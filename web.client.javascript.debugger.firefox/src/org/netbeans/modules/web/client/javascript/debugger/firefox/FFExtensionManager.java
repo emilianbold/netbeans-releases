@@ -48,6 +48,7 @@ import java.io.LineNumberReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -153,10 +154,6 @@ public class FFExtensionManager {
             if (firebugURIString != null && firebugURIString.length() > 0) {
                 try {
                     firebugURI = new URI(firebugURIString);
-                    
-                    if (firebugURI.getScheme().equals("http") && !isHttpURLValid(firebugURI.toURL())) {
-                        firebugURI = null;
-                    }
                 }catch (Exception ex) {
                     firebugURI = null;
                 }
@@ -164,9 +161,6 @@ public class FFExtensionManager {
             
             if (firebugURI == null) {
                 firebugURI = new URI(FIREBUG_XPI_URI);
-                if (!isHttpURLValid(firebugURI.toURL())) {
-                    firebugURI = null;
-                }
             }
         }catch (Exception ex) {
             firebugURI = null;
@@ -175,10 +169,10 @@ public class FFExtensionManager {
         URI nbExtensionURI = nbExtensionFile.toURI();
         
         int nbExtInstall = checkFirefoxExtension(browser, FIREFOX_EXTENSION_ID, 
-                null, nbExtensionURI, defaultProfile);
+                null, nbExtensionURI, defaultProfile, false);
         
         int firebugInstall = checkFirefoxExtension(browser, FIREBUG_EXTENSION_ID, 
-                FIREBUG_MIN_VERSION, firebugURI, defaultProfile);
+                FIREBUG_MIN_VERSION, firebugURI, defaultProfile, true);
         
         try {
             launchBrowser(browser, firebugInstall, firebugURI, nbExtInstall, nbExtensionURI);
@@ -199,9 +193,9 @@ public class FFExtensionManager {
         
         do {
             nbExtInstall = checkFirefoxExtension(browser, FIREFOX_EXTENSION_ID, 
-                null, nbExtensionURI, defaultProfile);
+                null, nbExtensionURI, defaultProfile, false);
             firebugInstall = checkFirefoxExtension(browser, FIREBUG_EXTENSION_ID, 
-                FIREBUG_MIN_VERSION, firebugURI, defaultProfile);
+                FIREBUG_MIN_VERSION, firebugURI, defaultProfile, true);
             
             if (nbExtInstall != EXTENSION_ALREADY_INSTALLED || firebugInstall != EXTENSION_ALREADY_INSTALLED) {
                 try {
@@ -221,7 +215,7 @@ public class FFExtensionManager {
     }
     
     public static int checkFirefoxExtension(HtmlBrowser.Factory browser, String extensionId, 
-            String minExtVersion, URI xpiURI, File defaultProfile) {
+            String minExtVersion, URI xpiURI, File defaultProfile, boolean httpCheck) {
         
         File extensionDir = new File(defaultProfile, "extensions" + File.separator + extensionId);
         
@@ -237,6 +231,17 @@ public class FFExtensionManager {
                 installDevExtension()) {
             
             if (xpiURI != null) {
+                if (httpCheck) {
+                    try {
+                        if (xpiURI.getScheme().equals("http") && !isHttpURLValid(xpiURI.toURL())) {
+                            return EXTENSION_NOT_INSTALLED;
+                        }
+                    }catch (MalformedURLException mue) {
+                        Log.getLogger().log(Level.SEVERE, "Unexpected exception while processing URI", mue);
+                        return EXTENSION_NOT_INSTALLED;
+                    }
+                }
+                
                 return EXTENSION_INSTALL;
             }
             
