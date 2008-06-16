@@ -66,6 +66,7 @@
     <mapID target="apisupport_building_zip" url="build_plugin/building_zip.html"/>
     <mapID target="apisupport_installing_plugins" url="distribute_plugin/installing_plugins.html"/>
     <mapID target="apisupport_branding_plugins" url="distribute_plugin/branding_plugins.html"/>
+    <mapID target="apisupport_branding_window_system" url="distribute_plugin/branding_window_system.html"/>
     <mapID target="apisupport_install_targetplatform" url="distribute_plugin/install_targetplatform.html"/>
     <mapID target="apisupport_install_devide" url="distribute_plugin/install_devide.html"/>
     <mapID target="apisupport_run_rich_client" url="distribute_plugin/run_rich_client.html"/>
