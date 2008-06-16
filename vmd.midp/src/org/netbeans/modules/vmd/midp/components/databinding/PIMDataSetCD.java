@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,55 +31,61 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.vmd.midp.components.categories;
+package org.netbeans.modules.vmd.midp.components.databinding;
 
-
-import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
-import org.netbeans.modules.vmd.api.model.*;
-import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
-import org.netbeans.modules.vmd.api.model.presenters.actions.AddActionPresenter;
-import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
-import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
-
-import java.util.Arrays;
+import org.netbeans.modules.vmd.midp.components.*;
+import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.vmd.midp.components.databinding.DataSetAbstractCD;
-import org.netbeans.modules.vmd.midp.components.databinding.DataSetCD;
-import org.netbeans.modules.vmd.midp.inspector.controllers.CategoryPC;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
+import org.netbeans.modules.vmd.api.model.Presenter;
+import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
+import org.netbeans.modules.vmd.api.model.TypeDescriptor;
+import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+
 /**
+ *
  * @author Karol Harezlak
  */
+public class PIMDataSetCD extends ComponentDescriptor {
 
-public final class DatabindingCategoryCD extends ComponentDescriptor {
+    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/dataset_16.gif"; // NOI18N
+    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.databinding.pim.PIMDataSet"); //NOI18N
+    
+    public static final String PROP_NAMES = "names"; 
 
-    public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "#DatabindingCategory"); // NOI18N
-    public static final String ICON_PATH_CATEGORY_DATABINDING = "org/netbeans/modules/vmd/midp/resources/components/category_resources_16.gif";// NOI18N
+    static {
+        MidpTypes.registerIconResource(TYPEID, ICON_PATH);
+    }
 
+    @Override
     public TypeDescriptor getTypeDescriptor() {
-        return new TypeDescriptor (CategoryCD.TYPEID, TYPEID, true, true);
+        return new TypeDescriptor(DataSetAbstractCD.TYPEID, TYPEID, true, true);
     }
 
+    @Override
     public VersionDescriptor getVersionDescriptor() {
-        return MidpVersionDescriptor.MIDP;
+        return MidpVersionDescriptor.MIDP_2;
     }
 
+    @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return null;
     }
 
-    protected List<? extends Presenter> createPresenters() {
-        return Arrays.asList (
-            // general
-            InfoPresenter.createStatic (NbBundle.getMessage(DatabindingCategoryCD.class, "DISP_Databinding"), null, ICON_PATH_CATEGORY_DATABINDING), // NOI18N
-            // accept
-            new AcceptTypePresenter (DataSetAbstractCD.TYPEID),
-            // inspector
-            InspectorPositionPresenter.create(new CategoryPC()),
-            // actions
-            AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, DataSetAbstractCD.TYPEID)
-        );
+    @Override
+    protected void gatherPresenters(ArrayList<Presenter> presenters) {
+        //DocumentSupport.removePresentersOfClass(presenters, CodeClassLevelPresenter.class);
+        super.gatherPresenters(presenters);
     }
 
+    @Override
+    protected List<? extends Presenter> createPresenters() {
+        return null;
+    }
 }

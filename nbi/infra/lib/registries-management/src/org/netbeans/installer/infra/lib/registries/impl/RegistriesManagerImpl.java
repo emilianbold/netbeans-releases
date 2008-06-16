@@ -1030,6 +1030,7 @@ public class RegistriesManagerImpl implements RegistriesManager {
             
             FileUtils.deleteFile(tempStatefile);
             FileUtils.deleteFile(tempPropertiesFile);
+            FileUtils.deleteFile(tempBundlePropertiesFile);
             FileUtils.deleteFile(tempUserDir, true);
             
             if (platform == Platform.WINDOWS) {

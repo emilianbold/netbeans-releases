@@ -365,7 +365,12 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         // Find buttonGroups of all selected components.
         while (metacomps.hasNext()) {
             RADComponent metacomp = (RADComponent)metacomps.next();
+            // Check whether metacomp is a member of some ButtonGroup
             Object buttonGroup = buttonGroupOfComponent(metacomp);
+            // Check whether metacomp is some ButtonGroup
+            if ((buttonGroup == null) && (metacomp.getBeanInstance() instanceof ButtonGroup)) {
+                buttonGroup = metacomp.getBeanInstance();
+            }
             if (buttonGroup != null) {
                 if (buttonGroups == null) {
                     buttonGroups = new HashMap<Object, java.util.List<AbstractButton>>();
