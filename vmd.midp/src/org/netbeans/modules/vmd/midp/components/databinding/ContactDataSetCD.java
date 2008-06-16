@@ -65,7 +65,7 @@ public class ContactDataSetCD extends ComponentDescriptor {
 
     @Override
     public TypeDescriptor getTypeDescriptor() {
-        return new TypeDescriptor(AbstractDataSetCD.TYPEID, TYPEID, true, true);
+        return new TypeDescriptor(DataSetAbstractCD.TYPEID, TYPEID, true, true);
     }
 
     @Override
