@@ -52,6 +52,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -116,10 +117,11 @@ public final class RefreshDependencyVersions extends Task {
                 + ", module = " + codenameBase + ", dryrun = " + dryRun + ", inject = " + injectDeps, Project.MSG_VERBOSE);
 
         validateInjectedDependencies(injectDeps);
-        
+
+        @SuppressWarnings("unchecked") Map<String,String> properties = getProject().getProperties();
         ModuleListParser listParser;
         try {
-            listParser = new ModuleListParser(getProject().getProperties(), ParseProjectXml.TYPE_NB_ORG, getProject());
+            listParser = new ModuleListParser(properties, ParseProjectXml.TYPE_NB_ORG, getProject());
         } catch (IOException ioe) {
             throw new BuildException("Can't read module list!", ioe, getLocation());
         }

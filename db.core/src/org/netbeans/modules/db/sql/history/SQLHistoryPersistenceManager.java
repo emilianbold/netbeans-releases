@@ -382,13 +382,14 @@ public class SQLHistoryPersistenceManager {
         
         private void addHistory(String url, String sql, Date date) {
             String sqlSetting = NbPreferences.forModule(SQLHistoryPersistenceManager.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", "");
-            if (sqlSetting != "") { // NOI18N
+            if (!sqlSetting.equals("")) { // NOI18N
                 limit = Integer.parseInt(NbPreferences.forModule(SQLHistoryPersistenceManager.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", ""));  // NOI18N
             }   
             if (sqlHistoryList.size() <= limit) {
                 sqlHistoryList.add(new SQLHistory(url, sql, date));
             } else {
-                LOGGER.log(Level.INFO, "");
+                // remove a statement from the beginning of the list
+                sqlHistoryList.remove(0);
             }
         }
  

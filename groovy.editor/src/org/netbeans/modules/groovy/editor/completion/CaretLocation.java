@@ -39,14 +39,12 @@
 
 package org.netbeans.modules.groovy.editor.completion;
 
-import org.netbeans.modules.groovy.editor.completion.CodeCompleter.CompletionRequest;
-
 /**
  *
  * @author schmidtm
  */
 public enum CaretLocation {
-
+    
     ABOVE_PACKAGE("ABOVE_PACKAGE"),
     BELOW_PACKAGE("BELOW_PACKAGE"),
     OUTSIDE_CLASSES("OUTSIDE_CLASSES"),
@@ -60,11 +58,6 @@ public enum CaretLocation {
 
     CaretLocation(String id) {
         this.id = id;
-    }
-    
-    
-    public static CaretLocation getCaretLocationFromRequest(final CompletionRequest request){
-        return UNDEFINED;
     }
     
 }

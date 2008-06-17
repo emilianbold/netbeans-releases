@@ -93,10 +93,16 @@ public class HyperlinkTest extends NbTestCase {
     }
 
     public void testMovingHyperlinkWithoutSave() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         doTestMovingHyperlink(false);
     }
 
     public void testMovingHyperlinkWithSave() throws Exception { // #62623
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         doTestMovingHyperlink(true);
     }
 

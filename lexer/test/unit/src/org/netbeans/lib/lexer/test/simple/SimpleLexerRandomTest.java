@@ -93,7 +93,7 @@ public class SimpleLexerRandomTest extends NbTestCase {
     }
     
     private void test(long seed) throws Exception {
-        TestRandomModify randomModify = new TestRandomModify(seed, this.getClass());
+        TestRandomModify randomModify = new TestRandomModify(seed);
         randomModify.setLanguage(TestTokenId.language());
         
         //randomModify.setDebugOperation(true);

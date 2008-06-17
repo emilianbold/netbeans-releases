@@ -54,6 +54,7 @@ public final class DotClassPathEntry {
 
     public static final String ATTRIBUTE_KIND = "kind";
     public static final String ATTRIBUTE_PATH = "path";
+    public static final String ATTRIBUTE_EXPORTED = "exported";
 
     public static enum Kind {
         CONTAINER,
@@ -128,6 +129,10 @@ public final class DotClassPathEntry {
      */
     /*public*/ String getLinkName() {
         return linkName;
+    }
+
+    public boolean isExported() {
+        return Boolean.parseBoolean(getProperty(ATTRIBUTE_EXPORTED));
     }
     
     /**

@@ -482,7 +482,13 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
         
         private void initRest() {
-            support.ensureAnnotationsLoaded();
+            //#132662 Post this task to another worker private thread
+            //to avoid deadlock.
+            support.RPPostprocessing.post(new Runnable() {
+                public void run() {
+                    support.ensureAnnotationsLoaded();
+                }
+            });
         }
     } // end of DoInitialize
     protected CloneableTopComponent createClonedObject() {

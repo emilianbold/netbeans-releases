@@ -89,7 +89,7 @@ public class JoinRandomTest extends NbTestCase {
     }
     
     private void test(long seed) throws Exception {
-        TestRandomModify randomModify = new TestRandomModify(seed, this.getClass());
+        TestRandomModify randomModify = new TestRandomModify(seed);
         randomModify.setLanguage(TestJoinSectionsTopTokenId.language());
 
 //        randomModify.setDebugOperation(true);
