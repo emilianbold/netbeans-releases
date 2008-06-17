@@ -1096,14 +1096,14 @@ public class GlassFishPanel extends DestinationPanel {
             "admin.label.text"; // NOI18N
     public static final String DEFAULTS_LABEL_TEXT_PROPERTY =
             "defaults.label.text"; // NOI18N
-    
+    */
     public static final String DEFAULT_DESTINATION_LABEL_TEXT =
             ResourceUtils.getString(GlassFishPanel.class,
             "GFP.destination.label.text"); // NOI18N
     public static final String DEFAULT_DESTINATION_BUTTON_TEXT =
             ResourceUtils.getString(GlassFishPanel.class,
             "GFP.destination.button.text"); // NOI18N
-    
+    /*
     public static final String DEFAULT_JDK_LOCATION_LABEL_TEXT =
             ResourceUtils.getString(GlassFishPanel.class,
             "GFP.jdk.location.label.text"); // NOI18N
