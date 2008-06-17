@@ -175,7 +175,7 @@ public final class ProjectImportModel {
         return null;
     }
 
-    public DotClassPathEntry getOuput() {
+    public DotClassPathEntry getOutput() {
         return project.getOutput();
     }
 

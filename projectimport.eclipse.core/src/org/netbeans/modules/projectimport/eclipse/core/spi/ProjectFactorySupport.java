@@ -180,8 +180,8 @@ public class ProjectFactorySupport {
         if (model.getJavaPlatform() != null) {
             sb.append("jre="+model.getJavaPlatform().getDisplayName()+";");
         }
-        if (model.getOuput() != null) {
-            sb.append("output="+model.getOuput().getRawPath()+";");
+        if (model.getOutput() != null) {
+            sb.append("output="+model.getOutput().getRawPath()+";");
         }
         return sb.toString().replace("con=;", ""); // remove empty container entries
     }
