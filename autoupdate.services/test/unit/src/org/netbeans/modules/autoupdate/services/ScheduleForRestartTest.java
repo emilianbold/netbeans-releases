@@ -60,6 +60,9 @@ public class ScheduleForRestartTest extends OperationsTestImpl {
     }
     
     public void testSelf() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         UpdateUnit toInstall = UpdateManagerImpl.getInstance ().getUpdateUnit (moduleCodeNameBaseForTest ());
         assertNotNull(toInstall.getAvailableUpdates ().get (1));
         installModule (toInstall, toInstall.getAvailableUpdates ().get (1));
