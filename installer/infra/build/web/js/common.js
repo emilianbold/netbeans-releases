@@ -199,6 +199,19 @@ function startList() {
     }
 }
 
+function getSize(filename) {
+	var size = "";
+	if(typeof file_names!='undefined' && typeof file_sizes!='undefined') {
+            for (var i = 0; i < file_names.length; i++) {		
+		if(file_names[i] == filename) {		
+			size = file_sizes[i];
+			break;
+		}
+            }
+	}
+	return size;
+}
+
 function message(msg) {
     document.write(msg);
 }

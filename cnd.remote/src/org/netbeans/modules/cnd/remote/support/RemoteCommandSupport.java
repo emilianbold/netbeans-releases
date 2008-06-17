@@ -87,11 +87,11 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
 
     @Override
     protected Channel createChannel() throws JSchException {
-        ChannelExec echannel = (ChannelExec) session.openChannel("exec");
-        String cmd = System.getProperty("cnd.remote.program");
+        ChannelExec echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
         
+        String cmd = System.getProperty("cnd.remote.program"); // DEBUG
         if (cmd == null) {
-            cmd = "/home/gordonp/.netbeans/rddev/cnd.remote/scripts/hello.sh";
+            cmd = "/home/gordonp/.netbeans/rddev/cnd.remote/scripts/hello.sh"; // DEBUG
         }
         
         echannel.setCommand(cmd);

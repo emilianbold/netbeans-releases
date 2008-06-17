@@ -756,7 +756,7 @@ public final class OpenProjectList {
         synchronized ( this ) {
             if (mainProject != null && !openProjects.contains(mainProject)) {
                 logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
-                throw new IllegalArgumentException("Project " + ProjectUtils.getInformation(mainProject).getDisplayName() + " is not open and cannot be set as main.");
+                throw new IllegalArgumentException("NB_REPORTER_IGNORE: Project " + ProjectUtils.getInformation(mainProject).getDisplayName() + " is not open and cannot be set as main.");
             }
         
             this.mainProject = mainProject;

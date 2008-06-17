@@ -127,6 +127,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         map.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(manager));
         map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(manager));
         map.put("delete", ExplorerUtils.actionDelete(manager, false));
+        setFocusable(false);
     }
     
     public void setModel (Models.CompoundModel model) {
@@ -383,7 +384,6 @@ ExplorerManager.Provider, PropertyChangeListener {
     
     /** Requests focus for the tree component. Overrides superclass method. */
     public boolean requestFocusInWindow () {
-        super.requestFocusInWindow ();
         return treeTable.requestFocusInWindow ();
     }
     
