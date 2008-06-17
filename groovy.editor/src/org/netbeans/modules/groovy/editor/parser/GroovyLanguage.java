@@ -39,8 +39,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.editor;
+package org.netbeans.modules.groovy.editor.parser;
 
+import org.netbeans.modules.groovy.editor.*;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyHintsProvider;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
