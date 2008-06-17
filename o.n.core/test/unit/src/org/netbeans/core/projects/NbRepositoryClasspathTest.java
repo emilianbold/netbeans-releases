@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,41 +31,30 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.core.startup;
+package org.netbeans.core.projects;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 
-/**
- * @author Jaroslav Tulach
- */
-public class NbRepositoryTest extends NbTestCase {
-    
-    public NbRepositoryTest(String testName) {
-        super(testName);
+public class NbRepositoryClasspathTest extends NbTestCase {
+
+    public NbRepositoryClasspathTest(String n) {
+        super(n);
     }
 
-    public void testUserDirIsWriteableEvenInstallDirDoesNotExists() throws IOException {
-        System.getProperties().remove("netbeans.home");
-        System.setProperty("netbeans.user", getWorkDirPath());
-        
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().getRoot();
-        
-        FileObject ahoj = FileUtil.createData(fo, "ahoj.jardo");
-        
-        OutputStream os = ahoj.getOutputStream();
-        os.write("Ahoj".getBytes());
-        os.close();
-        
-        File af = new File(new File(getWorkDir(), "config"), "ahoj.jardo");
-        assertTrue("File created", af.exists());
-        assertEquals("4 bytes", 4, af.length());
+    /**
+     * Test for issue #129583: XML layers from classpath modules should always be loaded.
+     * Only reason this is not in NbRepositoryTest is that neither core.startup nor any of its deps
+     * defines any kind of layer, so needs to be in a module which does.
+     */
+    public void testNbRepositoryInitializedFromClasspath() throws Exception {
+        assertNotNull(Repository.getDefault().getDefaultFileSystem().findResource("Services"));
     }
+
 }
