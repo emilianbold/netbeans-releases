@@ -384,6 +384,7 @@
                 <friend>org.netbeans.modules.fortress.editing</friend>
                 <friend>org.netbeans.modules.fortress.platform</friend>
                 <friend>org.netbeans.modules.fortress.project</friend>
+                <friend>org.netbeans.modules.groovy.editor</friend>
                 <friend>org.netbeans.modules.groovy.gsp</friend>
                 <friend>org.netbeans.modules.javafx.dataloader</friend>
                 <friend>org.netbeans.modules.languages.php</friend>
