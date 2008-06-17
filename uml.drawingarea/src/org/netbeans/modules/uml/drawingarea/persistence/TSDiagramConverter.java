@@ -52,6 +52,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -132,6 +133,7 @@ public class TSDiagramConverter
     private final String NESTEDLINKENGINE="NestedLinkDrawEngine";
     private final String NESTEDLINKPRESENTATION="NestedLink";
     private final String NODECONNECTORS="NodeConnectors";
+    private final String ASSOCIATIONCLASSCONNECTORENGINE="AssociationClassConnectorDrawEngine";
     private IProxyDiagram proxyDiagram;
     private TSDiagramDetails diagramDetails;
     
@@ -156,6 +158,8 @@ public class TSDiagramConverter
     private Map<String,NodeInfo.NodeLabel> peidToNodeLabels=new HashMap<String,NodeInfo.NodeLabel>();
     
     private HashMap<String,HashMap<String,Object>> peidToEdgeLabelMap=new HashMap<String,HashMap<String,Object>>();
+    
+    private HashMap<String,NodeInfo> associationClasses=new HashMap<String,NodeInfo>();//it's central elements only (circle in 6.1)
     
     // PEID -> NodeInfo
     private Map<String, NodeInfo> presIdNodeInfoMap = 
@@ -494,18 +498,15 @@ public class TSDiagramConverter
         for (NodeInfo ninfo : ninfos)
         {
             good=good&&createPE(ninfo);
-            System.out.println(ninfo.getProperty(PRESENTATIONELEMENT)!=null);
-            if(ninfo.getProperty(PRESENTATIONELEMENT)!=null)
-            {
-                IPresentationElement pe=(IPresentationElement) ninfo.getProperty(PRESENTATIONELEMENT);
-                System.out.println("ELEMENT: "+pe.getFirstSubjectsType()+"; SIZE: "+ninfo.getSize());
-            }
         }        
         return good;
     }
     
     private boolean createPE(NodeInfo nodeInfo)
     {
+        //special case, circle at center of assocciation connector isn't supported
+        if(associationClasses.get(nodeInfo.getPEID())!=null)return false;
+        //
         boolean good=true;
         try
         {            
@@ -932,6 +933,14 @@ public class TSDiagramConverter
                 ninfo.setMEID(readerPres.getAttributeValue(null, "MEID"));
                 //
                 getEngineFromPres(readerPres,ninfo);
+                //
+                if(ASSOCIATIONCLASSCONNECTORENGINE.equals(ninfo.getProperty(ENGINE)))
+                {
+                    //this is circle on association class connector
+                    //presIdNodeInfoMap.remove(PEID);
+                    associationClasses.put(PEID,ninfo);
+                    //return;
+                }
                 //
                 presIdNodeInfoMap.put(PEID, ninfo);
             }
