@@ -116,10 +116,7 @@ public class RootNode extends AbstractNode {
         }
 
         public synchronized void stateChanged(ChangeEvent e) {
-            if (e.getSource() instanceof RemoteServerList) {
-                System.err.println("RootNode.stateChanged:");
-            }
-            refresh(false);
+//            refresh(false);
         }
     }
 }
