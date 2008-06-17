@@ -214,6 +214,23 @@ public class CodeCompleter implements CodeCompletionHandler {
     }
 
     public CaretLocation getCaretLocationFromRequest(final CompletionRequest request) {
+        
+        // Are we above the package statement?
+        // We try to figure this out by moving down the lexer Stream
+        
+        int position = request.lexOffset;
+        
+        TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, position);
+        ts.move(position);
+        
+        while (ts.isValid() && ts.moveNext() && ts.offset() < request.doc.getLength()) {
+            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+            
+            if (t.id() == GroovyTokenId.LITERAL_package ) {
+                return CaretLocation.ABOVE_PACKAGE;
+            } 
+        }
+        
         AstPath path = getPathFromRequest(request);
 
         if (path == null) {
@@ -404,6 +421,11 @@ public class CodeCompleter implements CodeCompletionHandler {
             LOG.log(Level.FINEST, "no keywords completion inside of parameters"); // NOI18N
             return false;
         }
+        
+        if(request.behindDot){
+            LOG.log(Level.FINEST, "We are invoked right behind a dot."); // NOI18N
+            return false;
+        }
 
         Set<GroovyKeyword> keywords = EnumSet.allOf(GroovyKeyword.class);
 
@@ -474,6 +496,13 @@ public class CodeCompleter implements CodeCompletionHandler {
             return false;
         }
         
+        // If we are right behind a dot, there's no local-vars completion.
+        
+        if(request.behindDot){
+            LOG.log(Level.FINEST, "We are invoked right behind a dot."); // NOI18N
+            return false;
+        }
+        
         MethodNode scope = getSurroundingMethodNode(request);
 
         if(scope == null){
@@ -538,6 +567,22 @@ public class CodeCompleter implements CodeCompletionHandler {
                 return true;
             }
         }
+        return false;
+    }
+    
+    boolean checkBehindDot(final CompletionRequest request){
+        int position = request.lexOffset;
+        
+        TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, position);
+        ts.move(position);
+        
+        if(ts.isValid() && ts.movePrevious()) {
+            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+            if(t.id() == GroovyTokenId.DOT){
+                return true;
+            }
+        }
+        
         return false;
     }
     
@@ -793,7 +838,7 @@ public class CodeCompleter implements CodeCompletionHandler {
     }
 
     /**
-     * Complete the methods invocable on a class.
+     * Complete the methods invokable on a class.
      * @param proposals the CompletionProposal List we populate (return value)
      * @param request location information used as input
      * @return true if we found something usable
@@ -804,6 +849,14 @@ public class CodeCompleter implements CodeCompletionHandler {
         
         if (request.location == CaretLocation.INSIDE_PARAMETERS) {
             LOG.log(Level.FINEST, "no method completion inside of parameters"); // NOI18N
+            return false;
+        }
+        
+        // check whether we are either right behind a dot or have a 
+        // sorrounding class to retrieve methods from.
+        
+        if(!request.behindDot){
+            LOG.log(Level.FINEST, "I'm not invoked behind a dot."); // NOI18N
             return false;
         }
         
@@ -890,20 +943,31 @@ public class CodeCompleter implements CodeCompletionHandler {
             request.info = info;
             request.prefix = prefix;
             
+            // Are we invoked right behind a dot? This is information is used later on in
+            // a couple of completions.
+            
+            request.behindDot = checkBehindDot(request);
+            
             // here we figure out once for all completions, where we are inside the source
             // (in method, in class, ouside class etc)
             
             request.location = getCaretLocationFromRequest(request);
             LOG.log(Level.FINEST, "I am here in sourcecode: {0}", request.location); // NOI18N
             
-            // Complete potential import statements if we're invoced from a suitable
-            // position (outside method or class, right behind an import statement)
+            // if we are above a package statement, there's no completion at all.
+            if(request.location == CaretLocation.ABOVE_PACKAGE){
+                return new DefaultCompletionResult(proposals, false);
+            }
             
-            // complete packages
-            completePackages(proposals, request);
             
-            // complete classes, interfaces and enums
-            completeTypes(proposals, request);
+            if (!(request.location == CaretLocation.OUTSIDE_CLASSES)) {
+                // complete packages
+                completePackages(proposals, request);
+
+                // complete classes, interfaces and enums
+                completeTypes(proposals, request);
+            }
+            
             
             if (!checkForRequestBehindImportStatement(request)) {
                 // complette keywords
@@ -1196,6 +1260,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         private String prefix = "";
         private HtmlFormatter formatter;
         private CaretLocation location;
+        private boolean behindDot;
     }
 
     private abstract class GroovyCompletionItem implements CompletionProposal {
