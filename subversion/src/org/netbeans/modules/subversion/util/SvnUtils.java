@@ -69,6 +69,7 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.*;
 import org.tigris.subversion.svnclientadapter.utils.SVNUrlUtils;
 
@@ -78,8 +79,25 @@ import org.tigris.subversion.svnclientadapter.utils.SVNUrlUtils;
  * @author Maros Sandor
  */
 public class SvnUtils {
+
+    public static final String SVN_ADMIN_DIR;
+    public static final String SVN_ENTRIES_DIR;
+    private static final Pattern metadataPattern;
     
-    private static final Pattern metadataPattern = Pattern.compile(".*\\" + File.separatorChar + "(\\.|_)svn(\\" + File.separatorChar + ".*|$)");
+    static {
+        if (Utilities.isWindows()) {
+            String env = System.getenv("SVN_ASP_DOT_NET_HACK");
+            if (env != null) { 
+                SVN_ADMIN_DIR = "_svn";
+            } else {
+                SVN_ADMIN_DIR = ".svn";
+            }
+        } else {
+            SVN_ADMIN_DIR = ".svn";
+        }
+        SVN_ENTRIES_DIR = SVN_ADMIN_DIR + "/entries";
+        metadataPattern = Pattern.compile(".*\\" + File.separatorChar + SVN_ADMIN_DIR + "(\\" + File.separatorChar + ".*|$)");
+    }
     
     private static final FileFilter svnFileFilter = new FileFilter() {
         public boolean accept(File pathname) {
@@ -268,7 +286,7 @@ public class SvnUtils {
      * @return true if the given fileName is a svn administrative folder name, otherwise false
      */
     public static boolean isAdministrative(String fileName) {        
-        return fileName.equals(".svn") || fileName.equals("_svn"); // NOI18N
+        return fileName.equals(SVN_ADMIN_DIR); // NOI18N
     }
     
     /**
@@ -930,6 +948,5 @@ public class SvnUtils {
         }
         return svnrevision;
     }
-            
-            
+         
 }
