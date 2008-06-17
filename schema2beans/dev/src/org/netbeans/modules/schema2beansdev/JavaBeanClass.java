@@ -1563,7 +1563,12 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
         jw.writeEol("writeNodeAttributes(out, nodeName, namespace, indent, namespaceMap)");
 
         if (hasSubElements) {
-            geneol("out.write(\">\\n\")");
+            geneol("out.write(\">\")");
+            // see #132795
+            gen("if (sizeComments() > 0)");
+            cr();
+            jw.indentOneLevel();
+            geneol("out.write(\"\\n\")");
         } else {
         }                
             
