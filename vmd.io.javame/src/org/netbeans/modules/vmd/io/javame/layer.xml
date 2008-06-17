@@ -5,7 +5,7 @@
         <folder name="MIMEResolver">
             <file name="VMDResolver.xml" url="VMDResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.io.javame.Bundle"/>
-                <attr name="position" intvalue="137"/>
+                <attr name="position" intvalue="159"/>
             </file>
         </folder>
     </folder>
