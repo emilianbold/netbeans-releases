@@ -42,6 +42,7 @@ package org.netbeans.modules.options.keymap;
 
 import java.awt.event.ActionEvent;
 import java.lang.reflect.Field;
+import java.util.Collections;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
@@ -88,9 +89,14 @@ public class ActionsSearchProvider implements SearchProvider {
                         if (shortcut instanceof KeyStroke) {
                             stroke = (KeyStroke)shortcut;
                         }
+                        Object desc = ((Action)actAndEvent[0]).getValue(Action.SHORT_DESCRIPTION);
+                        String sDesc = null;
+                        if (sDesc instanceof String) {
+                            sDesc = (String)desc;
+                        }
                         if (!response.addResult(
                                 new ActionResult((Action)actAndEvent[0], (ActionEvent)actAndEvent[1]),
-                                sa.getDisplayName(), null, stroke)) {
+                                sa.getDisplayName(), sDesc, Collections.singletonList(stroke))) {
                             // return immediatelly if no further result is needed
                             return;
                         }

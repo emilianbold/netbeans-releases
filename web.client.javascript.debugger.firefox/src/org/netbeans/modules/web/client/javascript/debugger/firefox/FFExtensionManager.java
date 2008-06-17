@@ -114,7 +114,7 @@ public class FFExtensionManager {
 
     private static final String FIREFOX_EXTENSION_PATH = "modules/ext/netbeans-firefox-extension.xpi"; // NOI18N
 
-    private static final String APPDATA_CMD = "echo %AppData%"; // NOI18N
+    private static final String APPDATA_CMD = "cmd /c echo %AppData%"; // NOI18N
 
     private static final String[] WIN32_PROFILES_LOCATIONS = {
         "\\Mozilla\\Firefox\\" // NOI18N

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,40 +31,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.quicksearch;
+package org.netbeans.modules.cnd.remote.actions;
 
-import java.util.List;
-import javax.swing.KeyStroke;
-import org.netbeans.spi.quicksearch.SearchRequest;
-import org.netbeans.spi.quicksearch.SearchResponse;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
+import org.openide.util.NbBundle;
 
 /**
- * API trampoline pattern to hide constructors of 
- * SearchRequest and SearchResponse.
- * 
- * @author Dafe Simonek
+ *
+ * @author gordonp
  */
-public abstract class Accessor {
+public class DeleteServerAction extends AbstractAction {
     
-    public static Accessor DEFAULT;
+    private RemoteServerRecord record;
     
-    static {
-        // invokes static initializer of SearchRequest class
-        // that will assign value to the DEFAULT field above
-        Class c = SearchRequest.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (ClassNotFoundException ex) {
-            assert false : ex;
-        }
-//        assert DEFAULT != null : "The DEFAULT field must be initialized";
+    public DeleteServerAction(RemoteServerRecord record) {
+        super(NbBundle.getMessage(DeleteServerAction.class, "LBL_DeleteServerAction"));
+        this.record = record;
     }
-    
-    public abstract SearchRequest createRequest (String text, List<? extends KeyStroke> stroke);
-    
-    public abstract SearchResponse createResponse (CategoryResult catResult);
-        
-}
 
+    public void actionPerformed(ActionEvent e) {
+        RemoteServerList.getInstance().deleteServer(record);
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return !record.getName().equals("localhost"); // NOI18N
+    }
+}
