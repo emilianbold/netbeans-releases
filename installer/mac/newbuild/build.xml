@@ -52,6 +52,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${basedir}/dist"/>             
         <delete dir="${basedir}/netBeans/soa/build"/>
         <delete dir="${basedir}/netBeans/ruby/build"/>
+        <delete dir="${basedir}/netBeans/groovy/build"/>
         <delete dir="${basedir}/netBeans/cpp/build"/>
         <delete dir="${basedir}/netBeans/javase/build"/>
         <delete dir="${basedir}/netBeans/javaee/build"/>
@@ -78,6 +79,7 @@ Microsystems, Inc. All Rights Reserved.
                                          apisupport(javase), profiler(javase), java(javase), harness(javase),
                                          soa(soa),
                                          ruby(ruby),                                       
+                                         groovy(groovy),
                                          php(php), 
                                          enterprise(javaee), identity(javaee), xml(javaee), visualweb(javaee),
                                          ide(baseide), nb6.0-etc(baseide), platform(baseide), gsf(baseide)"/>        
@@ -119,6 +121,7 @@ Microsystems, Inc. All Rights Reserved.
                                         javaee(${javaee-title}),
                                         cpp(${cpp-title}),
                                         ruby(${ruby-title}),
+                                        groovy(${groovy-title}),
                                         soa(${soa-title}),
                                         php(${php-title})"/>        
         <for-each list="${modules}" separator="," property="module.name"  propertyArg="module.title">
@@ -158,7 +161,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="dist"/>                  
         <property name="bundles" value="        (./build/*pkg),
                                              -javase(./build/baseide.pkg ./build/javase.pkg),
-                                             -javaee(./build/baseide.pkg ./build/javase.pkg  ./build/javaee.pkg ./build/glassfish.pkg ./build/glassfish-v3.pkg ./build/tomcat.pkg),
+                                             -javaee(./build/baseide.pkg ./build/javase.pkg  ./build/javaee.pkg ./build/groovy.pkg ./build/glassfish.pkg ./build/glassfish-v3.pkg ./build/tomcat.pkg),
                                              -cpp(./build/baseide.pkg ./build/cpp.pkg),
                                              -ruby(./build/baseide.pkg ./build/ruby.pkg ./build/glassfish-v3.pkg),
                                              -php(./build/baseide.pkg ./build/php.pkg)"/>        
@@ -387,6 +390,7 @@ fi"
                 <filter token="SIZE_JAVASE" value="${sizeof.javase}"/> 
                 <filter token="SIZE_JAVAEE" value="${sizeof.javaee}"/>
                 <filter token="SIZE_RUBY" value="${sizeof.ruby}"/>
+                <filter token="SIZE_GROOVY" value="${sizeof.groovy}"/>
                 <filter token="SIZE_SOA" value="${sizeof.soa}"/>
                 <filter token="SIZE_GLASSFISH" value="${sizeof.glassfish}"/>
                 <filter token="SIZE_GLASSFISHV3" value="${sizeof.glassfish.v3}"/>
