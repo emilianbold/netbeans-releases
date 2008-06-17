@@ -49,6 +49,7 @@ import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Data about Eclipse project to import.
@@ -56,12 +57,13 @@ import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
 public final class ProjectImportModel {
 
     private EclipseProject project;
-    private String projectLocation;
+    private File projectLocation;
     private JavaPlatform platform;
     private List<Project> alreadyImportedProjects;
 
-    public ProjectImportModel(EclipseProject project, String projectLocation, JavaPlatform platform, List<Project> alreadyImportedProjects) {
+    public ProjectImportModel(EclipseProject project, File projectLocation, JavaPlatform platform, List<Project> alreadyImportedProjects) {
         this.project = project;
+        assert projectLocation == null || projectLocation.equals(FileUtil.normalizeFile(projectLocation));
         this.projectLocation = projectLocation;
         this.platform = platform;
         this.alreadyImportedProjects = alreadyImportedProjects;
@@ -83,7 +85,7 @@ public final class ProjectImportModel {
      * Folder in which to create NetBeans project. In case NetBeans projects are
      * imported into the same location as Eclipse one the folder will already exist.
      */
-    public String getNetBeansProjectLocation() {
+    public File getNetBeansProjectLocation() {
         return projectLocation;
     }
     

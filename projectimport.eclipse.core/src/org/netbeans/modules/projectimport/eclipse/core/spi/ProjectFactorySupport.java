@@ -59,6 +59,8 @@ import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
+import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
+import org.netbeans.modules.projectimport.eclipse.core.EclipseProjectReference;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseUtils;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -90,7 +92,7 @@ public class ProjectFactorySupport {
         }
         FileObject sourceRoot = FileUtil.toFileObject(model.getEclipseSourceRootsAsFileArray()[0]);
         for (DotClassPathEntry entry : model.getEclipseClassPathEntries()) {
-            addItemToClassPath(helper, refHelper, entry, model.getAlreadyImportedProjects(), model.getProjectName(), importProblems, sourceRoot);
+            addItemToClassPath(helper, refHelper, entry, model.getAlreadyImportedProjects(), importProblems, sourceRoot);
         }
     }
 
@@ -116,7 +118,7 @@ public class ProjectFactorySupport {
             if (!oldKey.contains(t)) {
                 DotClassPathEntry entry = findEntryByEncodedValue(model.getEclipseClassPathEntries(), t);
                 // TODO: items appended to the end of classpath; there is no API to control this apart from editting javac.classpath directly
-                addItemToClassPath(helper, refHelper, entry, model.getAlreadyImportedProjects(), model.getProjectName(), importProblems, sourceRoot);
+                addItemToClassPath(helper, refHelper, entry, model.getAlreadyImportedProjects(), importProblems, sourceRoot);
                 if (Boolean.FALSE.equals(entry.getImportSuccessful())) {
                     // adding of item failed: remove it from key so that it can be retried
                     resultingKey = resultingKey.replace(t+";", "");
@@ -233,13 +235,13 @@ public class ProjectFactorySupport {
      * Adds single DotClassPathEntry to NB project classpath.
      */
     private static boolean addItemToClassPath(AntProjectHelper helper, ReferenceHelper refHelper, DotClassPathEntry entry, 
-            List<Project> alreadyCreatedProjects, String projName, 
-            List<String> importProblems, FileObject sourceRoot) throws IOException {
+            List<Project> alreadyCreatedProjects, List<String> importProblems, FileObject sourceRoot) throws IOException {
         if (entry.getKind() == DotClassPathEntry.Kind.PROJECT) {
             Project requiredProject = null;
             // first try to find required project in list of already created projects.
             // if this is workspace import than required project must be there:
             for (Project p : alreadyCreatedProjects) {
+                // XXX use of ProjectInformation.displayName here is very suspicious:
                 if (entry.getRawPath().substring(1).equals(p.getLookup().lookup(ProjectInformation.class).getDisplayName())) {
                     requiredProject = p;
                     break;
@@ -249,6 +251,7 @@ public class ProjectFactorySupport {
                 // try to find project by its name in list of opened projects.
                 // if this is single project import than project might have already been imported:
                 for (Project p : OpenProjects.getDefault().getOpenProjects()) {
+                    // XXX this will not work well in the case of synchronizing an existing import:
                     if (entry.getRawPath().substring(1).equals(p.getLookup().lookup(ProjectInformation.class).getDisplayName())) {
                         requiredProject = p;
                         break;
@@ -266,13 +269,29 @@ public class ProjectFactorySupport {
                 elements.addAll(Arrays.asList(art.getArtifactLocations()));
             }
             if (artifact.length == 0) {
-                importProblems.add("Required project '"+requiredProject.getProjectDirectory()+"' does not provide any JAR articfacts.");
+                importProblems.add("Required project '" + requiredProject.getProjectDirectory() + "' does not provide any JAR artifacts.");
                 entry.setImportSuccessful(Boolean.FALSE);
                 return false;
             } else {
                 ProjectClassPathModifier.addAntArtifacts(artifact, elements.toArray(new URI[elements.size()]), sourceRoot, ClassPath.COMPILE);
-                entry.setImportSuccessful(Boolean.TRUE);
             }
+            EclipseProjectReference ref = EclipseProjectReference.read(requiredProject);
+            if (ref != null) {
+                EclipseProject ecprj = ref.getEclipseProject(false);
+                if (ecprj != null) {
+                    for (DotClassPathEntry transentry : ecprj.getClassPathEntries()) {
+                        if (transentry.isExported()) {
+                            boolean result = addItemToClassPath(helper, refHelper, transentry, alreadyCreatedProjects, importProblems, sourceRoot);
+                            if (!result) {
+                                importProblems.add("Transitive export " + transentry.getRawPath() + " cannot be resolved.");
+                                entry.setImportSuccessful(Boolean.FALSE);
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+            entry.setImportSuccessful(Boolean.TRUE);
         } else if (entry.getKind() == DotClassPathEntry.Kind.LIBRARY) {
             File f = new File(entry.getAbsolutePath());
             if (!f.exists()) {
