@@ -51,12 +51,8 @@ import java.io.NotSerializableException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -68,7 +64,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /** The system FileSystem - represents system files under $NETBEANS_HOME/system.
@@ -112,7 +107,7 @@ implements FileSystem.Status {
 
 
     /** Name of the system */
-    public String getDisplayName () {
+    public @Override String getDisplayName() {
         return NbBundle.getMessage(SystemFileSystem.class, "CTL_SystemFileSystem"); // NOI18N
     }
     
@@ -156,11 +151,11 @@ implements FileSystem.Status {
         return getDelegates().clone();
     }
     
-    protected FileSystem createWritableOnForRename(String oldName, String newName) throws IOException {
+    protected @Override FileSystem createWritableOnForRename(String oldName, String newName) throws IOException {
         return createWritableOn (oldName);
     }
     
-    protected FileSystem createWritableOn (String name) throws IOException {
+    protected @Override FileSystem createWritableOn(String name) throws IOException {
         FileSystem[] fss = getDelegates ();
         for (int index = 0; index < fss.length; index++) {
             if (! fss[index].isReadOnly ())
@@ -170,7 +165,7 @@ implements FileSystem.Status {
         throw new IOException("No writable filesystems in our delegates"); // NOI18N
     }
     
-    protected java.util.Set createLocksOn (String name) throws IOException {
+    protected @Override Set createLocksOn(String name) throws IOException {
         LocalFileSystemEx.potentialLock (name);
         return super.createLocksOn (name);
     }
@@ -178,11 +173,11 @@ implements FileSystem.Status {
     /** This filesystem cannot be removed from pool, it is persistent.
     */
     @Deprecated
-    public boolean isPersistent () {
+    public @Override boolean isPersistent() {
         return true;
     }
 
-    public FileSystem.Status getStatus () {
+    public @Override FileSystem.Status getStatus() {
         return this;
     }
 
