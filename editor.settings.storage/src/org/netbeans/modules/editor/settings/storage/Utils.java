@@ -279,6 +279,26 @@ public class Utils {
         }
     }
 
+    public static <A, B> boolean quickDiff(Map<A, B> oldMap, Map<A, B> newMap) {
+        for(A key : oldMap.keySet()) {
+            if (!newMap.containsKey(key)) {
+                return true;
+            } else {
+                if (!Utilities.compareObjects(oldMap.get(key), newMap.get(key))) {
+                    return true;
+                }
+            }
+        }
+        
+        for(A key : newMap.keySet()) {
+            if (!oldMap.containsKey(key)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
     public static void save(FileObject fo, StorageWriter writer) {
         assert fo != null : "FileObject can't be null"; //NOI18N
         assert writer != null : "StorageWriter can't be null"; //NOI18N

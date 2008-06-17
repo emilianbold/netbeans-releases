@@ -64,6 +64,7 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -110,6 +111,13 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             "org/netbeans/modules/debugger/resources/threadsView/thread_running_16.png";
     public static final String CALL_STACK2 =
             "org/netbeans/modules/debugger/resources/threadsView/call_stack_16.png";
+    
+    public static final String THREAD_GROUP_MIXED =
+            "org/netbeans/modules/debugger/jpda/resources/thread_group_mixed_16.png";
+    public static final String THREAD_GROUP_SUSPENDED =
+            "org/netbeans/modules/debugger/jpda/resources/thread_group_suspended_16.png";
+    public static final String THREAD_GROUP_RESUMED =
+            "org/netbeans/modules/debugger/jpda/resources/thread_group_running_16.png";
     
     public static final String SHOW_PACKAGE_NAMES = "show.packageNames";
 
@@ -165,6 +173,18 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                 } else {
                     return getDisplayName(t, showPackageNames);
                 }
+            }
+        }
+        if (node instanceof JPDAThreadGroup) {
+            if (isCurrent((JPDAThreadGroup) node) && !DebuggingTreeExpansionModelFilter.isExpanded(debugger, node)) {
+                return BoldVariablesTableModelFilterFirst.toHTML (
+                    ((JPDAThreadGroup) node).getName (),
+                    true,
+                    false,
+                    null
+                );
+            } else {
+                return ((JPDAThreadGroup) node).getName ();
             }
         }
         if (node instanceof CallStackFrame) {
@@ -274,17 +294,16 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     public String getIconBase(Object node) throws UnknownTypeException {
         if (node instanceof CallStackFrame) {
             CallStackFrame ccsf = debugger.getCurrentCallStackFrame ();
-            if ( (ccsf != null) && 
-                 (ccsf.equals (node)) 
-            ) return CURRENT_CALL_STACK;
+            if ((ccsf != null) &&  (ccsf.equals (node))) {
+                return CURRENT_CALL_STACK;
+            }
             return CALL_STACK;
         }
         if (node instanceof JPDAThread) {
-            if (node == debugger.getCurrentThread ())
+            if (node == debugger.getCurrentThread ()) {
                 return CURRENT_THREAD;
-            return ((JPDAThread) node).isSuspended () ? 
-                SUSPENDED_THREAD : RUNNING_THREAD;
-            
+            }
+            return ((JPDAThread) node).isSuspended () ? SUSPENDED_THREAD : RUNNING_THREAD;
         }
         throw new UnknownTypeException (node);
     }
@@ -296,7 +315,23 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         if (node instanceof CallStackFrame) {
             return CALL_STACK2;
         }
-        return getIconBase(node)+".gif";
+        if (node instanceof JPDAThreadGroup) {
+            boolean[] flags = new boolean[] {false, false};
+            computeGroupStatus((JPDAThreadGroup)node, flags);
+            if (flags[0]) {
+                // at least one thread suspended
+                if (flags[1]) {
+                    // mixed thread group
+                    return THREAD_GROUP_MIXED;
+                } else {
+                    // only suspended threads
+                    return THREAD_GROUP_SUSPENDED;
+                }
+            } else {
+                return THREAD_GROUP_RESUMED;
+            }
+        }
+        return getIconBase(node) + ".gif"; // NOI18N
     }
 
     public String getShortDescription(Object node) throws UnknownTypeException {
@@ -371,6 +406,9 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         if (node instanceof CallStackFrame) {
             CallStackFrame sf = (CallStackFrame) node;
             return CallStackNodeModel.getCSFName (null, sf, true);
+        }
+        if (node instanceof JPDAThreadGroup) {
+            return ((JPDAThreadGroup) node).getName ();
         }
         throw new UnknownTypeException(node.toString());
     }
@@ -451,6 +489,44 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         }
     }
     
+    private boolean isCurrent(JPDAThreadGroup tg) {
+        JPDAThread t = debugger.getCurrentThread ();
+        if (t == null)
+            return false;
+        JPDAThreadGroup ctg = t.getParentThreadGroup ();
+        while (ctg != null) {
+            if (ctg == tg) return true;
+            ctg = ctg.getParentThreadGroup ();
+        }
+        return false;
+    }
+    
+    /**
+     * @param tg thread group to inspect
+     * @param flags flags[0] true if there is at least one suspended thread,
+     *     flags[1] true if there is at least one resumed thread
+     */
+    private void computeGroupStatus(JPDAThreadGroup tg, boolean[] flags) {
+        JPDAThread[] threads = tg.getThreads();
+        for (int x = 0; x < threads.length; x++) {
+            if (threads[x].isSuspended()) {
+                flags[0] = true; // set 'suspended' flag
+            } else {
+                flags[1] = true; // set 'resumed' flag
+            }
+            if (flags[0] && flags[1]) {
+                return; // mixed group detected
+            }
+        }
+        JPDAThreadGroup[] groups = tg.getThreadGroups();
+        for (int x = 0; x < groups.length; x++) {
+            computeGroupStatus(groups[x], flags);
+            if (flags[0] && flags[1]) {
+                return; // mixed group detected
+            }
+        }
+    }
+    
     private class ThreadStateUpdater implements PropertyChangeListener {
         
         private Reference<JPDAThread> tr;
@@ -484,19 +560,26 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         
         private class Refresher extends Object implements Runnable {
             public void run() {
-                JPDAThread t = tr.get();
-                if (t != null) {
-                    fireNodeChanged(t);
+                JPDAThread thread = tr.get();
+                if (thread != null) {
+                    fireNodeChanged(thread);
                     boolean shouldExpand;
                     synchronized (this) {
                         shouldExpand = ThreadStateUpdater.this.shouldExpand;
                         ThreadStateUpdater.this.shouldExpand = false;
                     }
                     if (shouldExpand) {
-                        DebuggingTreeExpansionModelFilter.expand(debugger, t);
+                        DebuggingTreeExpansionModelFilter.expand(debugger, thread);
                     }
-                }
-            }
+                    if (preferences.getBoolean(DebuggingTreeModel.SHOW_THREAD_GROUPS, false)) {
+                        JPDAThreadGroup group = thread.getParentThreadGroup();
+                        while (group != null) {
+                            fireNodeChanged(group);
+                            group = group.getParentThreadGroup();
+                        } // while
+                    } // if
+                } // if
+            } // run
         }
     }
     

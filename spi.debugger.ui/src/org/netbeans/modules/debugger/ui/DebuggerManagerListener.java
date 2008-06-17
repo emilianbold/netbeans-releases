@@ -40,7 +40,13 @@
  */
 package org.netbeans.modules.debugger.ui;
 
-import java.beans.PropertyChangeEvent;
+import java.awt.Component;
+import java.beans.beancontext.BeanContextChildComponentProxy;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -48,6 +54,8 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 
 import org.openide.awt.ToolbarPool;
+import org.openide.util.Exceptions;
+import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
 
@@ -60,37 +68,139 @@ import org.openide.windows.WindowManager;
  */
 public class DebuggerManagerListener extends DebuggerManagerAdapter {
     
-    private boolean isOpened = false;
+    private List<DebuggerEngine> openedGroups = new LinkedList<DebuggerEngine>();
+    private Map<DebuggerEngine, List<? extends Component>> openedComponents = new HashMap<DebuggerEngine, List<? extends Component>>();
     
-    public void propertyChange (PropertyChangeEvent evt) {
-        if ( (DebuggerManager.getDebuggerManager ().getCurrentEngine () 
-               != null) &&
-             (!isOpened)
-        ) {
-            // Open debugger TopComponentGroup.
+    private static final List<Component> OPENED_COMPONENTS = new LinkedList<Component>();
+    
+    @Override
+    public synchronized void engineAdded (DebuggerEngine engine) {
+        if (openedComponents.containsKey(engine) || openedGroups.contains(engine)) {
+            return;
+        }
+        final List<? extends BeanContextChildComponentProxy> componentProxies =
+                engine.lookup(null, BeanContextChildComponentProxy.class);
+        //final List<? extends TopComponent> windowsToOpen = engine.lookup(null, TopComponent.class);
+        if (componentProxies != null && !componentProxies.isEmpty()) {
+            final List<Component> componentsToOpen = new ArrayList<Component>(componentProxies.size());
+            componentsToOpen.add(new java.awt.Label("EMPTY"));
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
-                    TopComponentGroup group = WindowManager.getDefault ().
-                        findTopComponentGroup ("debugger"); // NOI18N
-                    if (group != null) {
-                        group.open ();
-                        if (ToolbarPool.getDefault ().
-                            getConfiguration ().equals 
-                            (ToolbarPool.DEFAULT_CONFIGURATION)
-                        )
-                            ToolbarPool.getDefault ().setConfiguration 
-                                ("Debugging"); // NOI18N
+                    List<Component> cs = new ArrayList<Component>(componentProxies.size());
+                    try {
+                        for (BeanContextChildComponentProxy cp : componentProxies) {
+                            Component c;
+                            try {
+                                c = cp.getComponent();
+                                if (c == null) throw new NullPointerException("No component from "+cp);
+                            } catch (Exception ex) {
+                                Exceptions.printStackTrace(ex);
+                                continue;
+                            }
+                            cs.add(c);
+                            if (c instanceof TopComponent) {
+                                ((TopComponent) c).open();
+                            } else {
+                                c.setVisible(true);
+                            }
+                        }
+                        setupToolbar();
+                    } finally {
+                        synchronized (DebuggerManagerListener.this) {
+                            componentsToOpen.clear();
+                            componentsToOpen.addAll(cs);
+                            DebuggerManagerListener.this.notifyAll();
+                        }
+                        synchronized (OPENED_COMPONENTS) {
+                            OPENED_COMPONENTS.addAll(cs);
+                        }
                     }
                 }
             });
-            isOpened = true;
+            openedComponents.put(engine, componentsToOpen);
+        } else {
+            if (openedGroups.isEmpty()) {
+                // Open debugger TopComponentGroup.
+                SwingUtilities.invokeLater (new Runnable () {
+                    public void run () {
+                        TopComponentGroup group = WindowManager.getDefault ().
+                            findTopComponentGroup ("debugger"); // NOI18N
+                        if (group != null) {
+                            group.open ();
+                        }
+                        setupToolbar();
+                    }
+                });
+            }
+            openedGroups.add(engine);
         }
-        if ( (evt.getPropertyName () == DebuggerManager.PROP_DEBUGGER_ENGINES) 
-                &&
-             ((DebuggerEngine[]) evt.getNewValue ()).length == 0
-        ) {
-            closeDebuggerUI();
-            isOpened = false;
+    }
+
+    private static final void setupToolbar() {
+        if (ToolbarPool.getDefault ().getConfiguration ().equals(ToolbarPool.DEFAULT_CONFIGURATION)) {
+            ToolbarPool.getDefault ().setConfiguration("Debugging"); // NOI18N
+        }
+    }
+
+    private static final void closeToolbar() {
+        if (ToolbarPool.getDefault ().getConfiguration ().equals("Debugging")) {
+            ToolbarPool.getDefault ().setConfiguration(ToolbarPool.DEFAULT_CONFIGURATION); // NOI18N
+        }
+    }
+
+    @Override
+    public synchronized void engineRemoved (DebuggerEngine engine) {
+        List<? extends Component> openedWindows = openedComponents.remove(engine);
+        if (openedWindows != null) {
+            // If it's not filled yet by AWT, wait...
+            if (openedWindows.size() == 1 && openedWindows.get(0) instanceof java.awt.Label) {
+                try {
+                    wait();
+                } catch (InterruptedException iex) {}
+            }
+            // Check whether the component is opened by some other engine...
+            final List<Component> retainOpened = new ArrayList<Component>();
+            for (List<? extends Component> ltc : openedComponents.values()) {
+                retainOpened.addAll(ltc);
+            }
+            final List<Component> windowsToClose = new ArrayList<Component>(openedWindows);
+            windowsToClose.removeAll(retainOpened);
+            if (!windowsToClose.isEmpty()) {
+                SwingUtilities.invokeLater (new Runnable () {
+                    public void run () {
+                        for (Component c : windowsToClose) {
+                            if (c instanceof TopComponent) {
+                                ((TopComponent) c).close();
+                            } else {
+                                c.setVisible(false);
+                            }
+                        }
+                    }
+                });
+            }
+            synchronized (OPENED_COMPONENTS) {
+                OPENED_COMPONENTS.removeAll(windowsToClose);
+            }
+        } else {
+            openedGroups.remove(engine);
+            if (openedGroups.isEmpty()) {
+                SwingUtilities.invokeLater (new Runnable () {
+                    public void run () {
+                        TopComponentGroup group = WindowManager.getDefault ().
+                            findTopComponentGroup ("debugger"); // NOI18N
+                        if (group != null) {
+                            group.close();
+                        }
+                    }
+                });
+            }
+        }
+        if (openedComponents.isEmpty() && openedGroups.isEmpty()) {
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    closeToolbar();
+                }
+            });
         }
     }
     
@@ -119,17 +229,20 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                 findTopComponentGroup ("debugger"); // NOI18N
         if (group != null) {
             group.close ();
-            if (ToolbarPool.getDefault().getConfiguration().equals("Debugging")) { // NOI18N
-                ToolbarPool.getDefault().setConfiguration(ToolbarPool.DEFAULT_CONFIGURATION);
-            }
         }
-    }
-    
-    public String[] getProperties () {
-        return new String [] {
-            DebuggerManager.PROP_DEBUGGER_ENGINES,
-            DebuggerManager.PROP_CURRENT_ENGINE
-        };
+        synchronized (OPENED_COMPONENTS) {
+            for (Component c : OPENED_COMPONENTS) {
+                if (c instanceof TopComponent) {
+                    ((TopComponent) c).close();
+                } else {
+                    c.setVisible(false);
+                }
+            }
+            OPENED_COMPONENTS.clear();
+        }
+        if (ToolbarPool.getDefault().getConfiguration().equals("Debugging")) { // NOI18N
+            ToolbarPool.getDefault().setConfiguration(ToolbarPool.DEFAULT_CONFIGURATION);
+        }
     }
     
 }

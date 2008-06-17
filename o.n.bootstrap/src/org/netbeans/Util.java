@@ -242,8 +242,13 @@ public abstract class Util {
     
     /** Check whether a package dependency is met.
      * A classloader must be supplied to check in.
+     * @param dep a module dependency
+     * @param cl a package-accessible classloader
+     * @return true if a package dependency is met
+     * @throws IllegalArgumentException 
+     * @since 2.14
      */
-    static boolean checkPackageDependency(Dependency dep, ClassLoader cl) throws IllegalArgumentException {
+    public static boolean checkPackageDependency(Dependency dep, ClassLoader cl) throws IllegalArgumentException {
         if (dep.getType() != Dependency.TYPE_PACKAGE) {
             throw new IllegalArgumentException("Not a package dependency"); // NOI18N
         }
@@ -275,7 +280,7 @@ public abstract class Util {
             } catch (ClassNotFoundException cnfe) {
                 if (packageName == null) {
                     // This was all we were relying on, so it is an error.
-                    err.log(Level.WARNING, null, cnfe);
+                    err.log(Level.INFO, null, cnfe);
                     err.fine("Probed class could not be found");
                     return false;
                 }
@@ -283,12 +288,12 @@ public abstract class Util {
                 // this was only run to enforce that the package defs were loaded.
             } catch (RuntimeException e) {
                 // SecurityException, etc. Package exists but is corrupt.
-                err.log(Level.WARNING, null, e);
+                err.log(Level.INFO, null, e);
                 err.fine("Assuming package " + packageName + " is corrupt");
                 return false;
             } catch (LinkageError le) {
                 // NoClassDefFoundError, etc. Package exists but is corrupt.
-                err.log(Level.WARNING, null, le);
+                err.log(Level.INFO, null, le);
                 err.fine("Assuming package " + packageName + " is corrupt");
                 return false;
             }
@@ -321,7 +326,7 @@ public abstract class Util {
                             return false;
                         }
                     } catch (NumberFormatException nfe) {
-                        err.log(Level.WARNING, null, nfe);
+                        err.log(Level.INFO, null, nfe);
                         err.fine("Will not honor a dependency on non-numeric package spec version");
                         return false;
                     }

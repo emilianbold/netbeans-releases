@@ -64,6 +64,9 @@ public class FileUtilTest extends NbTestCase {
      * against FileUtil.copy(FileInputStream, FileOutputStream). It should be the same.
      */
     public void testCopy136308() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         File file = new File(getWorkDir(), "input");
         FileWriter writer = new FileWriter(file);
         for (int i = 0; i < 1000000; i++) {

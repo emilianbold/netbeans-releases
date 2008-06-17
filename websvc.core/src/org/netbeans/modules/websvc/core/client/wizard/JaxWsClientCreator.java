@@ -58,9 +58,6 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
@@ -172,7 +169,7 @@ public class JaxWsClientCreator implements ClientCreator {
         int ind = wsdlUrl.lastIndexOf("/"); //NOI18N
         String wsdlName = ind>=0?wsdlUrl.substring(ind+1):wsdlUrl;
         if (wsdlName.toUpperCase().endsWith("?WSDL")) wsdlName = wsdlName.substring(0,wsdlName.length()-5); //NOI18N
-        ind = wsdlName.lastIndexOf(".wsdl"); //NOI18N
+        ind = wsdlName.lastIndexOf("."); //NOI18N
         if (ind>0) wsdlName = wsdlName.substring(0,ind);
         // replace special characters with '_'
         return convertAllSpecialChars(wsdlName);
@@ -271,17 +268,6 @@ public class JaxWsClientCreator implements ClientCreator {
             }
         }
         return result;
-    }
-    
-    private J2eePlatform getJ2eePlatform(){
-        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-        if(provider != null){
-            String serverInstanceID = provider.getServerInstanceID();
-            if(serverInstanceID != null && serverInstanceID.length() > 0) {
-                return Deployment.getDefault().getJ2eePlatform(serverInstanceID);
-            }
-        }
-        return null;
     }
 
     /**

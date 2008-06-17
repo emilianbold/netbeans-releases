@@ -44,12 +44,14 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
-import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
+import org.netbeans.modules.cnd.modelutil.CsmFontColorManager;
+import org.netbeans.modules.cnd.modelutil.FontColorProvider;
+import org.netbeans.modules.cnd.modelutil.FontColorProvider.Entity;
 
 /**
  *
@@ -67,7 +69,7 @@ public class SemanticEntitiesProvider {
         list = new ArrayList<SemanticEntity>();
 
         // Inactive Code
-        list.add(new AbstractSemanticEntity() {
+        list.add(new AbstractSemanticEntity(FontColorProvider.Entity.INACTIVE_CODE) {
 
             public String getName() {
                 return "inactive"; // NOI18N
@@ -82,7 +84,7 @@ public class SemanticEntitiesProvider {
         if (!HighlighterBase.MINIMAL) { // for QEs who want to save performance on UI tests
         
             // Class Fields
-            list.add(new AbstractSemanticEntity() {
+            list.add(new AbstractSemanticEntity(FontColorProvider.Entity.CLASS_FIELD) {
 
                 public String getName() {
                     return "class-fields"; // NOI18N
@@ -107,13 +109,13 @@ public class SemanticEntitiesProvider {
                 }
 
                 @Override
-                public void initFontColors(FontColorSettings fcs) {
+                public void updateFontColors(FontColorProvider provider) {
                     color = AttributesUtilities.createImmutable(StyleConstants.Bold, Boolean.TRUE);
                 }
             });
 
             // Macro
-            list.add(new AbstractSemanticEntity() {
+            list.add(new AbstractSemanticEntity(FontColorProvider.Entity.USER_MACRO) {
 
                 public String getName() {
                     return MACROS;
@@ -137,15 +139,14 @@ public class SemanticEntitiesProvider {
                 protected AttributeSet sysMacroColors;
 
                 @Override
-                public void initFontColors(FontColorSettings fcs) {
-                    super.initFontColors(fcs);
-                    sysMacroColors = getFontColor(fcs, "macros-system"); // NOI18N
-
+                public void updateFontColors(FontColorProvider provider) {
+                    super.updateFontColors(provider);
+                    sysMacroColors = getFontColor(provider, FontColorProvider.Entity.SYSTEM_MACRO); // NOI18N
                 }
             });
 
             // typedefs
-            list.add(new AbstractSemanticEntity() {
+            list.add(new AbstractSemanticEntity(FontColorProvider.Entity.TYPEDEF) {
 
                 public String getName() {
                     return "typedefs"; // NOI18N
@@ -165,19 +166,28 @@ public class SemanticEntitiesProvider {
     private static abstract class AbstractSemanticEntity implements SemanticEntity {
 
         protected AttributeSet color;
-        private static final String prefix = "cc-highlighting-";
+        private final FontColorProvider.Entity entity;
         private static final AttributeSet cleanUp = AttributesUtilities.createImmutable(
                 StyleConstants.Underline, null,
                 StyleConstants.StrikeThrough, null,
                 StyleConstants.Background, null,
                 EditorStyleConstants.WaveUnderlineColor, null);
 
-        public void initFontColors(FontColorSettings fcs) {
-            color = getFontColor(fcs, getName());
+        public AbstractSemanticEntity() {
+            this.entity = null;
+        }
+        
+        public AbstractSemanticEntity(Entity entity) {
+            this.entity = entity;
+        }
+        
+        public void updateFontColors(FontColorProvider provider) {
+            assert entity != null;
+            color = getFontColor(provider, entity);
         }
 
-        protected AttributeSet getFontColor(FontColorSettings fcs, String name) {
-            return AttributesUtilities.createComposite(fcs.getTokenFontColors(prefix + name), cleanUp);
+        protected static AttributeSet getFontColor(FontColorProvider provider, FontColorProvider.Entity entity) {
+            return AttributesUtilities.createComposite(provider.getColor(entity), cleanUp);
         }
 
         public AttributeSet getColor(CsmOffsetable obj) {

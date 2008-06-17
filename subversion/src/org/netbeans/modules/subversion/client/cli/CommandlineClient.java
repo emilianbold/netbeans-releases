@@ -328,6 +328,9 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
 
     public void revert(File[] files, boolean recursivelly) throws SVNClientException {
+        if(files == null || files.length == 0) {
+            return;
+        }
         RevertCommand cmd = new RevertCommand(files, recursivelly);
         exec(cmd);
     }

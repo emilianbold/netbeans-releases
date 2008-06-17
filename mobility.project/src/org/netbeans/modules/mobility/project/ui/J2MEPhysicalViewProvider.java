@@ -43,7 +43,6 @@ package org.netbeans.modules.mobility.project.ui;
 import java.io.CharConversionException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.util.Iterator;
 import org.netbeans.api.project.*;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.project.ProjectConfiguration;
@@ -66,17 +65,10 @@ import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.FolderLookup;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -404,34 +396,8 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
                 act.add(new RefreshPackagesAction());
                 act.add(null);
                 // honor 57874 contact
-                
-                try {
-                    final Repository repository  = Repository.getDefault();
-                    final FileSystem sfs = repository.getDefaultFileSystem();
-                    final FileObject fo = sfs.findResource("Projects/Actions");  // NOI18N
-                    if (fo != null) {
-                        final DataObject dobj = DataObject.find(fo);
-                        final FolderLookup actionRegistry = new FolderLookup((DataFolder)dobj);
-                        final Lookup.Template<Object> query = new Lookup.Template<Object>(Object.class);
-                        final Lookup lookup = actionRegistry.getLookup();
-                        final Iterator it = lookup.lookup(query).allInstances().iterator();
-                        if (it.hasNext()) {
-                            act.add(null);
-                        }
-                        while (it.hasNext()) {
-                            final Object next = it.next();
-                            if (next instanceof Action) {
-                                act.add((Action)next);
-                            } else if (next instanceof JSeparator) {
-                                act.add(null);
-                            }
-                        }
-                    }
-                } catch (DataObjectNotFoundException ex) {
-                    // data folder for exitinf fileobject expected
-                    ErrorManager.getDefault().notify(ex);
-                }
-                
+                act.add(null);
+                act.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
                 act.add(null);
                 act.add(CommonProjectActions.customizeProjectAction());
                 actions = act.toArray(new Action[act.size()]);

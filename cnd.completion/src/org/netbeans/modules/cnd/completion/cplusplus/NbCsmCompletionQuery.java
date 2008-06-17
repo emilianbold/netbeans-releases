@@ -44,6 +44,7 @@ import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmFinder;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
@@ -290,8 +291,12 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
             return new NbCsmResultItem.NbNamespaceAliasResultItem(alias, displayFullNamespacePath, LIB_NAMESPACE_ALIAS_PRIORITY);
         }
 
-        public TemplateParameterResultItem createTemplateParameterResultItem(CsmTemplateParameter par) {
-            return new NbCsmResultItem.TemplateParameterResultItem(par, CLASS_ENUMERATOR_PRIORITY);
+        public CsmResultItem.TemplateParameterResultItem createTemplateParameterResultItem(CsmTemplateParameter par) {
+            return new NbCsmResultItem.NbTemplateParameterResultItem(par, CLASS_ENUMERATOR_PRIORITY);
+        }
+
+        public CsmResultItem createLabelResultItem(CsmLabel csmStatement) {
+            return new NbCsmResultItem.LabelResultItem(csmStatement, LOCAL_VAR_PRIORITY);
         }
     }
 }

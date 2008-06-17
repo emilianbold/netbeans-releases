@@ -42,15 +42,10 @@
 package org.netbeans.modules.ruby;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.prefs.Preferences;
-import javax.swing.Action;
 import org.jruby.ast.Node;
-import org.netbeans.modules.gsf.api.ParseListener;
-import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
@@ -62,8 +57,6 @@ import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.netbeans.modules.ruby.options.CodeStyle;
 import org.netbeans.modules.ruby.options.FmtOptions;
-import org.netbeans.modules.gsf.spi.DefaultParseListener;
-import org.netbeans.modules.gsf.spi.DefaultParserFile;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbPreferences;
 
@@ -84,57 +77,46 @@ public abstract class RubyTestBase extends org.netbeans.api.ruby.platform.RubyTe
     }
     
     @Override
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new RubyLanguage();
+    }
+
+    @Override
+    protected String getPreferredMimeType() {
+        return RubyInstallation.RUBY_MIME_TYPE;
+    }
+    
+    @Override
     protected void initializeClassPaths() {
         System.setProperty("netbeans.user", getWorkDirPath());
         FileObject jrubyHome = TestUtil.getXTestJRubyHomeFO();
         assertNotNull(jrubyHome);
         FileObject preindexed = jrubyHome.getParent().getFileObject("preindexed");
         RubyIndexer.setPreindexedDb(preindexed);
+
         initializeRegistry();
         // Force classpath initialization
         RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
         platform.getGemManager().getNonGemLoadPath();
-        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(RubyMimeResolver.RUBY_MIME_TYPE);
-        org.netbeans.modules.gsfret.source.usages.ClassIndexManager.get(language).getBootIndices();
+        
+        super.initializeClassPaths();
     }
 
     protected ParserResult parse(FileObject fileObject) {
-        RubyParser parser = new RubyParser();
-        int caretOffset = -1;
-
-        ParserFile file = new DefaultParserFile(fileObject, null, false);
-        String sequence = "";
-        ParseListener listener = new DefaultParseListener();
-//        BaseDocument baseDoc = null;
         try {
-//            DataObject dobj = DataObject.find(fileObject);
-//            EditorCookie cookie = dobj.getCookie(EditorCookie.class);
-//            Document doc = cookie.openDocument();
-//            sequence = doc.getText(0, doc.getLength());
-            sequence = readFile(fileObject);
-//            baseDoc = getDocument(sequence);
-        }
-        catch (Exception ex){
+            String text = RubyTestBase.read(fileObject);
+            BaseDocument doc = RubyTestBase.createDocument(text);
+            GsfTestCompilationInfo testInfo = new GsfTestCompilationInfo(this, fileObject, doc, text);
+            ParserResult result = testInfo.getEmbeddedResult(RubyMimeResolver.RUBY_MIME_TYPE, 0);
+
+            return result;
+        } catch (Exception ex) {
             fail(ex.toString());
+            
+            return null;
         }
-TranslatedSource translatedSource = null; // TODO            
-        RubyParser.Context context = new RubyParser.Context(file, listener, sequence, caretOffset, translatedSource);
-        ParserResult result = parser.parseBuffer(context, RubyParser.Sanitize.NEVER);
-        return result;
     }
 
-    @Override
-    protected void initializeRegistry() {
-        LanguageRegistry registry = LanguageRegistry.getInstance();
-        if (!LanguageRegistry.getInstance().isSupported(RubyInstallation.RUBY_MIME_TYPE)) {
-            List<Action> actions = Collections.emptyList();
-            org.netbeans.modules.gsf.Language dl = new Language("org/netbeans/modules/ruby/jrubydoc.png", "text/x-ruby", actions, new RubyLanguage(), new RubyParser(), new RubyCodeCompleter(), new RubyRenameHandler(), new RubyDeclarationFinder(), new RubyFormatter(), new RubyKeystrokeHandler(), new RubyIndexer(), new RubyStructureAnalyzer(), null, false);
-            List<org.netbeans.modules.gsf.Language> languages = new ArrayList<org.netbeans.modules.gsf.Language>();
-            languages.add(dl);
-            registry.addLanguages(languages);
-        }
-    }
-    
     protected Node getRootNode(String relFilePath) {
         FileObject fileObject = getTestFile(relFilePath);
         ParserResult result = parse(fileObject);
@@ -163,24 +145,20 @@ TranslatedSource translatedSource = null; // TODO
         }
     }
     
+    // Called via reflection from NbUtilities. This is necessary because
+    // during tests, going from a FileObject to a BaseDocument only works
+    // if all the correct data loaders are installed and working - and that
+    // hasn't been the case; we end up with PlainDocuments instead of BaseDocuments.
+    // If anyone can figure this out, please let me know and simplify the
+    // test infrastructure.
     public static BaseDocument getDocumentFor(FileObject fo) {
         return createDocument(read(fo));
     }
 
-    @Override
-    protected DefaultLanguageConfig getPreferredLanguage() {
-        return new RubyLanguage();
-    }
-
-    @Override
-    protected String getPreferredMimeType() {
-        return RubyInstallation.RUBY_MIME_TYPE;
-    }
-    
-    @Override
-    protected GsfTestCompilationInfo getInfo(FileObject fo, BaseDocument doc, String source) throws Exception {
-        return new TestCompilationInfo(this, fo, doc, source);
-    }
+//    @Override
+//    protected GsfTestCompilationInfo getInfo(FileObject fo, BaseDocument doc, String source) throws Exception {
+//        return new TestCompilationInfo(this, fo, doc, source);
+//    }
     
     @Override
     protected RubyFormatter getFormatter(IndentPrefs preferences) {

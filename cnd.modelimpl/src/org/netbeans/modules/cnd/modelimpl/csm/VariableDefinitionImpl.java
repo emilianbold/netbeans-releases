@@ -61,6 +61,8 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
@@ -192,7 +194,14 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
 		def = findByName(((CsmClass) owner).getMembers(), getName());
 	    }
 	    else if( owner instanceof CsmNamespace ) {
-		def = findByName(((CsmNamespace) owner).getDeclarations(), getName());
+                CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createCompoundFilter(
+                         CsmSelect.getDefault().getFilterBuilder().createKindFilter(
+                         new CsmDeclaration.Kind[]{CsmDeclaration.Kind.VARIABLE}),
+                         CsmSelect.getDefault().getFilterBuilder().createNameFilter(getName().toString(), true, false, false));
+                Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(((CsmNamespace)owner), filter);
+                while (it.hasNext()) {
+                    def = it.next();
+                }
 	    }
 	}
         return (CsmVariable) def;

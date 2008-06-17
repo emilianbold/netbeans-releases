@@ -57,35 +57,7 @@ public abstract class Index {
     }
 
     /**
-     * Encodes a reference type,
-     * used by {@link ClassIndex#getElements} and {@link ClassIndex#getResources}
-     * to restrict the search.
-     */
-    public enum SearchKind {
-        
-        /**
-         * The returned class has to extend or implement given element
-         */
-        IMPLEMENTORS,
-        
-        /**
-         * The returned class has to call method on given element
-         */
-        METHOD_REFERENCES,
-        
-        /**
-         * The returned class has to access a field on given element
-         */
-        FIELD_REFERENCES,
-        
-        /**
-         * The returned class contains references to the element type
-         */
-        TYPE_REFERENCES,        
-    };
-    
-    /**
-     * Scope used by {@link ClassIndex} to search in
+     * Scope used by {@link #search} to search in
      */
     public enum SearchScope {
         /**
@@ -133,7 +105,7 @@ public abstract class Index {
     
     public abstract void search(
             @NonNull final String key, 
-            @NonNull final String name, 
+            @NonNull final String value, 
             @NonNull final NameKind kind, 
             @NonNull final Set<SearchScope> scope, 
             @NonNull Set<SearchResult> result, 

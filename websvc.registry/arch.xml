@@ -307,7 +307,7 @@ invoking Javac internally.)
 
  <answer id="deploy-dependencies">
   <p>
-   Nothing.
+  Nothing.
   </p>
  </answer>
 
@@ -959,7 +959,7 @@ invoking Javac internally.)
             <hint>
             If you provide an ant task that users can use, you need to be very
             careful about its syntax and behaviour, as it most likely forms an
-	          API for end users and as there is a lot of end users, their reaction
+              API for end users and as there is a lot of end users, their reaction
             when such API gets broken can be pretty strong.
             </hint>
         </question>

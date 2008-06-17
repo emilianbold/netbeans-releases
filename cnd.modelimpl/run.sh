@@ -74,11 +74,6 @@ do
 		shift
                 JAVA=$1/bin/java
                 ;;
-        --cnd)
-		shift
-                echo "Using CND from $1"
-                CNDDIST=$1
-                ;;
 	--nocon|--noconsole)
 		CONSOLE=""
 		;;
@@ -135,15 +130,6 @@ else
 	fi
 fi
 
-DEFAULT_CND="${DEFAULT_NB}/cnd2"
-CNDDIST="${CNDDIST-${DEFAULT_CND}}"
-
-if [ -z "${CNDDIST}" ]; then
-	echo "Please specify CNDDIST environment variable; it should point to CND installation"
-        exit 1;
-fi
-
-
 if [ -n "${DEBUG}" ]; then
     DEBUG="${DEBUG},suspend=${SUSPEND},address=${DBGPORT}"
 fi
@@ -157,11 +143,9 @@ DEFS="${DEFS} -J-Dparser.report.include.failures=true"
 DEFS="${DEFS} -J-Dsun.java2d.pmoffscreen=false"
 DEFS="${DEFS} -J-Dtest.xref.action=true"
 DEFS="${DEFS} -J-Dcnd.classview.sys-includes=true"
+DEFS="${DEFS} -J-Dcnd.callgraph.showgraph=true"
 ##DEFS="${DEFS} -J-Dcnd.parser.queue.trace=true"
 ##DEFS="${DEFS} -J-Dcnd.modelimpl.parser.threads=2"
 ##DEFS="${DEFS} -J-Dcnd.modelimpl.no.reparse.include=true"
-
-#netbeans_extraclusters="${CNDDIST}"
-#export netbeans_extraclusters
 
 ${NBDIST}/bin/netbeans -J-ea -J-server ${USERDIR} ${DEBUG} ${PROFILE} ${DEFS} ${PARAMS}

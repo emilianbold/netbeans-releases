@@ -60,8 +60,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  */
 public enum TestJoinSectionsTopTokenId implements TokenId {
     
-    TEXT(),
-    TAG();
+    TAG(), // Text enclosed in <..> including '<' and '>'
+    TEXT(); // Any text not enclosed in <...>
 
     private TestJoinSectionsTopTokenId() {
     }

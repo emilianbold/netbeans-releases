@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.db.sql.execute;
 
+import org.netbeans.modules.db.sql.history.SQLHistory;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -170,6 +171,9 @@ public final class SQLExecuteHelper {
             }
             executionLogger.cancel();
         }
+        
+        // Persist SQL executed
+        SQLHistoryManager.getInstance().save();
         
         SQLExecutionResults results = new SQLExecutionResults(resultList);
         if (!cancelled) {

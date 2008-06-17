@@ -23,8 +23,19 @@
     <!-- GlassFish properties   -->   
     <property name="glassfish.install.dir" value="${install.dir}/glassfish-v2ur2"/>
     <property name="glassfish.version" value="v2ur2"/>
-    <property name="glassfish_location" value="${gf_builds_host}/java/re/glassfish/9.1_02/promoted/fcs/latest/images/mac/glassfish-image-SNAPSHOT.jar"/>  
-    <property name="glassfish_location_ml" value="${gf_builds_host}/java/re/glassfish/9.1_02/promoted/fcs/latest/l10n/mac/glassfish-image-SNAPSHOT-ml.jar"/>
+    <!--<property name="glassfish_location" value="${gf_builds_host}/java/re/glassfish/9.1_02/promoted/fcs/latest/images/mac/glassfish-image-SNAPSHOT.jar"/>-->
+    <property name="glassfish_location"    value="file:${user.home}/releng/hudson/glassfish-image-v2ur2-b04.jar"/>
+    <!--<property name="glassfish_location_ml" value="${gf_builds_host}/java/re/glassfish/9.1_02/promoted/fcs/latest/l10n/mac/glassfish-image-SNAPSHOT-ml.jar"/>-->
+    <property name="glassfish_location_ml" value="file:${user.home}/releng/hudson/glassfish-image-v2ur2-b04-ml.jar"/>
+
+    <!-- GlassFish V3 properties   -->   
+    <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-v3tp2"/>
+    <property name="glassfish.v3.version"      value="v3tp2"/>
+    <!--<property name="glassfish_location"    value="${gf_builds_host}/java/re/glassfish/10.0/promoted/preview/latest/bundles/glassfish-v3-preview2-b10d.zip"/>-->
+    <property name="glassfish_v3_location"     value="file:${user.home}/releng/hudson/glassfish-v3-preview2-b10d.zip"/>
+    <!--<property name="glassfish_location_ml" value="${gf_builds_host}/java/re/glassfish/10.0/promoted/preview/latest/bundles/glassfish-v3-preview2-b10d.zip"/>-->
+    <property name="glassfish_v3_location_ml"  value="file:${user.home}/releng/hudson/glassfish-v3-preview2-b10d.zip"/>
+    <property name="glassfish.v3.subdir"       value="glassfishv3-tp2"/>
     
     <!-- Open ESB Properties-->    
     <property name="openesb.install.dir" value="${glassfish.install.dir}/addons"/>

@@ -72,7 +72,7 @@ import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.hibernate.cfg.HibernateCfgXmlConstants;
 import org.netbeans.modules.hibernate.editor.HibernateEditorUtil;
 import org.netbeans.modules.hibernate.mapping.HibernateMappingXmlConstants;
-import org.netbeans.modules.hibernate.service.HibernateEnvironment;
+import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
@@ -632,7 +632,7 @@ public class HibernateRefactoringUtil {
 
     public static boolean anyHibernateMappingFiles(FileObject fo) {
         Project proj = org.netbeans.api.project.FileOwnerQuery.getOwner(fo);
-        HibernateEnvironment env = new HibernateEnvironment(proj);
+        HibernateEnvironment env = proj.getLookup().lookup(HibernateEnvironment.class);
         List<FileObject> mFileObjs = env.getAllHibernateMappingFileObjects();
         if (mFileObjs == null || mFileObjs.size() == 0) {
             // OK, no mapping files at all. 

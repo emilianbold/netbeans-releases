@@ -46,6 +46,7 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
 /** Superclass for Elf objects in the Repository.
  *
@@ -64,10 +65,17 @@ public class ExeObject extends MultiDataObject {
     
     }
     
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
+    }
+    
+    @Override
     protected Node createNodeDelegate() {
 	return new ExeNode(this);
     }    
   
+    @Override
     public HelpCtx getHelpCtx() {
 	return HelpCtx.DEFAULT_HELP;
 	// If you add context help, change to:
@@ -77,6 +85,7 @@ public class ExeObject extends MultiDataObject {
     /*
      * Return name with extension so renaming etc works
      */
+    @Override
     public String getName() {
 	String ename = getPrimaryFile().getNameExt();
 	return ename;

@@ -179,6 +179,8 @@ public class WarIncludesUi {
                 } else {
                     chooser = new FileChooser(FileUtil.toFile(project.getProjectDirectory()), null);
                 }
+                chooser.enableVariableBasedSelection(true);
+                chooser.setFileHidingEnabled(false);
                 FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
                 chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
                 chooser.setMultiSelectionEnabled( true );
@@ -198,7 +200,8 @@ public class WarIncludesUi {
                         Exceptions.printStackTrace(ex);
                         return;
                     }
-                    WarIncludesUiSupport.addJarFiles(filePaths, FileUtil.toFile(project.getProjectDirectory()), listModel);
+                    WarIncludesUiSupport.addJarFiles(filePaths, FileUtil.toFile(project.getProjectDirectory()), 
+                            chooser.getSelectedPathVariables(), listModel);
                     curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
                     UserProjectSettings.getDefault().setLastUsedClassPathFolder(curDir);
                 }
@@ -335,7 +338,13 @@ public class WarIncludesUi {
                         return NbBundle.getMessage( WarIncludesUi.class, "LBL_MISSING_FILE", getFileRefName( item ) );
                     }
                     else {
-                        return item.getFilePath();
+                        if (item.getVariableBasedProperty() != null) {
+                            String s = item.getVariableBasedProperty();
+                            // convert "${var.XXX}/path" to "XXX/path"
+                            return s.substring(6, s.indexOf("}")) + s.substring(s.indexOf("}")+1); // NOI18N
+                        } else {
+                            return item.getFilePath();
+                        }
                     }
             }
 

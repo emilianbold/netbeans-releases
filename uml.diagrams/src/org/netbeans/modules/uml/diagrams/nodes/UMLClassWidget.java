@@ -56,14 +56,16 @@ import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
+import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.widgets.ListWidget;
@@ -74,12 +76,16 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameterableElement;
 import org.netbeans.modules.uml.diagrams.DefaultWidgetContext;
-import org.netbeans.modules.uml.diagrams.actions.ClassifierSelectAction;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
+import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
+import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
+import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
 import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
 
 public class UMLClassWidget  extends SwitchableWidget
@@ -117,6 +123,7 @@ public class UMLClassWidget  extends SwitchableWidget
         
         addToLookup(initializeContextPalette());
         addToLookup(new DefaultWidgetContext("Class"));
+        //addToLookup(new DefaultWidgetContext(metatype));
 //        addToLookup(new ClassifierSelectAction());
     }
 
@@ -233,7 +240,6 @@ public class UMLClassWidget  extends SwitchableWidget
             retVal = true;
             ObjectScene scene = (ObjectScene) getScene();
 
-//            classView = new CustomizableWidget(scene, getResourcePath(), "Default", getResourceTable()); 
             classView = new Widget(scene){
                 @Override
                 protected void paintBackground()
@@ -275,7 +281,7 @@ public class UMLClassWidget  extends SwitchableWidget
             nameWidget.initialize(element);
 
             classView.addChild(nameWidget);
-            classView.addChild(new SeparatorWidget(scene, SeparatorWidget.Orientation.HORIZONTAL));
+//            classView.addChild(new SeparatorWidget(scene, SeparatorWidget.Orientation.HORIZONTAL));
 
             // It turns out that attributes can be redefined as well.  I do not
             // think that we have a UI to allow an attribute to be redefined,
@@ -292,11 +298,11 @@ public class UMLClassWidget  extends SwitchableWidget
             members = new ElementListWidget(scene);
             members.createActions(DesignerTools.SELECT).addAction(ActionFactory.createAcceptAction(new AcceptFeatureProvider()));
             ((ListWidget) members).setLabel(attrsTitle);
-            attributeSection.addChild(members);
+            attributeSection.addChild(new CollapsibleWidget(scene, members));
             classView.addChild(attributeSection);
             initializeAttributes(element);
 
-            classView.addChild(new SeparatorWidget(scene, SeparatorWidget.Orientation.HORIZONTAL));
+//            classView.addChild(new SeparatorWidget(scene, SeparatorWidget.Orientation.HORIZONTAL));
 
             String opsTitle = NbBundle.getMessage(UMLClassWidget.class, 
                                                     "LBL_OperationsCompartment");
@@ -304,7 +310,7 @@ public class UMLClassWidget  extends SwitchableWidget
             operations = new ElementListWidget(scene);
             operations.createActions(DesignerTools.SELECT).addAction(ActionFactory.createAcceptAction(new AcceptFeatureProvider()));
             ((ListWidget) operations).setLabel(opsTitle);
-            classView.addChild(operations);
+            classView.addChild(new CollapsibleWidget(scene, operations));
             initializeOperations(element);
         }
         
@@ -388,9 +394,9 @@ public class UMLClassWidget  extends SwitchableWidget
             retVal = new ElementListWidget(getScene());
             retVal.setLabel(title);
 
-            classView.addChild(new SeparatorWidget(getScene(), 
-                                                   SeparatorWidget.Orientation.HORIZONTAL));
-            classView.addChild(retVal);
+//            classView.addChild(new SeparatorWidget(getScene(), 
+//                                                   SeparatorWidget.Orientation.HORIZONTAL));
+            classView.addChild(new CollapsibleWidget(getScene(), retVal));
             
             operationRedefinedMap.put(classifier.getXMIID(), retVal);
         }
@@ -410,9 +416,9 @@ public class UMLClassWidget  extends SwitchableWidget
             retVal = new ElementListWidget(getScene());
             retVal.setLabel(title);
 
-            attributeSection.addChild(new SeparatorWidget(getScene(), 
-                                                   SeparatorWidget.Orientation.HORIZONTAL));
-            attributeSection.addChild(retVal);
+//            attributeSection.addChild(new SeparatorWidget(getScene(), 
+//                                                   SeparatorWidget.Orientation.HORIZONTAL));
+            attributeSection.addChild(new CollapsibleWidget(getScene(), retVal));
             
             attributeRedefinedMap.put(classifier.getXMIID(), retVal);
         }
@@ -420,19 +426,20 @@ public class UMLClassWidget  extends SwitchableWidget
         return retVal;
     }
     
-    protected void addOperation(IOperation op)
+    protected OperationWidget addOperation(IOperation op)
     {
         if(op.getIsRedefined() == false)
         {
             OperationWidget widget = new OperationWidget(getScene());
             widget.initialize(op);
             operations.addChild(widget);
+            return widget;
         }
         else
         {
            addRedefinedOperation(op);
         }
-        
+        return null;
     }
     
     protected void removeOperation(IOperation op)
@@ -440,7 +447,7 @@ public class UMLClassWidget  extends SwitchableWidget
         operations.removeElement(op);
     }
     
-    protected void addAttribute(IAttribute attr)
+    protected AttributeWidget addAttribute(IAttribute attr)
     {
         
         if(attr.getIsRedefined() == false)
@@ -449,12 +456,13 @@ public class UMLClassWidget  extends SwitchableWidget
             ResourceValue.initResources(getWidgetID() + "." + DEFAULT, widget);
             widget.initialize(attr);
             members.addChild(widget);
+            return widget;
         }
         else
         {
            addRedefinedAttribute(attr);
         }
-        
+        return null;
         
     }
     
@@ -523,6 +531,7 @@ public class UMLClassWidget  extends SwitchableWidget
     public void propertyChange(PropertyChangeEvent event)
     {
         super.propertyChange(event);
+        DesignerScene scene=(DesignerScene) getScene();
         
         if(classView != null)
         {
@@ -544,11 +553,13 @@ public class UMLClassWidget  extends SwitchableWidget
             {
                 if(event.getNewValue() instanceof IOperation)
                 {
-                    addOperation((IOperation)event.getNewValue());
+                    OperationWidget operW=addOperation((IOperation)event.getNewValue());
+                    if(operW!=null)operW.select();
                 }
                 else if(event.getNewValue() instanceof IAttribute)
                 {
-                    addAttribute((IAttribute)event.getNewValue());
+                    AttributeWidget attrW=addAttribute((IAttribute)event.getNewValue());
+                    if(attrW!=null)attrW.select();
                 }
             }
             else if(propName.equals(ModelElementChangedKind.FEATUREMOVED.toString()) ||
@@ -574,6 +585,7 @@ public class UMLClassWidget  extends SwitchableWidget
             {
                 updateRedefinesCompartment((IClassifier)event.getNewValue());
             }
+            updateSizeWithOptions();
         }
     }
 
@@ -602,7 +614,7 @@ public class UMLClassWidget  extends SwitchableWidget
         revalidate();
     }
     
-    private DefaultContextPaletteModel initializeContextPalette()
+    protected DefaultContextPaletteModel initializeContextPalette()
     {
         DefaultContextPaletteModel paletteModel = new DefaultContextPaletteModel(this);
         paletteModel.initialize("UML/context-palette/Class");
@@ -615,23 +627,33 @@ public class UMLClassWidget  extends SwitchableWidget
         private static final int TEMPLATE_EXTENDS = 10;
         public void layout(Widget widget)
         {
-            Rectangle bounds = classView.getPreferredBounds();
-            int viewY = 0;
-            if(bounds != null)
+            // When the user presses the diagram synch button it frist tell the
+            // node to refresh, which removes everything.  The act of removing 
+            // the nodes contents also calls validate.  Which tries to layout 
+            // the node.  This causes can NPE because classView is null.
+            //
+            // Therefore if we are in the situation where classView is null, 
+            // do nothing.
+            if(classView != null)
             {
-                int viewHalf = bounds.width / 2;
-                Rectangle paramBounds = parameterWidget.getPreferredBounds();
-                viewY = paramBounds.height / 2;
-
-                if(paramBounds.width < (viewHalf + TEMPLATE_EXTENDS))
+                Rectangle bounds = classView.getPreferredBounds();
+                int viewY = 0;
+                if(bounds != null)
                 {
-                    paramBounds.width = viewHalf + TEMPLATE_EXTENDS;
-                }
+                    int viewHalf = bounds.width / 2;
+                    Rectangle paramBounds = parameterWidget.getPreferredBounds();
+                    viewY = paramBounds.height / 2;
 
-                parameterWidget.resolveBounds(new Point(bounds.width / 2, -paramBounds.y), paramBounds);
-    
-                Point bodyLocation = new Point(0, paramBounds.height - (paramBounds.height / 3));
-                classView.resolveBounds(bodyLocation, new Rectangle(new Point(0, 0), bounds.getSize()));
+                    if(paramBounds.width < (viewHalf + TEMPLATE_EXTENDS))
+                    {
+                        paramBounds.width = viewHalf + TEMPLATE_EXTENDS;
+                    }
+
+                    parameterWidget.resolveBounds(new Point(bounds.width / 2, -paramBounds.y), paramBounds);
+
+                    Point bodyLocation = new Point(0, paramBounds.height - (paramBounds.height / 3));
+                    classView.resolveBounds(bodyLocation, new Rectangle(new Point(0, 0), bounds.getSize()));
+                }
             }
         }
 
@@ -642,22 +664,26 @@ public class UMLClassWidget  extends SwitchableWidget
 
         public void justify(Widget widget)
         {
-            Rectangle clientArea = widget.getClientArea();
-            
-            int bodyWidth = clientArea.width - TEMPLATE_EXTENDS;
-            int bodyHalf = bodyWidth / 2;
-            
-            Rectangle paramBounds = parameterWidget.getPreferredBounds();
-            Dimension paramSize = new Dimension(clientArea.width - bodyHalf, paramBounds.height );
-            
-            int bodyY = paramSize.height - (paramSize.height / 3);
-            Dimension bodySize = new Dimension(bodyWidth, clientArea.height - bodyY);
+            // See the comment in the layout method.
+            if(classView != null)
+            {
+                Rectangle clientArea = widget.getClientArea();
 
-            Point paramLocation = new Point(bodyHalf, -paramBounds.y);
-            Point bodyLocation = new Point(0, bodyY);
-            
-            parameterWidget.resolveBounds(paramLocation, new Rectangle(paramBounds.getLocation(), paramSize));
-            classView.resolveBounds(bodyLocation, new Rectangle(new Point(0, 0), bodySize));
+                int bodyWidth = clientArea.width - TEMPLATE_EXTENDS;
+                int bodyHalf = bodyWidth / 2;
+
+                Rectangle paramBounds = parameterWidget.getPreferredBounds();
+                Dimension paramSize = new Dimension(clientArea.width - bodyHalf, paramBounds.height );
+
+                int bodyY = paramSize.height - (paramSize.height / 3);
+                Dimension bodySize = new Dimension(bodyWidth, clientArea.height - bodyY);
+
+                Point paramLocation = new Point(bodyHalf, -paramBounds.y);
+                Point bodyLocation = new Point(0, bodyY);
+
+                parameterWidget.resolveBounds(paramLocation, new Rectangle(paramBounds.getLocation(), paramSize));
+                classView.resolveBounds(bodyLocation, new Rectangle(new Point(0, 0), bodySize));
+            }
         }
         
     }

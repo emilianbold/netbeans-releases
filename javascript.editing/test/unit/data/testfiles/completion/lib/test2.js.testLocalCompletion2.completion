@@ -1,4 +1,6 @@
-Results for alert('foo2 with queryType=COMPLETION and nameKind=PREFIX
+Code completion result for source line:
+|alert('foo2 ' + foo2);
+(QueryType=COMPLETION, NameKind=PREFIX)
 CONSTRUCTO Array(arrayLength)                         Core JS
 CONSTRUCTO Array(element0, element1, elem             Core JS
 CONSTRUCTO Boolean(val)                               Core JS

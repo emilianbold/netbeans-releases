@@ -47,6 +47,9 @@ made subject to such option by the copyright holder.
         jemmy and jellytools jars are on classpath for both. -->
     <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
 
+    <!-- Temporary logging.  -->
+    <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.modules.refactoring.spi.impl.ParametersPanel.level=100"/>
+
     <!-- Creates an empty Java project in IDE -->
     <!-- <property name="xtest.ide.create.project" value="true"/> -->
     <!-- Opens project at specified location -->

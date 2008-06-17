@@ -182,6 +182,19 @@ made subject to such option by the copyright holder.
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                 </folder>
+                
+                <folder name="text">
+                    <folder name="html">
+                        <folder name="CodeTemplates">
+                            <folder name="Defaults">
+                                <file name="codetemplates.shadow">
+                                    <attr name="originalFile" stringvalue="Editors/text/x-jsp"/>
+                                </file>
+                            </folder>
+                        </folder>
+                    </folder>
+                </folder>
+                
             </folder>
             <folder name="x-tag">
                 

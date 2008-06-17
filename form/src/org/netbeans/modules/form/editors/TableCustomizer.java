@@ -1090,6 +1090,9 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
     }
 
     private void updateFromUI() {
+        if (columnsTable.isEditing()) {
+            columnsTable.getCellEditor().stopCellEditing();
+        }
         updateColumnSection();
         if (!modelBoundChoice.isSelected() && !bindingProperty.isDefaultValue()) {
             bindingProperty.restoreDefaultValue();
@@ -1750,6 +1753,9 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
     class ColumnSelectionListener implements ListSelectionListener {
 
         public void valueChanged(ListSelectionEvent e) {
+            if (e.getValueIsAdjusting()) {
+                return;
+            }
             int[] index = columnsTable.getSelectedRows();
             boolean empty = (index.length == 0);
             boolean multi = (index.length > 1);

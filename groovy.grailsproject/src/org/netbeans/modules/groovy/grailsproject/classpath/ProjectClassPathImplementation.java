@@ -74,17 +74,19 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
         List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
         
         File[] jars = new File(projectRoot, "lib").listFiles();
-        for (File f : jars) {
-            try {
-                if (f.isFile()) {
-                    URL entry = f.toURI().toURL();
-                    if (FileUtil.isArchiveFile(entry)) {
-                        entry = FileUtil.getArchiveRoot(entry);
-                        result.add(ClassPathSupport.createResource(entry));
+        if (jars != null) {
+            for (File f : jars) {
+                try {
+                    if (f.isFile()) {
+                        URL entry = f.toURI().toURL();
+                        if (FileUtil.isArchiveFile(entry)) {
+                            entry = FileUtil.getArchiveRoot(entry);
+                            result.add(ClassPathSupport.createResource(entry));
+                        }
                     }
+                } catch (MalformedURLException mue) {
+                    assert false : mue;
                 }
-            } catch (MalformedURLException mue) {
-                assert false : mue;
             }
         }
         return Collections.unmodifiableList(result);

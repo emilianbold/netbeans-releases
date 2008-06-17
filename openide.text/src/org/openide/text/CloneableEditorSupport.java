@@ -119,6 +119,9 @@ import org.openide.util.UserCancelException;
 */
 public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     static final RequestProcessor RP = new RequestProcessor("Document Processing");
+
+    /** Thread for postprocessing work in CloneableEditor.DoInitialize.initRest */
+    static final RequestProcessor RPPostprocessing = new RequestProcessor("Document Postprocessing");
     
     /** Common name for editor mode. */
     public static final String EDITOR_MODE = "editor"; // NOI18N
@@ -361,6 +364,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
     void ensureAnnotationsLoaded() {
         if (!annotationsLoaded) {
+            /*ERR.log(Level.FINE,"CES.ensureAnnotationsLoaded Enter Asynchronous"
+            + " Time:" + System.currentTimeMillis()
+            + " Thread:" + Thread.currentThread().getName());*/
             annotationsLoaded = true;
 
             Line.Set lines = getLineSet();
@@ -908,6 +914,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                     throw ex;
                 }
             }
+        }
+
+        // Run before-save actions
+        Runnable beforeSaveRunnable = (Runnable) myDoc.getProperty("beforeSaveRunnable");
+        if (beforeSaveRunnable != null) {
+            beforeSaveRunnable.run();
         }
 
         SaveAsReader saveAsReader = new SaveAsReader();
@@ -2277,7 +2289,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         offset = el.getEndOffset();
                     }
                 } else {
-                    offset = pos.getOffset();
+                    offset = Math.min(pos.getOffset(), doc.getLength());
                 }
 
                 caret.setDot(offset);
@@ -2289,7 +2301,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         ePane.scrollRectToVisible(r);
                     }
                 } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
+                    ERR.log(Level.WARNING, "Can't scroll to text: pos.getOffset=" + pos.getOffset() //NOI18N
+                        + ", column=" + column + ", offset=" + offset //NOI18N
+                        + ", doc.getLength=" + doc.getLength(), ex); //NOI18N
                 }
             }
         }

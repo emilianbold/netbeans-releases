@@ -38,12 +38,12 @@ public class IEPModelFactory extends AbstractModelFactory<IEPModel> {
         return wsdlModelFactory;
     }
     
-    /** Creates a new instance of WLMModelFactory */
+    /** Creates a new instance of IEPModelFactory */
     private IEPModelFactory() {
     }
 
     /**
-     * Gets WLMModel  from given model source.  Model source should 
+     * Gets IEPModel  from given model source.  Model source should 
      * provide lookup for:
      * 1. FileObject of the model source
      * 2. DataObject represent the model

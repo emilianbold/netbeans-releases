@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.editor.settings.storage;
 
+import java.util.prefs.PreferenceChangeEvent;
 import org.netbeans.modules.editor.settings.storage.keybindings.KeyBindingSettingsImpl;
 import org.netbeans.modules.editor.settings.storage.fontscolors.CompositeFCS;
 import java.beans.PropertyChangeEvent;
@@ -53,6 +54,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
@@ -132,7 +134,7 @@ public final class SettingsProvider implements MimeDataProvider {
         }
     }
     
-    private static final class MyLookup extends AbstractLookup implements PropertyChangeListener {
+    private static final class MyLookup extends AbstractLookup implements PropertyChangeListener, PreferenceChangeListener {
         
         private final MimePath mimePath;
         private final boolean specialFcsProfile;
@@ -141,7 +143,7 @@ public final class SettingsProvider implements MimeDataProvider {
         private final InstanceContent ic;
         private CompositeFCS fontColorSettings = null;
         private Object keyBindingSettings = null;
-        private Object preferences = null;
+        private PreferencesImpl preferences = null;
         
         private KeyBindingSettingsImpl kbsi;
         
@@ -149,39 +151,16 @@ public final class SettingsProvider implements MimeDataProvider {
             this(mimePath, profile, new InstanceContent());
         }
         
-        private MyLookup(MimePath mimePath, String profile, InstanceContent ic) {
-            super(ic);
-
-            this.mimePath = mimePath;
-            
-            if (profile == null) {
-                // Use the selected current profile
-                String currentProfile = EditorSettings.getDefault().getCurrentFontColorProfile();
-                this.fcsProfile = FontColorSettingsImpl.get(mimePath).getInternalFontColorProfile(currentProfile);
-                this.specialFcsProfile = false;
-            } else {
-                // This is the special test profile derived from the mime path.
-                // It will never change.
-                this.fcsProfile = profile;
-                this.specialFcsProfile = true;
-            }
-            
-            this.ic = ic;
-            
-            // Start listening
-            EditorSettings es = EditorSettings.getDefault();
-            es.addPropertyChangeListener(WeakListeners.propertyChange(this, es));
-            
-            this.kbsi = KeyBindingSettingsImpl.get(mimePath);
-            this.kbsi.addPropertyChangeListener(WeakListeners.propertyChange(this, this.kbsi));
-        }
-
-        @Override
-        protected void initialize() {
+        protected @Override void initialize() {
             synchronized (this) {
-                fontColorSettings = new CompositeFCS(mimePath, fcsProfile);
+                // in fact this could probably be turned into 'assert preferences == null;'
+                if (preferences == null) {
+                    preferences = PreferencesImpl.get(mimePath);
+                    preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, preferences));
+                }
+                
+                fontColorSettings = new CompositeFCS(mimePath, fcsProfile, preferences);
                 keyBindingSettings = this.kbsi.createInstanceForLookup();
-                preferences = PreferencesImpl.get(mimePath);
                 
                 ic.set(Arrays.asList(new Object [] {
                     fontColorSettings,
@@ -190,6 +169,10 @@ public final class SettingsProvider implements MimeDataProvider {
                 }), null);
             }
         }
+        
+        // -------------------------------------------------------------------
+        // PropertyChangeListener implementation
+        // -------------------------------------------------------------------
         
         public void propertyChange(PropertyChangeEvent evt) {
             synchronized (this) {
@@ -236,33 +219,81 @@ public final class SettingsProvider implements MimeDataProvider {
                 }
                 
                 // Update lookup contents
-                boolean updateContents = false;
-                
-                if (fcsChanged && fontColorSettings != null) {
-                    fontColorSettings = new CompositeFCS(mimePath, fcsProfile);
-                    updateContents = true;
-                }
-                
-                if (kbsChanged  && keyBindingSettings != null) {
-                    keyBindingSettings = this.kbsi.createInstanceForLookup();
-                    updateContents = true;
-                }
-                
-                if (updateContents) {
-                    List<Object> list = new ArrayList<Object>();
-                    if (fontColorSettings != null) {
-                        list.add(fontColorSettings);
-                    }
-                    if (keyBindingSettings != null) {
-                        list.add(keyBindingSettings);
-                    }
-                    if (preferences != null) {
-                        list.add(preferences);
-                    }
-                    ic.set(list, null);
+                updateContents(kbsChanged, fcsChanged);
+            }
+        }
+
+        // -------------------------------------------------------------------
+        // PreferenceChangeListener implementation
+        // -------------------------------------------------------------------
+        
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            String settingName = evt == null ? null : evt.getKey();
+            if (settingName == null || settingName.equals(CompositeFCS.TEXT_ANTIALIASING_PROP)) { //NOI18N
+                synchronized (this) {
+                    updateContents(false, true);
                 }
             }
         }
 
+        // -------------------------------------------------------------------
+        // private implementation
+        // -------------------------------------------------------------------
+        
+        private MyLookup(MimePath mimePath, String profile, InstanceContent ic) {
+            super(ic);
+
+            this.mimePath = mimePath;
+            
+            if (profile == null) {
+                // Use the selected current profile
+                String currentProfile = EditorSettings.getDefault().getCurrentFontColorProfile();
+                this.fcsProfile = FontColorSettingsImpl.get(mimePath).getInternalFontColorProfile(currentProfile);
+                this.specialFcsProfile = false;
+            } else {
+                // This is the special test profile derived from the mime path.
+                // It will never change.
+                this.fcsProfile = profile;
+                this.specialFcsProfile = true;
+            }
+            
+            this.ic = ic;
+            
+            // Start listening
+            EditorSettings es = EditorSettings.getDefault();
+            es.addPropertyChangeListener(WeakListeners.propertyChange(this, es));
+            
+            this.kbsi = KeyBindingSettingsImpl.get(mimePath);
+            this.kbsi.addPropertyChangeListener(WeakListeners.propertyChange(this, this.kbsi));
+        }
+
+        private void updateContents(boolean kbsChanged, boolean fcsChanged) {
+            boolean updateContents = false;
+
+            if (fcsChanged && fontColorSettings != null) {
+                fontColorSettings = new CompositeFCS(mimePath, fcsProfile, preferences);
+                updateContents = true;
+            }
+
+            if (kbsChanged  && keyBindingSettings != null) {
+                keyBindingSettings = this.kbsi.createInstanceForLookup();
+                updateContents = true;
+            }
+
+            if (updateContents) {
+                List<Object> list = new ArrayList<Object>();
+                if (fontColorSettings != null) {
+                    list.add(fontColorSettings);
+                }
+                if (keyBindingSettings != null) {
+                    list.add(keyBindingSettings);
+                }
+                if (preferences != null) {
+                    list.add(preferences);
+                }
+                ic.set(list, null);
+            }
+        }
+        
     } // End of MyLookup class
 }

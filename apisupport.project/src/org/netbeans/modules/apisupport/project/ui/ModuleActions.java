@@ -44,7 +44,6 @@ package org.netbeans.modules.apisupport.project.ui;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -54,7 +53,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JSeparator;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
@@ -82,8 +80,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
 
 public final class ModuleActions implements ActionProvider {
     
@@ -104,7 +102,7 @@ public final class ModuleActions implements ActionProvider {
             actions.add(createSimpleAction(project, new String[] {"run"}, NbBundle.getMessage(ModuleActions.class, "ACTION_run")));
         }
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, NbBundle.getMessage(ModuleActions.class, "ACTION_debug"), null));
-        addFromLayers(actions, "Projects/Profiler_Actions_temporary"); //NOI18N
+        actions.addAll(Utilities.actionsForPath("Projects/Profiler_Actions_temporary")); //NOI18N
         if (project.supportsUnitTests()) {
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, NbBundle.getMessage(ModuleActions.class, "ACTION_test"), null));
         }
@@ -132,32 +130,10 @@ public final class ModuleActions implements ActionProvider {
         actions.add(null);
         actions.add(SystemAction.get(FindAction.class));
         // Honor #57874 contract:
-        Collection<? extends Object> res = Lookups.forPath("Projects/Actions").lookupAll(Object.class); // NOI18N
-        if (!res.isEmpty()) {
-            actions.add(null);
-            for (Object next : res) {
-                if (next instanceof Action) {
-                    actions.add((Action) next);
-                } else if (next instanceof JSeparator) {
-                    actions.add(null);
-                }
-            }
-        }
-        
+        actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
         actions.add(null);
         actions.add(CommonProjectActions.customizeProjectAction());
         return actions.toArray(new Action[actions.size()]);
-    }
-    
-    private static void addFromLayers(List<Action> actions, String path) {
-        Lookup look = Lookups.forPath(path);
-        for (Object next : look.lookupAll(Object.class)) {
-            if (next instanceof Action) {
-                actions.add((Action) next);
-            } else if (next instanceof JSeparator) {
-                actions.add(null);
-            }
-        }
     }
     
     private final NbModuleProject project;

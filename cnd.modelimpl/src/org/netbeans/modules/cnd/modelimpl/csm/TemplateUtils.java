@@ -166,24 +166,37 @@ public class TemplateUtils {
             return type;
         }
         
-        // first check scope
-        if (CsmKindUtilities.isTemplate(scope)) {
-            List<CsmTemplateParameter> params = ((CsmTemplate)scope).getTemplateParameters();
-            if (!params.isEmpty()) {
-                String classifierText = ((TypeImpl)type).getClassifierText().toString();
-                for (CsmTemplateParameter param : params) {
-                    if (param.getName().toString().equals(classifierText)) {
-                        return new TemplateParameterTypeImpl(type, param);
-                    }
+        // Check instantiation parameters
+        if (type.isInstantiation()) {
+            TypeImpl typeImpl = (TypeImpl) type;
+            List<CsmType> params = typeImpl.getInstantiationParams();
+            for (CsmType instParam : params) {
+                CsmType newType = checkTemplateType(instParam, scope);
+                if (newType != instParam) {
+                    params.set(params.indexOf(instParam), newType);
                 }
             }
         }
         
-        // then check class or super class
-        if (scope instanceof ClassImpl) {
-            return checkTemplateType(type, ((ClassImpl)scope).getScope());
-        } else if (scope instanceof CsmMethod) {
-            return checkTemplateType(type, ((CsmMethod)scope).getContainingClass());
+        // first check scope and super classes if needed
+        while (scope instanceof ClassImpl || scope instanceof CsmMethod) {
+            if (CsmKindUtilities.isTemplate(scope)) {
+                List<CsmTemplateParameter> params = ((CsmTemplate)scope).getTemplateParameters();
+                if (!params.isEmpty()) {
+                    String classifierText = ((TypeImpl)type).getClassifierText().toString();
+                    for (CsmTemplateParameter param : params) {
+                        if (param.getName().toString().equals(classifierText)) {
+                            return new TemplateParameterTypeImpl(type, param);
+                        }
+                    }
+                }
+            }
+            // then check class or super class
+            if (scope instanceof ClassImpl) {
+                scope = ((ClassImpl)scope).getScope();
+            } else if (scope instanceof CsmMethod) {
+                scope = ((CsmMethod)scope).getContainingClass();
+            }
         }
         
         return type;

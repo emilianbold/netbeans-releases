@@ -26,24 +26,20 @@ import antlr.collections.impl.BitSet;
  * @author gorrus
  */
 public abstract class CharScannerNoEx extends CharScanner {
-    public CharScannerNoEx() {
-        super();
-    } 
-    
     public CharScannerNoEx(InputBuffer cb) { // SAS: use generic buffer
         super(cb);
     }
 
-    public CharScannerNoEx(LexerSharedInputState sharedState) {
+    /*public CharScannerNoEx(LexerSharedInputState sharedState) {
         super(sharedState);
-    }
+    }*/
     
     @Override
     public void match(char c) {
         if (LA(1) == c) {
             consume();
         } else {
-            if (inputState.guessing == 0) {
+            if (guessing == 0) {
                 matchException = new MismatchedCharException(LA(1), c, false, this);
             }
             matchError = true;
@@ -55,7 +51,7 @@ public abstract class CharScannerNoEx extends CharScanner {
         if (b.member(LA(1))) {
             consume();
         } else {
-            if (inputState.guessing == 0) {
+            if (guessing == 0) {
                 matchException = new MismatchedCharException(LA(1), b, false, this);
             }
             matchError = true;
@@ -67,7 +63,7 @@ public abstract class CharScannerNoEx extends CharScanner {
         int len = s.length();
         for (int i = 0; i < len; i++) {
             if (LA(1) != s.charAt(i)) {
-                if (inputState.guessing == 0) {
+                if (guessing == 0) {
                     matchException = new MismatchedCharException(LA(1), s.charAt(i), false, this);
                 }
                 matchError = true;
@@ -82,7 +78,7 @@ public abstract class CharScannerNoEx extends CharScanner {
         if (LA(1) != c) {
             consume();
         } else {
-            if (inputState.guessing == 0) {
+            if (guessing == 0) {
                 matchException = new MismatchedCharException(LA(1), c, true, this);
             }
             matchError = true;
@@ -93,7 +89,7 @@ public abstract class CharScannerNoEx extends CharScanner {
     public void matchRange(char c1, char c2) {
         char LA1 = LA(1);
         if (LA1 < c1 || LA1 > c2) {
-            if (inputState.guessing == 0) {
+            if (guessing == 0) {
                 matchException = new MismatchedCharException(LA(1), c1, c2, false, this);
             }
             matchError = true;
@@ -112,7 +108,7 @@ public abstract class CharScannerNoEx extends CharScanner {
     
     @Override
     public void consume() {
-        if (inputState.guessing == 0) {
+        if (guessing == 0) {
             char c = LA(1);
             append(c);
             if (c == '\t') {
@@ -121,11 +117,11 @@ public abstract class CharScannerNoEx extends CharScanner {
                 inputState.column++;
             }
         }
-        inputState.input.consume();
+        input.consume();
     }
 
     @Override
     public char LA(int i) {
-        return inputState.input.LA(i);
+        return input.LA(i);
     }
 }

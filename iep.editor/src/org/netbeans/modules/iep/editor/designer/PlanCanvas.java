@@ -7,7 +7,6 @@ import java.awt.Cursor;
 import java.awt.Event;
 import java.awt.Point;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.dnd.DropTargetDragEvent;
@@ -30,13 +29,9 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
 
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
 import org.openide.windows.TopComponent;
 
 
-import com.nwoods.jgo.JGoControl;
 import com.nwoods.jgo.JGoDocument;
 import com.nwoods.jgo.JGoDocumentEvent;
 import com.nwoods.jgo.JGoLink;
@@ -59,11 +54,8 @@ import org.netbeans.modules.iep.editor.designer.actions.IEPTemplateAction;
 import org.netbeans.modules.iep.editor.designer.actions.PasteAction;
 import org.netbeans.modules.iep.editor.designer.nodes.PlanNode;
 import org.netbeans.modules.iep.editor.model.ModelObjectFactory;
-import org.netbeans.modules.iep.editor.model.ModelObjectWrapper;
 import org.netbeans.modules.iep.editor.model.NameGenerator;
 import org.netbeans.modules.iep.editor.tcg.palette.TcgActiveEditorDrop;
-import org.netbeans.modules.iep.editor.tcg.model.TcgModelManager;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNode;
 import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodeProperty;
 import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizerDialogManager;
 import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodeView;
@@ -77,11 +69,7 @@ import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.OperatorComponentContainer;
 import org.netbeans.modules.iep.model.PlanComponent;
 import org.netbeans.modules.iep.model.Property;
-import org.netbeans.modules.iep.model.SchemaComponentContainer;
-import org.netbeans.modules.iep.model.lib.TcgComponent;
 import org.netbeans.modules.iep.model.lib.TcgComponentType;
-import org.netbeans.modules.iep.model.lib.TcgComponentValidationMsg;
-import org.netbeans.modules.iep.model.lib.TcgComponentValidationReport;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
 import org.netbeans.spi.palette.PaletteController;
@@ -90,7 +78,6 @@ import org.openide.nodes.Node;
 import org.openide.text.ActiveEditorDrop;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.netbeans.api.javahelp.Help;
 
@@ -651,6 +638,10 @@ public class PlanCanvas extends JGoView implements JGoViewListener, GuiConstants
         EntityNode toNode = (EntityNode)toObj;
         
         if (fromNode.getOutputType().equals(IO_TYPE_TABLE)) {
+            if (toNode.getStaticInputCount() >= toNode.getStaticInputMaxCount()) {
+                return false;
+            }
+        } else if (fromNode.getOutputType().equals(IO_TYPE_RELATION) && toNode.isRelationInputStatic()) {
             if (toNode.getStaticInputCount() >= toNode.getStaticInputMaxCount()) {
                 return false;
             }

@@ -108,6 +108,9 @@ public class BlacklistedClassesHandler extends Handler {
     private BlacklistedClassesHandler(String blacklistFileName, String whitelistFileName, String whitelistStorageDir, boolean generateWhitelist) {
         this.generatingWhitelist = generateWhitelist;
         this.whitelistFileName = whitelistFileName;
+        
+        new BlacklistedClassesViolationException("Dummy");
+        
         if (whitelistStorageDir != null) {
             this.whitelistStorageDir = new File(whitelistStorageDir);
             this.whitelistStorageDir.mkdirs();
@@ -310,15 +313,14 @@ public class BlacklistedClassesHandler extends Handler {
     
     private void listViolationsMap(String caption, Map map, PrintWriter out, boolean listExceptions) {
         if (map.size() > 0) {
-            out.println("  " + caption);
+            out.println("  " + caption + " (" + map.size() + ")");
             synchronized (map) {
-                int i = 0;
                 final Set keySet = map.keySet();
                 Iterator iter = keySet.iterator();
                 while (iter.hasNext()) {
                     String violator = (String) iter.next();
                     if (((List) map.get(violator)).size() > 0) {
-                        out.println("    " + ++i + ". " + violator);
+                        out.println("    " + violator);
                         if (listExceptions) {
                             final List exceptions = (List) map.get(violator);
                             Iterator iter2 = exceptions.iterator();
@@ -364,18 +366,22 @@ public class BlacklistedClassesHandler extends Handler {
                 while (iter.hasNext()) {
                     String violator = (String) iter.next();
                     if (!list.contains(violator)) {
-                        out.println("    " + ++i + ". " + violator);
+                        out.println("    " + violator);
+                        ++i;
                     }
                 }
+                out.println("   Added " + i + " class(es)");
                 out.println("--- Removed:");
                 i = 0;
                 iter = list.iterator();
                 while (iter.hasNext()) {
                     String violator = (String) iter.next();
                     if (!newWhitelist.contains(violator)) {
-                        out.println("    " + ++i + ". " + violator);
+                        out.println("    " + violator);
+                        ++i;
                     }
                 }
+                out.println("   Removed " + i + " class(es)");
             }     
         }
         out.flush();

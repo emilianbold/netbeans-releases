@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -106,8 +107,13 @@ public class RunLocalCommand extends Command implements Displayable {
                 rewriteAndClose(reader, writer, null);
             }
         } catch (IOException ex) {
-            //TODO missing error handling
-            Exceptions.printStackTrace(ex);
+            // #137225
+            // inform user in output window
+            try {
+                processException(scriptFile, ex);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -130,6 +136,15 @@ public class RunLocalCommand extends Command implements Displayable {
 
     //designed to set env.variables for debugger to resuse this code
     protected  void initProcessBuilder(ProcessBuilder processBuilder) {
+    }
+
+    private void processException(File scriptFile, IOException exception) throws IOException {
+        BufferedWriter outputTabWriter = outputTabWriter(scriptFile, true, true);
+        try {
+            exception.printStackTrace(new PrintWriter(outputTabWriter));
+        } finally {
+            outputTabWriter.close();
+        }
     }
 
 //    private void processError(Process process, File scriptFile, Charset encoding) throws IOException {

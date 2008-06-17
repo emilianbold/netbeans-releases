@@ -63,6 +63,7 @@ public class CompositeFCSTest extends NbTestCase {
     
     protected @Override void setUp() throws Exception {
         super.setUp();
+        clearWorkDir();
     
         EditorTestLookup.setLookup(
             new URL[] {

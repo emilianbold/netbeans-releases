@@ -163,6 +163,10 @@
                             <from>true()</from>
                             <to variable="POStatusReply" part="status"/>
                         </copy>
+                        <copy>
+                            <from variable="confirmPORequest"/>
+                            <to variable="confirmPORequest"/>
+                        </copy>
                     </assign>
                     <reply name="confirmPO.Reply"
                            partnerLink="POConfirmPLink"
@@ -184,6 +188,10 @@
                         <copy>
                             <from>true()</from>
                             <to variable="POStatusReply" part="status"/>
+                        </copy>
+                        <copy>
+                            <from variable="cancelPORequest"/>
+                            <to variable="cancelPORequest"/>
                         </copy>
                     </assign>
                     <reply name="cancelPO.Reply"

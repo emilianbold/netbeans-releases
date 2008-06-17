@@ -252,12 +252,13 @@ class PaletteItemDataObject extends MultiDataObject {
     public static final class PaletteItemDataLoader extends UniFileLoader {
 
         static final String ITEM_EXT = "palette_item"; // NOI18N
+        static final String ITEM_MIME = "text/x-palette-item"; // NOI18N
 
         PaletteItemDataLoader() {
             super("org.netbeans.modules.form.palette.PaletteItemDataObject"); // NOI18N
 
             ExtensionList ext = new ExtensionList();
-            ext.addExtension(ITEM_EXT);
+            ext.addMimeType(ITEM_MIME);
             setExtensions(ext);
         }
         

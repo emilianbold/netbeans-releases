@@ -53,7 +53,6 @@ public class GroovyUtils {
 
     private GroovyUtils() {
     }
-
     
     public static String getLineCommentPrefix() {
         return "//"; // NOI18N
@@ -88,10 +87,8 @@ public class GroovyUtils {
             }
             
             return true;
-        } catch (Exception ex) {
-            BadLocationException ble = new BadLocationException(offset + " out of " + text.length(), offset);
-            ble.initCause(ex);
-            throw ble;
+        } catch (IndexOutOfBoundsException ex) {
+            throw getBadLocationException(ex, text, offset);
         }
     }
 
@@ -110,10 +107,8 @@ public class GroovyUtils {
             }
 
             return true;
-        } catch (Exception ex) {
-            BadLocationException ble = new BadLocationException(offset + " out of " + text.length(), offset);
-            ble.initCause(ex);
-            throw ble;
+        } catch (IndexOutOfBoundsException ex) {
+            throw getBadLocationException(ex, text, offset);
         }
     }
 
@@ -139,10 +134,8 @@ public class GroovyUtils {
             }
 
             return -1;
-        } catch (Exception ex) {
-            BadLocationException ble = new BadLocationException(offset + " out of " + text.length(), offset);
-            ble.initCause(ex);
-            throw ble;
+        } catch (IndexOutOfBoundsException ex) {
+            throw getBadLocationException(ex, text, offset);
         }
     }
 
@@ -171,10 +164,8 @@ public class GroovyUtils {
             }
 
             return -1;
-        } catch (Exception ex) {
-            BadLocationException ble = new BadLocationException(offset + " out of " + text.length(), offset);
-            ble.initCause(ex);
-            throw ble;
+        } catch (IndexOutOfBoundsException ex) {
+            throw getBadLocationException(ex, text, offset);
         }
     }
 
@@ -189,46 +180,15 @@ public class GroovyUtils {
             }
 
             return 0;
-        } catch (Exception ex) {
-            BadLocationException ble = new BadLocationException(offset + " out of " + text.length(), offset);
-            ble.initCause(ex);
-            throw ble;
+        } catch (IndexOutOfBoundsException ex) {
+            throw getBadLocationException(ex, text, offset);
         }
     }
     
-    public static final String[] GROOVY_KEYWORDS =
-        new String[] {
-            "as",
-            "import",
-            "assert",
-            "break",
-            "case",
-            "catch",
-            "try",
-            "class",
-            "continue",
-            "def",
-            "default",
-            "do",
-            "else",
-            "extends",
-            "finally",
-            "for",
-            "if",
-            "in",
-            "implements",
-            "import",
-            "instanceof",
-            "interface",
-            "new",
-            "package",
-            "property",
-            "return",
-            "switch",
-            "throw",
-            "throws",
-            "try",
-            "while"
-        };
-    
+    static BadLocationException getBadLocationException(IndexOutOfBoundsException ex, String text, int offset) {
+        BadLocationException ble = new BadLocationException(offset + " out of " + text.length(), offset);
+        ble.initCause(ex);
+        return ble;
+    }
+
 }

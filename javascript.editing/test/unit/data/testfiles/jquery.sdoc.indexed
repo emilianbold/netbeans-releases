@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/jquery.sdoc
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   base : add;jQuery;add;|DOCUMENTED|FUNCTION|DOC_ONLY|;expr;0;575b;;jQuery;
   base : addclass;jQuery;addClass;|DOCUMENTED|FUNCTION|DOC_ONLY|;class;0;329e;;jQuery;
   base : after;jQuery;after;|DOCUMENTED|FUNCTION|DOC_ONLY|;content;0;7f88;;jQuery;
@@ -354,4 +349,4 @@ Indexed:
   fqn : jquery.wrapinner;;jQuery.wrapInner;|DOCUMENTED|FUNCTION|DOC_ONLY|;html;0;8f28;;jQuery;
   fqn : jquery;;jQuery;|DOCUMENTED|GLOBAL|DOC_ONLY|;;0;c6;;jQuery;
 
-Not Indexed:
+Not Searchable Keys:

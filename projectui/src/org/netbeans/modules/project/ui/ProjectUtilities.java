@@ -449,27 +449,22 @@ public class ProjectUtilities {
     }
     
     static private void storeProjectOpenFiles (Project p, SortedSet<String> urls) {
-        AuxiliaryConfiguration aux = p.getLookup().lookup(AuxiliaryConfiguration.class);
-        if (aux != null) {
-            
-            aux.removeConfigurationFragment (OPEN_FILES_ELEMENT, OPEN_FILES_NS, false);
+        AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(p);
+        aux.removeConfigurationFragment (OPEN_FILES_ELEMENT, OPEN_FILES_NS, false);
 
-            Document xml = XMLUtil.createDocument (OPEN_FILES_ELEMENT, OPEN_FILES_NS, null, null);
-            Element fileEl;
-            
-            Element openFiles = xml.createElementNS (OPEN_FILES_NS, OPEN_FILES_ELEMENT);
-            
-            // loop all open files of given project
-            for (String url : urls) {
-                fileEl = openFiles.getOwnerDocument ().createElement (FILE_ELEMENT);
-                fileEl.appendChild(fileEl.getOwnerDocument().createTextNode(url));
-                openFiles.appendChild (fileEl);
-            }
-            
-            aux.putConfigurationFragment (openFiles, false);
-        } else {
-            ERR.log(Level.WARNING, "No AuxiliaryConfiguration in {0}", p);
+        Document xml = XMLUtil.createDocument (OPEN_FILES_ELEMENT, OPEN_FILES_NS, null, null);
+        Element fileEl;
+
+        Element openFiles = xml.createElementNS (OPEN_FILES_NS, OPEN_FILES_ELEMENT);
+
+        // loop all open files of given project
+        for (String url : urls) {
+            fileEl = openFiles.getOwnerDocument ().createElement (FILE_ELEMENT);
+            fileEl.appendChild(fileEl.getOwnerDocument().createTextNode(url));
+            openFiles.appendChild (fileEl);
         }
+
+        aux.putConfigurationFragment (openFiles, false);
     }
     
     /** Opens the project's files read from the private <code>project.xml</code> file
@@ -479,12 +474,7 @@ public class ProjectUtilities {
     public static void openProjectFiles (Project p) {
         ERR.log(Level.FINE, "Trying to open files from {0}...", p);
         
-        AuxiliaryConfiguration aux = p.getLookup().lookup(AuxiliaryConfiguration.class);
-        
-        if (aux == null) {
-            ERR.log(Level.WARNING, "No AuxiliaryConfiguration in {0}", p);
-            return ;
-        }
+        AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(p);
         
         Element openFiles = aux.getConfigurationFragment (OPEN_FILES_ELEMENT, OPEN_FILES_NS, false);
         if (openFiles == null) {

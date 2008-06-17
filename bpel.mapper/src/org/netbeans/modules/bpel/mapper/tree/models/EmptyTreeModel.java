@@ -27,7 +27,6 @@ import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeExtensionModel;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemInfoProvider;
 
 /**
@@ -48,13 +47,11 @@ public class EmptyTreeModel implements MapperTreeModel<Object>, TreeItemInfoProv
         return TREE_ROOT;
     }
 
-    public List getChildren(RestartableIterator<Object> dataObjectPathItr) {
+    public List getChildren(Iterable<Object> dataObjectPathItrb) {
         List<Object> resultList = new ArrayList<Object>();
         for (MapperTreeExtensionModel extModel : mExtModelList) {
-            dataObjectPathItr.restart();
-            //
             List<Object> childredDataObjectList = 
-                    extModel.getChildren(dataObjectPathItr);
+                    extModel.getChildren(dataObjectPathItrb);
             if (childredDataObjectList != null) {
                 resultList.addAll(childredDataObjectList);
             }
@@ -123,12 +120,12 @@ public class EmptyTreeModel implements MapperTreeModel<Object>, TreeItemInfoProv
 
     public List<Action> getMenuActions(MapperTcContext mapperTcContext, 
             boolean inLeftTree, TreePath treePath, 
-            RestartableIterator<Object> dataObjectPathItr) {
+            Iterable<Object> dataObjectPathItrb) {
         //
         for (MapperTreeExtensionModel extModel : mExtModelList) {
             TreeItemInfoProvider provider = extModel.getTreeItemInfoProvider();
             List<Action> result = provider.getMenuActions(
-                    mapperTcContext, inLeftTree, treePath, dataObjectPathItr);
+                    mapperTcContext, inLeftTree, treePath, dataObjectPathItrb);
             if (result != null) {
                 return result;
             }
@@ -137,7 +134,7 @@ public class EmptyTreeModel implements MapperTreeModel<Object>, TreeItemInfoProv
         return null;
     }
 
-    public String getToolTipText(RestartableIterator<Object> dataObjectPathItr) {
+    public String getToolTipText(Iterable<Object> dataObjectPathItr) {
         for (MapperTreeExtensionModel extModel : mExtModelList) {
             TreeItemInfoProvider provider = extModel.getTreeItemInfoProvider();
             String result = provider.getToolTipText(dataObjectPathItr);

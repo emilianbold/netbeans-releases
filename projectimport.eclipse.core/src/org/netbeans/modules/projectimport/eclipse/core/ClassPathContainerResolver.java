@@ -68,9 +68,9 @@ public class ClassPathContainerResolver {
      * 
      * Eg. for "org.eclipse.jdt.junit.JUNIT_CONTAINER/3.8.1" it would be "libs.junit.classpath"
      * 
-     * This method is called after .classpath file was parsed.
+     * This method is called during project import.
      */
-    public static boolean resolve(DotClassPathEntry entry) {
+    public static boolean resolve(Workspace workspace, DotClassPathEntry entry, List<String> importProblems) {
         assert entry.getKind() == DotClassPathEntry.Kind.CONTAINER : entry;
         
         String container = entry.getRawPath();
@@ -100,6 +100,10 @@ public class ClassPathContainerResolver {
             return true;
         }
         
+        importProblems.add("unsupported classpath container found. It will be ignored and " +
+                "you may need to update NetBeans project classpath by hand. Internal name of this container is: '"+
+                container+"'");
+        
         return false;
     }
 
@@ -113,9 +117,8 @@ public class ClassPathContainerResolver {
      * At the moment it creates global NB libraries.
      * 
      */
-    public static void setup(Workspace workspace, DotClassPathEntry entry) throws IOException {
+    public static void setup(Workspace workspace, DotClassPathEntry entry, List<String> importProblems) throws IOException {
         assert entry.getKind() == DotClassPathEntry.Kind.CONTAINER : entry;
-        assert entry.getContainerMapping() != null : entry;
         
         String container = entry.getRawPath();
        
@@ -127,8 +130,13 @@ public class ClassPathContainerResolver {
                 return;
             }
             Map<String,List<URL>> content = new HashMap<String,List<URL>>();
+            if (workspace == null) {
+                importProblems.add("User library '"+library+"' cannot be created because project is being imported without Eclipse workspace.");
+                return;
+            }
             content.put("classpath", workspace.getJarsForUserLibrary(container.substring(USER_LIBRARY_CONTAINER.length())));
             lm.createLibrary("j2se", library, content);
+            assert entry.getContainerMapping() != null : entry;
         }
     }
         

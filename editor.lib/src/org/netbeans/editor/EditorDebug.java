@@ -41,21 +41,18 @@
 
 package org.netbeans.editor;
 
-import java.awt.event.ActionEvent;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.TextAction;
 import javax.swing.text.Segment;
 
 /**
-* Various internal tests
-*
-* @author Miloslav Metelka
-* @version 0.10
-*/
-
+ * Various internal tests
+ *
+ * @author Miloslav Metelka
+ * @version 0.10
+ * @deprecated Should never have been made public. No replacement.
+ */
 public class EditorDebug {
 
     private EditorDebug() {
@@ -203,49 +200,48 @@ public class EditorDebug {
     }
 
     public static void checkSettings(Class kitClass) throws Exception {
-        int readBufferSize = SettingsUtil.getInteger(kitClass, SettingsNames.READ_BUFFER_SIZE,
-                             SettingsDefaults.defaultReadBufferSize);
-
-        int writeBufferSize = SettingsUtil.getInteger(kitClass, SettingsNames.WRITE_BUFFER_SIZE,
-                              SettingsDefaults.defaultWriteBufferSize);
-
-        int readMarkDistance = SettingsUtil.getInteger(kitClass, SettingsNames.READ_MARK_DISTANCE,
-                               SettingsDefaults.defaultReadMarkDistance);
-
-        int markDistance = SettingsUtil.getInteger(kitClass, SettingsNames.MARK_DISTANCE,
-                           SettingsDefaults.defaultMarkDistance);
-
-        int maxMarkDistance = SettingsUtil.getInteger(kitClass, SettingsNames.MAX_MARK_DISTANCE,
-                              SettingsDefaults.defaultMaxMarkDistance);
-
-        int minMarkDistance = SettingsUtil.getInteger(kitClass, SettingsNames.MIN_MARK_DISTANCE,
-                              SettingsDefaults.defaultMinMarkDistance);
-
-        int syntaxUpdateBatchSize = SettingsUtil.getInteger(kitClass, SettingsNames.SYNTAX_UPDATE_BATCH_SIZE,
-                                    SettingsDefaults.defaultSyntaxUpdateBatchSize);
-
-
-        // Now perform checks
-        if (maxMarkDistance < markDistance) {
-            throw new Exception("maxMarkDistance=" + maxMarkDistance // NOI18N
-                            + " < markDistance=" + markDistance); // NOI18N
-        }
-
-        if (markDistance < minMarkDistance) {
-            throw new Exception("markDistance=" + markDistance // NOI18N
-                            + " < minMarkDistance=" + minMarkDistance); // NOI18N
-        }
-
-        if (readMarkDistance < minMarkDistance) {
-            throw new Exception("readMarkDistance=" + readMarkDistance // NOI18N
-                            + " < minMarkDistance=" + minMarkDistance); // NOI18N
-        }
-
-        if (syntaxUpdateBatchSize < maxMarkDistance) {
-            throw new Exception("syntaxUpdateBatchSize=" + syntaxUpdateBatchSize // NOI18N
-                            + " < maxMarkDistance=" + maxMarkDistance); // NOI18N
-        }
-
+//        int readBufferSize = SettingsUtil.getInteger(kitClass, SettingsNames.READ_BUFFER_SIZE,
+//                             SettingsDefaults.defaultReadBufferSize);
+//
+//        int writeBufferSize = SettingsUtil.getInteger(kitClass, SettingsNames.WRITE_BUFFER_SIZE,
+//                              SettingsDefaults.defaultWriteBufferSize);
+//
+//        int readMarkDistance = SettingsUtil.getInteger(kitClass, SettingsNames.READ_MARK_DISTANCE,
+//                               SettingsDefaults.defaultReadMarkDistance);
+//
+//        int markDistance = SettingsUtil.getInteger(kitClass, SettingsNames.MARK_DISTANCE,
+//                           SettingsDefaults.defaultMarkDistance);
+//
+//        int maxMarkDistance = SettingsUtil.getInteger(kitClass, SettingsNames.MAX_MARK_DISTANCE,
+//                              SettingsDefaults.defaultMaxMarkDistance);
+//
+//        int minMarkDistance = SettingsUtil.getInteger(kitClass, SettingsNames.MIN_MARK_DISTANCE,
+//                              SettingsDefaults.defaultMinMarkDistance);
+//
+//        int syntaxUpdateBatchSize = SettingsUtil.getInteger(kitClass, SettingsNames.SYNTAX_UPDATE_BATCH_SIZE,
+//                                    SettingsDefaults.defaultSyntaxUpdateBatchSize);
+//
+//
+//        // Now perform checks
+//        if (maxMarkDistance < markDistance) {
+//            throw new Exception("maxMarkDistance=" + maxMarkDistance // NOI18N
+//                            + " < markDistance=" + markDistance); // NOI18N
+//        }
+//
+//        if (markDistance < minMarkDistance) {
+//            throw new Exception("markDistance=" + markDistance // NOI18N
+//                            + " < minMarkDistance=" + minMarkDistance); // NOI18N
+//        }
+//
+//        if (readMarkDistance < minMarkDistance) {
+//            throw new Exception("readMarkDistance=" + readMarkDistance // NOI18N
+//                            + " < minMarkDistance=" + minMarkDistance); // NOI18N
+//        }
+//
+//        if (syntaxUpdateBatchSize < maxMarkDistance) {
+//            throw new Exception("syntaxUpdateBatchSize=" + syntaxUpdateBatchSize // NOI18N
+//                            + " < maxMarkDistance=" + maxMarkDistance); // NOI18N
+//        }
     }
 
     /** Replace '\n', '\r' and '\t' in the string so they are identifiable. */

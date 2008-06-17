@@ -47,8 +47,9 @@ import org.netbeans.modules.gsf.api.annotations.NonNull;
 /** 
  * The CompletionResult object returns a list of proposals along with some
  * information about the result. You should subclass this class
- * yourself (or use the default implementation, DefaultCompletionResult)
- * and return an instance of it from the {@link #complete()} method.
+ * yourself (or use the default implementation, 
+ * {@link org.netbeans.modules.gsf.spi.DefaultCompletionResult}
+ * and return an instance of it from the {@link CodeCompletionHandler#complete} method.
  * object is provided by the language implementation
  * 
  * @author Tor Norbye

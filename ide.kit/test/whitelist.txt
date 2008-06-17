@@ -5784,6 +5784,11 @@ org.openide.nodes.CookieSet$R
 org.openide.nodes.CookieSetLkp
 org.openide.nodes.CookieSetLkp$ConvertingItem
 org.openide.nodes.CookieSetLkp$SimpleItem
+org.openide.nodes.EntrySupport
+org.openide.nodes.EntrySupport$Default
+org.openide.nodes.EntrySupport$Default$1
+org.openide.nodes.EntrySupport$Default$1SetAndNotify
+org.openide.nodes.EntrySupport$Default$Infoorg.openide.nodes.AbstractNode
 org.openide.nodes.FilterNode
 org.openide.nodes.FilterNode$Children
 org.openide.nodes.FilterNode$ChildrenAdapter

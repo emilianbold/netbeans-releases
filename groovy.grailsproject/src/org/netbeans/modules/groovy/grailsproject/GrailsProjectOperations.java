@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Arrays;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.Project;
@@ -42,9 +43,9 @@ import org.netbeans.api.project.Project;
  */
 public class GrailsProjectOperations implements DeleteOperationImplementation {
 
-    private final Project project;
+    private final GrailsProject project;
 
-    public GrailsProjectOperations(Project project) {
+    public GrailsProjectOperations(GrailsProject project) {
         this.project = project;
     }
 
@@ -53,19 +54,27 @@ public class GrailsProjectOperations implements DeleteOperationImplementation {
     }
 
     public void notifyDeleted() throws IOException {
-        return;
+        project.getProjectState().notifyDeleted();
     }
-
+    
+    private void addFile(FileObject projectDirectory, String fileName, List<FileObject> result) {
+        FileObject file = projectDirectory.getFileObject(fileName);        
+        if (file != null) {
+            result.add(file);
+        }
+    }
+    
     public List<FileObject> getMetadataFiles() {
-        return Collections.emptyList();
+        FileObject projectDirectory = project.getProjectDirectory();
+        List<FileObject> files = new ArrayList<FileObject>();
+        addFile(projectDirectory, ".project", files); // NOI18N
+        addFile(projectDirectory, ".classpath", files); // NOI18N
+        addFile(projectDirectory, projectDirectory.getName() + ".tmproj", files); // NOI18N
+        return files;
     }
 
     public List<FileObject> getDataFiles() {
-        List<FileObject> dataFiles = new ArrayList<FileObject>();
-
-        dataFiles.add(project.getProjectDirectory());
-
-        return dataFiles;
+        return Arrays.asList(project.getProjectDirectory().getChildren());
     }
 
 }

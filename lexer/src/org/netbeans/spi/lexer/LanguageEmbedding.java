@@ -205,9 +205,10 @@ public final class LanguageEmbedding<T extends TokenId> {
         return joinSections;
     }
     
+    @Override
     public String toString() {
         return "language: " + language() + ", skip[" + startSkipLength() // NOI18N
-            + ", " + endSkipLength + "]"; // NOI18N
+            + ", " + endSkipLength + "];" + (joinSections ? "join" : "no-join"); // NOI18N
     }
     
 }

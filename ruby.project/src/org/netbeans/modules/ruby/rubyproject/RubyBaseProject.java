@@ -139,6 +139,17 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
         return RakeSupport.findRakeFile(this);
     }
 
+    /**
+     * @return the source roots of this project.
+     */
+    public abstract FileObject[] getSourceRootFiles();
+    
+    /**
+     * @return the test source roots of this project.
+     */
+    public abstract FileObject[] getTestSourceRootFiles();
+
+    
     public PropertyEvaluator evaluator() {
         return eval;
     }

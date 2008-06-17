@@ -64,7 +64,9 @@ import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramRectangularSelectDecorator;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramSceneRectangularSelectProvider;
 import org.netbeans.modules.uml.drawingarea.actions.MarqueeZoomSelectProvider;
+import org.netbeans.modules.uml.drawingarea.actions.UMLRectangularSelectAction;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
+import org.netbeans.modules.uml.drawingarea.engines.DiagramEngineFactory;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager; 
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
@@ -76,6 +78,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -194,8 +197,8 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
     
     public WidgetAction createMarqueeSelectAction()
     {
-        return ActionFactory.createRectangularSelectAction
-                (new DiagramRectangularSelectDecorator(this, DesignerTools.MARQUEE_ZOOM), 
+        return new UMLRectangularSelectAction(
+                new DiagramRectangularSelectDecorator(this, DesignerTools.MARQUEE_ZOOM), 
                 backgroundLayer, new MarqueeZoomSelectProvider(this));
     }
     
@@ -403,47 +406,26 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
                 {
                     InstanceCookie ic = engineObjects[i].getCookie(org.openide.cookies.InstanceCookie.class);
                     //if (ic == null) continue;
-                    Object instance=null;
+                    Object instance;
                     try
                     {
-                        instance = ic.instanceClass().getConstructor(DesignerScene.class).newInstance(this) ;
+                        instance = ic.instanceCreate();
                     }
-                    catch (IOException e)
-                    {
-                        // ignore
-                        e.printStackTrace();
-                        continue;
-                    }
-                    catch (ClassNotFoundException e)
-                    {
-                        // ignore
-                        e.printStackTrace();
-                        continue;
-                    }
-                    catch(NoSuchMethodException ex)
+                    catch (IOException ex)
                     {
                         ex.printStackTrace();
                         continue;
                     }
-                    catch(InstantiationException ex)
+                    catch (ClassNotFoundException ex)
                     {
                         ex.printStackTrace();
                         continue;
                     }
-                    catch(IllegalAccessException ex)
+                    
+                    if (instance instanceof DiagramEngineFactory)
                     {
-                        ex.printStackTrace();
-                        continue;
-                    }
-                     catch(InvocationTargetException ex)
-                    {
-                        ex.printStackTrace();
-                        continue;
-                    }
-                    //
-                    if (instance instanceof DiagramEngine)
-                    {
-                        ret=(DiagramEngine)instance;
+                        DiagramEngineFactory factory = (DiagramEngineFactory)instance;
+                        ret = factory.createEngine(this);
                         break;
                     }
                  }
@@ -485,6 +467,10 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         nodeWriter.beginWriting();
     }
 
+    public void saveChildren(Widget widget, NodeWriter nodeWriter) {
+        //not applicable
+    }
+    
     public void setBackgroundWidget(IPresentationElement element, Point point, String view)
     {
         removeBackgroundWidget();
@@ -520,4 +506,6 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         backgroundWidget = null;
         validate();
     }
+
+    
 }

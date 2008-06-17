@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -42,11 +42,24 @@ package org.netbeans.modules.extexecution.api.print;
 import java.util.List;
 
 /**
+ * Converts the line to lines for output window. Convertor may change number
+ * of lines and add listener to line (invoked when the line is clicked).
  *
  * @author Petr Hejl
+ * @see org.netbeans.modules.extexecution.api.input.InputProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.modules.extexecution.api.print.LineConvertor, boolean)
+ * @see org.netbeans.modules.extexecution.api.input.LineProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.modules.extexecution.api.print.LineConvertor, boolean) 
  */
 public interface LineConvertor {
 
+    /**
+     * Converts the line to lines for output window. Method may return
+     * no line or any other number of lines for single input line, however it
+     * <i>must not</i> return <code>null</code>.
+     *
+     * @param line input line to convert
+     * @return converted lines for output window
+     * @see ConvertedLine
+     */
     List<ConvertedLine> convert(String line);
-        
+
 }
