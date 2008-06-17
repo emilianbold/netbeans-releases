@@ -220,9 +220,12 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
         displayer.selectPrev();
         evt.consume();
     } else if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-        returnFocus();
-        displayer.invoke();
         evt.consume();
+        // #137259: invoke only some results were found
+        if (displayer.getList().getModel().getSize() > 0) {
+            returnFocus();
+            displayer.invoke();
+        }
     } else if ((evt.getKeyCode()) == KeyEvent.VK_ESCAPE) {
         returnFocus();
     }
