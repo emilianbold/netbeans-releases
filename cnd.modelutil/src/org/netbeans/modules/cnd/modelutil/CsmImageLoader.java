@@ -110,6 +110,10 @@ public class CsmImageLoader implements CsmImageName {
         String iconPath = getImagePath(kind, modifiers);
         return getCachedImageIcon(iconPath);        
     }
+
+    public static ImageIcon getTempleteParameterIcon() {
+        return getCachedImageIcon(TEMPLATE_PARAMETER);        
+    }
     
     public static ImageIcon getIncludeImageIcon(boolean sysIncludeKind, boolean folder) {
         String iconPath;

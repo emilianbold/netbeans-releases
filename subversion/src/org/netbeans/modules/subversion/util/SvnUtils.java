@@ -506,6 +506,7 @@ public class SvnUtils {
                 do  {
                     byteList.add((byte) Integer.parseInt(s.substring(i + 1, i + 3), 16));                     
                     i += 3;    
+                    if (i >= s.length()) break;
                     c = s.charAt(i);
                 } while(isEncodedByte(c, s, i));
                 

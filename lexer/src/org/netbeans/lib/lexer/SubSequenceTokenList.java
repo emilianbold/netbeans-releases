@@ -110,84 +110,30 @@ public final class SubSequenceTokenList<T extends TokenId> implements TokenList<
             // No upper bound for end index so use tokenCount() (can be improved if desired)
             limitEndIndex = tokenList.tokenCount();
         } else { // Valid limit end offset
-            limitEndIndex = tokenList.tokenCountCurrent(); // presently created token count
-            if (limitEndIndex == 0) { // no tokens yet -> attempt to create at least one
-                if (tokenList.tokenOrEmbeddingContainer(0) != null) { // some tokens exist
-                    // Re-get the present token count (could be created a chunk of tokens at once)
-                    limitEndIndex = tokenList.tokenCountCurrent();
+            int[] indexAndTokenOffset = tokenList.tokenIndex(limitEndOffset);
+            limitEndIndex = indexAndTokenOffset[0];
+            if (limitEndIndex != -1) {
+                // If the limitStartOffset is "inside" a token and it's not at or beyond end of TL
+                if (limitEndOffset != indexAndTokenOffset[1] && limitEndIndex < tokenList.tokenCountCurrent()) {
+                    limitEndIndex++; // Include the token that contains the offset
                 }
-            }
-            
-            if (limitEndIndex > 0) {
-                // tokenCount surely >0
-                int tokenOffset = tokenList.tokenOffset(limitEndIndex - 1);
-                if (limitEndOffset > tokenOffset) { // may need to create further tokens if they do not exist
-                    // Force token list to create subsequent tokens
-                    // Cannot subtract offset by each token's length because
-                    // there may be gaps between tokens due to token id filter use.
-                    AbstractToken<?> token = token(limitEndIndex - 1);
-                    int tokenLength = token.length();
-                    while (limitEndOffset > tokenOffset + tokenLength) { // above present token
-                        Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(limitEndIndex);
-                        if (tokenOrEmbeddingContainer != null) {
-                            token = LexerUtilsConstants.token(tokenOrEmbeddingContainer);
-                            if (tokenList.isContinuous() || token.isFlyweight()) {
-                                tokenOffset += tokenLength;
-                            } else { // retrieve offset
-                                tokenOffset = tokenList.tokenOffset(limitEndIndex);
-                            }
-                            tokenLength = token.length();
-                            limitEndIndex++;
-                        } else { // no more tokens => break
-                            break;
-                        }
-                    }
-
-                } else { // end index within existing tokens
-                    // The offset is within the currently recognized tokens
-                    // Use binary search
-                    int low = 0;
-                    limitEndIndex--;
-
-                    while (low <= limitEndIndex) {
-                        int mid = (low + limitEndIndex) / 2;
-                        int midStartOffset = tokenList.tokenOffset(mid);
-
-                        if (midStartOffset < limitEndOffset) {
-                            low = mid + 1;
-                        } else if (midStartOffset > limitEndOffset) {
-                            limitEndIndex = mid - 1;
-                        } else { // Token starting exactly at offset found
-                            limitEndIndex = mid - 1;
-                            break;
-                        }
-                    }
-                    limitEndIndex++; // Increase from 'high' to end index
-                }
+            } else { // No tokens at all
+                limitEndIndex = 0;
             }
         }
             
         // Compute limitStartIndex (currently == 0)
         if (limitEndIndex > 0 && limitStartOffset > 0) {
-            int high = limitEndIndex - 1;
-            while (limitStartIndex <= high) {
-                int mid = (limitStartIndex + high) / 2;
-                int midStartOffset = tokenList.tokenOffset(mid);
-
-                if (midStartOffset < limitStartOffset) {
-                    limitStartIndex = mid + 1;
-                } else if (midStartOffset > limitStartOffset) {
-                    high = mid - 1;
-                } else { // Token starting exactly at offset found
-                    limitStartIndex = mid + 1;
-                    break;
-                }
-            }
-            // Include previous token if it "includes" limitStartOffset (also handles gaps between tokens properly)
-            if (limitStartIndex > 0 &&
-                    tokenList.tokenOffset(limitStartIndex - 1) + token(limitStartIndex - 1).length() > limitStartOffset
+            // Although the binary search could only be in <0,limitEndIndex> bounds
+            // use regular TL.tokenIndex() because it has substantially better performance
+            // e.g. in JoinTokenList.
+            int[] indexAndTokenOffset = tokenList.tokenIndex(limitStartOffset);
+            limitStartIndex = indexAndTokenOffset[0];
+            // Check if the limitStartOffset is not in gap after end of token at limitStartIndex
+            if (limitStartIndex < tokenList.tokenCountCurrent() &&
+                indexAndTokenOffset[1] + tokenList.tokenOrEmbedding(limitStartIndex).token().length() <= limitStartOffset
             ) {
-                limitStartIndex--;
+                limitStartIndex++;
             }
         }
     }
@@ -204,22 +150,26 @@ public final class SubSequenceTokenList<T extends TokenId> implements TokenList<
         return limitEndOffset;
     }
     
-    public Object tokenOrEmbeddingContainer(int index) {
+    public TokenOrEmbedding<T> tokenOrEmbedding(int index) {
         index += limitStartIndex;
         return (index < limitEndIndex)
-            ? tokenList.tokenOrEmbeddingContainer(index)
+            ? tokenList.tokenOrEmbedding(index)
             : null;
     }
 
-    public int tokenOffset(int index) {
+    public int tokenOffsetByIndex(int index) {
         index += limitStartIndex;
         if (index >= limitEndIndex)
             throw new IndexOutOfBoundsException("index=" + index + " >= limitEndIndex=" + limitEndIndex);
-        return tokenList.tokenOffset(index);
+        return tokenList.tokenOffsetByIndex(index);
+    }
+
+    public int[] tokenIndex(int offset) {
+        return LexerUtilsConstants.tokenIndexBinSearch(this, offset, tokenCountCurrent());
     }
 
     public int tokenCount() {
-        return limitEndIndex - limitStartIndex;
+        return tokenCountCurrent();
     }
 
     public int tokenCountCurrent() {
@@ -238,20 +188,20 @@ public final class SubSequenceTokenList<T extends TokenId> implements TokenList<
         return tokenList.languagePath();
     }
 
-    public int childTokenOffset(int rawOffset) {
-        throw new IllegalStateException("Unexpected call.");
-    }
-
-    public char childTokenCharAt(int rawOffset, int index) {
-        throw new IllegalStateException("Unexpected call.");
+    public int tokenOffset(AbstractToken<T> token) {
+        return tokenList.tokenOffset(token);
     }
 
     public void wrapToken(int index, EmbeddingContainer<T> embeddingContainer) {
         tokenList.wrapToken(limitStartIndex + index, embeddingContainer);
     }
 
-    public TokenList<?> root() {
-        return tokenList.root();
+    public TokenList<?> rootTokenList() {
+        return tokenList.rootTokenList();
+    }
+
+    public CharSequence inputSourceText() {
+        return rootTokenList().inputSourceText();
     }
 
     public TokenHierarchyOperation<?,?> tokenHierarchyOperation() {
@@ -281,14 +231,14 @@ public final class SubSequenceTokenList<T extends TokenId> implements TokenList<
     
     public int startOffset() {
         if (tokenCountCurrent() > 0 || tokenCount() > 0)
-            return tokenOffset(0);
+            return tokenOffsetByIndex(0);
         return limitStartOffset;
     }
 
     public int endOffset() {
         int cntM1 = tokenCount() - 1;
         if (cntM1 >= 0)
-            return tokenOffset(cntM1) + token(cntM1).length();
+            return tokenOffsetByIndex(cntM1) + tokenList.tokenOrEmbedding(cntM1).token().length();
         return limitStartOffset;
     }
     
@@ -296,8 +246,4 @@ public final class SubSequenceTokenList<T extends TokenId> implements TokenList<
         return tokenList.isRemoved();
     }
 
-    private AbstractToken<T> token(int index) {
-        return LexerUtilsConstants.token(tokenList, index);
-    }
-    
 }

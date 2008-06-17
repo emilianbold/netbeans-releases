@@ -172,7 +172,7 @@ public final class J2SEProject implements Project, AntProjectListener {
         actionProvider.startFSListener();
         helper.addAntProjectListener(this);
     }
-
+    
     /**
      * Returns the project directory
      * @return the directory the project is located in
@@ -252,7 +252,7 @@ public final class J2SEProject implements Project, AntProjectListener {
     }
 
     private Lookup createLookup(final AuxiliaryConfiguration aux,
-            final ActionProvider actionProvider) {
+            final J2SEActionProvider actionProvider) {
         final SubprojectProvider spp = refHelper.createSubprojectProvider();        
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), J2SEProjectProperties.SOURCE_ENCODING);
         final Lookup base = Lookups.fixed(new Object[] {
@@ -282,7 +282,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             buildExtender,
             cpMod,
             this, // never cast an externally obtained Project to J2SEProject - use lookup instead
-            new J2SEProjectOperations(this),
+            new J2SEProjectOperations(this, actionProvider),
             new J2SEConfigurationProvider(this),
             new J2SEPersistenceProvider(this, cpProvider),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
