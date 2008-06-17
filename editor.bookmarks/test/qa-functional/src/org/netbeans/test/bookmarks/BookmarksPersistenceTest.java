@@ -38,8 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-package bookmarks;
+package org.netbeans.test.bookmarks;
 
 import java.awt.event.KeyEvent;
 import javax.swing.text.Document;
@@ -47,8 +46,8 @@ import javax.swing.text.Element;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
-import org.netbeans.junit.NbModuleSuite.Configuration;
 import org.netbeans.lib.editor.bookmarks.api.BookmarkList;
 
 /**
@@ -57,181 +56,185 @@ import org.netbeans.lib.editor.bookmarks.api.BookmarkList;
  * @author Miloslav Metelka
  */
 public class BookmarksPersistenceTest extends EditorBookmarksTestCase {
-    
+
     public BookmarksPersistenceTest(String testMethodName) {
         super(testMethodName);
     }
-    
+
     public void testPersistence() {
-        int[] bookmarkLines = new int[] { 1, 7, 9 };
-        
+        int[] bookmarkLines = new int[]{1, 7, 9};
+
         openDefaultProject();
-        
+
         openDefaultSampleFile();
         try {
-            
+
             EditorOperator editorOper = getDefaultSampleEditorOperator();
             JEditorPaneOperator txtOper = editorOper.txtEditorPane();
             Document doc = txtOper.getDocument();
-            
+
             for (int i = 0; i < bookmarkLines.length; i++) {
                 editorOper.setCaretPosition(getLineOffset(doc, bookmarkLines[i]));
                 txtOper.pushKey(KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+                new EventTool().waitNoEvent(1000);
             }
-            
+
         } finally {
             closeFileWithDiscard();
         }
-        
+
         openDefaultSampleFile();
         try {
-            
+
             EditorOperator editorOper = getDefaultSampleEditorOperator();
             JEditorPaneOperator txtOper = editorOper.txtEditorPane();
             Document doc = txtOper.getDocument();
             BookmarkList bml = BookmarkList.get(doc);
             checkBookmarksAtLines(bml, bookmarkLines);
-            
+
         } finally {
             closeFileWithDiscard();
         }
     }
-    
+
     public void testBookmarkMove() {
         int bookmarkLine = 14;
         int lineToDelete = 12;
-        
+
         openDefaultProject();
-        
         openDefaultSampleFile();
         try {
             EditorOperator editorOper = getDefaultSampleEditorOperator();
             JEditorPaneOperator txtOper = editorOper.txtEditorPane();
             Document doc = txtOper.getDocument();
             editorOper.setCaretPosition(getLineOffset(doc, bookmarkLine));
-            txtOper.pushKey(KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);            
-            editorOper.setCaretPosition(getLineOffset(doc,lineToDelete));
+            txtOper.pushKey(KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+            editorOper.setCaretPosition(getLineOffset(doc, lineToDelete));
             txtOper.pushKey(KeyEvent.VK_E, KeyEvent.CTRL_MASK);
             doc = txtOper.getDocument();
             BookmarkList bml = BookmarkList.get(doc);
-            checkBookmarksAtLines(bml, new int[]{bookmarkLine-1});
+            checkBookmarksAtLines(bml, new int[]{bookmarkLine - 1});
         } finally {
             closeFileWithDiscard();
         }
     }
-    
-    public void testBookmarkMerge() {
-        int[] bookmarkLines = new int[] { 9, 10, 11 };
-        
-        openDefaultProject();
-        
-        openDefaultSampleFile();
-        try {
-            
-            EditorOperator editorOper = getDefaultSampleEditorOperator();
-            JEditorPaneOperator txtOper = editorOper.txtEditorPane();
-            Document doc = txtOper.getDocument();
-            for (int i = 0; i < bookmarkLines.length; i++) {
-                editorOper.setCaretPosition(getLineOffset(doc, bookmarkLines[i]));
-                txtOper.pushKey(KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-            }
-            editorOper.setCaretPosition(getLineOffset(doc, bookmarkLines[0]));
-            txtOper.pushKey(KeyEvent.VK_E, KeyEvent.CTRL_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_E, KeyEvent.CTRL_DOWN_MASK);            
-            BookmarkList bml = BookmarkList.get(doc);
-            checkBookmarksAtLines(bml, new int[]{bookmarkLines[0]});
-        } finally {
-            closeFileWithDiscard();
-        }
-    }
-    
+
+//    public void testBookmarkMerge() {
+//        int[] bookmarkLines = new int[]{9, 10, 11};
+//
+//        openDefaultProject();
+//
+//        openDefaultSampleFile();
+//        try {
+//            EditorOperator editorOper = getDefaultSampleEditorOperator();
+//            JEditorPaneOperator txtOper = editorOper.txtEditorPane();
+//            Document doc = txtOper.getDocument();
+//            for (int i = 0; i < bookmarkLines.length; i++) {
+//                editorOper.setCaretPosition(bookmarkLines[i] + 1, 1);
+//                txtOper.pushKey(KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+//            }
+//            editorOper.setCaretPosition(bookmarkLines[0] + 1, 1);
+//            txtOper.pushKey(KeyEvent.VK_E, KeyEvent.CTRL_DOWN_MASK);
+//            txtOper.pushKey(KeyEvent.VK_E, KeyEvent.CTRL_DOWN_MASK);
+//            BookmarkList bml = BookmarkList.get(doc);
+//            checkBookmarksAtLines(bml, new int[]{9, 9, 9});
+//        } finally {
+//            closeFileWithDiscard();
+//        }
+//    }
+
     public void testNextBookmark() {
-        int[] bookmarkLines = new int[] { 9, 10, 11 };
-        int[] expectedLines = new int[] { 9, 10, 11, 9};
-        
+        int[] bookmarkLines = new int[]{9, 10, 11};
+        int[] expectedLines = new int[]{9, 10, 11, 9};
+
         openDefaultProject();
-        
+
         openDefaultSampleFile();
         try {
-            
+
             EditorOperator editorOper = getDefaultSampleEditorOperator();
             JEditorPaneOperator txtOper = editorOper.txtEditorPane();
             Document doc = txtOper.getDocument();
             for (int i = 0; i < bookmarkLines.length; i++) {
-                editorOper.setCaretPosition(getLineOffset(doc, bookmarkLines[i]));
+                editorOper.setCaretPosition(bookmarkLines[i] + 1, 1);
                 txtOper.pushKey(KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
             }
-            editorOper.setCaretPosition(getLineOffset(doc,1));
+            editorOper.setCaretPosition(getLineOffset(doc, 2));
+            for (int i = 0; i < expectedLines.length; i++) {
+                txtOper.pushKey(KeyEvent.VK_PERIOD, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+                int actLine = getLineIndex(doc, txtOper.getCaretPosition());
+                int j = expectedLines[i];
+                assertEquals("Caret is at bad location", j, actLine);
+            }
+        } finally {
+            closeFileWithDiscard();
+        }
+    }
+
+    public void testPreviousBookmark() {
+        int[] bookmarkLines = new int[]{9, 10, 11};
+        int[] expectedLines = new int[]{11, 10, 9, 11};
+
+        openDefaultProject();
+
+        openDefaultSampleFile();
+        try {
+
+            EditorOperator editorOper = getDefaultSampleEditorOperator();
+            JEditorPaneOperator txtOper = editorOper.txtEditorPane();
+            Document doc = txtOper.getDocument();
+            for (int i = 0; i < bookmarkLines.length; i++) {
+                editorOper.setCaretPosition(bookmarkLines[i] + 1, 1);
+                txtOper.pushKey(KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+            }
+            editorOper.setCaretPosition(getLineOffset(doc, 14));
             for (int i = 0; i < expectedLines.length; i++) {
                 txtOper.pushKey(KeyEvent.VK_COMMA, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
                 int j = expectedLines[i];
                 int actLine = getLineIndex(doc, txtOper.getCaretPosition());
-                assertEquals("Caret is at bad location", j, actLine);                
-            }           
-        } finally {
-            closeFileWithDiscard();
-        }            
-    }
-    
-    public void testPreviousBookmark() {
-        int[] bookmarkLines = new int[] { 9, 10, 11 };
-        int[] expectedLines = new int[] { 11, 10, 9, 11};
-        
-        openDefaultProject();
-        
-        openDefaultSampleFile();
-        try {
-            
-            EditorOperator editorOper = getDefaultSampleEditorOperator();
-            JEditorPaneOperator txtOper = editorOper.txtEditorPane();
-            Document doc = txtOper.getDocument();
-            for (int i = 0; i < bookmarkLines.length; i++) {
-                editorOper.setCaretPosition(getLineOffset(doc, bookmarkLines[i]));
-                txtOper.pushKey(KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+                assertEquals("Caret is at bad location", j, actLine);
             }
-            editorOper.setCaretPosition(getLineOffset(doc,14));
-            for (int i = 0; i < expectedLines.length; i++) {
-                txtOper.pushKey(KeyEvent.VK_PERIOD, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-                int j = expectedLines[i];
-                int actLine = getLineIndex(doc, txtOper.getCaretPosition());
-                assertEquals("Caret is at bad location", j, actLine);                
-            }           
         } finally {
             closeFileWithDiscard();
         }
     }
-    
-    
-    
+
     private void checkBookmarksAtLines(BookmarkList bml, int[] expectedLineIndexes) {
         assertEquals("Invalid bookmark count", expectedLineIndexes.length, bml.getBookmarkCount());
         for (int i = 0; i < expectedLineIndexes.length; i++) {
             int expectedLineIndex = expectedLineIndexes[i];
             int lineIndex = bml.getBookmark(i).getLineIndex();
-            assertEquals("Bookmark line index " + lineIndex
-                    + " differs from expected " + expectedLineIndex,
+            assertEquals("Bookmark line index " + lineIndex + " differs from expected " + expectedLineIndex+ "index "+i,
                     lineIndex,
-                    expectedLineIndex
-                    );
+                    expectedLineIndex);
         }
     }
-    
-    
+
     private int getLineOffset(Document doc, int lineIndex) {
         Element root = doc.getDefaultRootElement();
         return root.getElement(lineIndex).getStartOffset();
     }
-    
+
     private int getLineIndex(Document doc, int offset) {
         Element root = doc.getDefaultRootElement();
         return root.getElementIndex(offset);
     }
-    
-    public static Test suite() {      
+
+    protected void setUp() throws Exception {
+        super.setUp();
+        System.out.println("#### " + getName() + " starts ####");
+    }
+
+    protected void tearDown() throws Exception {
+        System.out.println("#### " + getName() + " ends ####");
+        super.tearDown();
+    }
+
+    public static Test suite() {
         return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(BookmarksPersistenceTest.class).enableModules(".*").clusters(".*")
-        );
-     }
+                NbModuleSuite.createConfiguration(BookmarksPersistenceTest.class).enableModules(".*").clusters(".*")
     
-    
+
+);
+    }
 }

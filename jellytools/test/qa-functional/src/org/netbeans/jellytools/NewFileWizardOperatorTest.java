@@ -65,6 +65,9 @@ public class NewFileWizardOperatorTest extends JellyTestCase {
         TestRunner.run(suite());
     }
     
+    public static final String[] tests = new String[] {
+        "testInvokeTitle", "testInvoke", "testSelectProjectAndCategoryAndFileType", 
+        "testGetDescription", "testCreate"};    
     /** Method used for explicit testsuite definition
      * @return  created suite
      */
@@ -79,8 +82,7 @@ public class NewFileWizardOperatorTest extends JellyTestCase {
         return suite;
          */
         return createModuleTest(NewFileWizardOperatorTest.class, 
-                "testInvokeTitle", "testInvoke", "testSelectProjectAndCategoryAndFileType", 
-                "testGetDescription", "testCreate");
+                tests);
     }
     
     protected void setUp() throws IOException {

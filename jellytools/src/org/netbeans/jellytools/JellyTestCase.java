@@ -342,11 +342,7 @@ public class JellyTestCase extends NbTestCase {
     }
     
     protected static junit.framework.Test createModuleTest(String modules, String clusters, Class testClass, String... testNames) {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(testClass);
-        for(String t : testNames) {
-            conf = conf.addTest(t);
-        }
-        return(NbModuleSuite.create(conf.enableModules(modules).clusters(clusters)));
+        return NbModuleSuite.create(testClass, clusters, modules, testNames);
     }
     protected static junit.framework.Test createModuleTest(Class testClass, String... testNames) {
         return createModuleTest(".*", ".*", testClass, testNames);

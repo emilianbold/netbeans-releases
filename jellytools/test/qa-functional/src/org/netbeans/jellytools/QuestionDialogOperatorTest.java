@@ -41,6 +41,7 @@
 
 package org.netbeans.jellytools;
 
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 /**
  * Test of org.netbeans.jellytools.QuestionDialogOperator.
@@ -60,13 +61,11 @@ public class QuestionDialogOperatorTest extends NbDialogOperatorTest {
         super(testName);
     }
     
-    /** method used for explicit testsuite definition
-     */
+    public static final String[] tests = new String[] {
+        "testConstructorWithParameter", "testLblQuestion"};
+
     public static junit.framework.Test suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new QuestionDialogOperatorTest("testConstructorWithParameter"));
-        suite.addTest(new QuestionDialogOperatorTest("testLblQuestion"));
-        return suite;
+         return NbModuleSuite.create(QuestionDialogOperatorTest.class, ".*", ".*", tests);
     }
     
     /** Shows dialog to test. */

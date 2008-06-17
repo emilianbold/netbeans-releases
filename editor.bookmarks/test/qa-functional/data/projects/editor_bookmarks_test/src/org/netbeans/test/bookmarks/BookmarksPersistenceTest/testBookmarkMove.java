@@ -1,5 +1,5 @@
 
-package bookmarks.BookmarksPersistenceTest;
+package org.netbeans.test.bookmarks.BookmarksPersistenceTest;
 
 /**
  *

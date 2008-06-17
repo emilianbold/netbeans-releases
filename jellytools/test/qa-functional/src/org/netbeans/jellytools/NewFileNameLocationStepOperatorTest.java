@@ -61,6 +61,9 @@ public class NewFileNameLocationStepOperatorTest extends JellyTestCase {
         TestRunner.run(suite());
     }
     
+    public static String[] tests = new String[] {
+        "testInvoke", "testComponents"};
+    
     /** Method used for explicit testsuite definition
      * @return  created suite
      */
@@ -71,8 +74,7 @@ public class NewFileNameLocationStepOperatorTest extends JellyTestCase {
         suite.addTest(new NewFileNameLocationStepOperatorTest("testComponents"));
         return suite;
          */
-        return createModuleTest(NewFileNameLocationStepOperatorTest.class, 
-                "testInvoke", "testComponents");
+        return createModuleTest(NewFileNameLocationStepOperatorTest.class, tests);
     }
     
     protected void setUp() throws IOException {

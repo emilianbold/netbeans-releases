@@ -64,7 +64,15 @@ public class PluginsOperatorTest extends JellyTestCase {
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(suite());
     }
-
+    
+    public static final String[] tests = new String[] {
+"testInvoke",
+        "testInstall",
+        "testUninstall",
+        "testDeactivate",
+        "testSettings",
+        "testDowloaded",
+        "testClose"};
     /** Define test suite.
      * @return suite.
      */
@@ -82,13 +90,7 @@ public class PluginsOperatorTest extends JellyTestCase {
         return suite;
          */
         return (NbTest) createModuleTest(PluginsOperatorTest.class, 
-        "testInvoke",
-        "testInstall",
-        "testUninstall",
-        "testDeactivate",
-        "testSettings",
-        "testDowloaded",
-        "testClose");
+        tests);
     }
 
     /** Print out test name. */

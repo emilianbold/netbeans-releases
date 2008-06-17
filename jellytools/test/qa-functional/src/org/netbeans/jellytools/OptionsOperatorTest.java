@@ -64,6 +64,23 @@ public class OptionsOperatorTest extends JellyTestCase {
         TestRunner.run(suite());
     }
     
+    public static String[] tests = new String[] {
+// test classic view
+        "testTreeTable",
+        "testLevelsShowing",
+        "testLevelChanging",
+        "testPopup",
+        "testGetPropertySheet",
+        "testSelectOption",
+        // test modern view
+        "testSwitchToModernView",
+        "testSelectEditor",
+        "testSelectFontAndColors",
+        "testSelectKeymap",
+        "testSelectMiscellaneous",
+        "testSelectGeneral",
+        "testClose"};
+    
     /** Method used for explicit testsuite definition
      * @return  created suite
      */
@@ -88,21 +105,7 @@ public class OptionsOperatorTest extends JellyTestCase {
         return suite;
          */
         return (NbTestSuite) createModuleTest(OptionsOperatorTest.class, 
-        // test classic view
-        "testTreeTable",
-        "testLevelsShowing",
-        "testLevelChanging",
-        "testPopup",
-        "testGetPropertySheet",
-        "testSelectOption",
-        // test modern view
-        "testSwitchToModernView",
-        "testSelectEditor",
-        "testSelectFontAndColors",
-        "testSelectKeymap",
-        "testSelectMiscellaneous",
-        "testSelectGeneral",
-        "testClose");
+        tests);
     }
     
     /** Constructor required by JUnit.

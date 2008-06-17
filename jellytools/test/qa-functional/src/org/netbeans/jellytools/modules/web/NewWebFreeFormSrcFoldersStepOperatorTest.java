@@ -71,7 +71,7 @@ public class NewWebFreeFormSrcFoldersStepOperatorTest extends JellyTestCase {
         suite.addTest(new NewWebFreeFormSrcFoldersStepOperatorTest("testVerify"));
         return suite;
          */
-        return createModuleTest(NewWebFreeFormSrcFoldersStepOperatorTest.class, "testVerify");
+        return createModuleTest(NewWebFreeFormSrcFoldersStepOperatorTest.class);
     }
 
     

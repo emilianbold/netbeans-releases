@@ -85,6 +85,16 @@ public class DocumentsDialogOperatorTest extends JellyTestCase {
         junit.textui.TestRunner.run(suite());
     }
     
+    static String[] tests = new String[] { 
+                    "testInvoke",
+                    "testVerify",
+                    "testSelectDocument",
+                    "testSelectDocuments",
+                    "testGetDescription",
+                    "testSaveDocuments",
+                    "testCloseDocuments",
+                    "testSwitchToDocument"
+    };
     public static NbTest suite() {
         /*
         NbTestSuite suite = new NbTestSuite();
@@ -99,16 +109,8 @@ public class DocumentsDialogOperatorTest extends JellyTestCase {
         suite.addTest(new DocumentsDialogOperatorTest("testSwitchToDocument"));
         return suite;
          */
-        return (NbTest) NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(DocumentsDialogOperatorTest.class).
-                    addTest("testInvoke").
-                    addTest("testVerify").
-                    addTest("testSelectDocument").
-                    addTest("testSelectDocuments").
-                    addTest("testGetDescription").
-                    addTest("testSaveDocuments").
-                    addTest("testCloseDocuments").
-                    addTest("testSwitchToDocument").enableModules(".*").clusters(".*"));
+        return (NbTest) NbModuleSuite.create(DocumentsDialogOperatorTest.class,
+                ".*", ".*", tests);
     }
     
     /** Print out test name. */
