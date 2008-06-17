@@ -59,7 +59,7 @@ public class JavaSmartBracketTest extends JavaEditorTestCase {
         super(testMethodName);
     }
     
-    public void testJavaSmartBracketAfterLBrace(){
+    public void testLBrace(){
         openDefaultProject();
         openDefaultSampleFile();
         try {
@@ -82,7 +82,7 @@ public class JavaSmartBracketTest extends JavaEditorTestCase {
     }
 
     /** Testing problem of issue #68992 */
-    public void testJavaSmartBracketAfterLBraceAndSpace(){
+    public void testSpace(){
         openDefaultProject();
         openDefaultSampleFile();
         try {
@@ -104,7 +104,7 @@ public class JavaSmartBracketTest extends JavaEditorTestCase {
         }
     }
     
-    public void testJavaSmartBracketAfterLBraceAndComment(){
+    public void testComment(){
         openDefaultProject();
         openDefaultSampleFile();
         try {
