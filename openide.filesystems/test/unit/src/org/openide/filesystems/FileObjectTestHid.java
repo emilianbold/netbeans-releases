@@ -1043,19 +1043,21 @@ public class FileObjectTestHid extends TestBaseHid {
         int count = accessCounter.getResults().statResult(FileUtil.toFile(fo), StatFiles.READ);
         assertTrue("Too many read disk accesses while getting MIME type (should be cached). Expected "+count+" < 5.", count < 5);
         
-        String beforeRename = fo.getMIMEType();
-        FileLock lock = fo.lock();
-        fo.rename(lock, fo.getName(), "newDummyExt");
-        lock.releaseLock();
-        String afterRename = fo.getMIMEType();
-        assertFalse("MIME type after rename must be different.", beforeRename.equals(afterRename));
-        
-        OutputStream os = fo.getOutputStream();
-        os.write(42);
-        os.close();
-        MR.tested = null;
-        assertEquals("Wrong MIME type recognized.", fo.getExt(), fo.getMIMEType());
-        assertNotNull("After file modification cache must be cleaned and MIMEResolver accessed.", MR.tested);
+        if(fo.canWrite()) {
+            String beforeRename = fo.getMIMEType();
+            FileLock lock = fo.lock();
+            fo.rename(lock, fo.getName(), "newDummyExt");
+            lock.releaseLock();
+            String afterRename = fo.getMIMEType();
+            assertFalse("MIME type after rename must be different.", beforeRename.equals(afterRename));
+
+            OutputStream os = fo.getOutputStream();
+            os.write(42);
+            os.close();
+            MR.tested = null;
+            assertEquals("Wrong MIME type recognized.", fo.getExt(), fo.getMIMEType());
+            assertNotNull("After file modification cache must be cleaned and MIMEResolver accessed.", MR.tested);
+        }
     }
 
     public static final class MR extends MIMEResolver {
