@@ -7,6 +7,10 @@ function main() {
     gcc_home="/usr/sfw/bin"
     elsa_result_analyzer_home="/export/home/nk220367/main/cnd.modelimpl/test/whitebox/elsa-result-analyser"
 
+    ppPath="$1"
+
+    shift
+
     projName="`basename $1`"
     mainPath="$1"
     params="$1"
@@ -15,11 +19,9 @@ function main() {
 
 	shift
 
-    rm -r pptemp
     rm -r elsatemp
     rm -r $projName
 
-    mkdir pptemp
     mkdir elsatemp
     mkdir -p $projName/variables
     mkdir -p $projName/functions
@@ -28,22 +30,9 @@ function main() {
     while [ -n "$1" ]
     do
     	case "$1" in
-    	    -I*)
-     		import="${import} $1"
-     		shift
-            continue
-    		;;
-
     	    -J*)
             shift
      		java_home="$1"
-     		shift
-            continue
-    		;;
-
-    	    -G*)
-            shift
-     		gcc_home="$1"
      		shift
             continue
     		;;
@@ -65,20 +54,20 @@ function main() {
 
         echo "pp and ccparse $1"
         fileName="`basename $1`"
-        relPath=${1#$mainPath/}
+        relPath=${1#$ppPath/}
         fileDir="`dirname $relPath`"
 
-        mkdir -p pptemp/$fileDir
         mkdir -p elsatemp/$fileDir
 
-        ${gcc_home}/gcc  -Wno-deprecated -E $import $1 > pptemp/$relPath
-
         if [[ $relPath =~ ".*\.cpp|.*\.cc|.*\.c\+\+|.*\.cxx|.*\.mm|.*\.C" ]]; then
-            ${elsa_home}/ccparse -tr printTypedAST pptemp/$relPath > elsatemp/$relPath
+            echo "$relPath c++"
+            ${elsa_home}/ccparse -tr printTypedAST $1 > elsatemp/$relPath
         else
-            ${elsa_home}/ccparse -tr c_lang,printTypedAST pptemp/$relPath > elsatemp/$relPath
+            echo "$relPath c"
+            ${elsa_home}/ccparse -tr c_lang,printTypedAST $1 > elsatemp/$relPath
         fi
 
+#        echo ${relPath}
 
 		params="${params} elsatemp/${relPath}"
     	shift
