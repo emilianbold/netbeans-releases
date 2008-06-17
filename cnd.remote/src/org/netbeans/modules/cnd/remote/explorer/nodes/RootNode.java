@@ -116,7 +116,7 @@ public class RootNode extends AbstractNode {
         }
 
         public synchronized void stateChanged(ChangeEvent e) {
-//            refresh(false);
+            refresh(false);
         }
     }
 }
