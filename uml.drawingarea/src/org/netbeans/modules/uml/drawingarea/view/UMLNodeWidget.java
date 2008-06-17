@@ -83,6 +83,7 @@ import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
+import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.SwitchableWidget.SwitchableViewManger;
 import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.util.Lookup;
@@ -798,6 +799,8 @@ public abstract class UMLNodeWidget extends Widget
         {
             remove();
         }
+        
+        Util.resizeNodeToContents(this);
         scene.validate();
     }
     
