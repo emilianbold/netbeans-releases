@@ -150,7 +150,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             new PHPTokenId[]{PHPTokenId.PHPDOC_COMMENT}
             );
     
-    private static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, STRING,
+    static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, STRING,
         CLASS_MEMBER, STATIC_CLASS_MEMBER, PHPDOC, NONE};
 
     private final static String[] PHP_KEYWORDS = {"__FILE__", "exception",
@@ -171,7 +171,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private boolean caseSensitive;
     private NameKind nameKind;
     
-    private static CompletionContext findCompletionContext(CompilationInfo info, int caretOffset){
+    static CompletionContext findCompletionContext(CompilationInfo info, int caretOffset){
         Document document = info.getDocument();
         if (document == null) {
             return CompletionContext.NONE;
