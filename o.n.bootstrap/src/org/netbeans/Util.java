@@ -280,7 +280,7 @@ public abstract class Util {
             } catch (ClassNotFoundException cnfe) {
                 if (packageName == null) {
                     // This was all we were relying on, so it is an error.
-                    err.log(Level.WARNING, null, cnfe);
+                    err.log(Level.FINE, null, cnfe);
                     err.fine("Probed class could not be found");
                     return false;
                 }
