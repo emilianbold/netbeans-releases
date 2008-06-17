@@ -50,7 +50,6 @@ package org.netbeans.modules.uml;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import org.openide.modules.ModuleInstall;
 import java.util.zip.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -76,29 +75,6 @@ public class UMLCoreModule
            copyDotUmlIntoUserDir(nbuser, "org/netbeans/modules/uml/dotuml1.zip", null);
        }
    }
-   
-      
-   public static void instantiateDrawingLibrary() {
-       try
-        {            
-	    synchronized(dLock) 
-	    {
-		if (! libDecrypted) 
-		{
-		    org.netbeans.modules.uml.DrawingLibraryDecrypter decrypter = 
-			new org.netbeans.modules.uml.DrawingLibraryDecrypter("org.netbeans.modules.uml");
-		    decrypter.myDecrypt(decrypter); 
-		    libDecrypted = true;
-		}
-	    }           
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-   }
-   private static Object dLock = new Object();
-   private static boolean libDecrypted = false; 
    
    
    public static void checkInit() {
@@ -127,9 +103,13 @@ public class UMLCoreModule
                             return;
 			}
 
-                            if (Utilities.isMac()) {
-                               showMacWarning() ;
-                        }
+                        //kris richards
+                        //removing the mac warning dialog since future versions
+                        //will support the mac. Note the showMacWarning() code
+                        //will remain unchanged.
+//                            if (Utilities.isMac()) {
+//                               showMacWarning() ;
+//                        }
                         
 			ClassLoader loader = UMLCoreModule.class.getClassLoader();
 			InputStream in = null;

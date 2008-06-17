@@ -704,7 +704,8 @@ public class WSITModelSupport {
         return null;
     }
 
-    static void moveCurrentConfig(Binding b, ConfigVersion currentCfgVersion, ConfigVersion targetCfgVersion) {
+    static void moveCurrentConfig(Binding b, ConfigVersion currentCfgVersion, ConfigVersion targetCfgVersion,
+                                  Project project) {
         if (b == null) return;
         
         // First store the values
@@ -727,6 +728,7 @@ public class WSITModelSupport {
         // Security
         String profile = ProfilesModelHelper.getSecurityProfile(b);
         boolean security = SecurityPolicyModelHelper.isSecurityEnabled(b);
+        boolean serviceDefaultsUsed = ProfilesModelHelper.isServiceDefaultSetupUsed(profile, b, project);
         
         // STS
         boolean sts = ProprietarySecurityPolicyModelHelper.isSTSEnabled(b);
@@ -770,10 +772,15 @@ public class WSITModelSupport {
         // Security
         if (security) {
             ProfilesModelHelper.getInstance(targetCfgVersion).setSecurityProfile(b, profile, null, false);
+            if (serviceDefaultsUsed) {
+                ProfilesModelHelper.setServiceDefaults(profile, b, project);
+            }
         }
         
         // STS 
 //        ProprietarySecurityPolicyModelHelper.getInstance(targetCfgVersion).enableSTS(b, sts);
+
+        PolicyModelHelper.getInstance(targetCfgVersion).createPolicy(b, true); // this is needed so that the values are not lost
         
     }
     

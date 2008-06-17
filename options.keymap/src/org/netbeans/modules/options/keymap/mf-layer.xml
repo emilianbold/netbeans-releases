@@ -86,4 +86,14 @@ made subject to such option by the copyright holder.
             <attr name="position" intvalue="600"/>
         </file>    
         </folder>
+        
+    <folder name="QuickSearch">
+        <folder name="Actions">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.keymap.Bundle"/>
+            <attr name="command" stringvalue="a"/>
+            <attr name="position" intvalue="200"/>
+            <file name="org-netbeans-modules-options-keymap-ActionsSearchProvider.instance"/>
+        </folder>
+    </folder>
+        
 </filesystem>

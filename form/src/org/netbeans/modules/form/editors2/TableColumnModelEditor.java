@@ -42,6 +42,9 @@
 package org.netbeans.modules.form.editors2;
 
 import java.awt.Component;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.io.IOException;
@@ -120,6 +123,23 @@ public class TableColumnModelEditor extends PropertyEditorSupport
         JLabel label = new JLabel(NbBundle.getMessage(getClass(), "TableColumnModelEditor_Customizer")); // NOI18N
         label.setHorizontalAlignment(SwingConstants.CENTER);
         return label;
+    }
+
+    @Override
+    public String getAsText() {
+        return null;
+    }
+
+    @Override
+    public boolean isPaintable() {
+        return true;
+    }
+
+    @Override
+    public void paintValue(Graphics g, Rectangle rectangle) {
+        String msg = NbBundle.getMessage(TableColumnModelEditor.class, "TableColumnModelEditor_TableColumnModel"); // NOI18N
+        FontMetrics fm = g.getFontMetrics();
+        g.drawString(msg, rectangle.x, rectangle.y + (rectangle.height - fm.getHeight())/2 + fm.getAscent());
     }
 
     public String getSourceCode() {

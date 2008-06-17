@@ -48,7 +48,7 @@ import org.netbeans.jellytools.Bundle;
  */
 public class OutputWindowViewAction extends Action {
     private static final String menu =
-        Bundle.getStringTrimmed("org.netbeans.core.Bundle",
+        Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle",
                                 "Menu/Window") +
         "|" +
         Bundle.getStringTrimmed("org.netbeans.core.output2.Bundle", "Menu/Window/Output")+

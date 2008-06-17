@@ -387,6 +387,9 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 wadlTextFieldKeyTyped(evt);
             }
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                wadlTextFieldKeyReleased(evt);
+            }
         });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -624,6 +627,10 @@ private void wadlTextFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:
 private void wadlTextFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_wadlTextFieldKeyTyped
     fireChange();
 }//GEN-LAST:event_wadlTextFieldKeyTyped
+
+private void wadlTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_wadlTextFieldKeyReleased
+    fireChange();
+}//GEN-LAST:event_wadlTextFieldKeyReleased
     
     private boolean validateWadlFile(final String fileName) {
         File f = new File(fileName);

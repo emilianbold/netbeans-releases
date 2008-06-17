@@ -4,7 +4,3 @@ OpenIDE-Module-Specification-Version: 1.3
 OpenIDE-Module: org.netbeans.modules.bpel.core/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/bpel/core/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/bpel/core/resources/layer.xml
-
-Name: org/netbeans/modules/bpel/core/BPELDataLoader.class
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject
-OpenIDE-Module-Class: Loader

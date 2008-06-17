@@ -276,12 +276,13 @@ public class ClearcaseAnnotator extends VCSAnnotator {
     public Action[] getActions(VCSContext ctx, VCSAnnotator.ActionDestination destination) {
         Lookup context = ctx.getElements();
         List<Action> actions = new ArrayList<Action>(20);
+        File [] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
+        boolean noneVersioned = isNothingVersioned(files);
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
             actions.add(new CheckoutAction(ctx));
             actions.add(new ReserveAction(ctx));
             actions.add(new HijackAction(ctx));
             actions.add(new AddAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_AddToSourceControl_Name"), ctx)); //NOI18N
-            actions.add(new AddToRepositoryAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_Import_into_Clea&rcase_Repository"), ctx)); //NOI18N
             actions.add(null);
             actions.add(new DiffAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_Diff"), ctx)); //NOI18N
             actions.add(new UpdateAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_Update"), ctx)); //NOI18N
@@ -301,31 +302,44 @@ public class ClearcaseAnnotator extends VCSAnnotator {
             actions.add(null);            
             actions.add(new ShowPropertiesAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_ShowProperties"), ctx)); //NOI18N
         } else {            
-            actions.add(new CheckoutAction(ctx));
-            actions.add(new ReserveAction(ctx));
-            actions.add(new HijackAction(ctx));
-            actions.add(new AddAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_AddToSourceControl_Name"), ctx)); //NOI18N
-            actions.add(new AddToRepositoryAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_Import_into_Clea&rcase_Repository"), ctx)); //NOI18N
-            actions.add(null);
-            actions.add(SystemActionBridge.createAction(SystemAction.get(RefreshAction.class), NbBundle.getMessage(ClearcaseAnnotator.class, "Action_ShowChanges"), context)); //NOI18N
-            actions.add(new DiffAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_Diff"), ctx)); //NOI18N
-            actions.add(new UpdateAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_Update"), ctx)); //NOI18N
-            actions.add(new CheckinAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_Checkin"), ctx)); //NOI18N
-            actions.add(null);
-            actions.add(new LabelAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_Label"), ctx)); //NOI18N
-            actions.add(null);
-            actions.add(new AnnotateAction(ctx, Clearcase.getInstance().getAnnotationsProvider(ctx)));
-            actions.add(new ViewRevisionAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_View_Revision"), ctx)); //NOI18N
-            actions.add(new BrowseHistoryAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_BrowseHistory"), ctx)); //NOI18N
-            actions.add(new BrowseVersionTreeAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_BrowseVersionTree"), ctx)); //NOI18N
-            actions.add(null);
-            actions.add(new IgnoreAction(ctx));
-            actions.add(new ExcludeAction(ctx));
-            actions.add(null);                    
-            actions.add(new ShowPropertiesAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_ShowProperties"), ctx)); //NOI18N
+            if (noneVersioned) {
+                // TODO: insert import action when we have a functional import wizard
+            } else {
+                actions.add(new CheckoutAction(ctx));
+                actions.add(new ReserveAction(ctx));
+                actions.add(new HijackAction(ctx));
+                actions.add(new AddAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_AddToSourceControl_Name"), ctx)); //NOI18N
+                actions.add(new AddToRepositoryAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_Import_into_Clea&rcase_Repository"), ctx)); //NOI18N
+                actions.add(null);
+                actions.add(SystemActionBridge.createAction(SystemAction.get(RefreshAction.class), NbBundle.getMessage(ClearcaseAnnotator.class, "Action_ShowChanges"), context)); //NOI18N
+                actions.add(new DiffAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_Diff"), ctx)); //NOI18N
+                actions.add(new UpdateAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_Update"), ctx)); //NOI18N
+                actions.add(new CheckinAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_Checkin"), ctx)); //NOI18N
+                actions.add(null);
+                actions.add(new LabelAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_Label"), ctx)); //NOI18N
+                actions.add(null);
+                actions.add(new AnnotateAction(ctx, Clearcase.getInstance().getAnnotationsProvider(ctx)));
+                actions.add(new ViewRevisionAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_View_Revision"), ctx)); //NOI18N
+                actions.add(new BrowseHistoryAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_BrowseHistory"), ctx)); //NOI18N
+                actions.add(new BrowseVersionTreeAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_BrowseVersionTree"), ctx)); //NOI18N
+                actions.add(null);
+                actions.add(new IgnoreAction(ctx));
+                actions.add(new ExcludeAction(ctx));
+                actions.add(null);                    
+                actions.add(new ShowPropertiesAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_ShowProperties"), ctx)); //NOI18N
+            }
         }
         return actions.toArray(new Action[actions.size()]);
     }    
+    
+    private static boolean isNothingVersioned(File[] files) {
+        FileStatusCache cache = Clearcase.getInstance().getFileStatusCache();
+        for (File file : files) {
+            FileInformation info = cache.getCachedInfo(file);
+            if (info != null && (info.getStatus() & FileInformation.STATUS_MANAGED) != 0) return false;
+        }
+        return true;
+    }
     
     public String annotateNameHtml(File file, FileInformation info) {
         return annotateNameHtml(file.getName(), info, file);

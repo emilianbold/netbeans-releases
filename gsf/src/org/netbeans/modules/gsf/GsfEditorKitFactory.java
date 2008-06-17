@@ -42,9 +42,7 @@ package org.netbeans.modules.gsf;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -58,19 +56,14 @@ import javax.swing.text.TextAction;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.modules.gsf.api.KeystrokeHandler;
-import org.netbeans.modules.gsf.api.EditorAction;
 import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.BaseKit.InsertBreakAction;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.Completion;
-import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.ExtKit.ToggleCommentAction;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
@@ -79,9 +72,9 @@ import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.gsfret.InstantRenameAction;
 import org.netbeans.modules.gsfret.editor.fold.GsfFoldManager;
 import org.netbeans.modules.gsfret.editor.hyperlink.GoToSupport;
+import org.netbeans.modules.gsfret.editor.semantic.GoToMarkOccurrencesAction;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 
@@ -152,22 +145,8 @@ public class GsfEditorKitFactory {
     }
     
     public class GsfEditorKit extends NbEditorKit {
-        String mimeType;
 
         public GsfEditorKit() {
-            this.mimeType = language.getMimeType();
-            Settings.addInitializer (new Settings.Initializer () {
-                public String getName() {
-                    return mimeType;
-                }
-
-                @SuppressWarnings("unchecked")
-                public void updateSettingsMap (Class kitClass, Map settingsMap) {
-                    if (kitClass != null && kitClass.equals (GsfEditorKit.class)) {
-                        settingsMap.put (SettingsNames.CODE_FOLDING_ENABLE, Boolean.TRUE);
-                    }
-                }
-            });
         }
 
         @Override
@@ -177,10 +156,8 @@ public class GsfEditorKitFactory {
 
         @Override
         public Document createDefaultDocument() {
-            Document doc = new GsfDocument(this.getClass(), language);
-
-            doc.putProperty("mimeType", mimeType); //NOI18N
-
+            Document doc = new GsfDocument(language);
+            doc.putProperty("mimeType", getContentType()); //NOI18N
             return doc;
         }
 
@@ -215,12 +192,6 @@ public class GsfEditorKitFactory {
         }
 
         @Override
-        public Completion createCompletion(ExtEditorUI extEditorUI) {
-            //return new GenericCompletion(extEditorUI);
-            return null;
-        }
-
-        @Override
         public Object clone() {
             return new GsfEditorKit();
         }
@@ -243,13 +214,6 @@ public class GsfEditorKitFactory {
                 actions.add(new ToggleCommentAction(lineCommentPrefix));
             }
 
-            Collection<? extends EditorAction> extraActions = Lookup.getDefault().lookupAll(EditorAction.class);
-            for (EditorAction action : extraActions) {
-                if (action.appliesTo(mimeType)) {
-                    actions.add(new EditorActionWrapper(action));
-                }
-            }
-            
             actions.add(new InstantRenameAction());
             actions.add(new GenericGoToDeclarationAction());
             actions.add(new GenericGenerateGoToPopupAction());
@@ -263,6 +227,11 @@ public class GsfEditorKitFactory {
             actions.add(new SelectPreviousCamelCasePosition(findAction(superActions, selectionPreviousWordAction)));
             actions.add(new DeleteToNextCamelCasePosition(findAction(superActions, removeNextWordAction)));
             actions.add(new DeleteToPreviousCamelCasePosition(findAction(superActions, removePreviousWordAction)));
+            
+            if (language.hasOccurrencesFinder()) {
+                actions.add(new GoToMarkOccurrencesAction(false));
+                actions.add(new GoToMarkOccurrencesAction(true));
+            }
             
             return TextAction.augmentList(superActions,
                 actions.toArray(new Action[actions.size()]));
@@ -543,27 +512,6 @@ public class GsfEditorKitFactory {
                 //addAction(target, jm, ExtKit.gotoAction);
                 return jm;
             }
-        }
-    }
-
-    /** Wrap a Swing Action implementing the EditorAction interface into a proper BaseAction action */
-    private class EditorActionWrapper extends BaseAction {
-        EditorAction gotoAction;
-        
-        public EditorActionWrapper(EditorAction gotoAction) {
-            super(gotoAction.getActionName(),
-                  // Not sure about these flags?
-                  ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET | SAVE_POSITION);
-            this.gotoAction = gotoAction;
-        }
-
-        public void actionPerformed(ActionEvent evt, final JTextComponent target) {
-            gotoAction.actionPerformed(evt, target);
-        }
-
-        @Override
-        protected Class getShortDescriptionBundleClass() {
-            return gotoAction.getShortDescriptionBundleClass();
         }
     }
 

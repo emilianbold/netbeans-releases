@@ -4,8 +4,3 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xsl/resources/Bundle.prop
 OpenIDE-Module-Layer: org/netbeans/modules/xsl/resources/mf-layer.xml
 OpenIDE-Module-Requires: org.openide.util.HttpServer$Impl
 AutoUpdate-Show-In-Client: false
-
-Name: org/netbeans/modules/xsl/XSLDataLoader.class
-OpenIDE-Module-Class: Loader
-Install-Before: org.netbeans.modules.xml.XMLDataObject
-

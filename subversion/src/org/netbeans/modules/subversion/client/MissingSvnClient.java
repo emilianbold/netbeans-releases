@@ -81,6 +81,7 @@ public class MissingSvnClient implements ActionListener {
                 ok);
         if(DialogDisplayer.getDefault().notify(descriptor) == ok) {
             SvnModuleConfig.getDefault().setExecutableBinaryPath(panel.executablePathTextField.getText());            
+            SvnClientFactory.init();
         }
     }
     

@@ -56,13 +56,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.WeakHashMap;
+import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.AntProjectCookie;
-import org.apache.tools.ant.module.xml.AntProjectSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbCollections;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Union2;
@@ -114,6 +111,7 @@ public class TargetLister {
     public static Set<Target> getTargets(AntProjectCookie script) throws IOException {
         Set<File> alreadyImported = new HashSet<File>();
         Map<String,String> properties = NbCollections.checkedMapByFilter(System.getProperties(), String.class, String.class, false);
+        properties.putAll(AntSettings.getProperties()); // #130460
         Script main = new Script(null, script, alreadyImported, properties, Collections.<String,Element>emptyMap());
         Set<Target> targets = new HashSet<Target>();
         Set<AntProjectCookie> visitedScripts = new HashSet<AntProjectCookie>();
@@ -404,7 +402,7 @@ public class TargetLister {
                     if (file.canRead()) {
                         FileObject fileObj = FileUtil.toFileObject(file);
                         assert fileObj != null : file;
-                        AntProjectCookie importedApc = getAntProjectCookie(fileObj);
+                        AntProjectCookie importedApc = AntScriptUtils.antProjectCookieFor(fileObj);
                         imports.add(new Script(this, importedApc, alreadyImported, propertyDefs, macroDefs));
                     } else {
                         String optionalS = el.getAttribute("optional"); // NOI18N
@@ -688,30 +686,5 @@ public class TargetLister {
         }
         
     }
-    
-    /**
-     * Try to find an AntProjectCookie for a file.
-     */
-    static AntProjectCookie getAntProjectCookie(FileObject fo) {
-        try {
-            DataObject d = DataObject.find(fo);
-            AntProjectCookie apc = d.getCookie(AntProjectCookie.class);
-            if (apc != null) {
-                return apc;
-            }
-        } catch (DataObjectNotFoundException e) {
-            assert false : e;
-        }
-        // AntProjectDataLoader probably not installed, e.g. from a unit test.
-        synchronized (antProjectCookies) {
-            AntProjectCookie apc = antProjectCookies.get(fo);
-            if (apc == null) {
-                apc = new AntProjectSupport(fo);
-                antProjectCookies.put(fo, apc);
-            }
-            return apc;
-        }
-    }
-    private static final Map<FileObject,AntProjectCookie> antProjectCookies = new WeakHashMap<FileObject,AntProjectCookie>();
-    
+
 }

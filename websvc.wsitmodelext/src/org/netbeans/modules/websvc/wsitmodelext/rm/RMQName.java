@@ -54,7 +54,6 @@ import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 public enum RMQName {
     RMASSERTION(createRMQName("RMAssertion")),                                  //NOI18N
     ACKNOWLEDGEMENTINTERVAL(createRMQName("AcknowledgementInterval")),          //NOI18N
-    INACTIVITYTIMEOUT(createRMQName("InactivityTimeout")),                      //NOI18N
     DELIVERYASSURANCE(createRMQName("DeliveryAssurance")),                    //NOI18N
     INORDER(createRMQName("InOrder")),                                        //NOI18N
     EXACTLYONCE(createRMQName("ExactlyOnce")),                                //NOI18N

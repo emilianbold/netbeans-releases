@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import org.netbeans.modules.gsf.api.OccurrencesFinder;
-
 /**
  * Test the "mark occurrences" feature in JavaScript
  *
@@ -56,11 +54,6 @@ public class JsOccurrenceFinderTest extends JsTestBase {
         super(testName);
     }
 
-    @Override
-    protected OccurrencesFinder getOccurrencesFinder() {
-        return new JsOccurrenceFinder();
-    }
-    
     public void testMarks() throws Exception {
         String caretLine = "function myfunc(p^aram1, param2) {";
         checkOccurrences("testfiles/semantic4.js", caretLine, true);

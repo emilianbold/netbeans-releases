@@ -42,24 +42,53 @@
 package org.netbeans.modules.cnd.callgraph.impl;
 
 import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.TopComponent;
 
 /**
  *
  * @author Alexander Simon
  */
-public class CallGraphAction extends AbstractAction {
+public class CallGraphAction extends CallableSystemAction {
 
     public CallGraphAction() {
-        super(NbBundle.getMessage(CallGraphAction.class, "CTL_CallGraphAction")); // NOI18N
-//        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(CallGraphTopComponent.ICON_PATH, true)));
     }
 
+    @Override
     public void actionPerformed(ActionEvent evt) {
+        performAction();
+    }
+
+    @Override
+    protected String iconResource() {
+        return CallGraphTopComponent.ICON_PATH;
+    }
+
+    @Override
+    public void performAction() {
         TopComponent win = CallGraphTopComponent.findInstance();
         win.open();
         win.requestActive();
+    }
+
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(CallGraphAction.class, "CTL_CallGraphAction"); // NOI18N
+    }
+
+    public HelpCtx getHelpCtx() {
+	return HelpCtx.DEFAULT_HELP;
+    }
+    
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+    
+    @Override
+    protected boolean asynchronous () {
+        return false;
     }
 }

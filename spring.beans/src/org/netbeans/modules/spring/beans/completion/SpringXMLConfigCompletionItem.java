@@ -157,6 +157,10 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         return new PropertyAttribItem(substitutionOffset, text, property);
     }
     
+    public static SpringXMLConfigCompletionItem createBeanNameItem(int substitutionOffset, String text, int sortPriority) {
+        return new BeanNameItem(substitutionOffset, text, sortPriority);
+    }
+    
     protected int substitutionOffset;
     
     protected SpringXMLConfigCompletionItem(int substitutionOffset) {
@@ -735,6 +739,21 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                 }
             });
         }        
+    }
+    
+    private static class BeanNameItem extends AttribValueItem {
+
+        private final int sortPriority;
+        
+        public BeanNameItem(int substitutionOffset, String displayText, int sortPriority) {
+            super(substitutionOffset, displayText, null);
+            this.sortPriority = sortPriority;
+        }
+
+        @Override
+        public int getSortPriority() {
+            return sortPriority;
+        }
     }
     
     private static class FolderItem extends SpringXMLConfigCompletionItem {

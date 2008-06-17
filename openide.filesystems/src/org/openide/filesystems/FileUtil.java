@@ -641,6 +641,10 @@ public final class FileUtil extends Object {
      * @since 4.29
      */
     public static FileObject toFileObject(File file) {
+        // return null for UNC root
+        if(file.getPath().equals("\\\\")) {
+            return null;
+        }
         boolean asserts = false;
         assert asserts = true;
         if (asserts) {
@@ -689,7 +693,8 @@ public final class FileUtil extends Object {
     static URL fileToURL(File file) throws MalformedURLException {
         URL retVal = null;
 
-        if (!Utilities.isWindows() || canBeCanonicalizedOnWindows(file)) {
+        if (!Utilities.isWindows() || canBeCanonicalizedOnWindows(file) || file.getPath().startsWith("\\\\")) {  //NOI18N
+            // all non-Windows files, canonicalizable files on windows, UNC files
             retVal = file.toURI().toURL();
         } else {
             if (Utilities.isWindows() && file.getParentFile() == null) {
@@ -995,7 +1000,7 @@ public final class FileUtil extends Object {
 
         String result = fo.getPath().substring(folder.getPath().length());
 
-        if (result.startsWith("/")) {
+        if (result.startsWith("/") && !result.startsWith("//")) {
             result = result.substring(1);
         }
 
@@ -1446,13 +1451,13 @@ public final class FileUtil extends Object {
     private static float javaSpecVersion;
     private static boolean canBeCanonicalizedOnWindows(final File file) {
         /*#4089199, #95031 - Flopy and empty CD-drives can't be canonicalized*/
-        boolean canBeCanonizalized = true;
-        if (file.getParent() == null && Utilities.isWindows()) {//NOI18N
+        // UNC path \\computerName can't be canonicalized - parent is "\\\\" and exists() returns false
+        String parent = file.getParent();
+        if ((parent == null || parent.equals("\\\\")) && Utilities.isWindows()) {//NOI18N
             FileSystemView fsv = getFileSystemView();
-            canBeCanonizalized = (fsv != null) ? !fsv.isFloppyDrive(file) && file.exists() : false;
+            return (fsv != null) ? !fsv.isFloppyDrive(file) && file.exists() : false;
         }
-        
-        return canBeCanonizalized;
+        return true;
     }
     
     private static boolean is4089199() {
@@ -1577,7 +1582,13 @@ public final class FileUtil extends Object {
 
             if (index >= 0) {
                 try {
-                    return new URL(path.substring(0, index));
+                    String jarPath = path.substring(0, index);
+                    if (jarPath.indexOf("file://") > -1 && jarPath.indexOf("file:////") == -1) {  //NOI18N
+                        /* Replace because JDK application classloader wrongly recognizes UNC paths. */
+                        jarPath = jarPath.replaceFirst("file://", "file:////");  //NOI18N
+                    }
+                    return new URL(jarPath);
+
                 } catch (MalformedURLException mue) {
                     Exceptions.printStackTrace(mue);
                 }

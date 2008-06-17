@@ -32,7 +32,7 @@
 ..+ Web UI Components - jsf-extensions-common-0.1.jar
 ..+ Web UI Components - jsf-extensions-dynamic-faces-0.1.jar
 ..+ Web UI Default Theme - webui-jsf-suntheme.jar
-..+ JDK 1.5 (Default)
+..+ JDK 1.6 (Default)
 .+ Test Libraries 
 ..+ JUnit 3.8.2 - junit-3.8.2.jar
 ..+ JUnit 4.1 - junit-4.1.jar

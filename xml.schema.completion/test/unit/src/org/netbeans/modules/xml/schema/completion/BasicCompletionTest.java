@@ -77,6 +77,7 @@ public class BasicCompletionTest extends AbstractTestCase {
         suite.addTest(new BasicCompletionTest("testEndtagCompletion1"));
         suite.addTest(new BasicCompletionTest("testEndtagCompletion2"));
         suite.addTest(new BasicCompletionTest("testEndtagCompletion3"));
+        suite.addTest(new BasicCompletionTest("testCompletionWithAmpersand"));        
         suite.addTest(new BasicCompletionTest("testSchemaFromRuntimeCatalog"));
         //suite.addTest(new BasicCompletionTest("testCompletionUsingSchemaFromCatalog"));
         suite.addTest(new BasicCompletionTest("testWildcard1"));
@@ -88,6 +89,10 @@ public class BasicCompletionTest extends AbstractTestCase {
         suite.addTest(new BasicCompletionTest("testReadNamespace"));
         suite.addTest(new BasicCompletionTest("testImport1"));
         suite.addTest(new BasicCompletionTest("testInclude1"));
+        suite.addTest(new BasicCompletionTest("testElementValueCompletion1"));
+        suite.addTest(new BasicCompletionTest("testElementValueCompletion2"));
+        suite.addTest(new BasicCompletionTest("testAttributeValueCompletion1"));
+        suite.addTest(new BasicCompletionTest("testAttributeValueCompletion2"));
         return suite;
     }
     
@@ -211,6 +216,17 @@ public class BasicCompletionTest extends AbstractTestCase {
         setupCompletion("resources/PO7.xml", null);
         List<CompletionResultItem> items = query(261);
         String[] expectedResult = {};
+        assertResult(items, expectedResult);
+    }
+    
+    /**
+     * Tests completion with ampersand.
+     * See http://www.netbeans.org/issues/show_bug.cgi?id=135379.
+     */
+    public void testCompletionWithAmpersand() throws Exception {
+        setupCompletion("resources/PO8.xml", null);
+        List<CompletionResultItem> items = query(260);
+        String[] expectedResult = {"po:name","po:street","po:city","po:state","po:zip"};
         assertResult(items, expectedResult);
     }
     
@@ -410,5 +426,46 @@ public class BasicCompletionTest extends AbstractTestCase {
         String[] expectedResult = {"ns:M1","ns:M2"};
         assertResult(items, expectedResult);
     }
+    
+    /**
+     * Queries elements values for element "city".
+     * Result should be 0.
+     */
+    public void testElementValueCompletion1() throws Exception {
+        setupCompletion("resources/PO9.xml", null);
+        List<CompletionResultItem> items = query(309);
+        assert(items.size() == 0); //50 states
+    }    
 
+    /**
+     * Queries elements values for element "state".
+     * Result should be 50.
+     */
+    public void testElementValueCompletion2() throws Exception {
+        setupCompletion("resources/PO9.xml", null);
+        List<CompletionResultItem> items = query(332);
+        assert(items.size() == 50); //50 states
+    }    
+    
+    /**
+     * Queries attribute values for attribute "partNum".
+     * Result should be 0.
+     */
+    public void testAttributeValueCompletion1() throws Exception {
+        setupCompletion("resources/PO9.xml", null);
+        List<CompletionResultItem> items = query(588);
+        assert(items.size() == 0);
+    }    
+    
+    /**
+     * Queries attribute values for attribute "brand".
+     * Result should be 6.
+     */
+    public void testAttributeValueCompletion2() throws Exception {
+        setupCompletion("resources/PO9.xml", null);
+        String[] expectedResult = {"ACER", "HP", "NOKIA", "SAMSUNG", "SONY","SUN"};
+        List<CompletionResultItem> items = query(597);
+        assert(items.size() == 6);
+        assertResult(items, expectedResult);
+    }    
 }

@@ -58,7 +58,7 @@ public class SaveAllAction extends Action {
 
     /** "File|Save All" */
     private static final String saveAllMenu = 
-                       Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/File")
+                       Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/File")
                        + "|"
                        + Bundle.getStringTrimmed("org.openide.loaders.Bundle", "SaveAll");
     

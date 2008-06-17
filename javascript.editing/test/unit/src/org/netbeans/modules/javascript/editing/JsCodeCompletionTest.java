@@ -41,12 +41,8 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import javax.swing.JTextArea;
-import javax.swing.text.Caret;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
-import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 
 /**
  *
@@ -56,11 +52,12 @@ public class JsCodeCompletionTest extends JsTestBase {
     
     public JsCodeCompletionTest(String testName) {
         super(testName);
-    }
-    
-    @Override
-    protected CodeCompletionHandler getCodeCompleter() {
-        return new JsCodeCompletion();
+        
+        
+        // Don't truncate in unit tests; it's non-deterministic which items we end up
+        // with coming out of the index so golden file diffing doesn't work
+        JsIndex.MAX_SEARCH_ITEMS = Integer.MAX_VALUE;
+        JsCodeCompletion.MAX_COMPLETION_ITEMS = Integer.MAX_VALUE;
     }
     
     @Override
@@ -120,21 +117,6 @@ public class JsCodeCompletionTest extends JsTestBase {
         checkPrefix("testfiles/cc-prefix8.js");
     }
     
-    
-    private void assertAutoQuery(QueryType queryType, String source, String typedText) {
-        JsCodeCompletion completer = new JsCodeCompletion();
-        int caretPos = source.indexOf('^');
-        source = source.substring(0, caretPos) + source.substring(caretPos+1);
-        
-        BaseDocument doc = getDocument(source);
-        JTextArea ta = new JTextArea(doc);
-        Caret caret = ta.getCaret();
-        caret.setDot(caretPos);
-        
-        QueryType qt = completer.getAutoQuery(ta, typedText);
-        assertEquals(queryType, qt);
-    }
-
     public void testAutoQuery1() throws Exception {
         assertAutoQuery(QueryType.NONE, "foo^", "o");
         assertAutoQuery(QueryType.NONE, "foo^", " ");

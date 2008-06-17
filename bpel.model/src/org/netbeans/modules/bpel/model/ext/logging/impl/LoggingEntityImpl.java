@@ -14,15 +14,15 @@ import org.netbeans.modules.bpel.model.api.ExtensionEntity;
 import org.netbeans.modules.bpel.model.api.support.BpelModelVisitor;
 import org.netbeans.modules.bpel.model.ext.logging.xam.LoggingElements;
 import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl;
-import org.netbeans.modules.bpel.model.impl.BpelContainerImpl;
 import org.netbeans.modules.bpel.model.impl.BpelModelImpl;
+import org.netbeans.modules.bpel.model.impl.ExtensibleElementsImpl;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author zgursky
  */
-public abstract class LoggingEntityImpl extends BpelContainerImpl implements ExtensionEntity {
+public abstract class LoggingEntityImpl extends ExtensibleElementsImpl implements ExtensionEntity {
     
     private LoggingEntityFactory mFactory;
     

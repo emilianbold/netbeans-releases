@@ -40,10 +40,13 @@
 package org.netbeans.modules.web.jspparser;
 
 import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
 import org.netbeans.junit.NbTestCase;
@@ -254,6 +257,31 @@ public class CacheTest extends NbTestCase {
         assertEquals("TagLibMaps should be equal", url1, url2);
     }
 
+    // #133702: Editor ignores web.xml <include-prelude> tag
+    public void testIssue133702() throws Exception {
+        JspParserImpl jspParser = getJspParser();
+
+        FileObject jspFo = TestUtil.getProjectFile(this, "project2", "/web/main_2.jsp");
+        WebModule webModule = TestUtil.getWebModule(jspFo);
+
+        // web.xml with no include
+        ParseResult result = jspParser.analyzePage(jspFo, webModule, JspParserAPI.ERROR_IGNORE);
+        List includePrelude = result.getPageInfo().getIncludePrelude();
+        assertEquals(0, includePrelude.size());
+
+        // web.xml with include
+        copyXmlWithInclude();
+        result = jspParser.analyzePage(jspFo, webModule, JspParserAPI.ERROR_IGNORE);
+        includePrelude = result.getPageInfo().getIncludePrelude();
+        assertEquals(1, includePrelude.size());
+
+        // back web.xml with no include
+        copyXmlWithoutInclude();
+        result = jspParser.analyzePage(jspFo, webModule, JspParserAPI.ERROR_IGNORE);
+        includePrelude = result.getPageInfo().getIncludePrelude();
+        assertEquals(0, includePrelude.size());
+    }
+
     private static JspParserImpl getJspParser() {
         return (JspParserImpl) JspParserFactory.getJspParser();
     }
@@ -281,5 +309,31 @@ public class CacheTest extends NbTestCase {
         FileObject fmtFo = TestUtil.getProjectFile(this, projectName, projectFile);
         assertNotNull(fmtFo);
         fmtFo.delete();
+    }
+
+    private void copyXmlWithInclude() throws Exception {
+        FileObject source = TestUtil.getProjectFile(this, "project2", "/web/WEB-INF/web.xml.include-prelude");
+        FileObject target = TestUtil.getProjectFile(this, "project2", "/web/WEB-INF/web.xml");
+        copy(source, target);
+    }
+
+    private void copyXmlWithoutInclude() throws Exception {
+        FileObject source = TestUtil.getProjectFile(this, "project2", "/web/WEB-INF/web.xml.default");
+        FileObject target = TestUtil.getProjectFile(this, "project2", "/web/WEB-INF/web.xml");
+        copy(source, target);
+    }
+
+    private void copy(FileObject source, FileObject target) throws Exception {
+        InputStream is = source.getInputStream();
+        OutputStream os = target.getOutputStream();
+        try {
+            try {
+                FileUtil.copy(is, os);
+            } finally {
+                is.close();
+            }
+        } finally {
+            os.close();
+        }
     }
 }

@@ -49,6 +49,9 @@ public interface TableInputOperatorComponent extends OperatorComponent {
     
     public static String PROP_EXTERNAL_TABLE_NAME = "externalTableName";
     
+    public void setGlobalId(String globalId);
+    
+    public String getGlobalId();
     
     public void setDatabaseJndiName(String jndiName);
     

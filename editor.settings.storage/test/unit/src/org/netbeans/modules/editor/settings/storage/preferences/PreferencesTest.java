@@ -50,7 +50,7 @@ import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.settings.storage.EditorTestLookup;
 import org.netbeans.modules.editor.settings.storage.StorageImpl;
-import org.netbeans.modules.editor.settings.storage.preferences.PreferencesImpl.TypedValue;
+import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
 
 /**
  *
@@ -64,6 +64,7 @@ public class PreferencesTest extends NbTestCase {
 
     protected @Override void setUp() throws Exception {
         super.setUp();
+        clearWorkDir();
     
         EditorTestLookup.setLookup(
             new URL[] {
@@ -114,7 +115,7 @@ public class PreferencesTest extends NbTestCase {
         
         {
         // read the settings right from the file
-        StorageImpl<String, TypedValue> storage = new StorageImpl<String, TypedValue>(new PreferencesStorage());
+        StorageImpl<String, TypedValue> storage = new StorageImpl<String, TypedValue>(new PreferencesStorage(), null);
         Map<String, TypedValue> map = storage.load(MimePath.EMPTY, null, false);
         assertEquals("Wrong value for 'simple-value-setting-A'", "New-Written-Value", map.get("simple-value-setting-A").getValue());
         }

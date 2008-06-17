@@ -143,6 +143,9 @@ public interface DatabaseServer extends Cookie {
      * <b>synchronously</b> so may cause some delay.
      *
      * @return the list of users
+     *
+     * @throws org.netbeans.api.db.explorer.DatabaseException
+     * if some problem occurred
      */
     public List<DatabaseUser> getUsers() throws DatabaseException;
 
@@ -166,8 +169,6 @@ public interface DatabaseServer extends Cookie {
     public void refreshDatabaseList();
 
     public void setAdminArgs(String args);
-
-    public void setAdminCommandsConfirmed(boolean confirmed);
 
     public void setAdminPath(String path);
 

@@ -226,8 +226,7 @@ abstract class Plugin implements RefactoringPlugin, XMLRefactoringPlugin {
     FileObject file = source.getLookup().lookup(FileObject.class);
     
     if (BPEL_MIME_TYPE.equals(FileUtil.getMIMEType(file))) {
-      BpelModelFactory factory = (BpelModelFactory) Lookup.getDefault().
-        lookup(BpelModelFactory.class);
+      BpelModelFactory factory = (BpelModelFactory) Lookup.getDefault().lookup(BpelModelFactory.class);
       return factory.getModel(source);
      }
      return null;

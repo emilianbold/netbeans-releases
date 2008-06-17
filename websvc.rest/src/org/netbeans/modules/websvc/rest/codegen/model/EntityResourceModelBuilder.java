@@ -148,7 +148,7 @@ public class EntityResourceModelBuilder {
        
         EntityResourceBean itemBean = getItemResourceBean(info);
         
-        containerBean.addSubResource(new RelatedEntityResource(itemBean, info.getIdFieldInfo()));
+        containerBean.addSubResource(new RelatedEntityResource(itemBean, info.getIdFieldInfo(), null));
         
         return containerBean;
     }
@@ -167,7 +167,7 @@ public class EntityResourceModelBuilder {
     private EntityResourceBean createItemResourceBean(EntityClassInfo info) {
         EntityResourceBean itemBean = new EntityResourceBean(Type.ITEM);
         
-        itemBean.setName(Util.singularize(info.getName()));
+        itemBean.setName(info.getName());
         itemBean.setEntityClassInfo(info);
         FieldInfo idField = info.getIdFieldInfo();
         String uriTemplate = "";
@@ -196,12 +196,14 @@ public class EntityResourceModelBuilder {
         return itemBean;
     }
     
-    private void computeRelationship(EntityResourceBean bean, EntityClassInfo info) { 
+    private void computeRelationship(EntityResourceBean bean, EntityClassInfo info) {
+        String entityClassName = info.getName();
+     
         for (FieldInfo fieldInfo : info.getFieldInfos()) {
             if (fieldInfo.isRelationship()) {
                 EntityResourceBean foreignBean = null;
                 EntityResourceBean foreignItemBean = null;
-                
+  
                 if (fieldInfo.isOneToMany() || fieldInfo.isManyToMany()) {
                     foreignBean = getContainerResourceBean(entityClassInfoMap.get(fieldInfo.getTypeArg()));
                     foreignItemBean = getItemResourceBean(entityClassInfoMap.get((fieldInfo.getTypeArg())));
@@ -209,10 +211,25 @@ public class EntityResourceModelBuilder {
                     foreignBean = getItemResourceBean(entityClassInfoMap.get(fieldInfo.getType()));
                 }
      
-                RelatedEntityResource subResource = new RelatedEntityResource(foreignBean, fieldInfo);
+                FieldInfo reverseFieldInfo = null;
+   
+                for (FieldInfo f : foreignBean.getEntityClassInfo().getFieldInfos()) {
+                    if (f.isOneToOne() || f.isManyToOne()) {
+                        if (f.getSimpleTypeName().equals(entityClassName)) {
+                            reverseFieldInfo = f;
+                            break;
+                        }
+                    } else if (f.isOneToMany() || f.isManyToMany()) {
+                        if (f.getSimpleTypeArgName().equals(entityClassName)) {
+                            reverseFieldInfo = f;
+                            break;
+                        }
+                    }
+                }
+                RelatedEntityResource subResource = new RelatedEntityResource(foreignBean, fieldInfo, reverseFieldInfo);
                 bean.addSubResource(subResource);
                 
-                RelatedEntityResource superResource = new RelatedEntityResource(bean, fieldInfo);
+                RelatedEntityResource superResource = new RelatedEntityResource(bean, reverseFieldInfo, fieldInfo);
                 foreignBean.addSuperResource(superResource);
                 
                 if (foreignItemBean != null) {

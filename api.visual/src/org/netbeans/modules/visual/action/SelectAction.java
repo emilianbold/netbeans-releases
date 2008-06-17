@@ -57,7 +57,13 @@ public final class SelectAction extends WidgetAction.LockedAdapter {
     private Widget aimedWidget = null;
     private boolean invertSelection;
     private SelectProvider provider;
-
+    private boolean trapRightClick = false ;
+    
+    public SelectAction (SelectProvider provider, boolean trapRightClick) {
+        this.provider = provider ;
+        this.trapRightClick = trapRightClick ;
+    }
+  
     public SelectAction (SelectProvider provider) {
         this.provider = provider;
     }
@@ -67,22 +73,30 @@ public final class SelectAction extends WidgetAction.LockedAdapter {
     }
 
     public State mousePressed (Widget widget, WidgetMouseEvent event) {
-        if (isLocked ())
-            return State.createLocked (widget, this);
-        if (event.getButton ()  ==  MouseEvent.BUTTON1  ||  event.getButton () == MouseEvent.BUTTON2) {
-            invertSelection = (event.getModifiersEx () & MouseEvent.CTRL_DOWN_MASK) != 0;
-            Point localLocation = event.getPoint ();
-            if (provider.isSelectionAllowed (widget, localLocation, invertSelection)) {
-                aiming = provider.isAimingAllowed (widget, localLocation, invertSelection);
+        if (isLocked()) {
+            return State.createLocked(widget, this);
+        }
+        
+        Point localLocation = event.getPoint();
+        
+        if (event.getButton() == MouseEvent.BUTTON1 || event.getButton() == MouseEvent.BUTTON2) {
+            invertSelection = (event.getModifiersEx() & MouseEvent.CTRL_DOWN_MASK) != 0;
+            
+            if (provider.isSelectionAllowed(widget, localLocation, invertSelection)) {
+                aiming = provider.isAimingAllowed(widget, localLocation, invertSelection);
                 if (aiming) {
-                    updateState (widget, localLocation);
-                    return State.createLocked (widget, this);
+                    updateState(widget, localLocation);
+                    return State.createLocked(widget, this);
                 } else {
-                    provider.select (widget, localLocation, invertSelection);
+                    provider.select(widget, localLocation, invertSelection);
                     return State.CHAIN_ONLY;
                 }
             }
+        } else if (trapRightClick && event.getButton() == MouseEvent.BUTTON3) {
+            provider.select(widget, localLocation, invertSelection);
+            return State.CHAIN_ONLY;
         }
+        
         return State.REJECTED;
     }
 

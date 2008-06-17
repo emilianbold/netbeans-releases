@@ -132,7 +132,7 @@ public class RspecHandlerFactory {
     static class TestPendingHandler extends TestRecognizerHandler {
 
         public TestPendingHandler() {
-            super(".*%TEST_PENDING%\\s(.*)\\stime=(.+)\\s(.*)"); //NOI18N
+            super(".*%TEST_PENDING%\\s(.*)\\stime=(.+)\\smessage=(.*)"); //NOI18N
         }
 
         @Override

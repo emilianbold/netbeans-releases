@@ -17,13 +17,13 @@ import org.openide.awt.DynamicMenuContent;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptorBuilder;
+import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.openide.awt.Actions;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
-import org.netbeans.modules.groovy.grailsproject.execution.DefaultDescriptor;
-import org.netbeans.modules.groovy.grailsproject.execution.ExecutionService;
 
 public final class GenerateAllAction extends NodeAction {
     
@@ -46,9 +46,12 @@ public final class GenerateAllAction extends NodeAction {
 
         Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
                 command, GrailsProjectConfig.forProject(prj), dataObject.getPrimaryFile().getName()); // NOI18N
-        ExecutionService service = new ExecutionService(callable, displayName,
-                new DefaultDescriptor(prj, false));
 
+        ExecutionDescriptorBuilder builder = new ExecutionDescriptorBuilder();
+        builder.controllable(true).frontWindow(true).inputVisible(true).showProgress(true);
+        builder.postExecution(new RefreshProjectRunnable(prj));
+
+        ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
         service.run();
     }
 

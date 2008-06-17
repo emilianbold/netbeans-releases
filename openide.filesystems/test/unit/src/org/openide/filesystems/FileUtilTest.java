@@ -143,4 +143,21 @@ public class FileUtilTest extends NbTestCase {
                 FileUtil.archiveOrDirForURL(new URL(urlPrefix + getWorkDir().toURI() + urlSuffix)));
     }
 
+    /** Tests translation from jar resource url to jar archive url. */
+    public void testGetArchiveFile() throws Exception {
+        String urls[][] = {
+            // resource url, expected jar url
+            {"jar:file:/a.jar!/META-INF/MANIFEST.MF", "file:/a.jar"}, // unix root
+            {"jar:file:/a/b/c/a.jar!/META-INF/MANIFEST.MF", "file:/a/b/c/a.jar"}, // unix
+            {"jar:file:/C:/a.jar!/META-INF/MANIFEST.MF", "file:/C:/a.jar"}, // windows root
+            {"jar:file:/C:/a/b/c/a.jar!/META-INF/MANIFEST.MF", "file:/C:/a/b/c/a.jar"}, // windows
+            {"jar:file://computerName/sharedFolder/a.jar!/META-INF/MANIFEST.MF", "file:////computerName/sharedFolder/a.jar"}, // windows UNC root malformed
+            {"jar:file://computerName/sharedFolder/a/b/c/a.jar!/META-INF/MANIFEST.MF", "file:////computerName/sharedFolder/a/b/c/a.jar"}, // windows UNC malformed
+            {"jar:file:////computerName/sharedFolder/a.jar!/META-INF/MANIFEST.MF", "file:////computerName/sharedFolder/a.jar"}, // windows UNC root
+            {"jar:file:////computerName/sharedFolder/a/b/c/a.jar!/META-INF/MANIFEST.MF", "file:////computerName/sharedFolder/a/b/c/a.jar"} // windows UNC
+        };
+        for (int i = 0; i < urls.length; i++) {
+            assertEquals("FileUtil.getArchiveFile failed.", new URL(urls[i][1]), FileUtil.getArchiveFile(new URL(urls[i][0])));
+        }
+    }
 }

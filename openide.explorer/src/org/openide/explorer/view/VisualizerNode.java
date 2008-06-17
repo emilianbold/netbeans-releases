@@ -56,10 +56,10 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 import javax.swing.tree.TreeNode;
+import org.openide.util.ImageUtilities;
 
 
 /** Visual representation of one node. Holds necessary information about nodes
@@ -206,7 +206,14 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         if (desc == UNKNOWN) {
             shortDescription = desc = node.getShortDescription();
         }
-
+        if (icon instanceof Image) {
+            String toolTip = ImageUtilities.getImageToolTip((Image) icon);
+            if (toolTip.length() > 0) {
+                StringBuilder str = new StringBuilder(128);
+                str.append("<html>").append(desc).append("<br>").append(toolTip).append("</html>");
+                desc = str.toString();
+            }
+        }
         return desc;
     }
 
@@ -407,7 +414,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         if (Node.PROP_NAME.equals(name) || Node.PROP_DISPLAY_NAME.equals(name) || isIconChange) {
             if (isIconChange) {
                 //Ditch the cached icon type so the next call to getIcon() will
-                //recreate the ImageIcon
+                //recreate the Icon
                 cachedIconType = -1;
             }
 
@@ -558,7 +565,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
 
                 icon = getDefaultIcon();
             } else {
-                icon = new ImageIcon(image);
+                icon = ImageUtilities.image2Icon(image);
             }
         }
 
@@ -577,9 +584,8 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     /** Loads default icon if not loaded. */
     private static Icon getDefaultIcon() {
         if (defaultIcon == null) {
-            defaultIcon = new ImageIcon(Utilities.loadImage(DEFAULT_ICON));
+            defaultIcon = ImageUtilities.image2Icon(ImageUtilities.loadImage(DEFAULT_ICON));
         }
-
         return defaultIcon;
     }
 
@@ -635,22 +641,13 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
                 // either starts the processing of the queue immediatelly
                 // (if we are in AWT-Event thread) or uses 
                 // SwingUtilities.invokeLater to do so
-                // #126560 - queue all requests which come under Children.MUTEX write lock before running
-                if (Children.MUTEX.isWriteAccess()) {
-                    Children.MUTEX.postReadRequest(this);
-                } else {
-                    Mutex.EVENT.writeAccess(this);
-                }
+                Mutex.EVENT.writeAccess(this);
             }
         }
 
         /** Processes the queue.
          */
         public void run() {
-            if (!Mutex.EVENT.isWriteAccess()) {
-                Mutex.EVENT.writeAccess(this);
-                return;
-            }
             Enumeration<Runnable> en;
 
             synchronized (this) {
@@ -669,12 +666,6 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
                 LOG.log(Level.FINER, "Running {0}", r); // NOI18N
                 Children.MUTEX.readAccess(r); // run the update under Children.MUTEX
                 LOG.log(Level.FINER, "Finished {0}", r); // NOI18N
-                
-                // #126560 - remove subsequent element after structural change
-                if (r instanceof PropLeafChange && en.hasMoreElements()) {
-                    r = en.nextElement();
-                    LOG.log(Level.FINER, "Removing {0}", r); // NOI18N
-                }
             }
             LOG.log(Level.FINER, "Queue processing over"); // NOI18N
         }

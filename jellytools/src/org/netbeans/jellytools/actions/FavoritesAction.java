@@ -49,7 +49,7 @@ import org.netbeans.jellytools.Bundle;
  * @author Jiri.Skrivanek@sun.com
  */
 public class FavoritesAction extends Action {
-    private static final String allFilesMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window")
+    private static final String allFilesMenu = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window")
                                            + "|"
                                            + Bundle.getStringTrimmed("org.netbeans.modules.favorites.Bundle", "ACT_View");
     private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?

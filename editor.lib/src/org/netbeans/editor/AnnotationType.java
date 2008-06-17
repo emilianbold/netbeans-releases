@@ -49,7 +49,6 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.image.ImageObserver;
 import java.net.URL;
-import org.netbeans.editor.AnnotationTypes;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -200,7 +199,7 @@ public class AnnotationType {
                     } catch (InterruptedException e) {
                         // ignore
                     }
-                };
+                }
             }
         }
         return img;
@@ -325,8 +324,11 @@ public class AnnotationType {
         // if type does not have this property it is just being loaded
         if (getProp(AnnotationType.PROP_FILE) == null)
             return;
-        // force repaint of all documents
-        Settings.touchValue(null, null);
+        
+// XXX: has this ever worked??
+//        // force repaint of all documents
+//        Settings.touchValue(null, null);
+        
         AnnotationTypes.getTypes().saveType(this);
     }
 
@@ -587,7 +589,7 @@ public class AnnotationType {
         properties.put(key,value);
     }
     
-    public String toString() {
+    public @Override String toString() {
         return "AnnotationType: name='" + getName() + "', description='" + getDescription() + // NOI18N
             "', visible=" + isVisible() + ", wholeline=" + isWholeLine() + // NOI18N
             ", glyph=" + getGlyph() + ", highlight=" + getHighlight() + // NOI18N
@@ -760,7 +762,7 @@ public class AnnotationType {
         }
         
         /**{@inheritDoc}*/
-        public boolean equals(Object o) {
+        public @Override boolean equals(Object o) {
             if (!(o instanceof Severity)) {
                 return false;
             }
@@ -771,7 +773,7 @@ public class AnnotationType {
         }
         
         /**{@inheritDoc}*/
-        public int hashCode() {
+        public @Override int hashCode() {
             return 43 ^ status;
         }
         
@@ -785,7 +787,7 @@ public class AnnotationType {
          *
          * @return {@link String} representation of this object
          */
-        public String toString() {
+        public @Override String toString() {
             return "[Status: " + STATUS_NAMES[getStatus()] + "]"; // NOI18N
         }
         

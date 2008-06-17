@@ -40,11 +40,11 @@
 package org.netbeans.modules.cnd.editor.filecreation;
 
 import java.awt.Component;
-import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -86,7 +86,7 @@ public class NewCndClassPanel extends CndPanel {
             return false;
         }
         if (!org.openide.util.Utilities.isJavaIdentifier( getGui().getClassName() )) {
-            setErrorMessage("MSG_not_valid_classname");
+            setErrorMessage( NbBundle.getMessage(NewCndClassPanel.class, "MSG_not_valid_classname") );
             return false;
         }
         // check if the file name can be created

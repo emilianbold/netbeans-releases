@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -66,8 +65,6 @@ import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.editor.html.HTMLKit;
-import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -100,53 +97,49 @@ public class HtmlStructureScanner implements StructureScanner {
     }
 
     public Map<String, List<OffsetRange>> folds(CompilationInfo info) {
-        try {
-            //so far the css parser always parses the whole css content
-            ParserResult presult = info.getEmbeddedResults("text/html").iterator().next();
-            final TranslatedSource source = presult.getTranslatedSource();
-            final BaseDocument doc = (BaseDocument) info.getDocument();
-            AstNode root = ((HtmlParserResult) presult).root();
+        final BaseDocument doc = (BaseDocument) info.getDocument();
+        if (doc == null) {
+            return Collections.emptyMap();
+        }
+        //so far the css parser always parses the whole css content
+        ParserResult presult = info.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator().next();
+        final TranslatedSource source = presult.getTranslatedSource();
+        AstNode root = ((HtmlParserResult) presult).root();
 
-            final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
-            final List<OffsetRange> foldRange = new ArrayList<OffsetRange>();
-            
-            AstNodeVisitor foldsSearch = new AstNodeVisitor() {
+        final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
+        final List<OffsetRange> foldRange = new ArrayList<OffsetRange>();
 
-                public void visit(AstNode node) {
-                    if (node.type() == AstNode.NodeType.TAG 
-                            || node.type() == AstNode.NodeType.COMMENT) {
-                        try {
-                            int so = documentPosition(node.startOffset(), source);
-                            int eo = documentPosition(node.endOffset(), source);
-                            
-                            if (Utilities.getLineOffset(doc, so) < Utilities.getLineOffset(doc, eo)) {
-                                //do not creare one line folds
-                                //XXX this logic could possibly seat in the GSF folding impl.
-                                foldRange.add(new OffsetRange(so, eo));
-                            }
-                        } catch (BadLocationException ex) {
-                            LOGGER.log(Level.INFO, null, ex);
+        AstNodeVisitor foldsSearch = new AstNodeVisitor() {
+
+            public void visit(AstNode node) {
+                if (node.type() == AstNode.NodeType.TAG 
+                        || node.type() == AstNode.NodeType.COMMENT) {
+                    try {
+                        int so = documentPosition(node.startOffset(), source);
+                        int eo = documentPosition(node.endOffset(), source);
+
+                        if (Utilities.getLineOffset(doc, so) < Utilities.getLineOffset(doc, eo)) {
+                            //do not creare one line folds
+                            //XXX this logic could possibly seat in the GSF folding impl.
+                            foldRange.add(new OffsetRange(so, eo));
                         }
+                    } catch (BadLocationException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
                     }
                 }
-            };
-            
-            //the document is touched during the ast tree visiting, we need to lock it
-            doc.readLock();
-            try {
-                AstNodeUtils.visitChildren(root, foldsSearch);
-            } finally {
-                doc.readUnlock();
             }
-            folds.put("codeblocks", foldRange);
+        };
 
-            return folds;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        //the document is touched during the ast tree visiting, we need to lock it
+        doc.readLock();
+        try {
+            AstNodeUtils.visitChildren(root, foldsSearch);
+        } finally {
+            doc.readUnlock();
         }
+        folds.put("codeblocks", foldRange);
 
-        return null;
-
+        return folds;
     }
 
     public static int documentPosition(int astOffset, TranslatedSource source) {

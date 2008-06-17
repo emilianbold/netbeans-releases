@@ -81,6 +81,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -111,7 +112,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInstall;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -153,6 +153,25 @@ public class Installer extends ModuleInstall implements Runnable {
         "<meta.*http-equiv=['\"]Content-Type['\"]" +
         ".*content=.*charset=([A-Za-z0-9\\-]+)['\"]>", Pattern.CASE_INSENSITIVE
     ); // NOI18N
+    
+    static boolean preferencesWritable = false;
+    static {
+        // #131128 - suppress repetitive exceptions when config/Preferences/org/netbeans/modules/uihandler.properties
+        // is not writable for some reason
+        long checkTime = System.currentTimeMillis();
+        prefs.putLong("uihandler.preferences.writable.check", checkTime);  //NOI18N
+        try {
+            prefs.flush();
+            prefs.sync();
+            if(checkTime == prefs.getLong("uihandler.preferences.writable", 0)) {  //NOI18N
+                preferencesWritable = true;
+            }
+        } catch (BackingStoreException e) {
+            // immediatelly show dialog with exception (usually Access is denied)
+            NotifyDescriptor.Exception eDesc = new NotifyDescriptor.Exception(e);
+            DialogDisplayer.getDefault().notify(eDesc);
+        }
+    }
     
     @Override
     public void restored() {
@@ -207,7 +226,9 @@ public class Installer extends ModuleInstall implements Runnable {
         try {
             LogRecords.write(logStream(), r);
             if (logsSize >= UIHandler.MAX_LOGS) {
-                prefs.putInt("count", UIHandler.MAX_LOGS);
+                if(preferencesWritable) {
+                    prefs.putInt("count", UIHandler.MAX_LOGS);
+                }
                 closeLogStream();
                 if (isHintsMode()) {
                     class Auto implements Runnable {
@@ -222,7 +243,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 logsSize = 0;
             } else {
                 logsSize++;
-                if (prefs.getInt("count", 0) < logsSize) {
+                if (prefs.getInt("count", 0) < logsSize && preferencesWritable) {
                     prefs.putInt("count", logsSize);
                 }
             }
@@ -376,7 +397,9 @@ public class Installer extends ModuleInstall implements Runnable {
         }
         
         logsSize = 0;
-        prefs.putInt("count", 0);
+        if(preferencesWritable) {
+            prefs.putInt("count", 0);
+        }
         UIHandler.SUPPORT.firePropertyChange(null, null, null);
     }
     
@@ -971,7 +994,9 @@ public class Installer extends ModuleInstall implements Runnable {
             boolean submit = Button.SUBMIT.isCommand(actionURL);
             if (Button.AUTO_SUBMIT.isCommand(e.getActionCommand())) {
                 submit = true;
-                prefs.putBoolean("autoSubmitWhenFull", true); // NOI18N
+                if(preferencesWritable) {
+                    prefs.putBoolean("autoSubmitWhenFull", true); // NOI18N
+                }
             }
             
             if (submit) { // NOI18N
@@ -1100,7 +1125,9 @@ public class Installer extends ModuleInstall implements Runnable {
         private void uploadAndPost(List<LogRecord> recs, URL u) {
             URL nextURL = null;
             
-            prefs.putInt("submitted", 1 + prefs.getInt("submitted", 0)); // NOI18N
+            if(preferencesWritable) {
+                prefs.putInt("submitted", 1 + prefs.getInt("submitted", 0)); // NOI18N
+            }
             
             try {
                 nextURL = uploadLogs(u, findIdentity(), Collections.<String,String>emptyMap(), recs);

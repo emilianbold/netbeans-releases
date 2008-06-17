@@ -36,7 +36,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="manageButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="mainClassTextField" alignment="0" pref="377" max="32767" attributes="0"/>
+                  <Component id="mainClassTextField" alignment="0" pref="393" max="32767" attributes="0"/>
               </Group>
           </Group>
       </Group>

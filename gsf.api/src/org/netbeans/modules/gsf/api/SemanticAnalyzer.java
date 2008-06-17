@@ -42,6 +42,7 @@
 package org.netbeans.modules.gsf.api;
 
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 /**
@@ -53,7 +54,31 @@ import org.netbeans.modules.gsf.api.annotations.NonNull;
 public interface SemanticAnalyzer extends CancellableTask<CompilationInfo> {
     /**
      * Return a set of highlights computed by the last call to
+     * Note - there are a number of EnumSet constants in the ColoringAttributes
+     * class you should use for many of the common combinations of coloring
+     * attributes you want.
      * {@link #run}.
+     * <p>
+     * <b>NOTE</b>: The OffsetRanges should NOT be overlapping! (The unit test
+     * infrastructure in GsfTestBase will check for this condition and fail
+     * semantic highlighting tests if they violate this constraint. The test
+     * is not performed at runtime.)
      */
-    @NonNull Map<OffsetRange, ColoringAttributes> getHighlights();
+    @NonNull Map<OffsetRange, Set<ColoringAttributes>> getHighlights();
+
+    // Not yet implemented:
+    /**
+     * Provide a custom description of a set of attributes. This may be shown
+     * by the IDE as a tooltip when the user hovers over a region with the given
+     * attribute set.  Just return null if you want to get the default
+     * descriptions (a comma separated list of the attribute names, such as
+     * "Unused", or "Unused, Field".
+     * (With the offset range information as well as the CompilationInfo you
+     * can provide more accurate descriptions for the user if applicable).
+     * 
+     * @param attributes
+     * @return A localized String for the user describing the given attributes,
+     *   or null to get the default supplied descriptions.
+     */
+    //String describe(CompilationInfo info, OffsetRange range, Set<ColoringAttributes> attributes);
 }

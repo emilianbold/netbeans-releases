@@ -178,7 +178,7 @@ public class Reformatter implements ReformatTask {
     private boolean applyDiff(int start, int end, String text) throws BadLocationException{
         if (end - start > 0) {
             String what = doc.getText(start, end - start);
-            if (text.equals(what)) {
+            if (text != null && text.equals(what)) {
                 // optimization
                 return true;
             }

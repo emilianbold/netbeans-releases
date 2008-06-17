@@ -101,6 +101,7 @@ public class MergeAction extends ContextAction {
         }
         String repository = root.getAbsolutePath();
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
+        final File[] roots = context != null? context.getFiles().toArray(new File[0]): null;
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {
                 OutputLogger logger = getLogger();
@@ -118,8 +119,8 @@ public class MergeAction extends ContextAction {
                             NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE"),// NOI18N
                             JOptionPane.INFORMATION_MESSAGE);
                          return;
-                    } else if (headList.size() > MULTIPLE_AUTOMERGE_HEAD_LIMIT){
-                        final MergeRevisions mergeDlg = new MergeRevisions(root);
+                    } else {
+                        final MergeRevisions mergeDlg = new MergeRevisions(root, roots);
                         if (!mergeDlg.showDialog()) {
                             return;
                         }

@@ -80,6 +80,8 @@ public class APTStdCFilter extends APTBaseLanguageFilter {
         filter("short", APTTokenTypes.LITERAL_short); // NOI18N
         filter("int", APTTokenTypes.LITERAL_int); // NOI18N
         filter("long", APTTokenTypes.LITERAL_long); // NOI18N
+        filter("signed", APTTokenTypes.LITERAL_signed); // NOI18N
+        filter("__signed__", APTTokenTypes.LITERAL___signed__); // NOI18N
         filter("unsigned", APTTokenTypes.LITERAL_unsigned); // NOI18N
         filter("__unsigned__", APTTokenTypes.LITERAL___unsigned__); // NOI18N
         filter("float", APTTokenTypes.LITERAL_float); // NOI18N
@@ -89,8 +91,6 @@ public class APTStdCFilter extends APTBaseLanguageFilter {
         filter("__declspec", APTTokenTypes.LITERAL___declspec); // NOI18N   
         filter("struct", APTTokenTypes.LITERAL_struct); // NOI18N
         filter("union", APTTokenTypes.LITERAL_union); // NOI18N   
-        filter("true", APTTokenTypes.LITERAL_true); // NOI18N
-        filter("false", APTTokenTypes.LITERAL_false); // NOI18N        
         filter("case", APTTokenTypes.LITERAL_case); // NOI18N
         filter("default", APTTokenTypes.LITERAL_default); // NOI18N
         filter("if", APTTokenTypes.LITERAL_if); // NOI18N

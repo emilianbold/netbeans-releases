@@ -41,12 +41,15 @@
 
 package org.netbeans.modules.uml.codegen.dataaccess.xmlbeans;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.File;
 import java.io.IOException;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import org.netbeans.modules.schema2beans.Schema2BeansException;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 
@@ -89,10 +92,15 @@ public class TemplateFamiliesHandler
     
     public void read()
     {
+        File file=new File(configFolder + "TemplateFamilies.etc");// NOI18N
+        FileObject fo=FileUtil.toFileObject(file);
+        InputStream in=null;
         try
         {
-            templateFamilies = TemplateFamilies.createGraph(
-                new FileInputStream(configFolder + "TemplateFamilies.etc")); // NOI18N
+            //templateFamilies = TemplateFamilies.createGraph(
+            //    new FileInputStream(configFolder + "TemplateFamilies.etc")); // NOI18N
+            in=fo.getInputStream();
+            templateFamilies = TemplateFamilies.createGraph(in); // NOI18N
         }
         
         catch (Schema2BeansException ex)
@@ -104,7 +112,17 @@ public class TemplateFamiliesHandler
         {
             Exceptions.printStackTrace(ex);
         }
-
+        finally
+        {
+            if(in!=null)
+            {
+                try {
+                    in.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
     }
     
     public void reset()
@@ -115,16 +133,32 @@ public class TemplateFamiliesHandler
 
     public void save()
     {
+        File file=new File(configFolder + "TemplateFamilies.etc");// NOI18N
+        FileObject fo=FileUtil.toFileObject(file);
+        OutputStream out=null;
         try
         {
-            templateFamilies.write(new FileOutputStream(
-                configFolder + "TemplateFamilies.etc")); // NOI18N
+//            templateFamilies.write(new FileOutputStream(
+//                configFolder + "TemplateFamilies.etc")); // NOI18N
+            out=fo.getOutputStream();
+            templateFamilies.write(out); // NOI18N
         }
         
         catch (IOException ex) 
         {
             Exceptions.printStackTrace(ex);
         } 
+        finally
+        {
+            if(out!=null)
+            {
+                try {
+                    out.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
     }
     
     public TemplateFamilies getTemplateFamilies()

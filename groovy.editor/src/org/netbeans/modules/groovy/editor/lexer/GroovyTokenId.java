@@ -77,6 +77,7 @@ public enum GroovyTokenId implements TokenId {
     CHAR_LITERAL(null, "character"),
     STRING_LITERAL(null, "string"),
     WHITESPACE(null, "whitespace"),
+    EOL(null, "whitespace"),
     LINE_COMMENT(null, "comment"),
     BLOCK_COMMENT(null, "comment"),
     TODO(null, "todo"),

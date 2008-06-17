@@ -108,6 +108,7 @@ options {
 	codeGenBitsetTestThreshold = 3;
 	noConstructors = true;
 	buildAST = true;
+        genASTClassMap = false;
 }
 
 //
@@ -406,6 +407,7 @@ tokens {
 	protected static final  int ANSI_C	= 0x4;
 	protected static final  int KandR_C	= 0x8;
 
+        protected static final int ERROR_LIMIT = 100;
 	private int errorCount = 0;
 
 	public int getErrorCount() {
@@ -413,11 +415,21 @@ tokens {
 	    return cnt;
 	}
 
+        public boolean shouldProceed() {
+            boolean res = errorCount < ERROR_LIMIT;
+            if (!res) {
+                reportError("Too many errors. Parsing is being stopped."); // NOI18N
+            }
+            return res;
+        }
+
 	public void reportError(RecognitionException e) {
             // Do not report errors that we had reported already
-            if (lastRecoveryPosition == inputState.input.index()) {
+            if (lastRecoveryPosition == input.index()) {
                 return;
             }
+
+            onError(e);
             
             if (Diagnostic.needStatistics()) Diagnostic.onParserError(e);
 
@@ -452,7 +464,7 @@ tokens {
         private int lastRecoveryPosition = -1;
         
         public void recover(RecognitionException ex, BitSet tokenSet) {
-            if (lastRecoveryPosition == inputState.input.index()) {
+            if (lastRecoveryPosition == input.index()) {
                 if (recoveryCounter > RECOVERY_LIMIT) {
                     consume();
                     recoveryCounter = 0;
@@ -461,7 +473,7 @@ tokens {
                 }
             } else {
                 recoveryCounter = 0;
-                lastRecoveryPosition = inputState.input.index();
+                lastRecoveryPosition = input.index();
             }
             tokenSet.orInPlace(stopSet);
             consumeUntil(tokenSet);
@@ -637,6 +649,9 @@ tokens {
 	protected void printf (String pattern, int i1, int i2, int i3, String s) { /*TODO: implement*/ throw new NotImplementedException(); }
 
 	protected void balanceBraces(int left, int right) throws RecognitionException, TokenStreamException { throw new NotImplementedException(); };
+
+        /** Is called when an error occurred */
+        protected void onError(RecognitionException e) {}
 }
 
 public translation_unit:
@@ -644,8 +659,10 @@ public translation_unit:
                 /* Do not generate ambiguity warnings: we intentionally want to match everything that
                    can not be matched in external_declaration in the second alternative */
 		(options{generateAmbigWarnings = false;}:
+                    {shouldProceed()}?
                     external_declaration 
                     | 
+                    {shouldProceed()}?
                     /* Here we match everything that can not be matched by external_declaration rule,
                        report it as an error and not include in AST */
                     .! { reportError(new NoViableAltException(LT(0), getFilename())); }
@@ -1146,7 +1163,8 @@ member_declaration
 		// This is separated out otherwise the next alternative
 		// would look for "class A { ... } f() {...}" which is
 		// an unacceptable level of backtracking.
-		( (LITERAL_typedef)? class_head) => 
+                // we need "static" here for the case "static struct XX {...} myVar; - see issue #135149
+		( (LITERAL_typedef | LITERAL_static)? class_head) => 
 		{if (statementTrace>=1) 
 			printf("member_declaration_1[%d]: Class definition\n",
 				LT(1).getLine());
@@ -2356,7 +2374,7 @@ template_parameter
 protected template_template_parameter
     :
 	LITERAL_template LESSTHAN tpl:template_parameter_list GREATERTHAN 
-	LITERAL_class ID
+	LITERAL_class ID (ASSIGNEQUAL assigned_type_name)?
 	{ #template_template_parameter = #(#[CSM_TEMPLATE_TEMPLATE_PARAMETER, "CSM_TEMPLATE_TEMPLATE_PARAMETER"], #template_template_parameter);}
 
     ;

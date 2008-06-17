@@ -169,11 +169,12 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.bpel.core</friend>
-                <friend>org.netbeans.modules.bpel.model</friend>
                 <friend>org.netbeans.modules.bpel.debugger.ui</friend>
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.bpel.editors.api</friend>
                 <friend>org.netbeans.modules.bpel.mapper</friend>
+                <friend>org.netbeans.modules.bpel.model</friend>
+                <friend>org.netbeans.modules.etl.editor</friend>
                 <friend>org.netbeans.modules.bpel.validation</friend>
                 <friend>org.netbeans.modules.soa.mapper</friend>
                 <friend>org.netbeans.modules.soa.validation</friend>
@@ -181,15 +182,17 @@
                 <friend>org.netbeans.modules.xslt.mapper</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>
                 <friend>org.netbeans.modules.xslt.tmap</friend>
-                <friend>org.netbeans.modules.etl.editor</friend>
                 <package>org.netbeans.modules.soa.ui</package>
-                <package>org.netbeans.modules.soa.ui.util</package>
                 <package>org.netbeans.modules.soa.ui.axinodes</package>
                 <package>org.netbeans.modules.soa.ui.form</package>
                 <package>org.netbeans.modules.soa.ui.form.valid</package>
                 <package>org.netbeans.modules.soa.ui.nodes</package>
+                <package>org.netbeans.modules.soa.ui.schema</package>
                 <package>org.netbeans.modules.soa.ui.tnv.api</package>
                 <package>org.netbeans.modules.soa.ui.tnv.scrollpane</package>
+                <package>org.netbeans.modules.soa.ui.tree</package>
+                <package>org.netbeans.modules.soa.ui.tree.impl</package>
+                <package>org.netbeans.modules.soa.ui.util</package>
             </friend-packages>
         </data>
     </configuration>

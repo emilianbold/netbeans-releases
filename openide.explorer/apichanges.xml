@@ -47,6 +47,19 @@ made subject to such option by the copyright holder.
 <apidef name="explorer">Explorer API</apidef>
 </apidefs>
 <changes>
+    <change id="OutlineView">
+        <api name="explorer"/>
+        <summary>Added OutlineView component which is a replacement for buggy TreeTableView.</summary>
+        <version major="6" minor="15"/>
+        <date day="29" month="5" year="2008"/>
+        <author login="saubrecht"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
+        <description>Added new OutlineView component which is a table with expandable 
+        tree-like part and which replaces the current buggy TreeTableView.
+        </description>
+        <class package="org.openide.explorer.view" name="OutlineView"/>
+        <issue number="33281"/>
+    </change>
     <change id="ColumnDisplayNameWithMnemonicTTV">
         <api name="explorer"/>
         <summary>Added support for property ColumnDisplayNameWithMnemonicTTV.</summary>

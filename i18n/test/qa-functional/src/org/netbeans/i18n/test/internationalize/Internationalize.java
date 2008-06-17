@@ -5,27 +5,23 @@
  */
 package org.netbeans.i18n.test.internationalize;
 
-import java.io.File;
-import java.util.Enumeration;
-import org.netbeans.i18n.jelly.InternationalizeOperator;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.nodes.FilesystemNode;
-import org.netbeans.jemmy.EventTool;
+import lib.InternationalizationTestCase;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.junit.NbTestSuite;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
 
 /**
  *
- * @author  eh103527
+ * @author  Jana Maleckova
  */
-public class Internationalize extends JellyTestCase {
+public class Internationalize extends InternationalizationTestCase {
 
     String TEST_PACKAGE = "data";
     String FILE_NAME = "TestFrame";
-
+    String TEST_CLASS = "Internationalize";
+    String MENU_PATH = "Tools" + TREE_SEPARATOR + "Internationalization" + TREE_SEPARATOR + "Internationalize...";
+    // String testName = suite().getClass().toString();
     /**
      * Constructor - Creates new instance of this class
      */
@@ -50,33 +46,60 @@ public class Internationalize extends JellyTestCase {
         System.out.println("=   See testspec of i18n module:                                                  =");
         System.out.println("=   http://beetle.czech/modules/i18n/                                             =");
         System.out.println("===================================================================================");
+        System.out.println("Pracovni adresar: " + getDataDir().toString());
+        //System.out.println("Golden files " + getGoldenFile().getAbsolutePath());
 
-        FileSystem[] fileSystems = Repository.getDefault().toArray();
-        String fileSystemName = null;
+        //Open project
+        openProject(DEFAULT_PROJECT_NAME);
 
-        for (int ii = 0; ii < fileSystems.length; ii++) {
-            FileObject file = fileSystems[ii].findResource(TEST_PACKAGE);
-            if (file != null) {
-                System.out.println("> Used Filesystem = " + fileSystems[ii].getDisplayName());
-                fileSystemName = fileSystems[ii].getDisplayName();
+        //Create new Bundle file
+        createNewPropertiesFile(getClassNode(DEFAULT_PROJECT_NAME, ROOT_PACKAGE_NAME + TREE_SEPARATOR + DEFAULT_PROJECT_NAME.toLowerCase()), DEFAUL_BUNDLE_NAME);
+
+        //select testing class with strings
+        Node testClass = getClassNode(DEFAULT_PROJECT_NAME, ROOT_PACKAGE_NAME + TREE_SEPARATOR + DEFAULT_PROJECT_NAME.toLowerCase() + TREE_SEPARATOR + TEST_CLASS + ".java");
+        testClass.select();
+
+        //Open wizard for simple Internationalize
+        testClass.callPopup().pushMenuNoBlock(MENU_PATH, TREE_SEPARATOR);
+
+        /*Process of internationalization, all strings from java files 
+        should be internationalized
+         */
+        NbDialogOperator ndo = new NbDialogOperator(TITLE_INTERNATIONALIZE_DIALOG);
+        JButtonOperator jbo = new JButtonOperator(ndo, REPLACE_BUTTON);
+
+        //Check if Replace button is enabled
+        if (jbo.isEnabled()) {
+            while (jbo.isEnabled()) {
+                jbo.push();
             }
+        } else {
+            throw new Exception("Internationalization dialog doesn't found any string in class");
+
         }
 
-        if (fileSystemName == null) {
-            throw new Exception("Must be mounted .../" + TEST_PACKAGE + " repository in explorer !");
+        //Close dialog for internationalization
+        JButtonOperator close = new JButtonOperator(ndo, CLOSE_BUTTON);
+        close.push();
+
+        //Close and save recently edited files - Bundle, Internationalize.java
+        String[] Files = {DEFAUL_BUNDLE_NAME, TEST_CLASS + ".java"};
+
+        for (int i = 0; i < Files.length; i++) {
+            closeFileInEditor(Files[i], true);
         }
-
-        String path = fileSystemName.concat("|" + TEST_PACKAGE + "|" + FILE_NAME);
-        new Action("Tools", "Tools|Internationalization|Internationalize").performPopup(new FilesystemNode(path));
-        new EventTool().waitNoEvent(2500);
-        InternationalizeOperator io = new InternationalizeOperator();
-
+        
+        /*Test if java class was correctly internationalized
+         * and bundle file contains all keys with values
+        */
+        compareBundle(DEFAUL_BUNDLE_NAME);
+        compareJavaFile(TEST_CLASS);
     }
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite);
+        junit.textui.TestRunner.run(suite());
     }
 }

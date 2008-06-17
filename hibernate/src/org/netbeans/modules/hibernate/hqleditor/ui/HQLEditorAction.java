@@ -50,7 +50,7 @@ import org.openide.util.actions.NodeAction;
  * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
 public class HQLEditorAction extends NodeAction {
-
+    
     public HQLEditorAction() {
         super();
     }

@@ -42,26 +42,41 @@ package org.netbeans.modules.php.editor.verification;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.HintsProvider;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.Rule;
 import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 
 /**
  *
  * @author Tomasz.Slota@Sun.COM
  */
 public class PHPHintsProvider implements HintsProvider {
+    public static final String FIRST_PASS_HINTS = "1st pass"; //NOI18N
+    public static final String SECOND_PASS_HINTS = "2nd pass"; //NOI18N
 
     public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
-        Map<Integer,List<PHPRule>> allHints = (Map)manager.getHints(false, context);
+        Map<String, List> allHints = (Map) manager.getHints(false, context);
+        CompilationInfo info = context.compilationInfo;
+
+        PHPVerificationVisitor visitor = new PHPVerificationVisitor((PHPRuleContext)context, allHints.get(FIRST_PASS_HINTS));
         
-        for (List<PHPRule> ruleList : allHints.values()){
-            for (PHPRule rule: ruleList){
-                rule.run((PHPRuleContext) context, hints);
+        for (PHPParseResult parseResult : ((List<PHPParseResult>) info.getEmbeddedResults(PHPLanguage.PHP_MIME_TYPE))) {
+            if (parseResult.getProgram() != null) {
+                parseResult.getProgram().accept(visitor);
             }
+            
+            hints.addAll(visitor.getResult());
         }
+        
+        assert allHints.get(SECOND_PASS_HINTS).size() == 1;
+        UnusedVariableRule unusedVariableRule = (UnusedVariableRule) allHints.get(SECOND_PASS_HINTS).get(0);
+        unusedVariableRule.check((PHPRuleContext) context, hints);
     }
 
     public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
@@ -73,7 +88,11 @@ public class PHPHintsProvider implements HintsProvider {
     }
 
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
-        
+        ParserResult parserResult = context.parserResult;
+        if (parserResult != null) {
+            List<Error> errors = parserResult.getDiagnostics();
+            unhandled.addAll(errors);
+        }
     }
 
     public void cancel() {
@@ -87,5 +106,4 @@ public class PHPHintsProvider implements HintsProvider {
     public RuleContext createRuleContext() {
         return new PHPRuleContext();
     }
-
 }

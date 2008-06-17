@@ -86,7 +86,8 @@ public class TableInputCustomEditor extends DefaultCustomEditor {
     private class MyCustomizer extends DefaultCustomizer {
         protected PropertyPanel mIsGlobalPanel;
         protected PropertyPanel mGlobalIdPanel;
-        
+        private TableInputConfigurationPanel mConfigPanel;
+                
         public MyCustomizer(TcgPropertyType propertyType, OperatorComponent component, PropertyEnv env) {
             super(propertyType, component, env);
         }
@@ -95,8 +96,10 @@ public class TableInputCustomEditor extends DefaultCustomEditor {
             super(propertyType, component, customizerState);
         }
         
+//        @Override
 //        protected JPanel createPropertyPanel() throws Exception {
-//            return new TableInputConfigurationPanel((TableInputOperatorComponent) getOperatorComponent(), mSelectPanel);
+//            mConfigPanel = new TableInputConfigurationPanel((TableInputOperatorComponent) getOperatorComponent(), mSelectPanel);
+//            return mConfigPanel;
 //        }
         
         protected JPanel createPropertyPanel() throws Exception {
@@ -249,7 +252,10 @@ public class TableInputCustomEditor extends DefaultCustomEditor {
         
         public void validateContent(PropertyChangeEvent evt) throws PropertyVetoException {
             super.validateContent(evt);
+            
             try {
+//                mConfigPanel.validate(evt);
+//                mSelectPanel.validateContent(evt);
                 boolean isGlobal = mIsGlobalPanel.getBooleanValue();
                 String globalId = mGlobalIdPanel.getStringValue();
                 if (isGlobal && (globalId == null || globalId.trim().equals(""))) {
@@ -269,6 +275,11 @@ public class TableInputCustomEditor extends DefaultCustomEditor {
             super.setValue();
             mIsGlobalPanel.store();
             mGlobalIdPanel.store();
+            
+            
+//            mConfigPanel.store();
+//            //set documentation
+//            super.setDocumentation();
         }
         
         class SelectIEPProcessOperatorActionListener implements ActionListener {

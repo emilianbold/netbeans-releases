@@ -28,4 +28,12 @@ new Object());
 do {
 op1().op2.op3().op4();
 } while ( number < 2 && number != 3 );
+switch(number) {
+case 1:
+    return method("text", 22);
+case 2:
+    return 20;
+default:
+    return -1;
+}
 }

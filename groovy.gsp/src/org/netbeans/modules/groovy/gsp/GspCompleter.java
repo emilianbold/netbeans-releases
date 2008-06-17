@@ -28,17 +28,15 @@
 
 package org.netbeans.modules.groovy.gsp;
 
-import java.io.IOException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.groovy.editor.CodeCompleter;
+import org.netbeans.modules.groovy.editor.completion.CodeCompleter;
 import org.netbeans.modules.groovy.gsp.lexer.api.GspTokenId;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
-import org.openide.util.Exceptions;
 
 /**
  * GSP code completer
@@ -55,13 +53,9 @@ public class GspCompleter extends CodeCompleter {
     public CodeCompletionResult complete(CodeCompletionContext context) {
         CompilationInfo info = context.getInfo();
         int caretOffset = context.getCaretOffset();
-        try {
-            Document doc = info.getDocument();
-            if (isWithinGroovy(doc, caretOffset)) {
-                return super.complete(context);
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        Document doc = info.getDocument();
+        if (doc != null && isWithinGroovy(doc, caretOffset)) {
+            return super.complete(context);
         }
         return CodeCompletionResult.NONE;
     }
@@ -76,7 +70,7 @@ public class GspCompleter extends CodeCompleter {
     public QueryType getAutoQuery(JTextComponent component, String typedText) {
         Document doc = component.getDocument();
         int caretOffset =  component.getCaret().getDot();
-        if (isWithinGroovy(component.getDocument(), caretOffset)) {
+        if (isWithinGroovy(doc, caretOffset)) {
             return super.getAutoQuery(component, typedText);
         }
         

@@ -48,6 +48,7 @@ import java.util.logging.Logger;
 import javax.xml.namespace.QName;
 import javax.xml.namespace.QName;
 import javax.xml.namespace.QName;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitmodelext.policy.All;
 import org.netbeans.modules.websvc.wsitmodelext.policy.ExactlyOne;
 import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
@@ -92,19 +93,29 @@ public class PolicyModelHelper {
      * Returns 1.0 if 1.0 namespace is found, otherwise 1.1 is default.
      */
     public static ConfigVersion getConfigVersion(WSDLComponent c) {
+        ConfigVersion cfg = getWrittenConfigVersion(c);
+        return (cfg == null) ? ConfigVersion.getDefault() : cfg;
+    }
+
+    /** We need this one to find out if the value has been set already, or it's the default
+     * 
+     * @param c
+     * @return
+     */
+    private static ConfigVersion getWrittenConfigVersion(WSDLComponent c) {
         Policy p = getPolicyForElement(c);
         if (p != null) {
             return PolicyQName.getConfigVersion(p.getQName());
         }
-        return ConfigVersion.getDefault();
+        return null;
     }
-
+    
     /** 
      */
-    public static void setConfigVersion(Binding b, ConfigVersion cfgVersion) {
-        ConfigVersion currentCfgVersion = getConfigVersion(b);                
-        if (!currentCfgVersion.equals(cfgVersion)) {
-            WSITModelSupport.moveCurrentConfig(b, currentCfgVersion, cfgVersion);
+    public static void setConfigVersion(Binding b, ConfigVersion cfgVersion, Project project) {
+        ConfigVersion currentCfgVersion = getWrittenConfigVersion(b);                
+        if (!cfgVersion.equals(currentCfgVersion)) {
+            WSITModelSupport.moveCurrentConfig(b, currentCfgVersion, cfgVersion, project);
         }            
     }
         

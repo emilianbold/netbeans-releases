@@ -25,7 +25,6 @@ import org.netbeans.modules.bpel.mapper.logging.tree.LoggingTreeItem;
 import org.netbeans.modules.bpel.mapper.logging.tree.TraceItem;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeExtensionModel;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemInfoProvider;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 
@@ -49,8 +48,8 @@ public class LoggingAlertingTreeModel implements MapperTreeModel<Object> {
         return null;
     }
 
-    public List getChildren(RestartableIterator<Object> dataObjectPathItr) {
-        Object parent = dataObjectPathItr.next();
+    public List getChildren(Iterable<Object> dataObjectPathItr) {
+        Object parent = dataObjectPathItr.iterator().next();
         if (parent == TREE_ROOT) {
             return Collections.singletonList( myContext);
         }

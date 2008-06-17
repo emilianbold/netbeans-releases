@@ -52,6 +52,7 @@ import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
 import org.netbeans.modules.websvc.wsitmodelext.security.BootstrapPolicy;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.ProtectionToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversationToken;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 
 /**
@@ -102,8 +103,15 @@ public class UsernameAuthentication extends ProfileBaseForm {
             setChBox(encryptOrderChBox, SecurityPolicyModelHelper.isEncryptBeforeSigning(bootPolicy));
             p = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class,false);
             WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(p, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+            if (tokenKind == null) {
+                tokenKind = SecurityTokensModelHelper.getSupportingToken(p, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
+            }
             String tokenType = SecurityTokensModelHelper.getTokenType(tokenKind);
             setCombo(supportTokenCombo, tokenType);
+            if (ComboConstants.USERNAME.equals(tokenType)) {
+                WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
+                setChBox(hashPasswdChBox, SecurityTokensModelHelper.isHashPassword(token));
+            }
         } else {
             secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(comp);
             setChBox(secConvChBox, false);
@@ -112,8 +120,15 @@ public class UsernameAuthentication extends ProfileBaseForm {
             setChBox(encryptSignatureChBox, SecurityPolicyModelHelper.isEncryptSignature(comp));
             setChBox(encryptOrderChBox, SecurityPolicyModelHelper.isEncryptBeforeSigning(comp));
             WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+            if (tokenKind == null) {
+                tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
+            }
             String tokenType = SecurityTokensModelHelper.getTokenType(tokenKind);
             setCombo(supportTokenCombo, tokenType);
+            if (ComboConstants.USERNAME.equals(tokenType)) {
+                WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
+                setChBox(hashPasswdChBox, SecurityTokensModelHelper.isHashPassword(token));
+            }
         }
 
         WSDLComponent tokenKind = SecurityTokensModelHelper.getTokenElement(secBinding, ProtectionToken.class);
@@ -144,6 +159,9 @@ public class UsernameAuthentication extends ProfileBaseForm {
             sync();
         }
         
+        int suppTokenType = ((ConfigVersion.CONFIG_1_0.equals(cfgVersion)) || (hashPasswdChBox.isSelected())) ? 
+            SecurityTokensModelHelper.SIGNED_SUPPORTING : SecurityTokensModelHelper.SIGNED_ENCRYPTED;
+        
         SecurityPolicyModelHelper spmh = SecurityPolicyModelHelper.getInstance(cfgVersion);
         SecurityTokensModelHelper stmh = SecurityTokensModelHelper.getInstance(cfgVersion);
         AlgoSuiteModelHelper asmh = AlgoSuiteModelHelper.getInstance(cfgVersion);
@@ -160,9 +178,8 @@ public class UsernameAuthentication extends ProfileBaseForm {
             }
             p = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class,false);
             if (source.equals(supportTokenCombo)) {
-                stmh.setSupportingTokens(p, 
-                        (String)supportTokenCombo.getSelectedItem(), 
-                        SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                String selTokTyp = (String)supportTokenCombo.getSelectedItem();
+                stmh.setSupportingTokens(p, selTokTyp, suppTokenType);
             }
         } else {
             secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(comp);
@@ -170,10 +187,18 @@ public class UsernameAuthentication extends ProfileBaseForm {
                 spmh.enableRequireSignatureConfirmation(SecurityPolicyModelHelper.getWss11(comp), reqSigConfChBox.isSelected());
             }
             if (source.equals(supportTokenCombo)) {
-                stmh.setSupportingTokens(comp, 
-                        (String)supportTokenCombo.getSelectedItem(), 
-                        SecurityTokensModelHelper.SIGNED_SUPPORTING);
-            }            
+                String selTokTyp = (String)supportTokenCombo.getSelectedItem();
+                stmh.setSupportingTokens(comp, selTokTyp, suppTokenType);
+            }
+        }
+
+        if (source.equals(hashPasswdChBox)) {
+            String selTokTyp = (String)supportTokenCombo.getSelectedItem();
+            SecurityTokensModelHelper.removeSupportingTokens(comp);
+            stmh.setSupportingTokens(comp, selTokTyp, suppTokenType);
+            WSDLComponent suppToken = SecurityTokensModelHelper.getSupportingToken(comp, suppTokenType);
+            WSDLComponent uToken = SecurityTokensModelHelper.getTokenTypeElement(suppToken);
+            stmh.setHashPassword(uToken, hashPasswdChBox.isSelected());
         }
         
         if (source.equals(encryptSignatureChBox)) {
@@ -213,6 +238,8 @@ public class UsernameAuthentication extends ProfileBaseForm {
     protected void enableDisable() {
         boolean secConvEnabled = secConvChBox.isSelected();
         derivedKeysChBox.setEnabled(secConvEnabled);
+        hashPasswdChBox.setEnabled(ConfigVersion.CONFIG_1_2.equals(cfgVersion) && 
+                                   supportTokenCombo.getSelectedItem().equals(ComboConstants.USERNAME));
     }
     
     /** This method is called from within the constructor to
@@ -235,9 +262,9 @@ public class UsernameAuthentication extends ProfileBaseForm {
         encryptOrderChBox = new javax.swing.JCheckBox();
         supportTokenLabel = new javax.swing.JLabel();
         supportTokenCombo = new javax.swing.JComboBox();
+        hashPasswdChBox = new javax.swing.JCheckBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(secConvChBox, org.openide.util.NbBundle.getMessage(UsernameAuthentication.class, "LBL_SecConvLabel")); // NOI18N
-        secConvChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         secConvChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         secConvChBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -246,7 +273,6 @@ public class UsernameAuthentication extends ProfileBaseForm {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(reqSigConfChBox, org.openide.util.NbBundle.getMessage(UsernameAuthentication.class, "LBL_RequireSigConfirmation")); // NOI18N
-        reqSigConfChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         reqSigConfChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         reqSigConfChBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -255,7 +281,6 @@ public class UsernameAuthentication extends ProfileBaseForm {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(derivedKeysChBox, org.openide.util.NbBundle.getMessage(UsernameAuthentication.class, "LBL_RequireDerivedKeysForSecConv")); // NOI18N
-        derivedKeysChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         derivedKeysChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         derivedKeysChBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -282,7 +307,6 @@ public class UsernameAuthentication extends ProfileBaseForm {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(encryptSignatureChBox, org.openide.util.NbBundle.getMessage(UsernameAuthentication.class, "LBL_EncryptSignatureLabel")); // NOI18N
-        encryptSignatureChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         encryptSignatureChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         encryptSignatureChBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -291,7 +315,6 @@ public class UsernameAuthentication extends ProfileBaseForm {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(reqDerivedKeys, org.openide.util.NbBundle.getMessage(UsernameAuthentication.class, "LBL_RequireDerivedKeys")); // NOI18N
-        reqDerivedKeys.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         reqDerivedKeys.setMargin(new java.awt.Insets(0, 0, 0, 0));
         reqDerivedKeys.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -300,7 +323,6 @@ public class UsernameAuthentication extends ProfileBaseForm {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(encryptOrderChBox, org.openide.util.NbBundle.getMessage(UsernameAuthentication.class, "LBL_EncryptOrderLabel")); // NOI18N
-        encryptOrderChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         encryptOrderChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         encryptOrderChBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -316,6 +338,14 @@ public class UsernameAuthentication extends ProfileBaseForm {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(hashPasswdChBox, org.openide.util.NbBundle.getMessage(UsernameAuthentication.class, "LBL_HashPasswdLabel")); // NOI18N
+        hashPasswdChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        hashPasswdChBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                hashPasswdChBoxActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -323,6 +353,7 @@ public class UsernameAuthentication extends ProfileBaseForm {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(hashPasswdChBox)
                     .add(reqDerivedKeys)
                     .add(reqSigConfChBox)
                     .add(secConvChBox)
@@ -371,6 +402,8 @@ public class UsernameAuthentication extends ProfileBaseForm {
                 .add(encryptSignatureChBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(encryptOrderChBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(hashPasswdChBox)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -413,6 +446,10 @@ private void supportTokenComboActionPerformed(java.awt.event.ActionEvent evt) {/
     private void algoSuiteComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_algoSuiteComboActionPerformed
         setValue(algoSuiteCombo);
     }//GEN-LAST:event_algoSuiteComboActionPerformed
+
+private void hashPasswdChBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hashPasswdChBoxActionPerformed
+        setValue(hashPasswdChBox);
+}//GEN-LAST:event_hashPasswdChBoxActionPerformed
             
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox algoSuiteCombo;
@@ -420,6 +457,7 @@ private void supportTokenComboActionPerformed(java.awt.event.ActionEvent evt) {/
     private javax.swing.JCheckBox derivedKeysChBox;
     private javax.swing.JCheckBox encryptOrderChBox;
     private javax.swing.JCheckBox encryptSignatureChBox;
+    private javax.swing.JCheckBox hashPasswdChBox;
     private javax.swing.JComboBox layoutCombo;
     private javax.swing.JLabel layoutLabel;
     private javax.swing.JCheckBox reqDerivedKeys;

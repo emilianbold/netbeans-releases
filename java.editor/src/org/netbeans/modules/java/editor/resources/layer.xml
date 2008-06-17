@@ -118,6 +118,12 @@ made subject to such option by the copyright holder.
                 
                 <file name="org-netbeans-modules-java-editor-semantic-HighlightsLayerFactoryImpl.instance" />
                 
+                <folder name="Preferences">
+                    <folder name="Defaults">
+                        <file name="org-netbeans-modules-editor-java-preferences.xml" url="DefaultPreferences.xml" />
+                    </folder>
+                </folder>
+                    
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -164,8 +170,6 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-java-editor-fold-JavaElementFoldManagerFactory.instance"/>
                 </folder>
                 
-                <file name="Settings.settings" url="JavaOptions.settings"/>
-                
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.java.JavaKit"/>
                 </file>
@@ -178,7 +182,7 @@ made subject to such option by the copyright holder.
                 
                 <folder name="Popup">
                     <folder name="goto">
-                        <attr name="position" intvalue="100"/>
+                        <attr name="position" intvalue="500"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.editor.Bundle"/>
                         <file name="goto-source">
                             <attr name="position" intvalue="100"/>
@@ -189,11 +193,6 @@ made subject to such option by the copyright holder.
                         <file name="goto-super-implementation">
                             <attr name="position" intvalue="300"/>
                         </file>  
-                        <!-- file name="goto">
-                            <attr name="position" intvalue="500"/>
-                        </file -->
-                        
-                        
                     </folder>
                     
                     <file name="goto-help">
@@ -202,11 +201,11 @@ made subject to such option by the copyright holder.
 
                     <file name="SeparatorAfterGoToHelp.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1240"/>
+                        <attr name="position" intvalue="1430"/>
                     </file>
 
                     <file name="format">
-                        <attr name="position" intvalue="1480"/>
+                        <attr name="position" intvalue="1580"/>
                     </file>                    
                                                             
 
@@ -214,7 +213,7 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="1520"/>
                     </file>
                     <file name="generate-code">
-                        <attr name="position" intvalue="1560"/>
+                        <attr name="position" intvalue="1480"/>
                     </file>
                     
                     <file name="SeparatorBeforeCut.instance">
@@ -301,6 +300,19 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
 
+            <folder name="x-java">
+                <folder name="text">
+                    <folder name="x-java-string">
+                        <folder name="CodeTemplates">
+                            <folder name="Defaults">
+                                <file name="codetemplates.shadow">
+                                    <attr name="originalFile" stringvalue="Editors/text/x-java"/>
+                                </file>
+                            </folder>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
         </folder>
 
         <folder name="AnnotationTypes">

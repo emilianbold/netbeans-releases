@@ -50,114 +50,114 @@ import org.netbeans.modules.uml.core.requirementsframework.IRequirement;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.requirements.ADRequirementsManager;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
-import org.netbeans.modules.uml.ui.swing.drawingarea.ADDrawingAreaControl;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
+
+// TODO: meteora is this needed?
 public final class AddToDiagramAction extends CookieAction
 {
     
     protected void performAction(Node[] nodes)
     {
-        ArrayList<IElement> elements = new ArrayList<IElement>(nodes.length);
-        ArrayList<IProjectTreeItem> reqTreeItems = 
-            new ArrayList<IProjectTreeItem>(nodes.length);
-        
-        for (Node node: nodes)
-        {   
-            IElement ele = (IElement)node.getCookie(IElement.class);
-            
-            if (ele != null)
-                elements.add(ele);
-            
-	    IRequirement req = (IRequirement)node.getCookie(IRequirement.class);
-	    if (req != null) 
-            {
-		IProjectTreeItem item = 
-                    (IProjectTreeItem)node.getCookie(IProjectTreeItem.class);
-                
-		if (item != null) 
-		    reqTreeItems.add(item);
-	    }
-        }
-        
-	if (reqTreeItems.size() != 0) 
-        {
-            TopComponent topComp = org.openide.windows.WindowManager
-                .getDefault().findMode("editor").getSelectedTopComponent(); // NOI18N
-
-            if (topComp != null)
-            {
-                ADDrawingAreaControl daControl = (ADDrawingAreaControl)topComp
-                    .getLookup().lookup(ADDrawingAreaControl.class);
-
-                if (daControl != null)
-                {
-		    ETList<IPresentationElement> satisfiers = 
-                        daControl.getSelected();
-                    
-		    ADRequirementsManager reqMgr = 
-                        ADRequirementsManager.instance();
-		    
-                    if (reqMgr != null) 
-                    { 
-			reqMgr.addSatisfiers(satisfiers, reqTreeItems);		    		
-		    }
-		}
-            }
-	}
-
-        if (elements.size() != 0)
-        {
-            TopComponent topComp = WindowManager.getDefault().
-                  findMode("editor").getSelectedTopComponent(); // NOI18N
-            
-            if (topComp != null)
-            {
-                ADDrawingAreaControl daControl = (ADDrawingAreaControl)topComp
-                    .getLookup().lookup(ADDrawingAreaControl.class);
-
-                if (daControl != null)
-                {
-                   // Fixed issue 103231.
-                   // Check if the Project tab is currently actived. If yes,
-                   // process the actived node and deactivate any selected item on palette
-                   
-                   // Get the currently active top component
-                   TopComponent activeTopComp = WindowManager.getDefault().getRegistry().getActivated();
-                   if (activeTopComp != null && "Projects".equals(activeTopComp.getName()))
-                   {
-                      // if an item on platte was selected, deselected it
-                      String selectedPaletteItem = daControl.getSelectedPaletteButton();
-                      if (selectedPaletteItem != null && selectedPaletteItem.length() > 0 )
-                      {
-                         daControl.setSelectStateOnPalette();
-                         daControl.switchToDefaultState();
-                      }
-                      List<IETGraphObject> selitems = daControl.getSelected3();
-                      
-                      daControl.getGraphWindow().deselectAll(true);
-                      daControl.refresh(true);
-                      
-                      List<IETGraphObject> addedNodes =
-                            daControl.addNodeToCenter(elements);
-                      
-                      if (addedNodes == null || addedNodes.size() == 0)
-                         daControl.selectThese(selitems);
-                      
-                      else
-                         daControl.selectThese(addedNodes);
-                      
-                      daControl.setFocus();
-                      topComp.requestActive();
-                   }
-                }
-            }
-        }
+//        ArrayList<IElement> elements = new ArrayList<IElement>(nodes.length);
+//        ArrayList<IProjectTreeItem> reqTreeItems = 
+//            new ArrayList<IProjectTreeItem>(nodes.length);
+//        
+//        for (Node node: nodes)
+//        {   
+//            IElement ele = (IElement)node.getCookie(IElement.class);
+//            
+//            if (ele != null)
+//                elements.add(ele);
+//            
+//	    IRequirement req = (IRequirement)node.getCookie(IRequirement.class);
+//	    if (req != null) 
+//            {
+//		IProjectTreeItem item = 
+//                    (IProjectTreeItem)node.getCookie(IProjectTreeItem.class);
+//                
+//		if (item != null) 
+//		    reqTreeItems.add(item);
+//	    }
+//        }
+//        
+//	if (reqTreeItems.size() != 0) 
+//        {
+//            TopComponent topComp = org.openide.windows.WindowManager
+//                .getDefault().findMode("editor").getSelectedTopComponent(); // NOI18N
+//
+//            if (topComp != null)
+//            {
+//                ADDrawingAreaControl daControl = (ADDrawingAreaControl)topComp
+//                    .getLookup().lookup(ADDrawingAreaControl.class);
+//
+//                if (daControl != null)
+//                {
+//		    ETList<IPresentationElement> satisfiers = 
+//                        daControl.getSelected();
+//                    
+//		    ADRequirementsManager reqMgr = 
+//                        ADRequirementsManager.instance();
+//		    
+//                    if (reqMgr != null) 
+//                    { 
+//			reqMgr.addSatisfiers(satisfiers, reqTreeItems);		    		
+//		    }
+//		}
+//            }
+//	}
+//
+//        if (elements.size() != 0)
+//        {
+//            TopComponent topComp = WindowManager.getDefault().
+//                  findMode("editor").getSelectedTopComponent(); // NOI18N
+//            
+//            if (topComp != null)
+//            {
+//                ADDrawingAreaControl daControl = (ADDrawingAreaControl)topComp
+//                    .getLookup().lookup(ADDrawingAreaControl.class);
+//
+//                if (daControl != null)
+//                {
+//                   // Fixed issue 103231.
+//                   // Check if the Project tab is currently actived. If yes,
+//                   // process the actived node and deactivate any selected item on palette
+//                   
+//                   // Get the currently active top component
+//                   TopComponent activeTopComp = WindowManager.getDefault().getRegistry().getActivated();
+//                   if (activeTopComp != null && "Projects".equals(activeTopComp.getName()))
+//                   {
+//                      // if an item on platte was selected, deselected it
+//                      String selectedPaletteItem = daControl.getSelectedPaletteButton();
+//                      if (selectedPaletteItem != null && selectedPaletteItem.length() > 0 )
+//                      {
+//                         daControl.setSelectStateOnPalette();
+//                         daControl.switchToDefaultState();
+//                      }
+//                      List<IETGraphObject> selitems = daControl.getSelected3();
+//                      
+//                      daControl.getGraphWindow().deselectAll(true);
+//                      daControl.refresh(true);
+//                      
+//                      List<IETGraphObject> addedNodes =
+//                            daControl.addNodeToCenter(elements);
+//                      
+//                      if (addedNodes == null || addedNodes.size() == 0)
+//                         daControl.selectThese(selitems);
+//                      
+//                      else
+//                         daControl.selectThese(addedNodes);
+//                      
+//                      daControl.setFocus();
+//                      topComp.requestActive();
+//                   }
+//                }
+//            }
+//        }
     }
     
     protected int mode()
@@ -198,14 +198,14 @@ public final class AddToDiagramAction extends CookieAction
     {
         return null;
     }
-
-    private void addImportedElements(
-        ADDrawingAreaControl drawingAreaCtrl, ArrayList<IElement> elements)
-    {
-        for (IElement ele: elements)
-        {
-            drawingAreaCtrl.processOnDropElement(ele);
-        }
-    }
+//
+//    private void addImportedElements(
+//        ADDrawingAreaControl drawingAreaCtrl, ArrayList<IElement> elements)
+//    {
+//        for (IElement ele: elements)
+//        {
+//            drawingAreaCtrl.processOnDropElement(ele);
+//        }
+//    }
 }
 

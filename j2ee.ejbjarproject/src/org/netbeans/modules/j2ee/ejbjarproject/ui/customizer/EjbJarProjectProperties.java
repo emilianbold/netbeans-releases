@@ -292,7 +292,7 @@ public class EjbJarProjectProperties {
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
         SpecificationVersion minimalSourceLevel = null;
-        if (evaluator.getProperty(J2EE_PLATFORM).equals(ProjectProperties.JAVA_EE_5)) {
+        if (ProjectProperties.JAVA_EE_5.equals(evaluator.getProperty(J2EE_PLATFORM))) {
             minimalSourceLevel = new SpecificationVersion(ProjectProperties.JAVA_EE_5);
         }
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET), minimalSourceLevel);
@@ -327,7 +327,7 @@ public class EjbJarProjectProperties {
         JAVADOC_WINDOW_TITLE_MODEL = projectGroup.createStringDocument( evaluator, JAVADOC_WINDOW_TITLE );
         JAVADOC_PREVIEW_MODEL = privateGroup.createToggleButtonModel( evaluator, JAVADOC_PREVIEW );
         JAVADOC_ADDITIONALPARAM_MODEL = projectGroup.createStringDocument( evaluator, JAVADOC_ADDITIONALPARAM );
-        
+
         // CustomizerRun
         J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel( 
             privateProperties.getProperty(J2EE_SERVER_INSTANCE), projectProperties.getProperty(J2EE_PLATFORM));
@@ -523,15 +523,7 @@ public class EjbJarProjectProperties {
                     item.getType() == ClassPathSupport.Item.TYPE_JAR ) {
                 refHelper.destroyReference(item.getReference());
                 if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
-                    //oh well, how do I do this otherwise??
-                    EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    if (item.getJavadocProperty() != null) {
-                        ep.remove(item.getJavadocProperty());
-                    }
-                    if (item.getSourceProperty() != null) {
-                        ep.remove(item.getSourceProperty());
-                    }
-                    updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                    item.removeSourceAndJavadoc(updateHelper);
                 }
             }
         }

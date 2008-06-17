@@ -54,6 +54,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
+import org.openide.util.SharedClassObject;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.NamedServicesLookupTest;
 
@@ -206,4 +207,14 @@ public class NamedFSServicesLookupTest extends NamedServicesLookupTest{
     
     public static final class Inst extends Object {
     }
+
+    public void testSharedClassObject() throws Exception {
+        Shared instance = SharedClassObject.findObject(Shared.class, true);
+        FileUtil.createData(root, "dir/" + Shared.class.getName().replace('.', '-') + ".instance");
+        Lookup l = Lookups.forPath("dir");
+        assertSame(instance, l.lookup(Shared.class));
+    }
+
+    public static final class Shared extends SharedClassObject {}
+
 }

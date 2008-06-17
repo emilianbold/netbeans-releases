@@ -128,7 +128,7 @@ public final class Validator extends BpelValidator {
     StringBuilder builder = new StringBuilder();
 
     for (String string : set) {
-      builder.append( string );
+      builder.append(string);
       builder.append(", "); // NOI18N
     }
     String key;
@@ -167,7 +167,7 @@ public final class Validator extends BpelValidator {
       if (list != null) {
           for (Variable variable : list) {
               String name = variable.getVariableName();
-              set.remove( name );
+              set.remove(name);
           }
       }
       if (entity instanceof VariableDeclarationScope) {
@@ -200,7 +200,7 @@ public final class Validator extends BpelValidator {
       String tag = entity.getPeer().getLocalName();
       String attr = ((MappedReference) reference).getAttribute().getName();
 
-      addQuickFix("FIX_Reference", entity, tag, attr, QuickFix.get(entity, (Reference<Referenceable>) reference)); // NOI18N
+      addQuickFix("FIX_SA00010", entity, tag, attr, QuickFix.get(entity, (Reference<Referenceable>) reference)); // NOI18N
     }
   }
 

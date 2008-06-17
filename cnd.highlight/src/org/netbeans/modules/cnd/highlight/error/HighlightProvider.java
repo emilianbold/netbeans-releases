@@ -43,20 +43,22 @@ package org.netbeans.modules.cnd.highlight.error;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.Document;
+import javax.swing.text.Position;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.HintsController;
-import org.netbeans.spi.editor.hints.Severity;
+import org.openide.loaders.DataObject;
 import org.openide.text.PositionBounds;
+import org.openide.text.PositionRef;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -64,9 +66,21 @@ import org.openide.util.NbBundle;
  */
 public class HighlightProvider  {
     
+    /** for test purposes only! */
+    public interface Hook {
+        void highlightingDone(String absoluteFileName);
+    }
+    
+    private Hook hook;
+    
     public static final boolean TRACE_ANNOTATIONS = Boolean.getBoolean("cnd.highlight.trace.annotations"); // NOI18N
     
     private static final HighlightProvider instance = new HighlightProvider();
+    
+    /** for test purposes only! */
+    public synchronized  void setHook(Hook hook) {
+        this.hook = hook;
+    }
     
     public static HighlightProvider getInstance(){
         return instance;
@@ -76,10 +90,14 @@ public class HighlightProvider  {
     private HighlightProvider() {
     }
     
-    /* package */ void update(CsmFile file, Document doc) {
+    /* package */ void update(CsmFile file, Document doc, DataObject dao) {
         assert doc!=null || file==null;
         if (doc instanceof BaseDocument){
-            addAnnotations((BaseDocument)doc, file);
+            addAnnotations((BaseDocument)doc, file, dao);
+            Hook theHook = this.hook;
+            if( theHook != null ) {
+                theHook.highlightingDone(file.getAbsolutePath().toString());
+            }
         }
     }
     
@@ -90,7 +108,15 @@ public class HighlightProvider  {
         }
     }
     
-    private void addAnnotations(BaseDocument doc, CsmFile file) {
+    private static org.netbeans.spi.editor.hints.Severity getSeverity(CsmErrorInfo info) {
+        switch( info.getSeverity() ) {
+            case ERROR:     return org.netbeans.spi.editor.hints.Severity.ERROR;
+            case WARNING:   return org.netbeans.spi.editor.hints.Severity.WARNING;
+            default:        throw new IllegalArgumentException("Unexpected severity: " + info.getSeverity()); //NOI18N
+        }
+    }
+    
+    private void addAnnotations(BaseDocument doc, CsmFile file, DataObject dao) {
 //        removing validation is questionable but it seems it's faster to just reannotate file
 //        if (!isNeededUpdateAnnotations(doc, file)) {
 //            return;
@@ -98,32 +124,41 @@ public class HighlightProvider  {
         
         removeAnnotations(doc);
         
+        List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
         try {
-            List<ErrorDescription> descs = new ArrayList<ErrorDescription>();
-            for (Iterator<CsmInclude> it = file.getIncludes().iterator(); it.hasNext();) {
-                CsmInclude incl = it.next();
-                if (incl.getIncludeFile() == null) {
-                    PositionBounds pb = CsmUtilities.createPositionBounds(incl);
-                    descs.add(ErrorDescriptionFactory.createErrorDescription(Severity.ERROR, 
-                            NbBundle.getMessage(HighlightProvider.class, "HighlightProvider_IncludeMissed", getIncludeText(incl)), 
-                            doc, pb.getBegin().getPosition(), pb.getEnd().getPosition()));
+            if (TRACE_ANNOTATIONS) System.err.printf("\nSetting annotations for %s\n", file);
+            for( CsmErrorInfo info : CsmErrorProvider.getDefault().getErrors(doc, file) ) {
+                PositionBounds pb = createPositionBounds(dao, info.getStartOffset(), info.getEndOffset());
+                ErrorDescription desc = null;
+                if( pb != null ) {
+                    desc = ErrorDescriptionFactory.createErrorDescription(
+                            getSeverity(info), info.getMessage(), doc, pb.getBegin().getPosition(), pb.getEnd().getPosition());
+                    descriptions.add(desc);
+                    if (TRACE_ANNOTATIONS) System.err.printf("\tadded %s\n", desc);
+                } else {
+                    if (TRACE_ANNOTATIONS) System.err.printf("\tCan't create PositionBounds for %s\n", info);
                 }
             }
-            HintsController.setErrors(doc, HighlightProvider.class.getName(), descs);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
         }
+        HintsController.setErrors(doc, HighlightProvider.class.getName(), descriptions);
+    }
+    
+    
+    private static PositionBounds createPositionBounds(DataObject dao, int start, int end) {
+        CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(dao);
+        if (ces != null) {
+            PositionRef posBeg = ces.createPositionRef(start, Position.Bias.Forward);
+            PositionRef posEnd = ces.createPositionRef(end, Position.Bias.Backward);
+            return new PositionBounds(posBeg, posEnd);
+        }
+        return null;
     }
     
     private void removeAnnotations(Document doc) {
         HintsController.setErrors(doc, HighlightProvider.class.getName(), Collections.<ErrorDescription>emptyList());
     }
     
-    private static String getIncludeText(CsmInclude incl){
-        if (incl.isSystem()){
-            return "<"+incl.getIncludeName()+">"; // NOI18N
-        }
-        return "\""+incl.getIncludeName()+"\""; // NOI18N
-    }
     
 }

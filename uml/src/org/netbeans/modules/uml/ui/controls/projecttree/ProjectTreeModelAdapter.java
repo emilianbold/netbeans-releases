@@ -313,8 +313,8 @@ public class ProjectTreeModelAdapter implements IProjectTreeModel
         return null;
     }
 
-    public boolean isDiagramsRootNode(ITreeItem node)
+    public ITreeItem getModelRootNode(ITreeItem node)
     {
-        return false;
+        return null;
     }
 }

@@ -669,7 +669,7 @@ public final class JsfForm implements ActiveEditorDrop {
                             stringBuffer.append("<h:panelGroup>\n");
                             stringBuffer.append("<h:outputText rendered=\"#{empty " + variable + "." + propName + "}\" value=\"(No Items)\"/>\n");
                             stringBuffer.append("<h:dataTable value=\"#{" + variable + "." + propName + "}\" var=\"item\" \n");
-                            stringBuffer.append("border=\"0\" cellpadding=\"2\" cellspacing=\"0\" rowClasses=\"jsfcrud_oddrow,jsfcrud_evenrow\" rules=\"all\" style=\"border:solid 1px\" \n rendered=\"#{not empty " + variable + "." + propName + "}\">\n"); //NOI18N
+                            stringBuffer.append("border=\"0\" cellpadding=\"2\" cellspacing=\"0\" rowClasses=\"jsfcrud_odd_row,jsfcrud_even_row\" rules=\"all\" style=\"border:solid 1px\" \n rendered=\"#{not empty " + variable + "." + propName + "}\">\n"); //NOI18N
                             String commands = "<h:column>\n"
                                     + "<f:facet name=\"header\">\n"
                                     + "<h:outputText escape=\"false\" value=\"&nbsp;\"/>\n"

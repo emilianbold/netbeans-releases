@@ -47,9 +47,6 @@ made subject to such option by the copyright holder.
     <folder name="Services">
         <folder name="NoOps">
             <file name="NoIndentEngine.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.beaninfo.editors.Bundle"/>
-                <!-- The special icon for no indentation doesn't exist yet; using the default one -->
-                <!-- <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/beaninfo/editors/resources/noIndentationEngine.gif"/> -->
                 <attr name="instanceOf" stringvalue="org.openide.ServiceType,org.openide.text.IndentEngine,org.openide.text.IndentEngine$Default" />
                 <attr name="instanceClass" stringvalue="org.openide.text.IndentEngine$Default" />
                 <attr name="instanceCreate" methodvalue="org.openide.text.IndentEngine.getDefault" />

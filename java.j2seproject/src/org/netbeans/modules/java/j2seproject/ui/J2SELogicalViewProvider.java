@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JSeparator;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -86,7 +85,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -325,8 +323,8 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             actions.add(ProjectSensitiveActions.projectCommandAction(JavaProjectConstants.COMMAND_JAVADOC, bundle.getString("LBL_JavadocAction_Name"), null)); // NOI18N
             actions.add(null);
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, bundle.getString("LBL_RunAction_Name"), null)); // NOI18N
-            addFromLayers(actions, "Projects/Debugger_Actions_temporary"); //NOI18N
-            addFromLayers(actions, "Projects/Profiler_Actions_temporary"); //NOI18N
+            actions.addAll(Utilities.actionsForPath("Projects/Debugger_Actions_temporary")); //NOI18N
+            actions.addAll(Utilities.actionsForPath("Projects/Profiler_Actions_temporary")); //NOI18N
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"), null)); // NOI18N
             actions.add(CommonProjectActions.setProjectConfigurationAction());
             actions.add(null);
@@ -342,7 +340,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             actions.add(SystemAction.get(FindAction.class));
             
             // honor 57874 contact
-            addFromLayers(actions, "Projects/Actions"); //NOI18N
+            actions.addAll(Utilities.actionsForPath("Projects/Actions")); //NOI18N
             
             actions.add(null);
             if (broken) {
@@ -352,17 +350,6 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             
             return actions.toArray(new Action[actions.size()]);
             
-        }
-        
-        private void addFromLayers(List<Action> actions, String path) {
-            Lookup look = Lookups.forPath(path);
-            for (Object next : look.lookupAll(Object.class)) {
-                if (next instanceof Action) {
-                    actions.add((Action) next);
-                } else if (next instanceof JSeparator) {
-                    actions.add(null);
-                }
-            }
         }
         
         private void setBroken(boolean broken) {

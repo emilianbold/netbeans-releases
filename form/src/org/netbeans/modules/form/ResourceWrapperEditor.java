@@ -255,6 +255,9 @@ public class ResourceWrapperEditor implements ExPropertyEditor, FormAwareEditor,
             setValue(resValue);
         }
         else { // resource panel disabled
+            if (property != null) {
+                ResourceSupport.setExcludedProperty(property, true);
+            }
             propertyValue = delegateEditor.getValue();
             firePropertyChange();
         }

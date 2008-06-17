@@ -112,7 +112,7 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
 
     private void updateValidation() {
         cbKeepMarks.setEnabled(cbMarkOccurrences.isSelected());
-        cbSysMacro.setEnabled(cbMacros.isSelected());
+        cbSysMacro.setEnabled(cbMacros == null ? false : cbMacros.isSelected());
     }
 
     private void initMnemonics() {
@@ -148,6 +148,11 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
             entities.add(new Entity(se, cb));
             if (SemanticEntitiesProvider.MACROS.equals(se.getName())) {
                 cbMacros = cb;
+                cbMacros.addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        updateValidation();
+                    }
+                });
             }
         }
 

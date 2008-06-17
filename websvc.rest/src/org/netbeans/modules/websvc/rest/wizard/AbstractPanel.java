@@ -113,11 +113,11 @@ public abstract class AbstractPanel implements ChangeListener, FinishablePanel, 
         }
     }
 
-    static void clearErrorMessage(WizardDescriptor wizard) {
+    public static void clearErrorMessage(WizardDescriptor wizard) {
         setErrorMessage(wizard, (String) null);
     }
     
-    static void setErrorMessage(WizardDescriptor wizard, Throwable t) {
+    public static void setErrorMessage(WizardDescriptor wizard, Throwable t) {
         String message = "";
         if (t != null) {
             message = (t.getLocalizedMessage());
@@ -133,7 +133,7 @@ public abstract class AbstractPanel implements ChangeListener, FinishablePanel, 
         wizard.putProperty("WizardPanel_errorMessage", message);
     }
     
-    static void setErrorMessage(WizardDescriptor wizard, String key) {
+    public static void setErrorMessage(WizardDescriptor wizard, String key) {
         String message = "";
         if (key != null) {
             message = (NbBundle.getMessage(EntitySelectionPanel.class, key));

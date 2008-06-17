@@ -350,6 +350,9 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         if (!resume) {
             resume = checkWhetherResumeToFinishStep(thread);
         }
+        if (!resume) {
+            ((JPDAThreadImpl) getDebugger().getThread(thread)).setCurrentBreakpoint(breakpoint);
+        }
         //S ystem.out.println("BreakpointImpl.perform end");
         return resume; 
     }

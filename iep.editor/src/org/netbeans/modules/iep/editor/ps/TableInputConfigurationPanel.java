@@ -8,15 +8,21 @@ package org.netbeans.modules.iep.editor.ps;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+import java.util.List;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 
 import org.netbeans.modules.iep.editor.model.NameGenerator;
 import org.netbeans.modules.iep.editor.share.SharedConstants;
+import org.netbeans.modules.iep.editor.tcg.dialog.NotifyHelper;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.Property;
+import org.netbeans.modules.iep.model.SchemaAttribute;
 import org.netbeans.modules.iep.model.SchemaComponent;
+import org.netbeans.modules.iep.model.SchemaComponentContainer;
 import org.netbeans.modules.iep.model.TableInputOperatorComponent;
 import org.openide.util.NbBundle;
 
@@ -30,6 +36,9 @@ public class TableInputConfigurationPanel extends javax.swing.JPanel {
     
     private static final String CONFIG_EXTERNAL_TABLE = "CONFIG_EXTERNAL_TABLE";
     
+    private ConfigurationType internalTableType = new ConfigurationType(CONFIG_INTERNAL_TABLE, NbBundle.getMessage(TableInputConfigurationPanel.class, "TableInputConfigurationPanel_ConfigurationType_InternalTable"));
+    private ConfigurationType externalTableType = new ConfigurationType(CONFIG_EXTERNAL_TABLE, NbBundle.getMessage(TableInputConfigurationPanel.class, "TableInputConfigurationPanel_ConfigurationType_ExternalTable"));
+        
     private TableInputInternalTableConfigurationPanel mInternalTableConfigPanel;
     private TableInputExternalTableConfigurationPanel mExternalTableConfigPanel;
 
@@ -48,13 +57,99 @@ public class TableInputConfigurationPanel extends javax.swing.JPanel {
         
     }
 
-    public void validate() {
+    public void validate(PropertyChangeEvent evt) throws PropertyVetoException {
+     
+        //validate name
+        String nameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.NAME");
+        Property nameProp = mComponent.getProperty(SharedConstants.NAME_KEY);
+        GUIValidationHelper.validateProperty(nameStr, getOperatorName(), nameProp, evt);
+       
+        GUIValidationHelper.validateForUniqueOperatorName(mComponent.getModel(), mComponent, getOperatorName(), evt);
+      
+        //validate schema
+        Property outputSchemaNameProp = mComponent.getProperty(SharedConstants.OUTPUT_SCHEMA_ID_KEY);
+        String outputSchemaNameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.OUTPUT_SCHEMA_NAME");
+        GUIValidationHelper.validateProperty(outputSchemaNameStr, getOutputSchemaName(), outputSchemaNameProp, evt);
         
+        GUIValidationHelper.validateForUniqueSchemaName(mComponent.getModel(), mComponent, getOutputSchemaName(), evt);
+        
+        String globalId = getGlobalId();
+        if ((globalId == null || globalId.trim().equals(""))) {
+            String msg = NbBundle.getMessage(DefaultCustomEditor.class,
+                    "CustomEditor.GLOBAL_ID_MUST_BE_DEFINED_FOR_A_GLOBAL_ENTITY");
+            throw new PropertyVetoException(msg, evt);
+        }
     }
     
     public void store() {
+        IEPModel model = mComponent.getModel();
+        model.startTransaction();
+        SchemaComponentContainer scContainer = model.getPlanComponent().getSchemaComponentContainer();
         
+        try {
+            // name
+            mComponent.setName(getOperatorName());
+            
+            // schema
+            String newSchemaName = getOutputSchemaName();;
+            SchemaComponent outputSchema = mComponent.getOutputSchemaId();
+            String schemaName = null;
+            if(outputSchema != null) {
+                schemaName = outputSchema.getName();
+            }
+
+            boolean schemaExist = schemaName != null && !schemaName.trim().equals("") && outputSchema != null;
+            //ritList attributes = mSelectPanel.getAttributeMetadataAsList();
+            List<SchemaAttribute> attrs = mSelectPanel.getAttributes();
+            if (schemaExist) {
+                if (!newSchemaName.equals(schemaName)) {
+                    model.startTransaction();
+                    SchemaComponent sc = model.getFactory().createSchema(model);
+                    sc.setName(newSchemaName);
+                    sc.setTitle(newSchemaName);
+                    sc.setSchemaAttributes(attrs);
+
+
+                    scContainer.addSchemaComponent(sc);
+                    scContainer.removeSchemaComponent(outputSchema);
+
+                    mComponent.setOutputSchemaId(sc);
+                }else {
+                    outputSchema.setSchemaAttributes(attrs);
+                }
+            } else {
+                
+                SchemaComponent sc = model.getFactory().createSchema(model);
+                sc.setName(newSchemaName);
+                sc.setTitle(newSchemaName);
+                sc.setSchemaAttributes(attrs);
+
+                scContainer.addSchemaComponent(sc);
+                mComponent.setOutputSchemaId(sc);
+            }
+            
+            //globalid
+            mComponent.setGlobalId(getGlobalId());
+            
+            if(configurationTypeComboBox.getSelectedItem().equals(externalTableType)) {
+                //external table
+                mComponent.setExternalTableName(mExternalTableConfigPanel.getExternalTableName());
+                //jndi name
+                mComponent.setDatabaseJndiName(mExternalTableConfigPanel.getJNDIName());
+            } else {
+                //external table
+                mComponent.setExternalTableName("");
+                //jndi name
+                mComponent.setDatabaseJndiName("");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            NotifyHelper.reportError(e.getMessage());
+        }
+        
+        model.endTransaction();
     }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -96,7 +191,7 @@ public class TableInputConfigurationPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(jLabel1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(configurationTypeComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 157, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(configurationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -131,8 +226,7 @@ private void configurationTypeComboBoxItemStateChanged(java.awt.event.ItemEvent 
         this.configurationPanel.add(this.mExternalTableConfigPanel, CONFIG_EXTERNAL_TABLE);
         
         Vector v = new Vector();
-        ConfigurationType internalTableType = new ConfigurationType(CONFIG_INTERNAL_TABLE, NbBundle.getMessage(TableInputConfigurationPanel.class, "TableInputConfigurationPanel_ConfigurationType_InternalTable"));
-        ConfigurationType externalTableType = new ConfigurationType(CONFIG_EXTERNAL_TABLE, NbBundle.getMessage(TableInputConfigurationPanel.class, "TableInputConfigurationPanel_ConfigurationType_ExternalTable"));
+        
         
         v.add(internalTableType);
         v.add(externalTableType);
@@ -140,6 +234,24 @@ private void configurationTypeComboBoxItemStateChanged(java.awt.event.ItemEvent 
         configurationTypeComboBox.setModel(new DefaultComboBoxModel(v));
         
         mCardLayout.show(this.configurationPanel, CONFIG_INTERNAL_TABLE);
+        
+        //if any of the external table configuration is specified 
+        //then it means we need to show external table configuration
+        //option gui
+        
+        //external table name
+        String externalTableName = mComponent.getExternalTableName();
+        if(externalTableName != null && !externalTableName.trim().equals("")) {
+            configurationTypeComboBox.setSelectedItem(externalTableType);
+            mCardLayout.show(this.configurationPanel, CONFIG_EXTERNAL_TABLE);
+            mExternalTableConfigPanel.setExternalTableName(externalTableName);
+        }
+        
+        //jndi name
+        String databaseJNDIName  = mComponent.getDatabaseJndiName();
+        if(databaseJNDIName != null) {
+            mExternalTableConfigPanel.setJNDIName(databaseJNDIName);
+        }
         
         // name
         String operatorName = mComponent.getName();
@@ -163,49 +275,49 @@ private void configurationTypeComboBoxItemStateChanged(java.awt.event.ItemEvent 
         String globalId = mComponent.getGlobalId();
         setGlobalId(globalId);
         
-        //if any of the external table configuration is specified 
-        //then it means we need to show external table configuration
-        //option gui
         
-        //external table name
-        String externalTableName = mComponent.getExternalTableName();
-        if(externalTableName != null) {
-            mCardLayout.show(this.configurationPanel, CONFIG_EXTERNAL_TABLE);
-            mExternalTableConfigPanel.setExternalTableName(externalTableName);
+        
+    }
+    
+    private String getOperatorName() {
+        if(configurationTypeComboBox.getSelectedItem().equals(internalTableType)) {
+            return mInternalTableConfigPanel.getOperatorName();
+        } else {
+            return mExternalTableConfigPanel.getOperatorName();
         }
-        
-        //jndi name
-        String databaseJNDIName  = mComponent.getDatabaseJndiName();
-        if(databaseJNDIName != null) {
-            mExternalTableConfigPanel.setJNDIName(databaseJNDIName);
-        }
-        
     }
     
     private void setOperatorName(String operatorName) {
-        
-        if(configurationTypeComboBox.getSelectedItem().equals(CONFIG_INTERNAL_TABLE)) {
             mInternalTableConfigPanel.setOperatorName(operatorName);
-        } else {
             mExternalTableConfigPanel.setOperatorName(operatorName);
-        }
     }
     
     private void setOutputSchemaName(String outputSchemaName) {
-        
-        if(configurationTypeComboBox.getSelectedItem().equals(CONFIG_INTERNAL_TABLE)) {
             mInternalTableConfigPanel.setOutputSchemaName(outputSchemaName);
-        } else {
             mExternalTableConfigPanel.setOutputSchemaName(outputSchemaName);
+    }
+    
+    private String getOutputSchemaName() {
+        
+        if(configurationTypeComboBox.getSelectedItem().equals(internalTableType)) {
+            return mInternalTableConfigPanel.getOutputSchemaName();
+        } else {
+            return mExternalTableConfigPanel.getOutputSchemaName();
         }
     }
     
     private void setGlobalId(String globalId) {
-        
-        if(configurationTypeComboBox.getSelectedItem().equals(CONFIG_INTERNAL_TABLE)) {
             mInternalTableConfigPanel.setGlobalId(globalId);
-        } else {
             mExternalTableConfigPanel.setGlobalId(globalId);
+        
+    }
+    
+    private String getGlobalId() {
+        
+        if(configurationTypeComboBox.getSelectedItem().equals(internalTableType)) {
+            return mInternalTableConfigPanel.getGlobalId();
+        } else {
+            return mExternalTableConfigPanel.getGlobalId();
         }
     }
     

@@ -54,6 +54,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.vmd.componentssupport.ui.helpers.BaseHelper;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileSystem;
@@ -67,23 +68,24 @@ import org.openide.util.NbBundle;
  */
 final class NewLibraryDescriptor implements WizardDescriptor.InstantiatingIterator {
     
-    private static final String LIB_STEPS_COUNT = "LBL_LibStepsCount";      // NOI18N
+    private static final String WIZARD_TITLE    = "LBL_LibraryWizardTitle";   // NOI18N
+    private static final String LIB_STEPS_COUNT = "LBL_LibWizardStepsCount";    // NOI18N
     
-    public static final String  LIBRARY_STEP    = "LBL_LibSelectLibrary";   // NOI18N
+    public static final String  LIBRARY_STEP    = "LBL_LibSelectLibraryStep";   // NOI18N
     public static final String  NAME_LOCATION_STEP
-                                                = "LBL_LibNameAndLocation"; // NOI18N
+                                                = "LBL_LibNameAndLocationStep"; // NOI18N
     
-    public static final String LIBRARY          = "library";                // NOI18N
-    public static final String DISPLAY_NAME     = "displayName";            // NOI18N
-    public static final String LIB_NAME         = "libName";                // NOI18N
+    public static final String LIBRARY          = "library";                    // NOI18N
+    public static final String DISPLAY_NAME     = "displayName";                // NOI18N
+    public static final String LIB_NAME         = "libName";                    // NOI18N
 
     public static final String EXISTING_LIBRARIES    
-                                                = "existLibrary";           // NOI18N
+                                                = "existLibrary";               // NOI18N
     public static final String EXISTING_LIB_NAMES    
-                                                = "existLibName";           // NOI18N
+                                                = "existLibName";               // NOI18N
     
     public static final String LIBRARY_TYPE_J2SE    
-                                                = "j2se";           // NOI18N
+                                                = "j2se";                       // NOI18N
     
     
     
@@ -119,6 +121,9 @@ final class NewLibraryDescriptor implements WizardDescriptor.InstantiatingIterat
                         steps);
             }
         }    
+        
+        wizardDescriptor.setTitle(
+                NbBundle.getMessage(NewLibraryDescriptor.class, WIZARD_TITLE));
         
         // put properties useful for current wizard into wizardDescriptor
         wizardDescriptor.putProperty( 
@@ -255,8 +260,8 @@ final class NewLibraryDescriptor implements WizardDescriptor.InstantiatingIterat
     
     WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] { 
-              new SelectLibraryPanel(), 
-              new LibNameAndLocationPanel()
+              new SelectLibraryWizardPanel(), 
+              new NameAndLocationWizardPanel()
         };
     }
 
@@ -273,15 +278,15 @@ final class NewLibraryDescriptor implements WizardDescriptor.InstantiatingIterat
         String projectName = (String)myMainWizard.getProperty( 
                 CustomComponentWizardIterator.PROJECT_NAME);
         if ( codeNameBase == null ){
-            codeNameBase = BasicConfVisualPanel.getDefaultCodeNameBase(projectName);
+            codeNameBase = BaseHelper.getDefaultCodeNameBase(projectName);
         }
         return codeNameBase;
     }
     
     private String[] createSteps() {
         return new String[] { 
-                NbBundle.getMessage(SelectLibraryPanel.class, LIBRARY_STEP) ,
-                NbBundle.getMessage(SelectLibraryPanel.class, NAME_LOCATION_STEP) 
+                NbBundle.getMessage(NewLibraryDescriptor.class, LIBRARY_STEP) ,
+                NbBundle.getMessage(NewLibraryDescriptor.class, NAME_LOCATION_STEP) 
                         };
     }
     

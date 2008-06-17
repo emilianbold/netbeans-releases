@@ -89,4 +89,16 @@ public class VisualizerNodeTest extends NbTestCase {
         
         assertEquals("Index is 1", 1, ta.getIndex(tm));
     }
+    
+    public void testIconsAreShared() {
+        AbstractNode a1 = new AbstractNode(Children.LEAF);
+        VisualizerNode v1 = VisualizerNode.getVisualizer(null, a1);
+        Icon icon1 = v1.getIcon(false, false);
+        
+        AbstractNode a2 = new AbstractNode(Children.LEAF);
+        VisualizerNode v2 = VisualizerNode.getVisualizer(null, a2);
+        Icon icon2 = v2.getIcon(false, false);
+        
+        assertSame("Icon instances should be same", icon1, icon2);
+    }
 }

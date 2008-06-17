@@ -41,14 +41,11 @@
 
 package org.netbeans.modules.masterfs.filebasedfs.naming;
 
-import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
-
 import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
-import org.openide.util.Utilities;
 
 /**
  * @author Radek Matous
@@ -57,7 +54,7 @@ public final class NamingFactory {
     private static final Map nameMap = new WeakHashMap();
 
     public static synchronized FileNaming fromFile(final File file) {
-        final LinkedList list = new LinkedList();
+        final LinkedList<File> list = new LinkedList<File>();
         File current = file;
         while (current != null) {
             list.addFirst(current);
@@ -66,8 +63,13 @@ public final class NamingFactory {
 
         FileNaming fileName = null;
         for (int i = 0; i < list.size(); i++) {
-            File f = (File) list.get(i);
-            //TODO: UNC?
+            File f = list.get(i);
+            if("\\\\".equals(f.getPath())) {
+                // UNC file - skip \\, \\computerName
+                i++;
+                continue;
+            }
+            // returns unknown if last in the list, otherwise directory
             FileType type = (i == list.size() - 1) ? FileType.unknown : FileType.directory;
             fileName = NamingFactory.registerInstanceOfFileNaming(fileName, f, type);
         }
@@ -254,26 +256,17 @@ public final class NamingFactory {
         return retVal;
     }
 
-    public static enum FileType {file, directory, unc, unknown}
-    private static FileNaming createFileNaming(final File f, final FileNaming parentName) {    
-        return createFileNaming(f, parentName, FileType.unknown);
-    }
+    public static enum FileType {file, directory, unknown}
     
     private static FileNaming createFileNaming(final File f, final FileNaming parentName, FileType type) {
         FileName retVal = null;
         //TODO: check all tests for isFile & isDirectory
-        final FileInfo fInfo = new FileInfo(f);
         if (type.equals(FileType.unknown)) {
             if (f.isDirectory()) {
                 type = FileType.directory;
             } else {
                 //important for resolving  named pipes
                  type = FileType.file;
-                 /*else {
-                    if (fInfo.isUNCFolder()) {
-                        type = FileType.unc;
-                    }
-                }*/ //UNC doesn't work now anyway
             }            
         }
         
@@ -284,12 +277,8 @@ public final class NamingFactory {
             case directory:
                 retVal = new FolderName(parentName, f);
                 break;
-            case unc:
-                retVal = new UNCName(parentName, f);
-                break;
-                                
         }
         return retVal;
     }
 
-                }
+}

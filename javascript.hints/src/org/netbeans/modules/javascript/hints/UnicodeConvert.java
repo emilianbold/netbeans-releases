@@ -27,7 +27,6 @@
  */
 package org.netbeans.modules.javascript.hints;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +34,6 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.mozilla.javascript.Node;
 import org.mozilla.javascript.Token;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -86,7 +84,7 @@ public class UnicodeConvert extends JsAstRule {
                     return;
                 }
                 try {
-                    Document doc = info.getDocument();
+                    BaseDocument doc = context.doc;
                     if (lexOffset < doc.getLength()-i-1) {
                         char d = doc.getText(lexOffset+i, 1).charAt(0);
                         if (d != c) {
@@ -97,15 +95,13 @@ public class UnicodeConvert extends JsAstRule {
                     }
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
                 }
 //                lexOffset++; // Skip " ?
                 lexOffset += i;
                 
                 OffsetRange range = new OffsetRange(lexOffset, lexOffset+1);
                 List<HintFix> fixList = new ArrayList<HintFix>();
-                fixList.add(new ConvertFix(info, lexOffset, c));
+                fixList.add(new ConvertFix(context, lexOffset, c));
                 fixList.add(new MoreInfoFix("unicodeconvert")); // NOI18N
                 String displayName = getDisplayName();
                 Hint desc = new Hint(this, displayName, info.getFileObject(), range, fixList, 1500);
@@ -169,12 +165,12 @@ public class UnicodeConvert extends JsAstRule {
     
     private static class ConvertFix implements PreviewableFix {
 
-        private CompilationInfo info;
-        private int lexOffset;
-        private char c;
+        private final JsRuleContext context;
+        private final int lexOffset;
+        private final char c;
 
-        ConvertFix(CompilationInfo info, int offset, char c) {
-            this.info = info;
+        ConvertFix(JsRuleContext context, int offset, char c) {
+            this.context = context;
             this.lexOffset = offset;
             this.c = c;
         }
@@ -196,7 +192,7 @@ public class UnicodeConvert extends JsAstRule {
         }
 
         public EditList getEditList() throws Exception {
-            BaseDocument doc = (BaseDocument) info.getDocument();
+            BaseDocument doc = context.doc;
             EditList edits = new EditList(doc);
             edits.replace(lexOffset, 1, getConverted(), false, 0);
             

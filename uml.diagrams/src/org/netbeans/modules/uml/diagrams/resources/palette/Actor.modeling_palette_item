@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<palette_item version="1.0">
+  <element name="Actor" />
+
+  <icon16 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/actor.png" />
+  <icon32 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/actor-32.png" />
+
+  <description localizing-bundle="org.netbeans.modules.uml.diagrams.resources.palette.Bundle"
+               display-name-key="NAME_Actor"
+               tooltip-key="HINT_Actor" />
+</palette_item>

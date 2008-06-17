@@ -109,9 +109,8 @@ public abstract class SvnCommand implements CommandNotificationListener {
     
     void prepareCommand() throws IOException {
         assert notificationHandler != null;
-        config(configDir, username, password, arguments);
         prepareCommand(arguments);
-        
+        config(configDir, username, password, arguments);        
     }
     
     /**
@@ -276,11 +275,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
         }
         
         public void add(String argument) {
-            if (argument.indexOf(' ') == -1) {
-                args.add(argument);
-            } else {
-                args.add("'" + argument + "'");
-            }
+            args.add(argument);
         }
 
         public void add(File... files) {
@@ -289,8 +284,8 @@ public abstract class SvnCommand implements CommandNotificationListener {
             }            
         }
         
-        public void add(File argument) {
-            add(argument.getAbsolutePath());
+        public void add(File file) {
+            add(file.getAbsolutePath());
         }
         
         public void add(SVNUrl url) {
@@ -349,7 +344,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
         public void addConfigDir(File configDir) {            
             if (configDir != null) {
                 arguments.add("--config-dir");
-                arguments.add(configDir.getAbsolutePath());
+                arguments.add(configDir);
             }
         }         
     

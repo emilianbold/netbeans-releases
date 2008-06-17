@@ -64,7 +64,6 @@ import javax.swing.text.html.HTMLDocument;
 
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.ExtKit;
-import org.netbeans.editor.ext.ExtSettingsDefaults;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 
 import org.openide.awt.HtmlBrowser;
@@ -111,21 +110,15 @@ public class DocumentationScrollPane extends JScrollPane {
         super();
  
         // Determine and use fixed preferred size
-        documentationPreferredSize = CompletionSettings.INSTANCE.documentationPopupPreferredSize();
+        documentationPreferredSize = CompletionSettings.getInstance().documentationPopupPreferredSize();
         setPreferredSize(null); // Use the documentationPopupPreferredSize
         
-        Color bgColor = CompletionSettings.INSTANCE.documentationBackgroundColor();
+        Color bgColor = new JEditorPane().getBackground();
+        bgColor = new Color(
+                Math.max(bgColor.getRed() - 8, 0 ), 
+                Math.max(bgColor.getGreen() - 8, 0 ), 
+                bgColor.getBlue());
         
-        // XXX Workaround. If the option is set to default use system settings.
-        // The bg color oprion should die.
-        if (ExtSettingsDefaults.defaultJavaDocBGColor.equals(bgColor)) {
-            bgColor = new JEditorPane().getBackground();
-            bgColor = new Color(
-                    Math.max(bgColor.getRed() - 8, 0 ), 
-                    Math.max(bgColor.getGreen() - 8, 0 ), 
-                    bgColor.getBlue());
-        }
-                
         // Add the completion doc view
         view = new HTMLDocView(bgColor);
         view.addHyperlinkListener(new HyperlinkAction());
@@ -136,7 +129,7 @@ public class DocumentationScrollPane extends JScrollPane {
         setFocusable(true);
     }
     
-    public void setPreferredSize(Dimension preferredSize) {
+    public @Override void setPreferredSize(Dimension preferredSize) {
         if (preferredSize == null) {
             preferredSize = documentationPreferredSize;
         }
@@ -308,10 +301,10 @@ public class DocumentationScrollPane extends JScrollPane {
         // #25715 - Attempt to search keymap for the keybinding that logically corresponds to the action
         KeyStroke[] ret = new KeyStroke[] { defaultKey };
         if (component != null) {
-            TextUI ui = component.getUI();
+            TextUI componentUI = component.getUI();
             Keymap km = component.getKeymap();
-            if (ui != null && km != null) {
-                EditorKit kit = ui.getEditorKit(component);
+            if (componentUI != null && km != null) {
+                EditorKit kit = componentUI.getEditorKit(component);
                 if (kit instanceof BaseKit) {
                      Action a = ((BaseKit)kit).getActionByName(editorActionName);
                     if (a != null) {
@@ -401,7 +394,7 @@ public class DocumentationScrollPane extends JScrollPane {
             setFocusPainted(false);
         }
 
-        public void setEnabled(boolean b) {
+        public @Override void setEnabled(boolean b) {
             super.setEnabled(b);
         }
         
@@ -415,18 +408,18 @@ public class DocumentationScrollPane extends JScrollPane {
             this.button = button;
         }
         
-        public void mouseEntered(MouseEvent ev) {
+        public @Override void mouseEntered(MouseEvent ev) {
             if (button.isEnabled()){
                 button.setContentAreaFilled(true);
                 button.setBorderPainted(true);
             }
         }
-        public void mouseExited(MouseEvent ev) {
+        public @Override void mouseExited(MouseEvent ev) {
             button.setContentAreaFilled(false);
             button.setBorderPainted(false);
         }
         
-        public void mouseClicked(MouseEvent evt) {
+        public @Override void mouseClicked(MouseEvent evt) {
             if (button.equals(bBack)){
                 backHistory();
             }else if(button.equals(bForward)){

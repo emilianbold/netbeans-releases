@@ -56,6 +56,11 @@ import static org.netbeans.modules.compapp.projects.jbi.JbiConstants.*;
  * @author jqian
  */
 public class ServiceUnitDescriptorEnhancer {
+    
+    // See config extension module
+    private static final String DISABLE_IN_BC = "disableInBC";
+    private static final String CODEGEN = "codegen";
+    private static final String ENDPOINT_CONFIG_NS = "http://www.sun.com/jbi/descriptor/config-endpoint";
 
     /**
      * Decorates consumes/provides endpoints using extension elements in CASA.
@@ -106,14 +111,31 @@ public class ServiceUnitDescriptorEnhancer {
                 casaDocument, endpoint, isConsumes);
         
         // 2. Copy child extension elements over from CASA to JBI
-        if (casaEndpointRefElement != null) {
+        if (casaEndpointRefElement != null) {            
             NodeList casaEndpointChildren = casaEndpointRefElement.getChildNodes();
             for (int k = 0; k < casaEndpointChildren.getLength(); k++) {
                 Node casaEndpointChild = casaEndpointChildren.item(k);
-                if (casaEndpointChild instanceof Element) {
+                if (casaEndpointChild instanceof Element) {    
+                    
+                    // #136868 Remove disabled BC endpoint when applicable, 
+                    // or skip cloning of this type of endpoint extension 
+                    // 'cause runtime doesn't understand it.
+                    Element casaEndpointExtension = (Element) casaEndpointChild;
+                    String extName = casaEndpointExtension.getNodeName();
+                    String nsValue = casaEndpointExtension.getAttribute("xmlns");
+                    // The cloned extension elements in the new CASA document  
+                    // are not namespace aware.
+                    if (CODEGEN.equals(extName) && ENDPOINT_CONFIG_NS.equals(nsValue)) {
+                        String disableInBCValue = casaEndpointExtension.getAttribute(DISABLE_IN_BC);
+                        if ("true".equalsIgnoreCase(disableInBCValue)) {
+                            jbiEndpointElement.getParentNode().removeChild(jbiEndpointElement);
+                        }
+                        continue;
+                    }
+
                     Node clonedNode = CasaBuilder.deepCloneCasaNode(
                                     casaEndpointChild, jbiDocument);
-                    jbiEndpointElement.appendChild(clonedNode);
+                    jbiEndpointElement.appendChild(clonedNode);                    
                 }
             }
         }

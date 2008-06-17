@@ -1,3 +1,5 @@
-Results for somefunction({}, {f:1}, {}); with queryType=COMPLETION and nameKind=PREFIX
+Code completion result for source line:
+somefunction({}, {f|:1}, {});
+(QueryType=COMPLETION, NameKind=PREFIX)
 PARAMETER  foo                                        <i>Configuration foo for parameter def</i>
 CALL       somefunction(... , def, ...)               configcalls.js

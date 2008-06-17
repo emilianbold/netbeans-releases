@@ -59,10 +59,11 @@ final class SelectLibraryVisualPanel extends JPanel {
 
     private static final long serialVersionUID = -3903508171781536427L;
     
-    public SelectLibraryVisualPanel(SelectLibraryPanel panel) {
+    public SelectLibraryVisualPanel(SelectLibraryWizardPanel panel) {
         myPanel = panel;
+        getAccessibleContext().setAccessibleName(getMessage("ACS_SelectLibraryPanel"));
         getAccessibleContext().setAccessibleDescription(getMessage("ACS_SelectLibraryPanel"));
-        putClientProperty("NewFileWizard_Title", getMessage("LBL_LibraryWizardTitle"));
+
         myInnerPanel = LibraryChooser.createPanel(null, new ClassLibraryFilter() );
         myInnerPanel.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -110,10 +111,6 @@ final class SelectLibraryVisualPanel extends JPanel {
         checkValidity();
     }
     
-    protected String getPanelName() {
-        return getMessage("LBL_SelectLibraryPanel_Title");
-    }
-    
     protected HelpCtx getHelp() {
         return new HelpCtx(SelectLibraryVisualPanel.class);
     }
@@ -135,6 +132,6 @@ final class SelectLibraryVisualPanel extends JPanel {
     
     private WizardDescriptor mySettings;
     private final LibraryChooser.Panel myInnerPanel;
-    private SelectLibraryPanel myPanel;
+    private SelectLibraryWizardPanel myPanel;
     
 }

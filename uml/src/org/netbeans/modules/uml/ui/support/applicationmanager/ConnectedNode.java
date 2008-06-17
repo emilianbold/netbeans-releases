@@ -48,35 +48,36 @@ package org.netbeans.modules.uml.ui.support.applicationmanager;
  *
  */
 public class ConnectedNode implements IConnectedNode {
-	protected INodePresentation m_NodeAtOtherEnd = null;
-	protected IEdgePresentation m_IntermediateEdge = null;
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.ui.support.applicationmanager.IConnectedNode#getIntermediateEdge()
-	 */
-	public IEdgePresentation getIntermediateEdge() {
-		return m_IntermediateEdge;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.ui.support.applicationmanager.IConnectedNode#setIntermediateEdge(org.netbeans.modules.uml.ui.support.applicationmanager.IEdgePresentation)
-	 */
-	public void setIntermediateEdge(IEdgePresentation intermediateEdge) {
-		m_IntermediateEdge = intermediateEdge;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.ui.support.applicationmanager.IConnectedNode#getNodeAtOtherEnd()
-	 */
-	public INodePresentation getNodeAtOtherEnd() {
-		return m_NodeAtOtherEnd;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.ui.support.applicationmanager.IConnectedNode#setNodeAtOtherEnd(org.netbeans.modules.uml.ui.support.applicationmanager.INodePresentation)
-	 */
-	public void setNodeAtOtherEnd(INodePresentation nodePE) {
-		m_NodeAtOtherEnd = nodePE;
-	}
+    // TODO: meteora
+//	protected INodePresentation m_NodeAtOtherEnd = null;
+//	protected IEdgePresentation m_IntermediateEdge = null;
+//	/* (non-Javadoc)
+//	 * @see org.netbeans.modules.uml.ui.support.applicationmanager.IConnectedNode#getIntermediateEdge()
+//	 */
+//	public IEdgePresentation getIntermediateEdge() {
+//		return m_IntermediateEdge;
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see org.netbeans.modules.uml.ui.support.applicationmanager.IConnectedNode#setIntermediateEdge(org.netbeans.modules.uml.ui.support.applicationmanager.IEdgePresentation)
+//	 */
+//	public void setIntermediateEdge(IEdgePresentation intermediateEdge) {
+//		m_IntermediateEdge = intermediateEdge;
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see org.netbeans.modules.uml.ui.support.applicationmanager.IConnectedNode#getNodeAtOtherEnd()
+//	 */
+//	public INodePresentation getNodeAtOtherEnd() {
+//		return m_NodeAtOtherEnd;
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see org.netbeans.modules.uml.ui.support.applicationmanager.IConnectedNode#setNodeAtOtherEnd(org.netbeans.modules.uml.ui.support.applicationmanager.INodePresentation)
+//	 */
+//	public void setNodeAtOtherEnd(INodePresentation nodePE) {
+//		m_NodeAtOtherEnd = nodePE;
+//	}
 
 }
 

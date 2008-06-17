@@ -51,6 +51,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.hibernate.cfg.HibernateCfgProperties;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
+import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -109,9 +110,13 @@ public class Util {
     
     // Gets the list of mapping files from HibernateEnvironment.
     public static String[] getMappingFilesFromProject(FileObject fileObj) {
-        org.netbeans.api.project.Project enclosingProject = org.netbeans.api.project.FileOwnerQuery.getOwner(fileObj);
-        org.netbeans.modules.hibernate.service.HibernateEnvironment env = enclosingProject.getLookup().lookup(org.netbeans.modules.hibernate.service.HibernateEnvironment.class);
-        return env.getAllHibernateMappings().toArray(new String[]{});
+        Project enclosingProject = FileOwnerQuery.getOwner(fileObj);
+        HibernateEnvironment env = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
+        if(env != null) {
+            return env.getAllHibernateMappings().toArray(new String[]{});
+        } else {
+            return new String[0];
+        }
     }
 
     

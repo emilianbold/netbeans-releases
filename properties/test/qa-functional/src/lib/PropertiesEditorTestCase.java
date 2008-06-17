@@ -126,7 +126,7 @@ public class PropertiesEditorTestCase extends JellyTestCase {
     ;
 
     /** This constructor only creates operator's object and then does nothing. */
-    public PropertiesEditorTestCase(String testMethodName) {
+        public PropertiesEditorTestCase(String testMethodName) {
         super(testMethodName);
     }
 

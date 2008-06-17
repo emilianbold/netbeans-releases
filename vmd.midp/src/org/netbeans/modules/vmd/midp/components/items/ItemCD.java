@@ -77,6 +77,7 @@ import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresent
 import org.netbeans.modules.vmd.midp.screen.display.ItemDisplayPresenter;
 
 import java.util.*;
+import org.netbeans.modules.vmd.midp.codegen.MIDPDatabindingCodeSupport;
 import org.openide.util.NbBundle;
 
 
@@ -153,7 +154,7 @@ public class ItemCD extends ComponentDescriptor {
                 new PropertyDescriptor(PROP_PREFERRED_WIDTH, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue (-1), false, true, MidpVersionable.MIDP_2),
                 new PropertyDescriptor(PROP_COMMANDS, ItemCommandEventSourceCD.TYPEID.getArrayType(), PropertyValue.createEmptyArray(ItemCommandEventSourceCD.TYPEID), false, true, MidpVersionable.MIDP_2),
                 new PropertyDescriptor(PROP_DEFAULT_COMMAND, ItemCommandEventSourceCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
-                new PropertyDescriptor(PROP_ITEM_COMMAND_LISTENER, ItemCommandListenerCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2)
+                new PropertyDescriptor(PROP_ITEM_COMMAND_LISTENER, ItemCommandListenerCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2)  
         );
     }
 
@@ -161,7 +162,7 @@ public class ItemCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                     .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Label"), // NOI18N
-                        PropertyEditorString.createInstance(NbBundle.getMessage(ItemCD.class, "LBL_Item_Label")), PROP_LABEL) // NOI18N
+                        PropertyEditorString.createInstanceWithDatabinding(NbBundle.getMessage(ItemCD.class, "LBL_Item_Label")), PROP_LABEL) // NOI18N
                     .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Default_Command"), // NOI18N
                         PropertyEditorDefaultCommand.createInstance(), PROP_DEFAULT_COMMAND)
                     .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Layout"), PropertyEditorLayout.createInstance(), PROP_LAYOUT) // NOI18N
@@ -198,6 +199,11 @@ public class ItemCD extends ComponentDescriptor {
         MidpActionsSupport.addNewActionPresenter(presenters, CommandCD.TYPEID);
         MidpActionsSupport.addUnusedCommandsAddActionForItem(presenters);
         MidpActionsSupport.addMoveActionPresenter(presenters, FormCD.PROP_ITEMS);
+        
+        presenters.addAll(MIDPDatabindingCodeSupport.createDatabindingPresenters(PROP_LABEL, 
+                                                                                 "getLabel()",
+                                                                                 MIDPDatabindingCodeSupport.ProviderType.Item,
+                                                                                 MIDPDatabindingCodeSupport.FeatureType.Item_FEATURE_LABEL));
         
         super.gatherPresenters (presenters);
     }
@@ -281,7 +287,5 @@ public class ItemCD extends ComponentDescriptor {
         }
 
     }
-
-     
 
 }

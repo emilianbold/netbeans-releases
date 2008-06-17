@@ -110,6 +110,21 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("main.c", 27, 17, "main.c", 27, 9); // name in name--;
         performTest("main.c", 28, 17, "main.c", 27, 9); // name in name--;        
     }
+    
+    public void testGlobalVar() throws Exception {
+        // IZ#132295: Hyperlink does not  distinguish local variable and global
+        // variable if they has same name
+        
+        // local variable
+        performTest("main.c", 33, 24, "main.c", 32, 5);
+        performTest("main.c", 34, 36, "main.c", 32, 5);
+        
+        // global variable
+        performTest("main.c", 33, 14, "main.c", 37, 1);
+        performTest("main.c", 34, 12, "main.c", 37, 1);
+        performTest("main.c", 34, 28, "main.c", 37, 1);
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // K&R style
 
@@ -131,6 +146,22 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("kr.c", 9, 6, "kr.c", 2, 1); // int foo(index) -> int foo();
         performTest("kr.c", 15, 6, "kr.c", 17, 1); // int boo(); -> int boo(int i)
         performTest("kr.c", 17, 6, "kr.c", 15, 1); // int boo(int i) -> int boo();
+    }
+
+    public void testStaticVariable() throws Exception {
+        // See IZ136481
+        performTest("static_variable.c", 4, 16, "static_variable.h", 2, 1);
+        performTest("static_variable.c", 5, 15, "static_variable.h", 1, 1);
+    }
+
+    public void testIZ131555() throws Exception {
+        for (int i = 5; i <=13; i++ ) {
+            performTest("IZ131555.c", i, 16, "IZ131555.c", 2, 5);
+        }
+    }
+
+    public void testIZ136730() throws Exception {
+        performTest("IZ136730.c", 2, 11, "IZ136730.c", 3, 1);
     }
     
     public static class Failed extends HyperlinkBaseTestCase {

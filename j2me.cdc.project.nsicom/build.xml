@@ -16,7 +16,7 @@
         <copy todir="build/antclasses">
             <fileset dir="antsrc" excludes="**/*.java"/>
         </copy>
-        <mkdir dir="${cluster}/modules/ext"/>
+        <mkdir dir="${cluster}/ant/nblib"/>
         <jar jarfile="${cluster}/ant/nblib/${code.name.base.dashes}.jar" compress="false">
             <fileset dir="build/antclasses"/>
         </jar>
