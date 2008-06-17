@@ -305,6 +305,10 @@ public class XMLContentPanel extends AbstractPanel {
     }
     
     public boolean isPanelValid() {
+        //valid if root selected in previous panel
+        if(model.getRoot() != null)
+            return true;
+        
         if(getSchemaInfo() == null)
             return false;
         
