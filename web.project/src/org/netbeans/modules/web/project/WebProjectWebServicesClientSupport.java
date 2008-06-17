@@ -596,8 +596,8 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
         return wsdlFolder;
     }
     
-    public List/*ClientStubDescriptor*/ getStubDescriptors() {
-        ArrayList stubs = new ArrayList(2);
+    public List<ClientStubDescriptor> getStubDescriptors() {
+        ArrayList<ClientStubDescriptor> stubs = new ArrayList<ClientStubDescriptor>(2);
         String version = project.getWebModule().getJ2eePlatformVersion();
         if(WebModule.J2EE_14_LEVEL.equals(version)) {
             stubs.add(jsr109ClientStub);

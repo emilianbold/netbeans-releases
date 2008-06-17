@@ -294,10 +294,9 @@ tokens {
 //        }
     }
 
-    // is not used any more, override createToken method instead
-    /*public void setTokenObjectClass(Class cl) {
-	tokenObjectClass = cl;
-    }*/
+    // overriden to avoid class loading
+    public void setTokenObjectClass(String cl) {
+    }
 
     // Used instead of setTokenObjectClass method to avoid reflection usage
     protected Token createToken(int type) {
@@ -483,7 +482,7 @@ tokens {
 
     public void consume() {
         super.consume();
-        if (inputState.guessing == 0) {
+        if (guessing == 0) {
             offset++;
         }
     }

@@ -63,6 +63,7 @@ import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.bridge.AntBridge;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.ErrorManager;
@@ -259,6 +260,25 @@ public final class TargetExecutor implements Runnable {
 
     }
 
+    private static final class OptionsAction extends AbstractAction { // #59396
+
+        @Override
+        public Object getValue(String key) {
+            if (key.equals(Action.SMALL_ICON)) {
+                return new ImageIcon(TargetExecutor.class.getResource("/org/apache/tools/ant/module/resources/options.png"));
+            } else if (key.equals(Action.SHORT_DESCRIPTION)) {
+                return NbBundle.getMessage(TargetExecutor.class, "TargetExecutor.OptionsAction");
+            } else {
+                return super.getValue(key);
+            }
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            OptionsDisplayer.getDefault().open("Advanced/Ant"); // NOI18N
+        }
+
+    }
+
     /**
      * Actually start the process.
      */
@@ -304,7 +324,7 @@ public final class TargetExecutor implements Runnable {
             if (io == null) {
                 StopAction sa = new StopAction();
                 RerunAction ra = new RerunAction(this);
-                io = IOProvider.getDefault().getIO(displayName, new Action[] {ra, sa});
+                io = IOProvider.getDefault().getIO(displayName, new Action[] {ra, sa, new OptionsAction()});
                 stopActions.put(io, sa);
                 rerunActions.put(io, ra);
             }

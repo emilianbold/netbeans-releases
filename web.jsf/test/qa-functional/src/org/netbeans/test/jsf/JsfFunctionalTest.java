@@ -106,7 +106,7 @@ public class JsfFunctionalTest extends J2eeTestCase{
                 "testAddNavigationCaseWithNewRule",
                 "testAddJSFToProject",
                 "testJSFPalette"
-                ).enableModules(".*").clusters(".*"));
+                ).enableModules(".*").clusters(".*")); 
     }
     
     @Override

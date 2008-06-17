@@ -41,6 +41,8 @@ package org.netbeans.modules.uml.diagrams.nodes.state;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import javax.swing.Action;
+import org.netbeans.api.visual.border.BorderFactory;
+import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.modules.uml.diagrams.nodes.UMLLabelNodeWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -89,13 +91,13 @@ public class PseudoStateWidget extends UMLLabelNodeWidget
             {
 
                 case IPseudostateKind.PK_SHALLOWHISTORY:
-                    view = new HistoryStateWidget(getScene(), 15, getWidgetID(), loc("LBL_BodyColor"), "H");
+                    view = new HistoryStateWidget(getScene(), 10, getWidgetID(), loc("LBL_BodyColor"), " H ");
                     break;
                 case IPseudostateKind.PK_CHOICE:
                     view = new ChoicePseudoStateWidget(getScene(), getWidgetID(), loc("LBL_BodyColor"));
                     break;
                 case IPseudostateKind.PK_DEEPHISTORY:
-                    view = new HistoryStateWidget(getScene(), 15, getWidgetID(), loc("LBL_BodyColor"), " H*");
+                    view = new HistoryStateWidget(getScene(), 10, getWidgetID(), loc("LBL_BodyColor"), " H*");
                     break;
                 case IPseudostateKind.PK_FORK:
                 case IPseudostateKind.PK_JOIN:
@@ -184,5 +186,46 @@ public class PseudoStateWidget extends UMLLabelNodeWidget
     protected Dimension getNodeMinSizeForPreferredBounds()
     {
         return new Dimension(10, 10);
+    }
+    
+   
+    @Override
+    protected void notifyStateChanged(ObjectState previousState,
+                                       ObjectState state)
+    {
+        if (element != null)
+        {
+            switch (element.getKind())
+            {
+                case IPseudostateKind.PK_DEEPHISTORY:
+                case IPseudostateKind.PK_INITIAL:
+                case IPseudostateKind.PK_JUNCTION:
+                case IPseudostateKind.PK_SHALLOWHISTORY:
+                case IPseudostateKind.PK_ENTRYPOINT:
+                    processStateChangeForCircleNode(previousState, state);
+                    break;
+                default:
+                    super.notifyStateChanged(previousState, state);
+            }
+        }
+    }
+    
+    protected void processStateChangeForCircleNode(ObjectState previousState,
+                                       ObjectState state)
+    {
+        boolean select = state.isSelected();
+        boolean wasSelected = previousState.isSelected();
+
+        if (select && !wasSelected)
+        {
+            setBorder(UMLWidget.NON_RESIZABLE_BORDER);
+        }
+        else
+        {
+            if (!select && wasSelected)
+            {
+                setBorder(BorderFactory.createEmptyBorder());
+            }
+        }
     }
 }

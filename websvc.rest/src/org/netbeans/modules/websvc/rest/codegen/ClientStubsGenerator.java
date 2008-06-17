@@ -1063,7 +1063,10 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 String childName = child.getName();
                 if(child.isReference() || child.isRoot()) {
                     String childRepName = findRepresentationName(childName);
-                    sb.append("         this."+childName+" = new "+pkg+findResourceName(childName)+"("+repName+"['"+childName+"']['@uri']);\n");
+                    sb.append("         this."+childName+" = new "+pkg+
+                            findResourceName(childName)+"("+repName+"['"+
+                                childName.substring(0, childName.length()-1)+
+                                    "Collection"+"']['@uri']);\n");
                 } else {
                     //this.vehiclePK = this.findValue(this.vehiclePK , vehicle['vehiclePK']);
                     sb.append("         this."+childName+" = this.findValue(this."+childName+", "+repName+"['"+childName+"']);\n");

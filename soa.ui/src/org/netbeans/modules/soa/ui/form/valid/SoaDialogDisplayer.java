@@ -66,10 +66,12 @@ public class SoaDialogDisplayer extends DialogDisplayer {
         }
         //
         dialog.addWindowListener(new WindowAdapter() {
+            @Override
             public void windowClosed(WindowEvent e) {
                 // The Ok and Cancel buttons are processed here
                 desctipror.processWindowClose();
             }
+            @Override
             public void windowClosing(WindowEvent e) {
                 // The cross button is processed here.
                 // The Ok and Cancel buttons are not processed here

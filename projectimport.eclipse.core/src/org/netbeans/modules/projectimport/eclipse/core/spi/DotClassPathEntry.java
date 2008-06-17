@@ -72,6 +72,8 @@ public final class DotClassPathEntry {
     
     private String linkName;
     
+    private Boolean importSuccessful;
+    
     public DotClassPathEntry(Map<String, String> properties, String linkName) {
         this.properties = properties;
         this.linkName = linkName;
@@ -116,7 +118,6 @@ public final class DotClassPathEntry {
     /**
      * Normalized path.
      */
-    // TODO: perhaps not needed anymore:
     public String getAbsolutePath() {
         return absolutePath;
     }
@@ -129,7 +130,10 @@ public final class DotClassPathEntry {
         return linkName;
     }
     
-    // TODO: should nto be called by SPI clients
+    /**
+     * Despite being public this method should not be called outside of 
+     * eclipse.core module.
+     */
     public void setAbsolutePath(String absolutePath) {
         this.absolutePath = absolutePath;
     }
@@ -154,8 +158,32 @@ public final class DotClassPathEntry {
         return containerMapping;
     }
     
-    // TODO: should never be called by SPI clients
+    /**
+     * Despite being public this method should not be called outside of 
+     * eclipse.core module.
+     */
     public void setContainerMapping(String containerMapping) {
         this.containerMapping = containerMapping;
     }
+
+    public Boolean getImportSuccessful() {
+        return importSuccessful;
+    }
+
+    /**
+     * Despite being public this method should not be called outside of 
+     * eclipse.core module.
+     */
+    public void setImportSuccessful(Boolean importSuccessful) {
+        this.importSuccessful = importSuccessful;
+    }
+    
+    /**
+     * Despite being public this method should not be called outside of 
+     * eclipse.core module.
+     */
+    public void updateVariableValue(String value) {
+        this.properties.put(ATTRIBUTE_PATH, value);
+    }
+    
 }

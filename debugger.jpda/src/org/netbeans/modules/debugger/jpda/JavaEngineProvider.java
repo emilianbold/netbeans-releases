@@ -41,11 +41,15 @@
 
 package org.netbeans.modules.debugger.jpda;
 
+import java.awt.Component;
+import java.beans.beancontext.BeanContextChildComponentProxy;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 
 /**
@@ -73,7 +77,28 @@ public class JavaEngineProvider extends DebuggerEngineProvider {
     }
     
     public Object[] getServices () {
-        return new Object [0];
+        return getUIComponentProxies();
+    }
+    
+    static Object[] getUIComponentProxies() {
+        
+        class ComponentProxy implements BeanContextChildComponentProxy {
+            private String name;
+            ComponentProxy(String name) {
+                this.name = name;
+            }
+            public Component getComponent() {
+                return WindowManager.getDefault().findTopComponent(name);
+            }
+            
+        }
+        
+        return new Object [] {
+            new ComponentProxy("localsView"),
+            new ComponentProxy("watchesView"),
+            new ComponentProxy("breakpointsView"),
+            new ComponentProxy("debugging")
+        };
     }
     
     public void setDestructor (DebuggerEngine.Destructor desctuctor) {

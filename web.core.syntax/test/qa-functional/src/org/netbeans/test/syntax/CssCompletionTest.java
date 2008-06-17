@@ -44,6 +44,8 @@ import java.io.File;
 import org.netbeans.test.web.FileObjectFilter;
 import org.openide.filesystems.FileObject;
 import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.web.RecurrentSuiteFactory;
 
 /**
@@ -51,34 +53,43 @@ import org.netbeans.test.web.RecurrentSuiteFactory;
  * @author Jindrich Sedek
  */
 public class CssCompletionTest extends CompletionTest {
-    
+
     /** Creates a new instance of CompletionTesJ2EE */
     public CssCompletionTest(String name, FileObject testFileObj) {
         super(name, testFileObj);
         debug = false;
     }
-    
-    public static Test suite() {
-        // find folder with test projects and define file objects filter
-        File datadir = new CssCompletionTest(null, null).getDataDir();
-        File projectsDir = new File(datadir, "CSSCompletionTestProjects");
-        FileObjectFilter filter = new FileObjectFilter() {
 
-            public boolean accept(FileObject fo) {
-                String ext = fo.getExt();
-                String name = fo.getName();
-                return (name.startsWith("test") || name.startsWith("Test")) && (ext.equals("css"));
-            }
-        };
-        return RecurrentSuiteFactory.createSuite(CssCompletionTest.class,
-                projectsDir, filter);
+    public static Test suite() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf.addTest(SuiteCreator.class));
     }
-    
+
+    public static final class SuiteCreator extends NbTestSuite {
+
+        public SuiteCreator() {
+            super();
+            File datadir = new CssCompletionTest(null, null).getDataDir();
+            File projectsDir = new File(datadir, "CSSCompletionTestProjects");
+            FileObjectFilter filter = new FileObjectFilter() {
+
+                public boolean accept(FileObject fo) {
+                    String ext = fo.getExt();
+                    String name = fo.getName();
+                    return (name.startsWith("test") || name.startsWith("Test")) && (ext.equals("css"));
+                }
+            };
+            addTest(RecurrentSuiteFactory.createSuite(CssCompletionTest.class,
+                    projectsDir, filter));
+        }
+    }
+
     @Override
     public void runTest() throws Exception {
         test(testFileObj, "/**CC", "*/", false);
-    }       
-    
+    }
+
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(suite());
     }

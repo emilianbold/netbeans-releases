@@ -63,8 +63,11 @@ import org.netbeans.test.utilities.testcase.Utilities;
 public class BasicSearchTest extends JellyTestCase {
     
     public String DATA_PROJECT_NAME = "UtilitiesTestProject";
-    
-    
+
+    @Override
+    protected void setUp() throws Exception {
+        openDataProjects("projects/" + DATA_PROJECT_NAME);
+    }
     
     /** path to sample files */
     private static final String TEST_PACKAGE_PATH =

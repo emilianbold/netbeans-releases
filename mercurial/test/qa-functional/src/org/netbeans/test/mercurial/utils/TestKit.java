@@ -74,7 +74,7 @@ public final class TestKit {
         new JTextFieldOperator(npnlso, 0).setText(prj_name);
         new NewProjectWizardOperator().finish();
 
-        waitForScanFinishedAndQueueEmpty();
+        ProjectSupport.waitScanFinished();//AndQueueEmpty(); // test fails if there is waitForScanAndQueueEmpty()...
 
         return file;
     }

@@ -62,7 +62,6 @@ made subject to such option by the copyright holder.
                 <target name="wsimport-init" depends="init">
                     <xsl:if test="/jaxws:jax-ws/jaxws:clients/jaxws:client">
                         <mkdir dir="${{build.generated.dir}}/wsimport/client"/>
-                        <mkdir dir="${{build.generated.dir}}/wsimport/binaries"/>
                     </xsl:if>
                     <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
                         <classpath path="${{libs.jaxws21.classpath}}"/>
@@ -78,27 +77,15 @@ made subject to such option by the copyright holder.
                 <xsl:variable name="wsdl_url_actual" select="jaxws:wsdl-url"/>
                 <xsl:variable name="package_path" select = "translate($package_name,'.','/')"/>
                 <xsl:variable name="catalog" select = "jaxws:catalog-file"/>
-                <target name="wsimport-client-check-{$wsname}" depends="wsimport-init">
-                    <condition property="wsimport-client-{$wsname}.notRequired">
-                        <xsl:choose>
-                            <xsl:when test="jaxws:package-name">
-                                <available file="${{build.generated.dir}}/wsimport/client/{$package_path}" type="dir"/>    
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <available file="${{build.generated.dir}}/wsimport/client/dummy" type="dir"/>
-                            </xsl:otherwise>
-                        </xsl:choose>                       
-                    </condition>
-                </target>
-                <target name="wsimport-client-{$wsname}" depends="wsimport-init,wsimport-client-check-{$wsname}" unless="wsimport-client-{$wsname}.notRequired">
+                
+                <target name="wsimport-client-{$wsname}" depends="wsimport-init">
                     <xsl:if test="jaxws:package-name/@forceReplace">
                         <wsimport
-                            fork="true"
-                            xendorsed="true"
+                            xnocompile="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
+                            destdir="${{build.generated.dir}}/wsimport/client"
                             extension="true"
                             package="{$package_name}"
-                            destdir="${{build.generated.dir}}/wsimport/binaries"
                             wsdl="${{basedir}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
                             wsdlLocation="{$wsdl_url_actual}"
                             catalog="{$catalog}">
@@ -122,16 +109,15 @@ made subject to such option by the copyright holder.
                                     </xsl:attribute>
                                 </binding>
                             </xsl:if>
-                            <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
+                            <produces dir="${{build.generated.dir}}/wsimport/client/{$package_path}" includes="{$wsname}.java" casesensitive="no"/>
                         </wsimport>
                     </xsl:if>
                     <xsl:if test="not(jaxws:package-name/@forceReplace)">
                         <wsimport
-                            fork="true"
-                            xendorsed="true"
+                            xnocompile="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
+                            destdir="${{build.generated.dir}}/wsimport/client"
                             extension="true"
-                            destdir="${{build.generated.dir}}/wsimport/binaries"
                             wsdl="${{basedir}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
                             wsdlLocation="{$wsdl_url_actual}"
                             catalog="{$catalog}">
@@ -155,12 +141,9 @@ made subject to such option by the copyright holder.
                                     </xsl:attribute>
                                 </binding>
                             </xsl:if>
-                            <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
+                            <produces dir="${{build.generated.dir}}/wsimport/client/{$package_path}" includes="{$wsname}.java" casesensitive="no"/>
                         </wsimport>
                     </xsl:if>
-                    <copy todir="${{build.classes.dir}}">
-                        <fileset dir="${{build.generated.dir}}/wsimport/binaries" includes="**/*.xml"/>
-                    </copy>
                 </target>
                 <target name="wsimport-client-clean-{$wsname}" depends="-init-project">
                     <delete dir="${{build.generated.dir}}/wsimport/client/{$package_path}"/>
@@ -181,6 +164,9 @@ made subject to such option by the copyright holder.
                 <target name="wsimport-client-compile" depends="-pre-pre-compile">
                     <j2seproject3:depend srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{libs.jaxws21.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
                     <j2seproject3:javac srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{libs.jaxws21.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
+                    <copy todir="${{build.classes.dir}}">
+                        <fileset dir="${{build.generated.dir}}/wsimport/client" includes="**/*.xml"/>
+                    </copy>
                 </target>
                 
             </xsl:if>

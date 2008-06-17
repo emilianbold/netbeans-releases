@@ -83,6 +83,9 @@ public class ReplaceTest extends EditorTestCase {
         //new EventTool().waitNoEvent(100);
         //mwo.pushKey(KeyEvent.VK_ESCAPE);
         //new ReplaceAction().perform();
+        mwo.menuBar().pushMenu("Edit");
+        new EventTool().waitNoEvent(250);
+        mwo.pushKey(KeyEvent.VK_ESCAPE);
         mwo.requestFocus();
         mwo.pushKey(KeyEvent.VK_H, KeyEvent.CTRL_DOWN_MASK);
         new EventTool().waitNoEvent(200);
@@ -160,6 +163,7 @@ public class ReplaceTest extends EditorTestCase {
             editor.setCaretPosition(15,1);            
             //editor.select(15, 35, 62);
             openReplaceDialog();
+            replace = new Replace();
             replace.cboFindWhat().getTextField().typeText("testReplaceSelectionRepeated");
             replace.cboReplaceWith().typeText("testReplaceSelectionRepeated2");   
             Replace replace2 = new Replace();
@@ -196,7 +200,7 @@ public class ReplaceTest extends EditorTestCase {
             EditorOperator editor = getDefaultSampleEditorOperator();
             
             editor.setCaretPosition(1,1);
-            editor.txtEditorPane().pushKey(KeyEvent.VK_H, KeyEvent.CTRL_MASK);
+            openReplaceDialog();
             Replace replace = new Replace();
             //replace.cboFindWhat().removeAllItems();
             //replace.cboReplaceWith().removeAllItems();

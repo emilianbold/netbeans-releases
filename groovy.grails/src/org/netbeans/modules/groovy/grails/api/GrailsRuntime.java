@@ -42,11 +42,15 @@ package org.netbeans.modules.groovy.grails.api;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Collection;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grails.KillableProcess;
@@ -55,6 +59,7 @@ import org.netbeans.modules.groovy.grails.server.GrailsInstance;
 import org.netbeans.modules.groovy.grails.server.GrailsInstanceProvider;
 import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 import org.openide.execution.NbProcessDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
@@ -397,8 +402,23 @@ public final class GrailsRuntime {
             NbProcessDescriptor grailsProcessDesc = new NbProcessDescriptor(
                     grailsExecutable.getAbsolutePath(), command.toString());
 
-            String[] envp = new String[] {"GRAILS_HOME=" // NOI18N
-                    + GrailsSettings.getInstance().getGrailsBase()};
+
+            String javaHome = null;
+            Collection<FileObject> dirs = JavaPlatformManager.getDefault().getDefaultPlatform().getInstallFolders();
+            if (dirs.size() == 1) {
+                File file = FileUtil.toFile(dirs.iterator().next());
+                if (file != null) {
+                    javaHome = file.getAbsolutePath();
+                }
+            }
+            if (javaHome == null) {
+                javaHome = System.getProperty("java.home");
+            }
+
+            String[] envp = new String[] {
+                "GRAILS_HOME=" + GrailsSettings.getInstance().getGrailsBase(), // NOI18N
+                "JAVA_HOME=" + javaHome // NOI18N
+            };
 
             Process process = new KillableProcess(
                     grailsProcessDesc.exec(null, envp, true, descriptor.getDirectory()),

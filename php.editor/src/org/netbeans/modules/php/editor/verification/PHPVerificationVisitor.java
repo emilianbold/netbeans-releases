@@ -189,12 +189,6 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
     
     @Override
     public void visit(MethodDeclaration node) {
-        varStack.blockStart(VariableStack.BlockType.FUNCTION);
-        
-        for (FormalParameter param : node.getFunction().getFormalParameters()){
-            varStack.addVariableDefinition(param);
-        }
-        
         for (PHPRule rule : rules){
             rule.setContext(context);
             rule.visit(node);
@@ -203,7 +197,6 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
         }
         
         super.visit(node);
-        varStack.blockEnd();
     }
 
     @Override

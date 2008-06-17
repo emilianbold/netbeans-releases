@@ -75,6 +75,7 @@ public class CloneTest extends JellyTestCase {
     }
 
     public void testCloneProject() throws Exception {
+        System.out.println("DEBUG: testCloneProject - start");
         long timeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
         try {
             JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 15000);
@@ -101,6 +102,9 @@ public class CloneTest extends JellyTestCase {
             ndo = new NbDialogOperator("Clone Repository");
             bo = new JButtonOperator(ndo, "Clone");
             bo.push();
+            //* This line bellow was added in order to cover issue 136782
+            new ProjectsTabOperator().getProjectRootNode(TestKit.PROJECT_NAME + "_clone0").select();
+            //*/
             String outputTabName=s;
             System.out.println(outputTabName);
             oto = new OutputTabOperator(outputTabName);
@@ -134,6 +138,7 @@ public class CloneTest extends JellyTestCase {
             // do not remove it as following tests will work on the project
 //            TestKit.closeProject(PROJECT_NAME);
         }
+        System.out.println("DEBUG: testCloneProject - finish");
     }
 }
 

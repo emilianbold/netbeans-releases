@@ -126,7 +126,7 @@ public class CastsImpl extends EditorEntityImpl implements Casts {
     }
 
     public void addCast(Cast cast) {
-        addChildBefore(cast, Cast.class);
+        addChild(cast, Cast.class);
     }
 
     public void insertCast(Cast cast, int i) {

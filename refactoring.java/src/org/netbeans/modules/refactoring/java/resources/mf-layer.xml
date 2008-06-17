@@ -100,7 +100,7 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
-                        <attr name="position" intvalue="1440"/>
+                        <attr name="position" intvalue="1560"/>
                     </file>
                     
                             

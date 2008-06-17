@@ -152,7 +152,8 @@ public class CreatingPropertiesFileFromExplorer2Test extends PropertiesEditorTes
     
     public void tearDown() {
         log("Teardown");
-        closePropertiesFileWithoutCheck(FILE_NAME);
+        //closePropertiesFileWithoutCheck(FILE_NAME); 
+        closeOpenedProjects();
     }
     
     

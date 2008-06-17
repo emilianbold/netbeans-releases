@@ -74,14 +74,14 @@ public class DebugTreeView extends BeanTreeView implements TreeExpansionListener
     
     DebugTreeView() {
         super();
-        tree.setPreferredSize(new Dimension(5, 5));
+        tree.setPreferredSize(new Dimension(5, 5)); // [TODO]
         tree.setMinimumSize(new Dimension(5, 5));
         setPreferredSize(new Dimension(5, 5));
         setMinimumSize(new Dimension(5, 5));
         tree.setOpaque(false);
         ((JComponent)tree.getParent()).setOpaque(false);
     }
-    
+
     public JTree getTree() {
         return tree;
     }

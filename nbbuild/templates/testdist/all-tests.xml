@@ -42,8 +42,7 @@ made subject to such option by the copyright holder.
 -->
 <project name="All tests runner" default="all" basedir=".">
     <target name="all" depends="runtests,failtests"/>
-
-    <target name="runtests">
+    <target name="runtests" depends="-prepare-modules-list">
         <fail unless="netbeans.dest.dir" message="Property netbeans.dest.dir doesn't exist."/>
         <available file="${netbeans.dest.dir}/etc/netbeans.conf" property="exist.netbeans.dest.dir"/>
         <fail unless="exist.netbeans.dest.dir" message="Path netbeans.dest.dir doesn't contain  netbeans dir."/>
@@ -52,30 +51,46 @@ made subject to such option by the copyright holder.
         <property name="test.required.modules" value=""/>
         <property name="test.dist.dir" location=".."/>
         <property name="test.dist.timeout" value="600000"/>
-        
         <basename file="${basedir}" property="test.type"/>
         <testdistfilter testlistproperty="modules.list" testdistdir=".." requiredmodules="${test.required.modules}" testtype="${test.type}"/>
         <echo>Running modules: ${modules.list}</echo>
         <property name="extra.test.libs.dir" location="../extralibs"/>
         <property name="test.results.dir" location="results"/>
-        <subant buildpath="${modules.list}" genericantfile="../one-module.xml" >
+        <subant buildpath="${modules.list}" genericantfile="../one-module.xml" failonerror="false">
             <property name="test.disable.fails" value="true"/>
             <property name="test.timeout" value="${test.dist.timeout}"/>
-        </subant>    
+        </subant>
         <antcall target="generate-html-results"/>
-       <available file="${test.results.dir}/failed-test-var" type="dir" property="test.failed"/>
+        <available file="${test.results.dir}/failed-test-var" type="dir" property="test.failed"/>
     </target>
     <target name="generate-html-results" unless="no.html.results">
         <mkdir dir="${test.results.dir}"/>
         <junitreport todir="${test.results.dir}">
-          <fileset dir="${test.results.dir}">
-            <include name="TEST-*.xml"/>
-          </fileset>
-          <report format="frames" todir="${test.results.dir}/html"/>
+            <fileset dir="${test.results.dir}">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="frames" todir="${test.results.dir}/html"/>
         </junitreport>
         <echo>Report is available at ${test.results.dir}/html/index.html</echo>
     </target>
-  <target name="failtests" unless="test.disable.fails">
-           <fail if="test.failed">Some tests failed; see details above.</fail>
-  </target>
+    <target name="failtests" unless="test.disable.fails">
+        <fail if="test.failed">Some tests failed; see details above.
+        </fail>
+    </target>
+    <target name="-prepare-modules-list" if="test.modules">
+        <property name="test.clusters" value="*"/>
+        <pathconvert property="test.path" pathsep=",">
+            <path path="${test.modules}"/>
+            <chainedmapper>
+                <flattenmapper/>
+                <filtermapper>
+                    <replacestring from="." to="-"/>
+                </filtermapper>
+                <globmapper from="*" to="${test.clusters}/*"/>
+            </chainedmapper>
+        </pathconvert>
+        <pathconvert property="modules.list">
+            <dirset dir="." includes="${test.path}"/>
+        </pathconvert>
+    </target>
 </project>

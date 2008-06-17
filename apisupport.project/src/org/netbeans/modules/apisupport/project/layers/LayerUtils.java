@@ -90,11 +90,11 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.XMLFileSystem;
@@ -280,13 +280,12 @@ public class LayerUtils {
         
     }
     
-    private static final class CookieImpl implements SavableTreeEditorCookie, FileChangeListener {
+    private static final class CookieImpl implements SavableTreeEditorCookie, FileChangeListener, AtomicAction {
         private TreeDocumentRoot root;
         private boolean dirty;
         private Exception problem;
         private final FileObject f;
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-        private boolean saving;
         public CookieImpl(FileObject f) {
             //System.err.println("new CookieImpl for " + f);
             this.f = f;
@@ -356,38 +355,30 @@ public class LayerUtils {
             if (root == null || !dirty) {
                 return;
             }
-            assert !saving;
-            saving = true;
-            //System.err.println("saving");
-            try {
-                FileLock lock = f.lock();
-                try {
-                    OutputStream os = f.getOutputStream(lock);
-                    try {
-                        new TreeStreamResult(os).getWriter(root).writeDocument();
-                    } catch (TreeException e) {
-                        throw (IOException) new IOException(e.toString()).initCause(e);
-                    } finally {
-                        os.close();
-                    }
-                } finally {
-                    lock.releaseLock();
-                }
-            } finally {
-                saving = false;
-                //System.err.println("!saving in " + Thread.currentThread().getName() + " for " + this);
-            }
+            //System.err.println("saving in " + Thread.currentThread().getName() + " for " + this);
+            f.getFileSystem().runAtomicAction(this);
+            //System.err.println("!saving in " + Thread.currentThread().getName() + " for " + this);
             dirty = false;
             pcs.firePropertyChange(PROP_DIRTY, true, false);
         }
+        public void run() throws IOException {
+            OutputStream os = f.getOutputStream();
+            try {
+                new TreeStreamResult(os).getWriter(root).writeDocument();
+            } catch (TreeException e) {
+                throw (IOException) new IOException(e.toString()).initCause(e);
+            } finally {
+                os.close();
+            }
+        }
         public void fileChanged(FileEvent fe) {
-            changed();
+            changed(fe);
         }
         public void fileDeleted(FileEvent fe) {
-            changed();
+            changed(fe);
         }
         public void fileRenamed(FileRenameEvent fe) {
-            changed();
+            changed(fe);
         }
         public void fileAttributeChanged(FileAttributeEvent fe) {
             // ignore
@@ -398,10 +389,12 @@ public class LayerUtils {
         public void fileDataCreated(FileEvent fe) {
             assert false;
         }
-        private void changed() {
-            //System.err.println("changed on disk; saving=" + saving + " in " + Thread.currentThread().getName() + " for " + this);
+        private void changed(FileEvent fe) {
+            //System.err.println("changed on disk in " + Thread.currentThread().getName() + " for " + this);
+            //Thread.dumpStack();
             synchronized (this) {
-                if (saving) {
+                if (fe.firedFrom(this)) {
+                    //System.err.println("(my own change)");
                     return;
                 }
                 problem = null;

@@ -79,8 +79,10 @@ public interface TestRunner {
      * in it.
      * 
      * @param testFile the file representing a unit test class.
+     * @param debug specifies whether the test file should be run 
+     * in the debug mode.
      */
-    void runTest(FileObject testFile);
+    void runTest(FileObject testFile, boolean debug);
     
     /**
      * Runs a single test method.
@@ -88,14 +90,18 @@ public interface TestRunner {
      * @param testFile the file representing the unit test class
      * whose test method to run.
      * @param testMethod the name of the test method to run.
+     * @param debug specifies whether the test method should be run in the 
+     * debug mode.
      */
-    void runSingleTest(FileObject testFile, String testMethod);
+    void runSingleTest(FileObject testFile, String testMethod, boolean debug);
     
     /**
      * Runs all units tests in the given project.
      * 
      * @param project the project whose unit tests to run.
+     * @param debug specifies whether the tests of the project should 
+     * be run in the debug mode.
      */
-    void runAllTests(Project project);
+    void runAllTests(Project project, boolean debug);
 
 }

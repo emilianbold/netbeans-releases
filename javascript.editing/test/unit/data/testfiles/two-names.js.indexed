@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/two-names.js
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   base : g_modules;;g_modules;|GLOBAL|;;0;;;;
   base : g_mycallback;;g_mycallback;|FUNCTION|;info;0;;;void;
   base : g_mycallback;;g_mycallback;|GLOBAL|;;0;;;;
@@ -16,4 +11,4 @@ Indexed:
   fqn : g_mycallback;;g_mycallback;|GLOBAL|;;0;;;;
   fqn : yahoo_config;;YAHOO_config;|PROPERTY|;;0;;;;
 
-Not Indexed:
+Not Searchable Keys:

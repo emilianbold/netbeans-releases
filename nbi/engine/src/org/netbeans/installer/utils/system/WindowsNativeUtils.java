@@ -62,6 +62,7 @@ import org.netbeans.installer.utils.system.windows.SystemApplication;
 import org.netbeans.installer.utils.system.windows.FileExtension;
 import org.netbeans.installer.utils.system.windows.WindowsRegistry;
 import org.netbeans.installer.utils.helper.FilesList;
+import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.system.launchers.Launcher;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.cleaner.OnExitCleanerHandler;
@@ -217,6 +218,12 @@ public class WindowsNativeUtils extends NativeUtils {
         //initializeForbiddenFiles(FORBIDDEN_DELETING_FILES_WINDOWS);
         initializeForbiddenFiles();
         initializeRegistryKeys();
+    }
+    @Override
+    protected Platform getPlatform() {
+        return SystemUtils.isCurrentJava64Bit() ? 
+                            Platform.WINDOWS_X64 : 
+                            Platform.WINDOWS_X86;
     }
     
     private void initializeRegistryKeys() {
@@ -740,7 +747,7 @@ public class WindowsNativeUtils extends NativeUtils {
             return null;
         }
     }
-    
+    @Override
     public boolean checkFileAccess(File file, boolean isReadNotModify) throws NativeException {
         int result = 0;
         try {

@@ -30,10 +30,6 @@ public class LLkParserNoEx extends LLkParser {
         super(k_);
     }
 
-    public LLkParserNoEx(ParserSharedInputState state, int k_) {
-        super(state, k_);
-    }
-
     public LLkParserNoEx(TokenBuffer tokenBuf, int k_) {
         super(tokenBuf, k_);
     }
@@ -47,7 +43,7 @@ public class LLkParserNoEx extends LLkParser {
         if (LA(1) == t) {
             consume();
         } else {
-            if (inputState.guessing == 0) {
+            if (guessing == 0) {
                 matchException = new MismatchedTokenException(tokenNames, LT(1), t, false, getFilename());
             }
             matchError=true;
@@ -59,7 +55,7 @@ public class LLkParserNoEx extends LLkParser {
         if (b.member(LA(1))) {
             consume();
         } else {
-            if (inputState.guessing == 0) {
+            if (guessing == 0) {
                 matchException = new MismatchedTokenException(tokenNames, LT(1), b, false, getFilename());
             }
             matchError=true;
@@ -71,7 +67,7 @@ public class LLkParserNoEx extends LLkParser {
         if (LA(1) != t) {
             consume();
         } else {
-            if (inputState.guessing == 0) {
+            if (guessing == 0) {
                 matchException = new MismatchedTokenException(tokenNames, LT(1), t, true, getFilename());
             }
             matchError=true;

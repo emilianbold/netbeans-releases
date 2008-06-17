@@ -159,7 +159,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             }
         }
         refHelper = new ReferenceHelper(helper, aux, eval);
-        buildExtender = AntBuildExtenderFactory.createAntExtender(new J2SEExtenderImplementation());
+        buildExtender = AntBuildExtenderFactory.createAntExtender(new J2SEExtenderImplementation(), refHelper);
     /// TODO replace this GeneratedFilesHelper with the default one when fixing #101710
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
         UpdateImplementation updateProject = new UpdateProjectImpl(this, helper, aux);
@@ -260,6 +260,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             new Info(),
             aux,
             helper.createCacheDirectoryProvider(),
+            helper.createAuxiliaryProperties(),
             spp,
             actionProvider,
             new J2SELogicalViewProvider(this, this.updateHelper, evaluator(), spp, refHelper),
@@ -733,7 +734,7 @@ public final class J2SEProject implements Project, AntProjectListener {
         public Project getOwningProject() {
             return J2SEProject.this;
         }
-
+        
     }
     
     private static final String ENDORSED_DIR_PROPERTY="jaxws.endorsed.dir"; //NOI18N

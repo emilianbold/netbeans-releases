@@ -42,6 +42,7 @@ package org.netbeans.junit;
 
 import test.pkg.not.in.junit.NbModuleSuiteIns;
 import test.pkg.not.in.junit.NbModuleSuiteT;
+import test.pkg.not.in.junit.NbModuleSuiteS;
 import java.io.File;
 import org.netbeans.testjunit.AskForOrgOpenideUtilEnumClass;
 import java.util.Properties;
@@ -255,4 +256,43 @@ public class NbModuleSuiteTest extends TestCase {
         assertTrue("insane: " + s, s.contains("org.netbeans.insane"));
     }
     
+    public void testAddSuite() throws Exception{
+        System.setProperty("t.one", "No");
+        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
+        conf = conf.addTest(TS.class).gui(false);
+        junit.textui.TestRunner.run(NbModuleSuite.create(conf));
+        assertProperty("t.one", "OK");
+    }
+
+    public static class TS extends NbTestSuite{
+
+        public TS() {
+            super(NbModuleSuiteT.class);
+        }
+    }
+
+    public void testRunSuiteNoSimpleTests() throws Exception{
+        System.setProperty("s.one", "No");
+        System.setProperty("s.two", "No");
+        System.setProperty("nosuit", "OK");
+        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration().gui(false);
+        junit.textui.TestRunner.run(NbModuleSuite.create(conf.addTest(NbModuleSuiteS.class)));
+        assertProperty("s.one", "OK");
+        assertProperty("s.two", "OK");
+        assertProperty("nosuit", "OK");
+    }
+    
+    public void testRunEmptyConfiguration() throws Exception{
+        junit.textui.TestRunner.run(NbModuleSuite.create(NbModuleSuite.emptyConfiguration().gui(false)));
+    }
+    
+    public void testAddTestCase()throws Exception{
+        System.setProperty("t.one", "No");
+        Test instance = NbModuleSuite.create(
+            NbModuleSuite.emptyConfiguration().addTest(NbModuleSuiteT.class).gui(false)
+        );
+        junit.textui.TestRunner.run(instance);
+        
+        assertProperty("t.one", "OK");
+    }
 }

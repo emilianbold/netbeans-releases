@@ -1,13 +1,8 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/woodstock2.js
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   base : foobar;webui.suntheme4_2.addRemove;foobar;|FUNCTION|;;0;;;void;
   fqn : webui.suntheme4_2.addremove.foobar;;webui.suntheme4_2.addRemove.foobar;|FUNCTION|;;0;;;void;
 
-Not Indexed:
+Not Searchable Keys:

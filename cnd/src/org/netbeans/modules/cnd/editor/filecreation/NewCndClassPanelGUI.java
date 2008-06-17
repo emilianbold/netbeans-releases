@@ -231,7 +231,7 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel1 = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
+        classNameLbl = new javax.swing.JLabel();
         classNameTextField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         projectTextField = new javax.swing.JTextField();
@@ -251,11 +251,11 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jLabel3.setLabelFor(classNameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(NewCndClassPanelGUI.class, "LBL_TargetChooser_FileName_Label")); // NOI18N
+        classNameLbl.setLabelFor(classNameTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(classNameLbl, org.openide.util.NbBundle.getMessage(NewCndClassPanelGUI.class, "LBL_TargetChooser_FileName_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel1.add(jLabel3, gridBagConstraints);
+        jPanel1.add(classNameLbl, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -349,7 +349,6 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jLabel6, gridBagConstraints);
-        jLabel6.getAccessibleContext().setAccessibleName("Header File:");
 
         headerTextField.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -379,7 +378,7 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
 
     private void initMnemonics() {
         // kind Matiss put those above setText() in autogeneration, which is not what JLabel expects, so let's do it manually
-        jLabel3.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_FileName_Label_Mnemonic").charAt(0));
+        classNameLbl.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_FileName_Label_Mnemonic").charAt(0));
         jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_Project_Label_Mnemonic").charAt(0));
         locationLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_Location_Label_Mnemonic").charAt(0));
         jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_Folder_Label_Mnemonic").charAt(0));
@@ -391,13 +390,13 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel bottomPanelContainer;
     private javax.swing.JButton browseButton;
+    private javax.swing.JLabel classNameLbl;
     private javax.swing.JTextField classNameTextField;
     private javax.swing.JTextField fileTextField;
     private javax.swing.JTextField folderTextField;
     private javax.swing.JTextField headerTextField;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;

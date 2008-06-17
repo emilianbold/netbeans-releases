@@ -111,7 +111,7 @@ final class SelectionWizardPanel extends ImporterWizardPanel implements
             String dest = getProjectDestinationDir();
 
             String message = null;
-            if ((!new File(dest).isAbsolute()) || !EclipseUtils.isWritable(dest)) {
+            if (dest != null && ((!new File(dest).isAbsolute()) || !EclipseUtils.isWritable(dest))) {
                 message = ProjectImporterWizard.getMessage(
                         "MSG_CannotCreateProjectInFolder", dest); // NOI18N
             } else if (!EclipseUtils.isRegularProject(getProjectDir())) {

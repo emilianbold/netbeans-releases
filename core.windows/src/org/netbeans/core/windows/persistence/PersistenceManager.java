@@ -534,6 +534,8 @@ public final class PersistenceManager implements PropertyChangeListener {
                         id2TopComponentMap.put(stringId, new TopComponentReference(tc,stringId));
                         if (persistenceType(tc) == TopComponent.PERSISTENCE_ONLY_OPENED) {
                             topComponentPersistentOnlyOpenedID.add(stringId);
+                        } else if (persistenceType(tc) == TopComponent.PERSISTENCE_NEVER) {
+                            topComponentNonPersistentID.add(stringId);
                         }
                         dataobjectToTopComponentMap.put(dob, stringId);
                     }

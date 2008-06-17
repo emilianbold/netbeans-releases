@@ -41,115 +41,114 @@
 package org.netbeans.modules.extexecution;
 
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 
+import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor.RerunCondition;
 import org.netbeans.modules.extexecution.api.ExecutionService;
-import org.openide.ErrorManager;
-import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
-import org.openide.util.Task;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 
 
 /**
  * The RerunAction is placed into the I/O window, allowing the user to restart
  * a particular execution context.
  *
- * Based on the equivalent RerunAction in the ant support.
- *
- * @author Tor Norbye
+ * @author Petr Hejl
  */
-public final class RerunAction extends AbstractAction implements FileChangeListener {
-    private ExecutionService prototype;
-    private FileObject fileObject;
+public final class RerunAction extends AbstractAction implements ChangeListener {
 
-    public RerunAction(ExecutionService prototype, FileObject fileObject) {
-        this.prototype = prototype;
+    private ExecutionService service;
+
+    private RerunCondition condition;
+
+    private ChangeListener listener;
+
+    public RerunAction() {
         setEnabled(false); // initially, until ready
         putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage(
-                "org/netbeans/modules/extexecution/resources/rerun.png")));
+                "org/netbeans/modules/extexecution/resources/rerun.png"))); // NOI18N
         putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(RerunAction.class, "Rerun"));
+    }
 
-        this.fileObject = fileObject;
-
-        if (fileObject != null) {
-            fileObject.addFileChangeListener(FileUtil.weakFileChangeListener(this, fileObject));
+    public void setExecutionService(ExecutionService service) {
+        synchronized (this) {
+            this.service = service;
         }
+    }
+
+    public void setRerunCondition(RerunCondition condition) {
+        synchronized (this) {
+            if (this.condition != null) {
+                this.condition.removeChangeListener(listener);
+            }
+            this.condition = condition;
+            if (this.condition != null) {
+                listener = WeakListeners.change(this, this.condition);
+                this.condition.addChangeListener(listener);
+            }
+        }
+        stateChanged(null);
     }
 
     public void actionPerformed(ActionEvent e) {
-        setEnabled(false);
+        setEnabled(false); // discourage repeated clicking
 
-        // Save the file before running it, if any
-        if (fileObject != null) {
-            // Save the file
-            try {
-                DataObject dobj = DataObject.find(fileObject);
+        ExecutionService actionService;
+        synchronized (this) {
+            actionService = service;
+        }
 
-                if (dobj != null) {
-                    SaveCookie saveCookie = dobj.getCookie(SaveCookie.class);
+        if (actionService != null) {
+            Accessor.getDefault().run(actionService);
+        }
+    }
 
-                    if (saveCookie != null) {
-                        saveCookie.save();
-                    }
-                }
-            } catch (DataObjectNotFoundException donfe) {
-                ErrorManager.getDefault().notify(donfe);
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
+    public void stateChanged(ChangeEvent e) {
+        Boolean value = null;
+        synchronized (this) {
+            if (condition != null) {
+                value = condition.isRerunPossible();
             }
         }
 
-        Accessor.DEFAULT.rerun(prototype);
-        //prototype.rerun();
+        if (value != null) {
+            firePropertyChange("enabled", null, value); // NOI18N
+        }
     }
 
-    public void fileDeleted(FileEvent fe) {
-        firePropertyChange("enabled", null, false); // NOI18N
-    }
-
-    public void fileFolderCreated(FileEvent fe) {
-    }
-
-    public void fileDataCreated(FileEvent fe) {
-    }
-
-    public void fileChanged(FileEvent fe) {
-    }
-
-    public void fileRenamed(FileRenameEvent fe) {
-    }
-
-    public void fileAttributeChanged(FileAttributeEvent fe) {
-    }
-
+    @Override
     public boolean isEnabled() {
-        // #84874: should be disabled in case the original Ant script is now gone.
-        return super.isEnabled() && ((fileObject == null) || fileObject.isValid());
+        synchronized (this) {
+            return super.isEnabled() && (condition == null || condition.isRerunPossible());
+        }
     }
-    
+
     /**
      * The accessor pattern class.
      */
     public abstract static class Accessor {
 
-        /** The default accessor. */
-        public static Accessor DEFAULT;
+        private static volatile Accessor accessor;
 
-        static {
-            // invokes static initializer of GrailsRuntime.class
+        public static void setDefault(Accessor accessor) {
+            assert Accessor.accessor == null : "Already initialized accessor";
+
+            Accessor.accessor = accessor;
+        }
+
+        public static Accessor getDefault() {
+            if (accessor != null) {
+                return accessor;
+            }
+
+            // invokes static initializer of ExecutionService.class
             // that will assign value to the DEFAULT field above
             Class c = ExecutionService.class;
             try {
@@ -157,9 +156,12 @@ public final class RerunAction extends AbstractAction implements FileChangeListe
             } catch (ClassNotFoundException ex) {
                 assert false : ex;
             }
+
+            assert accessor != null : "The DEFAULT field must be initialized";
+            return accessor;
         }
 
-        public abstract Task rerun(ExecutionService service);
+        public abstract Future<Integer> run(ExecutionService service);
 
-    }    
+    }
 }

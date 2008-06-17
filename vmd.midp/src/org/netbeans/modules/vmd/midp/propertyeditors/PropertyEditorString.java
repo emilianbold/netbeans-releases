@@ -44,6 +44,8 @@ package org.netbeans.modules.vmd.midp.propertyeditors;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -88,6 +90,8 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     private boolean useTextArea;
     private TypeID parentTypeID;
     private String label;
+    private DatabindingElement dataSetElement;
+
 
     /**
      * Creates instance of PropertyEditorString.
@@ -100,7 +104,13 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * example is given text length is more than TextBoxCD.PROP_MAX_SIZE then
      * this property will be automatically increased to be equal of text length.
      */
-    private PropertyEditorString(String comment, int dependence, boolean useTextArea, String label, TypeID parentTypeID) {
+    protected PropertyEditorString(String comment, 
+                                   int dependence,
+                                   boolean useTextArea,
+                                   String label,
+                                   TypeID parentTypeID,
+                                   boolean databinding) {
+        
         super(NbBundle.getMessage(PropertyEditorString.class, "LBL_STRING_STR")); // NOI18N
         this.comment = comment;
         this.dependence = dependence;
@@ -108,8 +118,17 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         this.label = label;
         this.parentTypeID = parentTypeID;
         initComponents();
-
-        initElements(Collections.<PropertyEditorElement>singleton(this));
+        
+        if (databinding) {
+            Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(2);
+            dataSetElement = new DatabindingElement();
+            elements.add(this);
+            elements.add(dataSetElement);
+            initElements(elements);
+        } else {
+            initElements(Collections.<PropertyEditorElement>singleton(this));
+        }
+        
     }
 
     /**
@@ -125,16 +144,42 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * @param String default value of the property editor, could be different from default
      * value specified in the component descriptor
      */
-    private PropertyEditorString(String comment, int dependence, String defaultValue, String label) {
-        this(comment, dependence, true, label, null);
+    private PropertyEditorString(String comment,
+                                 int dependence,
+                                 String defaultValue,
+                                 String label,
+                                 boolean databinding) {
+        
+        this(comment, dependence, true, label, null, databinding);
         this.defaultValue = defaultValue;
     }
-
+    
+    public static final PropertyEditorString createInstanceWithDatabinding(String comment,
+                                                                           int dependence,
+                                                                           String defaultValue,
+                                                                           String label) {
+        
+        return new PropertyEditorString(comment, dependence, defaultValue, label, true);
+    }
+    
+     public static final PropertyEditorString createInstanceWithDatabinding(String comment,
+                                                                            int dependence,
+                                                                            boolean useTextArea,
+                                                                            String label,
+                                                                            TypeID parentTypeID) {
+         
+        return new PropertyEditorString(comment, dependence,useTextArea, label, parentTypeID, true);
+    }
+    
     /**
      * Creates instance of PropertyEditorString without dependences.
      */
     public static final PropertyEditorString createInstance(String label) {
-        return new PropertyEditorString(null, DEPENDENCE_NONE, true, label, null);
+        return new PropertyEditorString(null, DEPENDENCE_NONE, true, label, null, false);
+    }
+    
+    public static final PropertyEditorString createInstanceWithDatabinding(String label) {
+        return new PropertyEditorString(null, DEPENDENCE_NONE, true, label, null, true);
     }
 
     /**
@@ -143,7 +188,13 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * @see PropertyEditorString(String comment, int dependence)
      */
     public static final PropertyEditorString createInstance(int dependence, String label) {
-        return new PropertyEditorString(null, dependence, true, label, null);
+        return new PropertyEditorString(null, dependence, true, label, null, false);
+    }
+    
+    public static final PropertyEditorString createInstanceWithDatabinding(int dependence,
+                                                                           String label) {
+        
+        return new PropertyEditorString(null, dependence, true, label, null, true);
     }
 
     /**
@@ -153,28 +204,28 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * @see PropertyEditorString(String comment, int dependence)
      */
     public static final PropertyEditorString createInstance(String label, TypeID parentTypeID) {
-        return new PropertyEditorString(null, DEPENDENCE_NONE, true, label, parentTypeID);
+        return new PropertyEditorString(null, DEPENDENCE_NONE, true, label, parentTypeID, false);
     }
 
     /**
      * Creates instance of PropertyEditorString using JTExtField.
      */
     public static final PropertyEditorString createTextFieldInstance(String label) {
-        return new PropertyEditorString(null, DEPENDENCE_NONE, false, label, null);
+        return new PropertyEditorString(null, DEPENDENCE_NONE, false, label, null, false);
     }
 
     /**
      * Creates instance of PropertyEditorString without dependences with default value.
      */
     public static final PropertyEditorString createInstanceWithDefaultValue(String defaultValue, String label) {
-        return new PropertyEditorString(null, DEPENDENCE_NONE, defaultValue, label);
+        return new PropertyEditorString(null, DEPENDENCE_NONE, defaultValue, label, false);
     }
 
     /**
      * Creates instance of PropertyEditorString without dependences with default value.
      */
     public static final PropertyEditorString createInstanceWithComment(String comment, String label) {
-        return new PropertyEditorString(comment, DEPENDENCE_NONE, null, label);
+        return new PropertyEditorString(comment, DEPENDENCE_NONE, null, label, false);
     }
 
     private void initComponents() {
@@ -314,6 +365,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
                     }
                 });
         }
+
     }
 
     /*
@@ -324,6 +376,12 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         super.customEditorOKButtonPressed();
         if (radioButton.isSelected()) {
             saveValue(customEditor.getText());
+        }
+        final DesignComponent _component = component.get();
+        if (dataSetElement != null && dataSetElement.getRadioButton().isSelected()) { 
+            ((DatabindingElementUI) dataSetElement.getCustomEditorComponent()).saveToModel(_component);
+        } else {
+            ((DatabindingElementUI) dataSetElement.getCustomEditorComponent()).resetValuesInModel(_component);
         }
     }
 
@@ -348,6 +406,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         }
         return true;
     }
+
 
 /*
      * Custom property editor. JEditorPane plus possible JLabels with comments.
@@ -427,5 +486,49 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
 
         public void changedUpdate(DocumentEvent e) {
         }
+    }
+    
+    private class DatabindingElement implements  PropertyEditorElement {
+        
+        private JRadioButton radioButton;
+        private DatabindingElementUI customEditor;
+        
+        public void updateState(PropertyValue value) {
+           if (PropertyEditorString.this.component == null)
+               return;
+           final DesignComponent component = PropertyEditorString.this.component.get();
+           customEditor.updateComponent(component, radioButton);
+        }
+
+        public void setTextForPropertyValue(String text) {
+            
+        }
+
+        public String getTextForPropertyValue() {
+            return "DataSet"; //TODO Localized
+        }
+
+        public JComponent getCustomEditorComponent() {
+           if (customEditor == null) {
+               customEditor = new DatabindingElementUI(PropertyEditorString.this);
+           }
+           return customEditor;
+        }
+
+        public JRadioButton getRadioButton() {
+           if (radioButton == null) {
+               radioButton = new JRadioButton("Databinding"); //TODO locolized
+           } 
+           return radioButton;
+        }
+
+        public boolean isInitiallySelected() {
+            return true;
+        }
+
+        public boolean isVerticallyResizable() {
+            return true;
+        }
+        
     }
 }

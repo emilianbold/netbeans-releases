@@ -1,4 +1,6 @@
-Results for escape with queryType=COMPLETION and nameKind=PREFIX
+Code completion result for source line:
+/regexp/.|escape("myexpr")
+(QueryType=COMPLETION, NameKind=PREFIX)
 METHOD     exec(str) : void                           RegExp
 METHOD     test(str) : Boolean                        RegExp
 METHOD     toSource() : void                          RegExp

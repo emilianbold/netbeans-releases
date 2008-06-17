@@ -61,17 +61,24 @@ import org.openide.text.NbDocument;
 public class XSLTCompletionResultItem implements CompletionItem, Runnable {
     private static final Logger _Logger = 
         Logger.getLogger(XSLTCompletionResultItem.class.getName());
-    private static final Color ITEM_TEXT_COLOR = Color.decode("0x0000B2");
+    private static final Color ITEM_TEXT_COLOR = Color.BLUE; // Color.decode("0x0000B2");
     
     private String itemText;
     private Document document;
-    private int caretOffset;
+    private int caretOffset, sortPriority;
     private JTextComponent textComponent;
+    private boolean enabled;
 
     public XSLTCompletionResultItem(String itemText, Document document, int caretOffset) {
+        this(itemText, document, caretOffset, true);
+    }
+
+    public XSLTCompletionResultItem(String itemText, Document document, 
+        int caretOffset, boolean enabled) {
         this.itemText = itemText;
         this.document = document;
         this.caretOffset = caretOffset;
+        this.enabled = enabled;
     }
     
     private void doSubstitute(JTextComponent component) {
@@ -102,15 +109,16 @@ public class XSLTCompletionResultItem implements CompletionItem, Runnable {
     
     public void defaultAction(JTextComponent component) {
         this.textComponent = component;
-        doSubstitute(component);
+        if (enabled) {
+            doSubstitute(component);
+        }
         Completion.get().hideAll();
     }
     
     public void processKeyEvent(KeyEvent evt) {}
     
     public int getPreferredWidth(Graphics g, Font defaultFont) {
-        return CompletionUtilities.getPreferredWidth(
-        itemText, null, g, defaultFont);
+        return CompletionUtilities.getPreferredWidth(itemText, null, g, defaultFont);
     }
     
     public void render(Graphics g, Font defaultFont, Color defaultColor, 
@@ -123,13 +131,18 @@ public class XSLTCompletionResultItem implements CompletionItem, Runnable {
     
     public CompletionTask createToolTipTask() {return null;}
     
-    public boolean instantSubstitution(JTextComponent component) {return true;}
+    public boolean instantSubstitution(JTextComponent component) {return false;}
     
-    public int getSortPriority() {return 0;}
+    public int getSortPriority() {return sortPriority;}
+    public void setSortPriority(int sortPriority) {this.sortPriority = sortPriority;}
     
     public CharSequence getSortText() {return getText();}
     
     public CharSequence getInsertPrefix() {return getText();}
     
-    public String getText() {return itemText;}    
+    public String getText() {return itemText;}
+
+
+    public boolean isEnabled() {return enabled;}
+    public void setEnabled(boolean enabled) {this.enabled = enabled;}
 }

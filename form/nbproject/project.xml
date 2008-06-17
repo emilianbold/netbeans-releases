@@ -138,7 +138,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.10</specification-version>
+                        <specification-version>1.27</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -434,13 +434,7 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.i18n.form</friend>
-                <friend>org.netbeans.modules.swingapp</friend>
-                <friend>org.netbeans.modules.form.j2ee</friend>
-                <friend>org.netbeans.modules.java.examples</friend>
-                <package>org.netbeans.modules.form</package>
-            </friend-packages>
+            <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>ext/AbsoluteLayout.jar</runtime-relative-path>
             </class-path-extension>

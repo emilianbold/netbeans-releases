@@ -372,7 +372,7 @@ public final class MasterMatcher {
         MimePath mimePath = null;
 
         TokenHierarchy<? extends Document> th = TokenHierarchy.get(document);
-        if (th != null) {
+        if (th.isActive()) {
             List<TokenSequence<?>> sequences = th.embeddedTokenSequences(offset, backward);
             if (!sequences.isEmpty()) {
                 String path = sequences.get(sequences.size() - 1).languagePath().mimePath();

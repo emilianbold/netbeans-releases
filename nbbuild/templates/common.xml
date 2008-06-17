@@ -449,6 +449,7 @@ made subject to such option by the copyright holder.
                     <exclude name="**/*.java"/>
                 </fileset>
             </copy>
+            <delete dir="${build.test.@{test.type}.dir}/data"/>
             <copy todir="${build.test.@{test.type}.dir}">
                 <fileset dir="${test.@{test.type}.dir}">
                     <include name="data/**"/>

@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.modules.uml.diagrams.edges.factories.NestedLinkFactory;
 import org.netbeans.modules.uml.drawingarea.actions.ConnectAction;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteButtonModel;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteModel;
@@ -92,6 +93,7 @@ public class NestedLinkPaletteModel implements ContextPaletteButtonModel
         {
             DesignerScene designScene = (DesignerScene)scene;
             NestedLinkConnectProvider connector = new NestedLinkConnectProvider(defaultTargetType);
+            connector.setRelationshipFactory(new NestedLinkFactory());
 
             LayerWidget layer = designScene.getInterractionLayer();
             WidgetAction action = new ConnectAction(new ContextPaletteConnectDecorator(),

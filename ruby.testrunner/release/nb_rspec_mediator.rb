@@ -110,11 +110,25 @@ class Reporter < Spec::Runner::Reporter
     super
   end
       
-  def example_pending(example_group, example, message="Not Yet Implemented")
-    puts "%TEST_PENDING% #{example.description} time=#{elapsed_time} #{message}"
-    super
+  # need to use varargs since rspec 1.1.3 and 1.1.4 have different number of params
+  def example_pending(*args)
+    msg = "Not Yet Implemented"
+    if args.size == 3 && args[2] == nil
+        args[2] = msg
+    elsif args.size == 2 && args[1] == nil
+      args[1] = msg
+    end
+    
+    case args[1]
+    when String
+      # 1.1.4
+      puts "%TEST_PENDING% #{args[0].description} time=#{elapsed_time} message=#{args[1]}"
+    else
+      # 1.1.3 or older
+      puts "%TEST_PENDING% #{args[1].description} time=#{elapsed_time} message=#{args[2]}"
+    end
   end
-  
+
   def start_timer
     @start_time = Time.now
   end

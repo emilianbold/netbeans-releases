@@ -445,7 +445,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
     private javax.swing.JLabel specifyNamesLabel;
     // End of variables declaration//GEN-END:variables
 
-    public static final class WizardPanel implements WizardDescriptor.Panel, ChangeListener {
+    public static final class WizardPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel, ChangeListener {
 
         private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -581,19 +581,14 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         }
 
         public void storeSettings(Object settings) {
-            Object buttonPressed = ((WizardDescriptor)settings).getValue();
-            if (buttonPressed.equals(WizardDescriptor.NEXT_OPTION) ||
-                    buttonPressed.equals(WizardDescriptor.FINISH_OPTION)) {
+            RelatedCMPHelper helper = RelatedCMPWizard.getHelper(wizardDescriptor);
 
-                RelatedCMPHelper helper = RelatedCMPWizard.getHelper(wizardDescriptor);
-
-                helper.setSelectedTables(getComponent().getSelectedTables());
-                helper.setLocation(getComponent().getLocationValue());
-                helper.setPackageName(getComponent().getPackageName());
-                helper.setCmpFieldsInInterface(getComponent().getCmpFieldsInInterface());
-                helper.setGenerateFinderMethods(getComponent().getGenerateFinderMethods());
-                helper.setPersistenceUnit(getComponent().getPersistenceUnit());
-            }
+            helper.setSelectedTables(getComponent().getSelectedTables());
+            helper.setLocation(getComponent().getLocationValue());
+            helper.setPackageName(getComponent().getPackageName());
+            helper.setCmpFieldsInInterface(getComponent().getCmpFieldsInInterface());
+            helper.setGenerateFinderMethods(getComponent().getGenerateFinderMethods());
+            helper.setPersistenceUnit(getComponent().getPersistenceUnit());
         }
 
         public void stateChanged(ChangeEvent event) {
@@ -602,6 +597,10 @@ public class EntityClassesPanel extends javax.swing.JPanel {
 
         private void setErrorMessage(String errorMessage) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage", errorMessage); // NOI18N
+        }
+
+        public boolean isFinishPanel() {
+            return true;
         }
     }
 

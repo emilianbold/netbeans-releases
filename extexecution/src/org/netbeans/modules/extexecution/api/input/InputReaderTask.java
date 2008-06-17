@@ -50,11 +50,11 @@ import org.openide.util.Parameters;
  * Task consuming data from the certain reader, processing them with the given
  * processor.
  * <p>
- * When exception occurs while running the task is terminated.
+ * When exception occurs while running the task it is terminated.
  * Task is responsive to interruption. InputReader is closed on finish (includes
- * both thrown exception and interruption).
+ * both cases throwing an exception and interruption).
  * <p>
- * Task is <i>not</i> finished implicitly by reaching the end of the reader.
+ * Task is <i>not finished</i> implicitly by reaching the end of the reader.
  * <div class="nonnormative">
  * <p>
  * Sample usage - reading standard output of the process (throwing the data away):
@@ -110,6 +110,8 @@ public final class InputReaderTask implements Runnable {
     /**
      * Creates the new task. The task will read the data from reader
      * throwing them away.
+     * <p>
+     * {@link InputReader} must be responsive to interruption.
      *
      * @param reader data producer
      * @return task handling the read process
@@ -121,6 +123,8 @@ public final class InputReaderTask implements Runnable {
     /**
      * Creates the new task. The task will read the data from reader processing
      * them through processor (if any).
+     * <p>
+     * {@link InputReader} must be responsive to interruption.
      *
      * @param reader data producer
      * @param processor processor consuming the data, may be <code>null</code>

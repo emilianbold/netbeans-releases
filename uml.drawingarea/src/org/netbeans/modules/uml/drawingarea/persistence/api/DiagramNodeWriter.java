@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.uml.drawingarea.persistence.api;
 
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.drawingarea.persistence.*;
 
 /**
@@ -49,4 +50,7 @@ import org.netbeans.modules.uml.drawingarea.persistence.*;
 public interface DiagramNodeWriter {
 
     public void save(NodeWriter nodeWriter);   
+    
+    public void saveChildren(Widget widget, NodeWriter nodeWriter);
+    
 }

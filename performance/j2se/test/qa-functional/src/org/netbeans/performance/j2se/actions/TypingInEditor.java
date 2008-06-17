@@ -103,7 +103,7 @@ public class TypingInEditor extends PerformanceTestCase {
         caretPositionX = 2;
         caretPositionY = 1;
         kitClass = org.netbeans.modules.editor.plain.PlainKit.class;
-        optionsClass = org.netbeans.modules.editor.plain.options.PlainOptions.class;
+//        optionsClass = org.netbeans.modules.editor.plain.options.PlainOptions.class;
         fileToBeOpened = new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|" + fileName);
         doMeasurement();
     }
@@ -113,7 +113,7 @@ public class TypingInEditor extends PerformanceTestCase {
         caretPositionX = 38;
         caretPositionY = 19;
         kitClass = org.netbeans.modules.editor.java.JavaKit.class;
-        optionsClass = org.netbeans.modules.java.editor.options.JavaOptions.class;
+      //  optionsClass = org.netbeans.modules.java.editor.options.JavaOptions.class;
         fileToBeOpened = new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|" + fileName);
         doMeasurement();
     }

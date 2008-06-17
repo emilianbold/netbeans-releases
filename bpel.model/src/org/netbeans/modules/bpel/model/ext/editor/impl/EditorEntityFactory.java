@@ -18,43 +18,25 @@
  */
 package org.netbeans.modules.bpel.model.ext.editor.impl;
 
-import org.netbeans.modules.bpel.model.ext.editor.impl.*;
 import java.util.Arrays;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
-import org.netbeans.modules.bpel.model.api.ExtensionEntity;
 import org.netbeans.modules.bpel.model.impl.*;
 import java.util.HashSet;
 import java.util.Set;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.Catch;
-import org.netbeans.modules.bpel.model.api.CatchAll;
-import org.netbeans.modules.bpel.model.api.Compensate;
-import org.netbeans.modules.bpel.model.api.CompensateScope;
 import org.netbeans.modules.bpel.model.api.Copy;
-import org.netbeans.modules.bpel.model.api.Empty;
-import org.netbeans.modules.bpel.model.api.Exit;
-import org.netbeans.modules.bpel.model.api.Flow;
 import org.netbeans.modules.bpel.model.api.ForEach;
 import org.netbeans.modules.bpel.model.api.If;
-import org.netbeans.modules.bpel.model.api.Invoke;
-import org.netbeans.modules.bpel.model.api.Pick;
-import org.netbeans.modules.bpel.model.api.ReThrow;
-import org.netbeans.modules.bpel.model.api.Receive;
 import org.netbeans.modules.bpel.model.api.RepeatUntil;
-import org.netbeans.modules.bpel.model.api.Reply;
-import org.netbeans.modules.bpel.model.api.Scope;
-import org.netbeans.modules.bpel.model.api.Sequence;
-import org.netbeans.modules.bpel.model.api.Throw;
-import org.netbeans.modules.bpel.model.api.Validate;
 import org.netbeans.modules.bpel.model.api.Variable;
-import org.netbeans.modules.bpel.model.api.Wait;
 import org.netbeans.modules.bpel.model.api.While;
 import org.netbeans.modules.bpel.model.ext.editor.api.Editor;
 import org.netbeans.modules.bpel.model.ext.editor.api.Casts;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
+import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComp;
+import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComps;
 import org.netbeans.modules.bpel.model.ext.editor.xam.EditorElements;
 import org.netbeans.modules.bpel.model.ext.logging.api.Alert;
 import org.netbeans.modules.bpel.model.ext.logging.api.Log;
@@ -92,6 +74,10 @@ public class EditorEntityFactory implements EntityFactory {
             return new CastsImpl(this, (BpelModelImpl)container.getBpelModel(), element);
         } else if (EditorElements.CAST.getQName().equals(elementQName)) {
             return new CastImpl(this, (BpelModelImpl)container.getBpelModel(), element);
+        } else if (EditorElements.PSEUDO_COMPS.getQName().equals(elementQName)) {
+            return new PseudoCompsImpl(this, (BpelModelImpl)container.getBpelModel(), element);
+        } else if (EditorElements.PSEUDO_COMP.getQName().equals(elementQName)) {
+            return new PseudoCompImpl(this, (BpelModelImpl)container.getBpelModel(), element);
         } else {
             return null;
         }
@@ -105,6 +91,10 @@ public class EditorEntityFactory implements EntityFactory {
             newEntity = (T)new CastsImpl(this, builder);
         } else if (Cast.class.equals(clazz)) {
             newEntity = (T)new CastImpl(this, builder);
+        } else if (PseudoComps.class.equals(clazz)) {
+            newEntity = (T)new PseudoCompsImpl(this, builder);
+        } else if (PseudoComp.class.equals(clazz)) {
+            newEntity = (T)new PseudoCompImpl(this, builder);
         }
         return newEntity;
     }

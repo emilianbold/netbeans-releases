@@ -40,29 +40,35 @@
 package org.netbeans.modules.xslt.core.text.completion;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.CompletionModel;
-import org.netbeans.modules.xml.schema.model.Attribute;
-import org.netbeans.modules.xml.schema.model.Enumeration;
-import org.netbeans.modules.xml.schema.model.GlobalElement;
-import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
-import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.modules.xml.xam.NamedReferenceable;
-import org.netbeans.modules.xml.xam.dom.DocumentComponent;
-import org.netbeans.modules.xslt.model.XslComponent;
-import org.netbeans.modules.xslt.model.XslModel;
+import org.netbeans.modules.xslt.core.text.completion.handler.HandlerAttributeEnumValues;
+import org.netbeans.modules.xslt.core.text.completion.handler.HandlerCallTemplateName;
+import org.netbeans.modules.xslt.core.text.completion.handler.HandlerUseAttributeSets;
+import org.netbeans.modules.xslt.core.text.completion.handler.HandlerWithParamName;
+import org.netbeans.modules.xslt.core.text.completion.handler.XSLTCompletionHandler;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 
 /**
  * @author Alex Petrov (30.04.2008)
  */
-public class XSLTCompletionQuery extends AsyncCompletionQuery implements Runnable {
-    private static final String PATTERN_ATTRIB_VALUE_PREFIX = "=\"";
+public class XSLTCompletionQuery extends AsyncCompletionQuery implements 
+    Runnable, XSLTEditorComponentHolder {
+    private static final List<XSLTCompletionHandler> xsltCompletionHandlers = 
+        new ArrayList<XSLTCompletionHandler>(Arrays.asList(
+            new XSLTCompletionHandler[] { 
+                // don't change the sequence of handlers in this list
+                new HandlerAttributeEnumValues(),
+                new HandlerCallTemplateName(),
+                new HandlerWithParamName(),
+                new HandlerUseAttributeSets()
+            }
+        ));
     
     private CompletionResultSet resultSet;
     private int caretOffset;
@@ -88,74 +94,32 @@ public class XSLTCompletionQuery extends AsyncCompletionQuery implements Runnabl
             resultSet.finish();
             return;
         }
-        XslModel xslModel = XSLTCompletionUtil.getXslModel(document);
-        if (xslModel != null) {
-            XslComponent activeXslComponent = findActiveXslComponent(xslModel);
-            if (XSLTCompletionUtil.attributeValueExpected(document, caretOffset)) {
-                String attributeName = XSLTCompletionUtil.extractAttributeName(
-                    document, caretOffset, activeXslComponent);
-                if (attributeName != null) {
-                    CompletionModel completionModel = 
-                        new XSLTCompletionModelProvider().getCompletionModel();
-                    if ((completionModel != null) && 
-                        (completionModel.getSchemaModel() != null)){
-                        SchemaModel schemaModel = completionModel.getSchemaModel();
-
-                        NamedReferenceable refSchemaComponent = schemaModel.findByNameAndType(
-                            activeXslComponent.getPeer().getLocalName(), GlobalElement.class);
-
-                        List children = refSchemaComponent.getChildren();
-                        List attributes = XSLTCompletionUtil.collectChildrenOfType(
-                            children, Attribute.class);
-
-                        String attrTypeName = XSLTCompletionUtil.getAttributeType(
-                            attributes, attributeName);
-                        if (attrTypeName != null) {
-                            attrTypeName = XSLTCompletionUtil.ignoreNamespace(attrTypeName);
-                            refSchemaComponent = schemaModel.findByNameAndType(
-                                attrTypeName, GlobalSimpleType.class);
-
-                            children = refSchemaComponent.getChildren();
-                            List enumerations = XSLTCompletionUtil.collectChildrenOfType(
-                                children, Enumeration.class);
-
-                            if ((enumerations != null) && (! enumerations.isEmpty())) {
-                                List<XSLTCompletionResultItem> resultList = 
-                                    new ArrayList<XSLTCompletionResultItem>();
-                                for (Object objEnum : enumerations) {
-                                    String optionName = ((Enumeration) objEnum).getValue();
-                                    resultList.add(new XSLTCompletionResultItem(optionName, 
-                                        document, caretOffset));
-                                }
-                                resultSet.addAllItems(resultList);
-                            }
-                        }
-                    }
-                }
+        for (XSLTCompletionHandler completionHandler : xsltCompletionHandlers) {
+            List<XSLTCompletionResultItem> resultItemList = 
+                completionHandler.getResultItemList(this);
+            if (! resultItemList.isEmpty()) {
+                resultSet.addAllItems(resultItemList);
+                break;
             }
         }
         resultSet.setAnchorOffset(caretOffset);
         resultSet.finish();
     }
 
-    private XslComponent findActiveXslComponent(XslModel xslModel) {
-         if (srcEditorPane == null) return null;
-         
-         int dotPos = srcEditorPane.getCaret().getDot(); // caretOffset;
-         DocumentComponent docComponent = xslModel.findComponent(dotPos);    
-         return ((XslComponent) docComponent);
-    }
-
     @Override
     protected void prepareQuery(JTextComponent component) {
         super.prepareQuery(component);
         srcEditorPane = (XSLTCompletionUtil.getXsltDataEditorSupport() == null ? 
-            null : (JEditorPane) component); // XSLTCompletionUtil.getXslSourceEditor();
-        // srcEditorPane = getXslSourceEditor();
+            null : (JEditorPane) component);
+        // srcEditorPane = getXsltSourceEditor();
+    }
+
+    public JEditorPane getSourceEditorComponent() {
+        return srcEditorPane;
     }
 
     /*
-    private JEditorPane getXslSourceEditor() {
+    private JEditorPane getXsltSourceEditor() {
         try {
             XSLTDataEditorSupport editorSupport = 
                 XSLTCompletionUtil.getXsltDataEditorSupport();

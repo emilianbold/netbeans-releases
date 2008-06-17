@@ -42,19 +42,27 @@ package org.netbeans.modules.gsf.api;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 /**
- * An IndexDocument lets you store key,value pairs in the persistent store.
+ * An IndexDocument lets you store a series of [key,value] pairs in the 
+ * persistent store.
  * 
  * @author Tor Norbye
  */
 public interface IndexDocument {
     /**
-     * Add a key,value pair to this document. 
+     * Add a [key,value] pair to this document. Note that the document really
+     * contains a multi-map, so it is okay and normal to call addPair multiple
+     * times with the same key. This just adds the value to the set of values
+     * associated with the key. 
      * 
-     * @param key The key that you will later search by
+     * @param key The key that you will later search by. Note that you are NOT
+     *   allowed to use the keys <code>filename</code> or <code>timestamp</code>
+     *   since these are reserved (and in fact used) by GSF.
      * @param value The value that will be retrieved for this key
-     * @param indexed A boolean which if set to true will store the pair with
-     *   an indexed field, otherwise with an unindexed field (that cannot be
-     *   searched).
+     * @param searchable A boolean which if set to true will store the pair with
+     *   an indexed/searchable field key, otherwise with an unindexed field (that cannot be
+     *   searched).  You <b>must</b> be consistent in how keys are identified
+     *   as searchable; the same key must always be referenced with the same
+     *   value for searchable when pairs are added (per document).
      */
-    void addPair(@NonNull String key, @NonNull String value, boolean indexed);
+    void addPair(@NonNull String key, @NonNull String value, boolean searchable);
 }
