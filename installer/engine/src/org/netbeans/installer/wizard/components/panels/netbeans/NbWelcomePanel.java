@@ -902,7 +902,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             } else if(this.equals(MYSQL)) {
                 return "NBMYSQL";
             } else {
-                return "NB";
+                return "NBDVD";
             }
         }
     }
