@@ -86,6 +86,7 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     public void doDelete(File file) throws IOException {
         Mercurial.LOG.fine("doDelete " + file);
+        if (file == null) return;
         Mercurial hg = Mercurial.getInstance();
         File root = hg.getTopmostManagedParent(file);
         try {
@@ -101,7 +102,6 @@ public class MercurialInterceptor extends VCSInterceptor {
         if (file == null) return;
         Mercurial hg = Mercurial.getInstance();
         final File root = hg.getTopmostManagedParent(file);
-        RequestProcessor rp = hg.getRequestProcessor(root.getAbsolutePath());
         rp.post(new Runnable() {
             public void run() {
                 if (file.isDirectory()) {
