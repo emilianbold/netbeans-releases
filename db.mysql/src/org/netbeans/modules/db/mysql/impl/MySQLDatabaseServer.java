@@ -447,6 +447,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
             public void execute() throws Exception {
                 Connection conn = connProcessor.getConnection();
                 conn.prepareStatement(CREATE_DATABASE_SQL + dbname).executeUpdate();
+                refreshDatabaseList();
             }
         });
     }
