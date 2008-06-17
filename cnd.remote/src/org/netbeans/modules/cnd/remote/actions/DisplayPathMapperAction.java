@@ -37,23 +37,31 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.explorer.nodes;
+package org.netbeans.modules.cnd.remote.actions;
 
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
-import org.openide.nodes.Children;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author gordonp
  */
-public class LocalhostNode extends RemoteServerNode {
+public class DisplayPathMapperAction extends AbstractAction {
     
-    // The following is a **BAD** choice and only intendes as a temporary icon!!!
-    private static final String LOCALHOST_ICON = "org/netbeans/modules/cnd/remote/resources/servers.png"; // NOI18N
+    private RemoteServerRecord record;
     
-    public LocalhostNode(RemoteServerRecord record) {
-        super(Children.LEAF, record);
-        setName(record.getName());
-        setIconBaseWithExtension(LOCALHOST_ICON);
+    public DisplayPathMapperAction(RemoteServerRecord record) {
+        super(NbBundle.getMessage(DeleteServerAction.class, "LBL_DisplayPathMapperAction"));
+        this.record = record;
     }
+
+    public void actionPerformed(ActionEvent e) {
+        NotifyDescriptor nd = new NotifyDescriptor.Message("Not Yet Implemented");
+        DialogDisplayer.getDefault().notify(nd);
+    }
+
 }
