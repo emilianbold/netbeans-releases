@@ -216,6 +216,7 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
     }
 
     private String extractColumns(final String table, final List<? super String> columns) {
+        Thread.dumpStack();
         return doWithProgress(NbBundle.getMessage(TableGeneratorPanel.class, "MSG_ExtractingColumns"), new Callable<String>() {
             public String call() {
                 try {
@@ -450,7 +451,7 @@ private void dbconnComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GE
             dbconn = (DatabaseConnection) selected;
         }
         lastErrorMessage = changeDatabaseConnection(dbconn);
-        if (lastErrorMessage == null) {
+        if (lastErrorMessage == null && this.dbconn != null) {
             tableComboBoxSelectionChanged();
         }
         updateErrorState();
