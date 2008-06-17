@@ -105,7 +105,14 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         sqlHistoryTable.getColumnModel().getColumn(1).setHeaderValue(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_DateTableTitle"));
         // Initialize data for the Connection combo box  
         this.view.updateUrl();
+        // SQL statments save limit
         inputWarningLabel.setVisible(false);
+        String savedLimit = NbPreferences.forModule(SQLHistoryPanel.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", ""); // NOI18N
+        if (savedLimit != null) {
+            sqlLimitTextField.setText(savedLimit);
+        } else {
+            sqlLimitTextField.setText("10000"); // NOI18N
+        }
     }
 
     private void initSQLHistoryTableData(SQLHistoryView localSQLView) {
@@ -280,21 +287,36 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
 // TODO add your handling code here:
     String limit = sqlLimitTextField.getText();
     int iLimit = 0;
+    inputWarningLabel.setVisible(false);
+
     try {
         iLimit = Integer.parseInt(limit);
-        NbPreferences.forModule(SQLHistoryPanel.class).put("SQL_STATEMENTS_SAVED_FOR_HISTORY", Integer.toString(iLimit));  // NOI18N               
+        if (iLimit < 0 || iLimit > 10000) {
+            sqlLimitButton.setEnabled(true);
+            inputWarningLabel.setVisible(true);
+            inputWarningLabel.setText(NbBundle.getMessage(SQLHistoryPanel.class, "SQLHistoryPanel.numberInputWarningLabel.text"));
+            // reset user's input
+            String savedLimit = NbPreferences.forModule(SQLHistoryPanel.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", ""); // NOI18N
+            if (savedLimit != null) {
+                sqlLimitTextField.setText(savedLimit);
+            } else {
+                sqlLimitTextField.setText(""); // NOI18N
+                sqlLimitTextField.setText("10000"); // NOI18N
+            }
+        } else {
+            NbPreferences.forModule(SQLHistoryPanel.class).put("SQL_STATEMENTS_SAVED_FOR_HISTORY", Integer.toString(iLimit));  // NOI18N               
+        }
     } catch (NumberFormatException ne) {
         inputWarningLabel.setVisible(true);
         inputWarningLabel.setText(NbBundle.getMessage(SQLHistoryPanel.class, "SQLHistoryPanel.inputWarningLabel.text"));
-        sqlLimitTextField.setText("10000");  // reset user's input
+        // reset user's input
+        String savedLimit = NbPreferences.forModule(SQLHistoryPanel.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", ""); // NOI18N
+        if (savedLimit != null) {
+            sqlLimitTextField.setText(savedLimit);
+        } else {
+            sqlLimitTextField.setText("10000"); // NOI18N
+        }
     }
-    
-    if (iLimit < 0 && iLimit > 10000) {
-        sqlLimitButton.setEnabled(true);
-        inputWarningLabel.setVisible(true);
-        inputWarningLabel.setText(NbBundle.getMessage(SQLHistoryPanel.class, "SQLHistoryPanel.sqlLimitLabel.text"));
-    }
-
 }//GEN-LAST:event_sqlLimitButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
