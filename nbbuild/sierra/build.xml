@@ -168,7 +168,7 @@
     <target name="clean" depends="clean-tiny,clean-dev"/>
 
     <target name="build-tiny" depends="build-xml,build-libs,build-compapp,build-soa,build-bpel,build-xslt"/>
-    <target name="clean-tiny" depends="build-xml,clean-libs,clean-compapp,clean-soa,clean-bpel,clean-xslt"/>
+    <target name="clean-tiny" depends="clean-xml,clean-libs,clean-compapp,clean-soa,clean-bpel,clean-xslt"/>
 
     <target name="build-dev" depends="build-etl,build-iep,build-sql,build-wsdlextensions"/>
     <target name="clean-dev" depends="clean-etl,clean-iep,clean-sql,clean-wsdlextensions"/>
