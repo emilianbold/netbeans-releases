@@ -31,6 +31,11 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Building ${glassfish-title} into ${basedir}/glassfish"/>
         <ant dir="glassfish"/>      
     </target>
+
+    <target name="build-glassfish-v3-pkg" >
+        <echo message="Building ${glassfish-v3-title} into ${basedir}/glassfish-v3"/>
+        <ant dir="glassfish-v3"/>      
+    </target>
     
     <target name="build-tomcat-pkg">
         <echo message="Building ${tomcat-title} into ${basedir}/tomcat"/>
@@ -149,13 +154,13 @@ Microsystems, Inc. All Rights Reserved.
         </exec>                                         
     </target>          
     
-    <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-pkg,build-tomcat-pkg,build-openesb-pkg">                                                        
+    <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-pkg,build-glassfish-v3-pkg,build-tomcat-pkg,build-openesb-pkg">                                                        
         <mkdir dir="dist"/>                  
         <property name="bundles" value="        (./build/*pkg),
                                              -javase(./build/baseide.pkg ./build/javase.pkg),
-                                             -javaee(./build/baseide.pkg ./build/javase.pkg  ./build/javaee.pkg ./build/glassfish.pkg ./build/tomcat.pkg),
+                                             -javaee(./build/baseide.pkg ./build/javase.pkg  ./build/javaee.pkg ./build/glassfish.pkg ./build/glassfish-v3.pkg ./build/tomcat.pkg),
                                              -cpp(./build/baseide.pkg ./build/cpp.pkg),
-                                             -ruby(./build/baseide.pkg ./build/ruby.pkg),
+                                             -ruby(./build/baseide.pkg ./build/ruby.pkg ./build/glassfish-v3.pkg),
                                              -php(./build/baseide.pkg ./build/php.pkg)"/>        
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
             <delete dir="${basedir}/dist_dmg"/>                          
@@ -384,6 +389,7 @@ fi"
                 <filter token="SIZE_RUBY" value="${sizeof.ruby}"/>
                 <filter token="SIZE_SOA" value="${sizeof.soa}"/>
                 <filter token="SIZE_GLASSFISH" value="${sizeof.glassfish}"/>
+                <filter token="SIZE_GLASSFISHV3" value="${sizeof.glassfish.v3}"/>
                 <filter token="SIZE_TOMCAT" value="${sizeof.tomcat}"/>                
                 <filter token="SIZE_OPENESB" value="${sizeof.openesb}"/>   
                 <filter token="SIZE_BASEIDE" value="${sizeof.baseide}"/>                
