@@ -120,7 +120,7 @@ final class ProjectSelectionPanel extends JPanel {
             } else {
                 // required and non-java project are disabled
                 checkbox.setEnabled(false);
-                label.setEnabled(false);
+                //label.setEnabled(false);
                 if (!project.isImportSupported()) {
                     checkbox.setToolTipText(ProjectImporterWizard.getMessage(
                             "MSG_NonJavaProject", project.getName())); // NOI18N
