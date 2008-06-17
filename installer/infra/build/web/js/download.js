@@ -580,14 +580,14 @@ function update() {
     cnd_size = Math.ceil(cnd_size / 1024.0);
     php_size = Math.ceil(php_size / 1024.0);
 
-    if( platform == "zip") {
-       full_size = 174;
-       java_size = 67;
-       javaee_size = 122;
-       javame_size = 77;
-       ruby_size = 55;
-       cnd_size = 41;
-       php_size = 38;
+    if( platform == "zip") {       
+       full_size   = get_file_size_mb(get_file_name(platform, "all"),     174);
+       java_size   = get_file_size_mb(get_file_name(platform, "javase"),   67);
+       javaee_size = get_file_size_mb(get_file_name(platform, "javaee"),  122);
+       javame_size = get_file_size_mb(get_file_name(platform, "mobility"), 77);
+       ruby_size   = get_file_size_mb(get_file_name(platform, "ruby"),     55);
+       cnd_size    = get_file_size_mb(get_file_name(platform, "cpp"),      41);
+       php_size    = get_file_size_mb(get_file_name(platform, "php"),      38);
     } 
 
     if ((platform.indexOf("solaris")!=-1) || (platform.indexOf("macosx")!=-1)) {
@@ -644,6 +644,16 @@ function is_compatible(index, platform) {
     return false;
 }
 
+function get_file_size_mb(name,defaultValue) {
+   var size = getSize(name);
+   if(size=="") {
+       size = defaultValue;
+   } else {
+       size = Math.ceil(size / (1024 * 1024));
+   }
+   return size;
+}
+
 function add_download_tab(name, url) {
    if(download_tabs_number!=0) {
        document.write(" | ");
@@ -656,20 +666,13 @@ function add_download_tab(name, url) {
    download_tabs_number++;
 }
 
-function download(option) {
-    var select = document.getElementById("platform_select");
-    var platform = select.options[select.selectedIndex].value;
-
-    var basename  = "";
-	
+function get_file_name(platform, option) {
+    var file_name = "";
     if(platform=="zip") {
-        basename += "zip/" + ZIP_FILES_PREFIX;
+        file_name += ZIP_FILES_PREFIX;
     } else {
-        basename += "bundles/" + BUNDLE_FILES_PREFIX;
+        file_name += BUNDLE_FILES_PREFIX;
     }
-
-    var file_name = START_PAGE + "?" + basename;
-
     if (option != "all") {
     	file_name += "-" + option;
     }
@@ -677,8 +680,6 @@ function download(option) {
     if ( platform != "zip" ) {
    	file_name += "-" + platform;
     }
-
-
     if (platform == "windows") {
         file_name += ".exe";
     } else if ((platform == "macosx-x86") || (platform == "macosx-ppc")) {
@@ -690,27 +691,50 @@ function download(option) {
     } else {
         file_name += ".sh";
     }
-    file_name += "&platform=" + platform;
+    return file_name;
+}
+
+function get_file_url(platform, option) {
+    var basename  = "";
+	
+    if(platform=="zip") {
+        basename += "zip/";
+    } else {
+        basename += "bundles/";
+    }    
+    basename += get_file_name(platform, option);    
+    return basename;
+}
+
+function download(option) {
+    var select = document.getElementById("platform_select");
+    var platform = select.options[select.selectedIndex].value;
+
+    var file_url = get_file_url(platform, option);
+
+    var download_url = START_PAGE + "?" + file_url;
+
+    download_url += "&platform=" + platform;
 
     var language_select = document.getElementById("language_select");
     var language = language_select.options[language_select.selectedIndex].value;
-    file_name += "&lang=" + language;
-    file_name += "&option=" + option;
+    download_url += "&lang=" + language;
+    download_url += "&option=" + option;
     var email = document.getElementById("emailfield").value;
     if(email!="" && email.indexOf(".")!=-1 && email.indexOf("@")!=-1 && email.indexOf("&")==-1 && email.indexOf("?")==-1) {
 	var monthly = (document.getElementById("monthlycb").checked ? 1 : 0);
 	var weekly  = (document.getElementById("weeklycb").checked ? 1 : 0);
 	var contact = (document.getElementById("contactcb").checked ? 1 : 0);
 	if(monthly==1 || weekly ==1 || contact==1) {
-		file_name+= "&email="   + email;
-		file_name+= "&monthly=" + monthly;
-		file_name+= "&weekly="  + weekly;
-		file_name+= "&contact=" + contact;
+		download_url+= "&email="   + email;
+		download_url+= "&monthly=" + monthly;
+		download_url+= "&weekly="  + weekly;
+		download_url+= "&contact=" + contact;
         }
     }
     var overriden_language=get_overridden_language();
     if(overriden_language!=DEFAULT_LANGUAGE) {
-        file_name += "&" + PAGELANG_SEP + overriden_language;
+        download_url += "&" + PAGELANG_SEP + overriden_language;
     }
-    window.location = file_name;
+    window.location = download_url;
 }
