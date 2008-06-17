@@ -318,7 +318,7 @@ public class CacheTest extends NbTestCase {
     }
 
     private void copyXmlWithoutInclude() throws Exception {
-        FileObject source = TestUtil.getProjectFile(this, "project2", "/web/WEB-INF/web.xml.orig");
+        FileObject source = TestUtil.getProjectFile(this, "project2", "/web/WEB-INF/web.xml.default");
         FileObject target = TestUtil.getProjectFile(this, "project2", "/web/WEB-INF/web.xml");
         copy(source, target);
     }
