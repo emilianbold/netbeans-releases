@@ -111,15 +111,18 @@ public class CatalogEventSink implements IProjectTreeEventsSink,
 	 */
 	public void onBeforeEdit(IProjectTreeControl pParentControl, IProjectTreeItem pItem, IProjectTreeEditVerify pVerify, IResultCell cell)
 	{
-		// since we are listening for the design pattern catalog,
-		// we only want to respond to events being sent by the design center tree
-		// so we do this check so that we don't respond to the project tree events
+            // since we are listening for the design pattern catalog,
+            // we only want to respond to events being sent by the design center tree
+            // so we do this check so that we don't respond to the project tree events
+            if (pParentControl != null) 
+            {
 		String sMgrName = pParentControl.getConfigMgrName();
 		if (sMgrName.equals("DesignCenter"))
 		{
 			 // Forward to the parent if interested.
 			 m_Parent.onBeforeEdit(pParentControl, pItem, pVerify);
 		}
+            }
 	}
 
 	/* (non-Javadoc)
@@ -155,15 +158,18 @@ public class CatalogEventSink implements IProjectTreeEventsSink,
 	 */
 	public void onBeginDrag(IProjectTreeControl pParentControl, IProjectTreeItem[] pItem, IProjectTreeDragVerify pVerify, IResultCell cell)
 	{
-		// since we are listening for the design pattern catalog,
-		// we only want to respond to events being sent by the design center tree
-		// so we do this check so that we don't respond to the project tree events
+            // since we are listening for the design pattern catalog,
+            // we only want to respond to events being sent by the design center tree
+            // so we do this check so that we don't respond to the project tree events
+            if (pParentControl != null) 
+            {
 		String sMgrName = pParentControl.getConfigMgrName();
 		if (sMgrName.equals("DesignCenter"))
 		{
 			 // Forward to the parent if interested.
 			 m_Parent.onBeginDrag(pParentControl, pItem, pVerify);
 		}
+            }
 	}
 
 	/* (non-Javadoc)
