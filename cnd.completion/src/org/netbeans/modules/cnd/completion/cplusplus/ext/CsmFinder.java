@@ -89,7 +89,7 @@ public interface CsmFinder {
     *   of the element or not.
     * @return list of the matching elements
     */
-    public List findNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch, boolean searchNested);
+    public List findNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch, boolean searchNested,boolean searchFirst);
 
 //    /** Find fields by name in a given class.
 //    * @param c class which is searched for the fields.
