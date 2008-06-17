@@ -48,8 +48,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
-import org.netbeans.modules.cnd.modelutil.CsmFontColorManager;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider.Entity;
 
@@ -58,7 +56,7 @@ import org.netbeans.modules.cnd.modelutil.FontColorProvider.Entity;
  * @author Sergey Grinev
  */
 public class SemanticEntitiesProvider {
-    
+
     List<SemanticEntity> list;
 
     public List<SemanticEntity> get() {
@@ -82,7 +80,7 @@ public class SemanticEntitiesProvider {
         });
 
         if (!HighlighterBase.MINIMAL) { // for QEs who want to save performance on UI tests
-        
+
             // Class Fields
             list.add(new AbstractSemanticEntity(FontColorProvider.Entity.CLASS_FIELD) {
 
@@ -118,21 +116,16 @@ public class SemanticEntitiesProvider {
             list.add(new AbstractSemanticEntity(FontColorProvider.Entity.USER_MACRO) {
 
                 public String getName() {
-                    return MACROS;
+                    return "macros"; // NOI18N
 
                 }
-                private boolean diffSystem = true;
 
                 public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
-                    diffSystem = SemanticHighlightingOptions.instance().getDifferSystemMacros();
                     return ModelUtils.getMacroBlocks(csmFile);
                 }
 
                 @Override
                 public AttributeSet getColor(CsmOffsetable obj) {
-                    if (obj == null || !diffSystem) {
-                        return super.getColor(null);
-                    }
                     CsmMacro macro = (CsmMacro) ((CsmReference) obj).getReferencedObject();
                     return macro == null || !macro.isSystem() ? color : sysMacroColors;
                 }
@@ -159,10 +152,7 @@ public class SemanticEntitiesProvider {
             });
         } // if (!HighlighterBase.MINIMAL)
     }
-
-    // public name for special handling
-    public static final String MACROS = "macros"; // NOI18N
-
+    
     private static abstract class AbstractSemanticEntity implements SemanticEntity {
 
         protected AttributeSet color;
@@ -176,11 +166,11 @@ public class SemanticEntitiesProvider {
         public AbstractSemanticEntity() {
             this.entity = null;
         }
-        
+
         public AbstractSemanticEntity(Entity entity) {
             this.entity = entity;
         }
-        
+
         public void updateFontColors(FontColorProvider provider) {
             assert entity != null;
             color = getFontColor(provider, entity);

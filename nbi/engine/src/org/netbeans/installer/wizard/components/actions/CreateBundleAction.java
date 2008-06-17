@@ -118,7 +118,7 @@ public class CreateBundleAction extends WizardAction {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private Progress progress;
-    private HashSet jarEntries = new HashSet();
+    private HashSet<String> jarEntries = new HashSet <String>();
     
     public CreateBundleAction() {
         setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
