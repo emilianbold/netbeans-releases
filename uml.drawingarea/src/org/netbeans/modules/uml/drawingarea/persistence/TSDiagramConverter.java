@@ -52,6 +52,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -66,6 +67,7 @@ import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.IApplication;
 import org.netbeans.modules.uml.core.eventframework.IEventPayload;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityPartition;
+import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
@@ -78,6 +80,8 @@ import org.netbeans.modules.uml.core.metamodel.dynamics.IInteractionOperand;
 import org.netbeans.modules.uml.core.metamodel.dynamics.Lifeline;
 import org.netbeans.modules.uml.core.metamodel.dynamics.Message;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociation;
+import org.netbeans.modules.uml.core.metamodel.structure.AssociationClass;
+import org.netbeans.modules.uml.core.metamodel.structure.IAssociationClass;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlsupport.FileExtensions;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
@@ -132,6 +136,7 @@ public class TSDiagramConverter
     private final String NESTEDLINKENGINE="NestedLinkDrawEngine";
     private final String NESTEDLINKPRESENTATION="NestedLink";
     private final String NODECONNECTORS="NodeConnectors";
+    private final String ASSOCIATIONCLASSCONNECTORENGINE="AssociationClassConnectorDrawEngine";
     private IProxyDiagram proxyDiagram;
     private TSDiagramDetails diagramDetails;
     
@@ -156,6 +161,8 @@ public class TSDiagramConverter
     private Map<String,NodeInfo.NodeLabel> peidToNodeLabels=new HashMap<String,NodeInfo.NodeLabel>();
     
     private HashMap<String,HashMap<String,Object>> peidToEdgeLabelMap=new HashMap<String,HashMap<String,Object>>();
+    
+    private HashMap<String,NodeInfo> associationClasses=new HashMap<String,NodeInfo>();//it's central elements only (circle in 6.1)
     
     // PEID -> NodeInfo
     private Map<String, NodeInfo> presIdNodeInfoMap = 
@@ -493,19 +500,16 @@ public class TSDiagramConverter
         boolean good=true;
         for (NodeInfo ninfo : ninfos)
         {
-            good=good&&createPE(ninfo);
-            System.out.println(ninfo.getProperty(PRESENTATIONELEMENT)!=null);
-            if(ninfo.getProperty(PRESENTATIONELEMENT)!=null)
-            {
-                IPresentationElement pe=(IPresentationElement) ninfo.getProperty(PRESENTATIONELEMENT);
-                System.out.println("ELEMENT: "+pe.getFirstSubjectsType()+"; SIZE: "+ninfo.getSize());
-            }
+            good=createPE(ninfo)&&good;
         }        
         return good;
     }
     
     private boolean createPE(NodeInfo nodeInfo)
     {
+        //special case, circle at center of assocciation connector isn't supported
+        if(associationClasses.get(nodeInfo.getPEID())!=null)return false;
+        //
         boolean good=true;
         try
         {            
@@ -533,16 +537,6 @@ public class TSDiagramConverter
         IPresentationElement proxyPE = null;
         
         //
-        String sourceId=dataConnIdMap.get(edgeReader.getPEID()).getParamOne();
-        String targetId=dataConnIdMap.get(edgeReader.getPEID()).getParamTwo();
-        IPresentationElement sourcePE=findNode(sourceId);
-        IPresentationElement targetPE=findNode(targetId);
-        if(sourcePE==null || targetPE==null)return null;//target or source is missed from model
-        edgeReader.setSourcePE(sourcePE);
-        edgeReader.setTargetPE(targetPE);
-        //
-        processSemanricPresentation(edgeReader);
-        //
         IElement elt = (IElement) edgeReader.getProperty(ELEMENT);
         if (elt == null)
         {
@@ -554,6 +548,75 @@ public class TSDiagramConverter
             messagesInfo.add(edgeReader);
             return null;
         }
+        //
+        String sourceId=dataConnIdMap.get(edgeReader.getPEID()).getParamOne();
+        String targetId=dataConnIdMap.get(edgeReader.getPEID()).getParamTwo();
+        IPresentationElement sourcePE=findNode(sourceId);
+        IPresentationElement targetPE=findNode(targetId);
+            //it may be association class
+            if(elt instanceof IAssociationClass)
+            {
+                //we need to collect info from all three parts of association link from 6.1 diagram
+                NodeInfo circleInfo=null;
+                if(associationClasses.get(sourceId)!=null)
+                {
+                    //this size circle
+                    circleInfo=associationClasses.get(sourceId);
+                }
+                else if(associationClasses.get(targetId)!=null)
+                {
+                    //this side circle
+                    circleInfo=associationClasses.get(targetId);
+                }
+                if(circleInfo!=null)
+                {
+                    if(circleInfo.getProperty("LINKENDS")==null)
+                    {
+                        circleInfo.setProperty("LINKENDS", new ArrayList<IPresentationElement>());
+                    }
+                    if(sourcePE!=null && targetPE==null)
+                    {
+                        ((ArrayList) circleInfo.getProperty("LINKENDS")).add(sourcePE);
+                        if(!(sourcePE.getFirstSubject() instanceof IAssociationClass))
+                        {
+                            circleInfo.setProperty("ASSOCIATIONCLASSSOURCE",sourcePE);
+                        }
+                    }
+                    else if(sourcePE==null && targetPE!=null)
+                    {
+                        ((ArrayList) circleInfo.getProperty("LINKENDS")).add(targetPE);
+                        if(!(targetPE.getFirstSubject() instanceof IAssociationClass))
+                        {
+                            circleInfo.setProperty("ASSOCIATIONCLASSTARGET",targetPE);
+                        }
+                    }
+                    else if(sourcePE!=null && targetPE!=null)
+                    {
+                        //shouldn't happens
+                        System.out.println("****WARNING: both ends of association class link exist");
+                    }
+                    else
+                    {
+                        //both null, some element is missed, so association link will not be created
+                    }
+                    if(((ArrayList) circleInfo.getProperty("LINKENDS")).size()==3)
+                    {
+                        //collected all  3 parts of link from 6.1
+                        sourcePE=(IPresentationElement) circleInfo.getProperty("ASSOCIATIONCLASSSOURCE");
+                        targetPE=(IPresentationElement) circleInfo.getProperty("ASSOCIATIONCLASSTARGET");
+                    }
+                }
+            }
+        if(sourcePE==null || targetPE==null)
+        {
+            
+            //
+            return null;//target or source is missed from model
+        }
+        edgeReader.setSourcePE(sourcePE);
+        edgeReader.setTargetPE(targetPE);
+        //
+        processSemanricPresentation(edgeReader);
 
             pE = Util.createNodePresentationElement();
     //            pE.setXMIID(PEID);
@@ -932,6 +995,14 @@ public class TSDiagramConverter
                 ninfo.setMEID(readerPres.getAttributeValue(null, "MEID"));
                 //
                 getEngineFromPres(readerPres,ninfo);
+                //
+                if(ASSOCIATIONCLASSCONNECTORENGINE.equals(ninfo.getProperty(ENGINE)))
+                {
+                    //this is circle on association class connector
+                    //presIdNodeInfoMap.remove(PEID);
+                    associationClasses.put(PEID,ninfo);
+                    //return;
+                }
                 //
                 presIdNodeInfoMap.put(PEID, ninfo);
             }

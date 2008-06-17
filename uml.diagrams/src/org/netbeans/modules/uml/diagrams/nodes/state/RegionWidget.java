@@ -214,6 +214,10 @@ public class RegionWidget extends Widget implements PropertyChangeListener
         {
             nameWidget.propertyChange(evt);
         } 
+        else if(evt.getPropertyName().equals(ModelElementChangedKind.NAME_MODIFIED.toString()))
+        {
+            nameWidget.propertyChange(evt);
+        }
         else if (evt.getPropertyName().equals(ModelElementChangedKind.DELETE.toString()) ||
                  evt.getPropertyName().equals(ModelElementChangedKind.PRE_DELETE.toString()))
         {

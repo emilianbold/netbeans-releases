@@ -360,9 +360,9 @@ public class RelationValidator {
     {
         boolean retVal = false;
         
-        if(relType.equals("Generalization") == true)
+        if (pTo instanceof IDerivationClassifier)
         {
-            if (pTo instanceof IDerivationClassifier)
+            if(relType.equals("Generalization") == true)
             {
                 IDerivationClassifier classifier = (IDerivationClassifier) pTo;
                 if(classifier.getDerivation() != null)
@@ -375,10 +375,7 @@ public class RelationValidator {
                     }
                 }
             }
-        }
-        else if(relType.equals("Implementation") == true)
-        {
-            if (pTo instanceof IDerivationClassifier)
+            else if(relType.equals("Implementation") == true)
             {
                 IDerivationClassifier classifier = (IDerivationClassifier) pTo;
                 if(classifier.getDerivation() != null)
@@ -390,7 +387,11 @@ public class RelationValidator {
 
                     }
                 }
-            }  
+            }
+        }
+        else
+        {
+            retVal = true;
         }
         
         return retVal;

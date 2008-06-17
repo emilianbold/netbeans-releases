@@ -57,7 +57,7 @@ public class NodeInfo
 {
     private String PEID = "";
     private String MEID = "";
-    private String viewName = "";
+    private String viewName;
     private Point position;
     private Dimension size;
     private Widget parentWidget;
@@ -67,6 +67,7 @@ public class NodeInfo
     private IProject project;
     private IPresentationElement presentationElement;
     private IElement modelElement;
+    public static final String VIEW_NAME = "ViewName";
     
     public NodeInfo()
     {
@@ -164,7 +165,7 @@ public class NodeInfo
     
     public String getViewName()
     {
-        return viewName!=null ? viewName : (String) properties.get("ViewName");//use default for meteora release if value isn't set directly
+        return viewName!=null ? viewName : (String) properties.get(VIEW_NAME);//use default for meteora release if value isn't set directly
     }
     
     //--
