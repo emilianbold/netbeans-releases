@@ -498,7 +498,7 @@ public abstract class UMLNodeWidget extends Widget
             }
         }
         //get the view name
-        String viewName = props.get(VIEW_NAME);
+        String viewName = nodeReader.getViewName();//props.get(VIEW_NAME);
         //Now try to see if this is a Switchable widget.. if yes, set the correct view
         if (viewName != null && viewName.length() > 0)
         {
