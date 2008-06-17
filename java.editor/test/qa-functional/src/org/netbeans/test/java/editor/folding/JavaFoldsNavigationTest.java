@@ -130,7 +130,8 @@ import org.netbeans.junit.NbModuleSuite;
     
     public void testJavaFoldsNavigation(){
         openDefaultProject();
-        openDefaultSampleFile();
+        openFile("Source Packages|java_code_folding.JavaFoldsNavigationTest", "testJavaFoldsNavigation");
+        //openDefaultSampleFile();
         try {            
             editor = getDefaultSampleEditorOperator();
             JTextComponentOperator txtCompOper = new JTextComponentOperator(editor);

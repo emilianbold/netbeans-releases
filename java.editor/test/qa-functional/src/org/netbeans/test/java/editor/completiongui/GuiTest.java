@@ -114,13 +114,14 @@ public class GuiTest extends EditorTestCase {
                     editor.typeKey(c);
                 }
             }
+            new EventTool().waitNoEvent(1000);
             if(allsymbols) {
                 editor.pushKey(KeyEvent.VK_SPACE, KeyEvent.CTRL_DOWN_MASK | KeyEvent.ALT_DOWN_MASK);                
-                delay = 5000;
+                delay = 3000;
             } else {
                 editor.pushKey(KeyEvent.VK_SPACE, KeyEvent.CTRL_DOWN_MASK);
                 
-                delay = 2500;
+                delay = 1500;
             }
             new EventTool().waitNoEvent(delay);
             while(itemNo>1) {

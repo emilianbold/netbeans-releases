@@ -31,6 +31,7 @@ import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -55,8 +56,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.netbeans.spi.editor.highlighting.HighlightsSequence;
-import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -242,18 +242,41 @@ public class MarkOccurrencesTest extends NbTestCase {
     private List<int[]> foundMarks;
     
     class MyTask implements Task<CompilationController> {
-        
+    
+        public List<int[]> process(CompilationController parameter, Preferences node, Document doc, int caretPosition,MarkOccurrencesHighlighter moh) {
+            try {                
+                Method[] methods = moh.getClass().getDeclaredMethods();
+                Method procesImpl = null;
+                for (Method method : methods) {                    
+                    if(method.getName().equals("processImpl")) procesImpl = method;
+                }
+                if(procesImpl==null) return Collections.EMPTY_LIST;
+                procesImpl.setAccessible(true);
+                Object result = procesImpl.invoke(moh, parameter, node, doc, caretPosition);                
+                return  (List<int[]>) result;
+            } catch (IllegalAccessException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (SecurityException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return Collections.EMPTY_LIST;
+        }
         
         public void run(CompilationController parameter) throws Exception {
             foundMarks = null;
             Document doc = getDocument();
             CancellableTask<CompilationInfo> task  = factory.createTask(fileObject);//new MarkOccurrencesHighlighter(fileObject);
             MarkOccurrencesHighlighter moh;
-            if(task instanceof MarkOccurrencesHighlighter) moh = (MarkOccurrencesHighlighter) factory.createTask(fileObject);//new MarkOccurrencesHighlighter(fileObject);
+            if(task instanceof MarkOccurrencesHighlighter) moh = (MarkOccurrencesHighlighter) task;
             else return;
             int caretPosition = MarkOccurrencesHighlighterFactory.getLastPosition(fileObject);
             Preferences node = MarkOccurencesSettings.getCurrentNode();
-            List<int[]> highlights = moh.processImpl(parameter, node, doc, caretPosition);
+            //List<int[]> highlights = moh.processImpl(parameter, node, doc, caretPosition);
+            List<int[]> highlights = process(parameter, node, doc, caretPosition, moh);
             foundMarks  = highlights;
         }
     }
@@ -271,7 +294,7 @@ public class MarkOccurrencesTest extends NbTestCase {
     }
     
     private JavaSource openFile(String name) throws DataObjectNotFoundException, IOException, InterruptedException, InvocationTargetException {
-        String dataDir = System.getProperty("xtest.data");
+        String dataDir = getDataDir().getAbsoluteFile().getPath();
         File sample = new File(dataDir+"/projects/java_editor_test/src/markOccurrences",name);
         assertTrue("file "+sample.getAbsolutePath()+" does not exist",sample.exists());
         
