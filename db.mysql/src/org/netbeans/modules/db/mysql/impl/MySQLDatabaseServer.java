@@ -58,6 +58,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -457,6 +459,14 @@ public class MySQLDatabaseServer implements DatabaseServer {
             public void execute() throws Exception {
                 Connection conn = connProcessor.getConnection();
                 conn.prepareStatement(DROP_DATABASE_SQL + dbname).executeUpdate();
+
+                DatabaseConnection[] dbconns = ConnectionManager.getDefault().getConnections();
+                for (DatabaseConnection dbconn : dbconns) {
+                    if (dbconn.getDriverClass().equals(MySQLOptions.getDriverClass()) &&
+                            dbconn.getDatabaseURL().contains("/" + dbname)) {
+                        ConnectionManager.getDefault().removeConnection(dbconn);
+                    }
+                }
                 refreshDatabaseList();
             }
         });
