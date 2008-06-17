@@ -216,7 +216,6 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
     }
 
     private String extractColumns(final String table, final List<? super String> columns) {
-        Thread.dumpStack();
         return doWithProgress(NbBundle.getMessage(TableGeneratorPanel.class, "MSG_ExtractingColumns"), new Callable<String>() {
             public String call() {
                 try {
