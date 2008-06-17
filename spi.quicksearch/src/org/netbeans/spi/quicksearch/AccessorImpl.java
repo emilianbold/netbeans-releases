@@ -41,6 +41,7 @@
 
 package org.netbeans.spi.quicksearch;
 
+import java.util.List;
 import javax.swing.KeyStroke;
 import org.netbeans.modules.quicksearch.Accessor;
 import org.netbeans.modules.quicksearch.CategoryResult;
@@ -54,7 +55,7 @@ import org.netbeans.modules.quicksearch.CategoryResult;
 class AccessorImpl extends Accessor {
 
     @Override
-    public SearchRequest createRequest (String text, KeyStroke stroke) {
+    public SearchRequest createRequest (String text, List<? extends KeyStroke> stroke) {
         return new SearchRequest(text, stroke);
     }
 
