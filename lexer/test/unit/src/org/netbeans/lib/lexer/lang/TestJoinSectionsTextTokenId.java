@@ -60,8 +60,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  */
 public enum TestJoinSectionsTextTokenId implements TokenId {
     
-    TEXT(), // Text except of text within braces
-    BRACES(); // "{ ... }" i.e. text within braces
+    BRACES(), // "{...}" i.e. text within braces
+    TEXT(); // Text except of text within braces
 
     private TestJoinSectionsTextTokenId() {
     }

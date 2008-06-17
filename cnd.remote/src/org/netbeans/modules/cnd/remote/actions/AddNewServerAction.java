@@ -75,7 +75,11 @@ public class AddNewServerAction extends NodeAction implements PropertyChangeList
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.setVisible(true);
         if (dd.getValue() == ok) {
-            RemoteServerList.getInstance().add(dlg.getServerName(), dlg.getLoginName(), dlg.isDefault());
+            String entry = dlg.getLoginName() + '@' + dlg.getServerName();
+            RemoteServerList registry = RemoteServerList.getInstance();
+            if (!registry.contains(entry)) {
+                registry.add(dlg.getServerName(), dlg.getLoginName(), dlg.isDefault());
+            }
         }
     }
 

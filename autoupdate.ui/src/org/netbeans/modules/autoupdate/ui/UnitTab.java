@@ -324,7 +324,6 @@ public class UnitTab extends javax.swing.JPanel {
         if (getDownloadSizeTask != null && ! getDownloadSizeTask.isFinished ()) {
             getDownloadSizeTask.cancel ();
         }
-        assert getDownloadSizeTask == null || getDownloadSizeTask.isFinished ();
         if (units.size () > 0) {
             getDownloadSizeTask = DOWNLOAD_SIZE_PROCESSOR.post (new Runnable () {
                 public void run () {
