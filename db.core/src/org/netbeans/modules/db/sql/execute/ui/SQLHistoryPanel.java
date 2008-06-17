@@ -44,6 +44,7 @@
  */
 package org.netbeans.modules.db.sql.execute.ui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -265,6 +266,8 @@ private void insertSQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
             if (rowSelected == i) {
                 sqlToInsert = sqlHistory.getSql().trim();
             }
+            // increment for the next row
+            i++;
         }
         new InsertSQLUtility().insert(sqlToInsert, editorPane);
     } catch (BadLocationException ex) {
@@ -498,7 +501,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                     data[row++][1] = date;
                 }
         
-                sqlHistoryTable.setDefaultRenderer(String.class, new SQLHistoryTableRenderer());                                
+                sqlHistoryTable.setDefaultRenderer(Color.class, new SQLHistoryTableRenderer());                                
                 sqlHistoryTable.repaint();
                 sqlHistoryTable.getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
                 sqlList = null;
