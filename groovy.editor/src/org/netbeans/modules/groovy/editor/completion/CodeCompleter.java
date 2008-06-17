@@ -73,7 +73,6 @@ import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.modules.groovy.editor.elements.KeywordElement;
-import org.netbeans.modules.groovy.editor.parser.GroovyParser;
 import org.openide.filesystems.FileObject;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -105,6 +104,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
+import org.netbeans.modules.groovy.editor.elements.ElementHandleSupport;
 import org.netbeans.modules.groovy.editor.elements.GroovyElement;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
@@ -1605,7 +1605,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         @Override
         public ElementHandle getElement() {
             // For completion documentation
-            return GroovyParser.createHandle(request.info, new KeywordElement(keyword));
+            return ElementHandleSupport.createHandle(request.info, new KeywordElement(keyword));
         }
     }
 
@@ -1649,7 +1649,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         @Override
         public ElementHandle getElement() {
             // For completion documentation
-            return GroovyParser.createHandle(request.info, new KeywordElement(keyword));
+            return ElementHandleSupport.createHandle(request.info, new KeywordElement(keyword));
         }
     }
 
@@ -1695,7 +1695,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         @Override
         public ElementHandle getElement() {
             // For completion documentation
-            return GroovyParser.createHandle(request.info, new KeywordElement(name));
+            return ElementHandleSupport.createHandle(request.info, new KeywordElement(name));
         }
     }
 
@@ -1744,7 +1744,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         @Override
         public ElementHandle getElement() {
             // For completion documentation
-            return GroovyParser.createHandle(request.info, new KeywordElement(name));
+            return ElementHandleSupport.createHandle(request.info, new KeywordElement(name));
         }
     }
 
