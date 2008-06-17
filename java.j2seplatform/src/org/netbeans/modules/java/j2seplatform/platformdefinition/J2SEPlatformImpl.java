@@ -228,8 +228,13 @@ public class J2SEPlatformImpl extends JavaPlatform {
             ClassPath cp = (standardLibs == null ? null : standardLibs.get());
             if (cp != null)
                 return cp;
-            String pathSpec = getSystemProperties().get(SYSPROP_JAVA_CLASS_PATH);
-            cp = Util.createClassPath (pathSpec);
+            final String pathSpec = getSystemProperties().get(SYSPROP_JAVA_CLASS_PATH);
+            if (pathSpec == null) {
+                cp = ClassPathSupport.createClassPath(new URL[0]);
+            }
+            else {
+                cp = Util.createClassPath (pathSpec);
+            }
             standardLibs = new WeakReference<ClassPath>(cp);
             return cp;
         }
