@@ -1,0 +1,44 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright � 2008 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>New Entity Classes from Database Wizard: Mapping Options</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>New Entity Classes from Database Wizard: Mapping Options</h2>
+        <p> <small><a href="#seealso">See Also</a></small></p>
+        <!-- TODO -->
+        <p>This wizard generates a set of entity classes from an existing database connection or schema. 
+        The IDE generates an entity class for each related table with persistent fields. 
+        The wizard takes you through the steps of choosing the database connection or schema, 
+        and then selecting the tables in the database that will be used to generate the entity classes.</p>
+        <p>You open the wizard by right-clicking a 
+        project node or subnode and choosing New &gt; Other, selecting the Persistence category and then selecting Entity Classes from Database.</p>
+        <p>In this page of the wizard you set the following:</p>
+        <ul>
+            <li><b>Association Fetch.</b> can be default, eager or lazy. By default, it is default, meaning no fetch attribute will be added to the relationship annotations</li>
+            <li><b>Collection Type.</b> The collection type used for OneToMany and ManyToMany CMR fields. Can be java.util.Collection, java.util.List or java.util.Set. By default, it is <tt>java.util.Collection</tt>.</li>
+            <li><b>Fully Qualified Database Table Names.</b> if checked, catalog and schema attributes will be added on @Table. By default, it is not checked.</li>
+            <li><b>Attributes for Regenerating Database Tables.</b> if checked, nullable (when it is false), length (for String type), precision and scale (for decimal type) will be added on @Column. Unique constraints will be added on @Table if checked. By default, it is not checked. </li>
+        </ul>            
+            
+        
+        <p>When you click Finish, the IDE creates entity classes for each of the tables you specified in the wizard.</p>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../general/persistence_about.html">About Java Persistence</a></dd>
+            <dd><a href="../general/persistence_fromdb.html">Generating Persistent Entity Classes from a Database</a></dd>
+            <dd><a href="../general/persistence_unit.html">Creating a Persistence Unit</a></dd>
+        </dl>
+        
+        <hr><font size=-2><a href="../../credits.html">Legal Notices</a></font>
+        
+        <table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+    </table></body>
+</html>

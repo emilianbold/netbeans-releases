@@ -80,6 +80,16 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         add(server, user, false);
         cs.fireChange();
     }
+    
+    public boolean contains(String key) {
+        for (RemoteServerRecord record : this) {
+            String tmp = record.getUserName() + '@' + record.getServerName();
+            if (key.equals(tmp)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public ServerRecord getActive() {
         for (RemoteServerRecord record : this) {

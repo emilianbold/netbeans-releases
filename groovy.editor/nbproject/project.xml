@@ -307,6 +307,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.groovy.gsp</friend>
                 <package>org.netbeans.modules.groovy.editor</package>
+                <package>org.netbeans.modules.groovy.editor.completion</package>
                 <package>org.netbeans.modules.groovy.editor.lexer</package>
             </friend-packages>
             <class-path-extension>
