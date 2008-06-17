@@ -72,6 +72,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -414,6 +415,14 @@ public class ProjectsRootNode extends AbstractNode {
         private final boolean logicalView;
         private final ProjectChildren.Pair pair;
         private final Set<FileObject> projectDirsListenedTo = new WeakSet<FileObject>();
+        private final FileChangeListener newSubDirListener = new FileChangeAdapter() {
+            public @Override void fileDataCreated(FileEvent fe) {
+                setProjectFiles();
+            }
+            public @Override void fileFolderCreated(FileEvent fe) {
+                setProjectFiles();
+            }
+        };
 
         public BadgingNode(ProjectChildren.Pair p, Node n, boolean addSearchInfo, boolean logicalView) {
             super(n, null, badgingLookup(n, addSearchInfo));
@@ -474,14 +483,7 @@ public class ProjectsRootNode extends AbstractNode {
                         }
                     }
                     if (projectDirsListenedTo.add(fo)) {
-                        fo.addFileChangeListener(new FileChangeAdapter() {
-                            public @Override void fileDataCreated(FileEvent fe) {
-                                setProjectFiles();
-                            }
-                            public @Override void fileFolderCreated(FileEvent fe) {
-                                setProjectFiles();
-                            }
-                        });
+                        fo.addFileChangeListener(FileUtil.weakFileChangeListener(newSubDirListener, fo));
                     }
                 } else {
                     roots.add(fo);

@@ -337,6 +337,9 @@ public class DataLoaderInLayerTest extends NbTestCase {
     }
     
     public void testManifestRegistrationsTakePreceedence() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         DataLoader l1 = DataLoader.getLoader(SimpleUniFileLoader.class);
         DataLoader l2 = DataLoader.getLoader(AntUniFileLoader.class);
         DataLoader l3 = DataLoader.getLoader(XMLUniFileLoader.class);

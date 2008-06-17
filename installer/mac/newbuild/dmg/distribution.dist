@@ -85,15 +85,20 @@ function checkChoiceUpgradeAction() {
             <line choice="javaee"></line>
             <line choice="cpp"></line>
             <line choice="ruby"></line>
+            <line choice="groovy"></line>
             <line choice="soa"></line>
             <line choice="php"></line>
         </line>
         <line choice="glassfish"></line>
+        <line choice="glassfish-v3"></line>
         <line choice="tomcat"></line>
         <line choice="openesb"></line>
     </choices-outline>
     <choice id="glassfish" title="glassfish-title" description="glassfish-description" start_selected="true" start_enabled="true" start_visible="true">
         <pkg-ref id="ident.pkg.glassfish"></pkg-ref>
+    </choice>
+    <choice id="glassfish-v3" title="glassfish-v3-title" description="glassfish-v3-description" start_selected="true" start_enabled="true" start_visible="true">
+        <pkg-ref id="ident.pkg.glassfish.v3"></pkg-ref>
     </choice>
     <choice id="tomcat" title="tomcat-title" description="tomcat-description" start_selected="false" start_enabled="true" start_visible="true">
         <pkg-ref id="ident.pkg.tomcat"></pkg-ref>
@@ -117,6 +122,9 @@ function checkChoiceUpgradeAction() {
     <choice id="ruby" title="ruby-title" description="ruby-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.ruby.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.ruby"></pkg-ref>
     </choice>
+    <choice id="groovy" title="groovy-title" description="groovy-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.groovy.selected &amp;&amp; choices.javase.selected" enabled="choices.javase.selected">
+        <pkg-ref id="ident.pkg.groovy"></pkg-ref>
+    </choice>
     <choice id="soa" title="soa-title" description="soa-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.soa.selected &amp;&amp; choices.javaee.selected &amp;&amp; choices.openesb.selected" enabled="choices.javaee.selected &amp;&amp; choices.openesb.selected">
         <pkg-ref id="ident.pkg.soa"></pkg-ref>
     </choice>
@@ -125,6 +133,7 @@ function checkChoiceUpgradeAction() {
     </choice>
 
     <pkg-ref id="ident.pkg.glassfish" version="0.0.0.0.0" installKBytes="@SIZE_GLASSFISH@" auth="Root" onConclusion="None">file:./Contents/Packages/glassfish.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.glassfish.v3" version="0.0.0.0.0" installKBytes="@SIZE_GLASSFISHV3@" auth="Root" onConclusion="None">file:./Contents/Packages/glassfish-v3.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.tomcat" version="0.0.0.6.0" installKBytes="@SIZE_TOMCAT@" auth="Root" onConclusion="None">file:./Contents/Packages/tomcat.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.openesb" version="0.0.0.0.0" installKBytes="@SIZE_OPENESB@" auth="Root" onConclusion="None">file:./Contents/Packages/openesb.pkg</pkg-ref>
     <pkg-ref id="org.netbeans.ide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide.pkg</pkg-ref>
@@ -132,6 +141,7 @@ function checkChoiceUpgradeAction() {
     <pkg-ref id="ident.pkg.javaee" version="0.0.0.0.1" installKBytes="@SIZE_JAVAEE@" auth="Root" onConclusion="None">file:./Contents/Packages/javaee.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.cpp" version="0.0.0.0.1" installKBytes="@SIZE_CPP@" auth="Root" onConclusion="None">file:./Contents/Packages/cpp.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.ruby" version="0.0.0.0.1" installKBytes="@SIZE_RUBY@" auth="Root" onConclusion="None">file:./Contents/Packages/ruby.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.groovy" version="0.0.0.0.1" installKBytes="@SIZE_GROOVY@" auth="Root" onConclusion="None">file:./Contents/Packages/groovy.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.soa" version="0.0.0.0.1" installKBytes="@SIZE_SOA@" auth="Root" onConclusion="None">file:./Contents/Packages/soa.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.php" version="0.0.0.0.1" installKBytes="@SIZE_PHP@" auth="Root" onConclusion="None">file:./Contents/Packages/php.pkg</pkg-ref>
 </installer-gui-script>

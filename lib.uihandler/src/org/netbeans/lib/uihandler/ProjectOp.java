@@ -48,10 +48,15 @@ public final class ProjectOp {
         this.startup = startup;
     }
     
-    private static String fixName(String name, boolean nameOrType) {
-        if (nameOrType && name.indexOf("Maven") >= 0) {
-            return "Maven";
-        }
+    private static String fixName(String name, boolean isDisplayName) {
+        if (isDisplayName) {
+            if (name.indexOf("Maven") >= 0) {
+                return "Maven";
+            }
+            if (name.endsWith("Project")) {
+                return name.substring(0, name.length() - 7);
+            }
+        }        
         return name;
     }
     

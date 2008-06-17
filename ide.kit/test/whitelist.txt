@@ -5762,14 +5762,11 @@ org.openide.nodes.ChildFactory
 org.openide.nodes.ChildFactory$Observer
 org.openide.nodes.ChildFactory$WaitFilterNode
 org.openide.nodes.Children
-org.openide.nodes.Children$1
-org.openide.nodes.Children$1SetAndNotify
 org.openide.nodes.Children$Array
 org.openide.nodes.Children$Array$AE
 org.openide.nodes.Children$Dupl
 org.openide.nodes.Children$Empty
 org.openide.nodes.Children$Entry
-org.openide.nodes.Children$Info
 org.openide.nodes.Children$Keys
 org.openide.nodes.Children$Keys$2
 org.openide.nodes.Children$Keys$KE
@@ -5784,6 +5781,11 @@ org.openide.nodes.CookieSet$R
 org.openide.nodes.CookieSetLkp
 org.openide.nodes.CookieSetLkp$ConvertingItem
 org.openide.nodes.CookieSetLkp$SimpleItem
+org.openide.nodes.EntrySupport
+org.openide.nodes.EntrySupport$Default
+org.openide.nodes.EntrySupport$Default$1
+org.openide.nodes.EntrySupport$Default$1SetAndNotify
+org.openide.nodes.EntrySupport$Default$Infoorg.openide.nodes.AbstractNode
 org.openide.nodes.FilterNode
 org.openide.nodes.FilterNode$Children
 org.openide.nodes.FilterNode$ChildrenAdapter
