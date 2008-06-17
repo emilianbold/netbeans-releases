@@ -1335,15 +1335,18 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                 top.setExpID(SCOPE_OPEN);
                                 break;
 
+                            case METHOD_OPEN:
+                            case PARENTHESIS_OPEN:
+                            case OPERATOR:
+                            case UNARY_OPERATOR:
                             case NO_EXP: // alone :: is OK as access to global context
-                                if (tokenNumID == CCTokenContext.SCOPE_ID) {
-                                    CsmCompletionExpression emptyVar = CsmCompletionExpression.createEmptyVariable(curTokenPosition);
-                                    int openExpID = tokenID2OpenExpID(CCTokenContext.SCOPE_ID);
-                                    CsmCompletionExpression opExp = createTokenExp(openExpID);
-                                    opExp.addParameter(emptyVar);
-                                    pushExp(opExp);      
-                                    break;
-                                }
+                                CsmCompletionExpression emptyVar = CsmCompletionExpression.createEmptyVariable(curTokenPosition);
+                                int openExpID = tokenID2OpenExpID(tokenNumID);
+                                CsmCompletionExpression opExp = createTokenExp(openExpID);
+                                opExp.addParameter(emptyVar);
+                                pushExp(opExp);      
+                                break;
+                                    
                             default:
                                 errorState = true;
                                 break;

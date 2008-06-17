@@ -184,10 +184,12 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
         private NbiPanel spacer;
         
         private NbiCheckBox gfCheckbox;
+        private NbiCheckBox gfModCheckbox;
         private NbiCheckBox tomcatCheckbox;
         private NbiCheckBox mysqlCheckbox;
 
         private Product glassfishProduct;
+        private Product glassfishModProduct;
         private Product tomcatProduct;
         private Product mysqlProduct;
 
@@ -540,6 +542,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                         
                         String gfLocation = NetBeansUtils.getJvmOption(
                                 installLocation, GLASSFISH_JVM_OPTION_NAME);
+                        String gfModLocation = NetBeansUtils.getJvmOption(
+                                installLocation, GLASSFISH_MOD_JVM_OPTION_NAME);                        
                         String tomcatLocation = NetBeansUtils.getJvmOption(
                                 installLocation, TOMCAT_JVM_OPTION_NAME_HOME);
                         if(gfLocation!=null) {
@@ -589,6 +593,59 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                                             new Insets(0, 11, 0, 11),         // padding
                                             0, 0));                           // padx, pady - ???
                                     add(gfCheckbox, new GridBagConstraints(
+                                            0, index++,                        // x, y
+                                            1, 1,                             // width, height
+                                            1.0, 0.0,                         // weight-x, weight-y
+                                            GridBagConstraints.PAGE_START,    // anchor
+                                            GridBagConstraints.HORIZONTAL,    // fill
+                                            new Insets(0, 20, 0, 11),         // padding
+                                            0, 0));                           // padx, pady - ???
+                                    break;
+                                }
+                            }
+                        }
+                        if(gfModLocation!=null) {
+                            for(final Product gfModProduct : Registry.getInstance().getProducts("glassfish-mod")) {
+                                if(gfModProduct.getStatus() == Status.INSTALLED &&
+                                        new File(gfModLocation).equals(gfModProduct.getInstallationLocation()))    {
+                                    glassfishModProduct = gfModProduct;
+                                    gfModCheckbox = new NbiCheckBox();
+                                    //List <Product> alsoRemoving = Registry.getInstance().getInavoidableDependents(gfProduct);
+                                    //for(Product toUninstall : Registry.getInstance().getProductsToUninstall()) {
+                                    //    alsoRemoving.remove(toUninstall);
+                                    //}
+                                    //final String text = (alsoRemoving.isEmpty()) ?
+                                    //    StringUtils.format(removeSpecificRuntime, gfProduct.getDisplayName()) :
+                                    //    StringUtils.format(removeSpecificRuntimeIncluding, gfProduct.getDisplayName(),
+                                    //       StringUtils.asString(alsoRemoving));
+                                    //gfCheckbox.setText(text);
+                                    gfModCheckbox.setText(gfModProduct.getDisplayName());
+                                    gfModCheckbox.setBorder(new EmptyBorder(0,0,0,0));
+                                    if(runtimesToRemove==null) {
+                                        runtimesToRemove = new NbiLabel();
+                                        runtimesToRemove.setText(StringUtils.format(runtimesToRemoveText,
+                                                product.getLogic().getSystemDisplayName()));
+                               
+                                    
+                                        add(runtimesToRemove, new GridBagConstraints(
+                                                0, index++,                        // x, y
+                                                1, 1,                             // width, height
+                                                1.0, 0.0,                         // weight-x, weight-y
+                                                GridBagConstraints.PAGE_START,    // anchor
+                                                GridBagConstraints.HORIZONTAL,    // fill
+                                                new Insets(0, 11, 0, 11),         // padding
+                                                0, 0));                           // padx, pady - ???
+                                    }
+                                    gfModCheckbox.addActionListener(new ActionListener() {
+                                        public void actionPerformed(ActionEvent e) {
+                                            if(gfCheckbox.isSelected()) {
+                                                gfModProduct.setStatus(Status.TO_BE_UNINSTALLED);
+                                            } else {
+                                                gfModProduct.setStatus(Status.INSTALLED);
+                                            }
+                                        }
+                                    });
+                                    add(gfModCheckbox, new GridBagConstraints(
                                             0, index++,                        // x, y
                                             1, 1,                             // width, height
                                             1.0, 0.0,                         // weight-x, weight-y
@@ -749,37 +806,23 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
         
         @Override
         public void evaluateNextButtonClick() {
-            if(glassfishProduct!=null &&
-                    glassfishProduct.getStatus()==Status.TO_BE_UNINSTALLED) {
-                glassfishProduct.setStatus(Status.INSTALLED);
-                List <Product> others = Registry.getInstance().getInavoidableDependents(glassfishProduct);
-                for(Product pr : others) {
-                    pr.setStatus(Status.TO_BE_UNINSTALLED);
-                }
-                glassfishProduct.setStatus(Status.TO_BE_UNINSTALLED);
-            }
-            if(tomcatProduct!=null &&
-                    tomcatProduct.getStatus()==Status.TO_BE_UNINSTALLED) {
-                tomcatProduct.setStatus(Status.INSTALLED);
-                List <Product> others = Registry.getInstance().getInavoidableDependents(tomcatProduct);
-                for(Product pr : others) {
-                    pr.setStatus(Status.TO_BE_UNINSTALLED);
-                }
-                tomcatProduct.setStatus(Status.TO_BE_UNINSTALLED);
-            }
-            if(mysqlProduct!=null &&
-                    mysqlProduct.getStatus()==Status.TO_BE_UNINSTALLED) {
-                mysqlProduct.setStatus(Status.INSTALLED);
-                List <Product> others = Registry.getInstance().getInavoidableDependents(mysqlProduct);
-                for(Product pr : others) {
-                    pr.setStatus(Status.TO_BE_UNINSTALLED);
-                }
-                mysqlProduct.setStatus(Status.TO_BE_UNINSTALLED);
-            }
-
+            checkProductStatus(glassfishProduct);
+            checkProductStatus(glassfishModProduct);
+            checkProductStatus(tomcatProduct);
+            checkProductStatus(mysqlProduct);
             super.evaluateNextButtonClick();
         }
-        
+        private void checkProductStatus(Product product) {
+            if(product!=null &&
+                    product.getStatus()==Status.TO_BE_UNINSTALLED) {
+                product.setStatus(Status.INSTALLED);
+                List <Product> others = Registry.getInstance().getInavoidableDependents(product);
+                for(Product pr : others) {
+                    pr.setStatus(Status.TO_BE_UNINSTALLED);
+                }
+                product.setStatus(Status.TO_BE_UNINSTALLED);
+            }
+        }
     }
     
 /////////////////////////////////////////////////////////////////////////////////
@@ -881,6 +924,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             10L * 1024L * 1024L; // 10MB
     public static final String GLASSFISH_JVM_OPTION_NAME =
             "-Dcom.sun.aas.installRoot"; // NOI18N
+    public static final String GLASSFISH_MOD_JVM_OPTION_NAME =
+            "-Dorg.glassfish.v3.installRoot"; //NOI18N
     public static final String TOMCAT_JVM_OPTION_NAME_HOME =
             "-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome"; // NOI18N
 }

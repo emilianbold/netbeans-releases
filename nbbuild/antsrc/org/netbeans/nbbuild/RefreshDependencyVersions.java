@@ -74,6 +74,9 @@ public final class RefreshDependencyVersions extends Task {
     
     private File nbroot;
     private String codenameBase;
+    private String release;
+    private String specification;
+    
     private boolean dryRun = false;
     private final Set<Dep> injectDeps = new HashSet<Dep>();
     
@@ -87,6 +90,14 @@ public final class RefreshDependencyVersions extends Task {
         this.codenameBase = codenameBase;
     }
 
+    public void setRelease(String release) {
+        this.release = release == null || release.length() == 0 ? null : release;
+    }
+
+    public void setSpecification(String specification) {
+        this.specification = specification == null || specification.length() == 0 ? null : specification;
+    }
+    
     public void setDryRun(boolean b) {
         dryRun = b;
     }
@@ -98,12 +109,12 @@ public final class RefreshDependencyVersions extends Task {
     }
     
     public @Override void execute() throws BuildException {
-        log("RefreshDependencyVersions parameters: nbroot = '" + nbroot.getAbsolutePath() + "'"
-                + ", module = " + codenameBase + ", dryrun = " + dryRun + ", inject = " + injectDeps, Project.MSG_VERBOSE);
-
         if (nbroot == null || codenameBase == null) {
             throw new BuildException("Missing params 'nbroot' or 'modules'", getLocation());
         }
+
+        log("RefreshDependencyVersions parameters: nbroot = '" + nbroot.getAbsolutePath() + "'"
+                + ", module = " + codenameBase + ", dryrun = " + dryRun + ", inject = " + injectDeps, Project.MSG_VERBOSE);
 
         validateInjectedDependencies(injectDeps);
 
@@ -139,6 +150,18 @@ public final class RefreshDependencyVersions extends Task {
                 Project.MSG_VERBOSE);
             
             if (codenameBase.equals(mv.getCodenameBase())) {
+                if (mv.getRelease() == null) {
+                    throw new BuildException("Unknown release version of '" + codenameBase + "'.", getLocation());
+                }
+                if (mv.getSpecification() == null) {
+                    throw new BuildException("Unknown specification version of '" + codenameBase + "'.", getLocation());
+                }
+                if (release != null && compare(mv.getRelease(), release) < 0) {
+                    throw new BuildException("Release version of '" + codenameBase + "' is " + mv.getRelease() + ". Requested to update to " + release, getLocation());
+                }
+                if (specification != null && compare(mv.getSpecification(), specification) < 0) {
+                    throw new BuildException("Specification version of '" + codenameBase + "' is " + mv.getSpecification() + ". Requested to update to " + specification, getLocation());
+                }
                 sourceModuleVersion = mv;
                 break;
             }
@@ -147,8 +170,8 @@ public final class RefreshDependencyVersions extends Task {
             throw new BuildException("Can't find '" + codenameBase + "' module!", getLocation());
         }
         
-        // update all modules that depend on the source module, but not the source module itself
-        // and not the modules we are injecting
+        // update all modules that depend on the source module version older or equal to release & specification,
+        // but not update the source module itself and not the modules we are injecting
         NBPRJ:
         for(ModuleListParser.Entry moduleEntry: allModules) {
             String path = moduleEntry.getNetbeansOrgPath();
@@ -188,6 +211,40 @@ public final class RefreshDependencyVersions extends Task {
             
             Node sourceDep = findDependencyFor(nbprj, codenameBase);
             if (sourceDep != null) {
+                boolean compareSpecification = true;
+                // check release versions
+                if (release != null) {
+                    Node sourceRelease = findChild(findChild(sourceDep, "run-dependency"), "release-version");
+                    if (sourceRelease != null && sourceRelease.getTextContent().length() > 0)
+                    {
+                        int c = compare(sourceRelease.getTextContent(), release);
+                        if (c > 0) {
+                            // sourceDep is newer than release, skip
+                            continue;
+                        } else if (c < 0) {
+                            // sourceDep is older then release, ignore specification and updateVersions
+                            compareSpecification = false;
+                        }
+                    }
+                }
+                
+                // check specification versions
+                if (compareSpecification && specification != null) {
+                    Node sourceSpecification = findChild(findChild(sourceDep, "run-dependency"), "specification-version");
+                    if (sourceSpecification != null && sourceSpecification.getTextContent().length() > 0) {
+                        if (compare(sourceSpecification.getTextContent(), specification) >= 0) {
+                            // sourceDep is newer or equal than specification, skip
+                            continue;
+                        }
+                    } else {
+                        Node sourceImplementation = findChild(findChild(sourceDep, "run-dependency"), "implementation-version");
+                        if (sourceImplementation != null) {
+                            // sourceDep is implementation dependency, skip
+                            continue;
+                        }
+                    }
+                }
+                
                 updated |= updateVersions(sourceDep, sourceModuleVersion, false, refreshMsg);
                 
                 for(Dep inject : injectDeps) {
@@ -259,12 +316,6 @@ public final class RefreshDependencyVersions extends Task {
         StringBuilder s = new StringBuilder();
         Node runDep = findChild(dep, "run-dependency");
         if (injecting) {
-            if (runDep == null) {
-                runDep = dep.getOwnerDocument().createElement("run-dependency");
-                dep.appendChild(runDep);
-                s.append(" adding <run-dependency/>");
-            }
-            
             Node buildPrerequisite = findChild(dep, "build-prerequisite");
             if (buildPrerequisite == null) {
                 buildPrerequisite = dep.getOwnerDocument().createElement("build-prerequisite");
@@ -277,6 +328,12 @@ public final class RefreshDependencyVersions extends Task {
                 compileDep = dep.getOwnerDocument().createElement("compile-dependency");
                 dep.appendChild(compileDep);
                 s.append(" adding <compile-dependency/>");
+            }
+            
+            if (runDep == null) {
+                runDep = dep.getOwnerDocument().createElement("run-dependency");
+                dep.appendChild(runDep);
+                s.append(" adding <run-dependency/>");
             }
         }
         
@@ -364,6 +421,12 @@ public final class RefreshDependencyVersions extends Task {
         nueDep.appendChild(nueCnb);
         log.append(inject.getCodenameBase());
 
+        Element nueBuildPrerequisite = nbprj.createElement("build-prerequisite");
+        nueDep.appendChild(nueBuildPrerequisite);
+
+        Element nueCompileDep = nbprj.createElement("compile-dependency");
+        nueDep.appendChild(nueCompileDep);
+        
         Element nueRunDep = nbprj.createElement("run-dependency");
         nueDep.appendChild(nueRunDep);
 
@@ -383,12 +446,6 @@ public final class RefreshDependencyVersions extends Task {
             nueRunDep.appendChild(nueSpec);
             log.append(" >= " + nue);
         }
-        
-        Element nueBuildPrerequisite = nbprj.createElement("build-prerequisite");
-        nueDep.appendChild(nueBuildPrerequisite);
-
-        Element nueCompileDep = nbprj.createElement("compile-dependency");
-        nueDep.appendChild(nueCompileDep);
     }
     
     private static String[] gulp(File file, String enc) throws IOException {
@@ -497,6 +554,31 @@ public final class RefreshDependencyVersions extends Task {
             }
         } catch (IOException e) {
             throw new BuildException("While processing project files in " + projectDir + ": " + e, e, getLocation());
+        }
+    }
+    
+    private static int compare(String v1, String v2) {
+        String [] v1arr = v1.split("\\.");
+        String [] v2arr = v2.split("\\.");
+        int len = Math.min(v1arr.length, v2arr.length);
+        for (int i = 0; i < len; i++) {
+            int v1int = str2ver(v1arr[i]);
+            int v2int = str2ver(v2arr[i]);
+            int result = v1int - v2int;
+            if (result != 0) {
+                return result;
+            }
+        }
+        // 1.1 is older then 1.1.1
+        return v1arr.length - v2arr.length;
+    }
+    
+    private static int str2ver(String s) {
+        int i = s.indexOf('-');
+        if (i == -1) {
+            return Integer.parseInt(s);
+        } else {
+            return Integer.parseInt(s.substring(0, i));
         }
     }
     

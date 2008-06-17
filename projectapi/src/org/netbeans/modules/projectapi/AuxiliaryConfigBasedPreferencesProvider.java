@@ -237,18 +237,6 @@ public class AuxiliaryConfigBasedPreferencesProvider {
             }
         }
         
-        for (String createdNode : createdNodes) {
-            if (ap != null) {
-                String propName = toPropertyName(createdNode, "");
-                
-                ap.put(propName, "", shared);
-            } else {
-                findRelative(createdNode, true);
-                
-                domModified = true;
-            }
-        }
-        
         for (Entry<String, Map<String, String>> e : path2Data.entrySet()) {
             if (ap != null) {
                 for (Entry<String, String> value : e.getValue().entrySet()) {
@@ -304,7 +292,6 @@ public class AuxiliaryConfigBasedPreferencesProvider {
         path2Data.clear();
         path2Removed.clear();
         removedNodes.clear();
-        createdNodes.clear();
         modified = false;
     }
     
@@ -743,7 +730,7 @@ public class AuxiliaryConfigBasedPreferencesProvider {
         @Override
         protected AbstractPreferences getChild(final String nodeName) throws BackingStoreException {
             try {
-                return ProjectManager.mutex().writeAccess(new ExceptionAction<AbstractPreferences>() {
+                return ProjectManager.mutex().readAccess(new ExceptionAction<AbstractPreferences>() {
                     public AbstractPreferences run() throws BackingStoreException {
                         return AuxiliaryConfigBasedPreferences.super.getChild(nodeName);
                     }

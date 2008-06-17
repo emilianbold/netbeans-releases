@@ -1108,6 +1108,8 @@ AtomicLockListener, FoldHierarchyListener {
             BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
             if ((bevt.isInUndo() || bevt.isInRedo())
                     && component == Utilities.getLastActiveComponent()
+                    && !Boolean.TRUE.equals(org.netbeans.lib.editor.util.swing.
+                        DocumentUtilities.getEventProperty(evt, "caretIgnore"))
                ) {
                 // in undo mode and current component
                 undoOffset = evt.getOffset() + evt.getLength();
@@ -1129,6 +1131,8 @@ AtomicLockListener, FoldHierarchyListener {
             BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
             if ((bevt.isInUndo() || bevt.isInRedo())
                 && c == Utilities.getLastActiveComponent()
+                && !Boolean.TRUE.equals(org.netbeans.lib.editor.util.swing.
+                    DocumentUtilities.getEventProperty(evt, "caretIgnore"))
             ) {
                 // in undo mode and current component
                 undoOffset = evt.getOffset();

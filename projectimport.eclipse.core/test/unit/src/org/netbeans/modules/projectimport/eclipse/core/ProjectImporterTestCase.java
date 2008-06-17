@@ -87,15 +87,19 @@ public abstract class ProjectImporterTestCase extends NbTestCase {
      * XXX - If not replace with JarFileSystem as hinted by Radek :)
      */
     protected File extractToWorkDir(String archiveFile) throws IOException {
+        return extractToWorkDir(archiveFile, this);
+    }
+
+    public static File extractToWorkDir(String archiveFile, NbTestCase testCase) throws IOException {
         ZipInputStream zis = null;
         BufferedOutputStream dest = null;
         try {
-            FileInputStream fis = new FileInputStream(new File(getDataDir(), archiveFile));
+            FileInputStream fis = new FileInputStream(new File(testCase.getDataDir(), archiveFile));
             zis = new ZipInputStream(new BufferedInputStream(fis));
             ZipEntry entry;
             while((entry = zis.getNextEntry()) != null) {
                 byte data[] = new byte[BUFFER];
-                File entryFile = new File(getWorkDir(), entry.getName());
+                File entryFile = new File(testCase.getWorkDir(), entry.getName());
                 if (entry.isDirectory()) {
                     entryFile.mkdirs();
                 } else {
@@ -113,7 +117,7 @@ public abstract class ProjectImporterTestCase extends NbTestCase {
             if (dest != null) { dest.close(); }
         }
         // return the directory (without ".zip" - convention used here)
-        return new File(getWorkDir(), archiveFile.substring(0, archiveFile.length() - 4));
+        return new File(testCase.getWorkDir(), archiveFile.substring(0, archiveFile.length() - 4));
     }
     
 }

@@ -40,15 +40,14 @@
 package org.netbeans.modules.quicksearch;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.lang.ref.WeakReference;
 import javax.swing.JTextArea;
 import javax.swing.JWindow;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -66,13 +65,18 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
     WeakReference<TopComponent> caller;
     
     Color origForeground;
-    
+    private KeyStroke keyStroke;
+
+    public QuickSearchComboBar(KeyStroke ks) {
+        this();
+        keyStroke = ks;
+        setShowHint(true);
+    }
+
     /** Creates new form SilverLightComboBar */
     public QuickSearchComboBar() {
         initComponents();
         
-        setShowHint(true);
-
         command.getDocument().addDocumentListener(new DocumentListener() {
 
             public void insertUpdate(DocumentEvent arg0) {
@@ -268,7 +272,8 @@ private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:even
         }
         if (showHint) {
             command.setForeground(command.getDisabledTextColor());
-            command.setText(NbBundle.getMessage(QuickSearchComboBar.class, "MSG_DiscoverabilityHint"));
+            String sc = keyStroke == null ? "" : " (" + keyStroke.toString().replace(" pressed ", "+") + ")"; //NOI18N
+            command.setText(NbBundle.getMessage(QuickSearchComboBar.class, "MSG_DiscoverabilityHint") + sc); //NOI18N
         } else {
             command.setForeground(origForeground);
             command.setText("");        

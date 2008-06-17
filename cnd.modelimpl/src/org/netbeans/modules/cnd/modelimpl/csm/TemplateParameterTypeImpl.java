@@ -110,7 +110,7 @@ public class TemplateParameterTypeImpl implements CsmType, CsmTemplateParameterT
     }
 
     public CsmClassifier getClassifier() {
-        return type.getClassifier();
+        return (CsmClassifier)parameter;
     }
 
     public int getPointerDepth() {
@@ -140,6 +140,11 @@ public class TemplateParameterTypeImpl implements CsmType, CsmTemplateParameterT
     public boolean isInstantiation() {
         return type.isInstantiation();
     }
+    
+    @Override
+    public String toString() {
+        return "TEMPLATE PARAMETER TYPE " + getText()  + "[" + getStartOffset() + "-" + getEndOffset() + "]"; // NOI18N;
+    }    
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
