@@ -40,7 +40,7 @@
  */
 
 
-package bookmarks;
+package org.netbeans.test.bookmarks;
 
 /**
  *

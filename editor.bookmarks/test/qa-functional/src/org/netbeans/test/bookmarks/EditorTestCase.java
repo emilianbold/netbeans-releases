@@ -45,7 +45,7 @@
  * Created on 24. srpen 2004, 12:32
  */
 
-package bookmarks;
+package org.netbeans.test.bookmarks;
 
 import java.io.File;
 import java.io.IOException;

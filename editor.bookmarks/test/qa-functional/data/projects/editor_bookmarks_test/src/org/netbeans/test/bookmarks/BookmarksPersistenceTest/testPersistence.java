@@ -3,7 +3,7 @@
  *
  * Created on 23. August 2004, 18:41
  */
-package bookmarks.BookmarksPersistenceTest;
+package org.netbeans.test.bookmarks.BookmarksPersistenceTest;
 
 /**
  *
