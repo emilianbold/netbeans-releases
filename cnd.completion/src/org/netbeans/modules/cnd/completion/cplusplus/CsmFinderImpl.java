@@ -86,11 +86,7 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletion;
  */
 public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
 
-    public CsmModel model = null;
-    
     private boolean caseSensitive = false;
-    
-    private boolean naturalSort = false;    
     
     private FileObject fo;
     private CsmFile csmFile;
@@ -104,7 +100,6 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
         this.fo = fo;
         this.kitClass = kitClass;
         caseSensitive = getCaseSensitive();
-        naturalSort = getNaturalSort();
         Settings.addSettingsChangeListener(this);        
     }
         
@@ -113,7 +108,6 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
         this.csmFile = csmFile;
         this.kitClass = kitClass;
         caseSensitive = getCaseSensitive();
-        naturalSort = getNaturalSort();
         Settings.addSettingsChangeListener(this);        
     }
     
@@ -130,8 +124,6 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
         
         if (ExtSettingsNames.COMPLETION_CASE_SENSITIVE.equals((evt.getSettingName()))){
             caseSensitive = getCaseSensitive();
-        }else if (ExtSettingsNames.COMPLETION_NATURAL_SORT.equals((evt.getSettingName()))){
-            naturalSort = getNaturalSort();
         }
     }
     
@@ -265,7 +257,7 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
     *   of the element or not.
     * @return list of the matching elements
     */
-    public List findNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch, boolean searchNested) {
+    public List findNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch, boolean searchNested, boolean searchFirst) {
         List ret = new ArrayList();
 
         CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
@@ -276,23 +268,38 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
             Collection classes = contResolver.getNamespaceClassesEnums(ns, name, exactMatch, searchNested);
             if (classes != null) {
                 ret.addAll(classes);
+                if (searchFirst && ret.size()>0) {
+                    return ret;
+                }
             }
             classes = contResolver.getNamespaceEnumerators(ns, name, exactMatch, searchNested);
             if (classes != null) {
                 ret.addAll(classes);
+                if (searchFirst && ret.size()>0) {
+                    return ret;
+                }
             }
             classes = contResolver.getNamespaceVariables(ns, name, exactMatch, searchNested);
             if (classes != null) {
                 ret.addAll(classes);
+                if (searchFirst && ret.size()>0) {
+                    return ret;
+                }
             }
             classes = contResolver.getNamespaceFunctions(ns, name, exactMatch, searchNested);
             if (classes != null) {
                 ret.addAll(classes);
+                if (searchFirst && ret.size()>0) {
+                    return ret;
+                }
             }
             if (prj.getGlobalNamespace() != ns) {
                 classes =  contResolver.getLibClassesEnums(name, exactMatch);
                 if (classes != null) {
                     ret.addAll(classes);
+                    if (searchFirst && ret.size()>0) {
+                        return ret;
+                    }
                 }
             } else {
                 HashSet<CharSequence> set = new HashSet<CharSequence>();
@@ -306,12 +313,24 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
                         CsmNamespace n = lib.getGlobalNamespace();
                         classes = contResolver.getNamespaceClassesEnums(n, name, exactMatch, searchNested);
                         merge(set, ret, classes);
+                        if (searchFirst && ret.size()>0) {
+                            return ret;
+                        }
                         classes = contResolver.getNamespaceEnumerators(n, name, exactMatch, searchNested);
                         merge(set, ret, classes);
+                        if (searchFirst && ret.size()>0) {
+                            return ret;
+                        }
                         classes = contResolver.getNamespaceVariables(n, name, exactMatch, searchNested);
                         merge(set, ret, classes);
+                        if (searchFirst && ret.size()>0) {
+                            return ret;
+                        }
                         classes = contResolver.getNamespaceFunctions(n, name, exactMatch, searchNested);
                         merge(set, ret, classes);
+                        if (searchFirst && ret.size()>0) {
+                            return ret;
+                        }
                     }
                 }
             }
@@ -735,19 +754,6 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
 //    }
 //    //......................................
     
-    public void setCaseSensitive(boolean sensitive){
-        caseSensitive = sensitive;
-    }
-
-    public void setNaturalSort(boolean sort){
-        naturalSort = sort;        
-    }
-    
-    private boolean startsWith(String theString, String prefix){
-        return caseSensitive ? theString.startsWith(prefix) :
-            theString.toLowerCase().startsWith(prefix.toLowerCase());
-    }
-
     /** Find fields by name in a given class.
     * @param contextDeclaration declaration which defines context (class or function)
     * @param c class which is searched for the fields.
