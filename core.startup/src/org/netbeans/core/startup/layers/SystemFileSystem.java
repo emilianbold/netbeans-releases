@@ -165,7 +165,7 @@ implements FileSystem.Status {
         throw new IOException("No writable filesystems in our delegates"); // NOI18N
     }
     
-    protected @Override Set createLocksOn(String name) throws IOException {
+    protected @Override Set<? extends FileSystem> createLocksOn(String name) throws IOException {
         LocalFileSystemEx.potentialLock (name);
         return super.createLocksOn (name);
     }
