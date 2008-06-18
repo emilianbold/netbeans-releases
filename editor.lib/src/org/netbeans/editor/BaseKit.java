@@ -2526,6 +2526,7 @@ public class BaseKit extends DefaultEditorKit {
                         try {
                             Element lineRootElem = doc.getDefaultRootElement();
                             int count = lineRootElem.getElementCount();
+                            boolean removed = false;
                             for (int x = 0; x < count; x++) {
                                 Element elem = lineRootElem.getElement(x);
                                 int start = elem.getStartOffset();
@@ -2544,9 +2545,14 @@ public class BaseKit extends DefaultEditorKit {
                                 }
                                 if (index < endIndex) {
                                     doc.remove(start + index + 1, endIndex - index);
+                                    removed = true;
                                 }
                             } // for
-                            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(BaseKit.class, "TrailingSpacesWereRemoved_Lbl")); // NOI18N
+                            if (removed) {
+                                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(BaseKit.class, "TrailingSpacesWereRemoved_Lbl")); // NOI18N
+                            } else {
+                                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(BaseKit.class, "TrailingSpacesWereNotRemoved_Lbl")); // NOI18N
+                            }
                         } catch (BadLocationException e) {
                             e.printStackTrace();
                             target.getToolkit().beep();
