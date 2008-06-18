@@ -256,7 +256,11 @@ public class BrokenReferencesModel extends AbstractListModel {
         // If they are not report them as broken reference.
         // XXX: there will be API in PropertyUtils for listing of Ant 
         // prop names in String. Consider using it here.
-        for (Map.Entry<String, String> entry : evaluator.getProperties().entrySet()) {
+        final Map<String, String> entries = evaluator.getProperties();
+        if (entries == null) {
+            throw new IllegalArgumentException("Properies mapping could not be computed (e.g. due to a circular definition). Evaluator: "+evaluator.toString());  //NOI18N
+        }        
+        for (Map.Entry<String, String> entry : entries.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
             if (key.startsWith("project.")) { // NOI18N

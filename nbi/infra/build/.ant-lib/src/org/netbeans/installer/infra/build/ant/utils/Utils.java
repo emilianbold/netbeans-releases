@@ -210,7 +210,7 @@ public final class Utils {
                 project.getProperty("pack200.max.perm.size");
         
         Results results = run(
-                PACKER_EXECUTABLE,
+                getPackerExecutable(),
                 xmx,
                 permSize,
                 maxPermSize,
@@ -273,7 +273,7 @@ public final class Utils {
         
         
         Results results = run(
-                UNPACKER_EXECUTABLE,
+                getUnPackerExecutable(),
                 ARG_PREFIX + XMX_ARG + project.getProperty("pack200.xmx"),
                 ARG_PREFIX + PERM_SIZE_ARG + project.getProperty("pack200.perm.size"),
                 ARG_PREFIX + MAX_PERM_SIZE_ARG + project.getProperty("pack200.max.perm.size"),
@@ -459,7 +459,7 @@ public final class Utils {
             final File file,
             final File directory) throws IOException {
         final String[] command = new String[] {
-                NATIVE_UNZIP_EXECUTABLE,
+                getUnzipExecutable(),
                 file.getAbsolutePath(),
                 "-d",
                 directory.getAbsolutePath()};
@@ -477,7 +477,7 @@ public final class Utils {
         }
     }
 
-    private static final String getTarExecutable() {
+    private static final String findTarExecutable() {
         if (!tarInitialized) {
             for (String s : new String[]{NATIVE_GNUTAR_EXECUTABLE, NATIVE_GTAR_EXECUTABLE, NATIVE_TAR_EXECUTABLE}) {
                 try {                    
@@ -771,7 +771,7 @@ public final class Utils {
             final String password) throws IOException {
         List<String> command = new ArrayList<String>();
         
-        command.add(JARSIGNER_EXECUTABLE);
+        command.add(getJarSignerExecutable());
         command.add("-keystore");
         command.add(keystore);
         command.add(file.getAbsolutePath());
@@ -785,7 +785,7 @@ public final class Utils {
     
     public static int getPermissions(final File file) {
         try {
-            final Results results = run(LS_EXECUTABLE, "-ld", file.getAbsolutePath());
+            final Results results = run(getLsExecutable(), "-ld", file.getAbsolutePath());
             
             final String output = results.getStdout().toString().trim();
             
@@ -892,7 +892,7 @@ public final class Utils {
         
         final List<String> command = new ArrayList<String>();
         
-        command.add(JAVA_EXECUTABLE);
+        command.add(getVerificationJavaExecutable());
         command.add(CLASSPATH_ARG);
         command.add(classPath);
         command.add(clazz);
@@ -966,6 +966,33 @@ public final class Utils {
         Process process = new ProcessBuilder(command).directory(directory).start();
         
         return handleProcess(process);
+    }
+    
+    public static String getPackerExecutable() {
+        return getExecutable(PACKER_EXECUTABLE_PROPERTY, PACKER_EXECUTABLE);
+    }
+    public static String getUnPackerExecutable() {
+        return getExecutable(UNPACKER_EXECUTABLE_PROPERTY, UNPACKER_EXECUTABLE);
+    }
+    public static String getLsExecutable() {
+        return getExecutable(LS_EXECUTABLE_PROPERTY, LS_EXECUTABLE);
+    }
+    public static String getUnzipExecutable() {
+        return getExecutable(UNZIP_EXECUTABLE_PROPERTY, NATIVE_UNZIP_EXECUTABLE);
+    }
+    public static String getTarExecutable() {
+        final String value = project.getProperty(TAR_EXECUTABLE_PROPERTY);
+        return (value == null || value.equals("")) ? findTarExecutable() : value;
+    }
+    public static String getJarSignerExecutable() {
+        return getExecutable(JARSIGNER_EXECUTABLE_PROPERTY, JARSIGNER_EXECUTABLE);
+    }
+    public static String getVerificationJavaExecutable() {
+        return getExecutable(VERIFICATION_JAVA_EXECUTABLE_PROPERTY, VERIFICATION_JAVA_EXECUTABLE);
+    }
+    private static String getExecutable(String propName, String defaultValue) {
+        final String value = project.getProperty(propName);
+        return (value == null || value.equals("")) ? defaultValue : value;
     }
     /**
      * Resolving the project property
@@ -1305,25 +1332,40 @@ public final class Utils {
     public static final String JAVA_EXE =
             "bin\\java.exe"; // NOI18N
     
-    public static final String JAVA_EXECUTABLE = 
+    private static final String VERIFICATION_JAVA_EXECUTABLE = 
             JAVA_HOME_VALUE + File.separator + ((IS_WINDOWS) ? JAVA_EXE : JAVA);
     
-    public static final String PACKER_EXECUTABLE = JAVA_HOME_VALUE + 
+    private static final String PACKER_EXECUTABLE = JAVA_HOME_VALUE + 
             ((IS_WINDOWS) ? "\\bin\\pack200.exe" : "/bin/pack200");//NOI18N
-    public static final String UNPACKER_EXECUTABLE = JAVA_HOME_VALUE + 
+    private static final String UNPACKER_EXECUTABLE = JAVA_HOME_VALUE + 
             ((IS_WINDOWS) ? "\\bin\\unpack200.exe" : "/bin/unpack200");//NOI18N
-    public static final String NATIVE_UNZIP_EXECUTABLE =
+    private static final String NATIVE_UNZIP_EXECUTABLE =
             (IS_WINDOWS) ? "unzip.exe" : "unzip"; //NOI18N
-    public static final String NATIVE_TAR_EXECUTABLE =
+    private static final String NATIVE_TAR_EXECUTABLE =
             (IS_WINDOWS) ? "tar.exe" : "tar"; //NOI18N
-    public static final String NATIVE_GTAR_EXECUTABLE =
+    private static final String NATIVE_GTAR_EXECUTABLE =
             (IS_WINDOWS) ? "gtar.exe" : "gtar"; //NOI18N
-    public static final String NATIVE_GNUTAR_EXECUTABLE =
+    private static final String NATIVE_GNUTAR_EXECUTABLE =
             (IS_WINDOWS) ? "gnutar.exe" : "gnutar"; //NOI18N
 
-    public static final String JARSIGNER_EXECUTABLE = JAVA_HOME_VALUE +
+    public static final String PACKER_EXECUTABLE_PROPERTY = 
+            "pack200.executable";
+    public static final String UNPACKER_EXECUTABLE_PROPERTY = 
+            "unpack200.executable";
+    public static final String TAR_EXECUTABLE_PROPERTY = 
+            "tar.executable";
+    public static final String UNZIP_EXECUTABLE_PROPERTY = 
+            "unzip.executable";
+    public static final String LS_EXECUTABLE_PROPERTY = 
+            "ls.executable";
+    public static final String JARSIGNER_EXECUTABLE_PROPERTY = 
+            "jarsigner.executable";
+    public static final String VERIFICATION_JAVA_EXECUTABLE_PROPERTY =
+            "verification.java.executable";
+    
+    private static final String JARSIGNER_EXECUTABLE = JAVA_HOME_VALUE +
         ((IS_WINDOWS) ? "\\..\\bin\\jarsigner.exe" : "/../bin/jarsigner");//NOI18N
-    public static final String LS_EXECUTABLE = 
+    private static final String LS_EXECUTABLE = 
         (IS_WINDOWS) ? "ls.exe" : "ls";//NOI18N
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
 }

@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.vmd.midp.components.databinding;
 
 import java.util.Collection;
@@ -49,11 +48,11 @@ import org.netbeans.modules.vmd.midp.components.categories.DatabindingCategoryCD
  *
  * @author karolharezlak
  */
-public class MidpDatabindingSupport {
+public final class MidpDatabindingSupport {
 
     private MidpDatabindingSupport() {
     }
-    
+
     public static DesignComponent getConnector(DesignComponent bindedComponent, String bindedPropertyName) {
         DesignComponent category = MidpDocumentSupport.getCategoryComponent(bindedComponent.getDocument(), DatabindingCategoryCD.TYPEID);
         for (DesignComponent dataSet : category.getComponents()) {
@@ -67,10 +66,10 @@ public class MidpDatabindingSupport {
         }
         return null;
     }
-    
-     public static Collection<DesignComponent> getAllRelatedConnectors(DesignComponent bindedComponent) {
+
+    public static Collection<DesignComponent> getAllRelatedConnectors(DesignComponent bindedComponent) {
         DesignComponent category = MidpDocumentSupport.getCategoryComponent(bindedComponent.getDocument(), DatabindingCategoryCD.TYPEID);
-        HashSet<DesignComponent> connectors = new HashSet<DesignComponent>(); 
+        HashSet<DesignComponent> connectors = new HashSet<DesignComponent>();
         for (DesignComponent dataSet : category.getComponents()) {
             for (DesignComponent connector : dataSet.getComponents()) {
                 long id = (Long) connector.readProperty(DataSetConnectorCD.PROP_COMPONENT_ID).getPrimitiveValue();
@@ -81,8 +80,22 @@ public class MidpDatabindingSupport {
         }
         return connectors;
     }
-    
-    
- 
 
+    public static String getDatabaindingAsText(final DesignComponent component, final String propertyName) {
+        if (component != null) {
+            final boolean[] isConnector = new boolean[1];
+            component.getDocument().getTransactionManager().readAccess(new Runnable() {
+
+                public void run() {
+                    if (MidpDatabindingSupport.getConnector(component, propertyName) != null) {
+                        isConnector[0] = true;
+                    }
+                }
+            });
+            if (isConnector[0]) {
+                return "<databinding>"; //NOI18N
+            }
+        }
+        return null;
+    }
 }
