@@ -75,7 +75,7 @@ public class RevertCommand extends SvnCommand {
             arguments.add("-R");
         }
         arguments.addFileArguments(files);
-        setCommandWorkingDirectory(files[0]);                
+        setCommandWorkingDirectory(files);                
     }
     
 }
