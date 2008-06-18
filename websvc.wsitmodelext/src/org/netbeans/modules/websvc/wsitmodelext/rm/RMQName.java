@@ -62,20 +62,21 @@ public enum RMQName {
     SEQUENCETRANSPORTSECURITY(createRMQName("SequenceTransportSecurity")),    //NOI18N
     SEQUENCESTR(createRMQName("SequenceSTR"));                                //NOI18N
 
-    static final String RM_HEADERS_NS_URI = "http://schemas.xmlsoap.org/ws/2005/02/rm";    //NOI18N
-    
+    static final String RM_HEADERS_NS_URI = "http://schemas.xmlsoap.org/ws/2005/02/rm";    //NOI18
+
     static final String RM_NS_URI = "http://schemas.xmlsoap.org/ws/2005/02/rm/policy";    //NOI18N
-    public static final String RM_12_NS_URI = "http://docs.oasis-open.org/ws-rx/wsrmp/200702";    //NOI18N
+    static final String RM_12_NS_URI = "http://docs.oasis-open.org/ws-rx/wsrmp/200702";    //NOI18N
+
     static final String RM_NS_PREFIX = "wsrm";                                            //NOI18N
-    
+
     static QName createRMQName(String localName){
         return new QName(RM_NS_URI, localName, RM_NS_PREFIX);
     }
-    
+
     RMQName(QName name) {
         qName = name;
     }
-    
+
     public QName getQName(ConfigVersion cfgVersion) {
         return new QName(getNamespaceUri(cfgVersion), qName.getLocalPart(), qName.getPrefix());
     }
@@ -87,7 +88,7 @@ public enum RMQName {
         }
         return null;
     }
-    
+
     public static ConfigVersion getConfigVersion(QName q) {
         for (ConfigVersion cfgVersion : ConfigVersion.values()) {
             if (getQNames(cfgVersion).contains(q)) {
@@ -96,13 +97,13 @@ public enum RMQName {
         }
         return null;
     }
-    
+
     public static Set<QName> getQNames(ConfigVersion cfgVersion) {
         Set<QName> qnames = new HashSet<QName>();
         for (RMQName wq : values()) {
             qnames.add(wq.getQName(cfgVersion));
         }
         return qnames;
-    }    
+    }
     private final QName qName;
 }

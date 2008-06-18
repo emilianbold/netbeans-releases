@@ -371,15 +371,16 @@ public class SecurityTokensModelHelper {
                         (RequestSecurityTokenTemplate) wcf.create(tokenType, SecurityPolicyQName.REQUESTSECURITYTOKENTEMPLATE.getQName(configVersion));
                 tokenType.addExtensibilityElement(template);
 
-                TokenType trustTokenType = (TokenType) wcf.create(template, TrustQName.TOKENTYPE.getQName());
+                TokenType trustTokenType = (TokenType) wcf.create(template, TrustQName.TOKENTYPE.getQName(configVersion));
                 template.addExtensibilityElement(trustTokenType);
                 trustTokenType.setContent(ComboConstants.ISSUED_TOKENTYPE_SAML11_POLICYSTR);
 
-                KeyType trustKeyType = (KeyType) wcf.create(template, TrustQName.KEYTYPE.getQName());
+                KeyType trustKeyType = (KeyType) wcf.create(template, TrustQName.KEYTYPE.getQName(configVersion));
                 template.addExtensibilityElement(trustKeyType);
-                trustKeyType.setContent(ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR);
+                String nsStart = TrustQName.getNamespaceUri(configVersion);
+                trustKeyType.setContent(nsStart + ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR);
 
-                KeySize trustKeySize = (KeySize) wcf.create(template, TrustQName.KEYSIZE.getQName());
+                KeySize trustKeySize = (KeySize) wcf.create(template, TrustQName.KEYSIZE.getQName(configVersion));
                 template.addExtensibilityElement(trustKeySize);
                 trustKeySize.setContent(ComboConstants.ISSUED_KEYSIZE_256);
                 
@@ -738,13 +739,14 @@ public class SecurityTokensModelHelper {
                         (RequestSecurityTokenTemplate) wcf.create(tokenType, SecurityPolicyQName.REQUESTSECURITYTOKENTEMPLATE.getQName(configVersion));
                 tokenType.addExtensibilityElement(template);
                 
-                TokenType trustTokenType = pmh.createElement(template, TrustQName.TOKENTYPE.getQName(), TokenType.class, false);
+                TokenType trustTokenType = pmh.createElement(template, TrustQName.TOKENTYPE.getQName(configVersion), TokenType.class, false);
                 trustTokenType.setContent(ComboConstants.ISSUED_TOKENTYPE_SAML11_POLICYSTR);
                 
-                KeyType trustKeyType = pmh.createElement(template, TrustQName.KEYTYPE.getQName(), KeyType.class, false);
-                trustKeyType.setContent(ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR);
+                KeyType trustKeyType = pmh.createElement(template, TrustQName.KEYTYPE.getQName(configVersion), KeyType.class, false);
+                String nsStart = TrustQName.getNamespaceUri(configVersion);
+                trustKeyType.setContent(nsStart + ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR);
 
-                KeySize trustKeySize = pmh.createElement(template, TrustQName.KEYSIZE.getQName(), KeySize.class, false);
+                KeySize trustKeySize = pmh.createElement(template, TrustQName.KEYSIZE.getQName(configVersion), KeySize.class, false);
                 trustKeySize.setContent(ComboConstants.ISSUED_KEYSIZE_256);
 
                 SecurityPolicyModelHelper.getInstance(configVersion).enableRequireInternalReference(tokenType, true);            
@@ -805,15 +807,17 @@ public class SecurityTokensModelHelper {
                 KeyType kType = rst.getKeyType();
                 if (kType != null) {
                     String type = kType.getContent();
-                    if (ComboConstants.ISSUED_KEYTYPE_PUBLIC_POLICYSTR.equals(type)) {
-                        return ComboConstants.ISSUED_KEYTYPE_PUBLIC;
-                    }
-                    if (ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR.equals(type)) {
-                        return ComboConstants.ISSUED_KEYTYPE_SYMMETRIC;
-                    }
-                    if (ComboConstants.ISSUED_KEYTYPE_NOPROOF_POLICYSTR.equals(type) ||
-                        ComboConstants.ISSUED_KEYTYPE_NOPROOF13_POLICYSTR.equals(type)) {
-                        return ComboConstants.ISSUED_KEYTYPE_NOPROOF;
+                    if (type!= null) {
+                        if (type.endsWith(ComboConstants.ISSUED_KEYTYPE_PUBLIC_POLICYSTR)) {
+                            return ComboConstants.ISSUED_KEYTYPE_PUBLIC;
+                        }
+                        if (type.endsWith(ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR)) {
+                            return ComboConstants.ISSUED_KEYTYPE_SYMMETRIC;
+                        }
+                        if (type.endsWith(ComboConstants.ISSUED_KEYTYPE_NOPROOF_POLICYSTR) ||
+                            type.endsWith(ComboConstants.ISSUED_KEYTYPE_NOPROOF13_POLICYSTR)) {
+                            return ComboConstants.ISSUED_KEYTYPE_NOPROOF;
+                        }
                     }
                 }
             }
@@ -907,7 +911,7 @@ public class SecurityTokensModelHelper {
                     SecurityPolicyQName.REQUESTSECURITYTOKENTEMPLATE.getQName(configVersion), 
                     RequestSecurityTokenTemplate.class, false);
             
-            TokenType t = pmh.createElement(rst, TrustQName.TOKENTYPE.getQName(), TokenType.class, false); 
+            TokenType t = pmh.createElement(rst, TrustQName.TOKENTYPE.getQName(configVersion), TokenType.class, false);
             if (tokenType.equals(ComboConstants.ISSUED_TOKENTYPE_SAML20)) {
                 t.setContent(ComboConstants.ISSUED_TOKENTYPE_SAML20_POLICYSTR);
             }
@@ -918,18 +922,23 @@ public class SecurityTokensModelHelper {
                 t.setContent(ComboConstants.ISSUED_TOKENTYPE_SAML10_POLICYSTR);
             }
 
-            KeyType k = pmh.createElement(rst, TrustQName.KEYTYPE.getQName(), KeyType.class, false);
+            KeyType k = pmh.createElement(rst, TrustQName.KEYTYPE.getQName(configVersion), KeyType.class, false);
+            String nsStart = TrustQName.getNamespaceUri(configVersion);
             if (keyType.equals(ComboConstants.ISSUED_KEYTYPE_PUBLIC)) {
-                k.setContent(ComboConstants.ISSUED_KEYTYPE_PUBLIC_POLICYSTR);
+                k.setContent(nsStart + ComboConstants.ISSUED_KEYTYPE_PUBLIC_POLICYSTR);
             }
             if (keyType.equals(ComboConstants.ISSUED_KEYTYPE_SYMMETRIC)) {
-                k.setContent(ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR);
+                k.setContent(nsStart + ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR);
             }
             if (keyType.equals(ComboConstants.ISSUED_KEYTYPE_NOPROOF)) {
-                k.setContent(ComboConstants.ISSUED_KEYTYPE_NOPROOF_POLICYSTR);
+                if (ConfigVersion.CONFIG_1_3 == configVersion) {
+                    k.setContent(nsStart + ComboConstants.ISSUED_KEYTYPE_NOPROOF13_POLICYSTR);
+                } else {
+                    k.setContent(ComboConstants.ISSUED_KEYTYPE_NOPROOF_POLICYSTR);
+                }
             }
 
-            KeySize s = pmh.createElement(rst, TrustQName.KEYSIZE.getQName(), KeySize.class, false);
+            KeySize s = pmh.createElement(rst, TrustQName.KEYSIZE.getQName(configVersion), KeySize.class, false);
             s.setContent(keySize);
             
         } finally {
