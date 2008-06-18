@@ -41,8 +41,8 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
+import java.io.File;
 import java.util.List;
-import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
 import org.netbeans.modules.cnd.apt.support.APTIncludeResolver;
@@ -95,8 +95,12 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
             }
             if ( result == null) {
                 int startOffset = includeNext ? baseFileIncludeDirIndex+1 : 0;
+                String baseFolder = null;
+                if (system && baseFile != null) {
+                    baseFolder = new File(baseFile).getParent();
+                }
                 PathsCollectionIterator paths = 
-                        new PathsCollectionIterator(userIncludePaths, systemIncludePaths, startOffset);
+                        new PathsCollectionIterator(userIncludePaths, systemIncludePaths, startOffset, baseFolder);
                 result = APTIncludeUtils.resolveFilePath(paths, file, startOffset);
             }
             if ( result == null && system && !includeNext) {

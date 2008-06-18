@@ -45,13 +45,13 @@ package org.netbeans.modules.groovy.editor.completion;
  */
 public enum CaretLocation {
     
-    ABOVE_PACKAGE("ABOVE_PACKAGE"),
-    BELOW_PACKAGE("BELOW_PACKAGE"),
-    OUTSIDE_CLASSES("OUTSIDE_CLASSES"),
-    INSIDE_CLASS("INSIDE_CLASS"),
-    INSIDE_METHOD("INSIDE_METHOD"),
-    INSIDE_CLOSURE("INSIDE_CLOSURE"),
-    INSIDE_PARAMETERS("INSIDE_PARAMETERS"),
+    ABOVE_PACKAGE("ABOVE_PACKAGE"),         // above the "package" statement (if any).
+    ABOVE_FIRST_CLASS("ABOVE_FIRST_CLASS"), // Outside any classs and above the first class or interface stmt.
+    OUTSIDE_CLASSES("OUTSIDE_CLASSES"),     // Outside any class but behind some class or interface stmt.
+    INSIDE_CLASS("INSIDE_CLASS"),           // inside a class definition but not in a method.
+    INSIDE_METHOD("INSIDE_METHOD"),         // in a method definition.
+    INSIDE_CLOSURE("INSIDE_CLOSURE"),       // inside a closure definition.
+    INSIDE_PARAMETERS("INSIDE_PARAMETERS"), // inside a parameter-list definition (signature) of a method.
     UNDEFINED("UNDEFINED");
     
     private String id;
