@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.projectimport.eclipse.core.ClassPathContainerResolver;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
 import org.openide.filesystems.FileUtil;
 
@@ -143,10 +144,9 @@ public final class ProjectImportModel {
 
     private boolean hasJUnitOnClassPath() {
         for (DotClassPathEntry entry : getEclipseClassPathEntries()) {
-            if (entry.getKind() == DotClassPathEntry.Kind.CONTAINER && entry.getRawPath().startsWith("org.eclipse.jdt.junit.JUNIT_CONTAINER/")) {
+            if (ClassPathContainerResolver.isJUnit(entry)) {
                 return true;
             }
-            // XXX could be a little laxer, e.g. JSPWiki uses: <classpathentry kind="lib" path="tests/lib/junit.jar"/>
         }
         return false;
     }
