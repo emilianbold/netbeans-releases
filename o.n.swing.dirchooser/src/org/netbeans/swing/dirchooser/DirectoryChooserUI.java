@@ -1609,6 +1609,9 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         int depth = 0;
         
         public void paintIcon(Component c, Graphics g, int x, int y) {
+            if (icon == null) {
+                return;
+            }
             if (c.getComponentOrientation().isLeftToRight()) {
                 icon.paintIcon(c, g, x+depth*space, y);
             } else {
@@ -1617,11 +1620,11 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
         
         public int getIconWidth() {
-            return icon.getIconWidth() + depth*space;
+            return icon != null ? icon.getIconWidth() + depth*space : null;
         }
         
         public int getIconHeight() {
-            return icon.getIconHeight();
+            return icon != null ? icon.getIconHeight() : null;
         }
         
     }
