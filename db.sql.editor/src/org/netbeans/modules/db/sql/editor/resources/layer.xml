@@ -54,12 +54,16 @@ made subject to such option by the copyright holder.
         <folder name="System">
             <file name="org-netbeans-modules-db-sql-editor-ui-actions-RunSQLAction.instance"/>
             <file name="org-netbeans-modules-db-sql-editor-ui-actions-RunSQLSelectionAction.instance"/>
+            <file name="org-netbeans-modules-db-sql-editor-ui-actions-SQLHistoryAction.instance"/>
         </folder>
     </folder>
     
     <folder name="Shortcuts">
         <file name="DS-E.shadow">
             <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-db-sql-editor-ui-actions-RunSQLAction.instance"/>
+        </file>
+        <file name="DAS-H.shadow">
+            <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-db-sql-editor-ui-actions-SQLHistoryAction.instance"/>
         </file>
     </folder>
 
