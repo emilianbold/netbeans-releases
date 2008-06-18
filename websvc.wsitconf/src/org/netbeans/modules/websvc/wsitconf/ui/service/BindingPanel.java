@@ -96,7 +96,7 @@ public class BindingPanel extends SectionInnerPanel {
     private Project project;
     private Service service;
     private JaxWsModel jaxwsmodel;
-    
+
     private String oldProfile;
 
     private boolean doNotSync = false;
@@ -108,7 +108,7 @@ public class BindingPanel extends SectionInnerPanel {
     private final Color REGULAR;
 
     private boolean updateServiceUrl = true;
-    
+
     public BindingPanel(SectionView view, Node node, Project p, Binding binding, UndoManager undoManager, JaxWsModel jaxwsmodel) {
         super(view);
         this.model = binding.getModel();
@@ -118,9 +118,9 @@ public class BindingPanel extends SectionInnerPanel {
         this.binding = binding;
         this.jaxwsmodel = jaxwsmodel;
         initComponents();
-        
+
         REGULAR = profileInfoField.getForeground();
-        
+
         if (node != null) {
             service = node.getLookup().lookup(Service.class);
             if (service != null) {
@@ -132,7 +132,7 @@ public class BindingPanel extends SectionInnerPanel {
         } else {
             isFromJava = false;
         }
-                
+
         mtomChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         rmChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         orderedChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
@@ -151,13 +151,13 @@ public class BindingPanel extends SectionInnerPanel {
         jSeparator4.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         cfgVersionLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         cfgVersionCombo.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-        
+
         inSync = true;
         for (ConfigVersion cfgVersion : ConfigVersion.values()) {
             cfgVersionCombo.addItem(cfgVersion);
         }
         inSync = false;
-        
+
         addImmediateModifier(cfgVersionCombo);
         addImmediateModifier(mtomChBox);
         addImmediateModifier(rmChBox);
@@ -171,10 +171,10 @@ public class BindingPanel extends SectionInnerPanel {
 
         sync();
 
-        if ((!isFromJava) && 
+        if ((!isFromJava) &&
             (PolicyModelHelper.getPolicyUriForElement(binding) == null) &&
             (ProfilesModelHelper.isServiceUrlHttps(binding))) {
-                updateServiceUrl = false; 
+                updateServiceUrl = false;
         }
 
         model.addComponentListener(new ComponentListener() {
@@ -209,16 +209,16 @@ public class BindingPanel extends SectionInnerPanel {
     private ConfigVersion getUserExpectedConfigVersion() {
         return (ConfigVersion) cfgVersionCombo.getSelectedItem();
     }
-    
+
     private void sync() {
         inSync = true;
-        
+
         ConfigVersion configVersion = PolicyModelHelper.getConfigVersion(binding);
         cfgVersionCombo.setSelectedItem(configVersion);
-                
+
         boolean mtomEnabled = TransportModelHelper.isMtomEnabled(binding);
         setChBox(mtomChBox, mtomEnabled);
-        
+
         boolean fiEnabled = TransportModelHelper.isFIEnabled(binding);
         setChBox(fiChBox, !fiEnabled);
 
@@ -226,14 +226,14 @@ public class BindingPanel extends SectionInnerPanel {
         setChBox(tcpChBox, tcpEnabled);
 
         boolean rmEnabled = RMModelHelper.getInstance(configVersion).isRMEnabled(binding);
-        setChBox(rmChBox, rmEnabled);        
+        setChBox(rmChBox, rmEnabled);
         setChBox(orderedChBox, RMModelHelper.getInstance(configVersion).isOrderedEnabled(binding));
 
         boolean stsEnabled = ProprietarySecurityPolicyModelHelper.isSTSEnabled(binding);
         setChBox(stsChBox, stsEnabled);
-        
+
         fillProfileCombo(stsEnabled);
-        
+
         boolean securityEnabled = SecurityPolicyModelHelper.isSecurityEnabled(binding);
         setChBox(securityChBox, securityEnabled);
         if (securityEnabled) {
@@ -259,7 +259,7 @@ public class BindingPanel extends SectionInnerPanel {
         if (source.equals(cfgVersionCombo)) {
             PolicyModelHelper.setConfigVersion(binding, userExpectedCfgVersion, project);
         }
-        
+
         RMModelHelper rmh = RMModelHelper.getInstance(userExpectedCfgVersion);
 
         if (source.equals(rmChBox)) {
@@ -293,7 +293,7 @@ public class BindingPanel extends SectionInnerPanel {
             boolean mtom = TransportModelHelper.isMtomEnabled(binding);
             if (mtomChBox.isSelected() != mtom) {
                 TransportModelHelper.enableMtom(binding, mtomChBox.isSelected());
-            }            
+            }
         }
 
         if (source.equals(fiChBox)) {
@@ -302,7 +302,7 @@ public class BindingPanel extends SectionInnerPanel {
                 TransportModelHelper.enableFI(binding, fiChBox.isSelected());
             }
         }
-        
+
         if (source.equals(tcpChBox)) {
             boolean tcp = TransportModelHelper.isTCPEnabled(binding);
             if (tcpChBox.isSelected() != tcp) {
@@ -310,7 +310,7 @@ public class BindingPanel extends SectionInnerPanel {
                 TransportModelHelper.enableTCP(service, isFromJava, binding, project, tcpChBox.isSelected(), jsr109);
             }
         }
-        
+
         if (source.equals(securityChBox)) {
             String profile = (String) profileCombo.getSelectedItem();
             if (securityChBox.isSelected()) {
@@ -343,7 +343,7 @@ public class BindingPanel extends SectionInnerPanel {
                 Util.unfillDefaults(project);
             }
         }
-        
+
         if (source.equals(stsChBox)) {
             if (stsChBox.isSelected() != ProprietarySecurityPolicyModelHelper.isSTSEnabled(binding)) {
                 ProprietarySecurityPolicyModelHelper.enableSTS(binding, stsChBox.isSelected());
@@ -360,7 +360,7 @@ public class BindingPanel extends SectionInnerPanel {
                     ProfilesModelHelper.setServiceDefaults(profile, binding, project);
                     if (ProfilesModelHelper.isSSLProfile(profile) && !ProfilesModelHelper.isSSLProfile(oldProfile)) {
                         ProfilesModelHelper.setSSLAttributes(binding);
-                    } 
+                    }
                     if (!ProfilesModelHelper.isSSLProfile(profile) && ProfilesModelHelper.isSSLProfile(oldProfile)) {
                         ProfilesModelHelper.unsetSSLAttributes(binding);
                     }
@@ -373,7 +373,7 @@ public class BindingPanel extends SectionInnerPanel {
                 doNotSync = false;
             }
         }
-        
+
         enableDisable();
     }
 
@@ -383,7 +383,7 @@ public class BindingPanel extends SectionInnerPanel {
         }
         return Boolean.FALSE;
     }
-    
+
     private void setChBox(JCheckBox chBox, Boolean enable) {
         if (enable == null) {
             chBox.setSelected(false);
@@ -391,14 +391,14 @@ public class BindingPanel extends SectionInnerPanel {
             chBox.setSelected(enable);
         }
     }
-    
+
     // SECURITY PROFILE
     private void setSecurityProfile(String profile) {
         this.profileCombo.setSelectedItem(profile);
         SecurityProfile sp = SecurityProfileRegistry.getDefault().getProfile(profile);
         this.profileInfoField.setText(sp.getDescription());
     }
-    
+
     @Override
     public void documentChanged(javax.swing.text.JTextComponent comp, String value) {
         SectionView view = getSectionView();
@@ -411,7 +411,7 @@ public class BindingPanel extends SectionInnerPanel {
     @Override
     public void rollbackValue(javax.swing.text.JTextComponent source) {
     }
-    
+
     @Override
     protected void endUIChange() { }
 
@@ -420,28 +420,28 @@ public class BindingPanel extends SectionInnerPanel {
     public javax.swing.JComponent getErrorComponent(String errorId) {
         return new JButton();
     }
-    
+
     private void enableDisable() {
-        
+
         boolean relSelected = rmChBox.isSelected();
         orderedChBox.setEnabled(relSelected);
         rmAdvanced.setEnabled(relSelected);
 
         boolean isTomcat = Util.isTomcat(project);
         tcpChBox.setEnabled(!isTomcat);
-        
+
         boolean amSec = SecurityCheckerRegistry.getDefault().isNonWsitSecurityEnabled(node, jaxwsmodel);
-        
+
         // everything is ok, disable security
         if (!amSec) {
 
             boolean gf = Util.isGlassfish(project);
-            
+
             securityChBox.setEnabled(true);
             profileInfoField.setForeground(REGULAR);
-            
+
             boolean secSelected = securityChBox.isSelected();
-                            
+
             profileComboLabel.setEnabled(secSelected);
             profileCombo.setEnabled(secSelected);
             profileInfoField.setEnabled(secSelected);
@@ -449,22 +449,22 @@ public class BindingPanel extends SectionInnerPanel {
             boolean keyStoreConfigRequired = true;
             boolean trustStoreConfigRequired = true;
             boolean kerberosConfigRequired = false;
-            
+
             boolean validatorsRequired = true;
             boolean stsAllowed = true;
-            
+
             boolean defaults = devDefaultsChBox.isSelected();
 
             profConfigButton.setEnabled(secSelected);
-            
-            if (secSelected) {                
+
+            if (secSelected) {
 
                 String secProfile = ProfilesModelHelper.getSecurityProfile(binding);
 
                 boolean defaultsSupported = ProfilesModelHelper.isServiceDefaultSetupSupported(secProfile);
                 if (!defaultsSupported) defaults = false;
                 devDefaultsChBox.setEnabled(defaultsSupported);
-                
+
                 boolean isSSL = ProfilesModelHelper.isSSLProfile(secProfile);
                 if (isSSL) {
                     keyStoreConfigRequired = false;
@@ -475,17 +475,17 @@ public class BindingPanel extends SectionInnerPanel {
                     trustStoreConfigRequired = false;
                     kerberosConfigRequired = true;
                 }
-                
+
                 if (stsAllowed) {
-                    if (ComboConstants.PROF_SAMLHOLDER.equals(secProfile) || 
+                    if (ComboConstants.PROF_SAMLHOLDER.equals(secProfile) ||
                         ComboConstants.PROF_SAMLSENDER.equals(secProfile) ||
                         ComboConstants.PROF_SAMLSSL.equals(secProfile)) {
                             stsAllowed = false;
                     }
                 }
-                
+
                 if (trustStoreConfigRequired && gf) {
-                    if (ComboConstants.PROF_USERNAME.equals(secProfile) || 
+                    if (ComboConstants.PROF_USERNAME.equals(secProfile) ||
                         ComboConstants.PROF_MUTUALCERT.equals(secProfile) ||
                         ComboConstants.PROF_ENDORSCERT.equals(secProfile) ||
                         ComboConstants.PROF_SAMLSENDER.equals(secProfile) ||
@@ -498,9 +498,9 @@ public class BindingPanel extends SectionInnerPanel {
                             trustStoreConfigRequired = false;
                     }
                 }
-                
+
                 if (validatorsRequired) {
-                    if (ComboConstants.PROF_STSISSUED.equals(secProfile) || 
+                    if (ComboConstants.PROF_STSISSUED.equals(secProfile) ||
                         ComboConstants.PROF_STSISSUEDCERT.equals(secProfile) ||
                         ComboConstants.PROF_STSISSUEDSUPPORTING.equals(secProfile) ||
                         ComboConstants.PROF_STSISSUEDENDORSE.equals(secProfile)) {
@@ -510,9 +510,9 @@ public class BindingPanel extends SectionInnerPanel {
             } else {
                 devDefaultsChBox.setEnabled(false);
             }
-                  
+
             secAdvancedButton.setEnabled(secSelected && !defaults);
-            
+
             stsChBox.setEnabled(secSelected && !isFromJava && stsAllowed);
 
             boolean stsSelected = stsChBox.isSelected();
@@ -523,12 +523,12 @@ public class BindingPanel extends SectionInnerPanel {
                 keyStoreConfigRequired = true;
                 validatorsRequired = true;
             }
-            
-            validatorsButton.setEnabled(secSelected && !gf && !defaults && validatorsRequired);
+
+            validatorsButton.setEnabled(secSelected && !(ConfigVersion.CONFIG_1_0.equals(getUserExpectedConfigVersion()) && gf) && !defaults && validatorsRequired);
             keyButton.setEnabled(secSelected && keyStoreConfigRequired && !defaults);
             trustButton.setEnabled(secSelected && trustStoreConfigRequired && !defaults);
             kerberosCfgButton.setEnabled(secSelected && kerberosConfigRequired && !defaults);
-            
+
         } else { // no wsit fun, there's access manager security selected
             profileComboLabel.setEnabled(false);
             profileCombo.setEnabled(false);
@@ -554,8 +554,8 @@ public class BindingPanel extends SectionInnerPanel {
             return j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109);
         }
         return false;
-    }    
-    
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -862,12 +862,12 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
     private void validatorsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_validatorsButtonActionPerformed
         String profile = (String) profileCombo.getSelectedItem();
         ValidatorsPanel vPanel = new ValidatorsPanel(binding, project, profile, getUserExpectedConfigVersion()); //NOI18N
-        DialogDescriptor dlgDesc = new DialogDescriptor(vPanel, 
+        DialogDescriptor dlgDesc = new DialogDescriptor(vPanel,
                 NbBundle.getMessage(BindingPanel.class, "LBL_Validators_Panel_Title")); //NOI18N
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
-        
-        dlg.setVisible(true); 
-        
+
+        dlg.setVisible(true);
+
         if (dlgDesc.getValue() == DialogDescriptor.OK_OPTION) {
             vPanel.storeState();
         }
@@ -885,11 +885,11 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
         model.addUndoableEditListener(undoCounter);
 
         STSConfigServicePanel stsConfigPanel = new STSConfigServicePanel(project, binding, getUserExpectedConfigVersion());
-        DialogDescriptor dlgDesc = new DialogDescriptor(stsConfigPanel, 
+        DialogDescriptor dlgDesc = new DialogDescriptor(stsConfigPanel,
                 NbBundle.getMessage(BindingPanel.class, "LBL_STSConfig_Panel_Title")); //NOI18N
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
-        
-        dlg.setVisible(true); 
+
+        dlg.setVisible(true);
         if (dlgDesc.getValue() == DialogDescriptor.CANCEL_OPTION) {
             for (int i=0; i<undoCounter.getCounter();i++) {
                 if (undoManager.canUndo()) {
@@ -897,7 +897,7 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
                 }
             }
         }
-        
+
         model.removeUndoableEditListener(undoCounter);
     }//GEN-LAST:event_stsConfigButtonActionPerformed
 
@@ -905,11 +905,11 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
         boolean jsr109 = isJsr109Supported();
         String profile = (String) profileCombo.getSelectedItem();
         TruststorePanel storePanel = new TruststorePanel(binding, project, jsr109, profile, false, getUserExpectedConfigVersion());
-        DialogDescriptor dlgDesc = new DialogDescriptor(storePanel, 
+        DialogDescriptor dlgDesc = new DialogDescriptor(storePanel,
                 NbBundle.getMessage(BindingPanel.class, "LBL_Truststore_Panel_Title")); //NOI18N
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
-        
-        dlg.setVisible(true); 
+
+        dlg.setVisible(true);
         if (dlgDesc.getValue() == DialogDescriptor.OK_OPTION) {
             storePanel.storeState();
         }
@@ -918,12 +918,12 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
     private void keyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyButtonActionPerformed
         boolean jsr109 = isJsr109Supported();
         KeystorePanel storePanel = new KeystorePanel(binding, project, jsr109, false, getUserExpectedConfigVersion());
-        DialogDescriptor dlgDesc = new DialogDescriptor(storePanel, 
+        DialogDescriptor dlgDesc = new DialogDescriptor(storePanel,
                 NbBundle.getMessage(BindingPanel.class, "LBL_Keystore_Panel_Title")); //NOI18N
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
-        
-        dlg.setVisible(true); 
-        
+
+        dlg.setVisible(true);
+
         if (dlgDesc.getValue() == DialogDescriptor.OK_OPTION) {
             storePanel.storeState();
         }
@@ -931,11 +931,11 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
 
     private void rmAdvancedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rmAdvancedActionPerformed
         AdvancedRMPanel advancedRMPanel = new AdvancedRMPanel(binding, getUserExpectedConfigVersion()); //NOI18N
-        DialogDescriptor dlgDesc = new DialogDescriptor(advancedRMPanel, 
+        DialogDescriptor dlgDesc = new DialogDescriptor(advancedRMPanel,
                 NbBundle.getMessage(BindingPanel.class, "LBL_AdvancedRM_Title")); //NOI18N
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
-        
-        dlg.setVisible(true); 
+
+        dlg.setVisible(true);
 
         if (dlgDesc.getValue() == DialogDescriptor.OK_OPTION) {
             advancedRMPanel.storeState();
@@ -944,11 +944,11 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
 
     private void secAdvancedButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_secAdvancedButtonActionPerformed
         AdvancedSecurityPanel advancedSecPanel = new AdvancedSecurityPanel(binding, getUserExpectedConfigVersion()); //NOI18N
-        DialogDescriptor dlgDesc = new DialogDescriptor(advancedSecPanel, 
+        DialogDescriptor dlgDesc = new DialogDescriptor(advancedSecPanel,
                 NbBundle.getMessage(BindingPanel.class, "LBL_AdvancedSec_Title")); //NOI18N
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
-        
-        dlg.setVisible(true); 
+
+        dlg.setVisible(true);
 
         if (dlgDesc.getValue() == DialogDescriptor.OK_OPTION) {
             advancedSecPanel.storeState();
@@ -957,16 +957,16 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
 
     private void kerberosCfgButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_kerberosCfgButtonActionPerformed
         KerberosConfigPanel panel = new KerberosConfigPanel(binding, project, getUserExpectedConfigVersion());
-        DialogDescriptor dlgDesc = new DialogDescriptor(panel, 
+        DialogDescriptor dlgDesc = new DialogDescriptor(panel,
                 NbBundle.getMessage(BindingPanel.class, "LBL_KerberosConfig_Panel_Title")); //NOI18N
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
-        
-        dlg.setVisible(true); 
+
+        dlg.setVisible(true);
         if (dlgDesc.getValue() == DialogDescriptor.OK_OPTION) {
             panel.storeState();
         }
 }//GEN-LAST:event_kerberosCfgButtonActionPerformed
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cfgVersionCombo;
     private javax.swing.JLabel cfgVersionLabel;
