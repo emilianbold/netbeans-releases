@@ -57,6 +57,7 @@ import org.netbeans.modules.uml.core.metamodel.profiles.IStereotype;
 import org.netbeans.modules.uml.drawingarea.NodeWidgetFactory;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
+import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -449,5 +450,6 @@ public abstract class SwitchableWidget extends UMLNodeWidget
         switchTo(oldViewName);
         setPreferredBounds(bounds);
         scene.validate();
+        Util.resizeNodeToContents(this);
     }
 }
