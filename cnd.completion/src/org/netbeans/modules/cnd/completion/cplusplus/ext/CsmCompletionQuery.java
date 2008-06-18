@@ -1093,17 +1093,22 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                     } else { // Array of some depth
                                         cls = CsmCompletion.OBJECT_CLASS_ARRAY; // Use Object in this case
                                     }
-                                    List res = findFieldsAndMethods(finder, contextElement, cls, var, false, staticOnly, false, true,this.scopeAccessedClassifier,sort);
-                                    List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, var, false, true, sort);
-                                    res.addAll(nestedClassifiers);
-                                    result = new CsmCompletionResult(
-                                                 component, getBaseDocument(), 
-//                                                 findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls), cls, var, false, staticOnly, false),
-                                                 res,
-                                                 formatType(lastType, true, true, false) + var + '*',
-                                                 item,
-                                                 0/*cls.getName().length() + 1*/,
-                                                 isProjectBeeingParsed());
+                                    if (cls == null) {
+                                        lastType = null;
+                                        cont = false;
+                                    } else {
+                                        List res = findFieldsAndMethods(finder, contextElement, cls, var, false, staticOnly, false, true,this.scopeAccessedClassifier,sort);
+                                        List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, var, false, true, sort);
+                                        res.addAll(nestedClassifiers);
+                                        result = new CsmCompletionResult(
+                                                     component, getBaseDocument(), 
+    //                                                 findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls), cls, var, false, staticOnly, false),
+                                                     res,
+                                                     formatType(lastType, true, true, false) + var + '*',
+                                                     item,
+                                                     0/*cls.getName().length() + 1*/,
+                                                     isProjectBeeingParsed());
+                                    }
                                 }
                             } else { // currently package
                                 String searchPkg = (lastNamespace.isGlobal() ? "" : (lastNamespace.getQualifiedName() + CsmCompletion.SCOPE)) + var;

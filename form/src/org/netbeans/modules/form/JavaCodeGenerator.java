@@ -270,6 +270,7 @@ class JavaCodeGenerator extends CodeGenerator {
         if (component == null) {
             propList.add(new VariablesModifierProperty());
             propList.add(new LocalVariablesProperty());
+            propList.add(new GenerateFQNProperty());
             propList.add(new GenerateMnemonicsCodeProperty());
             propList.add(new ListenerGenerationStyleProperty());
             propList.add(new LayoutCodeTargetProperty());
@@ -1086,9 +1087,14 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }
 
-    private void regenerateVariables() {
+    /**
+     * Returns the set of generated variables.
+     * 
+     * @return the set of generated variables.
+     */
+    private Set<String> regenerateVariables() {
         if (!initialized || !canGenerate)
-            return;
+            return Collections.emptySet();
         
         IndentEngine indentEngine = IndentEngine.find(
                                         formEditorSupport.getDocument());
@@ -1107,12 +1113,13 @@ class JavaCodeGenerator extends CodeGenerator {
         else {
             variablesWriter = new CodeWriter(variablesBuffer, false);
         }
-	    
+
+        Set<String> variableNames = Collections.emptySet();
         try {
 	    variablesWriter.write(getVariablesHeaderComment());
             variablesWriter.write("\n"); // NOI18N
 
-            addFieldVariables(variablesWriter);
+            variableNames = addFieldVariables(variablesWriter);
             
             variablesWriter.write(getVariablesFooterComment());
             variablesWriter.write("\n"); // NOI18N
@@ -1128,6 +1135,7 @@ class JavaCodeGenerator extends CodeGenerator {
         catch (IOException e) { // should not happen
             e.printStackTrace();
         }
+        return variableNames;
     }   
     
     private void addCreateCode(RADComponent comp, CodeWriter initCodeWriter)
@@ -2492,16 +2500,19 @@ class JavaCodeGenerator extends CodeGenerator {
         return metacomp;
     }
 
-    private void addFieldVariables(CodeWriter variablesWriter)
+    private Set<String> addFieldVariables(CodeWriter variablesWriter)
         throws IOException
     {
+        Set<String> variableNames = new HashSet<String>();
         Iterator<CodeVariable> it = getSortedVariables(CodeVariable.FIELD, CodeVariable.SCOPE_MASK);
 
         while (it.hasNext()) {
             CodeVariable var = it.next();
             RADComponent metacomp = codeVariableToRADComponent(var);
-            if (metacomp != null)
+            if (metacomp != null) {
                 generateComponentFieldVariable(metacomp, variablesWriter, null);
+                variableNames.add(var.getName());
+            }
             // there should not be other than component variables as fields
         }
 
@@ -2515,12 +2526,14 @@ class JavaCodeGenerator extends CodeGenerator {
                             bindingGroupClass, "bindingGroup", true); // NOI18N
                 }
                 variablesWriter.write("private " + bindingGroupClass.getName() + " " + bindingGroupVariable + ";\n"); // NOI18N
+                variableNames.add(bindingGroupVariable);
                 break;
             }
         }
         if (!anyBinding) {
             bindingGroupVariable = null;
         }
+        return variableNames;
     }
 
     private void addLocalVariables(Writer writer)
@@ -3143,6 +3156,12 @@ class JavaCodeGenerator extends CodeGenerator {
             return;
         }
 
+        if (!formModel.getSettings().getGenerateFQN()) {
+            FQNImporter fqnImporter = new FQNImporter(formEditorSupport.getFormDataObject().getPrimaryFile());
+            fqnImporter.setHandleEventHandlers(Collections.singleton(handlerName));
+            fqnImporter.importFQNs();
+        }
+
         clearUndo();
     }
 
@@ -3416,8 +3435,18 @@ class JavaCodeGenerator extends CodeGenerator {
     void regenerateCode() {
         if (!codeUpToDate) {	    
             codeUpToDate = true;
-            regenerateVariables();
+            Set<String> variableNames = regenerateVariables();
             regenerateInitComponents();
+            if (!formModel.getSettings().getGenerateFQN()) {
+                FQNImporter fqnImporter = new FQNImporter(formEditorSupport.getFormDataObject().getPrimaryFile());
+                fqnImporter.setHandleInitComponents(true);
+                fqnImporter.setHandleVariables(variableNames);
+                if (formModel.getSettings().getListenerGenerationStyle() == CEDL_INNERCLASS && anyEvents()) {
+                    fqnImporter.setHandleFormListener(getListenerClassName());
+                }
+                fqnImporter.importFQNs();
+                clearUndo();
+            }
             ensureMainClassImplementsListeners();            
             FormModel.t("code regenerated"); // NOI18N	    
         }
@@ -4440,6 +4469,56 @@ class JavaCodeGenerator extends CodeGenerator {
             return new LayoutCodeTargetEditor(true);
         }
 
+    }
+
+    private class GenerateFQNProperty extends PropertySupport.ReadWrite<Boolean> {
+        
+        private GenerateFQNProperty() {
+            super(FormLoaderSettings.PROP_GENERATE_FQN,
+                Boolean.class,
+                FormUtils.getBundleString("PROP_GENERATE_FQN"), // NOI18N
+                FormUtils.getBundleString("HINT_GENERATE_FQN")); // NOI18N
+        }
+
+        public void setValue(Boolean value) {
+            Boolean oldValue = getValue();
+            formModel.getSettings().setGenerateFQN(value);
+            if (!value) {
+                FQNImporter fqnImporter = new FQNImporter(formEditorSupport.getFormDataObject().getPrimaryFile());
+                String[] handlers = formModel.getFormEvents().getAllEventHandlers();
+                fqnImporter.setHandleEventHandlers(Arrays.asList(handlers));
+                fqnImporter.importFQNs();
+            }
+            formModel.fireSyntheticPropertyChanged(null, FormLoaderSettings.PROP_GENERATE_FQN, oldValue, value);
+            FormEditor.getFormEditor(formModel).getFormRootNode().firePropertyChangeHelper(
+                FormLoaderSettings.PROP_GENERATE_FQN, oldValue, value);
+        }
+
+        public Boolean getValue() {
+            return formModel.getSettings().getGenerateFQN();
+        }
+
+        @Override
+        public boolean supportsDefaultValue() {
+            return true;
+        }
+
+        @Override
+        public void restoreDefaultValue() {
+            setValue(FormLoaderSettings.getInstance().getGenerateFQN());
+        }
+
+        @Override
+        public boolean isDefaultValue() {
+            return (formModel.getSettings().getGenerateFQN() ==
+                    FormLoaderSettings.getInstance().getGenerateFQN());
+        }
+
+        @Override
+        public boolean canWrite() {
+            return JavaCodeGenerator.this.canGenerate && !JavaCodeGenerator.this.formModel.isReadOnly();
+        }
+        
     }
     
     public final static class LayoutCodeTargetEditor

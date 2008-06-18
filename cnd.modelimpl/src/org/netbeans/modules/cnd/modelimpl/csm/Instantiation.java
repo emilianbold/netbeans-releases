@@ -683,8 +683,12 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
             CsmClassifier res;
             
             if (inst) {
-                res = (CsmClassifier)Class.create((CsmTemplate)originalType.getClassifier(), instantiation.getMapping());
-                return res;
+                CsmClassifier classifier = originalType.getClassifier();
+                if (CsmKindUtilities.isTemplate(classifier)) {
+                    res = (CsmClassifier)Class.create(
+                            (CsmTemplate)classifier, instantiation.getMapping());
+                    return res;
+                }
             }
             
             if (instantiatedType instanceof Resolver.SafeClassifierProvider) {
