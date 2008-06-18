@@ -153,7 +153,7 @@ abstract public class DiagramEngine {
         selectTool.addAction(scene.createRectangularSelectAction());
         selectTool.addAction(ActionFactory.createZoomAction());
         selectTool.addAction(scene.createWidgetHoverAction());
-        selectTool.addAction(new DiagramSceneAcceptAction(new SceneAcceptProvider(scene.getDiagram().getNamespaceForCreatedElements())));
+        selectTool.addAction(new DiagramSceneAcceptAction(new SceneAcceptProvider(scene.getDiagram().getNamespaceForCreatedElements(), false)));
         selectTool.addAction(ActionFactory.createCycleObjectSceneFocusAction());
         selectTool.addAction(ActionFactory.createPopupMenuAction(menuProvider));
 

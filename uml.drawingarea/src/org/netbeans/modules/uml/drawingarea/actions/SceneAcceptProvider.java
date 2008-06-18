@@ -84,10 +84,17 @@ public class SceneAcceptProvider implements AcceptProvider
 {
 
     protected INamespace sceneNamespace = null;
+    protected boolean handleMovingNodes = false;
 
     public SceneAcceptProvider(INamespace space)
     {
+        this(space, true);
+    }
+    
+    public SceneAcceptProvider(INamespace space, boolean handleMoving)
+    {
         sceneNamespace = space;
+        handleMovingNodes = handleMoving;
     }
     
     public ConnectorState isAcceptable(Widget widget, Point point, Transferable transferable)
@@ -153,7 +160,8 @@ public class SceneAcceptProvider implements AcceptProvider
                     Exceptions.printStackTrace(ex);
                 }
             }
-            else if (transferable.isDataFlavorSupported(MoveWidgetTransferable.FLAVOR))
+            else if ((handleMovingNodes == true) && 
+                     transferable.isDataFlavorSupported(MoveWidgetTransferable.FLAVOR))
             {
                 try
                 {
@@ -397,7 +405,8 @@ public class SceneAcceptProvider implements AcceptProvider
                 discoverRleationships = true;
             }
             
-            else if (transferable.isDataFlavorSupported(MoveWidgetTransferable.FLAVOR))
+            else if ((handleMovingNodes == true) && 
+                    transferable.isDataFlavorSupported(MoveWidgetTransferable.FLAVOR))
             {
                 try
                 {
@@ -430,7 +439,6 @@ public class SceneAcceptProvider implements AcceptProvider
                         }
                     }
                     
-                    System.out.println("Comparing Scenes: " + transferWidget.getScene() + ", " + engine.getScene());
                     transferWidget.removeFromParent();
                     engine.getScene().getMainLayer().addChild(transferWidget);
                     transferWidget.setPreferredLocation(point);
