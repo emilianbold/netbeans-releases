@@ -127,6 +127,9 @@ public class GsfCompletionProvider implements CompletionProvider {
     }
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
+        if (!autoPopup) {
+            return 0;
+        }
         if (typedText.length() > 0) {
             CodeCompletionHandler provider = getCompletable(component.getDocument(), component.getCaretPosition());
             if (provider != null) {
@@ -814,6 +817,7 @@ public class GsfCompletionProvider implements CompletionProvider {
     
     // From Utilities
     private static boolean caseSensitive = true;
+    private static boolean autoPopup = true;
     private static boolean inited;
 
     private static boolean isCaseSensitive() {
@@ -832,6 +836,8 @@ public class GsfCompletionProvider implements CompletionProvider {
         public void preferenceChange(PreferenceChangeEvent evt) {
             if (evt.getKey() == null || SimpleValueNames.COMPLETION_CASE_SENSITIVE.equals(evt.getKey())) {
                 setCaseSensitive(Boolean.valueOf(evt.getNewValue()));
+            } else if (SimpleValueNames.COMPLETION_AUTO_POPUP.equals(evt.getKey())) {
+                setAutoPopup(Boolean.valueOf(evt.getNewValue()));
             }
         }
     }
@@ -841,6 +847,11 @@ public class GsfCompletionProvider implements CompletionProvider {
     private static void setCaseSensitive(boolean b) {
         lazyInit();
         caseSensitive = b;
+    }
+
+    private static void setAutoPopup(boolean b) {
+        lazyInit();
+        autoPopup = b;
     }
 
     private static void lazyInit() {
@@ -855,6 +866,7 @@ public class GsfCompletionProvider implements CompletionProvider {
             prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, settingsListener, prefs));
             
             setCaseSensitive(prefs.getBoolean(SimpleValueNames.COMPLETION_CASE_SENSITIVE, false));
+            setAutoPopup(prefs.getBoolean(SimpleValueNames.COMPLETION_AUTO_POPUP, false));
         }
     }
 }
