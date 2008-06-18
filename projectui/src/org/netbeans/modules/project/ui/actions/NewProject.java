@@ -206,11 +206,12 @@ public class NewProject extends BasicAction {
                         
                         Project lastProject = projectsToOpen.size() > 0 ? (Project) projectsToOpen.get(0) : null;
                         
-                        OpenProjectList.getDefault().open( projectsToOpen.toArray(new Project[0]), false, true);
-                        
+                        Project mainProject = null;
                         if (setFirstMainFinal && lastProject != null) {
-                            OpenProjectList.getDefault().setMainProject(lastProject);
+                            mainProject = lastProject;
                         }
+                        
+                        OpenProjectList.getDefault().open(projectsToOpen.toArray(new Project[0]), false, true, mainProject);
                         
                         // Show the project tab to show the user we did something
                         if (! Boolean.getBoolean("project.tab.no.selection")) { //NOI18N
