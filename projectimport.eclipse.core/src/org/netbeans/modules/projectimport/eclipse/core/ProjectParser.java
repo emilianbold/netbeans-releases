@@ -65,15 +65,15 @@ final class ProjectParser {
         try {
             dotProjectXml = XMLUtil.parse(new InputSource(dotProject.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
         } catch (SAXException e) {
-            IOException ioe = (IOException) new IOException(dotProject + ": " + e.toString()).initCause(e);
+            IOException ioe = (IOException) new IOException(dotProject + ": " + e.toString()).initCause(e); // NOI18N
             throw ioe;
         }
         Element projectDescriptionEl = dotProjectXml.getDocumentElement();
         if (!"projectDescription".equals(projectDescriptionEl.getLocalName())) { // NOI18N
-            throw new IllegalStateException("given file is not eclipse .project file");
+            throw new IllegalStateException("given file is not eclipse .project file"); // NOI18N
         }
         
-        Element naturesEl = Util.findElement(projectDescriptionEl, "natures", null);
+        Element naturesEl = Util.findElement(projectDescriptionEl, "natures", null); // NOI18N
         if (naturesEl != null) {
             List<Element> natureEls = Util.findSubElements(naturesEl);
             if (natureEls != null) {
@@ -83,14 +83,25 @@ final class ProjectParser {
             }
         }
         
-        Element linksEl = Util.findElement(projectDescriptionEl, "linkedResources", null);
+        Element linksEl = Util.findElement(projectDescriptionEl, "linkedResources", null); // NOI18N
         if (linksEl != null) {
             List<Element> linkEls = Util.findSubElements(linksEl);
             if (linkEls != null) {
                 for (Element link : linkEls) {
-                    String loc = resolveLink(Util.findElement(link, "location", null).getTextContent(), variables);
-                    links.add(new Link(Util.findElement(link, "name", null).getTextContent(), 
-                            "1".equals(Util.findElement(link, "type", null).getTextContent()),
+                    Element locationElement = Util.findElement(link, "location", null); // NOI18N
+                    String loc;
+                    if (locationElement == null) {
+                        assert Util.findElement(link, "locationURI", null) != null : Util.findSubElements(link); // NOI18N
+                        // XXX external source root can be defined using IDE variable. For some reason (in Eclipse)
+                        // these variables are stored/managed separately from variables which can be used
+                        // in classpath. For now these variables are not transfer to NetBeans and normalized
+                        // path will be returned instead.
+                        loc = resolveLink(Util.findElement(link, "locationURI", null).getTextContent(), variables); // NOI18N
+                    } else {
+                        loc = locationElement.getTextContent();
+                    }
+                    links.add(new Link(Util.findElement(link, "name", null).getTextContent(),  // NOI18N
+                            "1".equals(Util.findElement(link, "type", null).getTextContent()), // NOI18N
                             loc));
                 }
             }
