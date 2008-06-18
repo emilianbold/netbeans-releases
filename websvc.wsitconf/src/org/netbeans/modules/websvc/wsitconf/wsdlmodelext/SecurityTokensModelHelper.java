@@ -436,15 +436,16 @@ public class SecurityTokensModelHelper {
         }
 
         try {
-            String levelStr = null;
+            String nsStart = SecurityPolicyQName.getNamespaceUri(configVersion);
+            String levelStr = nsStart;
             if (ComboConstants.NEVER.equals(incLevel)) {
-                levelStr = ComboConstants.NEVER_POLICYSTR;
+                levelStr += ComboConstants.NEVER_POLICYSTR;
             } else if (ComboConstants.ALWAYS.equals(incLevel)) {
-                levelStr = ComboConstants.ALWAYS_POLICYSTR;
+                levelStr += ComboConstants.ALWAYS_POLICYSTR;
             } else if (ComboConstants.ALWAYSRECIPIENT.equals(incLevel)) {
-                levelStr = ComboConstants.ALWAYSRECIPIENT_POLICYSTR;
+                levelStr += ComboConstants.ALWAYSRECIPIENT_POLICYSTR;
             } else if (ComboConstants.ONCE.equals(incLevel)) {
-                levelStr = ComboConstants.ONCE_POLICYSTR;
+                levelStr += ComboConstants.ONCE_POLICYSTR;
             }
             ((ExtensibilityElement)tokenType).setAnyAttribute(SecurityPolicyQName.INCLUDETOKENATTRIBUTE.getQName(configVersion), levelStr);
         } finally {

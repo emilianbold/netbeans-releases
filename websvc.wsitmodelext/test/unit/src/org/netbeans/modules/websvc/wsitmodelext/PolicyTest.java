@@ -106,7 +106,7 @@ public class PolicyTest extends NbTestCase {
         ArrayList<QName> qnames = new ArrayList<QName>();
         
         qnames.addAll(PolicyQName.getQNames(ConfigVersion.CONFIG_1_0));
-        qnames.addAll(PolicyQName.getQNames(ConfigVersion.CONFIG_1_2));
+        qnames.addAll(PolicyQName.getQNames(ConfigVersion.CONFIG_1_3));
         
         qnames.addAll(MtomQName.getQNames());
         qnames.addAll(FIQName.getQNames());
@@ -116,7 +116,7 @@ public class PolicyTest extends NbTestCase {
         qnames.addAll(Addressing10WsdlQName.getQNames());
         
         qnames.addAll(RMQName.getQNames(ConfigVersion.CONFIG_1_0));
-        qnames.addAll(RMQName.getQNames(ConfigVersion.CONFIG_1_2));
+        qnames.addAll(RMQName.getQNames(ConfigVersion.CONFIG_1_3));
         
         qnames.addAll(RMSunQName.getQNames());
         qnames.addAll(RMSunClientQName.getQNames());
@@ -124,7 +124,7 @@ public class PolicyTest extends NbTestCase {
         qnames.addAll(SecurityQName.getQNames());
         
         qnames.addAll(SecurityPolicyQName.getQNames(ConfigVersion.CONFIG_1_0));
-        qnames.addAll(SecurityPolicyQName.getQNames(ConfigVersion.CONFIG_1_2));
+        qnames.addAll(SecurityPolicyQName.getQNames(ConfigVersion.CONFIG_1_3));
 
         qnames.addAll(ProprietaryPolicyQName.getQNames());
         qnames.addAll(ProprietarySCClientQName.getQNames());
