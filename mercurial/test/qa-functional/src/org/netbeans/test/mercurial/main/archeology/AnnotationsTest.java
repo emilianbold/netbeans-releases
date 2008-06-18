@@ -11,7 +11,6 @@ package org.netbeans.test.mercurial.main.archeology;
 
 import java.io.File;
 import java.io.PrintStream;
-import junit.textui.TestRunner;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.OutputOperator;
@@ -19,7 +18,6 @@ import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.test.mercurial.utils.RepositoryMaintenance;
 import org.netbeans.test.mercurial.utils.TestKit;
 
 /**
@@ -37,6 +35,7 @@ public class AnnotationsTest extends JellyTestCase {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
@@ -53,8 +52,6 @@ public class AnnotationsTest extends JellyTestCase {
     }
     
     public static Test suite() {
-//        NbTestSuite suite = new NbTestSuite();
-//        suite.addTest(new AnnotationsTest("testShowAnnotations"));
         return NbModuleSuite.create(NbModuleSuite.createConfiguration(AnnotationsTest.class)
                 .addTest("testShowAnnotations")
                 .enableModules(".*")
@@ -66,20 +63,18 @@ public class AnnotationsTest extends JellyTestCase {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);
         try {
-            TestKit.closeProject(PROJECT_NAME);
-            OutputOperator oo = OutputOperator.invoke();
-
-            stream = new PrintStream(new File(getWorkDir(), getName() + ".log"))
-;
+            OutputOperator.invoke();
+            stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             TestKit.loadOpenProject(PROJECT_NAME, getDataDir());
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
             node.performPopupAction("Mercurial|Show Annotations");
-            OutputTabOperator oto = new OutputTabOperator("Mercurial");
+            OutputTabOperator oto = new OutputTabOperator(TestKit.getProjectAbsolutePath(PROJECT_NAME));
             oto.waitText("INFO: End of Annotate");
-            
             stream.flush();
             stream.close();
+            TestKit.closeProject(PROJECT_NAME);
         } catch (Exception e) {
+            TestKit.closeProject(PROJECT_NAME);
             throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);

@@ -42,10 +42,14 @@ package org.netbeans.test.mercurial;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.test.mercurial.main.archeology.AnnotationsTest;
 import org.netbeans.test.mercurial.main.commit.CloneTest;
+import org.netbeans.test.mercurial.main.commit.CommitDataTest;
+import org.netbeans.test.mercurial.main.commit.CommitUiTest;
 import org.netbeans.test.mercurial.main.commit.IgnoreTest;
 import org.netbeans.test.mercurial.main.commit.InitializeTest;
 import org.netbeans.test.mercurial.main.delete.DeleteUpdateTest;
+import org.netbeans.test.mercurial.main.properties.HgPropertiesTest;
 
 /**
  *
@@ -60,9 +64,13 @@ public class hgStableTest extends JellyTestCase {
     public static Test suite() {
         return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
                 .addTest(InitializeTest.class, "testInitializeAndFirstCommit")
+                .addTest(CommitDataTest.class, "testCommitFile", "testRecognizeMimeType")
+                .addTest(CommitUiTest.class, "testInvokeCloseCommit")
                 .addTest(CloneTest.class, "testCloneProject")
                 .addTest(IgnoreTest.class, "testIgnoreUnignoreFile")
                 .addTest(DeleteUpdateTest.class, "testDeleteUpdate")
+                .addTest(AnnotationsTest.class, "testShowAnnotations")
+                .addTest(HgPropertiesTest.class, "testHgPropertiesTest")
                 .enableModules(".*").clusters(".*"));
     }
 

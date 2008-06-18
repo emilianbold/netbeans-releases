@@ -11,12 +11,10 @@ package org.netbeans.test.mercurial.main.delete;
 
 import java.io.File;
 import java.io.PrintStream;
-import junit.textui.TestRunner;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -42,6 +40,7 @@ public class DeleteUpdateTest extends JellyTestCase {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {        
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
@@ -56,14 +55,9 @@ public class DeleteUpdateTest extends JellyTestCase {
     }
     
     public void testDeleteUpdate() throws Exception {
-        System.out.println("DEBUG: testDeleteUpdate - start");
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
         try {
-//            TestKit.closeProject(PROJECT_NAME);
-            
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
-//            TestKit.loadOpenProject(PROJECT_NAME, getDataDir());
+            TestKit.loadOpenProject(PROJECT_NAME, getDataDir());
             
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
             node.performPopupAction("Mercurial|Status");
@@ -116,11 +110,10 @@ public class DeleteUpdateTest extends JellyTestCase {
                 e = ex;
             }
             assertNull("TimeoutExpiredException should not have been thrown. Updating deleted file should make it visible!!!", e);
-            
+            TestKit.closeProject(PROJECT_NAME);
         } catch (Exception e) {
+            TestKit.closeProject(PROJECT_NAME);
             throw new Exception("Test failed: " + e);
-        } finally {
-        }    
-        System.out.println("DEBUG: testDeleteUpdate - finish");
+        }
     }
 }

@@ -40,11 +40,8 @@ package org.netbeans.test.mercurial.main.commit;
 
 import java.io.File;
 import java.io.PrintStream;
-import javax.swing.table.TableModel;
-import junit.textui.TestRunner;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -95,8 +92,6 @@ public class InitializeTest extends JellyTestCase {
         }
 
         try {
-            TestKit.closeProject(TestKit.PROJECT_NAME);
-            org.openide.nodes.Node nodeIDE;
             long start;
             long end;
             JTableOperator table;
@@ -111,9 +106,6 @@ public class InitializeTest extends JellyTestCase {
             Thread.sleep(1000);
             nodeFile = new ProjectsTabOperator().getProjectRootNode(TestKit.PROJECT_NAME);
             nodeFile.performPopupActionNoBlock("Versioning|Initialize Mercurial Project");
-//            NbDialogOperator ndo = new NbDialogOperator("Confirm Mercurial Version");
-//            ndo.yes();
-//            System.out.println(ndo);
             System.out.println(s);
             OutputTabOperator oto = new OutputTabOperator(s);
             oto.waitText("INFO: End of Initialize");
@@ -135,23 +127,19 @@ public class InitializeTest extends JellyTestCase {
             oto.close();
             Thread.sleep(1000);
             vo = VersioningOperator.invoke();
-            System.out.println("DEBUG: testInitializeAndFirstCommit - 1");
             TimeoutExpiredException tee = null;
             try {
                 vo.tabFiles();
             } catch (Exception e) {
                 tee = (TimeoutExpiredException) e;
             }
-            System.out.println("DEBUG: testInitializeAndFirstCommit - 2");
             assertNotNull("There shouldn't be any table in Versioning view", tee);
             stream.flush();
             stream.close();
-
+            TestKit.closeProject(TestKit.PROJECT_NAME);
         } catch (Exception e) {
+            TestKit.closeProject(TestKit.PROJECT_NAME);
             throw new Exception("Test failed: " + e);
-        } finally {
-            // do not remove it as following tests will work on the project
-//            TestKit.closeProject(PROJECT_NAME);
         }
         System.out.println("DEBUG: testInitializeAndFirstCommit - finish");
     }

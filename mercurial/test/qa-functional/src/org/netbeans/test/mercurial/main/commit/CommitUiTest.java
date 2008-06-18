@@ -11,17 +11,14 @@ package org.netbeans.test.mercurial.main.commit;
 
 import java.io.File;
 import javax.swing.table.TableModel;
-import junit.textui.TestRunner;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.mercurial.operators.CommitOperator;
-import org.netbeans.test.mercurial.utils.RepositoryMaintenance;
 import org.netbeans.test.mercurial.utils.TestKit;
 
 /**
@@ -40,6 +37,7 @@ public class CommitUiTest extends JellyTestCase{
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {        
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
@@ -76,8 +74,6 @@ public class CommitUiTest extends JellyTestCase{
         }
         
         try {
-            TestKit.closeProject(PROJECT_NAME);
-            
             TestKit.loadOpenProject(PROJECT_NAME, getDataDir());
             TestKit.createNewElements(PROJECT_NAME, "xx", "NewClass");
             TestKit.createNewElement(PROJECT_NAME, "xx", "NewClass2");
@@ -105,11 +101,10 @@ public class CommitUiTest extends JellyTestCase{
             co.verify();
             co.cancel();
             //TestKit.removeAllData(PROJECT_NAME);
-            
+            TestKit.closeProject(PROJECT_NAME);
         } catch (Exception e) {
+            TestKit.closeProject(PROJECT_NAME);
             throw new Exception("Test failed: " + e);
-        } finally {
-            TestKit.closeProject(PROJECT_NAME);    
         }
     }
 }

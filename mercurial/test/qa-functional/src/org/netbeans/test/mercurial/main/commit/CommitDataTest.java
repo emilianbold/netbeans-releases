@@ -12,7 +12,6 @@ package org.netbeans.test.mercurial.main.commit;
 import java.io.File;
 import java.io.PrintStream;
 import javax.swing.table.TableModel;
-import junit.textui.TestRunner;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.OutputOperator;
@@ -26,7 +25,6 @@ import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.mercurial.operators.CommitOperator;
 import org.netbeans.test.mercurial.operators.VersioningOperator;
-import org.netbeans.test.mercurial.utils.RepositoryMaintenance;
 import org.netbeans.test.mercurial.utils.TestKit;
 
 /**
@@ -45,9 +43,9 @@ public class CommitDataTest extends JellyTestCase {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {
         os_name = System.getProperty("os.name");
-        //System.out.println(os_name);
         System.out.println("### "+getName()+" ###");
         
     }
@@ -82,16 +80,13 @@ public class CommitDataTest extends JellyTestCase {
         
         try {
             TestKit.showStatusLabels();
-            TestKit.closeProject(PROJECT_NAME);
-            OutputOperator oo = OutputOperator.invoke();
+            OutputOperator.invoke();
             
             org.openide.nodes.Node nodeIDE;
             long start;
             long end;
             String color;
-            String status;
             JTableOperator table;
-            TableModel model;
             
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             TestKit.loadOpenProject(PROJECT_NAME, getDataDir());
@@ -132,7 +127,7 @@ public class CommitDataTest extends JellyTestCase {
             cmo.selectCommitAction("NewClass.java", "Commit");
             start = System.currentTimeMillis();
             cmo.commit();
-            OutputTabOperator oto = new OutputTabOperator("Mercurial");
+            OutputTabOperator oto = new OutputTabOperator(TestKit.getProjectAbsolutePath(PROJECT_NAME));
             oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
             oto.waitText("INFO: End of Commit");
             end = System.currentTimeMillis();
@@ -152,11 +147,10 @@ public class CommitDataTest extends JellyTestCase {
             assertNotNull("There shouldn't be any table in Versioning view", tee);
             stream.flush();
             stream.close();
-            
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
-        } finally {        
             TestKit.closeProject(PROJECT_NAME);
+        } catch (Exception e) {
+            TestKit.closeProject(PROJECT_NAME);
+            throw new Exception("Test failed: " + e);
         }    
     }
     
@@ -165,11 +159,8 @@ public class CommitDataTest extends JellyTestCase {
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);
         try {
             TestKit.showStatusLabels();
-            TestKit.closeProject(PROJECT_NAME);
             org.openide.nodes.Node nodeIDE;
             JTableOperator table;
-            long start;
-            long end;
             String color;
             String status;
             String[] expected = {"pp.bmp", "pp.dib", "pp.GIF", "pp.JFIF", "pp.JPE", "pp.JPEG", "pp.JPG", "pp.PNG", "pp.TIF", "pp.TIFF", "pp.zip", "text.txt", "test.jar"};
@@ -186,7 +177,7 @@ public class CommitDataTest extends JellyTestCase {
             
             Node nodeSrc = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
             nodeSrc.performPopupAction("Mercurial|Status");
-            new EventTool().waitNoEvent(10000);
+            new EventTool().waitNoEvent(5000);
             
             Node nodeTest;
             for (int i = 0; i < expected.length; i++) {
@@ -194,22 +185,20 @@ public class CommitDataTest extends JellyTestCase {
                 nodeIDE = (org.openide.nodes.Node) nodeTest.getOpenideNode();
                 status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
                 color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
+                //System.out.println(expected[i] + " #1 : " + nodeIDE.getHtmlDisplayName());
                 assertEquals("Wrong status of node!!!", TestKit.NEW_STATUS, status);
                 assertEquals("Wrong color of node!!!", TestKit.NEW_COLOR, color);
             }
             
             VersioningOperator vo = VersioningOperator.invoke();
             TableModel model = vo.tabFiles().getModel();
-            String[] actual = new String[model.getRowCount()];;
+            String[] actual = new String[model.getRowCount()];
             for (int i = 0; i < actual.length; i++) {
                 actual[i] = model.getValueAt(i, 0).toString();
             }
             int result = TestKit.compareThem(expected, actual, false);
             assertEquals("Not All files listed in Commit dialog", expected.length, result);
             
-            OutputTabOperator oto = new OutputTabOperator("Mercurial");
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto.clear();
             nodeSrc = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
             CommitOperator cmo = CommitOperator.invoke(nodeSrc);
             table = cmo.tabFiles();
@@ -227,9 +216,10 @@ public class CommitDataTest extends JellyTestCase {
             result = TestKit.compareThem(expected, actual, false);
             assertEquals("Not All files listed in Commit dialog", expected.length, result);
             cmo.commit();
+            OutputTabOperator oto = new OutputTabOperator(TestKit.getProjectAbsolutePath(PROJECT_NAME));
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
             for (int i = 0; i < expected.length; i++) {
                 oto.waitText("hg add " + expected[i]);
-                //oto.waitText(expected[i]);
             }
             oto.waitText("INFO: End of Commit");
             //System.out.println("Issue should be fixed: http://www.netbeans.org/issues/show_bug.cgi?id=77060!!!");
@@ -240,7 +230,8 @@ public class CommitDataTest extends JellyTestCase {
                 nodeTest = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|" + expected[i]);
                 nodeIDE = (org.openide.nodes.Node) nodeTest.getOpenideNode();
                 stream.print(expected[i] + ": " + nodeIDE.getHtmlDisplayName());
-                assertNull("Wrong status or color of node!!!", nodeIDE.getHtmlDisplayName());
+                //System.out.println(expected[i] + " #2: " + nodeIDE.getHtmlDisplayName());
+                assertNull("Wrong status or color of node!!!", TestKit.getColor(nodeIDE.getHtmlDisplayName()));
             }
             //verify versioning view
             vo = VersioningOperator.invoke();
@@ -254,11 +245,11 @@ public class CommitDataTest extends JellyTestCase {
             //TestKit.removeAllData(PROJECT_NAME);
             stream.flush();
             stream.close();
+            TestKit.closeProject(PROJECT_NAME);
             
         } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
-        } finally {
             TestKit.closeProject(PROJECT_NAME);
+            throw new Exception("Test failed: " + e);
         }
     }
 }

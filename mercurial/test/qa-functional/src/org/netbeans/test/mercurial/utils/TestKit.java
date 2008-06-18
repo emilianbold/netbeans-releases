@@ -85,6 +85,7 @@ public final class TestKit {
             return "";
         }
         int hashPos = nodeHtmlDisplayName.indexOf('#');
+        if (hashPos == -1) return null;
         nodeHtmlDisplayName = nodeHtmlDisplayName.substring(hashPos);
         hashPos = nodeHtmlDisplayName.indexOf('"');
         nodeHtmlDisplayName = nodeHtmlDisplayName.substring(0, hashPos);
