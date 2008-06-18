@@ -37,68 +37,44 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.model.services;
+package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import java.util.Iterator;
-import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmMember;
+import java.util.List;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.openide.util.Lookup;
 
 /**
  *
- * @author Alexander Simon
+ * @author gordonp
  */
-public abstract class CsmMemberResolver {
-    private static CsmMemberResolver DEFAULT = new Default();
-
-    /**
-     * @param cls
-     * @param name
-     * @return class declaration with name including inhered declarations
-     */
-    public abstract Iterator<CsmMember> getDeclarations(CsmClassifier cls, CharSequence name);
-
-    /**
-     * @param cls
-     * @param name
-     * @return nested classifiers with name including inhered nested classifiers
-     */
-    public abstract Iterator<CsmClassifier> getNestedClassifiers(CsmClassifier cls, CharSequence name);
+public class ServerConfiguration extends IntConfiguration {
     
-    protected CsmMemberResolver() {
+    private static ServerList serverList = null;
+
+    public ServerConfiguration() {
+        super((IntConfiguration) null, getDefaultServerIndex(), getServerNames(), null);
     }
     
-    /**
-     * Static method to obtain the CsmSelect implementation.
-     * @return the resolver
-     */
-    public static synchronized CsmMemberResolver getDefault() {
-        return DEFAULT;
+    private static int getDefaultServerIndex() {
+        if (getServerList() != null) {
+            return serverList.getDefaultServerIndex();
+        }
+        return 0;
     }
     
-    /**
-     * Implementation of the default resolver
-     */  
-    private static final class Default extends CsmMemberResolver {
-        private final Lookup.Result<CsmMemberResolver> res;
-        Default() {
-            res = Lookup.getDefault().lookupResult(CsmMemberResolver.class);
+    private static String[] getServerNames() {
+        if (getServerList() != null) {
+            return serverList.getServerNames();
         }
-
-        @Override
-        public Iterator<CsmMember> getDeclarations(CsmClassifier cls, CharSequence name) {
-            for (CsmMemberResolver resolver : res.allInstances()) {
-                return resolver.getDeclarations(cls, name);
-            }
-            return null;
+        return new String[] { "localhost" }; // NOI18N
+    }
+    
+    private static ServerList getServerList() {
+        if (Boolean.getBoolean("cnd.remote.enable")) // DEBUG
+        if (serverList == null) {
+            serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
         }
-
-        @Override
-        public Iterator<CsmClassifier> getNestedClassifiers(CsmClassifier cls, CharSequence name) {
-            for (CsmMemberResolver resolver : res.allInstances()) {
-                return resolver.getNestedClassifiers(cls, name);
-            }
-            return null;
-        }
+        return serverList;
     }
 }
