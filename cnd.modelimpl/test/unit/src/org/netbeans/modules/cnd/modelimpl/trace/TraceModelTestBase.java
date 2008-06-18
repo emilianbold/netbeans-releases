@@ -159,7 +159,16 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
     protected void postTest(String[] args, Object... params) {
         
     }
-            
+
+    protected void performPreprocessorTest(String source) throws Exception {
+        performPreprocessorTest(source, source + ".dat", source + ".err");
+    }
+
+    protected void performPreprocessorTest(String source, String goldenDataFileName, String goldenErrFileName, Object... params) throws Exception {
+        String flags = "-oG"; // NOI18N
+        File testFile = getDataFile(source);
+        performTest(new String[]{flags, testFile.getAbsolutePath()}, goldenDataFileName, goldenErrFileName, params);
+    }
 
     protected void performTest(String source, String goldenDataFileName, String goldenErrFileName, Object... params) throws Exception {
         File testFile = getDataFile(source);
