@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.remote.server;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
@@ -69,12 +70,48 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
     }
     
     public RemoteServerList() {
+        if (instance == null) {
+            instance = this;
+        }
         pcs = new PropertyChangeSupport(this);
         cs = new ChangeSupport(this);
         
         // creates the "localhost" record and make it active
         add("localhost", true); // NOI18N
         refresh();
+    }
+
+    public int getDefaultServerIndex() {
+        int i = 0;
+        
+        for (RemoteServerRecord record : this) {
+            if (record.isActive()) {
+                return i;
+            } else {
+                i++;
+            }
+        }
+        return 0;
+    }
+    
+    public String[] getServerNames() {
+        Object[] oa;
+        String[] sa;
+        try {
+            oa = toArray();
+            sa = new String[oa.length];
+            for (int i = 0; i < oa.length; i++) {
+                if (oa[i] instanceof RemoteServerRecord) {
+                    sa[i] = ((RemoteServerRecord) oa[i]).getName();
+                } else {
+                    System.err.println("RSL.getServerNames: Not a RemoteServerRecord!");
+                }
+            }
+        } catch (Exception ex) {
+            System.err.println("RSL.getServerNames: Exception");
+            return new String[] { "localhost" }; // NOI18N
+        }
+        return sa;
     }
     
     public void add(String name, boolean active) {
