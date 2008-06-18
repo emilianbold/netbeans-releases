@@ -36,16 +36,18 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.web.client.javascript.debugger.js.api;
+package org.netbeans.modules.web.client.tools.api;
 
 import java.net.URI;
 
 /**
+ * This represents a location in the context of a Web Browser.
  *
  * @author Sandip V. Chitale <sandipchitale@netbeans.org>
  */
 public interface JSLocation extends JSAbstractLocation {
-	public URI getURI();
-	public int getLineNumber();
+
+    public URI getURI();
+
+    public int getLineNumber();
 }

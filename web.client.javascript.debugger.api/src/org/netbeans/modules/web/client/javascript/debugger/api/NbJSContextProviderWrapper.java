@@ -54,6 +54,8 @@ import org.netbeans.modules.web.client.javascript.debugger.models.NbJSSessionsMo
 import org.netbeans.modules.web.client.javascript.debugger.models.NbJSThreadsModel;
 import org.netbeans.modules.web.client.javascript.debugger.models.NbJSVariablesModel;
 import org.netbeans.modules.web.client.javascript.debugger.models.NbJSWatchesModel;
+import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
+import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.viewmodel.TableModel;
@@ -87,8 +89,8 @@ public class NbJSContextProviderWrapper {
 
     // per JS session
     private NbJSDebugger debugger;
-    private NbJSToJSLocation nbJSToJSLocation;
-    private JSToNbJSLocation jsToNbJSLocation;
+    private NbJSToJSLocationMapper nbJSToJSLocation;
+    private JSToNbJSLocationMapper jsToNbJSLocation;
     private NbJSCallStackModel callStackModel;
     private NbJSVariablesModel variablesModel;
     private NbJSWatchesModel watchesModel;
@@ -163,16 +165,16 @@ public class NbJSContextProviderWrapper {
         return debugger;
     }
     
-    public NbJSToJSLocation getNbJSToJSLocation() {
+    public NbJSToJSLocationMapper getNbJSToJSLocation() {
         if (nbJSToJSLocation == null) {
-             nbJSToJSLocation = NbJSContextProviderWrapper.lookupFirst(contextProvider, NbJSToJSLocation.class);
+             nbJSToJSLocation = NbJSContextProviderWrapper.lookupFirst(contextProvider, NbJSToJSLocationMapper.class);
         }
     	return nbJSToJSLocation;
     }
     
-    public JSToNbJSLocation getJSToNbJSLocation() {
+    public JSToNbJSLocationMapper getJSToNbJSLocation() {
         if (jsToNbJSLocation == null) {
-        	jsToNbJSLocation = NbJSContextProviderWrapper.lookupFirst(contextProvider, JSToNbJSLocation.class);
+        	jsToNbJSLocation = NbJSContextProviderWrapper.lookupFirst(contextProvider, JSToNbJSLocationMapper.class);
         }
     	return jsToNbJSLocation;
     }
