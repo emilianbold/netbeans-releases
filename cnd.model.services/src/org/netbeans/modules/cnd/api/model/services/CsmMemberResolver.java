@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,27 +34,60 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.callgraph.api;
+package org.netbeans.modules.cnd.api.model.services;
+
+import java.util.Iterator;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Alexander Simon
  */
-public interface Call extends Comparable<Call>{
-    /**
-     * Open call in editor
-     */
-    void open();
+public abstract class CsmMemberResolver {
+    private static CsmMemberResolver DEFAULT = new Default();
 
+    public abstract Iterator<CsmOffsetableDeclaration> getDeclarations(CsmClassifier cls, CharSequence name);
+    public abstract Iterator<CsmClassifier> getNestedClassifiers(CsmClassifier cls, CharSequence name);
+    
+    protected CsmMemberResolver() {
+    }
+    
     /**
-     * 
-     * @return Function call lime to display in text pane
+     * Static method to obtain the CsmSelect implementation.
+     * @return the resolver
      */
-    String getHtmlDisplayName();
+    public static synchronized CsmMemberResolver getDefault() {
+        return DEFAULT;
+    }
+    
+    /**
+     * Implementation of the default resolver
+     */  
+    private static final class Default extends CsmMemberResolver {
+        private final Lookup.Result<CsmMemberResolver> res;
+        Default() {
+            res = Lookup.getDefault().lookupResult(CsmMemberResolver.class);
+        }
 
-    Function getCallee();
-    Function getCaller();
+        @Override
+        public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmClassifier cls, CharSequence name) {
+            for (CsmMemberResolver resolver : res.allInstances()) {
+                return resolver.getDeclarations(cls, name);
+            }
+            return null;
+        }
+
+        @Override
+        public Iterator<CsmClassifier> getNestedClassifiers(CsmClassifier cls, CharSequence name) {
+            for (CsmMemberResolver resolver : res.allInstances()) {
+                return resolver.getNestedClassifiers(cls, name);
+            }
+            return null;
+        }
+    }
 }
