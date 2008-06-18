@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,12 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -36,41 +31,72 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.db.mysql.actions;
 
-package org.netbeans.modules.profiler;
-
-import org.openide.ErrorManager;
-import org.openide.loaders.UniFileLoader;
-import org.openide.util.Utilities;
-import java.awt.Image;
-import java.beans.*;
-
+import org.netbeans.modules.db.mysql.DatabaseServer;
+import org.netbeans.modules.db.mysql.util.Utils;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.CookieAction;
 
 /**
- * Snapshot data loader bean info.
- *
- * @author Tomas Hurka
- * @author Ian Formanek
+ * Connect to a database
+ * 
+ * @author David Van Couvering
  */
-public class SnapshotDataLoaderBeanInfo extends SimpleBeanInfo {
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-
-    public BeanInfo[] getAdditionalBeanInfo() {
-        try {
-            return new BeanInfo[] { Introspector.getBeanInfo(UniFileLoader.class) };
-        } catch (IntrospectionException ie) {
-            ErrorManager.getDefault().notify(ie);
-
-            return null;
-        }
+public class DisconnectServerAction extends CookieAction {
+    private static final Class[] COOKIE_CLASSES = 
+            new Class[] { DatabaseServer.class };
+    
+    public DisconnectServerAction() {
+        putValue("noIconInMenu", Boolean.TRUE);
     }
 
-    public Image getIcon(final int type) {
-        if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) || (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
-            return Utilities.loadImage("org/netbeans/modules/profiler/resources/snapshotDataObjectCPU.gif"); // NOI18N
-        } else {
-            return Utilities.loadImage("org/netbeans/modules/profiler/resources/snapshotDataObjectCPU32.gif"); // NOI18N
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
+
+    public String getName() {
+        return Utils.getBundle().getString("LBL_DisconnectServerAction");
+    }
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(DisconnectServerAction.class);
+    }
+
+    @Override
+    public boolean enable(Node[] activatedNodes) {
+        if ( activatedNodes == null || activatedNodes.length == 0 ) {
+            return false;
         }
+        
+        DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
+        
+        return server != null && server.isConnected();
+    }
+
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+        DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
+
+        // Run this on a separate thread so that we don't hang up the AWT 
+        // thread if the database server is not responding
+        server.disconnect();
+    }
+    
+    @Override
+    protected int mode() {
+        return MODE_EXACTLY_ONE;
+    }
+
+    @Override
+    protected Class<?>[] cookieClasses() {
+        return COOKIE_CLASSES;
     }
 }

@@ -299,7 +299,7 @@ public class Subversion {
         File topmost = null;
         for (; file != null; file = file.getParentFile()) {
             if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
-            if (new File(file, ".svn/entries").canRead() || new File(file, "_svn/entries").canRead()) { // NOI18N
+            if (new File(file, SvnUtils.SVN_ENTRIES_DIR).canRead()) { // NOI18N
                 topmost = file;
             }
         }

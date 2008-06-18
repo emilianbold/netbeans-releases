@@ -44,7 +44,6 @@
  */
 package org.netbeans.modules.db.sql.execute.ui;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -55,10 +54,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
+import javax.swing.JComponent;
 import javax.swing.JEditorPane;
-import javax.swing.JLabel;
 import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataListener;
@@ -157,7 +155,17 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         searchTextField = new javax.swing.JTextField();
         insertSQLButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        sqlHistoryTable = new javax.swing.JTable();
+        sqlHistoryTable = new JTable() {
+            public Component prepareRenderer(TableCellRenderer renderer,
+                int rowIndex, int vColIndex) {
+                Component c = super.prepareRenderer(renderer, rowIndex, vColIndex);
+                if (c instanceof JComponent) {
+                    JComponent jc = (JComponent)c;
+                    jc.setToolTipText((String)getValueAt(rowIndex, vColIndex));
+                }
+                return c;
+            }
+        };
         sqlLimitLabel = new javax.swing.JLabel();
         sqlLimitTextField = new javax.swing.JTextField();
         sqlLimitButton = new javax.swing.JButton();
@@ -180,9 +188,8 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         });
 
         sqlHistoryTable.setModel(new HistoryTableModel());
-        sqlHistoryTable.setCellSelectionEnabled(true);
         sqlHistoryTable.setGridColor(java.awt.Color.lightGray);
-        sqlHistoryTable.setSelectionBackground(java.awt.Color.lightGray);
+        sqlHistoryTable.setSelectionBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.selectionBackground"));
         jScrollPane1.setViewportView(sqlHistoryTable);
         sqlHistoryTable.getColumnModel().getColumn(0).setHeaderValue(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "SQLHistoryPanel.sqlHistoryTable.columnModel.title0")); // NOI18N
         sqlHistoryTable.getColumnModel().getColumn(1).setHeaderValue(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "SQLHistoryPanel.sqlHistoryTable.columnModel.title1")); // NOI18N
@@ -218,8 +225,8 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                                 .add(jLabel2)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(searchTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE))
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE))
+                                .add(searchTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 521, Short.MAX_VALUE))
+                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 761, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(insertSQLButton))
                     .add(layout.createSequentialGroup()
@@ -522,10 +529,8 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                 for (String date : dateList) {
                     data[row++][1] = date;
                 }
-        
-                sqlHistoryTable.setDefaultRenderer(Color.class, new SQLHistoryTableRenderer());                                
+                // Refresh table
                 sqlHistoryTable.repaint();
-                sqlHistoryTable.getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
                 sqlList = null;
                 dateList = null;
         }
@@ -623,24 +628,6 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             }
         }
         return r.result;
-    }
-
-    private static class SQLHistoryTableRenderer extends JLabel implements TableCellRenderer {
-
-        public SQLHistoryTableRenderer() {
-            super();
-        }
-
-        public Component getTableCellRendererComponent(JTable table, Object sqlHistory, boolean isSelected, boolean hasFocus, int nRow, int nCol) {
-            Object tableData = data[nRow][nCol];
-            Object toolTipData = parsedData[nRow][nCol];
-            if (null != tableData && null != toolTipData) {
-                setToolTipText("<html>" + parsedData[nRow][nCol].toString() + "</html>");
-                setText(data[nRow][nCol].toString());
-                table.getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-            }
-            return this;
-        }
     }
 
     private static class Renderer implements Runnable {

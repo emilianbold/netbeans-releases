@@ -43,50 +43,80 @@ package org.netbeans.modules.groovy.editor.completion;
  * @author schmidtm
  */
 public enum GroovyKeyword {
-    // Java keywords:
-    KEYWORD_assert("assert", false, false, false),
-    KEYWORD_break("break", false, false, false),
-    KEYWORD_case("case", false, false, false),
-    KEYWORD_catch("catch", false, false, false),
-    KEYWORD_class("class", false, true, false),
-    KEYWORD_continue("continue", false, false, false),
-    KEYWORD_default("default", false, false, false),
-    KEYWORD_do("do", false, false, false),
-    KEYWORD_else("else", false, false, false),
-    KEYWORD_extends("extends", false, true, false),
-    KEYWORD_finally("finally", false, false, false),
-    KEYWORD_for("for", false, false, false),
-    KEYWORD_if("if", false, false, false),
-    KEYWORD_implements("implements", false, true, false),
-    KEYWORD_import("import", false, true, false),
-    KEYWORD_instanceof("instanceof", false, false, false),
-    KEYWORD_interface("interface", false, true, false),
-    KEYWORD_new("new", false, false, false),
-    KEYWORD_package("package", false, true, false),
-    KEYWORD_return("return", false, false, false),
-    KEYWORD_switch("switch", false, false, false),
-    KEYWORD_throw("throw", false, false, false),
-    KEYWORD_throws("throws", false, false, false),
-    KEYWORD_try("try", false, false, false),
-    KEYWORD_while("while", false, false, false),
-    
+    // Java keywords:                      groovy above  ouside inside code
+    KEYWORD_assert       ("assert"       , false, false, false, false, true),
+    KEYWORD_abstract     ("abstract"     , false, true , true , false, false),
+    KEYWORD_break        ("break"        , false, false, false, false, true),
+    KEYWORD_case         ("case"         , false, false, false, false, true),
+    KEYWORD_catch        ("catch"        , false, false, false, false, true),
+    KEYWORD_class        ("class"        , false, true , true , false, false),
+    KEYWORD_continue     ("continue"     , false, false, false, false, true),
+    KEYWORD_default      ("default"      , false, false, false, false, true),
+    KEYWORD_do           ("do"           , false, false, false, false, true),
+    KEYWORD_else         ("else"         , false, false, false, false, true),
+    KEYWORD_enum         ("enum"         , false, true , true , false, false),
+    KEYWORD_extends      ("extends"      , false, false, true , false, true),
+    KEYWORD_finally      ("finally"      , false, false, false, false, true),
+    KEYWORD_for          ("for"          , false, false, false, false, true),
+    KEYWORD_if           ("if"           , false, false, false, false, true),
+    KEYWORD_implements   ("implements"   , false, false, true , false, false),
+    KEYWORD_import       ("import"       , false, true , false, false, false),
+    KEYWORD_instanceof   ("instanceof"   , false, false, false, false, true),
+    KEYWORD_interface    ("interface"    , false, true , true , false, false),
+    KEYWORD_new          ("new"          , false, false, false, false, true),
+    KEYWORD_package      ("package"      , false, true , false, false, false),
+    KEYWORD_return       ("return"       , false, false, false, false, true),
+    KEYWORD_switch       ("switch"       , false, false, false, false, true),
+    KEYWORD_throw        ("throw"        , false, false, false, false, true),
+    KEYWORD_throws       ("throws"       , false, false, false, false, false),
+    KEYWORD_try          ("try"          , false, false, false, false, true),
+    KEYWORD_while        ("while"        , false, false, false, false, true),
     // Uniq Groovy keywords:
+    KEYWORD_as           ("as"           , true , true , false, false, false),
+    KEYWORD_def          ("def"          , true , false, true , true , true),
+    KEYWORD_in           ("in"           , true , false, true , false, true),
+    KEYWORD_property     ("property"     , true , false, true , true , true),
+    // Java primitive types:
+    KEYWORD_boolean      ("boolean"      , false, false, false, true , true),
+    KEYWORD_byte         ("byte"         , false, false, false, true , true),
+    KEYWORD_char         ("char"         , false, false, false, true , true),
+    KEYWORD_double       ("double"       , false, false, false, true , true),
+    KEYWORD_float        ("float"        , false, false, false, true , true),
+    KEYWORD_int          ("int"          , false, false, false, true , true),
+    KEYWORD_long         ("long"         , false, false, false, true , true),
+    KEYWORD_short        ("short"        , false, false, false, true , true),
+    KEYWORD_void         ("void"         , false, false, false, true , true),
+    // Java modifiers
+    KEYWORD_final        ("final"        , false, true , true , true , true),
+    KEYWORD_native       ("native"       , false, false, false, true , true),
+    KEYWORD_private      ("private"      , false, true , true , true , true),
+    KEYWORD_protected    ("protected"    , false, false, false, true , true),
+    KEYWORD_public       ("public"       , false, true , true , true , true),
+    KEYWORD_static       ("static"       , false, true , true , true , true),
+    KEYWORD_strictfp     ("strictfp"     , false, false, false, true , true),
+    KEYWORD_synchronized ("synchronized" , false, false, false, true , true),
+    KEYWORD_transient    ("transient"    , false, false, false, true , true),
+    KEYWORD_volatile     ("volatile"     , false, false, false, true , true),
     
-    KEYWORD_as("as", true, true, false),
-    KEYWORD_def("def", true, false, true),
-    KEYWORD_in("in", true, true, true),
-    KEYWORD_property("property", true, true, true),
-    KEYWORD_undefined("undefined", false, false, false);
+    KEYWORD_undefined    ("undefined"    , false, false, false, false, false);
     
     String name;
     boolean isGroovy;
-    boolean outsideClasses;
-    boolean insideClasses;
+    
+    // This flag               maps to in CaretLocation:
+    boolean aboveFistClass; // ABOVE_FIRST_CLASS
+    boolean outsideClasses; // OUTSIDE_CLASSES
+    boolean insideClass;    // INSIDE_CLASS
+    boolean insideCode;     // INSIDE_METHOD || INSIDE_CLOSURE
+    
 
-    GroovyKeyword(String name, boolean isGroovy, boolean outsideClasses, boolean insideClasses) {
+    GroovyKeyword(String name,  boolean isGroovy, boolean aboveFistClass, 
+                                boolean outsideClasses, boolean insideClass, boolean insideCode) {
         this.name = name;
         this.isGroovy = isGroovy;
+        this.aboveFistClass = aboveFistClass;
         this.outsideClasses = outsideClasses;
-        this.insideClasses = insideClasses;
+        this.insideClass = insideClass;
+        this.insideCode = insideCode;
     }
 }

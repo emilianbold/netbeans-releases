@@ -73,7 +73,7 @@ public class CsmFontColorManager {
     /* package */ Color getColor(FontColorProvider.Entity color) {
         // completion is not aware of document type
         AttributeSet as = getCreateProvider(DEFAULT_MIME_TYPE).getColor(color);
-        return (Color)as.getAttribute(StyleConstants.ColorConstants.Foreground);
+        return isUnitTestsMode ? Color.red : (Color)as.getAttribute(StyleConstants.ColorConstants.Foreground);
     }
     
     private FontColorProviderImpl getCreateProvider(String mimeType) {
@@ -96,8 +96,10 @@ public class CsmFontColorManager {
         public final static CsmFontColorManager instance = new CsmFontColorManager();
     }
 
+    private final boolean isUnitTestsMode;
+    
     private CsmFontColorManager() {
-        // welcome to doNothing world
+        isUnitTestsMode = CsmUtilities.isUnitTestsMode();
     }
 
     public interface FontColorChangeListener extends EventListener {

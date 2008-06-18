@@ -448,7 +448,11 @@ public final class OpenProjectList {
 	open(projects, openSubprojects, false);
     }
     
-    public void open(final Project[] projects, final boolean openSubprojects, final boolean asynchronously ) {
+    public void open(final Project[] projects, final boolean openSubprojects, final boolean asynchronously) {
+        open(projects, openSubprojects, asynchronously, null);
+    }
+    
+    public void open(final Project[] projects, final boolean openSubprojects, final boolean asynchronously, final Project/*|null*/ mainProject) {
         if (projects.length == 0) {
             //nothing to do:
             return ;
@@ -460,7 +464,7 @@ public final class OpenProjectList {
             if (!EventQueue.isDispatchThread()) { // #89935
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        open(projects, openSubprojects, asynchronously);
+                        open(projects, openSubprojects, asynchronously, mainProject);
                     }
                 });
                 return;
@@ -487,6 +491,9 @@ public final class OpenProjectList {
 		public void run() {
 		    try {
 			doOpen(projects, openSubprojects, handle, panel);
+                        if (mainProject != null && Arrays.asList(projects).contains(mainProject) && openProjects.contains(mainProject)) {
+                            setMainProject(mainProject);
+                        }
 		    } finally {
 			SwingUtilities.invokeLater(new Runnable() {
 			    public void run() {
@@ -507,6 +514,9 @@ public final class OpenProjectList {
 	    dialog.setVisible(true);
 	} else {
 	    doOpen(projects, openSubprojects, null, null);
+            if (mainProject != null && Arrays.asList(projects).contains(mainProject) && openProjects.contains(mainProject)) {
+                setMainProject(mainProject);
+            }
 	}
         
         long end = System.currentTimeMillis();
