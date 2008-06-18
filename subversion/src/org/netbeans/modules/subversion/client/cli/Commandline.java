@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.subversion.client.cli;
 
-import java.util.logging.Logger;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -49,7 +48,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  * Encapsulates svn shell process. 
