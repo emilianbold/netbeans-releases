@@ -200,8 +200,10 @@ public class FQNImporter {
                             if (Tree.Kind.METHOD == tree.getKind()) {
                                 MethodTree method = (MethodTree)tree;
                                 if (eventHandlers.contains(method.getName().toString())) {
-                                    Tree newTree = utils.importFQNs(method);
-                                    wc.rewrite(method, newTree);
+                                    for (VariableTree variable : method.getParameters()) {
+                                        Tree newTree = utils.importFQNs(variable);
+                                        wc.rewrite(variable, newTree);
+                                    }
                                 }
                             }
                         }
