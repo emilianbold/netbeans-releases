@@ -37,27 +37,25 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.completion;
+package org.netbeans.modules.cnd.highlight.error;
 
 /**
+ * Test for IdentifierErrorProvider.
  *
- * @author schmidtm
+ * @author Alexey Vladykin
  */
-public enum CaretLocation {
-    
-    ABOVE_PACKAGE("ABOVE_PACKAGE"),         // above the "package" statement (if any).
-    ABOVE_FIRST_CLASS("ABOVE_FIRST_CLASS"), // Outside any classs and above the first class or interface stmt.
-    OUTSIDE_CLASSES("OUTSIDE_CLASSES"),     // Outside any class but behind some class or interface stmt.
-    INSIDE_CLASS("INSIDE_CLASS"),           // inside a class definition but not in a method.
-    INSIDE_METHOD("INSIDE_METHOD"),         // in a method definition.
-    INSIDE_CLOSURE("INSIDE_CLOSURE"),       // inside a closure definition.
-    INSIDE_PARAMETERS("INSIDE_PARAMETERS"), // inside a parameter-list definition (signature) of a method.
-    UNDEFINED("UNDEFINED");
-    
-    private String id;
+public class UnresolvedIdentifierTestCase extends ErrorHighlightingBaseTestCase {
 
-    CaretLocation(String id) {
-        this.id = id;
+    static {
+        System.setProperty("cnd.identifier.error.provider", "true");
     }
     
+    public UnresolvedIdentifierTestCase(String testName) {
+        super(testName);
+    }
+    
+    public void testSimple() throws Exception {
+        performStaticTest("simple.cpp");
+    }
+
 }
