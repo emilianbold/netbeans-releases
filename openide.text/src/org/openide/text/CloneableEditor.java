@@ -476,8 +476,6 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                     caret.setDot(cursorPosition);
                 }
             }
-
-            requestFocusInWindow();
             isInInitVisual = false;
         }
         
