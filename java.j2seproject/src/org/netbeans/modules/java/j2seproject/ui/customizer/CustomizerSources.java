@@ -85,6 +85,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
     
     
     private String originalEncoding;
+    private boolean notified;
 
     private final J2SEProjectProperties uiProperties;
 
@@ -214,6 +215,11 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             }
             else {
                 encName = originalEncoding;
+            }
+            if (!notified && encName!=null && !encName.equals(originalEncoding)) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        NbBundle.getMessage(CustomizerSources.class,"MSG_EncodingWarning"), NotifyDescriptor.WARNING_MESSAGE));
+                notified=true;
             }
             this.uiProperties.putAdditionalProperty(J2SEProjectProperties.SOURCE_ENCODING, encName);
     }
