@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModel;
@@ -155,6 +156,22 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
             System.setErr(oldErr);
         }
     }
+
+    /*
+     * Used to filter out messages that may differ on different machines
+     */
+    protected static class FilteredPrintStream extends PrintStream {
+        public FilteredPrintStream(File file) throws FileNotFoundException {
+            super(file);
+        }
+
+        @Override
+        public void println(String s) {
+            if (s==null || !s.startsWith("Java Accessibility Bridge for GNOME loaded.")) {
+                super.println(s);
+            }
+        }
+    }
     
     protected void postTest(String[] args, Object... params) {
         
@@ -181,7 +198,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         File output = new File(workDir, goldenDataFileName);
         PrintStream streamOut = new PrintStream(output);
         File error = goldenErrFileName == null ? null : new File(workDir, goldenErrFileName);
-        PrintStream streamErr = goldenErrFileName == null ? null : new PrintStream(error);
+        PrintStream streamErr = goldenErrFileName == null ? null : new FilteredPrintStream(error);
         try {
             doTest(args, streamOut, streamErr, params);
         } finally {
