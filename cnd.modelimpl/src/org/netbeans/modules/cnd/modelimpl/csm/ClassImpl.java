@@ -48,6 +48,7 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -410,6 +411,14 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
             out = UIDCsmConverter.UIDsToDeclarations(members);
         }
         return out;
+    }
+
+    public Iterator<CsmMember> getMembers(CsmFilter filter) {
+        Collection<CsmUID<CsmMember>> uids = new ArrayList<CsmUID<CsmMember>>();
+        synchronized (members) {
+            uids.addAll(members);
+        }
+        return UIDCsmConverter.UIDsToDeclarations(uids, filter);
     }
 
     public Collection<CsmFriend> getFriends() {
