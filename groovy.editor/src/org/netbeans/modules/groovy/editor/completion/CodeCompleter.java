@@ -214,6 +214,46 @@ public class CodeCompleter implements CodeCompletionHandler {
         LOG.log(Level.FINEST, "getDeclaringClass() : " + mm.getDeclaringClass());
     }
 
+    /**
+     * Returns the next upstream Literal token (GroovyTokenId.LITERAL_*) or null
+     * 
+     * @param request
+     * @return
+     */
+    
+    Token<? extends GroovyTokenId> getNextUpstreamLiteral(final CompletionRequest request) {
+        int position = request.lexOffset;
+
+        TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, position);
+        ts.move(position);
+
+        while (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
+            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+            if (t.id().primaryCategory().equals("keyword")) {
+                return t;
+            }
+        }
+        
+        return null;
+    }
+    
+    
+    boolean checkForPackageStatement(final CompletionRequest request) {
+        TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, 1);
+        ts.move(1);
+        
+        while (ts.isValid() && ts.moveNext() && ts.offset() < request.doc.getLength()) {
+            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+            
+            if (t.id() == GroovyTokenId.LITERAL_package ) {
+                return true;
+            } 
+        }
+        
+        return false;
+    }
+    
+    
     public CaretLocation getCaretLocationFromRequest(final CompletionRequest request) {
         
         // Are we above the package statement?
@@ -231,6 +271,26 @@ public class CodeCompleter implements CodeCompletionHandler {
                 return CaretLocation.ABOVE_PACKAGE;
             } 
         }
+        
+        // Are we before the first class or interface statement?
+        // now were heading to the beginning to the document ...
+        
+        boolean aboveFirstClass = true;
+        
+        ts.move(position);
+        
+        while (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
+            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+            if (t.id() == GroovyTokenId.LITERAL_class || t.id() == GroovyTokenId.LITERAL_interface) {
+                aboveFirstClass = false;
+                break;
+            }
+        }
+        
+        if(aboveFirstClass){
+            return CaretLocation.ABOVE_FIRST_CLASS;
+        }
+        
         
         AstPath path = getPathFromRequest(request);
 
@@ -428,29 +488,108 @@ public class CodeCompleter implements CodeCompletionHandler {
             LOG.log(Level.FINEST, "We are invoked right behind a dot."); // NOI18N
             return false;
         }
+        
+        // Is there already a "package"-statement in the sourcecode?
+        boolean havePackage = checkForPackageStatement(request);
+        
+        Token<? extends GroovyTokenId> previousLiteral = getNextUpstreamLiteral(request);
 
         Set<GroovyKeyword> keywords = EnumSet.allOf(GroovyKeyword.class);
 
         for (GroovyKeyword groovyKeyword : keywords) {
+            
+            // filter-out package-statemen, if there's already one
+            if(groovyKeyword.name.equals("package") && havePackage) {
+                continue;
+            }
+            
             if (groovyKeyword.name.startsWith(prefix)) {
-                if (request.location == CaretLocation.OUTSIDE_CLASSES && groovyKeyword.outsideClasses == true) {
-                    KeywordItem item = new KeywordItem(groovyKeyword.name, null, anchor, request, groovyKeyword.isGroovy);
-                    item.setSymbol(true);
-                    proposals.add(item);
-                } else if ((request.location == CaretLocation.INSIDE_CLOSURE ||
-                        request.location == CaretLocation.INSIDE_METHOD) &&
-                        groovyKeyword.outsideClasses == false) {
-
-                    KeywordItem item = new KeywordItem(groovyKeyword.name, null, anchor, request, groovyKeyword.isGroovy);
-                    item.setSymbol(true);
-                    proposals.add(item);
-
-                }
+                if (checkKeywordAllowance(groovyKeyword, request.location)) {
+                    if (checkKeywordOrder(groovyKeyword, previousLiteral)) {
+                        LOG.log(Level.FINEST, "Adding keyword proposal : {0}", groovyKeyword.name); // NOI18N
+                        KeywordItem item = new KeywordItem(groovyKeyword.name, null, anchor, request, groovyKeyword.isGroovy);
+                        proposals.add(item);
+                    }
+                } 
             }
         }
         
         return true;
     }
+    
+    boolean checkKeywordOrder(GroovyKeyword groovyKeyword, Token<? extends GroovyTokenId> previousLiteral) {
+        // defaulte behaviour is to pass through everything.
+        if(previousLiteral == null) {
+            return true;
+        } 
+        
+        if (    previousLiteral.id() == GroovyTokenId.LITERAL_class ||
+                previousLiteral.id() == GroovyTokenId.LITERAL_interface || 
+                previousLiteral.id() == GroovyTokenId.LITERAL_import) {
+            
+            switch (groovyKeyword){
+                case KEYWORD_extends:
+                    if(previousLiteral.id() == GroovyTokenId.LITERAL_class || 
+                       previousLiteral.id() == GroovyTokenId.LITERAL_interface){
+                        return true;
+                    }
+                    break;
+                case KEYWORD_as:
+                    if(previousLiteral.id() == GroovyTokenId.LITERAL_import){
+                        return true;
+                    } 
+                    break;
+                case KEYWORD_implements:
+                    if(previousLiteral.id() == GroovyTokenId.LITERAL_class){
+                        return true;
+                    }
+                    break;
+                default:
+                    return false;
+
+            }
+            
+            return false;
+        } else {
+            return true;
+        }
+        
+    }
+    
+    
+    boolean checkKeywordAllowance(GroovyKeyword groovyKeyword, CaretLocation location){
+        
+        if(location == null){
+            return false;
+        }
+        
+        switch(location){
+            case ABOVE_FIRST_CLASS:
+                if(groovyKeyword.aboveFistClass){ 
+                    return true; 
+                }
+                break;
+            case OUTSIDE_CLASSES:
+                if(groovyKeyword.outsideClasses){ 
+                    return true; 
+                }
+                break;
+            case INSIDE_CLASS:
+                if(groovyKeyword.insideClass){ 
+                    return true; 
+                }
+                break;
+            case INSIDE_METHOD: // intentionally fall-through
+            case INSIDE_CLOSURE:
+                if(groovyKeyword.insideCode){ 
+                    return true; 
+                }
+                break;
+        }
+        
+        return false;
+    }
+    
     
     /**
      * Complete the fields for a class. There are two principal completions for fields:
@@ -1025,10 +1164,10 @@ public class CodeCompleter implements CodeCompletionHandler {
                 completeTypes(proposals, request);
             }
             
+            // complette keywords
+            completeKeywords(proposals, request);
             
             if (!checkForRequestBehindImportStatement(request)) {
-                // complette keywords
-                completeKeywords(proposals, request);
 
                 // complete methods
                 completeMethods(proposals, request);

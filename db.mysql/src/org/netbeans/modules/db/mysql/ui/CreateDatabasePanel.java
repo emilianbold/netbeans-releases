@@ -498,6 +498,9 @@ private void comboDatabaseNameInputMethodTextChanged(java.awt.event.InputMethodE
         }
 
         public Object getElementAt(int index) {
+            if (index < 0) {
+                return null;
+            }
             return samplePrefix + SAMPLES[index].toString();
         }
 

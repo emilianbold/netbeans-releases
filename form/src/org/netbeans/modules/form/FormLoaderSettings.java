@@ -108,6 +108,8 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
     public static final String PROP_DESIGNER_LAF = "designerLAF"; // NOI18N
     /** Property name of the layout code target property. */
     public static final String PROP_LAYOUT_CODE_TARGET = "layoutCodeTarget"; // NOI18N
+    /** Property name of the generate FQN property. */
+    public static final String PROP_GENERATE_FQN = "generateFQN"; // NOI18N
 
     /** Name of the property for automatic resources/i18n management.
      * The name refers only to i18n for compatibility reasons. */
@@ -564,6 +566,14 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
 
     public void setI18nAutoMode(int mode) {
         getPreferences().putInt(PROP_AUTO_RESOURCING, mode);    
+    }
+
+    public boolean getGenerateFQN() {
+        return getPreferences().getBoolean(PROP_GENERATE_FQN, true);    
+    }
+
+    public void setGenerateFQN(boolean generateFQN) {
+        getPreferences().putBoolean(PROP_GENERATE_FQN, generateFQN);    
     }
         
     private static String[] toArray(String esp) {

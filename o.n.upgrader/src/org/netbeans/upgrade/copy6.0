@@ -53,6 +53,7 @@ include Editors/.*
 exclude Editors/.*/Popup.*
 exclude Editors/.*/.*\.instance
 exclude Editors/.*/Settings\.settings
+exclude Editors/.*/macros.xml
 include Services/IndentEngine/.*
 #does not import C/C++ indent settings
 exclude Services/IndentEngine/org-netbeans-modules-cnd-editor-cplusplus-CCIndentEngine\.settings
