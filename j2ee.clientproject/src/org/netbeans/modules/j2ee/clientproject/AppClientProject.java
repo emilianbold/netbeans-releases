@@ -302,6 +302,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             new Info(),
             aux,
             helper.createCacheDirectoryProvider(),
+            helper.createAuxiliaryProperties(),
             spp,
             new AppClientActionProvider( this, helper, this.updateHelper ),
             new AppClientLogicalViewProvider(this, this.updateHelper, evaluator(), refHelper),
