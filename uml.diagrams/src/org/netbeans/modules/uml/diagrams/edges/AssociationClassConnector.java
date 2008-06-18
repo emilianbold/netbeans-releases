@@ -89,7 +89,7 @@ public class AssociationClassConnector extends AssociationConnector
     public void buildBridge(IPresentationElement node)
     {
         GraphScene scene = (GraphScene)getScene();
-        
+        boolean newasocnode=false;
         if(node == null)
         {
             node = createPresentationElement();
@@ -101,6 +101,7 @@ public class AssociationClassConnector extends AssociationConnector
         boolean createBridge = true;
         if(nodeWidget == null)
         {
+            newasocnode=true;
             nodeWidget = scene.addNode(node);
         }
         else
@@ -118,7 +119,7 @@ public class AssociationClassConnector extends AssociationConnector
         if(createBridge == true)
         {
             Rectangle bounds = getBounds();
-            if (bounds != null)
+            if (bounds != null && newasocnode)//reposition only if node was created, existred should stay
                 nodeWidget.setPreferredLocation(new Point(bounds.x + bounds.width / 2,
                                                   bounds.y + bounds.height * 2)); 
 
