@@ -473,7 +473,12 @@ class InstallPanelVisual extends javax.swing.JPanel {
             return false;
         }
 
-        if ((!jCheckBoxShared.isEnabled() || !jCheckBoxShared.isSelected()) && !isServerXmlValid(new File(homeDir, SERVER_XML))) {
+        File serverFile = new File(homeDir, SERVER_XML);
+        if (!serverFile.canRead()) {
+            errorMessage = NbBundle.getMessage(InstallPanelVisual.class, "MSG_NonReadableHomeServerXml");
+            return false;            
+        }
+        if ((!jCheckBoxShared.isEnabled() || !jCheckBoxShared.isSelected()) && !isServerXmlValid(serverFile)) {
             errorMessage = NbBundle.getMessage(InstallPanelVisual.class, "MSG_CorruptedHomeServerXml");
             return false;
         }
@@ -517,14 +522,23 @@ class InstallPanelVisual extends javax.swing.JPanel {
                 return false;
             }
             if (files.length > 0) {
+                if (!serverXml.canRead()) {
+                    errorMessage = NbBundle.getMessage(InstallPanelVisual.class, "MSG_NonReadableBaseServerXml");
+                    return false;
+                }
                 // check CATALINA_BASE/conf/server.xml, if base dir not empty
                 if (!isServerXmlValid(serverXml)) {
                     errorMessage = NbBundle.getMessage(InstallPanelVisual.class, "MSG_CorruptedBaseServerXml");
                     return false;
                 }
             } else {
+                File serverFile = new File(jTextFieldHomeDir.getText(), SERVER_XML);
+                if (!serverFile.canRead()) {
+                    errorMessage = NbBundle.getMessage(InstallPanelVisual.class, "MSG_NonReadableHomeServerXml");
+                    return false;                    
+                }
                 // otherwise check CATALINA_HOME/conf/server.xml which we will copy to base dir
-                if (!isServerXmlValid(new File(jTextFieldHomeDir.getText(), SERVER_XML))) {
+                if (!isServerXmlValid(serverFile)) {
                     errorMessage = NbBundle.getMessage(InstallPanelVisual.class, "MSG_CorruptedHomeServerXml");
                     return false;
                 }
