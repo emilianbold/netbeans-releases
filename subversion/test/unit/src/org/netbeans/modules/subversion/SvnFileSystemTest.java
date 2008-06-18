@@ -46,9 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.masterfs.filebasedfs.BaseFileObjectTestHid;
@@ -108,13 +106,13 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
         return new File(workDirProperty);
     }
 
-    private File getRepoDir() {
+    static File getRepoDir() {
         return new File(new File(System.getProperty("data.root.dir")), "repo");
     }
 
     protected FileSystem[] createFileSystem(String testName, String[] resources) throws IOException {
         try {                                 
-            repoinit();            
+            repoinit();          
         } catch (Exception ex) {
             throw new IOException(ex.getMessage());
         } 
@@ -134,12 +132,17 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
                 assertNotNull(fo);
             }            
             files.add(FileUtil.toFile(fo));            
-        }
+        }        
         commit(files);               
 //            for (File file : files) {
 //                assertStatus(file);    
 //            }        
+//        
         
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) { }
+//                
         return new FileSystem[]{workFo.getFileSystem()};
     }
     
@@ -194,6 +197,26 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
             }            
             client.addFile(filesToAdd.toArray(new File[filesToAdd.size()]), true);                                                      
             client.commit(new File[] {getWorkDir()}, "commit", true);
+            FileStatusCache cache = Subversion.getInstance().getStatusCache();
+            for (File file : filesToAdd) {
+                cache.refresh(file, null);
+            }
+            // block until uptodate
+            while(true) {
+                boolean fine = true;
+                for (File file : filesToAdd) {                    
+                    FileInformation s = cache.getCachedStatus(file);
+                    if(s == null) break; // means uptodate
+                    if(s.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE) {
+                        fine = false;
+                        break;
+                    }
+                }
+                if(fine) {
+                    break;
+                }
+                try { Thread.sleep(200); } catch (InterruptedException e) { }                
+            }
             
         } catch (SVNClientException ex) {
             throw new IOException(ex.getMessage());

@@ -50,8 +50,12 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
+ * In test environment MIME types are not always correctly loaded.
+ * 
+ * ATM, this resolver is not used due to extensive changes in tests output
+ * brought in by loading NetBeans FontColor settings profiles.
  *
- * @author sg155630
+ * @author Sergey Grinev
  */
 public class HelperMIMEResolver extends MIMEResolver {
 

@@ -61,6 +61,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
+import org.openide.util.Cancellable;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -212,8 +213,8 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
 
     private synchronized void cancelBackgroundTasks() {
         if (currentShowDiffTask != null && !currentShowDiffTask.isFinished()) {
-            currentShowDiffTask.cancel();  // it almost always late it's enqueued, so:
             currentTask.cancel();
+            currentShowDiffTask.cancel();  // it almost always late it's enqueued, so:
         }
     }
 
@@ -329,7 +330,13 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
             SVNUrl fileUrl = repotUrl.appendPath(header.getChangedPath().getPath());
             final DiffStreamSource s1 = new DiffStreamSource(header.getFile(), repotUrl, fileUrl, revision1, revision1);
             final DiffStreamSource s2 = new DiffStreamSource(header.getFile(), repotUrl, fileUrl, revision2, revision2);
-
+            this.setCancellableDelegate(new Cancellable() {
+                public boolean cancel() {
+                    s1.cancel();
+                    s2.cancel();
+                    return true;
+                }
+            });
             // it's enqueued at ClientRuntime queue and does not return until previous request handled
             s1.getMIMEType();  // triggers s1.init()
             if (isCanceled()) {

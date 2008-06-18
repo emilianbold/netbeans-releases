@@ -166,7 +166,7 @@ public class RMModelHelper {
     private String getInactivityTimeout(RMAssertion rm) {
         String timeout = null;
         if (rm != null) {
-            if (ConfigVersion.CONFIG_1_2.equals(configVersion)) {
+            if (ConfigVersion.CONFIG_1_3.equals(configVersion)) {
                 List<InactivityTimeout> time = rm.getParent().getExtensibilityElements(InactivityTimeout.class);
                 if ((time != null) && (time.size() > 0)) {
                     timeout = time.get(0).getMilliseconds();
@@ -189,7 +189,7 @@ public class RMModelHelper {
                 model.startTransaction();
             }
             try {
-                if (ConfigVersion.CONFIG_1_2.equals(configVersion)) {                    
+                if (ConfigVersion.CONFIG_1_3.equals(configVersion)) {
                     InactivityTimeout time = PolicyModelHelper.getTopLevelElement(rm.getParent(), InactivityTimeout.class, false);
                     if (value != null) {    // if is null, then there's no element and we want to remove it -> do nothing
                         if (time == null) {

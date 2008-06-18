@@ -41,12 +41,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import java.util.*;
-
 import antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 /**
  *
@@ -66,7 +63,6 @@ public class TypeFactory {
     }
     
     public static TypeImpl createType(CsmClassifier classifier, AST ptrOperator, int arrayDepth, AST ast, CsmFile file, CsmOffsetable offset) {
-        boolean pointer = false;
         boolean refence = false;
         int pointerDepth = 0;
         if (ptrOperator != null &&
@@ -119,16 +115,11 @@ public class TypeFactory {
             //}
             ptrOperator = ptrOperator.getNextSibling();
         }
-        if(offset == null) {
-            return new TypeImpl(classifier, pointerDepth, refence, arrayDepth, ast, file);
-        } else {
-            return new TypeImpl(classifier, pointerDepth, refence, arrayDepth, ast, file, offset);
-        }
+        return new TypeImpl(classifier, pointerDepth, refence, arrayDepth, ast, file, offset);
     }
    
     
-    public static TypeImpl createType(AST classifier, CsmFile file,  AST ptrOperator, int arrayDepth) {
-        boolean pointer = false;
+    public static TypeImpl createType(AST ast, CsmFile file,  AST ptrOperator, int arrayDepth) {
         boolean refence = false;
         int pointerDepth = 0;
         while( ptrOperator != null && ptrOperator.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ) {
@@ -148,9 +139,9 @@ public class TypeFactory {
             ptrOperator = ptrOperator.getNextSibling();
         }
 	
-	return (TypeFunPtrImpl.isFunctionPointerParamList(classifier)) ?
-	    new TypeFunPtrImpl(classifier, file, pointerDepth, refence, arrayDepth) :
-	    new TypeImpl(classifier, file, pointerDepth, refence, arrayDepth);
+	return (TypeFunPtrImpl.isFunctionPointerParamList(ast)) ?
+	    new TypeFunPtrImpl(ast, file, pointerDepth, refence, arrayDepth) :
+	    new TypeImpl(ast, file, pointerDepth, refence, arrayDepth);
 	
 //	return new TypeImpl(classifier, file, pointerDepth, refence, arrayDepth);
     }
