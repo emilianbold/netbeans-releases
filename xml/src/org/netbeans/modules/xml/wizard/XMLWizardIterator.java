@@ -208,6 +208,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
         final FileObject[] fileObject = new FileObject[1];
         FileSystem.AtomicAction fsAction = new FileSystem.AtomicAction() {
             public void run() throws IOException {
+                // XXX use Freemarker instead of this hardcoded template!
                 //use the project's encoding if there is one
                 String encoding = EncodingUtil.getProjectEncoding(folder.getPrimaryFile());
                 if(!EncodingUtil.isValidEncoding(encoding))
