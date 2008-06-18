@@ -221,7 +221,8 @@ public class PhpProject implements Project, AntProjectListener {
                 new PhpOpenedHook(),
                 new PhpActionProvider(this),
                 new PhpConfigurationProvider(this),
-                getHelper().createCacheDirectoryProvider(), // XXX needed?
+                helper.createCacheDirectoryProvider(),
+                helper.createAuxiliaryProperties(),
                 new ClassPathProviderImpl(getHelper(), getEvaluator(), phpSources),
                 new PhpLogicalViewProvider(this),
                 new CustomizerProviderImpl(this),
