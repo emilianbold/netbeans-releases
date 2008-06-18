@@ -79,7 +79,7 @@ public enum PolicyQName {
     public static String getNamespaceUri(ConfigVersion cfgVersion) {
         switch (cfgVersion) {
             case CONFIG_1_0 : return POLICY_NS_URI;
-            case CONFIG_1_2 : return POLICY_12_NS_URI;
+            case CONFIG_1_3 : return POLICY_12_NS_URI;
         }
         return null;
     }

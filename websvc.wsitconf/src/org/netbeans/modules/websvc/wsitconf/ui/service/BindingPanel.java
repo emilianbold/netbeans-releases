@@ -270,7 +270,7 @@ public class BindingPanel extends SectionInnerPanel {
                     if (!ProfilesModelHelper.isSCEnabled(binding)) {
                         ProfilesModelHelper.getInstance(userExpectedCfgVersion).setSecureConversation(binding, true);
                     }
-                    if (ConfigVersion.CONFIG_1_2.equals(userExpectedCfgVersion) && rmChBox.isSelected()) {
+                    if (ConfigVersion.CONFIG_1_3.equals(userExpectedCfgVersion) && rmChBox.isSelected()) {
                         String profile = ProfilesModelHelper.getSecurityProfile(binding);
                         if (ProfilesModelHelper.isSSLProfile(profile)) {
                             RMSequenceBinding.SECURED_TRANSPORT.set(userExpectedCfgVersion, binding);

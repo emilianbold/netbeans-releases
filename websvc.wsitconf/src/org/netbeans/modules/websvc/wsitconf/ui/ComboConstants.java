@@ -159,10 +159,10 @@ public interface ComboConstants {
     String ALWAYSRECIPIENT = NbBundle.getMessage(ComboConstants.class, "COMBO_AlwaysToRecipient");       //NOI18N
     String ALWAYS = NbBundle.getMessage(ComboConstants.class, "COMBO_Always");       //NOI18N
 
-    String NEVER_POLICYSTR = "http://schemas.xmlsoap.org/ws/2005/07/securitypolicy/IncludeToken/Never"; //NOI18N
-    String ONCE_POLICYSTR = "http://schemas.xmlsoap.org/ws/2005/07/securitypolicy/IncludeToken/Once"; //NOI18N
-    String ALWAYSRECIPIENT_POLICYSTR = "http://schemas.xmlsoap.org/ws/2005/07/securitypolicy/IncludeToken/AlwaysToRecipient"; //NOI18N
-    String ALWAYS_POLICYSTR = "http://schemas.xmlsoap.org/ws/2005/07/securitypolicy/IncludeToken/Always"; //NOI18N
+    String NEVER_POLICYSTR = "/IncludeToken/Never"; //NOI18N
+    String ONCE_POLICYSTR = "/IncludeToken/Once"; //NOI18N
+    String ALWAYSRECIPIENT_POLICYSTR = "/IncludeToken/AlwaysToRecipient"; //NOI18N
+    String ALWAYS_POLICYSTR = "/IncludeToken/Always"; //NOI18N
 
     String WSS11 = NbBundle.getMessage(ComboConstants.class, "COMBO_WSS11");         //NOI18N
     String WSS10 = NbBundle.getMessage(ComboConstants.class, "COMBO_WSS10");         //NOI18N
