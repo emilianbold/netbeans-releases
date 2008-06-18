@@ -450,7 +450,7 @@ private void dbconnComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GE
             dbconn = (DatabaseConnection) selected;
         }
         lastErrorMessage = changeDatabaseConnection(dbconn);
-        if (lastErrorMessage == null) {
+        if (lastErrorMessage == null && this.dbconn != null) {
             tableComboBoxSelectionChanged();
         }
         updateErrorState();

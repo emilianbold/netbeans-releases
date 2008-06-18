@@ -48,6 +48,7 @@ import org.openide.util.NbBundle;
 import javax.swing.*;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
+import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.windows.TopComponent;
 
@@ -112,6 +113,8 @@ public class CloseAllDocumentsAction extends AbstractAction {
 
     @Override
     public boolean isEnabled() {
+        if( !Switches.isEditorTopComponentClosingEnabled() )
+            return false;
         WindowManagerImpl wmi = WindowManagerImpl.getInstance();
         if (isContext) {
             TopComponent activeTC = TopComponent.getRegistry().getActivated();

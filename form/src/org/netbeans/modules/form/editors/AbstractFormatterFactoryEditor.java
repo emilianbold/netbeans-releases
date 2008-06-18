@@ -41,6 +41,9 @@
 package org.netbeans.modules.form.editors;
 
 import java.awt.Component;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
@@ -206,6 +209,23 @@ public class AbstractFormatterFactoryEditor extends PropertyEditorSupport
             code = "new javax.swing.text.NumberFormatter(" + code + ")"; // NOI18N            
         }
         return "new javax.swing.text.DefaultFormatterFactory(" + code + ")"; // NOI18N
+    }
+
+    @Override
+    public String getAsText() {
+        return null;
+    }
+
+    @Override
+    public boolean isPaintable() {
+        return true;
+    }
+
+    @Override
+    public void paintValue(Graphics g, Rectangle rectangle) {
+        String msg = NbBundle.getMessage(AbstractFormatterFactoryEditor.class, "MSG_AbstractFormatterFactory"); // NOI18N
+        FontMetrics fm = g.getFontMetrics();
+        g.drawString(msg, rectangle.x, rectangle.y + (rectangle.height - fm.getHeight())/2 + fm.getAscent());
     }
 
     /** Pre-code for mask format. */

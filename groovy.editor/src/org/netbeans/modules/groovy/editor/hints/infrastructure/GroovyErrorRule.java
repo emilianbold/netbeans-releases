@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.groovy.editor.GroovyCompilerErrorID;
-import org.netbeans.modules.groovy.editor.parser.GroovyParser.GroovyError;
+import org.netbeans.modules.groovy.editor.parser.GroovyError;
 import org.netbeans.modules.gsf.api.Rule.ErrorRule;
 
 /** 

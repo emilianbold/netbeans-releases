@@ -61,6 +61,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -207,6 +208,12 @@ public final class ProfilesTracker {
     private Map<String, ProfileDescription> profiles = Collections.<String, ProfileDescription>emptyMap();
     private Map<String, ProfileDescription> profilesByDisplayName = Collections.<String, ProfileDescription>emptyMap();
     
+    private final RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
+        public void run() {
+            rebuild();
+        }
+    });
+    
     private void rebuild() {
         PropertyChangeEvent event = null;
         
@@ -328,7 +335,7 @@ public final class ProfilesTracker {
         private void notifyRebuild(FileObject file) {
             String path = file.getPath();
             if (path.startsWith(mimeTypes.getBasePath())) {
-                rebuild();
+                task.schedule(100);
             }
         }
     } // End of Listener class

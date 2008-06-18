@@ -56,7 +56,6 @@ import org.netbeans.swing.tabcontrol.TabbedContainer;
 import org.netbeans.swing.tabcontrol.plaf.EqualPolygon;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
-import java.awt.Image;
 import org.netbeans.core.windows.view.ui.slides.SlideController;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -65,9 +64,10 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.netbeans.core.windows.ModeImpl;
+import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.actions.ActionUtils;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
-import org.netbeans.swing.tabcontrol.WinsysInfoForTabbed;
+import org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
 import org.openide.util.ChangeSupport;
 
@@ -90,7 +90,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
 
     /** Creates a new instance of TabbedAdapter */
     public TabbedAdapter (int type) {
-        super (null, type, new WinsysInfo());
+        super (null, type, new WinsysInfo(type));
         getSelectionModel().addChangeListener(new ChangeListener() {
             public void stateChanged (ChangeEvent ce) {
                 int idx = getSelectionModel().getSelectedIndex();
@@ -128,7 +128,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
                 "RequestAttention on component unknown to container: " + tc); //NOI18N
         }
     }
-    
+
     public void cancelRequestAttention (TopComponent tc) {
         int idx = indexOf(tc);
         if (idx >= 0) {
@@ -460,7 +460,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
     public Action[] getPopupActions(Action[] defaultActions, int tabIndex) {
         boolean isDocked = WindowManagerImpl.getInstance().isDocked(getTopComponentAt(tabIndex));
         // no auto hide for editors and floating views
-        if (TabbedContainer.TYPE_EDITOR == getType() || !isDocked) {
+        if (TabbedContainer.TYPE_EDITOR == getType() || !isDocked || !Switches.isTopComponentSlidingEnabled()) {
             return defaultActions;
         }
         int actionCount = defaultActions.length;
@@ -509,8 +509,12 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
 
     /********* implementation of WinsysInfoForTabbed ********/
     
-    static class WinsysInfo implements WinsysInfoForTabbed {
-    
+    static class WinsysInfo extends WinsysInfoForTabbedContainer {
+        private int containerType;
+        public WinsysInfo( int containerType ) {
+            this.containerType = containerType;
+        }
+        
         public Object getOrientation (Component comp) {
             WindowManagerImpl wmi = WindowManagerImpl.getInstance();
             // don't show pin button in separate views
@@ -536,6 +540,23 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
             return isInMaximizedMode(comp);
         }    
         
+        @Override
+        public boolean isTopComponentSlidingEnabled() {
+            return Switches.isTopComponentSlidingEnabled();
+        }
+        
+        @Override
+        public boolean isTopComponentClosingEnabled() {
+            if( containerType == Constants.MODE_KIND_EDITOR )
+                return Switches.isEditorTopComponentClosingEnabled();
+            else
+                return Switches.isViewTopComponentClosingEnabled();
+        }
+        
+        @Override
+        public boolean isTopComponentMaximizationEnabled() {
+            return Switches.isTopComponentMaximizationEnabled();
+        }
     } // end of LocInfo
 
     /** Returns instance of weak property change listener used to listen to 

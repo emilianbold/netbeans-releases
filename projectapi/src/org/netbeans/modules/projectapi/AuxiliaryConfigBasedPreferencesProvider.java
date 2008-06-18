@@ -46,7 +46,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -61,9 +60,9 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
-import org.openide.filesystems.FileObject;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -95,15 +94,10 @@ public class AuxiliaryConfigBasedPreferencesProvider {
             return prov;
         }
         
-        AuxiliaryConfiguration ac = p.getLookup().lookup(AuxiliaryConfiguration.class);
+        AuxiliaryConfiguration ac = ProjectUtils.getAuxiliaryConfiguration(p);
         AuxiliaryProperties ap = p.getLookup().lookup(AuxiliaryProperties.class);
         
-        if (ac != null || ap != null) {
-            target.put(p, new WeakReference<AuxiliaryConfigBasedPreferencesProvider>(prov = new AuxiliaryConfigBasedPreferencesProvider(p, ac, ap, shared)));
-        } else {
-            ap = new FallbackAuxiliaryPropertiesImpl(p.getProjectDirectory());
-            target.put(p, new WeakReference<AuxiliaryConfigBasedPreferencesProvider>(prov = new AuxiliaryConfigBasedPreferencesProvider(p, null, ap, shared)));
-        }
+        target.put(p, new WeakReference<AuxiliaryConfigBasedPreferencesProvider>(prov = new AuxiliaryConfigBasedPreferencesProvider(p, ac, ap, shared)));
         
         return prov;
     }
@@ -243,18 +237,6 @@ public class AuxiliaryConfigBasedPreferencesProvider {
             }
         }
         
-        for (String createdNode : createdNodes) {
-            if (ap != null) {
-                String propName = toPropertyName(createdNode, "");
-                
-                ap.put(propName, "", shared);
-            } else {
-                findRelative(createdNode, true);
-                
-                domModified = true;
-            }
-        }
-        
         for (Entry<String, Map<String, String>> e : path2Data.entrySet()) {
             if (ap != null) {
                 for (Entry<String, String> value : e.getValue().entrySet()) {
@@ -310,7 +292,6 @@ public class AuxiliaryConfigBasedPreferencesProvider {
         path2Data.clear();
         path2Removed.clear();
         removedNodes.clear();
-        createdNodes.clear();
         modified = false;
     }
     
@@ -749,7 +730,7 @@ public class AuxiliaryConfigBasedPreferencesProvider {
         @Override
         protected AbstractPreferences getChild(final String nodeName) throws BackingStoreException {
             try {
-                return ProjectManager.mutex().writeAccess(new ExceptionAction<AbstractPreferences>() {
+                return ProjectManager.mutex().readAccess(new ExceptionAction<AbstractPreferences>() {
                     public AbstractPreferences run() throws BackingStoreException {
                         return AuxiliaryConfigBasedPreferences.super.getChild(nodeName);
                     }
@@ -759,55 +740,6 @@ public class AuxiliaryConfigBasedPreferencesProvider {
             }
         }
 
-    }
-    
-    private static final class FallbackAuxiliaryPropertiesImpl implements AuxiliaryProperties {
-
-        private static final String PREFIX = "auxiliary.";
-        private FileObject projectDir;
-
-        public FallbackAuxiliaryPropertiesImpl(FileObject projectDir) {
-            this.projectDir = projectDir;
-        }
-        
-        public String get(String key, boolean shared) {
-            assert !shared;
-            
-            Object v = projectDir.getAttribute(PREFIX + key);
-            
-            return v instanceof String ? (String) v : null;
-        }
-
-        public void put(String key, String value, boolean shared) {
-            assert !shared;
-            
-            try {
-                projectDir.setAttribute(PREFIX + key, value);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-        public Iterable<String> listKeys(boolean shared) {
-            assert !shared;
-            
-            List<String> result = new LinkedList<String>();
-            
-            for (Enumeration<String> en = projectDir.getAttributes(); en.hasMoreElements(); ) {
-                String key = en.nextElement();
-                
-                if (key.startsWith(PREFIX)) {
-                    key = key.substring(PREFIX.length());
-                    
-                    if (get(key, shared) != null) {
-                        result.add(key);
-                    }
-                }
-            }
-            
-            return result;
-        }
-        
     }
     
 }

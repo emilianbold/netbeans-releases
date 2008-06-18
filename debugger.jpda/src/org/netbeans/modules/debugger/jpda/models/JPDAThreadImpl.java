@@ -107,8 +107,16 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     ) {
         this.threadReference = threadReference;
         this.debugger = debugger;
-        suspended = threadReference.isSuspended();
-        suspendCount = threadReference.suspendCount();
+        try {
+            suspended = threadReference.isSuspended();
+        } catch (IllegalThreadStateException itsex) {
+            suspended = false;
+        }
+        try {
+            suspendCount = threadReference.suspendCount();
+        } catch (IllegalThreadStateException itsex) {
+            suspendCount = 0;
+        }
     }
 
     /**

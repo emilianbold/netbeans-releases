@@ -19,6 +19,10 @@ Foo::Foo(int _boo) {
 void Foo::doFoo(int moo) {
     int goo = MOO;
     boo = moo + goo;
+    int bar = 1;
+    ::bar = ::bar + bar + 1;
+    func(::bar);
 }
 
-
+int bar = 1;
+void func(int bar) {}
