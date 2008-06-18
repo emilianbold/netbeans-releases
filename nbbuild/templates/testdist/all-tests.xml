@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 <project name="All tests runner" default="all" basedir=".">
     <target name="all" depends="runtests,failtests"/>
-    <target name="runtests" depends="-prepare-modules-list">
+    <target name="runtests" depends="-prepate-test-modules,-prepare-modules-list">
         <fail unless="netbeans.dest.dir" message="Property netbeans.dest.dir doesn't exist."/>
         <available file="${netbeans.dest.dir}/etc/netbeans.conf" property="exist.netbeans.dest.dir"/>
         <fail unless="exist.netbeans.dest.dir" message="Path netbeans.dest.dir doesn't contain  netbeans dir."/>
@@ -92,5 +92,8 @@ made subject to such option by the copyright holder.
         <pathconvert property="modules.list">
             <dirset dir="." includes="${test.path}"/>
         </pathconvert>
+    </target>
+    <target name="-prepate-test-modules" if="test.clusters">
+        <property name="test.modules" value="*"/>
     </target>
 </project>

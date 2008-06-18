@@ -46,6 +46,7 @@ import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import junit.textui.TestRunner;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
@@ -159,7 +160,7 @@ public class JavaEditActionsTest extends JavaEditorActionsTestCase {
 
             // 12 -- test COPY action ---
             editor.setCaretPosition(9, 15);
-            txtOper.pushKey(KeyEvent.VK_J, KeyEvent.ALT_DOWN_MASK | KeyEvent.ALT_DOWN_MASK);
+            txtOper.pushKey(KeyEvent.VK_J, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.ALT_DOWN_MASK);
             cutCopyViaStrokes(txtOper, KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK);
             editor.setCaretPosition(10, 17);
             txtOper.pushKey(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK);
@@ -515,9 +516,9 @@ public class JavaEditActionsTest extends JavaEditorActionsTestCase {
     public void testSyntaxSelection() {
         resetCounter();
         openDefaultProject();
-        openDefaultSampleFile();
-        int[] begins = {584,573,569,552,530,471,453,441,404,383,349,310,176};
-        int[] ends =   {590,591,593,594,612,612,626,626,637,637,643,645,645};
+        openDefaultSampleFile();    
+        int[] begins = {602,591,587,570,548,489,471,459,422,401,367,328,176};
+        int[] ends =   {608,609,611,612,630,630,644,644,655,655,661,663,663};
         try {
             EditorOperator editor = getDefaultSampleEditorOperator();
             editor.requestFocus();
@@ -528,6 +529,7 @@ public class JavaEditActionsTest extends JavaEditorActionsTestCase {
                 txtOper.pushKey(KeyEvent.VK_PERIOD, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK );
                 int start = txtOper.getSelectionStart();
                 int end = txtOper.getSelectionEnd();                
+                //System.out.println(start+" "+end);
                 if(start!=begins[x] || end != ends[x]) fail("Wrong selection expected <"+begins[x]+","+ends[x]+"> but got <"+start+","+end+">");
                 x++;
             }
@@ -537,6 +539,7 @@ public class JavaEditActionsTest extends JavaEditorActionsTestCase {
                 txtOper.pushKey(KeyEvent.VK_COMMA, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK );
                 int start = txtOper.getSelectionStart();
                 int end = txtOper.getSelectionEnd();                
+                //System.out.println(start+" "+end);
                 if(start!=begins[x] || end != ends[x]) fail("Wrong selection expected <"+begins[x]+","+ends[x]+"> but got <"+start+","+end+">");
             }            
         } finally {

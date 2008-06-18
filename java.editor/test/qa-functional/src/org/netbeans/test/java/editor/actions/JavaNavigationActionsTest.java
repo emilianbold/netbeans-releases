@@ -234,21 +234,6 @@ import org.netbeans.junit.NbModuleSuite;
 
             // -------- test selection-end action -------
             checkActionByKeyStroke(KeyEvent.VK_END, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK, 18, txtOper.getDocument().getLength(), true);
-
-            // ----  caret-end-word  ----
-            // testStandar|dNavigationActions
-//            editor.setCaretPosition(71);
-//            int etalon = 89; // testStandardNavigationActions|
-//            txtOper.pushKey(KeyEvent.VK_U, KeyEvent.ALT_DOWN_MASK);
-//            txtOper.pushKey(KeyEvent.VK_E);
-//            waitMaxMilisForValue(1500, getResolver(txtOper, etalon), Boolean.TRUE);
-//            int newCaretOffset = txtOper.getCaretPosition();
-//            if (etalon != newCaretOffset){
-//                fail("Alt+U E: Action failed: [etalon/newCaretOffset]: ["+etalon+"/"+
-//                        newCaretOffset+"]");
-//            }
-
-
             
         } finally {
             closeFileWithDiscard();

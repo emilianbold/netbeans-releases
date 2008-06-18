@@ -160,7 +160,7 @@ import org.netbeans.junit.NbModuleSuite;
     
     public void testJavaFolds(){
         openDefaultProject();
-        openDefaultSampleFile();
+        openFile("Source Packages|java_code_folding.JavaFoldsTest", "testJavaFolds");
         
         editor = getDefaultSampleEditorOperator();
         JTextComponentOperator text = new JTextComponentOperator(editor);

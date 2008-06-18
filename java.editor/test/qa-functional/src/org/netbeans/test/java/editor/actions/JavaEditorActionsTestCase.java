@@ -21,6 +21,7 @@ public class JavaEditorActionsTestCase extends EditorActionsTestCase{
         super(testMethodName);
     }
     
+    @Override
     protected String getDefaultProjectName() {
         return JavaEditorTestCase.PROJECT_NAME;
     }
