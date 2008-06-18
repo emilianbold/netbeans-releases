@@ -53,6 +53,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
@@ -99,6 +100,8 @@ public class Subversion {
     private SvnClient noUrlClientWithoutListeners;
     private SvnClient noUrlClientWithListeners;
     private List<ISVNNotifyListener> svnNotifyListeners;
+    
+    private Set<File> unversionedParents = Collections.synchronizedSet(new HashSet<File>(20));
         
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
@@ -272,6 +275,7 @@ public class Subversion {
     }
 
     public void versionedFilesChanged() {
+        unversionedParents.clear();
         support.firePropertyChange(PROP_VERSIONED_FILES_CHANGED, null, null);
     }
     
@@ -282,7 +286,8 @@ public class Subversion {
      * @param file a file
      * @return File the file itself or one of its parents or null if the supplied file is NOT managed by this versioning system
      */
-    File getTopmostManagedParent(File file) {           
+    File getTopmostManagedParent(File file) {          
+        if(unversionedParents.contains(file)) return null;
         try {
             SvnClientFactory.checkClientAvailable();
         } catch (SVNClientException ex) {
@@ -297,11 +302,19 @@ public class Subversion {
             }
         }
         File topmost = null;
+        Set<File> done = new HashSet<File>();
         for (; file != null; file = file.getParentFile()) {
+            if(unversionedParents.contains(file)) break;
             if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
             if (new File(file, SvnUtils.SVN_ENTRIES_DIR).canRead()) { // NOI18N
                 topmost = file;
+                done.clear();
+            } else {
+                done.add(file);
             }
+        }
+        if(done.size() > 0) {
+            unversionedParents.addAll(done);
         }
         return topmost;
     }
