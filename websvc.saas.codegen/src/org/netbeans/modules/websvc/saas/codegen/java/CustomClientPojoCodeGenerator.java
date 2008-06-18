@@ -56,6 +56,7 @@ import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.saas.codegen.model.CustomClientSaasBean;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
 
 /**
@@ -73,6 +74,7 @@ public class CustomClientPojoCodeGenerator extends CustomClientRestResourceCodeG
     
     @Override
     public void init(SaasMethod m, Document doc) throws IOException {
+        super.init(m, doc); 
         targetSource = JavaSource.forFileObject(getTargetFile());
         String packageName = JavaSourceHelper.getPackageName(targetSource);
         getBean().setPackageName(packageName);

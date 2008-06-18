@@ -288,11 +288,12 @@ made subject to such option by the copyright holder.
                     <xsl:variable name="wsname" select="@name"/>
                     <xsl:variable name="package_name" select="jaxws:package-name"/>
                     <xsl:variable name="wsdl_url" select="jaxws:local-wsdl-file"/>
+                    <xsl:variable name="service_name" select="jaxws:service-name"/>
                     <xsl:variable name="package_path" select = "translate($package_name,'.','/')"/>
                     <xsl:variable name="catalog" select = "jaxws:catalog-file"/>
                     <target name="wsimport-service-check-{$wsname}" depends="wsimport-init">
                         <condition property="wsimport-service-{$wsname}.notRequired">
-                            <available file="${{build.generated.dir}}/wsimport/service/{$package_path}" type="dir"/>
+                            <available file="${{build.generated.dir}}/wsimport/service/{$package_path}/{$service_name}.java"/>
                         </condition>
                     </target>
                     <target name="wsimport-service-{$wsname}" depends="wsimport-init,wsimport-service-check-{$wsname}" unless="wsimport-service-{$wsname}.notRequired">

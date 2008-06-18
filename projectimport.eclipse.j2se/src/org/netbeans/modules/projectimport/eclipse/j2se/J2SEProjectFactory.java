@@ -78,7 +78,7 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
 
     public Project createProject(final ProjectImportModel model, final List<String> importProblems) throws IOException {
         // calculate nb project location
-        File nbProjectDir = FileUtil.normalizeFile(new File(model.getNetBeansProjectLocation())); // NOI18N
+        File nbProjectDir = model.getNetBeansProjectLocation(); // NOI18N
         
         // create basic NB project
         final AntProjectHelper helper = J2SEProjectGenerator.createProject(

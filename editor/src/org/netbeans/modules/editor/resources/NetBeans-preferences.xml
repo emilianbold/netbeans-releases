@@ -260,6 +260,8 @@ made subject to such option by the copyright holder.
     <entry category="deprecated" javaType="methodvalue" name="whitespace-acceptor" xml:space="preserve">
         <value><![CDATA[org.netbeans.modules.editor.impl.ComplexValueSettingsFactory.getWhitespaceAcceptorValue]]></value>
     </entry>
+
+    <entry name="hyperlink-activation-modifiers" value="128" javaType="java.lang.Integer" />
     
 <!--
             settingsMap.put(SettingsNames.TAB_SIZE, SettingsDefaults.defaultTabSize);
