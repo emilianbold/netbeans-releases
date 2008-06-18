@@ -204,7 +204,7 @@ public class StartTask extends BasicTask<OperationState> {
         argumentBuf.append(" -client -jar ");
         argumentBuf.append(quote(jarLocation));
         argumentBuf.append(" --domain " + getDomainName());
-        argumentBuf.append(" --domaindir " + getDomainFolder().getAbsolutePath());
+        argumentBuf.append(" --domaindir " + quote(getDomainFolder().getAbsolutePath()));
         
         String arguments = argumentBuf.toString();
         Logger.getLogger("glassfish").log(Level.FINE, "V3 JVM Command: " + startScript + arguments);

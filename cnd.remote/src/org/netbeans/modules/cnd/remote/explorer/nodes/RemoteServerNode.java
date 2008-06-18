@@ -39,8 +39,14 @@
 
 package org.netbeans.modules.cnd.remote.explorer.nodes;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import javax.swing.Action;
+import org.netbeans.modules.cnd.remote.actions.DeleteServerAction;
+import org.netbeans.modules.cnd.remote.actions.DisplayPathMapperAction;
 import org.netbeans.modules.cnd.remote.actions.SetDefaultAction;
+import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -49,43 +55,56 @@ import org.openide.nodes.Children;
  *
  * @author gordonp
  */
-public class RemoteServerNode extends AbstractNode {
+public class RemoteServerNode extends AbstractNode implements PropertyChangeListener {
     
-    private boolean active;
     private RemoteServerRecord record;
     private static final String SINGLE_SERVER_ICON = "org/netbeans/modules/cnd/remote/resources/single_server.png"; // NOI18N
 
     public RemoteServerNode(RemoteServerRecord record) {
-        super(Children.LEAF);
+        this(Children.LEAF, record);
         setName(record.getUserName() + '@' + record.getServerName());
-        setActive(record.isActive());
         setIconBaseWithExtension(SINGLE_SERVER_ICON);
-        this.record = record;
     }
     
     public RemoteServerNode(Children children, RemoteServerRecord record) {
         super(children);
         this.record = record;
+        RemoteServerList.getInstance().addPropertyChangeListener(this);
     }
     
     @Override
     public Action[] getActions(boolean context) {
         Action[] actions = {
+            new DisplayPathMapperAction(record),
             new SetDefaultAction(record),
+            null,
+            new DeleteServerAction(record),
         };
         return actions;
     }
     
     @Override
     public String getHtmlDisplayName() {
-        return isActive() ? "<b>" + getName() + "</b>" : getName(); // NOI18N
+        return record.isActive() ? "<b>" + getName() + "</b>" : getName(); // NOI18N
     }
     
-    public void setActive(boolean active) {
-        this.active = active;
+    @Override
+    public boolean canDestroy() {
+        return !record.getName().equals("localhost"); // NOI18N
     }
-    
-    public boolean isActive() {
-        return active;
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(RemoteServerList.PROP_SET_AS_ACTIVE)) {
+            if (record.isActive()) {
+                fireDisplayNameChange(getName(), getHtmlDisplayName());
+            } else {
+                fireDisplayNameChange("", getName());
+            }
+        } else if (evt.getPropertyName().equals(RemoteServerList.PROP_DELETE_SERVER)) {
+            try {
+                destroy();
+            } catch (IOException ex) {
+            }
+        }
     }
 }

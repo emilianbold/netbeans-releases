@@ -63,7 +63,7 @@ a{
 
 .banner2 {
    background-color: #d9b6c4;
-   background-image: url(../images/ban2.gif);
+   background-image: url(./images/ban2.gif);
    border: 1px solid #000000
 }
 
@@ -130,7 +130,7 @@ a{
     color: #FFFFFF;  
     height: 100px;
     width: 750px;
-    background-image: url(../images/ban2.gif);
+    background-image: url(./images/ban2.gif);
 }        
 
 .tableheader {
@@ -162,7 +162,7 @@ a{
 .results .resultHeader
 {
     /*background-color: #164A78;*/
-    background-image: url(../images/heading.gif);
+    background-image: url(./images/heading.gif);
     color: #FF9933;
     font-family: Arial, Verdana, Helvetica;
     font-size: 11px;
@@ -219,7 +219,7 @@ a{
     color: #000000;
     width: 100%;
     border: 1px solid #000000;
-    background-image: url(../images/menu.gif);
+    background-image: url(./images/menu.gif);
 } 
 
 .mglf {
@@ -237,7 +237,7 @@ a{
     /*color: #FFFFFF;*/
     color: #FFFFFF;
     border: 1px solid #000000;
-    background-image: url(../images/heading.gif);
+    background-image: url(./images/heading.gif);
 }
 
 .ht {
@@ -315,7 +315,7 @@ a{
     background-color: #2574B7;
     color: #FFFFFF;
     text-align: center;
-    background-image: url(../images/menu.gif);
+    background-image: url(./images/menu.gif);
 }
 
 .stext
@@ -332,7 +332,7 @@ a{
     background-color: #e1e1e1;
     color: #000000;
     text-align: center;
-    background-image: url(../images/ban2.gif);
+    background-image: url(./images/ban2.gif);
 }
 
 .otext

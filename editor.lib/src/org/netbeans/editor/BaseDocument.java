@@ -2181,7 +2181,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         
         public Object getValue() {
             if (hackMimeType == null) {
-                return doc.getEditorKit().getContentType();
+                return doc.mimeType;
             } else {
                 return hackMimeType;
             }

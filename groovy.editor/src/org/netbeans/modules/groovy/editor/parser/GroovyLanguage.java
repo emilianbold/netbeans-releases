@@ -39,15 +39,17 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.editor;
+package org.netbeans.modules.groovy.editor.parser;
 
-import org.netbeans.modules.groovy.editor.completion.CodeCompleter;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.groovy.editor.BracketCompleter;
+import org.netbeans.modules.groovy.editor.GroovyDeclarationFinder;
+import org.netbeans.modules.groovy.editor.GroovyIndexer;
+import org.netbeans.modules.groovy.editor.GroovyUtils;
+import org.netbeans.modules.groovy.editor.StructureAnalyzer;
+import org.netbeans.modules.groovy.editor.completion.CodeCompleter;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyHintsProvider;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
-import org.netbeans.modules.groovy.editor.parser.GroovyOccurrencesFinder;
-import org.netbeans.modules.groovy.editor.parser.GroovyParser;
-import org.netbeans.modules.groovy.editor.parser.GroovySemanticAnalyzer;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.DeclarationFinder;
 import org.netbeans.modules.gsf.api.Formatter;

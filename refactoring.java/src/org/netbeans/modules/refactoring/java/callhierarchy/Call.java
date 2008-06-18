@@ -61,6 +61,7 @@ import javax.lang.model.type.WildcardType;
 import javax.swing.Icon;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.api.java.source.ui.ElementIcons;
@@ -93,6 +94,7 @@ final class Call implements CallDescriptor {
     TreePathHandle selection;
     TreePathHandle declaration;
     private TreePathHandle overridden;
+    private ElementHandle identity;
     private Call parent;
     private boolean leaf;
     /** collection of references might not be complete */
@@ -163,12 +165,15 @@ final class Call implements CallDescriptor {
     
     private static Call createReference(CompilationInfo javac, TreePath selection, Element selectionElm, Call parent, boolean isCallerGraph, List<TreePath> occurrences) {
         Call c = new Call();
-        c.displayName = selectionElm.getKind() == ElementKind.INSTANCE_INIT || selectionElm.getKind() == ElementKind.STATIC_INIT
-                ? "<init>" // NOI18N
-                : ElementHeaders.getHeader(selectionElm, javac, ElementHeaders.NAME);
+        if (selectionElm.getKind() == ElementKind.INSTANCE_INIT || selectionElm.getKind() == ElementKind.STATIC_INIT) {
+            c.displayName = "<init>"; // NOI18N
+            c.identity = null;
+        } else {
+            c.displayName = ElementHeaders.getHeader(selectionElm, javac, ElementHeaders.NAME);
+            c.identity = ElementHandle.create(selectionElm);
+        }
         c.htmlDisplayName = createHtmlHeader(selectionElm, occurrences.size(), javac);
         c.icon = ElementIcons.getElementIcon(selectionElm.getKind(), selectionElm.getModifiers());
-        c.leaf = isLeaf(selectionElm, parent, isCallerGraph, javac);
         c.selection = TreePathHandle.create(selection, javac);
         c.parent = parent;
         if (parent != null) {
@@ -181,6 +186,7 @@ final class Call implements CallDescriptor {
             if (!overridenMethods.isEmpty()) {
                 ExecutableElement next = overridenMethods.iterator().next();
                 c.overridden = TreePathHandle.create(next, javac);
+                c.identity = ElementHandle.create(next);
             }
         }
         
@@ -189,6 +195,12 @@ final class Call implements CallDescriptor {
             if (declarationPath != null) {
                 c.declaration = TreePathHandle.create(declarationPath, javac);
             }
+        }
+        
+        if (c.identity != null) {
+            c.leaf = isLeaf(selectionElm, c.identity, parent, isCallerGraph);
+        } else {
+            c.leaf = true;
         }
 
         c.occurrences = new ArrayList<CallOccurrence>(occurrences.size());
@@ -203,7 +215,7 @@ final class Call implements CallDescriptor {
         return String.format("name='%s', handle='%s', refs='%s'", displayName, selection, references); // NOI18N
     }
 
-    private static boolean isLeaf(Element elm, Call parent, boolean isCallerGraph, CompilationInfo javac) {
+    private static boolean isLeaf(Element elm, ElementHandle handle, Call parent, boolean isCallerGraph) {
         ElementKind kind = elm.getKind();
         if (kind != ElementKind.METHOD && kind != ElementKind.CONSTRUCTOR) {
             return true;
@@ -212,8 +224,7 @@ final class Call implements CallDescriptor {
             return true;
         }
         while (parent != null) {                
-            Element parentElm = parent.selection.resolveElement(javac);
-            if (elm == parentElm) {
+            if (handle.equals(parent.identity)) {
                 return true;
             }
             parent = parent.parent;

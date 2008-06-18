@@ -1,43 +1,6 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
- * 
- * Contributor(s):
- * 
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- * 
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
- */
+* Support js for Customer
+*/
 
 function Customer(uri_) {
     this.Customer(uri_, false);
@@ -56,7 +19,7 @@ function Customer(uri_, initialized_) {
     this.fax = '';
     this.email = '';
     this.creditLimit = '';
-    this.discountCodeRef = '';
+    this.discountCode = '';
 
     this.initialized = initialized_;
 }
@@ -180,11 +143,11 @@ Customer.prototype = {
    getDiscountCode : function() {
       if(!this.initialized)
          this.init();
-      return this.discountCodeRef;
+      return this.discountCode;
    },
 
-   setDiscountCode : function(discountCodeRef_) {
-      this.discountCodeRef = discountCodeRef_;
+   setDiscountCode : function(discountCode_) {
+      this.discountCode = discountCode_;
    },
 
 
@@ -207,7 +170,7 @@ Customer.prototype = {
          this.fax = this.findValue(this.fax, customer['fax']);
          this.email = this.findValue(this.email, customer['email']);
          this.creditLimit = this.findValue(this.creditLimit, customer['creditLimit']);
-         this.discountCodeRef = new DiscountCode(customer['discountCodeRef']['@uri']);
+         this.discountCode = this.findValue(this.discountCode, customer['discountCode']);
 
          this.initialized = true;
       }
@@ -248,7 +211,7 @@ Customer.prototype = {
          '"fax":"'+this.fax+'",'+
          '"email":"'+this.email+'",'+
          '"creditLimit":"'+this.creditLimit+'",'+
-         '"discountCodeRef":{"@uri":"'+this.discountCodeRef.getUri()+'", "discountCode":"'+eval("this.discountCodeRef.get"+this.discountCodeRef.getFields()[0].substring(0,1).toUpperCase()+this.discountCodeRef.getFields()[0].substring(1)+"()")+'"}'+
+         this.discountCode+
 
          '}';
       return myObj;
@@ -267,6 +230,7 @@ Customer.prototype = {
          fields.push('fax');
          fields.push('email');
          fields.push('creditLimit');
+         fields.push('discountCode');
 
       return fields;
    }
@@ -279,12 +243,25 @@ function CustomerRemote(uri_) {
 
 CustomerRemote.prototype = {
 
+/* Default getJson() method used by Container/Containee init() methods. Do not remove. */
+   getJson : function() {
+      return rjsSupport.get(this.uri, 'application/json');
+   },
+
+   getXml : function() {
+      return rjsSupport.get(this.uri, 'application/xml');
+   },
+
    getXml : function() {
       return rjsSupport.get(this.uri, 'application/xml');
    },
 
    getJson : function() {
       return rjsSupport.get(this.uri, 'application/json');
+   },
+
+   putXml : function(content) {
+      return rjsSupport.put(this.uri, 'application/xml', content);
    },
 
    putXml : function(content) {

@@ -234,7 +234,7 @@ public abstract class CommonLauncher extends Launcher {
                 if(file.isBundled() && !file.isBasedOnResource() ) {
                     JarFile jarFile = new JarFile(new File(file.getPath()));
                     boolean mainClassExists = jarFile.getJarEntry(
-                            mainClass.replace(".","/") + ".class") != null;
+                            ResourceUtils.getResourceClassName(mainClass))!= null;
                     jarFile.close();
                     if(mainClassExists) {                        
                         return;
@@ -348,7 +348,7 @@ public abstract class CommonLauncher extends Launcher {
                     if (manifest != null) {
                         String mainClassName = manifest.getMainAttributes().getValue(Attributes.Name.MAIN_CLASS);
                         if (mainClassName != null) {
-                            resource = mainClassName.replace(".", "/") + ".class";
+                            resource = ResourceUtils.getResourceClassName(mainClassName);
                         }
                     }
                     if (resource == null) {
@@ -380,7 +380,7 @@ public abstract class CommonLauncher extends Launcher {
         }
         if (majorVersion == -1) {
             try {
-                final String resource = CommonLauncher.class.getName().replace(".", "/") + ".class";
+                final String resource = ResourceUtils.getResourceClassName(CommonLauncher.class);
                 majorVersion = getMajorVersion(ResourceUtils.getResource(resource));
             } catch (IOException e) {
                 LogManager.log(e);

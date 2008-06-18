@@ -44,7 +44,7 @@ package org.netbeans.modules.groovy.editor.test;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.Formatter;
 import org.netbeans.modules.groovy.editor.GroovyIndex;
-import org.netbeans.modules.groovy.editor.GroovyLanguage;
+import org.netbeans.modules.groovy.editor.parser.GroovyLanguage;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.gsf.GsfTestBase;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
