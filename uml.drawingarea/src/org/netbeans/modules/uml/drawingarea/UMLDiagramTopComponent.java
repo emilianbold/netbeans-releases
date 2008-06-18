@@ -42,6 +42,7 @@
 package org.netbeans.modules.uml.drawingarea;
 
 import java.awt.BorderLayout;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Point;
@@ -59,7 +60,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.ActionMap;
@@ -103,7 +103,6 @@ import org.netbeans.modules.uml.drawingarea.ZoomManager.ZoomEvent;
 import org.netbeans.modules.uml.drawingarea.actions.CopyPasteSupport;
 import org.netbeans.modules.uml.drawingarea.actions.SceneAcceptAction;
 import org.netbeans.modules.uml.drawingarea.actions.SceneAcceptProvider;
-import org.netbeans.modules.uml.drawingarea.actions.SceneDeleteAction;
 import org.netbeans.modules.uml.drawingarea.dataobject.PaletteItem;
 import org.netbeans.modules.uml.drawingarea.dataobject.UMLDiagramDataNode;
 import org.netbeans.modules.uml.drawingarea.dataobject.UMLDiagramDataObject;
@@ -124,20 +123,17 @@ import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
 import org.netbeans.modules.uml.ui.support.ADTransferable;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.netbeans.modules.uml.ui.support.DispatchHelper;
+import org.netbeans.modules.uml.ui.support.ElementDeletePanel;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
-import org.netbeans.modules.uml.ui.support.QuestionResponse;
-import org.netbeans.modules.uml.ui.support.UIFactory;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProduct;
-import org.netbeans.modules.uml.ui.support.commondialogs.IQuestionDialog;
-import org.netbeans.modules.uml.ui.support.commondialogs.MessageDialogKindEnum;
-import org.netbeans.modules.uml.ui.support.commondialogs.MessageIconKindEnum;
-import org.netbeans.modules.uml.ui.support.commondialogs.MessageResultKindEnum;
 import org.netbeans.modules.uml.ui.support.commonresources.CommonResourceManager;
 import org.netbeans.modules.uml.ui.support.diagramsupport.DiagramAreaEnumerations;
 import org.netbeans.modules.uml.ui.support.diagramsupport.DrawingAreaEventsAdapter;
 import org.netbeans.modules.uml.ui.support.diagramsupport.IDrawingAreaEventDispatcher;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.palette.PaletteController;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Toolbar;
@@ -1671,74 +1667,102 @@ public class UMLDiagramTopComponent extends TopComponent
 
             if (nodesToDestroy.length > 0)
             {
-                ResourceBundle bundle = NbBundle.getBundle(SceneDeleteAction.class);
-                String title = bundle.getString("DELETE_QUESTIONDIALOGTITLE"); // NO18N
-                String question = bundle.getString("DELETE_GRAPH_OBJECTS_MESSAGE"); // NO18N
-                String checkQuestion = bundle.getString("DELETE_ELEMENTS_QUESTION"); // NO18N
-                IQuestionDialog questionDialog = UIFactory.createQuestionDialog();
-                QuestionResponse result = questionDialog.displaySimpleQuestionDialogWithCheckbox(MessageDialogKindEnum.SQDK_YESNO, MessageIconKindEnum.EDIK_ICONWARNING, question, checkQuestion, title, MessageResultKindEnum.SQDRK_RESULT_NO, false);
+                String title = NbBundle.getMessage(ElementDeletePanel.class, "DELETE_QUESTIONDIALOGTITLE"); // NO18N
 
-                if (result.getResult() != MessageResultKindEnum.SQDRK_RESULT_NO && result.getResult() != MessageResultKindEnum.SQDRK_RESULT_CANCEL)
+                boolean displayRemove = false;
+                List<Node> a = Arrays.asList(nodesToDestroy);
+                // if there is one node in the selection that is imported element we display 
+                // checkbox to allow user to remove it from imported list 
+                for (Node node : a)
                 {
-                    List<Node> a = Arrays.asList(nodesToDestroy);
-                    for (Node node : a)
+                    IPresentationElement pe = node.getCookie(IPresentationElement.class);
+                    if (pe.getFirstSubject().getProject() != getDiagram().getDiagram().getProject())
                     {
-                        IPresentationElement pe = node.getCookie(IPresentationElement.class);
-                        Widget widget = scene.findWidget(pe);
-                        if(widget instanceof UMLNodeWidget && !((UMLNodeWidget)widget).isCopyCutDeletable())continue;
-                        Widget sourceEnd = null;
-                        Widget targetEnd = null;
-                        if (widget instanceof UMLWidget)
+                        displayRemove = true;
+                        break;
+                    }
+                }
+                ElementDeletePanel panel = new ElementDeletePanel(displayRemove);
+                DialogDescriptor dialogDescriptor = new DialogDescriptor(panel,
+                        title, true, NotifyDescriptor.YES_NO_OPTION,
+                        NotifyDescriptor.YES_OPTION, null);
+                dialogDescriptor.setMessageType(NotifyDescriptor.QUESTION_MESSAGE);
+
+                Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
+                dialog.getAccessibleContext().setAccessibleDescription(title);
+
+                dialog.setVisible(true);
+                try
+                {
+                    if (dialogDescriptor.getValue() == DialogDescriptor.YES_OPTION)
+                    {
+                        for (Node node : a)
                         {
-                            if (widget instanceof ConnectionWidget)
+                            IPresentationElement pe = node.getCookie(IPresentationElement.class);
+                            Widget widget = scene.findWidget(pe);
+                            if (widget instanceof UMLNodeWidget && !((UMLNodeWidget) widget).isCopyCutDeletable())
                             {
-                                ConnectionWidget edge = (ConnectionWidget) widget;
-                                sourceEnd = edge.getSourceAnchor().getRelatedWidget();
-                                targetEnd = edge.getTargetAnchor().getRelatedWidget();
+                                continue;
                             }
-                            ((UMLWidget)widget).remove();
-                        }
-                            
-                        boolean deleteFromModel = result.isChecked();
-                        DiagramEngine engine = scene.getEngine();
-                        if(engine != null)
-                        {
-                            
-                            RelationshipFactory factory = engine.getRelationshipFactory(pe.getFirstSubjectsType()); 
-                            if((factory != null) && (sourceEnd != null) && (targetEnd != null))
+                            Widget sourceEnd = null;
+                            Widget targetEnd = null;
+                            if (widget instanceof UMLWidget)
                             {
-                                IPresentationElement sourceElement = (IPresentationElement)scene.findObject(sourceEnd);
-                                IPresentationElement targetElement = (IPresentationElement)scene.findObject(targetEnd);
-                                factory.delete(deleteFromModel, pe,
-                                               sourceElement.getFirstSubject(), 
-                                               targetElement.getFirstSubject()); 
-                            }
-                            else if (deleteFromModel == true)
-                            {
-                                IElement data = node.getCookie(IElement.class);
-                                if (data != null)
+                                if (widget instanceof ConnectionWidget)
                                 {
-                                    data.delete();
-                                    pe.delete();
+                                    ConnectionWidget edge = (ConnectionWidget) widget;
+                                    sourceEnd = edge.getSourceAnchor().getRelatedWidget();
+                                    targetEnd = edge.getTargetAnchor().getRelatedWidget();
                                 }
+                                ((UMLWidget) widget).remove();
                             }
-                            else
+
+                            boolean deleteFromModel = panel.getDeleteFromOriginal();//result.isChecked();
+
+                            DiagramEngine engine = scene.getEngine();
+                            if (engine != null)
                             {
-                                pe.delete();
-                            }
-                            
-                            // We need to clear the clipboard even if the 
-                            // factory was used to delete the model element.
-                            // Therefore I am going to have to make the check
-                            // again.
-                            if(deleteFromModel == true)
-                            {
-                                clearClipBoard();
+
+                                RelationshipFactory factory = engine.getRelationshipFactory(pe.getFirstSubjectsType());
+                                if ((factory != null) && (sourceEnd != null) && (targetEnd != null))
+                                {
+                                    IPresentationElement sourceElement = (IPresentationElement) scene.findObject(sourceEnd);
+                                    IPresentationElement targetElement = (IPresentationElement) scene.findObject(targetEnd);
+                                    factory.delete(deleteFromModel, pe,
+                                            sourceElement.getFirstSubject(),
+                                            targetElement.getFirstSubject());
+                                } else if (deleteFromModel == true)
+                                {
+                                    // element will also be deleted from imported list from other projects
+                                    IElement data = node.getCookie(IElement.class);
+                                    if (data != null)
+                                    {
+                                        data.delete();
+                                    }                                
+                                } else if (panel.getRemoveFromImport())
+                                {
+                                    IElement e = node.getCookie(IElement.class);
+                                    getDiagram().getDiagram().getProject().removeElementImport(e);
+                                }
+                                
+                                pe.delete();                              
+
+                                // We need to clear the clipboard even if the 
+                                // factory was used to delete the model element.
+                                // Therefore I am going to have to make the check
+                                // again.
+                                if (deleteFromModel == true)
+                                {
+                                    clearClipBoard();
+                                }
                             }
                         }
                     }
+                } finally
+                {
+                    dialog.dispose();
+                    nodesToDestroy = null;
                 }
-                nodesToDestroy = null;
             }
         }
     }
