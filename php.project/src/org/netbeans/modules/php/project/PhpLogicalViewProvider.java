@@ -84,6 +84,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -95,7 +96,7 @@ import org.openide.util.lookup.Lookups;
  */
 class PhpLogicalViewProvider implements LogicalViewProvider {
     private static final Logger LOGGER = Logger.getLogger(PhpLogicalViewProvider.class.getName());
-    static final Image PACKAGE_BADGE = Utilities.loadImage(
+    static final Image PACKAGE_BADGE = ImageUtilities.loadImage(
             "org/netbeans/modules/php/project/ui/resources/packageBadge.gif"); // NOI18N
 
     final PhpProject project;
@@ -415,12 +416,12 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public Image getIcon(int type) {
-            return Utilities.mergeImages(super.getIcon(type), PACKAGE_BADGE, 7, 7);
+            return ImageUtilities.mergeImages(super.getIcon(type), PACKAGE_BADGE, 7, 7);
         }
 
         @Override
         public Image getOpenedIcon(int type) {
-            return Utilities.mergeImages(super.getOpenedIcon(type), PACKAGE_BADGE, 7, 7);
+            return ImageUtilities.mergeImages(super.getOpenedIcon(type), PACKAGE_BADGE, 7, 7);
         }
 
         @Override
