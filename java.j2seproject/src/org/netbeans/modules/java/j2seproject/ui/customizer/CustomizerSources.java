@@ -63,6 +63,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
+import javax.swing.UIManager;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.plaf.UIResource;
@@ -151,8 +152,16 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         
         this.encoding.setModel(new EncodingModel(this.originalEncoding));
         this.encoding.setRenderer(new EncodingRenderer());
-        
-
+        final String lafid = UIManager.getLookAndFeel().getID();
+        if (!"Aqua".equals(lafid)) { //NOI18N
+            this.encoding.putClientProperty ("JComboBox.isTableCellEditor", Boolean.TRUE);    //NOI18N
+            this.encoding.addItemListener(new java.awt.event.ItemListener(){ 
+                public void itemStateChanged(java.awt.event.ItemEvent e){ 
+                    javax.swing.JComboBox combo = (javax.swing.JComboBox)e.getSource(); 
+                    combo.setPopupVisible(false); 
+                } 
+            });
+        }
         this.encoding.addActionListener(new ActionListener () {
             public void actionPerformed(ActionEvent arg0) {
                 handleEncodingChange();
