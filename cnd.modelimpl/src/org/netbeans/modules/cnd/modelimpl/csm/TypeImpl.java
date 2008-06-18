@@ -181,15 +181,13 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     private static boolean initIsConst(AST node) {
         if( node != null ) {
             for( AST token = node; token != null; token = token.getNextSibling() ) {
-		switch( token.getType() ) {
-		    case CPPTokenTypes.LITERAL_const:
-                    case CPPTokenTypes.LITERAL___const:
-                    case CPPTokenTypes.LITERAL___const__:
-			return true;
-		    case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
-		    case CPPTokenTypes.CSM_QUALIFIED_ID:
-			return false;
-		}
+                int tokenType = token.getType();
+                if (AstRenderer.isConstQualifier(tokenType)) {
+                    return true;
+                } else if (tokenType == CPPTokenTypes.CSM_VARIABLE_DECLARATION ||
+                               tokenType == CPPTokenTypes.CSM_QUALIFIED_ID) {
+                    return false;
+                }
             }
         }
         return false;
