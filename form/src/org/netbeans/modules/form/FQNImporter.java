@@ -187,8 +187,21 @@ public class FQNImporter {
                             if (Tree.Kind.VARIABLE == tree.getKind()) {
                                 VariableTree variable = (VariableTree)tree;
                                 if (variableNames.contains(variable.getName().toString())) {
-                                    Tree newTree = utils.importFQNs(tree);
-                                    wc.rewrite(tree, newTree);
+                                    // It would be ideal to invoke importFQNs
+                                    // directly on 'variable', but this corrupts
+                                    // comments around variables section
+
+                                    // Variable type
+                                    Tree type = variable.getType();
+                                    Tree newTree = utils.importFQNs(type);
+                                    wc.rewrite(type, newTree);
+                                    
+                                    // Variable initializer
+                                    Tree initializer = variable.getInitializer();
+                                    if (initializer != null) {
+                                        newTree = utils.importFQNs(initializer);
+                                        wc.rewrite(initializer, newTree);
+                                    }
                                 }
                             }
                         }
