@@ -108,14 +108,14 @@ public final class ResultsModel extends AbstractListModel {
         private CategoryResult category;
         private Runnable action;
         private String displayName;
-        private KeyStroke shortcut;
+        private List<? extends KeyStroke> shortcut;
         private String displayHint;
 
         public ItemResult (CategoryResult category, Runnable action, String displayName) {
             this(category, action, displayName, null, null);
         }
 
-        public ItemResult (CategoryResult category, Runnable action, String displayName, KeyStroke shortcut, String displayHint) {
+        public ItemResult (CategoryResult category, Runnable action, String displayName, List<? extends KeyStroke> shortcut, String displayHint) {
             this.category = category;
             this.action = action;
             this.displayName = displayName;
@@ -135,7 +135,7 @@ public final class ResultsModel extends AbstractListModel {
             return displayHint;
         }
 
-        public KeyStroke getShortcut() {
+        public List<? extends KeyStroke> getShortcut() {
             return shortcut;
         }
 

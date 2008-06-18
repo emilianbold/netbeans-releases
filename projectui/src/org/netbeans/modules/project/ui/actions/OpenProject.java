@@ -127,14 +127,19 @@ public class OpenProject extends BasicAction {
                 else {
                     Project projectsArray[] = new Project[ projects.size() ];
                     projects.toArray( projectsArray );
+                    
+                    Project mainProject = null;
+                    if ( opls.isOpenAsMain() && projectsArray.length == 1 ) {
+                        // Set main project if selected
+                        mainProject = projectsArray[0];
+                    }
+                    
                     OpenProjectList.getDefault().open( 
                         projectsArray,                    // Put the project into OpenProjectList
                         opls.isOpenSubprojects(),         // And optionaly open subprojects
-			true);                            // open asynchronously
-                    if ( opls.isOpenAsMain() && projectsArray.length == 1 ) {
-                        // Set main project if selected
-                        OpenProjectList.getDefault().setMainProject( projectsArray[0] );
-                    }
+                        true,                             // open asynchronously
+                        mainProject);
+                    
                     final ProjectTab ptLogial  = ProjectTab.findDefault (ProjectTab.ID_LOGICAL);
                     
                     // invoke later to select the being opened project if the focus is outside ProjectTab

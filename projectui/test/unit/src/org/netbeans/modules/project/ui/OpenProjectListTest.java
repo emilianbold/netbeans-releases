@@ -206,6 +206,10 @@ public class OpenProjectListTest extends NbTestCase {
     }
     
     public void testSerialize() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) { // NB-Core-Build #810
+            return;
+        }
+
         testOpen();
         
         OpenProjectList.waitProjectsFullyOpen();

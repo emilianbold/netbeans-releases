@@ -56,6 +56,7 @@ import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.filters.RegistryFilter;
 import org.netbeans.installer.product.filters.SubTreeFilter;
+import org.netbeans.installer.utils.EngineUtils;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.helper.Status;
@@ -177,7 +178,7 @@ public class CreateBundleAction extends WizardAction {
             progress.setDetail(StringUtils.format(
                     getProperty(PROGRESS_ADD_ENGINE_DETAIL_PROPERTY)));
             
-            engine = new JarFile(Installer.getInstance().cacheInstallerEngine(new Progress()));
+            engine = new JarFile(EngineUtils.cacheEngine(new Progress()));
             output = new JarOutputStream(new FileOutputStream(targetFile));
             
             // transfer the engine, skipping existing bundled components
@@ -417,7 +418,8 @@ public class CreateBundleAction extends WizardAction {
             
             // serialize the registry: get the document and save it to the jar file
             putNextEntry(output,
-                    EngineResources.DATA_DIRECTORY + "/registry.xml");
+                    EngineResources.DATA_DIRECTORY + "/" + 
+                    Registry.DEFAULT_BUNDLED_REGISTRY_FILE_NAME);
             XMLUtils.saveXMLDocument(
                     registry.getRegistryDocument(filter, false, true, true), output);
             

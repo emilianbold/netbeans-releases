@@ -48,12 +48,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.Manifest;
-import java.util.logging.Level;
-import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Lookup;
 import org.openide.xml.EntityCatalog;
@@ -70,6 +66,7 @@ public class LayersTest extends NbTestCase {
         super(testName);
     }
 
+    /* XXX this does not make sense as a unit test; could be in a functional test using NbModuleSuite:
     public void testFastParsingOfXMLFiles() throws Exception {
         CharSequence chars = Log.enable(XMLSettingsSupport.class.getName(), Level.FINE);
         int len = 0;
@@ -106,6 +103,7 @@ public class LayersTest extends NbTestCase {
             fail("fast parsing of .settings files fails :"+chars.toString());
         }
     }
+     */
     
     public void testCorrectContentOfSettingsFiles() throws Exception {
         if (Boolean.getBoolean("ignore.random.failures")) {

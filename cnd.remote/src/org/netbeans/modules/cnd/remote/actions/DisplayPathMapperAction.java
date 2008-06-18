@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,12 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -36,41 +31,37 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.profiler;
+package org.netbeans.modules.cnd.remote.actions;
 
-import org.openide.ErrorManager;
-import org.openide.loaders.UniFileLoader;
-import org.openide.util.Utilities;
-import java.awt.Image;
-import java.beans.*;
-
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
- * Snapshot data loader bean info.
  *
- * @author Tomas Hurka
- * @author Ian Formanek
+ * @author gordonp
  */
-public class SnapshotDataLoaderBeanInfo extends SimpleBeanInfo {
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-
-    public BeanInfo[] getAdditionalBeanInfo() {
-        try {
-            return new BeanInfo[] { Introspector.getBeanInfo(UniFileLoader.class) };
-        } catch (IntrospectionException ie) {
-            ErrorManager.getDefault().notify(ie);
-
-            return null;
-        }
+public class DisplayPathMapperAction extends AbstractAction {
+    
+    private RemoteServerRecord record;
+    
+    public DisplayPathMapperAction(RemoteServerRecord record) {
+        super(NbBundle.getMessage(DeleteServerAction.class, "LBL_DisplayPathMapperAction"));
+        this.record = record;
     }
 
-    public Image getIcon(final int type) {
-        if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) || (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
-            return Utilities.loadImage("org/netbeans/modules/profiler/resources/snapshotDataObjectCPU.gif"); // NOI18N
-        } else {
-            return Utilities.loadImage("org/netbeans/modules/profiler/resources/snapshotDataObjectCPU32.gif"); // NOI18N
-        }
+    public void actionPerformed(ActionEvent e) {
+        NotifyDescriptor nd = new NotifyDescriptor.Message("Not Yet Implemented");
+        DialogDisplayer.getDefault().notify(nd);
     }
+
 }

@@ -41,26 +41,23 @@
 
 var customersObj;
 
+function getCustomerDBApp() {
+    return new CustomerDB('http://localhost:8080/WebApplication5/resources');
+}
+
 //function to show all customers
 function showCustomers() {
-    var app = new CustomerDB();
-    var resources = app.getResources();
-    for(i=0;i<resources.length;i++) {
-        var resource = resources[i];
-        if(resource instanceof Customers) {
-            customersObj = resource;
-            var customers = customersObj.getItems();
-            var headers = new Array();
-            headers[0] = 'ID';
-            headers[1] = 'Name';
-            headers[2] = 'Email';
-            headers[3] = 'Address';
-            headers[4] = 'Action';
-            var node = document.getElementById('vw_pl_content');
-            node.innerHTML = createCustomersTable(headers, customers) ;
-            doShowContent('vw_pl');
-        }
-    }   
+    customersObj = getResource(Customers);
+    var customers = customersObj.getItems();
+    var headers = new Array();
+    headers[0] = 'ID';
+    headers[1] = 'Name';
+    headers[2] = 'Email';
+    headers[3] = 'Address';
+    headers[4] = 'Action';
+    var node = document.getElementById('vw_pl_content');
+    node.innerHTML = createCustomersTable(headers, customers) ;
+    doShowContent('vw_pl');
 }
 
 //function to show a customer
@@ -155,15 +152,7 @@ function deleteCustomer(index) {
 
 //function to get DiscountCodes
 function getDiscountCodes() {
-    var app = new CustomerDB();
-    var resources = app.getResources();
-    for(i=0;i<resources.length;i++) {
-        var resource = resources[i];
-        if(resource instanceof DiscountCodes) {
-            return resource;
-        }
-    }  
-    return null; 
+    return getResource(DiscountCodes);
 }
 
 //function to create new customer form
@@ -258,4 +247,15 @@ function doShowContent(id) {
 
 function doHideContent(id) {
     document.getElementById(id).style.display="none";
+}
+
+function getResource(resourceType) {
+    var resources = getCustomerDBApp().getResources();
+    for(i=0;i<resources.length;i++) {
+        var resource = resources[i];
+        if(resource instanceof resourceType) {
+            return resource;
+        }
+    }
+    return null;
 }

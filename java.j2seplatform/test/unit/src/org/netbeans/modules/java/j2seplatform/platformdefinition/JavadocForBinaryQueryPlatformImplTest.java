@@ -90,6 +90,10 @@ public class JavadocForBinaryQueryPlatformImplTest extends NbTestCase {
     }
     
     public void testQuery() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
+
         JavaPlatform platform = JavaPlatform.getDefault();
         
         ClassPath cp = platform.getBootstrapLibraries();

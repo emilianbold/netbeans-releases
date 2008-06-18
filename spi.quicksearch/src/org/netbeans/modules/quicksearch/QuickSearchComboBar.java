@@ -40,15 +40,14 @@
 package org.netbeans.modules.quicksearch;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.lang.ref.WeakReference;
 import javax.swing.JTextArea;
 import javax.swing.JWindow;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -66,13 +65,18 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
     WeakReference<TopComponent> caller;
     
     Color origForeground;
-    
+    private KeyStroke keyStroke;
+
+    public QuickSearchComboBar(KeyStroke ks) {
+        this();
+        keyStroke = ks;
+        setShowHint(true);
+    }
+
     /** Creates new form SilverLightComboBar */
     public QuickSearchComboBar() {
         initComponents();
         
-        setShowHint(true);
-
         command.getDocument().addDocumentListener(new DocumentListener() {
 
             public void insertUpdate(DocumentEvent arg0) {
@@ -151,7 +155,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 2, 3, 1);
+        gridBagConstraints.insets = new java.awt.Insets(1, 2, 1, 1);
         jPanel1.add(jLabel2, gridBagConstraints);
 
         jScrollPane1.setBorder(null);
@@ -196,7 +200,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 3);
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 3);
         jPanel1.add(jSeparator1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -220,9 +224,12 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
         displayer.selectPrev();
         evt.consume();
     } else if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-        returnFocus();
-        displayer.invoke();
         evt.consume();
+        // #137259: invoke only some results were found
+        if (displayer.getList().getModel().getSize() > 0) {
+            returnFocus();
+            displayer.invoke();
+        }
     } else if ((evt.getKeyCode()) == KeyEvent.VK_ESCAPE) {
         returnFocus();
     }
@@ -265,7 +272,8 @@ private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:even
         }
         if (showHint) {
             command.setForeground(command.getDisabledTextColor());
-            command.setText(NbBundle.getMessage(QuickSearchComboBar.class, "MSG_DiscoverabilityHint"));
+            String sc = keyStroke == null ? "" : " (" + keyStroke.toString().replace(" pressed ", "+") + ")"; //NOI18N
+            command.setText(NbBundle.getMessage(QuickSearchComboBar.class, "MSG_DiscoverabilityHint") + sc); //NOI18N
         } else {
             command.setForeground(origForeground);
             command.setText("");        

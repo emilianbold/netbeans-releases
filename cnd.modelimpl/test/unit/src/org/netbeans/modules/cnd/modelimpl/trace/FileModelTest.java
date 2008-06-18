@@ -285,6 +285,11 @@ public class FileModelTest extends TraceModelTestBase {
         // IZ 131407 : parser doesn't handle specialized destructor
         performTest("template_destructor.cc"); // NOI18N
     }
+    
+    public void testStringizeMacro() throws Exception {
+        // IZ 137465 : wrong macro expansion for #x
+        performPreprocessorTest("stringize_macro.cc"); // NOI18N
+    }
 
     /////////////////////////////////////////////////////////////////////
     // FAILS

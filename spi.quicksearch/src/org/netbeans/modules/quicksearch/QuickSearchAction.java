@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.quicksearch;
 
+import javax.swing.Action;
+import javax.swing.KeyStroke;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -48,9 +50,11 @@ import org.openide.util.actions.CallableSystemAction;
  */
 public final class QuickSearchAction extends CallableSystemAction {
 
-   QuickSearchComboBar retValue = new QuickSearchComboBar();
+   QuickSearchComboBar retValue;
    
    public void performAction() {
+       if(retValue == null)
+           retValue = new QuickSearchComboBar((KeyStroke) this.getValue(Action.ACCELERATOR_KEY));
        retValue.requestFocus();
     }
 
@@ -74,7 +78,10 @@ public final class QuickSearchAction extends CallableSystemAction {
 
     @Override
     public java.awt.Component getToolbarPresenter() {
+        if (retValue == null) {
+            retValue = new QuickSearchComboBar((KeyStroke) this.getValue(Action.ACCELERATOR_KEY));
+        }
         return retValue;
     }
-    
+
 }

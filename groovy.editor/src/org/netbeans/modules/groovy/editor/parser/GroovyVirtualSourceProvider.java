@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,12 +37,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.groovy.editor;
+
+package org.netbeans.modules.groovy.editor.parser;
 
 import groovyjarjarasm.asm.Opcodes;
 import java.io.File;
@@ -61,11 +64,9 @@ import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
-import org.codehaus.groovy.classgen.Verifier;
 import org.codehaus.groovy.control.ResolveVisitor;
+import org.netbeans.modules.groovy.editor.AstUtilities;
 import org.netbeans.modules.groovy.editor.elements.AstRootElement;
-import org.netbeans.modules.groovy.editor.parser.GroovyParser;
-import org.netbeans.modules.groovy.editor.parser.GroovyParserResult;
 import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.SourceFileReader;
@@ -79,7 +80,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author martin
+ * @author Martin Adamek
  */
 public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
 
@@ -136,6 +137,9 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
         List<ClassNode> resultList = new ArrayList<ClassNode>();
         
         final FileObject fo = FileUtil.toFileObject(file);
+        
+        // do not use Source.runUserActionTask()
+        // direct access to parser, because of locking between GSF and Java
         ParserFile parserFile = new DefaultParserFile(fo, null, false);
         if (parserFile != null) {
             List<ParserFile> files = Collections.singletonList(parserFile);
@@ -187,7 +191,7 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
         
         return resultList;
     }
-    
+
     @SuppressWarnings("unchecked")
     private class JavaStubGenerator {
 
