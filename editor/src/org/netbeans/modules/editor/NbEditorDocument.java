@@ -72,6 +72,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.AnnotationDesc;
+import org.netbeans.modules.editor.impl.ComplexValueSettingsFactory;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.openide.util.Lookup;
@@ -136,8 +137,7 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
         putProperty(INDENT_ENGINE, new BaseDocument.PropertyEvaluator() {
             public Object getValue() {
                 MimePath mimePath = MimePath.parse((String) getProperty(MIME_TYPE_PROP));
-                Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
-                return SettingsConversions.callFactory(prefs, mimePath, INDENT_ENGINE, null);
+                return ComplexValueSettingsFactory.getIndentEngine(mimePath);
             }
         });
     }

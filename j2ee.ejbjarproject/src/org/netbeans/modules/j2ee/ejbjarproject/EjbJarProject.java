@@ -382,6 +382,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new Info(),
                 aux,
                 helper.createCacheDirectoryProvider(),
+                helper.createAuxiliaryProperties(),
                 new ProjectWebServicesSupportProvider(), // implementation of WebServicesClientSupportProvider commented out
                 spp,
                 EjbEnterpriseReferenceContainerSupport.createEnterpriseReferenceContainer(this, helper),

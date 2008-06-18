@@ -72,7 +72,13 @@ function main() {
         mkdir -p elsatemp/$fileDir
 
         ${gcc_home}/gcc  -Wno-deprecated -E $import $1 > pptemp/$relPath
-        ${elsa_home}/ccparse -tr printTypedAST pptemp/$relPath > elsatemp/$relPath
+
+        if [[ $relPath =~ ".*\.cpp|.*\.cc|.*\.c\+\+|.*\.cxx|.*\.mm|.*\.C" ]]; then
+            ${elsa_home}/ccparse -tr printTypedAST pptemp/$relPath > elsatemp/$relPath
+        else
+            ${elsa_home}/ccparse -tr c_lang,printTypedAST pptemp/$relPath > elsatemp/$relPath
+        fi
+
 
 		params="${params} elsatemp/${relPath}"
     	shift

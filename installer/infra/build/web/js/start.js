@@ -171,17 +171,6 @@ function getMD5(name) {
 	return md5;
 }
 
-function getSize(name) {
-	var size = "";
-        for (var i = 0; i < file_names.length; i++) {		
-		if(file_names[i] == filename) {		
-			size = file_sizes[i];
-			break;
-		}
-        }
-	return size;
-}
-
 function write_download_info() {
 	var size = getSize(filename);
 	var md5 = getMD5(filename);		
