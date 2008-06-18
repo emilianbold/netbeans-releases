@@ -44,6 +44,7 @@ import org.netbeans.modules.groovy.editor.*;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaMethod;
+import groovy.lang.MetaProperty;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -72,7 +73,6 @@ import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.modules.groovy.editor.elements.KeywordElement;
-import org.netbeans.modules.groovy.editor.parser.GroovyParser;
 import org.openide.filesystems.FileObject;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -104,6 +104,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
+import org.netbeans.modules.groovy.editor.elements.ElementHandleSupport;
 import org.netbeans.modules.groovy.editor.elements.GroovyElement;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
@@ -213,6 +214,30 @@ public class CodeCompleter implements CodeCompletionHandler {
         LOG.log(Level.FINEST, "getDeclaringClass() : " + mm.getDeclaringClass());
     }
 
+    /**
+     * Returns the next upstream Literal token (GroovyTokenId.LITERAL_*) or null
+     * 
+     * @param request
+     * @return
+     */
+    
+    Token<? extends GroovyTokenId> getNextUpstreamLiteral(final CompletionRequest request) {
+        int position = request.lexOffset;
+
+        TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, position);
+        ts.move(position);
+
+        while (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
+            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+            if (t.id().primaryCategory().equals("keyword")) {
+                return t;
+            }
+        }
+        
+        return null;
+    }
+    
+    
     public CaretLocation getCaretLocationFromRequest(final CompletionRequest request) {
         
         // Are we above the package statement?
@@ -230,6 +255,26 @@ public class CodeCompleter implements CodeCompletionHandler {
                 return CaretLocation.ABOVE_PACKAGE;
             } 
         }
+        
+        // Are we before the first class or interface statement?
+        // now were heading to the beginning to the document ...
+        
+        boolean aboveFirstClass = true;
+        
+        ts.move(position);
+        
+        while (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
+            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+            if (t.id() == GroovyTokenId.LITERAL_class || t.id() == GroovyTokenId.LITERAL_interface) {
+                aboveFirstClass = false;
+                break;
+            }
+        }
+        
+        if(aboveFirstClass){
+            return CaretLocation.ABOVE_FIRST_CLASS;
+        }
+        
         
         AstPath path = getPathFromRequest(request);
 
@@ -415,6 +460,7 @@ public class CodeCompleter implements CodeCompletionHandler {
      * @return
      */
     private boolean completeKeywords(List<CompletionProposal> proposals, CompletionRequest request) {
+        LOG.log(Level.FINEST, "-> completeKeywords"); // NOI18N
         String prefix = request.prefix;
         
         if (request.location == CaretLocation.INSIDE_PARAMETERS ) {
@@ -426,66 +472,198 @@ public class CodeCompleter implements CodeCompletionHandler {
             LOG.log(Level.FINEST, "We are invoked right behind a dot."); // NOI18N
             return false;
         }
+        
+        Token<? extends GroovyTokenId> previousLiteral = getNextUpstreamLiteral(request);
 
         Set<GroovyKeyword> keywords = EnumSet.allOf(GroovyKeyword.class);
 
         for (GroovyKeyword groovyKeyword : keywords) {
             if (groovyKeyword.name.startsWith(prefix)) {
-                if (request.location == CaretLocation.OUTSIDE_CLASSES && groovyKeyword.outsideClasses == true) {
-                    KeywordItem item = new KeywordItem(groovyKeyword.name, null, anchor, request, groovyKeyword.isGroovy);
-                    item.setSymbol(true);
-                    proposals.add(item);
-                } else if ((request.location == CaretLocation.INSIDE_CLOSURE ||
-                        request.location == CaretLocation.INSIDE_METHOD) &&
-                        groovyKeyword.outsideClasses == false) {
-
-                    KeywordItem item = new KeywordItem(groovyKeyword.name, null, anchor, request, groovyKeyword.isGroovy);
-                    item.setSymbol(true);
-                    proposals.add(item);
-
-                }
+                if (checkKeywordAllowance(groovyKeyword, request.location)) {
+                    if (checkKeywordOrder(groovyKeyword, previousLiteral)) {
+                        KeywordItem item = new KeywordItem(groovyKeyword.name, null, anchor, request, groovyKeyword.isGroovy);
+                        item.setSymbol(true);
+                        proposals.add(item);
+                    }
+                } 
             }
         }
         
         return true;
     }
     
+    boolean checkKeywordOrder(GroovyKeyword groovyKeyword, Token<? extends GroovyTokenId> previousLiteral) {
+        // defaulte behaviour is to pass through everything.
+        if(previousLiteral == null) {
+            return true;
+        } 
+        
+        if (    previousLiteral.id() == GroovyTokenId.LITERAL_class ||
+                previousLiteral.id() == GroovyTokenId.LITERAL_interface || 
+                previousLiteral.id() == GroovyTokenId.LITERAL_import) {
+            
+            switch (groovyKeyword){
+                case KEYWORD_extends:
+                    if(previousLiteral.id() == GroovyTokenId.LITERAL_class || 
+                       previousLiteral.id() == GroovyTokenId.LITERAL_interface){
+                        return true;
+                    }
+                    break;
+                case KEYWORD_as:
+                    if(previousLiteral.id() == GroovyTokenId.LITERAL_import){
+                        return true;
+                    } 
+                    break;
+                case KEYWORD_implements:
+                    if(previousLiteral.id() == GroovyTokenId.LITERAL_class){
+                        return true;
+                    }
+                    break;
+                default:
+                    return false;
+
+            }
+            
+            return false;
+        } else {
+            return true;
+        }
+        
+    }
+    
+    
+    boolean checkKeywordAllowance(GroovyKeyword groovyKeyword, CaretLocation location){
+        
+        if(location == null){
+            return false;
+        }
+        
+        switch(location){
+            case ABOVE_FIRST_CLASS:
+                if(groovyKeyword.aboveFistClass){ 
+                    return true; 
+                }
+                break;
+            case OUTSIDE_CLASSES:
+                if(groovyKeyword.outsideClasses){ 
+                    return true; 
+                }
+                break;
+            case INSIDE_CLASS:
+                if(groovyKeyword.insideClass){ 
+                    return true; 
+                }
+                break;
+            case INSIDE_METHOD: // intentionally fall-through
+            case INSIDE_CLOSURE:
+                if(groovyKeyword.insideCode){ 
+                    return true; 
+                }
+                break;
+        }
+        
+        return false;
+    }
+    
+    
+    /**
+     * Complete the fields for a class. There are two principal completions for fields:
+     * 
+     * 1.) We are invoked right behind a dot. Then we have to retrieve the type in front of this dot.
+     * 2.) We are located inside a type. Then we gotta get the fields for this class.
+     * 
+     * @param proposals
+     * @param request
+     * @return
+     */
+    
     private boolean completeFields(List<CompletionProposal> proposals, CompletionRequest request) {
         LOG.log(Level.FINEST, "-> completeFields"); // NOI18N
+
+        if (request.location == CaretLocation.INSIDE_PARAMETERS && request.behindDot == false) {
+            LOG.log(Level.FINEST, "no fields completion inside of parameters-list"); // NOI18N
+            return false;
+        }
+
+        ClassNode requestedClass;
+
+        if (request.behindDot) {
+            LOG.log(Level.FINEST, "We are invoked right behind a dot."); // NOI18N
+
+            ASTNode closest = getClosestNode(request);
+
+            if (closest == null) {
+                LOG.log(Level.FINEST, "Couldn't find closest Node"); // NOI18N
+                return false;
+            }
+
+            requestedClass = getDeclaringClass(closest);
+
+            if (requestedClass == null) {
+                LOG.log(Level.FINEST, "No declaring class found"); // NOI18N
+                return false;
+            }
+        } else {
+            requestedClass = getSurroundingClassdNode(request);
+
+            if (requestedClass == null) {
+                LOG.log(Level.FINEST, "No surrounding class found, bail out ..."); // NOI18N
+                return false;
+            }
+        }
+
+        LOG.log(Level.FINEST, "requestedClass is : {0}", requestedClass); // NOI18N
+
+        List<FieldNode> fields = requestedClass.getFields();
         
-        if (request.location == CaretLocation.INSIDE_PARAMETERS) {
-            LOG.log(Level.FINEST, "no fields completion inside of parameters"); // NOI18N
-            return false;
-        }
-
-        ClassNode surroundingClass = getSurroundingClassdNode(request);
-
-        if (surroundingClass == null) {
-            LOG.log(Level.FINEST, "No surrounding class found, bail out ..."); // NOI18N
-            return false;
-        }
-
-        LOG.log(Level.FINEST, "Surrounding class is : {0}", surroundingClass); // NOI18N
-
-        List<FieldNode> fields = surroundingClass.getFields();
-
         for (FieldNode field : fields) {
-            LOG.log(Level.FINEST, "Field found: {0}", field.getName()); // NOI18N
-            // TODO: I take the freedom to filter this: __timeStamp*
-            if(field.getName().startsWith("__timeStamp")) { // NOI18N
+            LOG.log(Level.FINEST, "-------------------------------------------------------------------------"); // NOI18N
+            LOG.log(Level.FINEST, "Field found       : {0}", field.getName()); // NOI18N
+            
+            String fieldTypeAsString = field.getType().getNameWithoutPackage();
+
+            if (request.behindDot == true) {
+                Class clz = null;
+
+                try {
+                    clz = Class.forName(field.getOwner().getName());
+                } catch (ClassNotFoundException e) {
+                    LOG.log(Level.FINEST, "Class.forName() failed: {0}", e.getMessage()); // NOI18N
+                    // we keep on running here, since we might deal with a class
+                    // defined in our very own file.
+                }
+
+                if (clz != null) {
+                    MetaClass metaClz = GroovySystem.getMetaClassRegistry().getMetaClass(clz);
+
+                    if (metaClz != null) {
+                        MetaProperty metaProp = metaClz.getMetaProperty(field.getName());
+                        
+                        if (metaProp != null) {
+                            LOG.log(Level.FINEST, "Type from MetaProperty: {0}", metaProp.getType()); // NOI18N
+                            fieldTypeAsString = metaProp.getType().getSimpleName();
+                        }
+                    }
+                }
+
+            }
+            
+            // TODO: I take the freedom to filter this out: __timeStamp*
+            if (field.getName().startsWith("__timeStamp")) { // NOI18N
                 continue;
             }
             
             if (request.prefix.length() < 1) {
-                proposals.add(new FieldItem(field.getName(), anchor, request, javax.lang.model.element.ElementKind.FIELD, field.getType()));
+                proposals.add(new FieldItem(field.getName(), anchor, request, javax.lang.model.element.ElementKind.FIELD, fieldTypeAsString));
             } else {
                 String fieldName = field.getName();
                 if (fieldName.compareTo(request.prefix) != 0 && fieldName.startsWith(request.prefix)) {
-                    proposals.add(new FieldItem(field.getName(), anchor, request, javax.lang.model.element.ElementKind.FIELD, field.getType()));
+                    proposals.add(new FieldItem(field.getName(), anchor, request, javax.lang.model.element.ElementKind.FIELD, fieldTypeAsString));
                 }
             }
         }
-        return false;
+
+        return true;
     }
 
     private boolean completeLocalVars(List<CompletionProposal> proposals, CompletionRequest request) {
@@ -740,7 +918,7 @@ public class CodeCompleter implements CodeCompletionHandler {
      * @return
      */
    private boolean completeTypes(final List<CompletionProposal> proposals, final CompletionRequest request) {
-
+        LOG.log(Level.FINEST, "-> completeTypes"); // NOI18N
         final PackageCompletionRequest packageRequest = getPackageRequest(request);
      
         LOG.log(Level.FINEST, "completeTypes fullstring = >{0}<", packageRequest.fullString);
@@ -844,7 +1022,6 @@ public class CodeCompleter implements CodeCompletionHandler {
      * @return true if we found something usable
      */
     private boolean completeMethods(List<CompletionProposal> proposals, CompletionRequest request) {
-
         LOG.log(Level.FINEST, "-> completeMethods"); // NOI18N
         
         if (request.location == CaretLocation.INSIDE_PARAMETERS) {
@@ -921,13 +1098,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             return CodeCompletionResult.NONE;
         }
 
-        // TODO - move to LexUtilities now that this applies to the lexing offset?
-//        lexOffset = AstUtilities.boundCaretOffset(info, lexOffset);
-
-        // Discover whether we're in a require statement, and if so, use special completion
-        // final TokenHierarchy<Document> th = TokenHierarchy.get(document);
         final BaseDocument doc = (BaseDocument) document;
-        // final FileObject fileObject = info.getFileObject();
 
         doc.readLock(); // Read-lock due to Token hierarchy use
 
@@ -968,10 +1139,10 @@ public class CodeCompleter implements CodeCompletionHandler {
                 completeTypes(proposals, request);
             }
             
+            // complette keywords
+            completeKeywords(proposals, request);
             
             if (!checkForRequestBehindImportStatement(request)) {
-                // complette keywords
-                completeKeywords(proposals, request);
 
                 // complete methods
                 completeMethods(proposals, request);
@@ -1548,7 +1719,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         @Override
         public ElementHandle getElement() {
             // For completion documentation
-            return GroovyParser.createHandle(request.info, new KeywordElement(keyword));
+            return ElementHandleSupport.createHandle(request.info, new KeywordElement(keyword));
         }
     }
 
@@ -1592,7 +1763,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         @Override
         public ElementHandle getElement() {
             // For completion documentation
-            return GroovyParser.createHandle(request.info, new KeywordElement(keyword));
+            return ElementHandleSupport.createHandle(request.info, new KeywordElement(keyword));
         }
     }
 
@@ -1638,7 +1809,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         @Override
         public ElementHandle getElement() {
             // For completion documentation
-            return GroovyParser.createHandle(request.info, new KeywordElement(name));
+            return ElementHandleSupport.createHandle(request.info, new KeywordElement(name));
         }
     }
 
@@ -1649,13 +1820,13 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         private final String name;
         private final javax.lang.model.element.ElementKind ek;
-        private final ClassNode type;
+        private final String typeName;
 
-        FieldItem(String name, int anchorOffset, CompletionRequest request, javax.lang.model.element.ElementKind ek, ClassNode type) {
+        FieldItem(String name, int anchorOffset, CompletionRequest request, javax.lang.model.element.ElementKind ek, String typeName) {
             super(null, anchorOffset, request);
             this.name = name;
             this.ek = ek;
-            this.type = type;
+            this.typeName = typeName;
         }
 
         @Override
@@ -1670,7 +1841,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         @Override
         public String getRhsHtml() {
-            return type.getNameWithoutPackage();
+            return typeName;
         }
 
         @Override
@@ -1687,7 +1858,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         @Override
         public ElementHandle getElement() {
             // For completion documentation
-            return GroovyParser.createHandle(request.info, new KeywordElement(name));
+            return ElementHandleSupport.createHandle(request.info, new KeywordElement(name));
         }
     }
 

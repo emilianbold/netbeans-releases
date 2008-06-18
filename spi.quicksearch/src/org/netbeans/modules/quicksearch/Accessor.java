@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.quicksearch;
 
+import java.util.List;
 import javax.swing.KeyStroke;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
@@ -67,7 +68,7 @@ public abstract class Accessor {
 //        assert DEFAULT != null : "The DEFAULT field must be initialized";
     }
     
-    public abstract SearchRequest createRequest (String text, KeyStroke stroke);
+    public abstract SearchRequest createRequest (String text, List<? extends KeyStroke> stroke);
     
     public abstract SearchResponse createResponse (CategoryResult catResult);
         

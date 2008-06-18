@@ -644,7 +644,15 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             if (SORT_ALPHABET.equals(key) || SORT_SUSPEND.equals(key) ||
                     SHOW_SYSTEM_THREADS.equals(key) || SHOW_THREAD_GROUPS.equals(key) || 
                     DebuggingNodeModel.SHOW_PACKAGE_NAMES.equals(key)) {
-                fireNodeChanged(ROOT);
+                // We have to catch the Throwables, so that the AbstractPreferences.EventDispatchThread
+                // is not killed. See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6467096
+                try {
+                    fireNodeChanged(ROOT);
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable t) {
+                    Exceptions.printStackTrace(t);
+                }
             }
         }
 
