@@ -10,9 +10,7 @@
 package org.netbeans.test.subversion.main.checkout;
 
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
@@ -36,6 +34,7 @@ public class ProxySettingsUITest extends JellyTestCase {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {        
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);

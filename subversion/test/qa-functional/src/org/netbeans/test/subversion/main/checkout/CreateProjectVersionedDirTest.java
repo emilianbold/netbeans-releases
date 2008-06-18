@@ -11,15 +11,12 @@ package org.netbeans.test.subversion.main.checkout;
 
 import java.io.File;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
@@ -52,6 +49,7 @@ public class CreateProjectVersionedDirTest extends JellyTestCase {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {        
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
@@ -118,7 +116,7 @@ public class CreateProjectVersionedDirTest extends JellyTestCase {
             TestKit.waitForScanFinishedAndQueueEmpty();
             
             NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-            npwo.selectCategory("General");
+            npwo.selectCategory("Java");
             npwo.selectProject("Java Application");
             npwo.next();
             NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();

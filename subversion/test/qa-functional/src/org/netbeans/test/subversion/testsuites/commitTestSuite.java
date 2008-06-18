@@ -36,50 +36,30 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.test.subversion.testsuites;
 
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.test.subversion.main.archeology.AnnotationsTest;
-import org.netbeans.test.subversion.main.archeology.SearchHistoryUITest;
-import org.netbeans.test.subversion.main.archeology.SearchRevisionsTest;
-import org.netbeans.test.subversion.main.branches.CopyTest;
-import org.netbeans.test.subversion.main.branches.CopyUiTest;
-import org.netbeans.test.subversion.main.branches.MergeUiTest;
-import org.netbeans.test.subversion.main.branches.RevertUiTest;
-import org.netbeans.test.subversion.main.branches.SwitchUiTest;
-import org.netbeans.test.subversion.main.checkout.CheckoutContentTest;
-import org.netbeans.test.subversion.main.checkout.CheckoutUITest;
-import org.netbeans.test.subversion.main.checkout.CreateProjectVersionedDirTest;
-import org.netbeans.test.subversion.main.checkout.ImportUITest;
-import org.netbeans.test.subversion.main.checkout.ProxySettingsUITest;
 import org.netbeans.test.subversion.main.commit.CommitDataTest;
 import org.netbeans.test.subversion.main.commit.CommitUiTest;
 import org.netbeans.test.subversion.main.commit.IgnoreTest;
-import org.netbeans.test.subversion.main.delete.DeleteTest;
-import org.netbeans.test.subversion.main.delete.FilesViewDoubleRefTest;
-import org.netbeans.test.subversion.main.delete.FilesViewRefTest;
-import org.netbeans.test.subversion.main.delete.RefactoringTest;
-import org.netbeans.test.subversion.main.diff.DiffTest;
-import org.netbeans.test.subversion.main.diff.ExportDiffPatchTest;
-import org.netbeans.test.subversion.main.properties.SvnPropertiesTest;
 
 /**
  *
- * @author cyhelsky
+ * @author Petr Dvorak, (joshis)
  */
-public class CommandLineSvnExistsTest extends JellyTestCase {
-
-    public CommandLineSvnExistsTest(String name) {
+public class commitTestSuite extends JellyTestCase {
+    
+    public commitTestSuite(String name) {
         super(name);
     }
 
     @Override
     protected void setUp() throws Exception {
         System.out.println("### " + getName() + " ###");
-
     }
 
     /**
@@ -92,37 +72,9 @@ public class CommandLineSvnExistsTest extends JellyTestCase {
         }
         if (Subversion.getInstance().checkClientAvailable()) {
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                    .addTest(CheckoutUITest.class, "testInvokeClose", "testChangeAccessTypes", "testIncorrentUrl", "testAvailableFields", "testRepositoryFolder")
-                    .addTest(CheckoutContentTest.class, "testCheckoutProject", "testCheckoutContent")
-                    .addTest(ImportUITest.class, "testInvoke", "testWarningMessage", "testRepositoryFolderLoad", "testCommitStep")
-
-                    .addTest(DiffTest.class, "testDiffFile")
-                    .addTest(ExportDiffPatchTest.class, "invokeExportDiffPatch")
-
-                    .addTest(DeleteTest.class, "testDeleteRevert", "testDeleteCommit")
-                    .addTest(RefactoringTest.class, "testRefactoring")
-                    .addTest(FilesViewRefTest.class, "testFilesViewRefactoring")
-                    
-                    .addTest(SvnPropertiesTest.class, "SvnPropertiesTest")
-
-                    .addTest(SearchHistoryUITest.class, "testInvokeSearch")
-                    .addTest(AnnotationsTest.class, "testShowAnnotations")
-                    .addTest(SearchRevisionsTest.class, "testSearchRevisionsTest")
-                    
-                    .addTest(CopyTest.class, "testCreateNewCopySwitch", "testCreateNewCopy")
-                    .addTest(CopyUiTest.class, "testInvokeCloseCopy")
-                    .addTest(MergeUiTest.class, "testInvokeCloseMerge")
-                    .addTest(RevertUiTest.class, "testInvokeCloseRevert")
-                    .addTest(SwitchUiTest.class, "testInvokeCloseSwitch")
-                    
                     .addTest(CommitDataTest.class, "testCommitFile", "testCommitPackage", "testRecognizeMimeType")
                     .addTest(CommitUiTest.class, "testInvokeCloseCommit")
                     .addTest(IgnoreTest.class, "testIgnoreUnignoreFile", "testIgnoreUnignorePackage", "testIgnoreUnignoreFilePackage", "testFinalRemove")
-
-                    
-//                    .addTest(CreateProjectVersionedDirTest.class, "testCreateNewProject")
-//                    .addTest(ProxySettingsUITest.class, "testProxySettings", "testProxyBeforeUrl")
-//                    .addTest(FilesViewDoubleRefTest.class, "testFilesViewDoubleRefactoring")
                     .enableModules(".*").clusters(".*"));
         } else {
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());

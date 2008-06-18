@@ -12,10 +12,10 @@ package org.netbeans.test.subversion.main.diff;
 import java.io.File;
 import java.io.PrintStream;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -49,6 +49,7 @@ public class DiffTest extends JellyTestCase {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {        
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
@@ -77,11 +78,11 @@ public class DiffTest extends JellyTestCase {
     public void testDiffFile() throws Exception {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
-        try {
-            TestKit.closeProject(PROJECT_NAME);
-            
+        try {            
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             VersioningOperator vo = VersioningOperator.invoke();
+            OutputOperator.invoke();
+            TestKit.showStatusLabels();
             CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
             RepositoryStepOperator rso = new RepositoryStepOperator();
             
@@ -105,7 +106,7 @@ public class DiffTest extends JellyTestCase {
             OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
             oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
 //            oto.clear();            
-            oto.waitText("Checking out... finished.");
+//            oto.waitText("Checking out... finished.");
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();

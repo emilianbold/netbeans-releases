@@ -12,10 +12,8 @@ package org.netbeans.test.subversion.main.archeology;
 import java.io.File;
 import java.io.PrintStream;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbModuleSuite;
@@ -47,6 +45,7 @@ public class SearchRevisionsTest extends JellyTestCase {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {        
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
@@ -89,13 +88,18 @@ public class SearchRevisionsTest extends JellyTestCase {
             //create repository... 
             File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
             new File(TMP_PATH).mkdirs();
+            Thread.sleep(1000);
             work.mkdirs();
+            Thread.sleep(1000);
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
+            Thread.sleep(500);
             //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
+            Thread.sleep(500);
             RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
             rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
-
+            Thread.sleep(500);
+            
             rso.next();
 
             WorkDirStepOperator wdso = new WorkDirStepOperator();
@@ -104,11 +108,11 @@ public class SearchRevisionsTest extends JellyTestCase {
             wdso.checkCheckoutContentOnly(false);
 
             SearchRevisionsOperator sro = wdso.search();
-            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
+//            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
 //            oto.clear();            
             sro.setFrom("");
             sro.list();
-            oto.waitText("Searching revisions finished.");
+//            oto.waitText("Searching revisions finished.");
             sro.verify();
             sro.selectListItem(0);
             sro.ok();

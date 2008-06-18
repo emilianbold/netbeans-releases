@@ -12,7 +12,6 @@ package org.netbeans.test.subversion.main.commit;
 import java.io.File;
 import javax.swing.table.TableModel;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -48,6 +47,7 @@ public class CommitUiTest extends JellyTestCase {
         super(name);
     }
 
+    @Override
     protected void setUp() throws Exception {
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);

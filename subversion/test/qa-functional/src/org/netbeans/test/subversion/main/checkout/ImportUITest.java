@@ -12,8 +12,8 @@ package org.netbeans.test.subversion.main.checkout;
 import java.io.File;
 import javax.swing.table.TableModel;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
@@ -53,6 +53,7 @@ public class ImportUITest extends JellyTestCase {
         super(name);
     }
 
+    @Override
     protected void setUp() throws Exception {
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
@@ -260,7 +261,9 @@ public class ImportUITest extends JellyTestCase {
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         try {
             TestKit.closeProject(PROJECT_NAME);
-
+            OutputOperator.invoke();
+            TestKit.showStatusLabels();
+            
             new File(TMP_PATH).mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);

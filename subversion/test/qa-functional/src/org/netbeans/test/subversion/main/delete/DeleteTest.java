@@ -12,7 +12,6 @@ package org.netbeans.test.subversion.main.delete;
 import java.io.File;
 import java.io.PrintStream;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputOperator;
@@ -54,6 +53,7 @@ public class DeleteTest extends JellyTestCase {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {        
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
@@ -86,7 +86,7 @@ public class DeleteTest extends JellyTestCase {
         try {
             OutputOperator.invoke();
             TestKit.closeProject(PROJECT_NAME);
-            
+            TestKit.showStatusLabels();
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             VersioningOperator vo = VersioningOperator.invoke();
             comOperator = new Operator.DefaultStringComparator(true, true);

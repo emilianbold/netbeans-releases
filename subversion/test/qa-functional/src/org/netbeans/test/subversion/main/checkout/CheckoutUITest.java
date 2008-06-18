@@ -51,7 +51,6 @@ package org.netbeans.test.subversion.main.checkout;
 
 import java.io.File;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jemmy.JemmyProperties;
@@ -90,6 +89,7 @@ public class CheckoutUITest extends JellyTestCase{
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
@@ -129,7 +129,8 @@ public class CheckoutUITest extends JellyTestCase{
     public void testChangeAccessTypes() throws Exception {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
-        
+        OutputOperator.invoke();
+        TestKit.showStatusLabels();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);

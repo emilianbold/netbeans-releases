@@ -11,11 +11,9 @@ package org.netbeans.test.subversion.main.branches;
 
 import java.io.File;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.subversion.operators.CommitStepOperator;
@@ -45,6 +43,7 @@ public class RevertUiTest extends JellyTestCase{
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {        
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);

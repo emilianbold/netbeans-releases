@@ -11,11 +11,9 @@ package org.netbeans.test.subversion.main.branches;
 
 import java.io.File;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.subversion.operators.CommitStepOperator;
 import org.netbeans.test.subversion.operators.FolderToImportStepOperator;
@@ -24,7 +22,6 @@ import org.netbeans.test.subversion.operators.MergeOneRepoOperator;
 import org.netbeans.test.subversion.operators.MergeOperator;
 import org.netbeans.test.subversion.operators.MergeOriginOperator;
 import org.netbeans.test.subversion.operators.MergeTwoRepoOperator;
-import org.netbeans.test.subversion.operators.RepositoryBrowserImpOperator;
 import org.netbeans.test.subversion.operators.RepositoryBrowserOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
 import org.netbeans.test.subversion.utils.RepositoryMaintenance;
@@ -48,6 +45,7 @@ public class MergeUiTest extends JellyTestCase {
         super(name);
     }
 
+    @Override
     protected void setUp() throws Exception {
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
