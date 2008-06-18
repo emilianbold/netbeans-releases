@@ -37,68 +37,68 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.support;
+package org.netbeans.modules.cnd.api.model.services;
 
-import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSchException;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
+import java.util.Iterator;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author gordonp
+ * @author Alexander Simon
  */
-public class RemoteOutputOnlyCommandSupport extends RemoteConnectionSupport {
-        
-    private BufferedReader in;
-    private StringWriter out;
+public abstract class CsmMemberResolver {
+    private static CsmMemberResolver DEFAULT = new Default();
 
-    public RemoteOutputOnlyCommandSupport(String host, String user) {
-        super(host, user);
-                
-        try {
-            InputStream is = channel.getInputStream();
-            in = new BufferedReader(new InputStreamReader(is));
-            out = new StringWriter();
-            
-            String line;
-            while ((line = in.readLine()) != null) {
-                out.write(line);
-                out.flush();
-            }
-            in.close();
-            is.close();
-        } catch (IOException ex) {
-        }
+    /**
+     * @param cls
+     * @param name
+     * @return class declaration with name including inhered declarations
+     */
+    public abstract Iterator<CsmMember> getDeclarations(CsmClassifier cls, CharSequence name);
+
+    /**
+     * @param cls
+     * @param name
+     * @return nested classifiers with name including inhered nested classifiers
+     */
+    public abstract Iterator<CsmClassifier> getNestedClassifiers(CsmClassifier cls, CharSequence name);
+    
+    protected CsmMemberResolver() {
     }
     
-    @Override
-    public String toString() {
-        if (out != null) {
-            return out.toString();
-        } else {
-            return "";
+    /**
+     * Static method to obtain the CsmSelect implementation.
+     * @return the resolver
+     */
+    public static synchronized CsmMemberResolver getDefault() {
+        return DEFAULT;
+    }
+    
+    /**
+     * Implementation of the default resolver
+     */  
+    private static final class Default extends CsmMemberResolver {
+        private final Lookup.Result<CsmMemberResolver> res;
+        Default() {
+            res = Lookup.getDefault().lookupResult(CsmMemberResolver.class);
+        }
+
+        @Override
+        public Iterator<CsmMember> getDeclarations(CsmClassifier cls, CharSequence name) {
+            for (CsmMemberResolver resolver : res.allInstances()) {
+                return resolver.getDeclarations(cls, name);
+            }
+            return null;
+        }
+
+        @Override
+        public Iterator<CsmClassifier> getNestedClassifiers(CsmClassifier cls, CharSequence name) {
+            for (CsmMemberResolver resolver : res.allInstances()) {
+                return resolver.getNestedClassifiers(cls, name);
+            }
+            return null;
         }
     }
-
-    @Override
-    protected Channel createChannel() throws JSchException {
-        ChannelExec echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
-        
-        String cmd = System.getProperty("cnd.remote.program"); // DEBUG
-        if (cmd == null) {
-            cmd = "/home/gordonp/.netbeans/rddev/cnd.remote/scripts/hello.sh"; // DEBUG
-        }
-        
-        echannel.setCommand(cmd);
-        echannel.setInputStream(null);
-        echannel.setErrStream(System.err);
-        echannel.connect();
-        return echannel;
-    }
-
 }

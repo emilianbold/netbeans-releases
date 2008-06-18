@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -107,11 +108,15 @@ class ScriptExecSupport {
                 InstanceCookie ic = dobj.getCookie(InstanceCookie.class);
                 Object obj = ic.instanceCreate();
                 if (obj instanceof Action) {
-                    Action a = (Action)obj;
+                    final Action a = (Action)obj;
                     if (a.isEnabled()) {
-                        a.actionPerformed(new ActionEvent(this, 0, null));
-                        return;
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                a.actionPerformed(new ActionEvent(this, 0, null));
+                            }
+                        });
                     }
+                    return;
                 }
             }
         } catch (Exception x) {
