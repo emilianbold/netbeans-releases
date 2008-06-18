@@ -47,6 +47,7 @@ import org.netbeans.modules.db.mysql.util.Utils;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -317,6 +318,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
             });
         } else {
             setDatabases(new HashMap<String,Database>());
+            notifyChange();
         }
     }
     
@@ -344,7 +346,12 @@ public class MySQLDatabaseServer implements DatabaseServer {
             public void execute() throws Exception {
                 Connection conn = connProcessor.getConnection();
                 if (conn != null) {
-                    conn.close();
+                    try {
+                        conn.close();
+                    } catch (SQLException e) {
+                        // Not important, since we want to disconnect anyway.
+                        LOGGER.log(Level.FINE, null, e);
+                    }
                 }
                 
                 connProcessor.setConnection(null);
