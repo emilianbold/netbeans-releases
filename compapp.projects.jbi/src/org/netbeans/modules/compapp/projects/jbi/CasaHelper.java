@@ -298,6 +298,15 @@ public class CasaHelper {
             NodeList seSUs = sus.getElementsByTagName(
                     CasaConstants.CASA_SERVICE_ENGINE_SERVICE_UNIT_ELEM_NAME);
             
+            List<Element> internalSESUs = new ArrayList<Element>();
+            for (int i = 0; i < seSUs.getLength(); i++) {
+                Element seSU = (Element) seSUs.item(i);
+                String isInternal = seSU.getAttribute(CasaConstants.CASA_INTERNAL_ATTR_NAME);
+                if (isInternal == null || "true".equalsIgnoreCase(isInternal)) {
+                    internalSESUs.add(seSU);
+                }
+            }
+            
             @SuppressWarnings("unchecked")
             List<VisualClassPathItem> newContentList = 
                     (List) properties.get(JbiProjectProperties.JBI_CONTENT_ADDITIONAL);
@@ -311,15 +320,13 @@ public class CasaHelper {
             }
             
             List<String> sesuUnitNameList = new ArrayList<String>();
-            for (int i = 0; i < seSUs.getLength(); i++) {
-                Element seSU = (Element) seSUs.item(i);
+            for (Element seSU : internalSESUs) {
                 String unitName = seSU.getAttribute(CasaConstants.CASA_UNIT_NAME_ATTR_NAME);
                 sesuUnitNameList.add(unitName);
             }
 
             // Remove deleted service units from casa
-            for (int i = 0; i < seSUs.getLength(); i++) {
-                Element seSU = (Element) seSUs.item(i);
+            for (Element seSU : internalSESUs) {
                 String projName = seSU.getAttribute(CasaConstants.CASA_UNIT_NAME_ATTR_NAME);
                 if (!newProjectNameList.contains(projName)) {
                     sus.removeChild(seSU);
