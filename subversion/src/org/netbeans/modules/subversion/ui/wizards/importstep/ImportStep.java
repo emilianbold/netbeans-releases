@@ -237,8 +237,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                     try {
                         // if the user came back from the last step and changed the repository folder name,
                         // then this could be already a working copy ...    
-                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + ".svn")); // NOI18N
-                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + "_svn")); // NOI18N
+                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + SvnUtils.SVN_ADMIN_DIR)); // NOI18N
                         File importDummyFolder = new File(System.getProperty("java.io.tmpdir") + "/svn_dummy/" + importDirectory.getName()); // NOI18N
                         importDummyFolder.mkdirs();                     
                         importDummyFolder.deleteOnExit();
@@ -261,8 +260,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                     // XXX this is ugly and expensive! the client should notify (onNotify()) the cache. find out why it doesn't work...
                     Subversion.getInstance().getStatusCache().refreshRecursively(importDirectory);
                     if(isCanceled()) {                        
-                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + ".svn")); // NOI18N
-                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + "_svn")); // NOI18N
+                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + SvnUtils.SVN_ADMIN_DIR)); // NOI18N
                         return;
                     }
                 } catch (SVNClientException ex) {
