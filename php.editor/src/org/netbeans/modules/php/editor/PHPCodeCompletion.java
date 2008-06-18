@@ -506,8 +506,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
         
         for (String name : PredefinedSymbols.SUPERGLOBALS){
-            CompletionProposal proposal = new PHPCompletionItem.SuperGlobalItem(request, name);
-            proposals.add(proposal);
+            if (isPrefix("$" + name, request.prefix)) { //NOI18N
+                CompletionProposal proposal = new PHPCompletionItem.SuperGlobalItem(request, name);
+                proposals.add(proposal);
+            }
         }
         
         return proposals;
