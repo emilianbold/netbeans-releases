@@ -37,68 +37,44 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.support;
+package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSchException;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
+import java.util.List;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author gordonp
  */
-public class RemoteOutputOnlyCommandSupport extends RemoteConnectionSupport {
-        
-    private BufferedReader in;
-    private StringWriter out;
+public class ServerConfiguration extends IntConfiguration {
+    
+    private static ServerList serverList = null;
 
-    public RemoteOutputOnlyCommandSupport(String host, String user) {
-        super(host, user);
-                
-        try {
-            InputStream is = channel.getInputStream();
-            in = new BufferedReader(new InputStreamReader(is));
-            out = new StringWriter();
-            
-            String line;
-            while ((line = in.readLine()) != null) {
-                out.write(line);
-                out.flush();
-            }
-            in.close();
-            is.close();
-        } catch (IOException ex) {
-        }
+    public ServerConfiguration() {
+        super((IntConfiguration) null, getDefaultServerIndex(), getServerNames(), null);
     }
     
-    @Override
-    public String toString() {
-        if (out != null) {
-            return out.toString();
-        } else {
-            return "";
+    private static int getDefaultServerIndex() {
+        if (getServerList() != null) {
+            return serverList.getDefaultServerIndex();
         }
+        return 0;
     }
-
-    @Override
-    protected Channel createChannel() throws JSchException {
-        ChannelExec echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
-        
-        String cmd = System.getProperty("cnd.remote.program"); // DEBUG
-        if (cmd == null) {
-            cmd = "/home/gordonp/.netbeans/rddev/cnd.remote/scripts/hello.sh"; // DEBUG
+    
+    private static String[] getServerNames() {
+        if (getServerList() != null) {
+            return serverList.getServerNames();
         }
-        
-        echannel.setCommand(cmd);
-        echannel.setInputStream(null);
-        echannel.setErrStream(System.err);
-        echannel.connect();
-        return echannel;
+        return new String[] { "localhost" }; // NOI18N
     }
-
+    
+    private static ServerList getServerList() {
+        if (Boolean.getBoolean("cnd.remote.enable")) // DEBUG
+        if (serverList == null) {
+            serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+        }
+        return serverList;
+    }
 }
