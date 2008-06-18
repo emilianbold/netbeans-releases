@@ -578,6 +578,7 @@ public class TSDiagramConverter
                         {
                             circleInfo.setProperty("ASSOCIATIONCLASSSOURCE",sourcePE);
                         }
+                        else circleInfo.setProperty("ASSOCIATIONCLASSASSOCIATIONCLASST",sourcePE);
                     }
                     else if(sourcePE==null && targetPE!=null)
                     {
@@ -586,6 +587,7 @@ public class TSDiagramConverter
                         {
                             circleInfo.setProperty("ASSOCIATIONCLASSTARGET",targetPE);
                         }
+                        else circleInfo.setProperty("ASSOCIATIONCLASSASSOCIATIONCLASST",targetPE);
                     }
                     else if(sourcePE!=null && targetPE!=null)
                     {
