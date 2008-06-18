@@ -276,7 +276,7 @@ public class InputPanel<T extends WSDLComponent> extends SectionInnerPanel {
         
         encryptedChBox.setEnabled(securityEnabled && tokenSelected && 
                 !secConversation && !bindingScopeTokenPresent && 
-                (PolicyModelHelper.getConfigVersion(input) == ConfigVersion.CONFIG_1_2));
+                (PolicyModelHelper.getConfigVersion(input) == ConfigVersion.CONFIG_1_3));
     }
     
     /** This method is called from within the constructor to

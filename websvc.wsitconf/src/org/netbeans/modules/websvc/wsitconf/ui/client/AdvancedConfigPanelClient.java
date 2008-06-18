@@ -342,7 +342,7 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
     private void enableDisable() {
         Binding serviceBinding = PolicyModelHelper.getBinding(serviceModel, binding.getName());
         boolean rmEnabled = RMModelHelper.getInstance(ConfigVersion.CONFIG_1_0).isRMEnabled(serviceBinding) || 
-                            RMModelHelper.getInstance(ConfigVersion.CONFIG_1_2).isRMEnabled(serviceBinding);
+                            RMModelHelper.getInstance(ConfigVersion.CONFIG_1_3).isRMEnabled(serviceBinding);
         boolean secConvConfigRequired = RequiredConfigurationHelper.isSecureConversationParamRequired(serviceBinding);
 
         rmAckRequestLabel.setEnabled(rmEnabled);

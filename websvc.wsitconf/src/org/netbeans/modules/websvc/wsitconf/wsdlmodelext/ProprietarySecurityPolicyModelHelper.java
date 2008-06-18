@@ -76,6 +76,7 @@ import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.KerberosConfig;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.DisableStreamingSecurity;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.ServiceProvider;
+import org.netbeans.modules.websvc.wsitmodelext.trust.TrustQName;
 
 /**
  *
@@ -208,10 +209,10 @@ public class ProprietarySecurityPolicyModelHelper {
             if ((elems != null) && !(elems.isEmpty())) {
                 String kType = elems.get(0).getKeyType();
                 if (kType != null) {
-                    if (ComboConstants.ISSUED_KEYTYPE_PUBLIC_POLICYSTR.equals(kType)) {
+                    if (kType.endsWith(ComboConstants.ISSUED_KEYTYPE_PUBLIC_POLICYSTR)) {
                         return ComboConstants.ISSUED_KEYTYPE_PUBLIC;
                     }
-                    if (ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR.equals(kType)) {
+                    if (kType.endsWith(ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR)) {
                         return ComboConstants.ISSUED_KEYTYPE_SYMMETRIC;
                     }
                 }
@@ -995,7 +996,7 @@ public class ProprietarySecurityPolicyModelHelper {
         }
     }
     
-    public static void addSTSServiceProvider(STSConfiguration stsConfig, ServiceProviderElement spe) {
+    public static void addSTSServiceProvider(STSConfiguration stsConfig, ServiceProviderElement spe, ConfigVersion cfgVersion) {
         if ((stsConfig == null) || (spe == null)) return;
         WSDLModel model = stsConfig.getModel();
         boolean isTransaction = model.isIntransaction();
@@ -1037,11 +1038,12 @@ public class ProprietarySecurityPolicyModelHelper {
             KeyType ktype = (KeyType)wcf.create(sp, ProprietaryTrustServiceQName.KEYTYPE.getQName());
             sp.addExtensibilityElement(ktype);
 
-            String kTypePolicyStr = ComboConstants.ISSUED_KEYTYPE_PUBLIC_POLICYSTR;
+            String nsStart = TrustQName.getNamespaceUri(cfgVersion);
+            String kTypePolicyStr = nsStart + ComboConstants.ISSUED_KEYTYPE_PUBLIC_POLICYSTR;
             
             String kTypeShort = spe.getKeyType();
             if (ComboConstants.ISSUED_KEYTYPE_SYMMETRIC.equals(kTypeShort)) {
-                kTypePolicyStr = ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR;
+                kTypePolicyStr = nsStart + ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR;
             }
             ktype.setKeyType(kTypePolicyStr);
             

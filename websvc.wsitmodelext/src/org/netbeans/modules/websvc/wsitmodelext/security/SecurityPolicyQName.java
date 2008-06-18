@@ -190,7 +190,7 @@ public enum SecurityPolicyQName {
     
     public static final String SECPOLICY_NS = 
             "http://schemas.xmlsoap.org/ws/2005/07/securitypolicy"; //NOI18N
-    public static final String SECPOLICY_12_NS = 
+    public static final String SECPOLICY_13_NS =
             "http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702"; //NOI18N
     public static final String SECPOLICY_NS_PREFIX = "sp";         //NOI18N
             
@@ -209,7 +209,7 @@ public enum SecurityPolicyQName {
     public static String getNamespaceUri(ConfigVersion cfgVersion) {
         switch (cfgVersion) {
             case CONFIG_1_0 : return SECPOLICY_NS;
-            case CONFIG_1_2 : return SECPOLICY_12_NS;
+            case CONFIG_1_3 : return SECPOLICY_13_NS;
         }
         return null;
     }
