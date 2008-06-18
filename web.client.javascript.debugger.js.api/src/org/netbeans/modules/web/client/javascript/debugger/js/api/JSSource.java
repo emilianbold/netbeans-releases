@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.web.client.javascript.debugger.js.api;
 
+import org.netbeans.modules.web.client.tools.api.JSLocation;
+
 /**
  * This represents the source of a URI containing the JavaScript code.
  *

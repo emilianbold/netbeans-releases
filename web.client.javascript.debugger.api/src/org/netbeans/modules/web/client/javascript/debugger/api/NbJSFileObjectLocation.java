@@ -38,7 +38,8 @@
  */
 package org.netbeans.modules.web.client.javascript.debugger.api;
 
-import org.netbeans.modules.web.client.javascript.debugger.js.api.JSLocation;
+import org.netbeans.modules.web.client.tools.api.JSLocation;
+import org.netbeans.modules.web.client.tools.api.NbJSLocation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
