@@ -107,6 +107,7 @@ import org.netbeans.modules.uml.drawingarea.support.ProxyPresentationElement;
 import org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator.SQDDiagramEngineExtension;
 import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget.UMLWidgetIDString;
+import org.netbeans.modules.uml.drawingarea.widgets.CombinedFragment;
 import org.netbeans.modules.uml.drawingarea.widgets.ContainerNode;
 import org.netbeans.modules.uml.ui.support.DispatchHelper;
 import org.netbeans.modules.uml.ui.support.diagramsupport.IDrawingAreaEventDispatcher;
@@ -436,6 +437,7 @@ public class TSDiagramConverter
             IPresentationElement presEl = (IPresentationElement) nodeInfo.getProperty(PRESENTATIONELEMENT);
             if(presEl!=null)
             {
+                nodeInfo.setModelElement(presEl.getFirstSubject());
                 DiagramEngine engine = scene.getEngine();
                 Widget widget = null;
                 if(presEl!=null && presEl.getFirstSubject() instanceof INamedElement)widget=engine.addWidget(presEl, nodeInfo.getPosition());
@@ -447,27 +449,27 @@ public class TSDiagramConverter
                     if (widget!=null && widget instanceof UMLNodeWidget)
                     {
                         ((UMLNodeWidget) widget).load(nodeInfo);
-//                        if(nodeInfo.getModelElement() instanceof ICombinedFragment)
-//                        {
-//                            ICombinedFragment cfE=(ICombinedFragment) nodeInfo.getModelElement();
-//                            for(int i=0;i<cfE.getOperands().size();i++)
-//                            {
-//                                IInteractionOperand ioE=cfE.getOperands().get(i);
-//                                NodeInfo ioI=new NodeInfo();
-//                                ioI.setModelElement(ioE);
-//                                if(i==0)ioI.setPosition(new Point(0,0));
-//                                else ioI.setPosition(new Point(0,Integer.parseInt(nodeInfo.getDevidersOffests().get(i-1))-10));//deviders to operands position convertion
-//                                for(NodeLabel nL:nodeInfo.getLabels())
-//                                {
-//                                    if(nL.getElement().equals(ioE))
-//                                    {
-//                                        ioI.addNodeLabel(nL);
-//                                    }
-//                                }
-//                                ((UMLNodeWidget) widget).load(ioI);
-//                            }
-//                        }
-//                        else if(nodeInfo.getModelElement() instanceof IActivityPartition)
+                        if(nodeInfo.getModelElement() instanceof ICombinedFragment)
+                        {
+                            ICombinedFragment cfE=(ICombinedFragment) nodeInfo.getModelElement();
+                            for(int i=0;i<cfE.getOperands().size();i++)
+                            {
+                                IInteractionOperand ioE=cfE.getOperands().get(i);
+                                NodeInfo ioI=new NodeInfo();
+                                ioI.setModelElement(ioE);
+                                if(i==0)ioI.setPosition(new Point(0,0));
+                                else ioI.setPosition(new Point(0,Integer.parseInt(nodeInfo.getDevidersOffests().get(i-1))-10));//deviders to operands position convertion
+                                for(NodeLabel nL:nodeInfo.getLabels())
+                                {
+                                    if(nL.getElement().equals(ioE))
+                                    {
+                                        ioI.addNodeLabel(nL);
+                                    }
+                                }
+                                ((UMLNodeWidget) widget).load(ioI);
+                            }
+                        }
+ //                       else if(nodeInfo.getModelElement() instanceof IActivityPartition)
 //                        {
 //                            
 //                        }
