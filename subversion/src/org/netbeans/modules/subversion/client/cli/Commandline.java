@@ -148,7 +148,9 @@ class Commandline {
                 if(t instanceof IOException) {
                     throw (IOException) t;
                 } else {
-                    throw new IOException(t.getMessage());
+                    IOException ioe = new IOException();
+                    ioe.initCause(t);
+                    throw ioe;
                 }
             }
         } finally {
