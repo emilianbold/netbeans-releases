@@ -103,12 +103,9 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
             for (int i = 0; i < oa.length; i++) {
                 if (oa[i] instanceof RemoteServerRecord) {
                     sa[i] = ((RemoteServerRecord) oa[i]).getName();
-                } else {
-                    System.err.println("RSL.getServerNames: Not a RemoteServerRecord!");
                 }
             }
         } catch (Exception ex) {
-            System.err.println("RSL.getServerNames: Exception");
             return new String[] { "localhost" }; // NOI18N
         }
         return sa;
@@ -137,7 +134,6 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
 
     public void deleteServer(RemoteServerRecord record) {
         if (remove(record)) {
-            System.err.println("RSL.deleteServer: Deleted " + record.getName());
             pcs.firePropertyChange(PROP_DELETE_SERVER, null, record);
             removePropertyChangeListener(record);
             if (record.isActive()) {
