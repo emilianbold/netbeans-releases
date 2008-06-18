@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+<?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Templates">
+        <folder name="Project">
+            <folder name="SOA">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.dataView.project.ui.resources.Bundle"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/dataView/project/ui/resources/showdatapro.html"/>
+
+                <!-- Add template for the J2SE project -->
+                <file name="emptyShowDatapro.xml">
+                    <attr name="position" intvalue="300"/>
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.dataView.project.ui.wizards.NewShowDataproProjectWizardIterator"/> 
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.dataView.project.ui.wizards.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/dataView/project/ui/resources/showdataproProjectIcon.gif"/>
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/dataView/project/ui/resources/emptyProject.html"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="org-netbeans-modules-dataView-project">
+        <file name="untitled.dv" url="untitled.dv"/>
+    </folder>
+</filesystem>
