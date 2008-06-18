@@ -84,7 +84,7 @@ public class RMFactories {
 
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(RMQName.DELIVERYASSURANCE.getQName(ConfigVersion.CONFIG_1_2));
+            return Collections.singleton(RMQName.DELIVERYASSURANCE.getQName(ConfigVersion.CONFIG_1_3));
         }
 
         @Override
@@ -97,7 +97,7 @@ public class RMFactories {
 
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(RMQName.EXACTLYONCE.getQName(ConfigVersion.CONFIG_1_2));
+            return Collections.singleton(RMQName.EXACTLYONCE.getQName(ConfigVersion.CONFIG_1_3));
         }
 
         @Override
@@ -110,7 +110,7 @@ public class RMFactories {
 
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(RMQName.ATMOSTONCE.getQName(ConfigVersion.CONFIG_1_2));
+            return Collections.singleton(RMQName.ATMOSTONCE.getQName(ConfigVersion.CONFIG_1_3));
         }
 
         @Override
@@ -123,7 +123,7 @@ public class RMFactories {
 
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(RMQName.ATLEASTONCE.getQName(ConfigVersion.CONFIG_1_2));
+            return Collections.singleton(RMQName.ATLEASTONCE.getQName(ConfigVersion.CONFIG_1_3));
         }
 
         @Override
@@ -136,7 +136,7 @@ public class RMFactories {
 
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(RMQName.INORDER.getQName(ConfigVersion.CONFIG_1_2));
+            return Collections.singleton(RMQName.INORDER.getQName(ConfigVersion.CONFIG_1_3));
         }
 
         @Override
@@ -149,7 +149,7 @@ public class RMFactories {
 
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(RMQName.SEQUENCESTR.getQName(ConfigVersion.CONFIG_1_2));
+            return Collections.singleton(RMQName.SEQUENCESTR.getQName(ConfigVersion.CONFIG_1_3));
         }
 
         @Override
@@ -162,7 +162,7 @@ public class RMFactories {
 
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(RMQName.SEQUENCETRANSPORTSECURITY.getQName(ConfigVersion.CONFIG_1_2));
+            return Collections.singleton(RMQName.SEQUENCETRANSPORTSECURITY.getQName(ConfigVersion.CONFIG_1_3));
         }
 
         @Override
