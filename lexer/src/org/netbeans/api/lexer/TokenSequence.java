@@ -122,7 +122,7 @@ import org.netbeans.lib.lexer.TokenOrEmbedding;
 
 public final class TokenSequence<T extends TokenId> {
     
-    private TokenList<T> tokenList; // 8 + 4 = 12 bytes
+    private final TokenList<T> tokenList; // 8 + 4 = 12 bytes
     
     private AbstractToken<T> token; // 16 bytes
     
