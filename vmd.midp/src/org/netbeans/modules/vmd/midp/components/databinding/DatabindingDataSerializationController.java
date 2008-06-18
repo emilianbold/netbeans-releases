@@ -47,6 +47,7 @@ import org.netbeans.modules.vmd.api.io.serialization.DocumentSerializationContro
 import org.netbeans.modules.vmd.api.io.serialization.PropertyElement;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.categories.DatabindingCategoryCD;
 
 /**
@@ -67,8 +68,7 @@ public class DatabindingDataSerializationController extends DocumentSerializatio
 
     @Override
     public void postValidateDocument(DataObjectContext context, DesignDocument loadingDocument, String documentVersion, DocumentErrorHandler errorHandler) {
-        DesignComponent categoryComponent = loadingDocument.createComponent (DatabindingCategoryCD.TYPEID);
-        loadingDocument.getRootComponent ().addComponent (categoryComponent);
+        MidpDocumentSupport.getCategoryComponent(loadingDocument, DatabindingCategoryCD.TYPEID);
     }
 
 }
