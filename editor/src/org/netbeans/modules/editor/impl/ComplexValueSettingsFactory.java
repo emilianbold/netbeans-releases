@@ -85,20 +85,8 @@ public final class ComplexValueSettingsFactory {
 
     public static final Object getFormatterValue(MimePath mimePath, String settingName) {
         assert settingName.equals(NbEditorDocument.FORMATTER) : "The getFormatter factory called for '" + settingName + "'"; //NOI18N
-        
-        IndentEngine eng = null;
-        Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
-        String handle = prefs.get(NbEditorDocument.INDENT_ENGINE, null);
-        if (handle != null && handle.indexOf('.') == -1) { //NOI18N
-            // looks like Lookup handle from previous version
-            Lookup.Template<IndentEngine> query = new Lookup.Template(IndentEngine.class, handle, null);
-            Collection<? extends IndentEngine> all = Lookup.getDefault().lookup(query).allInstances();
-            if (!all.isEmpty()) {
-                eng = all.iterator().next();
-            }
-        } else {
-            eng = (IndentEngine) SettingsConversions.callFactory(prefs, mimePath, NbEditorDocument.INDENT_ENGINE, null);
-        }
+
+        IndentEngine eng = getIndentEngine(mimePath);
 
         if (eng != null) {
             if (eng instanceof FormatterIndentEngine) {
@@ -112,6 +100,25 @@ public final class ComplexValueSettingsFactory {
         }
         
         return null;
+    }
+
+    public static final IndentEngine getIndentEngine(MimePath mimePath) {
+        IndentEngine eng = null;
+
+        Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
+        String handle = prefs.get(NbEditorDocument.INDENT_ENGINE, null);
+        if (handle != null && handle.indexOf('.') == -1) { //NOI18N
+            // looks like Lookup handle from previous version
+            Lookup.Template<IndentEngine> query = new Lookup.Template(IndentEngine.class, handle, null);
+            Collection<? extends IndentEngine> all = Lookup.getDefault().lookup(query).allInstances();
+            if (!all.isEmpty()) {
+                eng = all.iterator().next();
+            }
+        } else {
+            eng = (IndentEngine) SettingsConversions.callFactory(prefs, mimePath, NbEditorDocument.INDENT_ENGINE, null);
+        }
+
+        return eng;
     }
 
     // -----------------------------------------------------------------------

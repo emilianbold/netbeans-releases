@@ -51,7 +51,7 @@
 
 # Loaders no longer needed during startup
 
-org.netbeans.core.startup.ManifestSection$LoaderSection
+#org.netbeans.core.startup.ManifestSection$LoaderSection
 org.apache.tools.ant.module.loader.AntProjectDataLoader
 org.netbeans.modules.java.JavaDataLoader
 org.netbeans.modules.java.ClassDataLoader

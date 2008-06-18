@@ -60,11 +60,25 @@ public class StatFiles extends SecurityManager {
     public static final int DELETE = 3;
     private Results results;
     private Monitor monitor;
+    private SecurityManager defaultSecurityManager;
 
     public StatFiles() {
         reset();
     }
 
+    public void register() {
+        if (defaultSecurityManager == null) {
+            defaultSecurityManager = System.getSecurityManager();
+        }
+        System.setSecurityManager(this);
+    }
+    
+    public void unregister() {
+        if (defaultSecurityManager == null) {
+            System.setSecurityManager(defaultSecurityManager);
+        }
+    }
+    
     public void reset() {
         results = new Results();
     }

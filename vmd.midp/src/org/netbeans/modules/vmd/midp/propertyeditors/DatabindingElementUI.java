@@ -7,13 +7,18 @@ package org.netbeans.modules.vmd.midp.propertyeditors;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.JRadioButton;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataListener;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
@@ -32,22 +37,77 @@ import org.netbeans.modules.vmd.midp.components.general.ClassCD;
  *
  * @author Karol Harezlak
  */
-class DatabindingElementUI extends javax.swing.JPanel {
+public class DatabindingElementUI extends javax.swing.JPanel {
 
     private static String NULL = "<null>"; //TODO Localized
     private DesignPropertyEditor propertyEditor;
+    private JRadioButton radioButton;
 
     /** Creates new form DataSetDatabindingElement */
-    DatabindingElementUI(DesignPropertyEditor propertyEditor) {
+    DatabindingElementUI(DesignPropertyEditor propertyEditor, final JRadioButton radioButton) {
         this.propertyEditor = propertyEditor;
-      
+        this.radioButton = radioButton;
         initComponents();
-        jTextFieldExpression.addActionListener(new ActionListener() {
+        jComboBoxDatasets.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                jLabelPreview.setText(jComboBoxDatasets.getSelectedItem().toString()+"."+ jTextFieldExpression.getText());
+                updateExpressionPreview();
+                updateWarning();
             }
         });
+        updateExpressionPreview();
+        ComponentFocusAdapter focusListener = new ComponentFocusAdapter();
+        jTextFieldExpression.addFocusListener(focusListener);
+        jComboBoxCommands.addFocusListener(focusListener);
+        jComboBoxDatasets.addFocusListener(focusListener);
+        jTextFieldExpression.addKeyListener(new KeyAdapter() {
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                updateWarning();
+                updateExpressionPreview();
+            }
+        });
+        radioButton.addItemListener(new ItemListener() {
+
+            public void itemStateChanged(ItemEvent e) {
+                if (!radioButton.isSelected()) {
+                    jLabelWarning.setText(null);
+                } else {
+                    updateWarning();
+                }
+            }
+        });
+
+    }
+
+    private boolean updateWarning() {
+        
+        if (radioButton.isSelected()) {
+            if (jComboBoxDatasets.getSelectedItem() == null || jComboBoxDatasets.getSelectedItem() == NULL) {
+                jLabelWarning.setText("Warning: Dataset not Selected.");
+                return false;
+            } else if (jTextFieldExpression.getText() == null || jTextFieldExpression.getText().length() == 0) {
+                jLabelWarning.setText("Warning: Empty expression.");
+                return false;
+            } else {
+                jLabelWarning.setText(null);
+            }
+        } else {
+            jLabelWarning.setText(null);
+        }
+        return true;
+    }
+
+    private void updateExpressionPreview() {
+        if (jComboBoxDatasets.getSelectedItem() != null && jComboBoxDatasets.getSelectedItem() != NULL) {
+            jTextFieldExpression.setEnabled(true);
+            jComboBoxCommands.setEnabled(true);
+            jLabelPreview.setText(jComboBoxDatasets.getSelectedItem().toString() + "." + jTextFieldExpression.getText()); //NOI18N
+        } else {
+            jComboBoxCommands.setEnabled(false);
+            jTextFieldExpression.setEnabled(false);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -70,6 +130,7 @@ class DatabindingElementUI extends javax.swing.JPanel {
         jLabel8 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jComboBoxCommands = new javax.swing.JComboBox();
+        jLabelWarning = new javax.swing.JLabel();
 
         setMaximumSize(new java.awt.Dimension(0, 0));
         setMinimumSize(new java.awt.Dimension(100, 100));
@@ -83,9 +144,8 @@ class DatabindingElementUI extends javax.swing.JPanel {
 
         jLabel3.setText(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jLabel3.text")); // NOI18N
 
-        jComboBoxDatasets.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
         jTextFieldExpression.setText(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jTextFieldExpression.text")); // NOI18N
+        jTextFieldExpression.setEnabled(false);
 
         jLabelPreview.setText(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jLabelPreview.text_1")); // NOI18N
 
@@ -120,13 +180,13 @@ class DatabindingElementUI extends javax.swing.JPanel {
                     .add(jLabelPreview)))
         );
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Dataset Property"));
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jPanel2.border.title"))); // NOI18N
 
         jLabel8.setText(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jLabel8.text")); // NOI18N
 
         jLabel5.setText(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jLabel5.text")); // NOI18N
 
-        jComboBoxCommands.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jComboBoxCommands.setEnabled(false);
 
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -150,25 +210,30 @@ class DatabindingElementUI extends javax.swing.JPanel {
                 .add(jLabel8))
         );
 
+        jLabelWarning.setForeground(new java.awt.Color(255, 0, 0));
+        jLabelWarning.setText(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jLabelWarning.text_1")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(jLabelWarning, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 56, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 56, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabelWarning)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-
-
-    void updateComponent(final DesignComponent component,final JRadioButton radiobutton) {
+    public void updateComponent(final DesignComponent component) {
         component.getDocument().getTransactionManager().readAccess(new Runnable() {
 
             public void run() {
@@ -181,7 +246,7 @@ class DatabindingElementUI extends javax.swing.JPanel {
                 jComboBoxCommands.setModel(new Model(component, CommandsCategoryCD.TYPEID));
                 DesignComponent connector = MidpDatabindingSupport.getConnector(component, propertyEditor.getPropertyNames().get(0));
                 if (connector != null) {
-                    radiobutton.setSelected(true);
+                    radioButton.setSelected(true);
                     jComboBoxDatasets.setSelectedItem(connector.getParentComponent().readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue());
                     jTextFieldExpression.setText((String) connector.readProperty(DataSetConnectorCD.PROP_EXPRESSION).getPrimitiveValue());
                     DesignComponent command = connector.readProperty(DataSetConnectorCD.PROP_UPDATE_COMMAND).getComponent();
@@ -193,10 +258,15 @@ class DatabindingElementUI extends javax.swing.JPanel {
                 }
             }
         });
+        updateExpressionPreview();
+        updateWarning();
     }
 
-    void saveToModel(final DesignComponent component) {
+    public void saveToModel(final DesignComponent component) {
         final DesignDocument document = component.getDocument();
+        if (!updateWarning()) {
+            return;
+        }
         document.getTransactionManager().writeAccess(new Runnable() {
 
             public void run() {
@@ -229,7 +299,7 @@ class DatabindingElementUI extends javax.swing.JPanel {
         });
     }
 
-    void resetValuesInModel(final DesignComponent component) {
+    public void resetValuesInModel(final DesignComponent component) {
         final DesignDocument document = component.getDocument();
         document.getTransactionManager().writeAccess(new Runnable() {
 
@@ -240,6 +310,13 @@ class DatabindingElementUI extends javax.swing.JPanel {
                 }
             }
         });
+        jComboBoxCommands.setSelectedItem(NULL);
+        jComboBoxDatasets.setSelectedItem(NULL);
+        jTextFieldExpression.setText(null);
+        jTextFieldExpression.setEnabled(false);
+        jLabelPreview.setText(null);
+        updateWarning();
+        
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -251,36 +328,11 @@ class DatabindingElementUI extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabelPreview;
+    private javax.swing.JLabel jLabelWarning;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JTextField jTextFieldExpression;
     // End of variables declaration//GEN-END:variables
-
-    
-
-    private void enableComponents(String name) {
-        jComboBoxDatasets.setSelectedItem(name);
-        //jLabelExpression.setText(name + "."); //NOI18N
-
-        jTextFieldExpression.setEnabled(true);
-    }
-
-    private void disableComponents() {
-        jComboBoxDatasets.setSelectedItem(null);
-        jTextFieldExpression.setText(null);
-        //jLabelExpression.setText(NULL + "."); //NOI18N
-
-        jTextFieldExpression.setEnabled(false);
-    }
-
-    private void safeRepaint() {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            public void run() {
-                DatabindingElementUI.this.repaint();
-            }
-        });
-    }
 
     private class Model implements ComboBoxModel {
 
@@ -350,4 +402,14 @@ class DatabindingElementUI extends javax.swing.JPanel {
         public void removeListDataListener(ListDataListener l) {
         }
     }
+    
+    private class ComponentFocusAdapter extends FocusAdapter {
+
+        @Override
+        public void focusGained(FocusEvent e) {
+            radioButton.setSelected(true);
+        }
+            
+    }
+    
 }

@@ -93,6 +93,7 @@ import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.windows.Mode;
@@ -141,7 +142,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private JPanel leftPanel;
     private JPanel rightPanel;
     
-    private ThreadsListener threadsListener;
+    private final ThreadsListener threadsListener;
     private transient Reference<TopComponent> lastSelectedTCRef;
     private transient Reference<TopComponent> componentToActivateAfterClose;
     
@@ -297,7 +298,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
 
     public void setRootContext(Models.CompoundModel model, DebuggerEngine engine) {
         if (engine != null) {
-            JPDADebugger deb = engine.lookupFirst(null, JPDADebugger.class);
+            final JPDADebugger deb = engine.lookupFirst(null, JPDADebugger.class);
             synchronized (this) {
                 if (previousDebugger != null) {
                     previousDebugger.removePropertyChangeListener(this);
@@ -311,7 +312,11 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                     this.session = null;
                 }
             }
-            threadsListener.changeDebugger(deb);
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    threadsListener.changeDebugger(deb);
+                }
+            });
         } else {
             synchronized (this) {
                 if (previousDebugger != null) {

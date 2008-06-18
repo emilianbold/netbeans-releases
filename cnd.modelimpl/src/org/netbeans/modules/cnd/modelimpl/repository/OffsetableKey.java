@@ -64,9 +64,13 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
     private final CharSequence name;
     
     protected OffsetableKey(CsmOffsetable obj, String kind, CharSequence name) {
-	super((FileImpl) obj.getContainingFile());
-	this.startOffset = obj.getStartOffset();
-	this.endOffset = obj.getEndOffset();
+        this((FileImpl) obj.getContainingFile(), obj.getStartOffset(), obj.getEndOffset(), kind, name);
+    }
+    
+    protected OffsetableKey(FileImpl containingFile, int startOffset, int endOffset, String kind, CharSequence name) {
+	super(containingFile);
+	this.startOffset = startOffset;
+	this.endOffset = endOffset;
         assert kind.length()==1;
 	this.kind = kind.charAt(0);
 	this.name = name;
