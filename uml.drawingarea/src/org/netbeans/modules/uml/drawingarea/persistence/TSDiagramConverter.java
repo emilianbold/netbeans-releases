@@ -543,12 +543,7 @@ public class TSDiagramConverter
             //there is nothing to add.. so return..
             return null;
         }
-        else if(elt instanceof Message)
-        {
-            messagesInfo.add(edgeReader);
-            return null;
-        }
-        //
+             //
         String sourceId=dataConnIdMap.get(edgeReader.getPEID()).getParamOne();
         String targetId=dataConnIdMap.get(edgeReader.getPEID()).getParamTwo();
         IPresentationElement sourcePE=findNode(sourceId);
@@ -615,6 +610,12 @@ public class TSDiagramConverter
         }
         edgeReader.setSourcePE(sourcePE);
         edgeReader.setTargetPE(targetPE);
+        if(elt instanceof Message)
+        {
+            messagesInfo.add(edgeReader);
+            //messages will be handled in seprate method
+            return null;
+        }
         //
         processSemanricPresentation(edgeReader);
 
