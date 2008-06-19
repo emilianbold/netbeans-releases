@@ -134,7 +134,12 @@ public final class ProjectFactory {
             project.setNatures(natures);
             project.setName(projName);
 
-            DotClassPath dotClassPath = DotClassPathParser.parse(project.getClassPathFile(), links);
+            DotClassPath dotClassPath;
+            if (project.getClassPathFile() != null) {
+                dotClassPath = DotClassPathParser.parse(project.getClassPathFile(), links);
+            } else {
+                dotClassPath = DotClassPathParser.empty();
+            }
             project.setClassPath(dotClassPath);
         } catch (IOException ex) {
             throw new ProjectImporterException(ex);

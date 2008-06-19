@@ -39,24 +39,34 @@
 
 package org.netbeans.modules.projectimport.eclipse.core.spi;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.projectimport.eclipse.core.ClassPathContainerResolver;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  * Data about Eclipse project to import.
  */
 public final class ProjectImportModel {
 
+    private static final Logger LOG =
+            Logger.getLogger(ProjectImportModel.class.getName());
+    
     private EclipseProject project;
     private File projectLocation;
     private JavaPlatform platform;
@@ -117,7 +127,8 @@ public final class ProjectImportModel {
     private final Map<File,Boolean> looksLikeTests = new HashMap<File,Boolean>();
     private List<DotClassPathEntry> filterSourceRootsForTests(boolean test) {
         List<DotClassPathEntry> all = project.getSourceRoots();
-        if (!hasJUnitOnClassPath()) {
+        // if project has just one source root then keep it as sources:
+        if (!hasJUnitOnClassPath() || all.size() <= 1) {
             if (test) {
                 return Collections.emptyList();
             } else {
@@ -164,8 +175,43 @@ public final class ProjectImportModel {
             }
             return false;
         } else {
-            return fileOrDir.getName().endsWith("Test.java");
+            return isJUnitFile(fileOrDir);
         }
+    }
+    
+    private boolean isJUnitFile(File f) {
+        if (!(f.getName().endsWith("Test.java") || // NOI18N
+                f.getName().endsWith("Case.java") || // NOI18N
+                f.getName().endsWith("Suite.java"))) { // NOI18N
+            return false;
+        }
+        FileObject fo = FileUtil.toFileObject(f);
+        try {
+            return readJUnitFileHeader(fo);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return false;
+        }
+    }
+        
+    private boolean readJUnitFileHeader(FileObject fo) throws IOException {
+        InputStream is = fo.getInputStream();
+        try {
+            BufferedReader input = new BufferedReader(new InputStreamReader(is, "ISO-8859-1")); // NOI18N
+            String line;
+            int maxLines = 100;
+            while (null != (line = input.readLine()) && maxLines > 0) {
+                maxLines--;
+                if (line.contains("junit.framework.Test") || // NOI18N
+                    line.contains("org.junit.Test")) { // NOI18N
+                    return true;
+                }
+                    
+            }
+        } finally {
+            is.close();
+        }
+        return false;
     }
 
     public JavaPlatform getJavaPlatform() {

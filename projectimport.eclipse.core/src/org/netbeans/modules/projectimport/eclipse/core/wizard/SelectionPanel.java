@@ -297,6 +297,7 @@ final class SelectionPanel extends JPanel {
     private void projectDestBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectDestBrowseActionPerformed
         JFileChooser chooser = new JFileChooser(projectDestDir.getText());
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setFileHidingEnabled(false);
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
             projectDestDir.setText(chooser.getSelectedFile().getAbsolutePath());
@@ -332,6 +333,7 @@ final class SelectionPanel extends JPanel {
     private void projectBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectBrowseActionPerformed
         JFileChooser chooser = new JFileChooser(projectDir.getText());
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setFileHidingEnabled(false);
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
             projectDir.setText(chooser.getSelectedFile().getAbsolutePath());
@@ -341,6 +343,7 @@ final class SelectionPanel extends JPanel {
     private void worskpaceBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_worskpaceBrowseActionPerformed
         JFileChooser chooser = new JFileChooser(getWorkspaceDir());
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setFileHidingEnabled(false);
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
             workspaceDir.setText(chooser.getSelectedFile().getAbsolutePath());
