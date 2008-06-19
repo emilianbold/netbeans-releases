@@ -95,7 +95,6 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         //wizard.putProperty(ConfigureProjectPanel.SET_AS_MAIN, null); // "setAsMain" has to remain!
         wizard.putProperty(ConfigureProjectPanel.SOURCES_FOLDER, null);
         wizard.putProperty(ConfigureProjectPanel.LOCAL_SERVERS, null);
-        wizard.putProperty(ConfigureProjectPanel.CREATE_INDEX_FILE, null);
         wizard.putProperty(ConfigureProjectPanel.INDEX_FILE, null);
         wizard.putProperty(ConfigureProjectPanel.ENCODING, null);
         wizard.putProperty(ConfigureProjectPanel.ROOTS, null);
@@ -141,8 +140,15 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         logUI(helper.getProjectDirectory(), sourceDir, getRunAsType(), isCopyFiles());
 
         // index file
-        Boolean createIndexFile = (Boolean) descriptor.getProperty(ConfigureProjectPanel.CREATE_INDEX_FILE);
-        if (createIndexFile != null && createIndexFile) {
+        if (sourceDir.getChildren(false).hasMoreElements()) {
+            // sources directory is not empty => try to find index file and open it
+            String indexName = (String) descriptor.getProperty(ConfigureProjectPanel.INDEX_FILE);
+            FileObject indexFile = sourceDir.getFileObject(indexName);
+            if (indexFile != null && indexFile.isValid()) {
+                resultSet.add(indexFile);
+            }
+        } else {
+            // sources directory is empty
             msg = NbBundle.getMessage(
                     NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_CreatingIndexFile");
             handle.progress(msg, 4);
