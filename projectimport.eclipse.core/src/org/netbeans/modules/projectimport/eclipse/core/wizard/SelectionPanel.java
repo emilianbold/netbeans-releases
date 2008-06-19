@@ -41,14 +41,13 @@
 
 package org.netbeans.modules.projectimport.eclipse.core.wizard;
 
-import java.awt.Color;
 import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
-import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseUtils;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Represent "Selection" step(panel) in the Eclipse importer wizard.
@@ -81,21 +80,26 @@ final class SelectionPanel extends JPanel {
         setWorkspaceEnabled(workspaceButton.isSelected());
     }
     
-    /** Returns workspace directory choosed by user. */
-    String getWorkspaceDir() {
-        return workspaceDir.getText().trim();
+    /** Returns workspace directory chosen by user, or null. */
+    File getWorkspaceDir() {
+        String d = workspaceDir.getText();
+        if (d != null && d.trim().length() > 0) {
+            return FileUtil.normalizeFile(new File(d.trim()));
+        } else {
+            return null;
+        }
     }
     
     private void workspaceChanged() {
-        String workspace = getWorkspaceDir().trim();
-        if ("".equals(workspace)) {
+        File workspace = getWorkspaceDir();
+        if (workspace == null) {
             setErrorMessage(ProjectImporterWizard.getMessage(
                     "MSG_ChooseWorkspace")); // NOI18N
             return;
         }
-        boolean wsValid = EclipseUtils.isRegularWorkSpace(getWorkspaceDir());
+        boolean wsValid = EclipseUtils.isRegularWorkSpace(workspace);
         setErrorMessage(wsValid ? null : ProjectImporterWizard.getMessage(
-                "MSG_NotRegularWorkspace", getWorkspaceDir())); // NOI18N
+                "MSG_NotRegularWorkspace", workspace)); // NOI18N
     }
     
     private void projectChanged() {
