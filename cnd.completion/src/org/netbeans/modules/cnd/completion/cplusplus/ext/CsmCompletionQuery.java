@@ -1336,7 +1336,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                                      | CompletionResolver.RESOLVE_TEMPLATE_PARAMETERS
                                                      | CompletionResolver.RESOLVE_GLOB_NAMESPACES
                                                      );
-                        if (compResolver.refresh() && compResolver.resolve(varPos, varName, false)) {
+                        if (compResolver.refresh() && compResolver.resolve(varPos, varName, openingSource)) {
                             res = compResolver.getResult();
                             if (findType) {
                                 CsmClassifier cls = null;

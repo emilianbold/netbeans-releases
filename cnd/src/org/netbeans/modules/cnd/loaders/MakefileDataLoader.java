@@ -44,16 +44,16 @@ package org.netbeans.modules.cnd.loaders;
 import java.io.IOException;
 import org.netbeans.modules.cnd.MIMENames;
 
+import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.UniFileLoader;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 
 
 /** Recognizes single files in the Repository as being of a certain type */
-public class MakefileDataLoader extends UniFileLoader {
+public class MakefileDataLoader extends CndAbstractDataLoader {
 
     /** Serial version number */
     static final long serialVersionUID = -7148711275717543299L;
@@ -68,9 +68,6 @@ public class MakefileDataLoader extends UniFileLoader {
     /** Do various initializations */
     private void init() {
         instance = this;
-        
-        /* initialize the extensions list */
-        super.getExtensions().addExtension("mk"); // NOI18N
     }
 
     public static MakefileDataLoader getInstance(){
@@ -109,6 +106,19 @@ public class MakefileDataLoader extends UniFileLoader {
             return fo;
         }
 	return null;
+    }
+
+    public String getDisplayNameForExtensionList() {
+	throw new UnsupportedOperationException();
+    }
+
+    public String getSettingsName() {
+        return ExtensionsSettings.MAKEFILE;
+    }
+
+    @Override
+    protected String getMimeType() {
+        return MIMENames.MAKEFILE_MIME_TYPE;
     }
 }
 

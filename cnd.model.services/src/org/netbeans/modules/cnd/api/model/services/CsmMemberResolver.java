@@ -41,7 +41,7 @@ package org.netbeans.modules.cnd.api.model.services;
 
 import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.openide.util.Lookup;
 
 /**
@@ -51,7 +51,18 @@ import org.openide.util.Lookup;
 public abstract class CsmMemberResolver {
     private static CsmMemberResolver DEFAULT = new Default();
 
-    public abstract Iterator<CsmOffsetableDeclaration> getDeclarations(CsmClassifier cls, CharSequence name);
+    /**
+     * @param cls
+     * @param name
+     * @return class declaration with name including inhered declarations
+     */
+    public abstract Iterator<CsmMember> getDeclarations(CsmClassifier cls, CharSequence name);
+
+    /**
+     * @param cls
+     * @param name
+     * @return nested classifiers with name including inhered nested classifiers
+     */
     public abstract Iterator<CsmClassifier> getNestedClassifiers(CsmClassifier cls, CharSequence name);
     
     protected CsmMemberResolver() {
@@ -75,7 +86,7 @@ public abstract class CsmMemberResolver {
         }
 
         @Override
-        public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmClassifier cls, CharSequence name) {
+        public Iterator<CsmMember> getDeclarations(CsmClassifier cls, CharSequence name) {
             for (CsmMemberResolver resolver : res.allInstances()) {
                 return resolver.getDeclarations(cls, name);
             }

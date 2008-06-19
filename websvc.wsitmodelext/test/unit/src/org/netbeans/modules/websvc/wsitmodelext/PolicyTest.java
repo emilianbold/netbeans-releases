@@ -80,7 +80,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
  * @author Martin Grebac
  */
 public class PolicyTest extends NbTestCase {
-    
+
     public PolicyTest(String testName) {
         super(testName);
     }
@@ -98,31 +98,31 @@ public class PolicyTest extends NbTestCase {
         TestCatalogModel.getDefault().setDocumentPooling(true);
         WSDLModel model = Util.loadWSDLModel("../resources/policy.xml");
         WSDLComponentFactory fact = model.getFactory();
-        
+
         model.startTransaction();
 
         Definitions d = model.getDefinitions();
         ExtensibilityElement e = null;
         ArrayList<QName> qnames = new ArrayList<QName>();
-        
+
         qnames.addAll(PolicyQName.getQNames(ConfigVersion.CONFIG_1_0));
         qnames.addAll(PolicyQName.getQNames(ConfigVersion.CONFIG_1_3));
-        
+
         qnames.addAll(MtomQName.getQNames());
         qnames.addAll(FIQName.getQNames());
         qnames.addAll(TCPQName.getQNames());
         qnames.addAll(AddressingQName.getQNames());
         qnames.addAll(Addressing10QName.getQNames());
         qnames.addAll(Addressing10WsdlQName.getQNames());
-        
+
         qnames.addAll(RMQName.getQNames(ConfigVersion.CONFIG_1_0));
         qnames.addAll(RMQName.getQNames(ConfigVersion.CONFIG_1_3));
-        
+
         qnames.addAll(RMSunQName.getQNames());
         qnames.addAll(RMSunClientQName.getQNames());
         qnames.addAll(RMMSQName.getQNames());
         qnames.addAll(SecurityQName.getQNames());
-        
+
         qnames.addAll(SecurityPolicyQName.getQNames(ConfigVersion.CONFIG_1_0));
         qnames.addAll(SecurityPolicyQName.getQNames(ConfigVersion.CONFIG_1_3));
 
@@ -133,24 +133,27 @@ public class PolicyTest extends NbTestCase {
         qnames.addAll(ProprietaryTrustClientQName.getQNames());
         qnames.addAll(ProprietaryTrustServiceQName.getQNames());
         qnames.addAll(ProprietarySCServiceQName.getQNames());
-        qnames.addAll(TrustQName.getQNames());
+
+        qnames.addAll(TrustQName.getQNames(ConfigVersion.CONFIG_1_0));
+        qnames.addAll(TrustQName.getQNames(ConfigVersion.CONFIG_1_3));
+
         qnames.addAll(TxQName.getQNames());
 
         for (QName qname : qnames) {
             e = (ExtensibilityElement)fact.create(d, qname);
             d.addExtensibilityElement(e);
         }
-        
+
         model.endTransaction();
 
         File output = new File("WSITModelTestOutput.wsdl");
-        
+
         System.out.println("Generating file: " + output.getAbsolutePath());
-        
+
         File golden = new File(getDataDir().getAbsolutePath() + "/goldenfiles/" + "WSITModelTestOutput.wsdl");
 
         Util.dumpToFile(model.getBaseDocument(), output);
-        
+
         System.out.println(getWorkDir().getAbsolutePath());
         assertFile(output, golden, getWorkDir());
     }
@@ -158,5 +161,5 @@ public class PolicyTest extends NbTestCase {
     public String getTestResourcePath() {
         return "../resources/policy.xml";
     }
-    
+
 }

@@ -42,6 +42,7 @@ package org.netbeans.modules.hibernate.cfg;
 import java.util.HashMap;
 import java.util.Map;
 import org.hibernate.cfg.Environment;
+import org.openide.util.NbBundle;
 
 /**
  * This class contains all the properties in the Hibernate configuration file
@@ -170,7 +171,7 @@ public class HibernateCfgProperties {
     // String[] for selecting one of the values
     private final static String[] TRUE_FALSE = new String[] {"true", "false" }; // NOI18N
     private final static String[] RELEASE_MODES = new String[] {"auto", "on_close", "after_transaction", "after_statement"}; // NOI18N
-    private final static String[] SESSION_CONTEXT = new String[] {"jta", "thread", "managed", "--Enter custom class--"}; // NOI18N
+    private final static String[] SESSION_CONTEXT = new String[] {"jta", "thread", "managed", NbBundle.getMessage(HibernateCfgProperties.class, "LBL_CustomClass")}; // NOI18N
     private final static String[] QUERY_FACTORY_CLASS = new String[] {"org.hibernate.hql.ast.ASTQueryTranslatorFactory",
     "org.hibernate.hql.classic.ClassicQueryTransactionFactory"}; // NOI18N
     private final static String[] HBM2DDL_AUTO = new String[] {"validate", "update", "create", "create-drop" }; // NOI18N

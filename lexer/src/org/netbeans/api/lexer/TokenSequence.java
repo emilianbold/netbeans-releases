@@ -413,8 +413,9 @@ public final class TokenSequence<T extends TokenId> {
     int startSkipLength, int endSkipLength, boolean joinSections) {
         checkTokenNotNull();
         // Write-lock presence checked in the impl
-        return EmbeddingContainer.createEmbedding(tokenList, tokenIndex,
-                embeddedLanguage, startSkipLength, endSkipLength, joinSections);
+        return false;
+//        return EmbeddingContainer.createEmbedding(tokenList, tokenIndex,
+//                embeddedLanguage, startSkipLength, endSkipLength, joinSections);
     }
     
     /**
