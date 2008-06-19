@@ -41,6 +41,7 @@ package org.netbeans.modules.quicksearch;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
@@ -224,7 +225,13 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
         // #137259: invoke only some results were found
         if (displayer.getList().getModel().getSize() > 0) {
             returnFocus();
-            displayer.invoke();
+            // #137342: run action later to let focus indeed be transferred
+            // by previous returnFocus() call
+            SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        displayer.invoke();
+                    }
+            });
         }
     } else if ((evt.getKeyCode()) == KeyEvent.VK_ESCAPE) {
         returnFocus();
@@ -258,6 +265,7 @@ private void commandFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_
 }//GEN-LAST:event_commandFocusLost
 
 private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_commandFocusGained
+        System.out.println("focus gained....");        
     setShowHint(false);
 }//GEN-LAST:event_commandFocusGained
 
