@@ -42,6 +42,7 @@ package org.netbeans.modules.web.client.javascript.debugger.filesystem;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -68,6 +69,15 @@ public class BufferedURLContent implements URLContent {
             
             try {
                 InputStream stream = baseContent.getInputStream();
+                
+                if (stream == null) {
+                    String defaultMsg = NbBundle.getMessage(BufferedURLContent.class, "NO_CONTENT_MSG");
+                    contentBuffer = defaultMsg.getBytes();
+                    baseContent = null;
+                    
+                    return new ByteArrayInputStream(contentBuffer);
+                }
+                
                 int bytesRead = 0;
                 
                 do {
