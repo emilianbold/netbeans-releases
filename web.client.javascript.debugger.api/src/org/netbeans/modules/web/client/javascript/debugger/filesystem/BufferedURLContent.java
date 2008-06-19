@@ -73,7 +73,6 @@ public class BufferedURLContent implements URLContent {
                 if (stream == null) {
                     String defaultMsg = NbBundle.getMessage(BufferedURLContent.class, "NO_CONTENT_MSG");
                     contentBuffer = defaultMsg.getBytes();
-                    baseContent = null;
                     
                     return new ByteArrayInputStream(contentBuffer);
                 }
@@ -105,13 +104,17 @@ public class BufferedURLContent implements URLContent {
                 throw ex;
             }
             
-            baseContent = null;
-            contentBuffer = new byte[totalBytes];
-            for (int i = 0; i < totalBytes; i++) {
-                contentBuffer[i] = tempBuffer[i];
+            if (totalBytes > 0) {
+                baseContent = null;
+                contentBuffer = new byte[totalBytes];
+                for (int i = 0; i < totalBytes; i++) {
+                    contentBuffer[i] = tempBuffer[i];
+                }
+
+                return new ByteArrayInputStream(contentBuffer);
+            } else {
+                return new ByteArrayInputStream(new byte[0]);
             }
-            
-            return new ByteArrayInputStream(contentBuffer);
         }
         
     }
