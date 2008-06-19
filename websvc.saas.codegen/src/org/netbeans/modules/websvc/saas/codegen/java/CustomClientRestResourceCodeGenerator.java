@@ -49,6 +49,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.Document;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
@@ -70,6 +72,7 @@ import org.openide.filesystems.FileSystem;
  */
 public class CustomClientRestResourceCodeGenerator extends SaasClientCodeGenerator {
     
+    private JavaSource targetSource;  
     private DropFileType dropFileType;
     private FileObject serviceFolder;
     private SaasClientJavaAuthenticationGenerator authGen;
@@ -80,13 +83,23 @@ public class CustomClientRestResourceCodeGenerator extends SaasClientCodeGenerat
 
     @Override
     public void init(SaasMethod m, Document doc) throws IOException {
+        init(m, new CustomClientSaasBean((CustomSaasMethod) m, true), doc);
+    }
+    
+    public void init(SaasMethod m, CustomClientSaasBean saasBean, Document doc) throws IOException {
         super.init(m, doc);
-        setBean(new CustomClientSaasBean((CustomSaasMethod) m));
+        setBean(saasBean);
+
+        this.targetSource = JavaSource.forFileObject(getTargetFile());
+        String packageName = JavaSourceHelper.getPackageName(getTargetSource());
+        getBean().setPackageName(packageName);
+        
+        this.serviceFolder = null;
+        
         this.authGen = new SaasClientJavaAuthenticationGenerator(getBean(), getProject());
         this.authGen.setLoginArguments(getLoginArguments());
         this.authGen.setAuthenticatorMethodParameters(getAuthenticatorMethodParameters());
         this.authGen.setSaasServiceFolder(getSaasServiceFolder());
-
     }
 
     @Override
@@ -96,6 +109,10 @@ public class CustomClientRestResourceCodeGenerator extends SaasClientCodeGenerat
 
     public SaasClientJavaAuthenticationGenerator getAuthenticationGenerator() {
         return authGen;
+    }
+        
+    protected JavaSource getTargetSource() {
+        return this.targetSource;
     }
     
     public DropFileType getDropFileType() {

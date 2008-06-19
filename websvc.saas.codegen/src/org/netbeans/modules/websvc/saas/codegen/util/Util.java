@@ -218,8 +218,7 @@ public class Util {
     }
 
     public static boolean isJava(DataObject d) {
-        if (d != null && "java".equals(d.getPrimaryFile().getExt()) 
-                && !isServlet(d)) //NOI18N
+        if (d != null && "java".equals(d.getPrimaryFile().getExt())) //NOI18N
         {
             return true;
         }
