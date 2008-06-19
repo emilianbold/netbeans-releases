@@ -119,6 +119,7 @@ public class RandomlyFailsTest extends TestCase {
     }
 
     public void testRegularMode() throws Exception {
+        System.setProperty("ignore.random.failures", "false");
         runAll();
         assertEquals(Arrays.asList(10, 11, 20, 30, 40, 41, 50, 40, 41, 50), runs);
     }
