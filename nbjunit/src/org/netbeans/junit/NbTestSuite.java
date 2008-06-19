@@ -44,6 +44,7 @@ package org.netbeans.junit;
 import java.util.*;
 import junit.framework.TestSuite;
 import junit.framework.Test;
+import junit.framework.TestCase;
 
 /**
  * NetBeans extension to JUnit's TestSuite class.
@@ -52,6 +53,10 @@ public class NbTestSuite extends TestSuite implements NbTest {
 
 
     private Filter fFilter;
+
+    static boolean ignoreRandomFailures() {
+        return Boolean.getBoolean("ignore.random.failures");
+    }
 
     /**
      * Constructs an empty TestSuite.
@@ -66,7 +71,22 @@ public class NbTestSuite extends TestSuite implements NbTest {
      *
      */
     public NbTestSuite(Class theClass) {       
-        super(theClass);
+        super(testCaseClassOrDummy(theClass));
+    }
+    private static Class testCaseClassOrDummy(Class testClass) {
+        if (ignoreRandomFailures() && ((Class<?>) testClass).isAnnotationPresent(RandomlyFails.class)) {
+            return APIJail.Dummy.class;
+        } else {
+            return testClass;
+        }
+    }
+    private static class APIJail {
+        public static class Dummy extends TestCase {
+            public Dummy(String name) {
+                super(name);
+            }
+            public void testNothing() {}
+        }
     }
 
     /**
@@ -95,6 +115,10 @@ public class NbTestSuite extends TestSuite implements NbTest {
      * adds a test suite to this test suite
      */
     public void addTestSuite(Class testClass) {
+        // XXX should be expecting Class<? extends TestCase>, perhaps
+        if (ignoreRandomFailures() && ((Class<?>) testClass).isAnnotationPresent(RandomlyFails.class)) {
+            return;
+        }
         NbTest t = new NbTestSuite(testClass);
         t.setFilter(fFilter);
         addTest(t);

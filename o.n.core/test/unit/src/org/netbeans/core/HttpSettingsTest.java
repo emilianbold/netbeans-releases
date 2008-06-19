@@ -56,6 +56,7 @@ import org.openide.util.NbPreferences;
  * @author Jiri Rechtacek
  * @see http://www.netbeans.org/issues/show_bug.cgi?id=51641
  */
+@RandomlyFails
 public class HttpSettingsTest extends NbTestCase {
     private final Object sync = getEventQueueSync ();
     private static String SYSTEM_PROXY_HOST = "system.cache.org";
@@ -80,9 +81,6 @@ public class HttpSettingsTest extends NbTestCase {
     
     @Override
     public void run (final TestResult result) {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return;
-        }
         //just initialize Preferences before code NbTestCase
         Preferences.userRoot ();                        
         super.run (result);

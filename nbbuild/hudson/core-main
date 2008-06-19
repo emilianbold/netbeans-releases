@@ -66,6 +66,7 @@ if [ "$action" = "build" ]; then
 #   testmodule java.project
     testmodule javahelp
     testmodule masterfs
+    testmodule nbjunit
     testmodule o.apache.tools.ant.module
     testmodule o.n.bootstrap
     testmodule o.n.core

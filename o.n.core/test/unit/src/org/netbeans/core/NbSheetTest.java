@@ -45,6 +45,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.actions.GlobalPropertiesAction;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -54,6 +55,7 @@ import org.openide.windows.TopComponent;
  *
  * @author Jaroslav Tulach
  */
+@RandomlyFails
 public class NbSheetTest extends NbTestCase {
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");    
@@ -76,14 +78,7 @@ public class NbSheetTest extends NbTestCase {
         tc = new TopComponent();
     }
 
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
     public void testIssue97069EgUseSetActivatedNodesNull() throws Exception {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return;
-        }
         class Empty implements Runnable {
             public void run() { }
         }
@@ -156,9 +151,6 @@ public class NbSheetTest extends NbTestCase {
 
 
     public void testMemoryLeakIssue125057() throws Exception {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return;
-        }
         NbSheet sheet = NbSheet.getDefault();
         SwingUtilities.invokeAndWait( new Runnable() {
             public void run() {
