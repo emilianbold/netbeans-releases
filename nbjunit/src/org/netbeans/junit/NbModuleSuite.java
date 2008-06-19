@@ -387,7 +387,7 @@ public class NbModuleSuite {
 
     static final class S extends NbTestSuite {
         final Configuration config;
-        private int invocations;
+        private static int invocations;
         private int testCount = 0; 
         
         public S(Configuration config) {
