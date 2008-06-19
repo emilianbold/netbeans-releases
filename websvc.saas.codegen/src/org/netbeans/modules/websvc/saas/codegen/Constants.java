@@ -206,7 +206,7 @@ public class Constants {
     public static final String PHP_EXT = "php";
         
     public enum DropFileType {
-        JAVA_CLIENT("javaClient", "System.out"), 
+        JAVA_CLIENT("java", "System.out"), 
         RESOURCE("resource", "System.out"),
         SERVLET("servlet", "out"),
         JSP("jsp", "out"),
