@@ -294,7 +294,7 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(24, 12, 12, 12);
         add(errorMessage, gridBagConstraints);
 
-        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SQLStmtCustomizer.class, "ACSD_Stmt_Dialog_1")+" "+displayName+" "+NbBundle.getMessage(SQLStmtCustomizer.class, "ACSD_Stmt_Dialog_2"));
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SQLStmtCustomizer.class, "ACSD_Stmt_Dialog", displayName));
     }// </editor-fold>//GEN-END:initComponents
     
     

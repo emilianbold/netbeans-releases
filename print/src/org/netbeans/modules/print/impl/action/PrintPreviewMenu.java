@@ -56,6 +56,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 
+import org.netbeans.modules.print.api.PrintManager;
 import org.netbeans.modules.print.spi.PrintProvider;
 import org.netbeans.modules.print.impl.provider.ComponentProvider;
 import org.netbeans.modules.print.impl.provider.TextProvider;
@@ -165,9 +166,9 @@ public class PrintPreviewMenu extends IconAction {
 
   private String getName(List<JComponent> components, TopComponent top, DataObject data) {
     for (JComponent component : components) {
-      Object object = component.getClientProperty(Printable.class);
+      Object object = component.getClientProperty(PrintManager.PRINT_NAME);
 
-      if (object instanceof String && !object.equals("")) { // NOI18N
+      if (object instanceof String) {
         return (String) object;
       }
     }
@@ -179,7 +180,7 @@ public class PrintPreviewMenu extends IconAction {
 
   private Date getDate(List<JComponent> components, DataObject data) {
     for (JComponent component : components) {
-      Object object = component.getClientProperty(Date.class);
+      Object object = component.getClientProperty(PrintManager.PRINT_DATE);
 
       if (object instanceof Date) {
         return (Date) object;
@@ -200,7 +201,7 @@ public class PrintPreviewMenu extends IconAction {
   }
 
   private void getPrintable(Container container, List<JComponent> printable) {
-    if (container.isShowing() && container instanceof JComponent && ((JComponent) container).getClientProperty(Printable.class) != null) {
+    if (container.isShowing() && container instanceof JComponent && ((JComponent) container).getClientProperty(PrintManager.PRINT_PRINTABLE) == Boolean.TRUE) {
 //out("see: " + container.getClass().getName());
       printable.add((JComponent) container);
     }

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.subversion.client;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -148,6 +149,15 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                 if(t instanceof InterruptedException) {
                     throw new SVNClientException(SvnClientExceptionHandler.ACTION_CANCELED_BY_USER);                     
                 } 
+                if(t instanceof SVNClientException) {
+                    Throwable c = t.getCause();
+                    if(c instanceof IOException) {
+                        c = c.getCause();
+                        if(c instanceof InterruptedException) {                    
+                            throw new SVNClientException(SvnClientExceptionHandler.ACTION_CANCELED_BY_USER);                     
+                        } 
+                    }
+                }
                 Throwable c = t.getCause();
                 if(c instanceof InterruptedException) {                    
                     throw new SVNClientException(SvnClientExceptionHandler.ACTION_CANCELED_BY_USER);                     

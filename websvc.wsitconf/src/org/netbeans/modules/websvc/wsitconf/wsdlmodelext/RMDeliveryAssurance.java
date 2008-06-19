@@ -62,7 +62,7 @@ public enum RMDeliveryAssurance {
             }
         }
         public QName getQName() {
-            return RMQName.ATLEASTONCE.getQName(ConfigVersion.CONFIG_1_2);
+            return RMQName.ATLEASTONCE.getQName(ConfigVersion.CONFIG_1_3);
         }
         public Class getAssertionClass() {
             return AtLeastOnce.class;
@@ -80,7 +80,7 @@ public enum RMDeliveryAssurance {
             }
         }
         public QName getQName() {
-            return RMQName.EXACTLYONCE.getQName(ConfigVersion.CONFIG_1_2);
+            return RMQName.EXACTLYONCE.getQName(ConfigVersion.CONFIG_1_3);
         }
         public Class getAssertionClass() {
             return ExactlyOnce.class;
