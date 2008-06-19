@@ -47,6 +47,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -95,6 +96,7 @@ public class StatFilesTest extends NbTestCase {
         //return MasterFileSystem.getDefault().findResource(f.getAbsolutePath());
     }
 
+    @RandomlyFails
     public void testToFileObject() throws IOException {      
         FileObjectFactory fbs = FileObjectFactory.getInstance(getWorkDir());
         File workDir = getWorkDir();

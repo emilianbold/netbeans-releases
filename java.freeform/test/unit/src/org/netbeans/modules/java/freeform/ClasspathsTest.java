@@ -64,6 +64,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
 import org.netbeans.modules.ant.freeform.TestBase;
@@ -526,7 +527,8 @@ public class ClasspathsTest extends TestBase {
         }
         return b.toString();
     }
-    
+
+    @RandomlyFails
     public void testIncludesFiredJustOnce() throws Exception {
         clearWorkDir();
         File d = getWorkDir();
