@@ -114,6 +114,7 @@
                 <friend>org.netbeans.modules.php.editor</friend>
                 <friend>org.netbeans.modules.php.refactoring</friend>
                 <friend>org.netbeans.modules.python.editor</friend>
+                <friend>net.java.dev.nbpython.editor</friend>
                 <friend>org.netbeans.modules.ruby</friend>
                 <friend>org.netbeans.modules.ruby.extrahints</friend>
                 <friend>org.netbeans.modules.ruby.hints</friend>

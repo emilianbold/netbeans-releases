@@ -81,7 +81,7 @@ public abstract class OperationWizardModel {
     private boolean reconized = false;
     static Dimension PREFFERED_DIMENSION = new Dimension (530, 400);
     private static int MAX_TO_REPORT = 10;
-    static String MORE_BROKEN_PLUGINS = "OperationWizardModel_MoreBrokenPlugins"; // NOTICES
+    static String MORE_BROKEN_PLUGINS = "OperationWizardModel_MoreBrokenPlugins"; // NOI18N
     
     abstract OperationType getOperation ();
     abstract OperationContainer getBaseContainer ();

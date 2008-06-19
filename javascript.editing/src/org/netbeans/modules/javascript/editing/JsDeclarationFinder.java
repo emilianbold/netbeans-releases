@@ -169,7 +169,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
         }
 
         // TODO: Tokens.SUPER, Tokens.THIS, Tokens.SELF ...
-        if ((id == JsTokenId.IDENTIFIER) || (id == JsTokenId.GLOBAL_VAR) || (id == JsTokenId.CONSTANT)) {
+        if (id == JsTokenId.IDENTIFIER) {
             return new OffsetRange(ts.offset(), ts.offset() + token.length());
         }
         

@@ -194,7 +194,7 @@ public class GraphView extends JPanel {
         });
 
         // vlv: print
-        getContent().putClientProperty(java.awt.print.Printable.class, "");
+        getContent().putClientProperty("print.printable", Boolean.TRUE); // NOI18N
     }
 
     /**
@@ -233,7 +233,7 @@ public class GraphView extends JPanel {
         // vlv: print
 // todo add after # 136903
 //        toolbar.addSeparator();
-//        toolbar.add(PrintManager.getDefault().getPrintPreviewAction());
+//        toolbar.add(PrintManager.printPreviewAction());
     }
 
     /**

@@ -145,6 +145,8 @@ public final class AddCast implements ErrorRule<Void> {
                         tm[0] = expected;
                         expression[0] = found;
                         leaf[0] = scope;
+                    } else { //clean up
+                        tm[0] = null;
                     }
                 }
             }

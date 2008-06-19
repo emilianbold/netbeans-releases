@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
 public enum RMSequenceBinding {
     SECURED_TRANSPORT {
         public QName getQName() {
-            return RMQName.SEQUENCETRANSPORTSECURITY.getQName(ConfigVersion.CONFIG_1_2);
+            return RMQName.SEQUENCETRANSPORTSECURITY.getQName(ConfigVersion.CONFIG_1_3);
         }
         public Class getAssertionClass() {
             return SequenceTransportSecurity.class;
@@ -60,7 +60,7 @@ public enum RMSequenceBinding {
     },
     SECURED_TOKEN {
         public QName getQName() {
-            return RMQName.SEQUENCESTR.getQName(ConfigVersion.CONFIG_1_2);
+            return RMQName.SEQUENCESTR.getQName(ConfigVersion.CONFIG_1_3);
         }
         public Class getAssertionClass() {
             return SequenceSTR.class;
@@ -72,7 +72,7 @@ public enum RMSequenceBinding {
     }
 
     public final static RMSequenceBinding getValue(ConfigVersion cfgVersion, Binding b) {
-        if (ConfigVersion.CONFIG_1_2.equals(cfgVersion)) {
+        if (ConfigVersion.CONFIG_1_3.equals(cfgVersion)) {
             if (RMModelHelper.getInstance(cfgVersion).isSequenceBinding(b, SECURED_TRANSPORT)) {
                 return SECURED_TRANSPORT;
             }

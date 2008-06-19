@@ -46,8 +46,10 @@ import org.netbeans.modules.cnd.completion.csm.CsmProjectContentResolver;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.netbeans.editor.Settings;
@@ -61,12 +63,15 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmFinder;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
@@ -81,11 +86,7 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletion;
  */
 public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
 
-    public CsmModel model = null;
-    
     private boolean caseSensitive = false;
-    
-    private boolean naturalSort = false;    
     
     private FileObject fo;
     private CsmFile csmFile;
@@ -99,7 +100,6 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
         this.fo = fo;
         this.kitClass = kitClass;
         caseSensitive = getCaseSensitive();
-        naturalSort = getNaturalSort();
         Settings.addSettingsChangeListener(this);        
     }
         
@@ -108,7 +108,6 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
         this.csmFile = csmFile;
         this.kitClass = kitClass;
         caseSensitive = getCaseSensitive();
-        naturalSort = getNaturalSort();
         Settings.addSettingsChangeListener(this);        
     }
     
@@ -125,8 +124,6 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
         
         if (ExtSettingsNames.COMPLETION_CASE_SENSITIVE.equals((evt.getSettingName()))){
             caseSensitive = getCaseSensitive();
-        }else if (ExtSettingsNames.COMPLETION_NATURAL_SORT.equals((evt.getSettingName()))){
-            naturalSort = getNaturalSort();
         }
     }
     
@@ -260,7 +257,7 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
     *   of the element or not.
     * @return list of the matching elements
     */
-    public List findNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch, boolean searchNested) {
+    public List findNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch, boolean searchNested, boolean searchFirst) {
         List ret = new ArrayList();
 
         CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
@@ -271,29 +268,89 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
             Collection classes = contResolver.getNamespaceClassesEnums(ns, name, exactMatch, searchNested);
             if (classes != null) {
                 ret.addAll(classes);
+                if (searchFirst && ret.size()>0) {
+                    return ret;
+                }
             }
             classes = contResolver.getNamespaceEnumerators(ns, name, exactMatch, searchNested);
             if (classes != null) {
                 ret.addAll(classes);
+                if (searchFirst && ret.size()>0) {
+                    return ret;
+                }
             }
             classes = contResolver.getNamespaceVariables(ns, name, exactMatch, searchNested);
             if (classes != null) {
                 ret.addAll(classes);
+                if (searchFirst && ret.size()>0) {
+                    return ret;
+                }
             }
             classes = contResolver.getNamespaceFunctions(ns, name, exactMatch, searchNested);
             if (classes != null) {
                 ret.addAll(classes);
+                if (searchFirst && ret.size()>0) {
+                    return ret;
+                }
             }
             if (prj.getGlobalNamespace() != ns) {
                 classes =  contResolver.getLibClassesEnums(name, exactMatch);
                 if (classes != null) {
                     ret.addAll(classes);
+                    if (searchFirst && ret.size()>0) {
+                        return ret;
+                    }
+                }
+            } else {
+                HashSet<CharSequence> set = new HashSet<CharSequence>();
+                for(Object o : ret){
+                    if (CsmKindUtilities.isQualified((CsmObject) o)) {
+                        set.add(((CsmQualifiedNamedElement)o).getQualifiedName());
+                    }
+                }
+                if (!ns.getProject().isArtificial()) {
+                    for (CsmProject lib : prj.getLibraries()) {
+                        CsmNamespace n = lib.getGlobalNamespace();
+                        classes = contResolver.getNamespaceClassesEnums(n, name, exactMatch, searchNested);
+                        merge(set, ret, classes);
+                        if (searchFirst && ret.size()>0) {
+                            return ret;
+                        }
+                        classes = contResolver.getNamespaceEnumerators(n, name, exactMatch, searchNested);
+                        merge(set, ret, classes);
+                        if (searchFirst && ret.size()>0) {
+                            return ret;
+                        }
+                        classes = contResolver.getNamespaceVariables(n, name, exactMatch, searchNested);
+                        merge(set, ret, classes);
+                        if (searchFirst && ret.size()>0) {
+                            return ret;
+                        }
+                        classes = contResolver.getNamespaceFunctions(n, name, exactMatch, searchNested);
+                        merge(set, ret, classes);
+                        if (searchFirst && ret.size()>0) {
+                            return ret;
+                        }
+                    }
                 }
             }
         }
         return ret;
     }
 
+    private void merge(HashSet<CharSequence> set, List ret, Collection classes) {
+        if (classes != null) {
+            for (Object o : classes) {
+                if (CsmKindUtilities.isQualified((CsmObject) o)) {
+                    if (!set.contains(((CsmQualifiedNamedElement) o).getQualifiedName())) {
+                        ret.add(o);
+                        set.add(((CsmQualifiedNamedElement) o).getQualifiedName());
+                    }
+                }
+            }
+        }
+    }
+    
     /** Find classes by name and possibly in some namespace
     * @param nmsp namespace where the classes should be searched for. It can be null
     * @param begining of the name of the class. The namespace name must be omitted.
@@ -697,19 +754,6 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
 //    }
 //    //......................................
     
-    public void setCaseSensitive(boolean sensitive){
-        caseSensitive = sensitive;
-    }
-
-    public void setNaturalSort(boolean sort){
-        naturalSort = sort;        
-    }
-    
-    private boolean startsWith(String theString, String prefix){
-        return caseSensitive ? theString.startsWith(prefix) :
-            theString.toLowerCase().startsWith(prefix.toLowerCase());
-    }
-
     /** Find fields by name in a given class.
     * @param contextDeclaration declaration which defines context (class or function)
     * @param c class which is searched for the fields.
@@ -774,9 +818,9 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
     }
 
     public List findLabel(CsmOffsetableDeclaration contextDeclaration, String name, boolean exactMatch, boolean sort) {
+        List<CsmObject> out = new ArrayList<CsmObject>();
         if (CsmKindUtilities.isFunctionDefinition(contextDeclaration)) {
             Collection<CsmReference> res = CsmLabelResolver.getDefault().getLabels((CsmFunctionDefinition) contextDeclaration, null, CsmLabelResolver.LabelKind.Definiton);
-            List<CsmObject> out = new ArrayList<CsmObject>();
             for(CsmReference ref : res){
                 if (ref.getReferencedObject() instanceof CsmLabel){
                     CsmLabel label = (CsmLabel) ref.getReferencedObject();
@@ -785,8 +829,7 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
                     }
                 }
             }
-            return out;
         }
-        return null;
+        return out;
     }
 }

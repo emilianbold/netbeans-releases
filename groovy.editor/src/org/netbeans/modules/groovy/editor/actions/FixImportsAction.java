@@ -41,37 +41,33 @@ package org.netbeans.modules.groovy.editor.actions;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.netbeans.modules.groovy.editor.NbUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import javax.swing.text.Document;
-import org.netbeans.modules.groovy.editor.parser.GroovyParserResult;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.codehaus.groovy.control.ErrorCollector;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.netbeans.editor.BaseAction;
-import org.netbeans.modules.groovy.editor.AstUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.groovy.editor.actions.FixImportsHelper.ImportCandidate;
-import org.netbeans.modules.groovy.editor.parser.GroovyParser;
-import org.netbeans.modules.gsf.api.Parser;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.api.SourceFileReader;
-import org.netbeans.modules.gsf.spi.DefaultParseListener;
-import org.netbeans.modules.gsf.spi.DefaultParserFile;
+import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.editor.parser.GroovyParserResult;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.napi.gsfret.source.CompilationController;
+import org.netbeans.napi.gsfret.source.Phase;
+import org.netbeans.napi.gsfret.source.Source;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -110,45 +106,6 @@ public class FixImportsAction extends BaseAction implements Runnable {
         }
     }
 
-    GroovyParserResult getParserResult(final FileObject fo) {
-
-        DefaultParseListener listener = new DefaultParseListener();
-        ParserFile parserFile = new DefaultParserFile(fo, null, false);
-        List<ParserFile> files = Collections.singletonList(parserFile);
-
-        SourceFileReader reader =
-                new SourceFileReader() {
-
-                    public CharSequence read(ParserFile file)
-                            throws IOException {
-                        Document doc = AstUtilities.getBaseDocument(fo, true);
-
-                        if (doc == null) {
-                            return "";
-                        }
-
-                        try {
-                            return doc.getText(0, doc.getLength());
-                        } catch (BadLocationException ble) {
-                            IOException ioe = new IOException();
-                            ioe.initCause(ble);
-                            throw ioe;
-                        }
-                    }
-
-                    public int getCaretOffset(ParserFile fileObject) {
-                        return -1;
-                    }
-                };
-
-
-        Parser.Job job = new Parser.Job(files, listener, reader, null);
-        new GroovyParser().parseFiles(job);
-
-        return (GroovyParserResult) listener.getParserResult();
-
-    }
-
     public void run() {
         DataObject dob = NbEditorUtilities.getDataObject(doc);
 
@@ -157,40 +114,48 @@ public class FixImportsAction extends BaseAction implements Runnable {
             return;
         }
 
+        final List<String> missingNames = new ArrayList<String>();
+
         FileObject fo = dob.getPrimaryFile();
-        GroovyParserResult result = getParserResult(fo);
+        Source source = Source.forFileObject(fo);
+        try {
+            source.runUserActionTask(new CancellableTask<CompilationController>() {
+                public void run(CompilationController controller) throws Exception {
+                    System.out.println("### FixImportsAction.run()");
+                    controller.toPhase(Phase.PARSED);
+                    GroovyParserResult result = (GroovyParserResult) controller.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
+                    if (result != null) {
+                        ErrorCollector errorCollector = result.getErrorCollector();
+                        List errList = errorCollector.getErrors();
 
-        if (result == null) {
-            LOG.log(Level.FINEST, "Could not get GroovyParserResult");
-            return;
-        }
+                        if (errList == null) {
+                            LOG.log(Level.FINEST, "Could not get list of errors");
+                            return;
+                        }
 
-        ErrorCollector errorCollector = result.getErrorCollector();
-        List errList = errorCollector.getErrors();
+                        // loop over the list of errors, remove duplicates and 
+                        // populate list of missing imports.
 
-        if (errList == null) {
-            LOG.log(Level.FINEST, "Could not get list of errors");
-            return;
-        }
+                        for (Object error : errList) {
+                            if (error instanceof SyntaxErrorMessage) {
+                                SyntaxException se = ((SyntaxErrorMessage) error).getCause();
+                                if (se != null) {
+                                    String missingClassName = helper.getMissingClassName(se.getMessage());
 
-        List<String> missingNames = new ArrayList<String>();
-
-        // loop over the list of errors, remove duplicates and 
-        // populate list of missing imports.
-
-        for (Object error : errList) {
-            if (error instanceof SyntaxErrorMessage) {
-                SyntaxException se = ((SyntaxErrorMessage) error).getCause();
-                if (se != null) {
-                    String missingClassName = helper.getMissingClassName(se.getMessage());
-
-                    if (missingClassName != null) {
-                        if (!missingNames.contains(missingClassName)) {
-                            missingNames.add(missingClassName);
+                                    if (missingClassName != null) {
+                                        if (!missingNames.contains(missingClassName)) {
+                                            missingNames.add(missingClassName);
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
-            }
+                public void cancel() {}
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
 
         // go over list of missing imports, fix it - if there is only one 

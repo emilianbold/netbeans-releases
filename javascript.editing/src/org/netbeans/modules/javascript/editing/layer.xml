@@ -11,8 +11,6 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
                 
-                <!-- TODO - this should not be necessary; I'm doing this now to work around
-                    bugs in color initialization -->
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -35,15 +33,45 @@
                     <folder name="NetBeans">
                         <folder name="Defaults">
                             <file name="org-netbeans-modules-javascript-editing-keybindings.xml" url="DefaultKeyBindings.xml"/>
-                            <!--
-                            <file name="org-netbeans-modules-javascript-editing-keybindings-mac.xml" url="DefaultKeyBindings-Mac.xml">
-                                <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
-                            </file>
-                            -->
                         </folder>
                     </folder>
                 </folder>
             </folder>
+
+            <folder name="x-javascript-string">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript.editing.Bundle"/>
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript.editing.lexer.JsStringTokenId.language"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="stringColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript.editing.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+
+            <folder name="x-javascript-comment">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript.editing.Bundle"/>
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId.language"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="commentColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript.editing.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+
         </folder>
     </folder>
 
@@ -67,25 +95,8 @@
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.options.JsOptions"/>
             </file>
         </folder>        
-        <!--
-        <file name="JsOptions.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.JsOptionsCategory"/>
-            <attr name="position" intvalue="305"/>
-        </file>     
-        -->
     </folder>
 
-    <!--
-    <folder name="org.netbeans.modules.javascript.editing">
-        <folder name="options">
-            <file name="Formatting.instance">
-                <attr name="position" intvalue="150"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.options.FormatingAdvancedOption"/>
-            </file>
-        </folder>
-    </folder>
-    -->
-    
     <folder name="GsfPlugins">
         <folder name="text">
             <folder name="javascript">
@@ -173,15 +184,6 @@
             </folder>
         </folder>
     </folder>
-    <!--
-    <folder name="Actions">
-        <folder name="Edit">
-            <file name="org-netbeans-modules-javascript-editing-ReflowParagraphAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.ReflowParagraphAction"/>
-            </file>
-        </folder>
-    </folder>
-    -->
     
     <folder name="Templates">
         <folder name="Other">

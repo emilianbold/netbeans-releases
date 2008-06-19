@@ -57,7 +57,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -105,7 +104,7 @@ final class ModuleListParser {
     /**
      * Find all NBM projects in a root, possibly from cache.
      */
-    private static Map<String,Entry> scanNetBeansOrgSources(File root, Hashtable<String,String> properties, Project project) throws IOException {
+    private static Map<String,Entry> scanNetBeansOrgSources(File root, Map<String,String> properties, Project project) throws IOException {
         Map<String,Entry> entries = SOURCE_SCAN_CACHE.get(root);
         if (entries == null) {
             // Similar to #62221: if just invoked from a module in standard clusters, only scan those clusters (faster):
@@ -259,7 +258,7 @@ final class ModuleListParser {
     /**
      * Check a single dir to see if it is an NBM project, and if so, register it.
      */
-    private static boolean scanPossibleProject(File dir, Map<String,Entry> entries, Hashtable<String,String> properties,
+    private static boolean scanPossibleProject(File dir, Map<String,Entry> entries, Map<String,String> properties,
             String path, int moduleType, Project project, Map<File,Long[]> timestampsAndSizes) throws IOException {
         File nbproject = new File(dir, "nbproject");
         File projectxml = new File(nbproject, "project.xml");
@@ -502,7 +501,7 @@ final class ModuleListParser {
     /**
      * Find all modules in a binary build, possibly from cache.
      */
-    private static Map<String,Entry> scanBinaries(Hashtable<String,String> properties, Project project) throws IOException {
+    private static Map<String,Entry> scanBinaries(Map<String,String> properties, Project project) throws IOException {
         String buildS = properties.get("netbeans.dest.dir");
         File basedir = new File(properties.get("basedir"));
         if (buildS == null) {
@@ -604,7 +603,7 @@ final class ModuleListParser {
         }
     }
     
-    private static Map<String,Entry> scanSuiteSources(Hashtable<String,String> properties, Project project) throws IOException {
+    private static Map<String,Entry> scanSuiteSources(Map<String,String> properties, Project project) throws IOException {
         File basedir = new File(properties.get("basedir"));
         String suiteDir = properties.get("suite.dir");
         if (suiteDir == null) {
@@ -629,7 +628,7 @@ final class ModuleListParser {
         return entries;
     }
     
-    private static void doScanSuite(Map<String,Entry> entries, File suite, Hashtable<String,String> properties, Project project) throws IOException {
+    private static void doScanSuite(Map<String,Entry> entries, File suite, Map<String,String> properties, Project project) throws IOException {
         Project fakeproj = new Project();
         fakeproj.setBaseDir(suite); // in case ${basedir} is used somewhere
         Property faketask = new Property();
@@ -654,7 +653,7 @@ final class ModuleListParser {
         }
     }
     
-    private static Entry scanStandaloneSource(Hashtable<String,String> properties, Project project) throws IOException {
+    private static Entry scanStandaloneSource(Map<String,String> properties, Project project) throws IOException {
         if (properties.get("project") == null) return null; //Not a standalone module
         File basedir = new File(properties.get("project"));
         Entry entry = STANDALONE_SCAN_CACHE.get(basedir);
@@ -689,7 +688,7 @@ final class ModuleListParser {
      * @param type the type of project
      * @param project a project ref, only for logging (may be null with no loss of semantics)
      */
-    public ModuleListParser(Hashtable<String,String> properties, int type, Project project) throws IOException {
+    public ModuleListParser(Map<String,String> properties, int type, Project project) throws IOException {
         String nball = properties.get("nb_all");
         if (type != ParseProjectXml.TYPE_NB_ORG) {
             // External module.

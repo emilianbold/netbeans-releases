@@ -63,7 +63,7 @@ public class RemotePathMap extends HashMap<String, String> {
     }
     
     private static String makeKey(String host, String user) {
-        return host + " " + user;
+        return host + ' ' + user;
     }
     
     private RemotePathMap(String host, String user) {
@@ -93,18 +93,18 @@ public class RemotePathMap extends HashMap<String, String> {
     private String initializePath(String lpath) {
         String rpath = null;
         
-        if (Boolean.getBoolean("cnd.remote.enabled")) { // this means we're still debugging...
-            if (user.equals("gordonp")) {
-                if (lpath.toLowerCase().startsWith("z:")) {
-                    rpath = "/net/pucci/export/pucci1/" + lpath.substring(2);
-                } else if (lpath.toLowerCase().startsWith("x:")) {
-                    rpath = "/net/pucci/export/pucci2/" + lpath.substring(2);
-                } else if (lpath.startsWith("/export/")) {
-                    rpath = "/net/" + host + lpath;
-                } else /*if (lpath.startsWith("/net/"))*/ {
+        if (Boolean.getBoolean("cnd.remote.enabled")) { // Debug
+            if (user.equals("gordonp")) { // Debug
+                if (lpath.toLowerCase().startsWith("z:")) { // Debug
+                    rpath = "/net/pucci/export/pucci1/" + lpath.substring(2); // Debug
+                } else if (lpath.toLowerCase().startsWith("x:")) { // Debug
+                    rpath = "/net/pucci/export/pucci2/" + lpath.substring(2); // Debug
+                } else if (lpath.startsWith("/export/")) { // Debug
+                    rpath = "/net/" + host + lpath; // Debug
+                } else {
                     rpath = lpath;
                 }
-            } else if (user.equals("sg155630")) {
+            } else if (user.equals("sg155630")) { // Debug
                 // fill in your debugging pathmaps if you want...
             }
         }
@@ -112,7 +112,7 @@ public class RemotePathMap extends HashMap<String, String> {
         if (rpath != null) {
             put(lpath, rpath);
         } else {
-            rpath = "/tmp";
+            rpath = "/tmp"; // Debug
         }
         
         return rpath;

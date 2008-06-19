@@ -79,7 +79,11 @@ class FloatingWindowTransparencyManager {
         if( null == topComponentRegistryListener ) {
             topComponentRegistryListener = new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    toggleFloatingWindowTransparency();
+                    SwingUtilities.invokeLater( new Runnable() {
+                        public void run() {
+                            toggleFloatingWindowTransparency();
+                        }
+                    });
                 }
             };
             TopComponent.getRegistry().addPropertyChangeListener(topComponentRegistryListener);

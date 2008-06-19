@@ -42,11 +42,9 @@
 package org.netbeans.modules.form;
 
 import java.awt.Color;
-import java.util.*;
 import java.util.prefs.Preferences;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.form.codestructure.*;
-import org.openide.nodes.BeanNode;
 import org.openide.util.NbPreferences;
 
 /**
@@ -55,10 +53,8 @@ import org.openide.util.NbPreferences;
 public class FormLoaderSettings implements HelpCtx.Provider   {
     private static final FormLoaderSettings INSTANCE = new FormLoaderSettings();
     public static final String PROP_USE_INDENT_ENGINE = "useIndentEngine"; // NOI18N
-
     /** Property name of the event listener code generation style option. */
     public static final String PROP_LISTENER_GENERATION_STYLE = "listenerGenerationStyle"; // NOI18N
-
     /** Property name of the selectionBorderSize property */
     public static final String PROP_SELECTION_BORDER_SIZE = "selectionBorderSize"; // NOI18N
     /** Property name of the selectionBorderColor property */
@@ -75,7 +71,6 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
     /** Property name of the formDesignerBorderColor property */
     public static final String PROP_FORMDESIGNER_BORDER_COLOR =
         "formDesignerBorderColor"; // NOI18N
-
     /** Property name of the gridX property */
     public static final String PROP_GRID_X = "gridX"; // NOI18N
     /** Property name of the gridY property */
@@ -84,7 +79,6 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
     public static final String PROP_APPLY_GRID_TO_POSITION = "applyGridToPosition"; // NOI18N
     /** Property name of the applyGridToSize property */
     public static final String PROP_APPLY_GRID_TO_SIZE = "applyGridToSize"; // NOI18N
-
     /** Property name of the variablesModifier property */
     public static final String PROP_VARIABLES_MODIFIER = "variablesModifier"; // NOI18N
     /** Property name of the variablesLocal property */
@@ -100,13 +94,10 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
     public static final String PROP_GENERATE_MNEMONICS = "generateMnemonicsCode"; // NOI18N
     /** Property name of the showMnemonicsDialog property */
     public static final String PROP_SHOW_MNEMONICS_DIALOG = "showMnemonicsDialog"; // NOI18N
-
     /** Property name of the displayWritableOnly property */
     public static final String PROP_DISPLAY_WRITABLE_ONLY = "displayWritableOnly"; // NOI18N
-
     /** Property name of the editorSearchPath property */
     public static final String PROP_EDITOR_SEARCH_PATH = "editorSearchPath"; // NOI18N
-
     /** Property name of the toolBarPalette property */
     public static final String PROP_PALETTE_IN_TOOLBAR = "toolBarPalette"; // NOI18N
     /** Property name of the foldGeneratedCode property. */
@@ -115,9 +106,10 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
     public static final String PROP_ASSISTANT_SHOWN = "assistantShown"; // NOI18N
     /** Property name of the designerLAF property. */
     public static final String PROP_DESIGNER_LAF = "designerLAF"; // NOI18N
-
     /** Property name of the layout code target property. */
     public static final String PROP_LAYOUT_CODE_TARGET = "layoutCodeTarget"; // NOI18N
+    /** Property name of the generate FQN property. */
+    public static final String PROP_GENERATE_FQN = "generateFQN"; // NOI18N
 
     /** Name of the property for automatic resources/i18n management.
      * The name refers only to i18n for compatibility reasons. */
@@ -125,27 +117,14 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
     static final int AUTO_RESOURCE_DEFAULT = 0;
     static final int AUTO_RESOURCE_ON = 1;
     static final int AUTO_RESOURCE_OFF = 2;
-    //    public static final String PROP_CONTAINER_BEANS = "containerBeans"; // NOI18N
 
-    // ------------------------------------------
-    /** The color of the drag border on selection border */
-    private static java.awt.Color dragBorderColor = java.awt.Color.gray;
-    /** Indicates whether to display automatically hint dialog advertising the
-     * Mnemonics generation feature. */
-    private static boolean showMnemonicsDialog = true;
     /** Array of package names to search for property editors used in Form Editor */
     private static String[] editorSearchPath = null;
-    /** Array of items [Class Name, Editor1, Editor2, ...] */
-    private static String [][] registeredEditors;
     private static final int MIN_SELECTION_BORDER_SIZE = 1;
     private static final int MAX_SELECTION_BORDER_SIZE = 15;
 
     private static final int MIN_GRID_X = 2;
     private static final int MIN_GRID_Y = 2;
-
-//    private static Map containerBeans;
-
-    // --------
 
     public static final Preferences getPreferences() {
         return NbPreferences.forModule(FormLoaderSettings.class);
@@ -155,7 +134,6 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
         return INSTANCE;
     }
 
-    // ------------------------------------------
     // property access methods
 
     public boolean getUseIndentEngine() {
@@ -588,6 +566,14 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
 
     public void setI18nAutoMode(int mode) {
         getPreferences().putInt(PROP_AUTO_RESOURCING, mode);    
+    }
+
+    public boolean getGenerateFQN() {
+        return getPreferences().getBoolean(PROP_GENERATE_FQN, true);    
+    }
+
+    public void setGenerateFQN(boolean generateFQN) {
+        getPreferences().putBoolean(PROP_GENERATE_FQN, generateFQN);    
     }
         
     private static String[] toArray(String esp) {
