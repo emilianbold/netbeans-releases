@@ -47,6 +47,7 @@ import org.netbeans.modules.subversion.*;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.versioning.util.Utils;
 import java.io.*;
+import java.util.logging.Level;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.openide.util.*;
@@ -108,7 +109,8 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
         try {
             init();
         } catch (IOException e) {
-            return null; // XXX use error manager HACK null  potentionally kills DiffViewImpl, NPE while constructing EditorKit
+            Subversion.LOG.log(Level.INFO, "DiffStreamSource.getMIMEType() returns null", e);
+            return null; // HACK null cases the file handled as binary
         }
         return mimeType;
     }
