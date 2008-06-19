@@ -40,46 +40,32 @@
 
 package org.netbeans.modules.profiler.j2se;
 
+import java.util.ArrayList;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.DataFilesProviderImplementation;
-import org.netbeans.spi.project.LookupProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.modules.profiler.MarkerMethodBuilder;
+import org.netbeans.modules.profiler.SimpleMarkerMethodBuilder;
+import org.netbeans.modules.profiler.projectsupport.AbstractProjectLookupProvider;
 
 
 /**
  *
  * @author Jiri Sedlacek
  */
-public class LookupProviderImpl implements LookupProvider {
+public class LookupProviderImpl extends AbstractProjectLookupProvider {
+    private MarkerMethodBuilder markerBuilder = new SimpleMarkerMethodBuilder("J2SE"); // NOI18N
+    
     //~ Methods ------------------------------------------------------------------------------------------------------------------
-
-    public DataFilesProviderImplementation getDataFilesProviderImplementation(final Project project) {
-        return new DataFilesProviderImplementation() {
-                public List<FileObject> getMetadataFiles() {
-                    List<FileObject> metadataFilesList = new LinkedList();
-                    FileObject buildBackupFile = (project == null) ? null
-                                                                   : project.getProjectDirectory()
-                                                                            .getFileObject("build-before-profiler.xml"); // NOI18N
-
-                    if ((buildBackupFile != null) && buildBackupFile.isValid()) {
-                        metadataFilesList.add(buildBackupFile);
-                    }
-
-                    return metadataFilesList;
-                }
-
-                public List<FileObject> getDataFiles() {
-                    return Collections.EMPTY_LIST;
-                }
-            };
+    private MarkerMethodBuilder getMarkerBuilder() {
+        return markerBuilder;
     }
-
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        return Lookups.fixed(new Object[] { getDataFilesProviderImplementation(baseContext.lookup(Project.class)) });
+    
+    @Override
+    protected List getAdditionalLookups(Project project) {
+        return new ArrayList() {
+            {
+                add(getMarkerBuilder());
+            }
+        };
     }
 }

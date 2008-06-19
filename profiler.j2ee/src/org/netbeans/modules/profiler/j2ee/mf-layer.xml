@@ -42,21 +42,84 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-  <folder name="Projects">
-    <folder name="org-netbeans-modules-j2ee-ejbjarproject">
-      <folder name="Lookup">
-        <file name="org.netbeans.modules.profiler.j2ee.LookupProviderImpl.instance"/>
-      </folder>
+    <folder name="Projects">
+        <folder name="org-netbeans-modules-j2ee-ejbjarproject">
+            <folder name="Lookup">
+                <file name="org.netbeans.modules.profiler.j2ee.LookupProviderImpl.instance"/>
+            </folder>
+        </folder>
+        <folder name="org-netbeans-modules-j2ee-earproject">
+            <folder name="Lookup">
+                <file name="org.netbeans.modules.profiler.j2ee.LookupProviderImpl.instance"/>
+            </folder>
+        </folder>
+        <folder name="org-netbeans-modules-web-project">
+            <folder name="Lookup">
+                <file name="org.netbeans.modules.profiler.j2ee.LookupProviderImpl.instance"/>
+            </folder>
+        </folder>
     </folder>
-    <folder name="org-netbeans-modules-j2ee-earproject">
-      <folder name="Lookup">
-        <file name="org.netbeans.modules.profiler.j2ee.LookupProviderImpl.instance"/>
-      </folder>
+    <folder name="Profiler">
+        <folder name="J2EE">
+            <folder name="AreasOfInterest">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
+                <folder name="WebContainer">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
+                    <folder name="Filters">
+                        <folder name="LifeCycle">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
+                            <folder name="~subtypes">
+                                <file name="javax.servlet.Filter" url="javax.servlet.Filter">
+                                    <attr name="includes" stringvalue="init,destroy"/>
+                                </file>
+                            </folder>
+                        </folder>
+                        <folder name="~subtypes">
+                            <file name="javax.servlet.Filter" url="javax_1.servlet.Filter">
+                                <attr name="excludes" stringvalue="init,destroy"/>
+                            </file>
+                            <file name="javax.servlet.FilterChain" url="javax_1.servlet.FilterChain">
+                                <attr name="excludes" stringvalue="init,destroy"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="JSPs">
+                        <folder name="~custom" url="~custom">
+                            <attr name="instanceClass" stringvalue="org.netbeans.modules.profiler.j2ee.JSPMarkerMethodProvider"/>
+                        </folder>
+                    </folder>
+                    <folder name="JSTL">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
+                        <folder name="~subtypes">
+                            <file name="javax.servlet.jsp.tagext.BodyTagSupport" url="javax.servlet.jsp.tagext.BodyTagSupport"/>
+                            <file name="javax.servlet.jsp.tagext.SimpleTagSupport" url="javax.servlet.jsp.tagext.SimpleTagSupport"/>
+                            <file name="javax.servlet.jsp.tagext.Tag" url="javax.servlet.jsp.tagext.Tag"/>
+                            <file name="javax.servlet.jsp.tagext.TagSupport" url="javax.servlet.jsp.tagext.TagSupport"/>
+                        </folder>
+                    </folder>
+                    <folder name="Servlets">
+                        <folder name="LifeCycle">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
+                            <folder name="~subtypes">
+                                <file name="javax.servlet.Servlet" url="javax.servlet.Servlet">
+                                    <attr name="includes" stringvalue="init,destroy"/>
+                                </file>
+                                <file name="javax.servlet.http.HttpServlet" url="javax.servlet.http.HttpServlet">
+                                    <attr name="includes" stringvalue="init,destroy"/>
+                                </file>
+                            </folder>
+                        </folder>
+                        <folder name="~subtypes">
+                            <file name="javax.servlet.Servlet" url="javax_1.servlet.Servlet">
+                                <attr name="excludes" stringvalue="init,destroy"/>
+                            </file>
+                            <file name="javax.servlet.http.HttpServlet" url="javax_1.servlet.http.HttpServlet">
+                                <attr name="excludes" stringvalue="init,destroy"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
     </folder>
-    <folder name="org-netbeans-modules-web-project">
-      <folder name="Lookup">
-        <file name="org.netbeans.modules.profiler.j2ee.LookupProviderImpl.instance"/>
-      </folder>
-    </folder>
-  </folder>    
 </filesystem>
