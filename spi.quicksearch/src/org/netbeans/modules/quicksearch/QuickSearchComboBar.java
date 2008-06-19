@@ -40,16 +40,10 @@
 package org.netbeans.modules.quicksearch;
 
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.KeyboardFocusManager;
-import java.awt.Point;
-import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.lang.ref.WeakReference;
 import javax.swing.JTextArea;
-import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -62,7 +56,6 @@ import org.openide.windows.TopComponent;
  */
 public class QuickSearchComboBar extends javax.swing.JPanel {
     
-    JWindow popup;
     QuickSearchPopup displayer = new QuickSearchPopup(this);
     WeakReference<TopComponent> caller;
     
@@ -90,26 +83,11 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
             
             private void textChanged () {
                 if (command.isFocusOwner()) {
-                    processCommand(command.getText());
+                    displayer.update(command.getText());
                 }
             }
             
         });
-    }
-
-    private void processCommand(String text) {
-        if (popup == null) {
-            Point where = new Point(-SearchResultRender.shift-6, jPanel1.getSize().height - 1);
-            Window parent = SwingUtilities.windowForComponent(this);
-            SwingUtilities.convertPointToScreen(where, command);
-            popup = new JWindow(parent);
-            popup.setFocusableWindowState(false);
-            popup.getContentPane().add(displayer);
-            popup.setLocation(where);
-            popup.setVisible(true);
-            command.requestFocus();
-        }
-        displayer.update(text);
     }
 
     /** This method is called from within the constructor to
@@ -208,9 +186,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void formFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusLost
-    if (popup!=null)
-        popup.setVisible(false);
-    popup = null;
+    displayer.setVisible(false);
 }//GEN-LAST:event_formFocusLost
 
 private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_commandKeyPressed
@@ -239,10 +215,7 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
 }//GEN-LAST:event_commandKeyPressed
 
     private void returnFocus () {
-        if (popup != null) {
-            popup.setVisible(false);
-            popup = null;
-        }
+        displayer.setVisible(false);
         if (caller != null) {
             TopComponent tc = caller.get();
             if (tc != null) {
@@ -254,18 +227,11 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
 
 
 private void commandFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_commandFocusLost
-    if(popup != null && evt.getOppositeComponent() != null) {
-        if (!evt.getOppositeComponent().equals(displayer.getList())) {
-            popup.setVisible(false);
-            popup = null;
-        }
-    }
-    
+    displayer.setVisible(false);
     setShowHint(true);
 }//GEN-LAST:event_commandFocusLost
 
 private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_commandFocusGained
-        System.out.println("focus gained....");        
     setShowHint(false);
 }//GEN-LAST:event_commandFocusGained
 
@@ -298,10 +264,6 @@ private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:even
         caller = new WeakReference<TopComponent>(TopComponent.getRegistry().getActivated());
         super.requestFocus();
         command.requestFocus();
-    }
-    
-    JWindow getPopup () {
-        return popup;
     }
     
     JTextArea getCommand() {
