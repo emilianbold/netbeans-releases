@@ -94,12 +94,8 @@ implements CloneableEditorSupport.Env {
         err = Logger.getLogger(getName());
     }
     
-
+    @RandomlyFails // NB-Core-Build #670
     public void testRefreshProblem46885 () throws Exception {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return; // NB-Core-Build #670
-        }
-
         StyledDocument doc = support.openDocument ();
         
         doc.insertString (0, "A text", null);

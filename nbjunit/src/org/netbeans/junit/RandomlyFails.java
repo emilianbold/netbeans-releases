@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,31 +31,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.autoupdate.services;
+package org.netbeans.junit;
 
-import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.junit.RandomlyFails;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- *
- * @author Jirka Rechtacek
+ * Indicates that this test can fail randomly.
+ * <p>When used on a method in a class extending {@link NbTestCase},
+ * the implicit suite will exclude this test in case the system property
+ * <code>ignore.random.failures</code> is set to <code>true</code>.
+ * When used on a class passed to {@link NbTestSuite#NbTestSuite(Class)} or {@link NbTestSuite#addTestSuite(Class)},
+ * the suite will be empty if the system property is set;
+ * the same if it is used on a class extending {@link NbTestCase}.
+ * <p>Test runs which must be reliable should define the system property.
+ * (E.g. for NetBeans modules: <code>ant -Dtest-unit-sys-prop.ignore.random.failures=true test</code>)
+ * Developers running tests interactively should not.
+ * @since 1.51
  */
-public class InstallWhenDependsOnUpdateTest extends OperationsTestImpl {
-    public InstallWhenDependsOnUpdateTest (String testName) {
-        super (testName);
-    }
-    
-    protected String moduleCodeNameBaseForTest() {
-        return "org.yourorghere.depending_on_new_one_engine";//NOI18N
-    }
-
-    @RandomlyFails
-    public void testSelf() throws Exception {
-        UpdateUnit toInstall = UpdateManagerImpl.getInstance ().getUpdateUnit (moduleCodeNameBaseForTest ());
-        installModule (UpdateManagerImpl.getInstance ().getUpdateUnit ("org.yourorghere.engine"), null);
-        installModule (toInstall, null);
-    }
-    
-}
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD})
+@Inherited
+public @interface RandomlyFails {}

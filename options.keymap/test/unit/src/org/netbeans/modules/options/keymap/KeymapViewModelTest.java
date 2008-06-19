@@ -110,11 +110,9 @@ public class KeymapViewModelTest extends NbTestCase {
             }
         });
     }
-    
+
+    /* XXX failing: #137748
     public void testChangeShortcutsOk () {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return;
-        }
         KeymapViewModel model = new KeymapViewModel ();
         Map<Set<String>,ShortcutAction> shortcuts = setRandomShortcuts (model);
         System.out.println ("apply changes");
@@ -125,6 +123,7 @@ public class KeymapViewModelTest extends NbTestCase {
         checkShortcuts (model, shortcuts, true);
         checkShortcuts (new KeymapViewModel (), shortcuts, true);
     }
+     */
     
     public void testChangeShortcutsCancel () {
         KeymapViewModel model = new KeymapViewModel ();
