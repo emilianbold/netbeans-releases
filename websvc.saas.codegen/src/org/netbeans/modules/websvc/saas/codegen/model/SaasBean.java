@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
+import org.netbeans.modules.websvc.saas.codegen.Constants.DropFileType;
 import org.netbeans.modules.websvc.saas.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.Constants.SaasAuthenticationType;
@@ -583,6 +584,30 @@ public abstract class SaasBean extends GenericResourceBean {
                 mimeTypes.add(mType);
             }
         }
+    }
+    
+    public static boolean canAccept(SaasMethod m, Class classType, DropFileType type) {
+        if(classType == null || type == null)
+            throw new IllegalArgumentException("Argument classType or type is null");
+        if(!classType.isInstance(m))
+            return false;
+        CodeGen codegen = m.getSaas().getSaasMetadata().getCodeGen();
+        if(codegen != null) {
+            List<Artifacts> artifactsList = codegen.getArtifacts();
+            if(artifactsList != null) {
+                for(Artifacts artifacts: artifactsList) {
+                    String targets = artifacts.getTargets();
+                    if(targets != null) {
+                        String[] fileTypes = targets.split(",");
+                        for(String fileType:fileTypes) {
+                            if(fileType.equalsIgnoreCase(type.prefix()))
+                                return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
     
     public class Time {

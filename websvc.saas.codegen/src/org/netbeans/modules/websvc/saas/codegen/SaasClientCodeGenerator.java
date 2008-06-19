@@ -60,6 +60,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.websvc.saas.codegen.Constants.DropFileType;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo.ParamFilter;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo.ParamStyle;
@@ -102,6 +103,7 @@ abstract public class SaasClientCodeGenerator implements SaasClientCodeGeneratio
     private ProgressHandle pHandle;
     private int totalWorkUnits;
     private int workUnits;
+    private DropFileType dropFileType;
     
     public SaasClientCodeGenerator() {
     }
@@ -138,6 +140,14 @@ abstract public class SaasClientCodeGenerator implements SaasClientCodeGeneratio
         this.end = end;
     }
 
+    public DropFileType getDropFileType() {
+        return dropFileType;
+    }
+
+    public void setDropFileType(DropFileType dropFileType) {
+        this.dropFileType = dropFileType;
+    }
+    
     public void initProgressReporting(ProgressHandle pHandle) {
         initProgressReporting(pHandle, true);
     }
