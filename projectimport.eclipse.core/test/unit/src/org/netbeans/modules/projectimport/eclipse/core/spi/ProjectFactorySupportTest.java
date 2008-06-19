@@ -152,7 +152,6 @@ public class ProjectFactorySupportTest extends NbTestCase {
             "src=src;" +
             "var=MAVEN_REPOPO/commons-cli/commons-cli/1.0/commons-cli-1.0.jar;" +
             "file=/home/dev/hibernate-annotations-3.3.1.GA/lib/ejb3-persistence.jar;" +
-            "ant=libs.junit.classpath;" +
             "prj=JavaLibrary1;"+
             "jre="+JavaPlatform.getDefault().getDisplayName()+";";
         String result = ProjectFactorySupport.calculateKey(model);
@@ -181,8 +180,6 @@ public class ProjectFactorySupportTest extends NbTestCase {
         assertEquals(
             "${file.reference.commons-cli-1.0.jar}:" +
             "${file.reference.ejb3-persistence.jar}:" +
-            // XXX if test roots are detected, ought to move JUnit libs to test CP only
-            "${libs.junit.classpath}:" +
             "${reference.JavaLibrary1.jar}", 
             ep.getProperty("javac.classpath").replace(';', ':'));
         assertEquals("${var.MAVEN_REPOPO}/commons-cli/commons-cli/1.0/commons-cli-1.0.jar",
@@ -212,7 +209,6 @@ public class ProjectFactorySupportTest extends NbTestCase {
         assertEquals(
             "${file.reference.commons-cli-1.0.jar}:" +
             "${file.reference.ejb3-persistence.jar}:" +
-            "${libs.junit.classpath}:" +
             "${reference.JavaLibrary1.jar}", 
             ep.getProperty("javac.classpath").replace(';', ':'));
         // ================= end of copy of testUpdateProjectClassPath
@@ -222,7 +218,6 @@ public class ProjectFactorySupportTest extends NbTestCase {
             "src=src;" +
             "var=MAVEN_REPOPO/commons-cli/commons-cli/1.0/commons-cli-1.0.jar;" +
             "file=/home/dev/hibernate-annotations-3.3.1.GA/lib/ejb3-persistence.jar;" +
-            "ant=libs.junit.classpath;" +
             "prj=JavaLibrary1;"+
             "jre="+JavaPlatform.getDefault().getDisplayName()+";", oldKey);
         
@@ -236,7 +231,6 @@ public class ProjectFactorySupportTest extends NbTestCase {
             "var=MAVEN_REPOPO/some/other.jar;" +
             "file=/home/dev/hibernate-annotations-3.3.1.GA/lib/ejb3-persistence.jar;" +
             "file=/some/other.jar;" +
-            "ant=libs.junit.classpath;" +
             "ant=libs.david.classpath;" +
             "prj=JavaLibrary1;" +
             "prj=jlib;"+
@@ -246,7 +240,6 @@ public class ProjectFactorySupportTest extends NbTestCase {
         assertEquals(
             "${file.reference.commons-cli-1.0.jar}:" +
             "${file.reference.ejb3-persistence.jar}:" +
-            "${libs.junit.classpath}:" +
             "${reference.JavaLibrary1.jar}:" +
             "${file.reference.other.jar}:" +
             "${file.reference.other.jar-1}:" +
@@ -299,15 +292,13 @@ public class ProjectFactorySupportTest extends NbTestCase {
         // on classpath nor in key
         assertEquals(
             "${file.reference.commons-cli-1.0.jar}:" +
-            "${file.reference.ejb3-persistence.jar}:" +
-            "${libs.junit.classpath}", 
+            "${file.reference.ejb3-persistence.jar}",
             ep.getProperty("javac.classpath").replace(';', ':'));
         String oldKey = ProjectFactorySupport.calculateKey(model);
         assertEquals(
             "src=src;" +
             "var=MAVEN_REPOPO/commons-cli/commons-cli/1.0/commons-cli-1.0.jar;" +
             "file=/home/dev/hibernate-annotations-3.3.1.GA/lib/ejb3-persistence.jar;" +
-            "ant=libs.junit.classpath;"+
             "jre="+JavaPlatform.getDefault().getDisplayName()+";", oldKey);
     }
 

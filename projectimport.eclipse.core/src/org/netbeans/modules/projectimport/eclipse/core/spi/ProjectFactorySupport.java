@@ -59,6 +59,7 @@ import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
+import org.netbeans.modules.projectimport.eclipse.core.ClassPathContainerResolver;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseProjectReference;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseUtils;
@@ -189,6 +190,10 @@ public class ProjectFactorySupport {
     }
     
     private static String encodeDotClassPathEntryToKey(DotClassPathEntry entry) {
+        if (ClassPathContainerResolver.isJUnit(entry)) {
+            // always ignore junit and never add it to key
+            return null;
+        }
         String value = getValueTag(entry);
         if (value == null || value.length() == 0) {
             return null;
@@ -236,6 +241,10 @@ public class ProjectFactorySupport {
      */
     private static boolean addItemToClassPath(AntProjectHelper helper, ReferenceHelper refHelper, DotClassPathEntry entry, 
             List<Project> alreadyCreatedProjects, List<String> importProblems, FileObject sourceRoot) throws IOException {
+        if (ClassPathContainerResolver.isJUnit(entry)) {
+            // always ignore junit and never add it to NB project compilation classpath
+            return true;
+        }
         if (entry.getKind() == DotClassPathEntry.Kind.PROJECT) {
             Project requiredProject = null;
             // first try to find required project in list of already created projects.

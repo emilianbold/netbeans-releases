@@ -312,7 +312,7 @@ public class JavaCodeGenerator extends CodeGenerator {
         boolean oldsaveText = saveText;
         saveText = saveText && atom.getAutoGenType() == GrammarElement.AUTO_GEN_NONE;
         if (Tool.avoidLAMatch && (context.checkedLA > 0)) {
-            println("//already checked char, just skip");
+            //println("//already checked char, just skip");
             if (!(grammar instanceof TreeWalkerGrammar)) {
                 println("consume();");
             }
@@ -343,7 +343,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 	        }
 	
                 if (Tool.avoidLAMatch && (context.checkedLA > 0)) {
-                    println("//already checked char range, just skip");
+                    //println("//already checked char range, just skip");
                     if (!(grammar instanceof TreeWalkerGrammar)) {
                         println("consume();");
                     }
@@ -1093,7 +1093,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
         // match
         if (Tool.avoidLAMatch && (context.checkedLA > 0)) {
-            println("// already checked token range, just skip");
+            //println("// already checked token range, just skip");
             if (!(grammar instanceof TreeWalkerGrammar)) {
                 println("consume();");
             }
@@ -1123,7 +1123,7 @@ public class JavaCodeGenerator extends CodeGenerator {
         genElementAST(atom, context);
         // matching
         if (Tool.avoidLAMatch && (context.checkedLA > 0)) {
-            println("// already checked token ref, just skip");
+            //println("// already checked token ref, just skip");
             if (!(grammar instanceof TreeWalkerGrammar)) {
                 println("consume();");
             }
@@ -1195,7 +1195,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 	        }
 	        else {
                     if (Tool.avoidLAMatch && (context.checkedLA > 0)) {
-                        println("//already checked tree element, skip");
+                        //println("//already checked tree element, skip");
                         context.decreaseLAChecked();
                     } else {
                         genMatch(t.root);
@@ -1489,7 +1489,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     }
     
     public void printLoopEnd(String label) {
-        println("break;} // End of loop " + label);
+        println("break;} // " + label);
     }
 
     /** Generate an alternative.
@@ -1950,7 +1950,7 @@ public class JavaCodeGenerator extends CodeGenerator {
                 if ( Tool.localLACache && !(grammar instanceof TreeWalkerGrammar) && (maxDepth > 1)) {
                     la_cache_no++;
                     String type = (grammar instanceof LexerGrammar)? "char" : "int";
-                    println("// Local LA Cache for " + maxDepth + " element(s):");
+                    //println("// Local LA Cache for " + maxDepth + " element(s):");
                     for (int i = 1; i<maxDepth+1; i++) {
                         println(type + " LA" + i + "_" + la_cache_no + " = LA(" + i + ");");
                     }

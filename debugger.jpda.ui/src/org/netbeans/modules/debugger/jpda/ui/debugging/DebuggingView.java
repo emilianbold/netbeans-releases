@@ -47,6 +47,8 @@ import java.awt.GridBagConstraints;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.KeyEvent;
@@ -128,6 +130,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private transient ViewModelListener viewModelListener;
     private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
     private PreferenceChangeListener prefListener;
+    private SessionsComboBoxListener sessionsComboListener;
 
     private transient ImageIcon resumeIcon;
     private transient ImageIcon focusedResumeIcon;
@@ -216,6 +219,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         
         prefListener = new DebuggingPreferenceChangeListener();
         preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefListener, preferences));
+        sessionsComboListener = new SessionsComboBoxListener();
         
         scrollBarPanel.setVisible(false);
         treeScrollBar.addAdjustmentListener(this);
@@ -246,11 +250,6 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
 
         sessionComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Java Project" }));
         sessionComboBox.setMaximumSize(new java.awt.Dimension(32767, 20));
-        sessionComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                sessionComboBoxActionPerformed(evt);
-            }
-        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -292,17 +291,6 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(scrollBarPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
-
-private void sessionComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sessionComboBoxActionPerformed
-    SessionItem si = (SessionItem)sessionComboBox.getSelectedItem();
-    if (si != null) {
-        Session ses = si.getSession();
-        DebuggerManager dm = DebuggerManager.getDebuggerManager();
-        if (ses != null && ses != dm.getCurrentSession()) {
-            //dm.setCurrentSession(ses); [TODO]
-        }
-    }
-}//GEN-LAST:event_sessionComboBoxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -530,6 +518,7 @@ private void sessionComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//G
     
     private void updateSessionsComboBox() {
         //Object selection = sessionComboBox.getSelectedItem();
+        sessionComboBox.removeActionListener(sessionsComboListener);
         ComboBoxModel model = sessionComboBox.getModel();
         sessionComboBox.removeAllItems();
         DebuggerManager dm = DebuggerManager.getDebuggerManager();
@@ -543,6 +532,7 @@ private void sessionComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//G
             sessionComboBox.addItem(new SessionItem(null));
         }
         sessionComboBox.setSelectedItem(new SessionItem(dm.getCurrentSession()));
+        sessionComboBox.addActionListener(sessionsComboListener);
     }
     
     // **************************************************************************
@@ -779,6 +769,21 @@ private void sessionComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//G
                 g.drawLine(clipRect.x, height - 1, clipRect.x + clipRect.width - 1, height - 1);
             }
             g.setColor(originalColor);
+        }
+        
+    }
+    
+    private class SessionsComboBoxListener implements ActionListener {
+
+        public void actionPerformed(ActionEvent e) {
+            SessionItem si = (SessionItem)sessionComboBox.getSelectedItem();
+            if (si != null) {
+                Session ses = si.getSession();
+                DebuggerManager dm = DebuggerManager.getDebuggerManager();
+                if (ses != null && ses != dm.getCurrentSession()) {
+                    dm.setCurrentSession(ses);
+                }
+            }
         }
         
     }

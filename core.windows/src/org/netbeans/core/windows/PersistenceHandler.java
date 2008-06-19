@@ -491,7 +491,12 @@ final public class PersistenceHandler implements PersistenceObserver {
         wmc.widthSeparated  = separatedBounds.width;
         wmc.heightSeparated = separatedBounds.height;
         
-        wmc.mainWindowFrameStateJoined = wmi.getMainWindowFrameStateJoined();
+        if( Utilities.isMac() ) {
+            //125881 - mac doesn't fire events when maximized window is resized by user
+            wmc.mainWindowFrameStateJoined = wmi.getMainWindow().getExtendedState();
+        } else {
+            wmc.mainWindowFrameStateJoined = wmi.getMainWindowFrameStateJoined();
+        }
         if (wmc.mainWindowFrameStateJoined == Frame.ICONIFIED) {
             // #46646 - don't save iconified state
             //mkleint - actually shoudn't we ignore the maximized states as well?

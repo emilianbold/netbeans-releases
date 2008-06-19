@@ -89,7 +89,7 @@ public class RunLocalCommand extends Command implements Displayable {
         try {
             Process process = processBuilder.start();
             int exitValue = process.waitFor();
-            File outputTmpFile = processOutput(process, scriptFile, encoding);
+            File outputTmpFile = FileUtil.normalizeFile(processOutput(process, scriptFile, encoding));
 
             PhpOptions options = PhpOptions.getInstance();
             if (options.isOpenResultInBrowser()) {

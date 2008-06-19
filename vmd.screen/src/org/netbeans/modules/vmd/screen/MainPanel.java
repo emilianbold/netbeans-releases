@@ -120,7 +120,7 @@ public class MainPanel extends JPanel {
         add(filler, constraints);
 
         // vlv: print
-        putClientProperty(java.awt.print.Printable.class, ""); // NOI18N
+        putClientProperty("print.printable", Boolean.TRUE); // NOI18N
     }
     
     private class SelectionListener extends MouseAdapter implements Runnable {
