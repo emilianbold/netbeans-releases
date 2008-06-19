@@ -151,7 +151,9 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
             private int handled = 0;
             @Override
             public void projectFilesCounted(CsmProject project, int filesCount) {
+                err.flush();
                 out.println("Project " + project.getName() + " has " + filesCount + " files"); // NOI18N
+                out.flush();
                 handle.switchToDeterminate(filesCount);
             }
 
@@ -167,5 +169,7 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
         }, canceled);
         handle.finish();
         out.println("Analyzing " + p.getProjectDisplayName() + " took " + (time[1]-time[0]) + "ms"); // NOI18N
+        err.flush();
+        out.flush();
     }
 }
