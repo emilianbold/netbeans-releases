@@ -127,7 +127,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             runAsScript = new RunAsScript(configManager);
             RunAsPanel.InsidePanel[] insidePanels = new RunAsPanel.InsidePanel[] {
                 runAsLocalWeb,
-                //runAsRemoteWeb,
+                runAsRemoteWeb,
                 runAsScript,
             };
             runConfigurationPanelVisual = new RunConfigurationPanelVisual(this, sourcesFolderNameProvider, configManager, insidePanels);

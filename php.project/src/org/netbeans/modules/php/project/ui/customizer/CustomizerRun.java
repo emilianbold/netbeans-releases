@@ -68,7 +68,7 @@ public class CustomizerRun extends javax.swing.JPanel {
         manager = new ConfigManager(properties);
         insidePanels = new RunAsPanel.InsidePanel[] {
             new RunAsLocalWeb(manager, category),
-            //new RunAsRemoteWeb(manager, category),
+            new RunAsRemoteWeb(manager, category),
             new RunAsScript(manager, category),
         };
         initComponents();
