@@ -80,6 +80,7 @@ import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.RefactoringModule;
 import org.openide.awt.Mnemonics;
@@ -192,7 +193,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             }
         } else if (CsmKindUtilities.isFunction(refObject)) {
             String functionFQN = ((CsmFunction)refObject).getSignature().toString();
-            functionFQN = CsmRefactoringUtils.htmlize(functionFQN);
+            functionFQN = CsmDisplayUtilities.htmlize(functionFQN);
             labelText = getString("DSC_FunctionUsages", functionFQN); // NOI18N
         } else if (CsmKindUtilities.isClass(refObject)) {
             CsmDeclaration.Kind classKind = ((CsmDeclaration)refObject).getKind();

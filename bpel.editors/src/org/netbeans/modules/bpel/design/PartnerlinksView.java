@@ -36,8 +36,8 @@ public class PartnerlinksView extends DiagramView {
         this.mode = mode;
 
         // vlv: print
-        putClientProperty(java.awt.print.Printable.class, ""); // NOI18N
-        putClientProperty(java.lang.Integer.class, mode.getWeight());
+        putClientProperty("print.printable", Boolean.TRUE); // NOI18N
+        putClientProperty("print.weight", mode.getWeight()); // NOI18N
     }
 
     public PartnerRole getMode() {

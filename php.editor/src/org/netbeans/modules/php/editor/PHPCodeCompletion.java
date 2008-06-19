@@ -76,6 +76,7 @@ import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPDOCTagElement;
 import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -149,7 +150,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             new PHPTokenId[]{PHPTokenId.PHPDOC_COMMENT}
             );
     
-    private static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, STRING,
+    static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, STRING,
         CLASS_MEMBER, STATIC_CLASS_MEMBER, PHPDOC, NONE};
 
     private final static String[] PHP_KEYWORDS = {"__FILE__", "exception",
@@ -170,7 +171,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private boolean caseSensitive;
     private NameKind nameKind;
     
-    private static CompletionContext findCompletionContext(CompilationInfo info, int caretOffset){
+    static CompletionContext findCompletionContext(CompilationInfo info, int caretOffset){
         Document document = info.getDocument();
         if (document == null) {
             return CompletionContext.NONE;
@@ -308,7 +309,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 break;
             case STRING:
                 // LOCAL VARIABLES
-                proposals.addAll(getLocalVariableProposals(request.result.getProgram().getStatements(), request));
+                proposals.addAll(getVariableProposals(request.result.getProgram().getStatements(), request));
                 break;
             case CLASS_MEMBER:
                 autoCompleteClassMembers(proposals, request, false);
@@ -469,7 +470,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
 
         // LOCAL VARIABLES
-        proposals.addAll(getLocalVariableProposals(request.result.getProgram().getStatements(), request));
+        proposals.addAll(getVariableProposals(request.result.getProgram().getStatements(), request));
         
         // CLASS NAMES
         // TODO only show classes with static elements
@@ -486,7 +487,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
     }
 
-    private Collection<CompletionProposal> getLocalVariableProposals(Collection<Statement> statementList,
+    private Collection<CompletionProposal> getVariableProposals(Collection<Statement> statementList,
             PHPCompletionItem.CompletionRequest request){
         
         Collection<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
@@ -502,6 +503,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         for (IndexedConstant localVar : localVars){
             CompletionProposal proposal = new PHPCompletionItem.VariableItem(localVar, request);
             proposals.add(proposal);
+        }
+        
+        for (String name : PredefinedSymbols.SUPERGLOBALS){
+            if (isPrefix("$" + name, request.prefix)) { //NOI18N
+                CompletionProposal proposal = new PHPCompletionItem.SuperGlobalItem(request, name);
+                proposals.add(proposal);
+            }
         }
         
         return proposals;
@@ -710,10 +718,16 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         
     public String document(CompilationInfo info, ElementHandle element) {
         
+        //todo use inheritance instead of these checks
         if (element instanceof PHPDOCTagElement) {
             PHPDOCTagElement pHPDOCTagElement = (PHPDOCTagElement) element;
             return pHPDOCTagElement.getDoc();
         } 
+        
+        if (element instanceof PredefinedSymbolElement) {
+            PredefinedSymbolElement predefinedSymbolElement = (PredefinedSymbolElement) element;
+            return predefinedSymbolElement.getDoc();
+        }
         
         if (element instanceof IndexedElement) {
             final IndexedElement indexedElement = (IndexedElement) element;

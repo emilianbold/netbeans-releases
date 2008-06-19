@@ -2735,7 +2735,11 @@ public final class Models {
                 } catch (UnknownTypeException e) {
                 }
             }
-            throw new UnknownTypeException (node);
+            if (k == 0) {
+                return new Action[] {};
+            } else {
+                throw new UnknownTypeException (node);
+            }
         }
 
         /**

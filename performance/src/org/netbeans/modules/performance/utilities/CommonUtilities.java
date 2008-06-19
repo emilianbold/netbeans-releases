@@ -217,9 +217,10 @@ public class CommonUtilities {
      * Close Memory Toolbar.
      */
     public static void closeMemoryToolbar(){
-        closeToolbar(Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/View") + "|" +
-                Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle","CTL_ToolbarsListAction") + "|" +
-                Bundle.getStringTrimmed("org.netbeans.core.Bundle","Toolbars/Memory"));
+        // View|Toolbars|Memory
+        closeToolbar(Bundle.getStringTrimmed("org.openide.actions.Bundle","View") + "|" +
+                Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle", "CTL_ToolbarsListAction") + "|" +
+                "Memory");
     }
     
     private static void closeToolbar(String menu){

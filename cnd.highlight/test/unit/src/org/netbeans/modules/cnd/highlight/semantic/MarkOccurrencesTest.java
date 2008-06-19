@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.highlight.semantic.MarkOccurrencesHighlighter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 
 /**
@@ -72,6 +71,11 @@ public class MarkOccurrencesTest extends SemanticHighlightingTestBase {
         doTest("localvar", 236); // NOI18N
     }
 
+    public void testGlobalVariable() throws Exception {
+        // int bar
+        doTest("globalvar", 264); // NOI18N
+    }
+
     public void testField() throws Exception {
         //boo 
         doTest("field", 122); // NOI18N
@@ -91,7 +95,7 @@ public class MarkOccurrencesTest extends SemanticHighlightingTestBase {
         // class Foo 
         doTest("classname", 110); // NOI18N
     }
-
+    
     protected Collection<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
         return MarkOccurrencesHighlighter.getOccurrences(testFile, offset);
     }

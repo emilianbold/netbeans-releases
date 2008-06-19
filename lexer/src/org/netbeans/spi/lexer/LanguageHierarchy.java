@@ -48,7 +48,6 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.CharProvider;
 import org.netbeans.lib.lexer.LexerApiPackageAccessor;
 import org.netbeans.lib.lexer.LexerInputOperation;
 import org.netbeans.lib.lexer.LexerSpiPackageAccessor;
@@ -279,6 +278,9 @@ public abstract class LanguageHierarchy<T extends TokenId> {
     }
 
     /**
+     * This feature is currently not supported - Token.text()
+     * will return null for non-flyweight tokens.
+     * <br/>
      * Determine whether the text of the token with the particular id should
      * be retained after the token has been removed from the token list
      * because of the underlying mutable input source modification.
@@ -387,8 +389,8 @@ public abstract class LanguageHierarchy<T extends TokenId> {
             return languageHierarchy.isRetainTokenText(id);
         }
 
-        public LexerInput createLexerInput(CharProvider charProvider) {
-            return new LexerInput(charProvider);
+        public LexerInput createLexerInput(LexerInputOperation<?> operation) {
+            return new LexerInput(operation);
         }
 
         public Language<?> language(MutableTextInput<?> mti) {

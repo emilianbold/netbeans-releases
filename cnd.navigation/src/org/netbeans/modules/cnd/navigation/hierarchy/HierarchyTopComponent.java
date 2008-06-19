@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.navigation.hierarchy;
 import java.awt.BorderLayout;
 import java.io.Serializable;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
@@ -58,7 +57,6 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.navigation.classhierarchy.ClassHierarchyPanel;
 import org.netbeans.modules.cnd.navigation.includeview.IncludeHierarchyPanel;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.Utilities;
@@ -72,9 +70,6 @@ final class HierarchyTopComponent extends TopComponent implements CsmModelListen
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/cnd/navigation/classhierarchy/resources/subtypehierarchy.gif"; // NOI18N
     private static final String PREFERRED_ID = "HierarchyTopComponent"; // NOI18N
-    private static final String OPENED_VIEW_PREFERENCE = "HierarchyViewWasOpened"; // NOI18N
-    private static final String OPENED_DIALOG_PREFERENCE = "HierarchyDialodWasOpened"; // NOI18N
-    public static final boolean USE_VIEW_AS_DIALOG = false;
     private JComponent last = null;
 
     private HierarchyTopComponent() {
@@ -82,36 +77,6 @@ final class HierarchyTopComponent extends TopComponent implements CsmModelListen
         setName(NbBundle.getMessage(getClass(), "CTL_HierarchyTopComponent")); // NOI18N
         setToolTipText(NbBundle.getMessage(getClass(), "HINT_HierarchyTopComponent")); // NOI18N
         setIcon(Utilities.loadImage(ICON_PATH, true));
-    }
-
-    public boolean isUserOpenView(){
-        if (USE_VIEW_AS_DIALOG) {
-            Preferences ps = NbPreferences.forModule(HierarchyTopComponent.class);
-            return ps.getBoolean(HierarchyTopComponent.OPENED_VIEW_PREFERENCE, false);
-        }
-        return true;
-    }
-
-    public void setUserOpenView(){
-        if (USE_VIEW_AS_DIALOG) {
-            Preferences ps = NbPreferences.forModule(HierarchyTopComponent.class);
-            ps.putBoolean(HierarchyTopComponent.OPENED_VIEW_PREFERENCE, true);
-        }
-    }
-
-    public boolean isUserOpenDialog(){
-        if (USE_VIEW_AS_DIALOG) {
-            Preferences ps = NbPreferences.forModule(HierarchyTopComponent.class);
-            return ps.getBoolean(HierarchyTopComponent.OPENED_DIALOG_PREFERENCE, false);
-        }
-        return true;
-    }
-
-    public void setUserOpenDialog(){
-        if (USE_VIEW_AS_DIALOG) {
-            Preferences ps = NbPreferences.forModule(HierarchyTopComponent.class);
-            ps.putBoolean(HierarchyTopComponent.OPENED_DIALOG_PREFERENCE, true);
-        }
     }
 
     void setClass(CsmClass decl, boolean setClose) {
