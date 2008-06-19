@@ -628,9 +628,7 @@ public class ADProjectTreeEngine
                   }
               }
               else
-              {
-                  // TODO: meteora
-                   
+              {                   
                   // The C++ version first checks if changed Item is actually an
                   // IElement instance.  However, since INamedElement extends IElement
                   // I do not have to worry about that.
