@@ -495,11 +495,19 @@ public class TSDiagramConverter
                         else if(nodeInfo.getModelElement() instanceof IActivityPartition)
                         {
                             IActivityPartition ap=(IActivityPartition)nodeInfo.getModelElement();
-                            
+                            if(ap.getSubPartitions()!=null && ap.getSubPartitions().size()>1)//don't need to care if only one subpartition
+                            {
+                                new AfterValidationExecutor(new LoadSubPartitionsProvider((UMLNodeWidget) widget,ap, SeparatorWidget.Orientation.valueOf(nodeInfo.getProperty("Orientation").toString()), nodeInfo.getDevidersOffests()), scene);
+                            }
                         }
-                        //else if(nodeInfo.getModelElement() instanceof COMPOSITE-STATE)
+                        else if(nodeInfo.getModelElement() instanceof IState)
                         {
-                            
+                            IState state=(IState) nodeInfo.getModelElement();
+                            if(state.getContents()!=null && state.getContents().size()>1)//don't need to care if only one region
+                            {
+                                //composite state
+                                new AfterValidationExecutor(new LoadRegionsProvider((UMLNodeWidget) widget,state, SeparatorWidget.Orientation.valueOf(nodeInfo.getProperty("Orientation").toString()), nodeInfo.getDevidersOffests()), scene);
+                            }
                         }
                     }
                 }
