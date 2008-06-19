@@ -135,22 +135,27 @@ public class ProjectPanel extends javax.swing.JPanel {
             tmp = "My Project"; // NOI18N
         tName.setText(camelize(tmp));
         
-        final File home = ProjectChooser.getProjectsFolder();
-        tHome.setText(home != null ? home.getAbsolutePath() : System.getProperty("user.home", "")); // NOI18N
-        
-        if (testIfProjectNameExists()) {
-            String name = getProjectName();
-            if (name.endsWith("1")) name = name.substring(0, name.length() - 1); //NOI18N
-            int i = 2;
-            for (;;) {
-                tName.setText(name + i); // NOI18N
-                if (! testIfProjectNameExists())
-                    break;
-                i ++;
+        File location = (File) object.getProperty(PROJECT_LOCATION);
+        if (location != null){
+            tCreated.setText(location.getAbsolutePath());
+        } else {
+            final File home = ProjectChooser.getProjectsFolder();
+            tHome.setText(home != null ? home.getAbsolutePath() : System.getProperty("user.home", "")); // NOI18N
+
+            if (testIfProjectNameExists()) {
+                String name = getProjectName();
+                if (name.endsWith("1")) name = name.substring(0, name.length() - 1); //NOI18N
+                int i = 2;
+                for (;;) {
+                    tName.setText(name + i); // NOI18N
+                    if (! testIfProjectNameExists())
+                        break;
+                    i ++;
+                }
             }
+            tName.selectAll();
         }
-        tName.selectAll();
-        
+
         b = (Boolean) object.getProperty(PROJECT_MAIN);
         cMainProject.setSelected(b == null ? true : b.booleanValue());
         

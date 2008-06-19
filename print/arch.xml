@@ -120,23 +120,19 @@
 
       <p>The simple way to enable print preview for a custom data is:</p>
 
-      <p>If the data is a Swing component which extends <code>javax.swing.JComponent</code> and
-      is shown in a <code>org.openide.windows.TopComponent</code>, not <code>null</code> key
-      <code>"java.awt.print.Printable.class"</code> in the component should be set, see example:</p>
+      <p>If the data is a Swing component which extends <code>javax.swing.JComponent</code>
+      and shown in a <code>org.openide.windows.TopComponent</code>, the
+      key "print.printable" (PrintManager.PRINT_PRINTABLE) with value <code>"Boolean.TRUE"</code>
+      in the component must be set as a client property, see example:</p>
 
       <pre>
-      public class CustomComponent extends JComponent {
+      public class CustomComponent extends javax.swing.JComponent {
         public CustomComponent() {
           ...
-          putClientProperty(java.awt.print.Printable.class, "&lt;name&gt;");
+          putClientProperty("print.printable", Boolean.TRUE); // NOI18N
         }
         ...
       }</pre>
-
-      <p>The second argument in method <code>putClientProperty</code> is a name, which is
-      shown at the top/bottom of the print preview as the header/footer, which can be
-      changed in the Print Options dialog. If empty name is passed, the display name
-      of the top component is shown.</p>
   </answer>
 
   <!--

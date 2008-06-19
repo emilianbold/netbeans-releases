@@ -66,9 +66,10 @@ public class TemplateParameterImpl extends OffsetableDeclarationBase implements 
     private final CharSequence name;
     private CsmUID<CsmScope> scope;
 
-    public TemplateParameterImpl(AST ast, CsmFile file, CsmScope scope) {
+    public TemplateParameterImpl(AST ast, String name, CsmFile file, CsmScope scope) {
         super(ast, file);
-        this.name = NameCache.getManager().getString(ast.getText());
+        // TODO what about explicite type in ast?
+        this.name = NameCache.getManager().getString(name);
         if ((scope instanceof CsmIdentifiable)) {
             this.scope = UIDCsmConverter.scopeToUID(scope);
         }
