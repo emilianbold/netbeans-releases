@@ -69,6 +69,7 @@ class NbWriter extends OutputWriter {
     }
 
     
+    @Override
     public void println(String s, OutputListener l, boolean important) throws IOException {
         ((OutWriter) out).println (s, l, important);
     }

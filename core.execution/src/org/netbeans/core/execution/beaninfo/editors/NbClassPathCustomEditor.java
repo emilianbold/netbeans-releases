@@ -460,6 +460,15 @@ class NbClassPathCustomEditor extends javax.swing.JPanel {
             upButton.setEnabled(false);
         }
     }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        if (enabled) {
+            enableButtons();
+        }
+    }
+    
     
     /** This method parses given classPath and adds the elements to
      * the listModel.
