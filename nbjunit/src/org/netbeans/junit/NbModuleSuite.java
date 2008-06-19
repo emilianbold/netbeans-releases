@@ -103,6 +103,7 @@ public class NbModuleSuite {
         final String clusterRegExp;
         final String moduleRegExp;
         final ClassLoader parentClassLoader;
+        final boolean reuseUserDir;
         final boolean gui;
 
         private Configuration(
@@ -110,19 +111,21 @@ public class NbModuleSuite {
             String moduleRegExp,
             ClassLoader parent, 
             List<Item> testItems,
-            Class<? extends TestCase> latestTestCase,
+            Class<? extends TestCase> latestTestCase, 
+            boolean reuseUserDir,
             boolean gui
         ) {
             this.clusterRegExp = clusterRegExp;
             this.moduleRegExp = moduleRegExp;
             this.parentClassLoader = parent;
             this.tests = testItems;
+            this.reuseUserDir = reuseUserDir;
             this.latestTestCaseClass = latestTestCase;
             this.gui = gui;
         }
 
-        static Configuration create(Class<? extends TestCase> clazz) {
-            return new Configuration(null, null, ClassLoader.getSystemClassLoader().getParent(), Collections.<Item>emptyList(), clazz, true);
+        static Configuration create(Class<? extends TestCase> clazz) {            
+            return new Configuration(null, null, ClassLoader.getSystemClassLoader().getParent(), Collections.<Item>emptyList(), clazz, false, true);
         }
         
         /** Regular expression to match clusters that shall be enabled.
@@ -135,7 +138,7 @@ public class NbModuleSuite {
          * @return clone of this configuration with cluster set to regExp value
          */
         public Configuration clusters(String regExp) {
-            return new Configuration(regExp, moduleRegExp, parentClassLoader, tests, latestTestCaseClass, gui);
+            return new Configuration(regExp, moduleRegExp, parentClassLoader, tests, latestTestCaseClass, reuseUserDir, gui);
         }
 
         /** By default only modules on classpath of the test are enabled, 
@@ -146,11 +149,11 @@ public class NbModuleSuite {
          * @return clone of this configuration with enable modules set to regExp value
          */
         public Configuration enableModules(String regExp) {
-            return new Configuration(clusterRegExp, regExp, parentClassLoader, tests, latestTestCaseClass, gui);
+            return new Configuration(clusterRegExp, regExp, parentClassLoader, tests, latestTestCaseClass, reuseUserDir, gui);
         }
 
         Configuration classLoader(ClassLoader parent) {
-            return new Configuration(clusterRegExp, moduleRegExp, parent, tests, latestTestCaseClass, gui);
+            return new Configuration(clusterRegExp, moduleRegExp, parent, tests, latestTestCaseClass, reuseUserDir, gui);
         }
 
         /** Adds new test name, or array of names into the configuration. By 
@@ -170,7 +173,7 @@ public class NbModuleSuite {
             }
             List<Item> newTests = new ArrayList<Item>(tests);
             newTests.add(new Item(true, latestTestCaseClass, testNames));
-            return new Configuration(clusterRegExp, moduleRegExp, parentClassLoader, newTests, latestTestCaseClass, gui);
+            return new Configuration(clusterRegExp, moduleRegExp, parentClassLoader, newTests, latestTestCaseClass, reuseUserDir, gui);
         }
         
         /** Adds new test class to run, together with a list of its methods
@@ -193,7 +196,7 @@ public class NbModuleSuite {
             if ((testNames != null) && (testNames.length != 0)){
                 newTests.add(new Item(true, test, testNames));
             }
-            return new Configuration(clusterRegExp, moduleRegExp, parentClassLoader, newTests, test, gui);
+            return new Configuration(clusterRegExp, moduleRegExp, parentClassLoader, newTests, test, reuseUserDir, gui);
         }
         
         /**
@@ -214,7 +217,7 @@ public class NbModuleSuite {
             }
             List<Item> newTests = new ArrayList<Item>(tests);
             newTests.add(new Item(false, test, null));
-            return new Configuration(clusterRegExp, moduleRegExp, parentClassLoader, newTests, latestTestCaseClass, gui);
+            return new Configuration(clusterRegExp, moduleRegExp, parentClassLoader, newTests, latestTestCaseClass, reuseUserDir, gui);
         }
 
         private void addLatest(List<Item> newTests) {
@@ -232,7 +235,7 @@ public class NbModuleSuite {
         private Configuration getReady() {
             List<Item> newTests = new ArrayList<Item>(tests);
             addLatest(newTests);
-            return new Configuration(clusterRegExp, moduleRegExp, parentClassLoader, newTests, latestTestCaseClass, gui);
+            return new Configuration(clusterRegExp, moduleRegExp, parentClassLoader, newTests, latestTestCaseClass, reuseUserDir, gui);
         }
         
         /** Should the system run with GUI or without? The default behaviour
@@ -245,7 +248,17 @@ public class NbModuleSuite {
          * @return clone of this configuration with gui mode associated
          */
         public Configuration gui(boolean gui) {
-            return new Configuration(clusterRegExp, moduleRegExp, parentClassLoader, tests, latestTestCaseClass, gui);
+            return new Configuration(clusterRegExp, moduleRegExp, parentClassLoader, tests, latestTestCaseClass, reuseUserDir, gui);
+        }
+
+        /**
+         * Enables or disables userdir reuse. By default it is disabled.
+         * @param reuse true or false
+         * @return clone of this configuration with userdir reuse mode associated
+         * @since 1.52
+         */
+        public Configuration reuseUserDir(boolean reuse) {
+            return new Configuration(clusterRegExp, moduleRegExp, parentClassLoader, tests, latestTestCaseClass, reuse, gui);
         }
     }
 
@@ -427,9 +440,14 @@ public class NbModuleSuite {
             System.setProperty("netbeans.home", platform.getPath());
             System.setProperty("netbeans.full.hack", "true");
 
-            File ud = new File(new File(Manager.getWorkDirPath()), "userdir" + invocations++);
+            File ud;
+            if (config.reuseUserDir) {
+                ud = new File(new File(Manager.getWorkDirPath()), "userdir" + invocations);
+            } else {
+                ud = new File(new File(Manager.getWorkDirPath()), "userdir" + invocations++);
+                NbTestCase.deleteSubFiles(ud);
+            }
             ud.mkdirs();
-            NbTestCase.deleteSubFiles(ud);
 
             System.setProperty("netbeans.user", ud.getPath());
 

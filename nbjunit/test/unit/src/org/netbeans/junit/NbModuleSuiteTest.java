@@ -49,6 +49,7 @@ import java.util.Properties;
 import java.util.Set;
 import junit.framework.Test;
 import junit.framework.TestCase;
+import test.pkg.not.in.junit.NbModuleSuiteTUserDir;
 
 /**
  *
@@ -59,6 +60,24 @@ public class NbModuleSuiteTest extends TestCase {
     public NbModuleSuiteTest(String testName) {
         super(testName);
     }            
+    
+    public void testUserDir() {
+        Test instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(NbModuleSuiteTUserDir.class).gui(false));
+        junit.textui.TestRunner.run(instance);
+        
+        assertEquals("Doesn't exist", System.getProperty("t.userdir"));
+        
+        instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(NbModuleSuiteTUserDir.class).gui(false).reuseUserDir(true));
+        junit.textui.TestRunner.run(instance);
+        
+        assertEquals("Exists", System.getProperty("t.userdir"));
+        
+        instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(NbModuleSuiteTUserDir.class).gui(false).reuseUserDir(false));
+        junit.textui.TestRunner.run(instance);
+        
+        assertEquals("Doesn't exist", System.getProperty("t.userdir"));
+        assertProperty("netbeans.full.hack", "true");
+    }
     
     public void testPreparePathes() {
         Properties p = new Properties();
@@ -255,7 +274,7 @@ public class NbModuleSuiteTest extends TestCase {
         assertTrue("JUnit: " + s, s.contains("org.netbeans.libs.junit4"));
         assertTrue("insane: " + s, s.contains("org.netbeans.insane"));
     }
-    
+        
     public void testAddSuite() throws Exception{
         System.setProperty("t.one", "No");
         NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
