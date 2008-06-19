@@ -117,7 +117,7 @@ public class Clearcase {
         fileStatusCache = new FileStatusCache();
         clearcaseAnnotator = new ClearcaseAnnotator();
         clearcaseInterceptor = new ClearcaseInterceptor();
-        client = new ClearcaseClient();        
+        client = new ClearcaseClient(true);        
     }
 
     public void printlnOut(String msg) {
