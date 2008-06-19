@@ -44,12 +44,12 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.TypeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
@@ -263,7 +263,10 @@ public class Resolver3 implements Resolver {
     
     private CsmClassifier findNestedClassifier(CsmClassifier clazz) {
         if (CsmKindUtilities.isClass(clazz)) {
-            for (CsmMember member : ((CsmClass)clazz).getMembers()) {
+            Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers((CsmClass)clazz,
+                    CsmSelect.getDefault().getFilterBuilder().createNameFilter(currName().toString(), true, true, false));
+            while(it.hasNext()) {
+                CsmMember member = it.next();
                 if( CharSequenceKey.Comparator.compare(currName(),member.getName())==0 ) {
                     if(CsmKindUtilities.isClassifier(member)) {
                         return (CsmClassifier) member;
@@ -424,7 +427,7 @@ public class Resolver3 implements Resolver {
                 }
                 
                 if( result == null ) {
-                    CsmDeclaration decl = (CsmDeclaration) usingDeclarations.get(CharSequenceKey.create(nameTokens[0]));
+                    CsmDeclaration decl = usingDeclarations.get(CharSequenceKey.create(nameTokens[0]));
                     if( decl != null ) {
                         result = decl;
                     }
@@ -497,6 +500,18 @@ public class Resolver3 implements Resolver {
                         }
                     }
                 }
+                
+                if( result == null ) {
+                    for (Iterator<CharSequence> iter = usedNamespaces.iterator(); iter.hasNext();) {
+                        String nsp = iter.next().toString();
+                        String fqn = nsp + "::" + sb; // NOI18N
+                        result = findClassifier(fqn);
+                        if( result != null ) {
+                            break;
+                        }
+                    }
+                }
+
                 if( result == null ) {
                     CsmObject first = new Resolver3(this.file, this.origOffset, this).resolve(nameTokens[0], NAMESPACE);
                     if( first != null ) {

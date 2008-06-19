@@ -45,6 +45,8 @@ import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.ui.ClassDialog;
 import org.netbeans.modules.websvc.wsitconf.ui.client.PanelEnabler;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHandler;
 import org.netbeans.modules.xml.wsdl.model.Binding;
@@ -71,10 +73,6 @@ public class DynamicCredsPanel extends javax.swing.JPanel implements PanelEnable
                
         initComponents();
         
-//        passwdHandlerField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-//        passwdHandlerLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-//        usernameHandlerField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-//        usernameHandlerLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         sync();
     }
     
@@ -97,7 +95,7 @@ public class DynamicCredsPanel extends javax.swing.JPanel implements PanelEnable
     
     public void setValue(javax.swing.JComponent source, Object value) {
         if (inSync) return;
-            
+        ConfigVersion cfgVersion = PolicyModelHelper.getConfigVersion(binding);
         if (source.equals(usernameHandlerField)) {
             String classname = getCallbackHandler(CallbackHandler.USERNAME_CBHANDLER);
             if ((classname != null) && (classname.length() == 0)) {
@@ -248,6 +246,7 @@ private void usernameHandlerFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN
                 Set<String> selectedClasses = classDialog.getSelectedClasses();
                 for (String selectedClass : selectedClasses) {
                     setCallbackHandler(selectedClass, CallbackHandler.PASSWORD_CBHANDLER);
+//                    ConfigVersion cfgVersion = PolicyModelHelper.getConfigVersion(binding);
                     ProprietarySecurityPolicyModelHelper.setCallbackHandler(binding, CallbackHandler.PASSWORD_CBHANDLER, selectedClass, null, true);
                     break;
                 }
@@ -263,6 +262,7 @@ private void usernameHandlerFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN
                 Set<String> selectedClasses = classDialog.getSelectedClasses();
                 for (String selectedClass : selectedClasses) {
                     setCallbackHandler(selectedClass, CallbackHandler.USERNAME_CBHANDLER);
+//                    ConfigVersion cfgVersion = PolicyModelHelper.getConfigVersion(binding);
                     ProprietarySecurityPolicyModelHelper.setCallbackHandler(binding, CallbackHandler.USERNAME_CBHANDLER, selectedClass, null, true);
                     break;
                 }

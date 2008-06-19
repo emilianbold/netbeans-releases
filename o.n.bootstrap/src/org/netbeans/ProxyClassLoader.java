@@ -186,7 +186,7 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
     @Override
     protected synchronized Class loadClass(String name, boolean resolve)
                                             throws ClassNotFoundException {
-        if (LOG_LOADING && !name.startsWith("java.util.logging.")) {
+        if (LOG_LOADING && !name.startsWith("java.")) {
             LOGGER.log(Level.FINEST, "{0} initiated loading of {1}",
                     new Object[] {this, name});
         }
@@ -260,7 +260,7 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
         Class cls = findLoadedClass(name); 
         if (cls == null) {
             cls = doLoadClass(pkg, name);
-            if (LOG_LOADING && !name.startsWith("java.util.logging.")) LOGGER.log(Level.FINEST, "{0} loaded {1}",
+            if (LOG_LOADING && !name.startsWith("java.")) LOGGER.log(Level.FINEST, "{0} loaded {1}",
                         new Object[] {this, name});
         }
         return cls; 

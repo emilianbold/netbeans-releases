@@ -56,10 +56,10 @@ public enum Macro {
   ROW, // row number
   COLUMN, // column number
   COUNT, // total count
-  MODIFIED_DATE, // the date of last modification
-  MODIFIED_TIME, // the time of last modification
-  PRINTED_DATE, // the date of printing
-  PRINTED_TIME; // the time of printing
+  MODIFIED_DATE, // date of the last modification
+  MODIFIED_TIME, // time of the last modification
+  PRINTED_DATE, // date of printing
+  PRINTED_TIME; // time of printing
 
   public interface Listener {
 

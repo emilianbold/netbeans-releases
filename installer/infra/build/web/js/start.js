@@ -62,6 +62,7 @@ function initialize() {
 
 	    if(query!="" && query != string && query.indexOf(sep)!=-1)  {
 	            url      = query.substring(0, query.indexOf(sep));	                
+	            url      = BINARIES_LOCATION + url;
 		    filename = url.substring(url.lastIndexOf("/") + 1, url.length);
 		    query = query.substring(query.indexOf(sep) + 1, query.length);
 		    
@@ -168,17 +169,6 @@ function getMD5(name) {
 		}
         }
 	return md5;
-}
-
-function getSize(name) {
-	var size = "";
-        for (var i = 0; i < file_names.length; i++) {		
-		if(file_names[i] == filename) {		
-			size = file_sizes[i];
-			break;
-		}
-        }
-	return size;
 }
 
 function write_download_info() {

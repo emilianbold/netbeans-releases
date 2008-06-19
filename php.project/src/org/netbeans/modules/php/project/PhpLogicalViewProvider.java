@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -53,7 +52,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -86,6 +84,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -97,12 +96,13 @@ import org.openide.util.lookup.Lookups;
  */
 class PhpLogicalViewProvider implements LogicalViewProvider {
     private static final Logger LOGGER = Logger.getLogger(PhpLogicalViewProvider.class.getName());
-    static final Image PACKAGE_BADGE = Utilities.loadImage(
+    static final Image PACKAGE_BADGE = ImageUtilities.loadImage(
             "org/netbeans/modules/php/project/ui/resources/packageBadge.gif"); // NOI18N
 
     final PhpProject project;
 
     PhpLogicalViewProvider(PhpProject project) {
+        assert project != null;
         this.project = project;
     }
 
@@ -240,17 +240,8 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
             actions.add(SystemAction.get(FindAction.class));
 
             // honor 57874 contact
-            Collection<? extends Object> res = Lookups.forPath("Projects/Actions").lookupAll(Object.class); // NOI18N
-            if (!res.isEmpty()) {
-                actions.add(null);
-                for (Object next : res) {
-                    if (next instanceof Action) {
-                        actions.add((Action) next);
-                    } else if (next instanceof JSeparator) {
-                        actions.add(null);
-                    }
-                }
-            }
+            actions.add(null);
+            actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
             actions.add(null);
             actions.add(CommonProjectActions.customizeProjectAction());
             return actions.toArray(new Action[actions.size()]);
@@ -425,12 +416,12 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public Image getIcon(int type) {
-            return Utilities.mergeImages(super.getIcon(type), PACKAGE_BADGE, 7, 7);
+            return ImageUtilities.mergeImages(super.getIcon(type), PACKAGE_BADGE, 7, 7);
         }
 
         @Override
         public Image getOpenedIcon(int type) {
-            return Utilities.mergeImages(super.getOpenedIcon(type), PACKAGE_BADGE, 7, 7);
+            return ImageUtilities.mergeImages(super.getOpenedIcon(type), PACKAGE_BADGE, 7, 7);
         }
 
         @Override
@@ -455,9 +446,14 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public Action[] getActions(boolean context) {
+            PhpActionProvider provider = project.getLookup().lookup(PhpActionProvider.class);
+            assert provider != null;
             Action[] actions = new Action[] {
                 CommonProjectActions.newFileAction(),
                 null,
+//                provider.getAction(DownloadCommand.ID),
+//                provider.getAction(UploadCommand.ID),
+//                null,
                 SystemAction.get(FileSystemAction.class),
                 null,
                 SystemAction.get(FindAction.class),

@@ -45,18 +45,23 @@ package org.netbeans.test.umllib;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Point;
+import java.awt.event.InputEvent;
+import java.lang.Enum;
 import javax.swing.JList;
 import javax.swing.ListModel;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.test.umllib.exceptions.NotFoundException;
 import org.netbeans.test.umllib.exceptions.UMLCommonException;
 import org.netbeans.test.umllib.util.LibProperties;
+import org.netbeans.test.umllib.DNDDriver;
 
 public class UMLPaletteOperator extends TopComponentOperator {
     
@@ -339,4 +344,67 @@ public class UMLPaletteOperator extends TopComponentOperator {
     {
         return debug_info;
     }
+   
+   public void dndToolByType(Enum type, ComponentOperator drawingArea, Point drawingAreaPoint) throws NotFoundException {
+        dndTool(getToolNameByElementType(type),  drawingArea, drawingAreaPoint);
+   }
+      
+      
+   public void dndTool(String toolName, ComponentOperator drawingArea, Point drawingAreaPoint) throws NotFoundException {
+        //selectToolByType(type);
+        makeComponentVisible();
+        waitComponentVisible(true);
+        //
+        try{Thread.sleep(100);}catch(Exception ex){}
+        //
+        ComponentChooser listChooser = new JListByItemChooser(toolName);   
+        Component comp = waitSubComponent(listChooser);
+        if (comp == null){
+            throw new NotFoundException("The element with name "+ toolName +" was not found on UML palette");
+        }
+        Container cont = comp.getParent();        
+        JToggleButtonOperator btn = new JToggleButtonOperator(new ContainerOperator(cont));
+        JListOperator listOperator = new JListOperator((JList)comp);
+        eventTool.waitNoEvent(500);
+        if (!btn.isSelected()){
+            btn.pushNoBlock();
+            btn.waitSelected(true);
+        }
+        try{Thread.sleep(100);}catch(Exception ex){}
+        //refresh
+        listOperator = new JListOperator((JList)comp);
+        int itemIndex = listOperator.findItemIndex(new PaletteListItemChooser(toolName));
+        try
+        {
+            listOperator.scrollToItem(itemIndex);
+        }
+        catch(TimeoutExpiredException ex)
+        {
+            //sometimes scrolling generate exceptions without visible reason
+            //may be thhid check will help
+            listOperator = new JListOperator((JList)comp);//refresh list operator
+            if(((JList)(listOperator.getSource())).getLastVisibleIndex()<itemIndex || ((JList)(listOperator.getSource())).getFirstVisibleIndex()>itemIndex)throw new UMLCommonException("Scrolling, current index: "+itemIndex+"; min: "+((JList)(listOperator.getSource())).getFirstVisibleIndex()+"; max: "+((JList)(listOperator.getSource())).getLastVisibleIndex());
+            //else all is good and we can click
+        }
+        listOperator.getTimeouts().setTimeout("JScrollBarOperator.WholeScrollTimeout",  500);
+        try{Thread.sleep(100);}catch(Exception ex){}
+        if(listOperator.getSelectedIndex()!=itemIndex)
+        {
+            listOperator.clickOnItem(itemIndex, 1);
+            listOperator.waitItemSelection(itemIndex,true);
+            try{Thread.sleep(100);}catch(Exception ex){}
+        }       
+        listOperator.getTimeouts().setTimeout("JScrollBarOperator.WholeScrollTimeout",  30000);
+        //wait again with waiter
+        waitSelection(toolName,true);
+        Point paletteClickPoint=listOperator.getClickPoint(itemIndex);
+        
+        DNDDriver dndDriver = new DNDDriver();
+       
+        dndDriver.dnd(listOperator, paletteClickPoint, drawingArea, drawingAreaPoint,
+                InputEvent.BUTTON1_MASK, 0);
+         
+    }
+    
+     
 }

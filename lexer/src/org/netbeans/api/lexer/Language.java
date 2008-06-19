@@ -97,7 +97,7 @@ public final class Language<T extends TokenId> {
     
     private final LanguageOperation<T> languageOperation;
     
-    private String mimeType;
+    private final String mimeType;
     
     private final int maxOrdinal;
 
@@ -146,7 +146,7 @@ public final class Language<T extends TokenId> {
      * @return The <code>Language</code> registered
      *         for the given <code>mimeType</code>.
      */
-    public static Language<?> find(String mimeType) {
+    public static Language<? extends TokenId> find(String mimeType) {
         return LanguageManager.getInstance().findLanguage(mimeType);
     }
     

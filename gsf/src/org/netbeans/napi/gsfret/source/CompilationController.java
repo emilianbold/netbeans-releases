@@ -176,7 +176,7 @@ public class CompilationController extends CompilationInfo {
     }
 
     @Override
-    public Document getDocument() throws IOException {
+    public Document getDocument() {
         return this.delegate.getDocument();
     }
         

@@ -56,6 +56,32 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.api.progress</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.12</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.api.visual</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>2.14</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.editor</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>3</release-version>
+                        <specification-version>1.41</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -79,16 +105,15 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.1</specification-version>
+                        <specification-version>1.4</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.uml.palette</code-name-base>
+                    <code-name-base>org.netbeans.modules.uml.dom4jlib</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.1</specification-version>
+                        <specification-version>1.4</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -110,12 +135,21 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.uml.tomsawyer</code-name-base>
+                    <code-name-base>org.netbeans.modules.uml.widgets</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.1</specification-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.websvc.jaxws21api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -142,6 +176,14 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>6.3.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.awt</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -173,7 +215,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>5.6.1</specification-version>
+                        <specification-version>7.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -218,9 +260,25 @@ made subject to such option by the copyright holder.
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.uml.designpattern</friend>
+                <friend>org.netbeans.modules.uml.diagrams</friend>
                 <friend>org.netbeans.modules.uml.kit</friend>
                 <package>org.netbeans.modules.uml.drawingarea</package>
-                <package>org.netbeans.modules.uml.drawingarea.options</package>
+                <package>org.netbeans.modules.uml.drawingarea.actions</package>
+                <package>org.netbeans.modules.uml.drawingarea.border</package>
+                <package>org.netbeans.modules.uml.drawingarea.dataobject</package>
+                <package>org.netbeans.modules.uml.drawingarea.engines</package>
+                <package>org.netbeans.modules.uml.drawingarea.palette</package>
+                <package>org.netbeans.modules.uml.drawingarea.palette.context</package>
+                <package>org.netbeans.modules.uml.drawingarea.persistence</package>
+                <package>org.netbeans.modules.uml.drawingarea.persistence.api</package>
+                <package>org.netbeans.modules.uml.drawingarea.persistence.data</package>
+                <package>org.netbeans.modules.uml.drawingarea.support</package>
+                <package>org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator</package>
+                <package>org.netbeans.modules.uml.drawingarea.ui.trackbar</package>
+                <package>org.netbeans.modules.uml.drawingarea.util</package>
+                <package>org.netbeans.modules.uml.drawingarea.view</package>
+                <package>org.netbeans.modules.uml.drawingarea.widgets</package>
             </friend-packages>
         </data>
     </configuration>

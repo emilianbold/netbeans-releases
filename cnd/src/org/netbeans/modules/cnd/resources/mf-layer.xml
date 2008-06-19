@@ -367,6 +367,21 @@ made subject to such option by the copyright holder.
             <attr name="position" intvalue="550"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/cppFiles.html"/>
             
+            <file name="class.cc" url="templates/cpp/class-cc.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
+                <attr name="position" intvalue="400"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/class.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CndClassWizardIterator"/>
+                <attr name="templateCategory" stringvalue="cpp-types"/>
+            </file>
+            <file name="class.h" url="templates/cpp/class-h.template">
+                <attr name="position" intvalue="10"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="hidden"/>
+            </file>
+            
             <file name="file.cc" url="templates/cpp/empty-cc.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
@@ -522,7 +537,54 @@ made subject to such option by the copyright holder.
     
     <folder name="Loaders">
         <folder name="application">
+            <folder name="x-exe">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-ExeLoader.instance">
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-exec+dll">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-ExeLoader.instance">
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
+            </folder> 
+            <folder name="x-core+elf">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-ExeLoader.instance">
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-shobj+elf">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-ExeLoader.instance">
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
+            </folder>  
+            <folder name="x-object+elf">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-ExeLoader.instance">
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-elf">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-ExeLoader.instance">
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
+            </folder>           
             <folder name="x-executable+elf">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-ExeLoader.instance">
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>                
                 <folder name="Actions">
                     <file name="FileSystemAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
@@ -635,6 +697,11 @@ made subject to such option by the copyright holder.
             </folder> <!-- x-cnd-sourcefile -->
             
             <folder name="x-make">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-MakefileDataLoader.instance">
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
                 <folder name="Actions">
                     <file name="OpenAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
@@ -712,6 +779,11 @@ made subject to such option by the copyright holder.
             </folder> <!-- x-make -->
             
             <folder name="sh">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-ShellDataLoader.instance">
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
                 <folder name="Actions">
                     <file name="OpenAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
@@ -779,6 +851,37 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder> <!-- Actions -->
             </folder> <!-- x-shell -->
+            <folder name="x-fortran">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-FortranDataLoader.instance">
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-sparc-asm">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-AsmDataLoader.instance">
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-c">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-CDataLoader.instance">
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
+            </folder>        
+            <folder name="x-c++">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-CCDataLoader.instance">
+                        <attr name="position" intvalue="90000"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-loaders-HDataLoader.instance">
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
+            </folder>
         </folder> <!-- text -->
     </folder> <!-- Loaders -->
     

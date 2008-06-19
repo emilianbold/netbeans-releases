@@ -154,5 +154,17 @@ public abstract class OptionalDeploymentManagerFactory {
     public MessageDestinationDeployment getMessageDestinationDeployment(DeploymentManager dm) {
         return null;
     }
-    
+
+    /**
+     * Creates a <code>ServerInstanceDescriptor</code> for the given deployment manager
+     * or <code>null</code> if descriptor is not supported.
+     *
+     * @param dm the deployment manager
+     * @return instance descriptor or <code>null</code> if descriptor is not supported
+     * @since 1.46
+     */
+    public ServerInstanceDescriptor getServerInstanceDescriptor(DeploymentManager dm) {
+        return null;
+    }
+
 }

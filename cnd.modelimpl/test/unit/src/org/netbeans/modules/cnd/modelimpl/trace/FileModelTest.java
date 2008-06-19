@@ -54,6 +54,7 @@ public class FileModelTest extends TraceModelTestBase {
     @Override
     protected void setUp() throws Exception {
 	System.setProperty("parser.report.errors", "true");
+        System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
         super.setUp();
     }
 
@@ -283,6 +284,16 @@ public class FileModelTest extends TraceModelTestBase {
     public void testTemplateDestrucror() throws Exception {
         // IZ 131407 : parser doesn't handle specialized destructor
         performTest("template_destructor.cc"); // NOI18N
+    }
+    
+    public void testConversionOperator() throws Exception {
+        // IZ 137468 : grammar does not support conversion operator invocation
+        performTest("conversion_operator.cc"); // NOI18N
+    }
+
+    public void testStringizeMacro() throws Exception {
+        // IZ 137465 : wrong macro expansion for #x
+        performPreprocessorTest("stringize_macro.cc"); // NOI18N
     }
 
     /////////////////////////////////////////////////////////////////////

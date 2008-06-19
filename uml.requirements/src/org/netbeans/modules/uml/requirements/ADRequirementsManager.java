@@ -54,7 +54,6 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
-import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.metamodel.structure.IRequirementArtifact;
 import org.netbeans.modules.uml.core.requirementsframework.IReqProviderDialog;
@@ -66,7 +65,6 @@ import org.netbeans.modules.uml.core.requirementsframework.ReqProviderDialog;
 import org.netbeans.modules.uml.core.requirementsframework.RequirementsException;
 import org.netbeans.modules.uml.core.requirementsframework.RequirementsManager;
 import org.netbeans.modules.uml.core.support.umlmessagingcore.UMLMessagingHelper;
-import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
@@ -86,7 +84,6 @@ import org.netbeans.modules.uml.ui.support.commonresources.CommonResourceManager
 import org.netbeans.modules.uml.ui.support.commonresources.ICommonResourceManager;
 import org.netbeans.modules.uml.ui.support.contextmenusupport.IProductContextMenu;
 import org.netbeans.modules.uml.ui.support.contextmenusupport.IProductContextMenuItem;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext;
 import org.netbeans.modules.uml.designpattern.IActionProvider;
 import org.netbeans.modules.uml.designpattern.IDesignCenterSupportGUI;
 import java.awt.Frame;
@@ -195,7 +192,7 @@ implements IDesignCenterSupport, IDesignCenterSupportGUI, IActionProvider
    public long deInitialize(Object context)
    {
       DispatchHelper helper = new DispatchHelper();
-      helper.revokeDrawingAreaSink(m_EventsSink);
+//      helper.revokeDrawingAreaSink(m_EventsSink);
       helper.revokeInitSink(m_EventsSink);
       helper.revokeProjectTreeSink(m_EventsSink);
       m_EventsSink = null;
@@ -381,7 +378,7 @@ implements IDesignCenterSupport, IDesignCenterSupportGUI, IActionProvider
          m_EventsSink = new ReqEventsSink(m_RequirementsManager);
 
          DispatchHelper helper = new DispatchHelper();
-         helper.registerDrawingAreaEvents(m_EventsSink);
+//         helper.registerDrawingAreaEvents(m_EventsSink);
          helper.registerForInitEvents(m_EventsSink);
          helper.registerProjectTreeEvents(m_EventsSink);
       }
@@ -504,13 +501,6 @@ implements IDesignCenterSupport, IDesignCenterSupportGUI, IActionProvider
          }
       }
    }
-
-   ///////////////////////////////////////////////////////////////////////////////
-   ///////////////////////////////////////////////////////////////////////////////
-   ///////////////////////////////////////////////////////////////////////////////
-   ///////////////////////////////////////////////////////////////////////////////
-   ///////////////////////////////////////////////////////////////////////////////
-   ///////////////////////////////////////////////////////////////////////////////
 
 
    /**
@@ -1102,11 +1092,13 @@ implements IDesignCenterSupport, IDesignCenterSupportGUI, IActionProvider
     * @return void
     *
     */
-   public void onDrawingAreaPreDrop( IDiagram pParentDiagram,
-                                     IDrawingAreaDropContext pContext,
-                                     IResultCell cell )
-   {
-   }
+
+// TODO: meteora
+//   public void onDrawingAreaPreDrop( IDiagram pParentDiagram,
+//                                     IDrawingAreaDropContext pContext,
+//                                     IResultCell cell )
+//   {
+//   }
 
    /**
     *
@@ -1121,43 +1113,43 @@ implements IDesignCenterSupport, IDesignCenterSupportGUI, IActionProvider
     * @return void
     *
     */
-   public void onDrawingAreaPostDrop( IDiagram pParentDiagram,
-                                      IDrawingAreaDropContext pContext,
-                                      IResultCell cell )
-   {
-      if( (null == pParentDiagram) || (pContext == null))
-      {
-         throw new IllegalArgumentException();
-      }
-
-      // The presentation element dropped upon, could be null.
-      IPresentationElement  cpPresElement = pContext.getPEDroppedOn();
-
-      if( cpPresElement != null)
-      {
-	  ETArrayList<IPresentationElement> satisfiers = new  ETArrayList<IPresentationElement> (1);
-	  satisfiers.add(cpPresElement);
-
-	  // Get the DesignCenter's TreeControl.
-	  IProjectTreeControl cpProjectTreeControl = ProductHelper.getDesignCenterTree();
-	  
-	  // Ask the TreeControl for its selected items.
-	  IProjectTreeItem[] projectTreeItems = cpProjectTreeControl.getSelected();
-
-	  ETArrayList<IProjectTreeItem> itemsList = new ETArrayList<IProjectTreeItem>(projectTreeItems.length);
-
-	  for( int lIdx = 0; lIdx < projectTreeItems.length; lIdx++ )
-	  {
-	      IProjectTreeItem  projectTreeItem = projectTreeItems[lIdx];
-	      if (projectTreeItem != null) 
-		  itemsList.add(projectTreeItem);
-	  }
-	  
-	  addSatisfiers(satisfiers, itemsList);
-
-      } // EndIf - We have been dropped on a Presentation Element
-
-   }
+//   public void onDrawingAreaPostDrop( IDiagram pParentDiagram,
+//                                      IDrawingAreaDropContext pContext,
+//                                      IResultCell cell )
+//   {
+//      if( (null == pParentDiagram) || (pContext == null))
+//      {
+//         throw new IllegalArgumentException();
+//      }
+//
+//      // The presentation element dropped upon, could be null.
+//      IPresentationElement  cpPresElement = pContext.getPEDroppedOn();
+//
+//      if( cpPresElement != null)
+//      {
+//	  ETArrayList<IPresentationElement> satisfiers = new  ETArrayList<IPresentationElement> (1);
+//	  satisfiers.add(cpPresElement);
+//
+//	  // Get the DesignCenter's TreeControl.
+//	  IProjectTreeControl cpProjectTreeControl = ProductHelper.getDesignCenterTree();
+//	  
+//	  // Ask the TreeControl for its selected items.
+//	  IProjectTreeItem[] projectTreeItems = cpProjectTreeControl.getSelected();
+//
+//	  ETArrayList<IProjectTreeItem> itemsList = new ETArrayList<IProjectTreeItem>(projectTreeItems.length);
+//
+//	  for( int lIdx = 0; lIdx < projectTreeItems.length; lIdx++ )
+//	  {
+//	      IProjectTreeItem  projectTreeItem = projectTreeItems[lIdx];
+//	      if (projectTreeItem != null) 
+//		  itemsList.add(projectTreeItem);
+//	  }
+//	  
+//	  addSatisfiers(satisfiers, itemsList);
+//
+//      } // EndIf - We have been dropped on a Presentation Element
+//
+//   }
 
    /**
     *  Associates the satisfiers with the requirements

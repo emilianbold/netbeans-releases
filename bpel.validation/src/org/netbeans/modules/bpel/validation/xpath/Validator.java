@@ -96,7 +96,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
   }
 
   @Override
-  protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
+  protected SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
 
   @Override
   public void visit(Copy copy) {
@@ -111,9 +111,9 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
       return;
     }
     String fromName = ((Named) fromType).getName();
-//out("  from name: " + fromName);
+//out("   from name: " + fromName);
     String toName = ((Named) toType).getName();
-//out("    to name: " + toName);
+//out("     to name: " + toName);
 
     if (fromName == null || toName == null) {
       return;
@@ -124,9 +124,44 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     if (fromName.equals("anyType") || toName.equals("anyType")) { // NOI18N
       return;
     }
-//out("  from based: " + ValidationUtil.getBasedSimpleType(fromType));
-//out("    to based: " + ValidationUtil.getBasedSimpleType(toType));
-
+    // # 135489
+    if (fromName.startsWith("nonNegative") && toName.startsWith("negative")) { // NOI18N
+      addError("FIX_NonNegative_Negative_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("positive") && toName.startsWith("negative")) { // NOI18N
+      addError("FIX_Positive_Negative_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("positive") && toName.startsWith("nonPositive")) { // NOI18N
+      addError("FIX_Positive_NonPositive_Copy", copy); // NOI18N
+      return;
+    }
+    // # 135489
+    if (fromName.startsWith("negative") && toName.startsWith("nonNegative")) { // NOI18N
+      addError("FIX_Negative_NonNegative_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("negative") && toName.startsWith("positive")) { // NOI18N
+      addError("FIX_Negative_Positive_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("nonPositive") && toName.startsWith("positive")) { // NOI18N
+      addError("FIX_NonPositive_Positive_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("nonPositive") && toName.startsWith("nonNegative")) { // NOI18N
+      addWarning("FIX_NonPositive_NonNegative_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("nonNegative") && toName.startsWith("nonPositive")) { // NOI18N
+      addWarning("FIX_NonNegative_NonPositive_Copy", copy); // NOI18N
+      return;
+    }
+    // # 135489
+    if (isNumeric(fromName) && isNumeric(toName)) {
+      return;
+    }
     Component fType = ValidationUtil.getBasedSimpleType(fromType);
     Component tType = ValidationUtil.getBasedSimpleType(toType);
 
@@ -135,7 +170,9 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     }
     String fTypeName = getTypeName(fType);
     String tTypeName = getTypeName(tType);
-    
+//out("  from based: " + fTypeName);
+//out("    to based: " + tTypeName);
+
     if (fTypeName.equals("string") && tTypeName.equals("time")) { // NOI18N
       // # 135079
       addWarning("FIX_Time_in_copy", copy); // NOI18N
@@ -143,6 +180,26 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     else {
       addWarning("FIX_TYPE_IN_COPY", copy, fTypeName, tTypeName); // NOI18N
     }
+  }
+
+  private boolean isNumeric(String value) {
+    return
+      value.equals("byte") || // NOI18N
+      value.equals("decimal") || // NOI18N
+      value.equals("double") || // NOI18N
+      value.equals("float") || // NOI18N
+      value.equals("int") || // NOI18N
+      value.equals("integer") || // NOI18N
+      value.equals("long") || // NOI18N
+      value.equals("negativeInteger") || // NOI18N
+      value.equals("nonNegativeInteger") || // NOI18N
+      value.equals("nonPositiveInteger") || // NOI18N
+      value.equals("positiveInteger") || // NOI18N
+      value.equals("short") || // NOI18N
+      value.equals("unsignedByte") || // NOI18N
+      value.equals("unsignedInt") || // NOI18N
+      value.equals("unsignedLong") || // NOI18N
+      value.equals("unsignedShort"); // NOI18N
   }
 
   @Override
@@ -167,7 +224,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     WSDLReference<Role> ref1 = partnerLink.getPartnerRole();
 
     if (ref1 == null || ref1.get() == null) {
-      addError("FIX_To_PartnerLink", to);
+      addError("FIX_To_PartnerLink", to); // NOI18N
     }
   }
 
@@ -185,7 +242,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
       return;
     }
     if ( !value.startsWith("$")) { // NOI18N
-      addError("FIX_To_Value", to, value); // NOI18N
+      addError("FIX_SA00033", to, value); // NOI18N
     }
   }
 
@@ -195,7 +252,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     if (from == null) {
       return null;
     }
-    Component variableType = getVariableType(from);
+    Component variableType = getVariableReferenceType(from);
 //out("  var: " + variableType);
 
     if (variableType != null) {
@@ -216,7 +273,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     if (to == null) {
       return null;
     }
-    Component variableType = getVariableType(to);
+    Component variableType = getVariableReferenceType(to);
 
     if (variableType != null) {
       Component partType = getPartType(to);
@@ -231,49 +288,13 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     return checkXPath(to);
   }
 
-  private Component getVariableType(VariableReference reference) {
+  private Component getVariableReferenceType(VariableReference reference) {
     BpelReference<VariableDeclaration> ref = reference.getVariable();
 
     if (ref == null) {
       return null;
     }
-    VariableDeclaration declaration = ref.get();
-
-    if (declaration == null) {
-      return null;
-    }
-    // message type
-    WSDLReference<Message> wsdlRef = declaration.getMessageType();
-
-    if (wsdlRef != null) {
-      Message message = wsdlRef.get();
-
-      // # 130764
-      if (message != null) {
-        return message;
-      }
-    }
-    // element
-    SchemaReference<GlobalElement> elementRef = declaration.getElement();
-
-    if (elementRef != null) {
-      GlobalElement element = elementRef.get();
-
-      if (element != null) {
-        return element;
-      }
-    }
-    // type
-    SchemaReference<GlobalType> typeRef = declaration.getType();
-
-    if (typeRef != null) {
-      GlobalType type = typeRef.get();
-
-      if (type != null) {
-        return type;
-      }
-    }
-    return null;
+    return getVariableDeclarationType(ref.get());
   }
 
   private SchemaComponent getPartType(PartReference reference) {
@@ -365,7 +386,9 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
         addError("FIX_Negative_RepeatEvery", repeatEvery); // NOI18N
       }
     }
-    catch (IllegalArgumentException e) {}
+    catch (IllegalArgumentException e) {
+      return;
+    }
   }
 
   private boolean isZero(Duration duration) {

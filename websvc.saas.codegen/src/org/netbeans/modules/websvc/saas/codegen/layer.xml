@@ -53,6 +53,24 @@
             <file name="RestResponse.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/RestResponse.template">
                 <attr name="position" intvalue="170"/>
             </file>
+            
+            <!-- PHP -->
+            <file name="RestConnection.php" url="/org/netbeans/modules/websvc/saas/codegen/php/resources/RestConnection.template">
+                <attr name="position" intvalue="310"/>
+            </file>
+            <file name="RestResponse.php" url="/org/netbeans/modules/websvc/saas/codegen/php/resources/RestResponse.template">
+                <attr name="position" intvalue="320"/>
+            </file>
+            <file name="SaasService.php" url="/org/netbeans/modules/websvc/saas/codegen/php/resources/SaasService.template">
+                <attr name="position" intvalue="330"/>
+            </file>
+            <file name="ApiKeyAuthenticator.php" url="/org/netbeans/modules/websvc/saas/codegen/php/resources/ApiKeyAuthenticator.template">
+                <attr name="position" intvalue="340"/>
+            </file>
+            <file name="apikey.php" url="/org/netbeans/modules/websvc/saas/codegen/php/resources/apikey.template">
+                <attr name="position" intvalue="350"/>
+            </file>
+
         </folder>
     </folder>
 </filesystem>

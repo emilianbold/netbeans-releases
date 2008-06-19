@@ -54,10 +54,12 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import org.netbeans.modules.cnd.callgraph.api.CallModel;
+import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphUI;
 import org.netbeans.modules.cnd.callgraph.impl.CallGraphPanel;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 //import org.openide.util.Utilities;
@@ -70,7 +72,8 @@ public final class CallGraphTopComponent extends TopComponent {
 
     private static CallGraphTopComponent instance;
     /** path to the icon used by the component and its open action */
-//    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
+    static final String ICON_PATH = "org/netbeans/modules/cnd/callgraph/resources/call_graph.png"; // NOI18N
+    
     private static final String PREFERRED_ID = "CallGraphTopComponent"; // NOI18N
 
     private JPopupMenu pop;
@@ -82,7 +85,7 @@ public final class CallGraphTopComponent extends TopComponent {
         initComponents();
         setName(NbBundle.getMessage(CallGraphTopComponent.class, "CTL_CallGraphTopComponent")); // NOI18N
         setToolTipText(NbBundle.getMessage(CallGraphTopComponent.class, "HINT_CallGraphTopComponent")); // NOI18N
-//        setIcon(Utilities.loadImage(ICON_PATH, true));
+        setIcon(Utilities.loadImage(ICON_PATH, true));
         pop = new JPopupMenu();
         pop.add(new Close());
         pop.add(new CloseAll());
@@ -91,8 +94,13 @@ public final class CallGraphTopComponent extends TopComponent {
         closeL = new CloseListener();
     }
 
-    public void setModel(CallModel model) {
-        CallGraphPanel panel = new CallGraphPanel();
+    public void setModel(CallModel model, CallGraphUI graphUI) {
+        CallGraphPanel panel;
+        if (graphUI != null) {
+            panel = new CallGraphPanel(graphUI.showGraph());
+        } else {
+            panel = new CallGraphPanel(false);
+        }
         panel.setName(model.getName());
         panel.setToolTipText(panel.getName()+" - "+NbBundle.getMessage(getClass(), "CTL_CallGraphTopComponent")); // NOI18N
         if (false) {
@@ -246,10 +254,12 @@ public final class CallGraphTopComponent extends TopComponent {
                 add(c, BorderLayout.CENTER);
                 setName(((JPanel)c).getToolTipText());
             }
+        } else if (comp instanceof CallGraphPanel)  {
+            remove(comp);
+            add(jButton1, BorderLayout.CENTER);
+            setName(NbBundle.getMessage(CallGraphTopComponent.class, "CTL_CallGraphTopComponent")); // NOI18N
+            close();
         } else {
-            if (comp != null) {
-                remove(comp);
-            }
             close();
         }
         validate();

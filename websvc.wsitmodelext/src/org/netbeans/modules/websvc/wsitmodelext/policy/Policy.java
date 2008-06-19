@@ -41,16 +41,19 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.policy;
 
+import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
+
 /**
  *
  * @author Martin Grebac
  */
-public interface Policy extends NestedPolicyAllowed {
+public interface Policy extends ExtensibilityElement {
     
     public static final String ID_PROPERTY = "ID";     //NOI18N
     public static final String ALL_PROPERTY = "ALL";     //NOI18N
     public static final String EXACTLYONE_PROPERTY = "EXACTLYONE";     //NOI18N
     public static final String POLICYREFERENCE_PROPERTY = "POLICYREFERENCE";     //NOI18N
+    public static final String POLICY_PROPERTY = "POLICY";     //NOI18N
     
     void setID(String id);
     String getID();

@@ -76,7 +76,7 @@ import org.netbeans.editor.BaseKit.DeleteCharAction;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.html.*;
 import org.netbeans.editor.ext.html.parser.SyntaxParser;
-import org.netbeans.modules.gsf.api.BracketCompletion;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.gsfret.InstantRenameAction;
 import org.netbeans.modules.editor.indent.api.Reformat;
@@ -163,7 +163,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         return TextAction.augmentList(super.createActions(), HTMLActions);
     }
 
-    static BracketCompletion getBracketCompletion(Document doc, int offset) {
+    static KeystrokeHandler getBracketCompletion(Document doc, int offset) {
         BaseDocument baseDoc = (BaseDocument) doc;
         List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
         for (Language l : list) {
@@ -190,7 +190,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         @Override
         protected Object beforeBreak(JTextComponent target, BaseDocument doc, Caret caret) {
             if (completionSettingEnabled()) {
-                BracketCompletion bracketCompletion = getBracketCompletion(doc, caret.getDot());
+                KeystrokeHandler bracketCompletion = getBracketCompletion(doc, caret.getDot());
 
                 if (bracketCompletion != null) {
                     try {
@@ -259,7 +259,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                 boolean overwrite) throws BadLocationException {
 
             if (completionSettingEnabled()) {
-                BracketCompletion bracketCompletion = getBracketCompletion(doc, dotPos);
+                KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
 
                 if (bracketCompletion != null) {
                     // TODO - check if we're in a comment etc. and if so, do nothing
@@ -292,7 +292,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                 BaseDocument doc = (BaseDocument) document;
 
                 if (completionSettingEnabled()) {
-                    BracketCompletion bracketCompletion = getBracketCompletion(doc, dotPos);
+                    KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
 
                     if (bracketCompletion != null) {
                         try {
@@ -376,7 +376,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
         protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch) throws BadLocationException {
               if (completionSettingEnabled()) {
-                BracketCompletion bracketCompletion = getBracketCompletion(doc, dotPos);
+                KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
 
                 if (bracketCompletion != null) {
                     boolean success = bracketCompletion.charBackspaced(doc, dotPos, currentTarget, ch);

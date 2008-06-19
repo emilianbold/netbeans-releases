@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+AutoUpdate-Show-In-Client: true
+OpenIDE-Module: org.netbeans.modules.projectimport.eclipse.core/1
+OpenIDE-Module-Install: org/netbeans/modules/projectimport/eclipse/core/Installer.class
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/projectimport/eclipse/core/resources/Bundle.properties
+OpenIDE-Module-Layer: org/netbeans/modules/projectimport/eclipse/core/resources/layer.xml
+

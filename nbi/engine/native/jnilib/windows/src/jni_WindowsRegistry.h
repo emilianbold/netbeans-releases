@@ -94,165 +94,188 @@ extern "C" {
 #define org_netbeans_installer_utils_system_windows_WindowsRegistry_REG_QWORD_LITTLE_ENDIAN 11L
 #undef org_netbeans_installer_utils_system_windows_WindowsRegistry_REG_QWORD
 #define org_netbeans_installer_utils_system_windows_WindowsRegistry_REG_QWORD 11L
+#undef org_netbeans_installer_utils_system_windows_WindowsRegistry_MODE_DEFAULT
+#define org_netbeans_installer_utils_system_windows_WindowsRegistry_MODE_DEFAULT 0L
+#undef org_netbeans_installer_utils_system_windows_WindowsRegistry_MODE_32BIT
+#define org_netbeans_installer_utils_system_windows_WindowsRegistry_MODE_32BIT 1L
+#undef org_netbeans_installer_utils_system_windows_WindowsRegistry_MODE_64BIT
+#define org_netbeans_installer_utils_system_windows_WindowsRegistry_MODE_64BIT 2L
 /*
  * Class:     org_netbeans_installer_utils_system_windows_WindowsRegistry
  * Method:    checkKeyAccess0
- * Signature: (ILjava/lang/String;I;)Z
+ * Signature: (IILjava/lang/String;I;)Z
  */
 JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_checkKeyAccess0
-  (JNIEnv *, jobject, jint, jstring, jint);
+  (JNIEnv *, jobject, jint, jint, jstring, jint);
 
 /*
  * Class:     org_netbeans_installer_utils_system_windows_WindowsRegistry
  * Method:    valueExists0
- * Signature: (ILjava/lang/String;Ljava/lang/String;)Z
+ * Signature: (IILjava/lang/String;Ljava/lang/String;)Z
  */
 JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_valueExists0
-  (JNIEnv *, jobject, jint, jstring, jstring);
+  (JNIEnv *, jobject, jint, jint, jstring, jstring);
 
 /*
  * Class:     org_netbeans_installer_utils_system_windows_WindowsRegistry
  * Method:    keyEmpty0
- * Signature: (ILjava/lang/String;)Z
+ * Signature: (IILjava/lang/String;)Z
  */
 JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_keyEmpty0
-  (JNIEnv *, jobject, jint, jstring);
+  (JNIEnv *, jobject, jint, jint, jstring);
 
 /*
  * Class:     org_netbeans_installer_utils_system_windows_WindowsRegistry
  * Method:    countSubKeys0
- * Signature: (ILjava/lang/String;)I
+ * Signature: (IILjava/lang/String;)I
  */
 JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_countSubKeys0
-  (JNIEnv *, jobject, jint, jstring);
+  (JNIEnv *, jobject, jint, jint, jstring);
 
 /*
  * Class:     org_netbeans_installer_utils_system_windows_WindowsRegistry
  * Method:    countValues0
- * Signature: (ILjava/lang/String;)I
+ * Signature: (IILjava/lang/String;)I
  */
 JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_countValues0
-  (JNIEnv *, jobject, jint, jstring);
+  (JNIEnv *, jobject, jint, jint, jstring);
 
 /*
  * Class:     org_netbeans_installer_utils_system_windows_WindowsRegistry
  * Method:    getSubkeyNames0
- * Signature: (ILjava/lang/String;)[Ljava/lang/String;
+ * Signature: (IILjava/lang/String;)[Ljava/lang/String;
  */
 JNIEXPORT jobjectArray JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_getSubkeyNames0
-  (JNIEnv *, jobject, jint, jstring);
+  (JNIEnv *, jobject, jint, jint, jstring);
 
 /*
  * Class:     org_netbeans_installer_utils_system_windows_WindowsRegistry
  * Method:    getValueNames0
- * Signature: (ILjava/lang/String;)[Ljava/lang/String;
+ * Signature: (IILjava/lang/String;)[Ljava/lang/String;
  */
 JNIEXPORT jobjectArray JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_getValueNames0
-  (JNIEnv *, jobject, jint, jstring);
+  (JNIEnv *, jobject, jint, jint, jstring);
 
 /*
  * Class:     org_netbeans_installer_utils_system_windows_WindowsRegistry
  * Method:    getValueType0
- * Signature: (ILjava/lang/String;Ljava/lang/String;)I
+ * Signature: (IILjava/lang/String;Ljava/lang/String;)I
  */
 JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_getValueType0
-  (JNIEnv *, jobject, jint, jstring, jstring);
+  (JNIEnv *, jobject, jint, jint, jstring, jstring);
 
 /*
  * Class:     org_netbeans_installer_utils_system_windows_WindowsRegistry
  * Method:    createKey0
- * Signature: (ILjava/lang/String;Ljava/lang/String;)V
+ * Signature: (IILjava/lang/String;Ljava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_createKey0
-  (JNIEnv *, jobject, jint, jstring, jstring);
+  (JNIEnv *, jobject, jint, jint, jstring, jstring);
 
 /*
  * Class:     org_netbeans_installer_utils_system_windows_WindowsRegistry
  * Method:    deleteKey0
- * Signature: (ILjava/lang/String;Ljava/lang/String;)V
+ * Signature: (IILjava/lang/String;Ljava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_deleteKey0
-  (JNIEnv *, jobject, jint, jstring, jstring);
+  (JNIEnv *, jobject, jint, jint, jstring, jstring);
 
 /*
  * Class:     org_netbeans_installer_utils_system_windows_WindowsRegistry
  * Method:    deleteValue0
- * Signature: (ILjava/lang/String;Ljava/lang/String;)V
+ * Signature: (IILjava/lang/String;Ljava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_deleteValue0
-  (JNIEnv *, jobject, jint, jstring, jstring);
+  (JNIEnv *, jobject, jint, jint, jstring, jstring);
 
 /*
  * Class:     org_netbeans_installer_utils_system_windows_WindowsRegistry
  * Method:    getStringValue0
- * Signature: (ILjava/lang/String;Ljava/lang/String;Z)Ljava/lang/String;
+ * Signature: (IILjava/lang/String;Ljava/lang/String;Z)Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_getStringValue0
-  (JNIEnv *, jobject, jint, jstring, jstring, jboolean);
+  (JNIEnv *, jobject, jint, jint, jstring, jstring, jboolean);
 
 /*
  * Class:     org_netbeans_installer_utils_system_windows_WindowsRegistry
  * Method:    setStringValue0
- * Signature: (ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)V
+ * Signature: (IILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)V
  */
 JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_setStringValue0
-  (JNIEnv *, jobject, jint, jstring, jstring, jstring, jboolean);
+  (JNIEnv *, jobject, jint, jint, jstring, jstring, jstring, jboolean);
 
 /*
  * Class:     org_netbeans_installer_utils_system_windows_WindowsRegistry
  * Method:    get32BitValue0
- * Signature: (ILjava/lang/String;Ljava/lang/String;)I
+ * Signature: (IILjava/lang/String;Ljava/lang/String;)I
  */
 JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_get32BitValue0
-  (JNIEnv *, jobject, jint, jstring, jstring);
+  (JNIEnv *, jobject, jint, jint, jstring, jstring);
 
 /*
  * Class:     org_netbeans_installer_utils_system_windows_WindowsRegistry
  * Method:    set32BitValue0
- * Signature: (ILjava/lang/String;Ljava/lang/String;I)V
+ * Signature: (IILjava/lang/String;Ljava/lang/String;I)V
  */
 JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_set32BitValue0
-  (JNIEnv *, jobject, jint, jstring, jstring, jint);
+  (JNIEnv *, jobject, jint, jint, jstring, jstring, jint);
 
 /*
  * Class:     org_netbeans_installer_utils_system_windows_WindowsRegistry
  * Method:    getMultiStringValue0
- * Signature: (ILjava/lang/String;Ljava/lang/String;)[Ljava/lang/String;
+ * Signature: (IILjava/lang/String;Ljava/lang/String;)[Ljava/lang/String;
  */
 JNIEXPORT jobjectArray JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_getMultiStringValue0
-  (JNIEnv *, jobject, jint, jstring, jstring);
+  (JNIEnv *, jobject, jint, jint, jstring, jstring);
 
 /*
  * Class:     org_netbeans_installer_utils_system_windows_WindowsRegistry
  * Method:    setMultiStringValue0
- * Signature: (ILjava/lang/String;Ljava/lang/String;[Ljava/lang/String;)V
+ * Signature: (IILjava/lang/String;Ljava/lang/String;[Ljava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_setMultiStringValue0
-  (JNIEnv *, jobject, jint, jstring, jstring, jobjectArray);
+  (JNIEnv *, jobject, jint, jint, jstring, jstring, jobjectArray);
 
 /*
  * Class:     org_netbeans_installer_utils_system_windows_WindowsRegistry
  * Method:    getBinaryValue0
- * Signature: (ILjava/lang/String;Ljava/lang/String;)[B
+ * Signature: (IILjava/lang/String;Ljava/lang/String;)[B
  */
 JNIEXPORT jbyteArray JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_getBinaryValue0
-  (JNIEnv *, jobject, jint, jstring, jstring);
+  (JNIEnv *, jobject, jint, jint, jstring, jstring);
 
 /*
  * Class:     org_netbeans_installer_utils_system_windows_WindowsRegistry
  * Method:    setBinaryValue0
- * Signature: (ILjava/lang/String;Ljava/lang/String;[B)V
+ * Signature: (IILjava/lang/String;Ljava/lang/String;[B)V
  */
 JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_setBinaryValue0
-  (JNIEnv *, jobject, jint, jstring, jstring, jbyteArray);
+  (JNIEnv *, jobject, jint, jint, jstring, jstring, jbyteArray);
 
 /*
  * Class:     org_netbeans_installer_utils_system_windows_WindowsRegistry
  * Method:    setNoneValue0
- * Signature: (ILjava/lang/String;Ljava/lang/String;[B)V
+ * Signature: (IILjava/lang/String;Ljava/lang/String;[B)V
  */
 JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_setNoneValue0
-  (JNIEnv *, jobject, jint, jstring, jstring, jbyteArray);
+  (JNIEnv *, jobject, jint, jint, jstring, jstring, jbyteArray);
+
+/*
+ * Class:     org_netbeans_installer_utils_system_windows_WindowsRegistry
+ * Method:    IsWow64Process0
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_IsWow64Process0
+  (JNIEnv *, jobject);
+
+
+#ifndef KEY_WOW64_32KEY
+#define KEY_WOW64_32KEY 0x0200
+#endif
+#ifndef KEY_WOW64_64KEY
+#define KEY_WOW64_64KEY 0x0100
+#endif
+
 
 #ifdef __cplusplus
 }

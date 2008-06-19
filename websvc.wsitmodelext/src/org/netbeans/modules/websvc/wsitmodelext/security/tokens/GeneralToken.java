@@ -41,12 +41,12 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.tokens;
 
-import org.netbeans.modules.websvc.wsitmodelext.policy.NestedPolicyAllowed;
+import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 
 /**
  *
  * @author Martin Grebac
  */
-public interface GeneralToken extends NestedPolicyAllowed {
+public interface GeneralToken  extends ExtensibilityElement {
     public static final String INCLUSION_LEVEL = "INCLUSION_LEVEL";     //NOI18N
 }

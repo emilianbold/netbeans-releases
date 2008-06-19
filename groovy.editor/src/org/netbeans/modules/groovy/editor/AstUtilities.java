@@ -44,7 +44,6 @@ package org.netbeans.modules.groovy.editor;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -74,16 +73,14 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.groovy.editor.elements.AstElement;
 import org.netbeans.modules.groovy.editor.elements.IndexedElement;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
-import org.netbeans.modules.groovy.editor.parser.GroovyParser;
+import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.Parser;
-import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.SourceFileReader;
 import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.gsf.spi.DefaultParseListener;
+import org.netbeans.napi.gsfret.source.CompilationController;
+import org.netbeans.napi.gsfret.source.Phase;
+import org.netbeans.napi.gsfret.source.Source;
 
 /**
  *
@@ -389,6 +386,11 @@ public class AstUtilities {
     
     public static ASTNode findVariableScope(Variable variable, AstPath path, ModuleNode moduleNode) {
         
+//        final Logger LOG = Logger.getLogger(AstUtilities.class.getName());
+//        LOG.setLevel(Level.FINEST);
+//        
+//        LOG.log(Level.FINEST, "findVariableScope(...)"); //NOI18N
+        
         String name = variable.getName();
         VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(moduleNode, name);
         
@@ -406,10 +408,20 @@ public class AstUtilities {
                     return current;
                 }
             } else if (current instanceof FieldNode) {
-                scopeVisitor.visitField((FieldNode)current);
-                if (scopeVisitor.isDeclaring()) {
-                    return current;
+                // if we are dealing with a FieldNode the scope is the surrounding
+                // class. So go and find it:
+                
+                while (it.hasNext()) {
+                    current = it.next();
+                    if (current instanceof ClassNode) {
+                        return current;
+                    }
                 }
+                
+//                scopeVisitor.visitField((FieldNode)current);
+//                if (scopeVisitor.isDeclaring()) {
+//                    return current;
+//                }
             } else if (current instanceof ClassNode) {
                 scopeVisitor.visitClass((ClassNode)current);
                 if (scopeVisitor.isDeclaring()) {
@@ -423,8 +435,9 @@ public class AstUtilities {
             } else if (current instanceof DeclarationExpression) {
                 DeclarationExpression declarationExpression = (DeclarationExpression) current;
                 if (name.equals(declarationExpression.getVariableExpression().getName())) {
-                    // ok, the variable i'm searching for (name) gets declared here
-                    // if it's not a field it's scope is the next method up the path:
+                    // ok, the variable i'm searching for (name) gets declared here.
+                    // It's either a file and i have to stop on the surrounding class or
+                    // it's a local-var and we need to stop on the method
                     
                     while (it.hasNext()){
                         current = it.next();
@@ -447,84 +460,31 @@ public class AstUtilities {
     }
 
     public static ASTNode getForeignNode(final IndexedElement o, ASTNode[] foreignRootRet) {
-        ParserFile file = o.getFile();
 
-        if (file == null) {
-            return null;
-        }
-
-        List<ParserFile> files = Collections.singletonList(file);
-        SourceFileReader reader =
-            new SourceFileReader() {
-                public CharSequence read(ParserFile file)
-                    throws IOException {
-                    Document doc = o.getDocument();
-
-                    if (doc == null) {
-                        return "";
-                    }
-
-                    try {
-                        return doc.getText(0, doc.getLength());
-                    } catch (BadLocationException ble) {
-                        IOException ioe = new IOException();
-                        ioe.initCause(ble);
-                        throw ioe;
+        final ASTNode[] nodes = new ASTNode[1];
+        Source source = Source.forFileObject(o.getFileObject());
+        try {
+            source.runUserActionTask(new CancellableTask<CompilationController>() {
+                public void run(CompilationController controller) throws Exception {
+                    System.out.println("### Ast.getForeignNode()");
+                    controller.toPhase(Phase.PARSED);
+                    GroovyParserResult result = (GroovyParserResult) controller.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
+                    if (result != null) {
+                        String signature = o.getSignature();
+                        for (AstElement element : result.getStructure().getElements()) {
+                            if (signature.equals(element.getSignature())) {
+                                nodes[0] = element.getNode();
+                            }
+                        }
                     }
                 }
-
-                public int getCaretOffset(ParserFile fileObject) {
-                    return -1;
-                }
-            };
-
-        DefaultParseListener listener = new DefaultParseListener();
-
-        // TODO - embedding model?
-TranslatedSource translatedSource = null; // TODO - determine this here?                
-        Parser.Job job = new Parser.Job(files, listener, reader, translatedSource);
-        new GroovyParser().parseFiles(job);
-
-        ParserResult result = listener.getParserResult();
-
-        if (result == null) {
-            return null;
-        }
-
-        ASTNode root = AstUtilities.getRoot(result);
-
-        if (root == null) {
-            return null;
-        } else if (foreignRootRet != null) {
-            foreignRootRet[0] = root;
-        }
-
-        String signature = o.getSignature();
-
-        if (signature == null) {
-            return null;
-        }
-//        Node node = AstUtilities.findBySignature(root, signature);
-        GroovyParserResult rpr = (GroovyParserResult)result;
-        boolean lookForFunction = o.getKind() == ElementKind.CONSTRUCTOR || o.getKind() == ElementKind.METHOD;
-        if (lookForFunction) {
-            for (AstElement element : rpr.getStructure().getElements()) {
-//                if (element instanceof FunctionAstElement) {
-//                    FunctionAstElement func = (FunctionAstElement) element;
-//                    if (signature.equals(func.getSignature())) {
-//                        return func.getNode();
-//                    }
-//                }
-            }
-        }
-
-        for (AstElement element : rpr.getStructure().getElements()) {
-            if (signature.equals(element.getSignature())) {
-                return element.getNode();
-            }
+                public void cancel() {}
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
         
-        return null;
+        return nodes[0];
     }
     
     public static String getDefSignature(MethodNode node) {

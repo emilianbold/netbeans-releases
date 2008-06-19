@@ -70,6 +70,7 @@ public abstract class IndexedElement extends PHPElement {
     protected String textSignature;
     protected boolean smart;
     protected boolean inherited = true;
+    protected boolean resolved = true;
     protected int offset;
 
     IndexedElement(String name, String in, PHPIndex index, String fileUrl, int offset, int flags, ElementKind kind) {
@@ -80,6 +81,14 @@ public abstract class IndexedElement extends PHPElement {
         this.offset = offset;
         this.flags = flags;
         this.kind = kind;
+    }
+
+    public boolean isResolved() {
+        return resolved;
+    }
+
+    public void setResolved(boolean resolved) {
+        this.resolved = resolved;
     }
     
     public int getOffset() {

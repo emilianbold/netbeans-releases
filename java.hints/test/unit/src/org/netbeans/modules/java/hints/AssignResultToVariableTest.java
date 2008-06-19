@@ -113,6 +113,15 @@ public class AssignResultToVariableTest extends TreeRuleTestBase {
                        "package test; public class Test {public void t() {Iterable<? super CharSequence> test = test(); } private Iterable<? super CharSequence> test() {return null;}}");
     }
     
+    public void testApplyHintGenericType6() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; import java.util.List; public class Test {public Test() {List<?> l = null;l.get(0); } }",
+                       117 - 25,
+                       "0:88-0:93:hint:Assign Return Value To New Variable",
+                       "FixImpl",
+                       "package test; import java.util.List; public class Test {public Test() {List<?> l = null;Object get = l.get(0); } }");
+    }
+    
     public void testCommentsCopied() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test {public void t() {/*t*/get();\n} String get() {return null;}}",

@@ -42,10 +42,12 @@
 
 package org.netbeans.tests.j2eeserver.plugin;
 
+import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 
 /**
@@ -68,6 +70,11 @@ public class ManagerWrapperFactory extends OptionalDeploymentManagerFactory {
     
     public StartServer getStartServer(javax.enterprise.deploy.spi.DeploymentManager dm) {
         return new ServerLifecycle(dm);
+    }
+
+    @Override
+    public ServerInstanceDescriptor getServerInstanceDescriptor(DeploymentManager dm) {
+        return new TestInstanceDescriptor(dm);
     }
     
 }

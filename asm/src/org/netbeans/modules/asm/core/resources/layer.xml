@@ -94,6 +94,9 @@
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-asm">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-asm-core-dataobjects-AsmDataLoader.instance"/>
+                </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">
                         <attr name="position" intvalue="100"/>

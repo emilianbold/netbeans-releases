@@ -178,7 +178,7 @@ public class Reformatter implements ReformatTask {
     private boolean applyDiff(int start, int end, String text) throws BadLocationException{
         if (end - start > 0) {
             String what = doc.getText(start, end - start);
-            if (text.equals(what)) {
+            if (text != null && text.equals(what)) {
                 // optimization
                 return true;
             }
@@ -289,12 +289,12 @@ public class Reformatter implements ReformatTask {
 
         public static String repeatChar(int length, char c, boolean indent) {
             if (length == 0) {
-                return "";
+                return ""; //NOI18N
             } else if (length == 1) {
                 if (c == ' ') {
-                    return " ";
+                    return " "; //NOI18N
                 } else {
-                    return "\n";
+                    return "\n"; //NOI18N
                 }
             }
             StringBuilder buf = new StringBuilder(length);

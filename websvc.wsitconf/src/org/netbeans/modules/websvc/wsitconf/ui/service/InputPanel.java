@@ -42,6 +42,7 @@
 package org.netbeans.modules.websvc.wsitconf.ui.service;
 
 import java.awt.Dialog;
+import java.util.List;
 import javax.swing.undo.UndoManager;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.TargetsPanel;
@@ -63,6 +64,7 @@ import org.openide.DialogDisplayer;
 
 import javax.swing.*;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.openide.util.NbBundle;
 
 /**
@@ -80,6 +82,7 @@ public class InputPanel<T extends WSDLComponent> extends SectionInnerPanel {
 
     private boolean signed = false;
     private boolean endorsing = false;
+    private boolean encrypted = false;
 
     private WSDLComponent tokenElement = null;
     
@@ -96,12 +99,12 @@ public class InputPanel<T extends WSDLComponent> extends SectionInnerPanel {
         tokenCombo.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         signedChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         endorsingChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-//        targetOverrideChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        encryptedChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
 
         addImmediateModifier(tokenCombo);
         addImmediateModifier(signedChBox);
         addImmediateModifier(endorsingChBox);
-//        addImmediateModifier(targetOverrideChBox);
+        addImmediateModifier(encryptedChBox);
 
         inSync = true;
         tokenCombo.removeAllItems();
@@ -110,7 +113,7 @@ public class InputPanel<T extends WSDLComponent> extends SectionInnerPanel {
         tokenCombo.addItem(ComboConstants.X509);
         tokenCombo.addItem(ComboConstants.SAML);
         tokenCombo.addItem(ComboConstants.ISSUED);
-//        tokenCombo.addItem(ComboConstants.KERBEROS);
+        tokenCombo.addItem(ComboConstants.KERBEROS);
         inSync = false;
 
         sync();
@@ -132,33 +135,35 @@ public class InputPanel<T extends WSDLComponent> extends SectionInnerPanel {
     private void sync() {
         inSync = true;
 
-        WSDLComponent t = SecurityTokensModelHelper.getSupportingToken(input, SecurityTokensModelHelper.SUPPORTING);
-        if (t != null) {
-            tokenElement = t;
-            signed = false;
-            endorsing = false;
-        }
-        t = SecurityTokensModelHelper.getSupportingToken(input, SecurityTokensModelHelper.SIGNED_SUPPORTING);
-        if (t != null) {
-            tokenElement = t;
-            signed = true;
-            endorsing = false;
-        }
-        t = SecurityTokensModelHelper.getSupportingToken(input, SecurityTokensModelHelper.ENDORSING);
-        if (t != null) {
-            tokenElement = t;
-            signed = false;
-            endorsing = true;
-        }
-        t = SecurityTokensModelHelper.getSupportingToken(input, SecurityTokensModelHelper.SIGNED_ENDORSING);
-        if (t != null) {
-            tokenElement = t;
-            signed = true;
-            endorsing = true;
+        int i =0;
+        
+        List<WSDLComponent> suppTokens = SecurityTokensModelHelper.getSupportingTokens(input);
+        if ((suppTokens != null) && (suppTokens.size() > 0)) {
+            tokenElement = suppTokens.get(0);
+            for (Class c : SecurityTokensModelHelper.SUPPORTING_TOKENS) {
+                if (tokenElement.getClass().isInstance(c)) {
+                    break;
+                } else {
+                    i += 1;
+                }
+            }
+            if (i < SecurityTokensModelHelper.SUPPORTING_TOKENS.length) {
+                if (i > 3) {
+                    encrypted = true;
+                    i = i - 4;
+                }
+                if (i > 1) {
+                    endorsing = true;
+                }
+                if ((i % 2) == 1) {
+                    signed = true;
+                }
+            }
         }
 
         signedChBox.setSelected(signed);
         endorsingChBox.setSelected(endorsing);
+        encryptedChBox.setSelected(encrypted);
         tokenCombo.setSelectedItem(SecurityTokensModelHelper.getTokenType(tokenElement));
 
         enableDisable();
@@ -169,40 +174,49 @@ public class InputPanel<T extends WSDLComponent> extends SectionInnerPanel {
     @Override
     public void setValue(javax.swing.JComponent source, Object value) {
         if (!inSync) {
+            
+            SecurityTokensModelHelper stmh = SecurityTokensModelHelper.getInstance(PolicyModelHelper.getConfigVersion(tokenElement));
+        
             if (source.equals(tokenCombo)) {
                 String token = (String) tokenCombo.getSelectedItem();
                 if (token != null) {
                     SecurityTokensModelHelper.removeSupportingTokens(input);
                     if (ComboConstants.USERNAME.equals(token)) {
-                        tokenElement = SecurityTokensModelHelper.setSupportingTokens(input, token, getSuppType(signed, false));
+                        tokenElement = stmh.setSupportingTokens(input, token, getSuppType(signed, endorsing, encrypted));
                     } else {
-                        tokenElement = SecurityTokensModelHelper.setSupportingTokens(input, token, getSuppType(signed, endorsing));
+                        tokenElement = stmh.setSupportingTokens(input, token, getSuppType(signed, endorsing, encrypted));
                     }
                 }
-                enableDisable();
             }
             if (source.equals(signedChBox)) {
                 String token = (String) tokenCombo.getSelectedItem();
                 signed = signedChBox.isSelected();
                 SecurityTokensModelHelper.removeSupportingTokens(input);
-                tokenElement = SecurityTokensModelHelper.setSupportingTokens(input, token, getSuppType(signed, endorsing));
-                enableDisable();
+                tokenElement = stmh.setSupportingTokens(input, token, getSuppType(signed, endorsing, encrypted));
             }
             if (source.equals(endorsingChBox)) {
                 String token = (String) tokenCombo.getSelectedItem();
                 endorsing = endorsingChBox.isSelected();
                 SecurityTokensModelHelper.removeSupportingTokens(input);
-                tokenElement = SecurityTokensModelHelper.setSupportingTokens(input, token, getSuppType(signed, endorsing));
-                enableDisable();
+                tokenElement = stmh.setSupportingTokens(input, token, getSuppType(signed, endorsing, encrypted));
             }
+            if (source.equals(encryptedChBox)) {
+                String token = (String) tokenCombo.getSelectedItem();
+                encrypted = encryptedChBox.isSelected();
+                SecurityTokensModelHelper.removeSupportingTokens(input);
+                tokenElement = stmh.setSupportingTokens(input, token, getSuppType(signed, endorsing, encrypted));
+            }
+            
+            enableDisable();
         }
     }
     
-    private int getSuppType(boolean signed, boolean endorsing) {
-        if (signed && endorsing) return SecurityTokensModelHelper.SIGNED_ENDORSING;
-        if (signed) return SecurityTokensModelHelper.SIGNED_SUPPORTING;
-        if (endorsing) return SecurityTokensModelHelper.ENDORSING;
-        return SecurityTokensModelHelper.SUPPORTING;
+    private int getSuppType(boolean signed, boolean endorsing, boolean encrypted) {
+        int i = 0;
+        if (encrypted) i += 4;
+        if (endorsing) i += 2;
+        if (signed) i += 1;
+        return i;
     }
 
     @Override
@@ -254,9 +268,15 @@ public class InputPanel<T extends WSDLComponent> extends SectionInnerPanel {
         targetsButton.setEnabled(securityEnabled && !isSSL);
         
         boolean tokenSelected = !ComboConstants.NONE.equals((String)tokenCombo.getSelectedItem());
+        
         signedChBox.setEnabled(securityEnabled && tokenSelected && !secConversation && !bindingScopeTokenPresent);
+        
         endorsingChBox.setEnabled(securityEnabled && tokenSelected && 
                 !secConversation && !bindingScopeTokenPresent && !isUsernameToken);
+        
+        encryptedChBox.setEnabled(securityEnabled && tokenSelected && 
+                !secConversation && !bindingScopeTokenPresent && 
+                (PolicyModelHelper.getConfigVersion(input) == ConfigVersion.CONFIG_1_3));
     }
     
     /** This method is called from within the constructor to
@@ -272,6 +292,7 @@ public class InputPanel<T extends WSDLComponent> extends SectionInnerPanel {
         targetsButton = new javax.swing.JButton();
         signedChBox = new javax.swing.JCheckBox();
         endorsingChBox = new javax.swing.JCheckBox();
+        encryptedChBox = new javax.swing.JCheckBox();
 
         tokenComboLabel.setLabelFor(tokenCombo);
         org.openide.awt.Mnemonics.setLocalizedText(tokenComboLabel, org.openide.util.NbBundle.getMessage(InputPanel.class, "LBL_tokenComboLabel")); // NOI18N
@@ -289,6 +310,8 @@ public class InputPanel<T extends WSDLComponent> extends SectionInnerPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(endorsingChBox, org.openide.util.NbBundle.getMessage(InputPanel.class, "LBL_Token_Endorsing")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(encryptedChBox, org.openide.util.NbBundle.getMessage(InputPanel.class, "LBL_Token_Encrypted")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -299,17 +322,18 @@ public class InputPanel<T extends WSDLComponent> extends SectionInnerPanel {
                     .add(layout.createSequentialGroup()
                         .add(tokenComboLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(tokenCombo, 0, 306, Short.MAX_VALUE)
+                        .add(tokenCombo, 0, 307, Short.MAX_VALUE)
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
                         .add(12, 12, 12)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(endorsingChBox)
-                            .add(signedChBox))
+                            .add(signedChBox)
+                            .add(encryptedChBox))
                         .add(216, 216, 216))
                     .add(layout.createSequentialGroup()
                         .add(targetsButton)
-                        .addContainerGap(327, Short.MAX_VALUE))))
+                        .addContainerGap(328, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -323,8 +347,10 @@ public class InputPanel<T extends WSDLComponent> extends SectionInnerPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(endorsingChBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(encryptedChBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(targetsButton)
-                .addContainerGap())
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         tokenComboLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InputPanel.class, "LBL_InputPanel_AuthTokenCombo_ACSD")); // NOI18N
@@ -352,13 +378,14 @@ public class InputPanel<T extends WSDLComponent> extends SectionInnerPanel {
                 }
             }
         } else {
-            SecurityPolicyModelHelper.setTargets(input, targetsPanel.getTargetsModel());
+            SecurityPolicyModelHelper.getInstance(PolicyModelHelper.getConfigVersion(tokenElement)).setTargets(input, targetsPanel.getTargetsModel());
         }
         
         model.removeUndoableEditListener(undoCounter);
     }//GEN-LAST:event_targetsButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox encryptedChBox;
     private javax.swing.JCheckBox endorsingChBox;
     private javax.swing.JCheckBox signedChBox;
     private javax.swing.JButton targetsButton;

@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.uml.designpattern;
 
-import org.netbeans.modules.uml.ui.addins.diagramcreator.DiagCreatorAddIn;
+import org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator.DiagCreatorAddIn;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -54,8 +54,6 @@ import javax.swing.JDialog;
 import org.dom4j.Node;
 
 import org.netbeans.modules.uml.common.generics.ETPairT;
-import org.netbeans.modules.uml.core.IApplication;
-//import org.netbeans.modules.uml.core.addinframework.IAddIn;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchRetriever;
@@ -123,13 +121,9 @@ import org.netbeans.modules.uml.core.support.umlutils.PropertyElement;
 import org.netbeans.modules.uml.core.support.umlutils.PropertyElementManager;
 import org.netbeans.modules.uml.core.typemanagement.IPickListManager;
 import org.netbeans.modules.uml.core.typemanagement.ITypeManager;
-import org.netbeans.modules.uml.ui.addins.diagramcreator.IDiagCreatorAddIn;
-import org.netbeans.modules.uml.ui.controls.drawingarea.DiagramAreaEnumerations;
-import org.netbeans.modules.uml.ui.controls.drawingarea.ElementBroadcastAction;
-import org.netbeans.modules.uml.ui.controls.drawingarea.IElementBroadcastAction;
+import org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator.IDiagCreatorAddIn;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeControl;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
-import org.netbeans.modules.uml.ui.support.ADTransferable;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.QuestionResponse;
 import org.netbeans.modules.uml.ui.support.SimpleQuestionDialogKind;
@@ -146,7 +140,6 @@ import org.netbeans.modules.uml.ui.support.diagramsupport.IProxyDiagramManager;
 import org.netbeans.modules.uml.ui.support.diagramsupport.ProxyDiagramManager;
 import org.netbeans.modules.uml.ui.swing.commondialogs.SwingErrorDialog;
 import org.netbeans.modules.uml.ui.swing.commondialogs.SwingQuestionDialogImpl;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext;
 import org.netbeans.modules.uml.ui.swing.propertyeditor.IPropertyEditor;
 
 public class DesignPatternManager implements IDesignPatternManager {
@@ -3195,76 +3188,80 @@ public class DesignPatternManager implements IDesignPatternManager {
      *
      * @return HRESULT
      */
-    public boolean allowDragAndDrop(IDrawingAreaDropContext pContext) {
-        boolean bAllow = false;
-        if (pContext != null) {
-            // get what is being dropped from the context
-            ADTransferable.ADTransferData data = pContext.getDropData();
-            
-            // this string is a specially designed string that will be interpreted by CDragAndDropSupport
-            // and then turned into the appropriate model elements
-            IApplication pApplication = ProductHelper.getApplication();
-                        /* TODO
-                        CDragAndDropSupport dragSupport = null;         // Used to help interpret what's on the clipboard
-                        IElements pMEs = null;               			// The elements represented by the strings on the clipboard
-                        ETList <IPresentationElement> pPEs = null;   	// The PE's represented by the strings on the clipboard
-                        ETList < String > diagramLocations = null;		// The diagrams on the clipboard
-                        int num = dragSupport.getElementsOnClipboard(str, pApplication, "DRAGGEDITEMS", &pMEs, &pPEs, diagramLocations);
-                        if( num > 0)
-                        {
-                                if (pMEs)
-                                {
-                                        // only going to deal with one item being dragged
-                                        int count;
-                                        pMEs.getCount();
-                                        if (count == 1)
-                                        {
-                                                // get the model element of this item
-                                                IElement > pElement;
-                                                pMEs.Item(0, &pElement));
-                                                if (pElement)
-                                                {
-                                                        // if the item being dragged is a collaboration
-                                                        if (CComQIPtr < ICollaboration > pCollab2 = pElement)
-                                                        {
-                         *bAllow = true;
-                                                                // since we are allowing the drag, we also want to put the part facade objects owned
-                                                                // by this collaboration onto to the drop context
-                                                                INamedElements > pOwned;
-                                                                pCollab2.getOwnedElements(&pOwned));
-                                                                if (pOwned)
-                                                                {
-                                                                        int ownCount;
-                                                                        pOwned.getCount(&ownCount));
-                                                                        for (int x = 0; x < ownCount; x++)
-                                                                        {
-                                                                                INamedElement > pNamed;
-                                                                                pOwned.Item(x, &pNamed));
-                                                                                if (pNamed)
-                                                                                {
-                                                                                        pContext.AddAdditionalDropElement(pNamed));
-                                                                                }
-                                                                        }
-                                                                }
-                                                                pCollab2.CopyTo(pCollab));
-                                                        }
-                                                }
-                                        }
-                                }
-                        }
-                         */
-        }
-        return bAllow;
-    }
-    public ICollaboration getDragAndDropCollab(IDrawingAreaDropContext pContext) {
-        ICollaboration pCollab = null;
-        if (pContext != null) {
-            // get what is being dropped from the context
-            ADTransferable.ADTransferData data = pContext.getDropData();
-            // TODO
-        }
-        return pCollab;
-    }
+    
+    // TODO: meteora
+//    public boolean allowDragAndDrop(IDrawingAreaDropContext pContext) {
+//        boolean bAllow = false;
+//        if (pContext != null) {
+//            // get what is being dropped from the context
+//            ADTransferable.ADTransferData data = pContext.getDropData();
+//            
+//            // this string is a specially designed string that will be interpreted by CDragAndDropSupport
+//            // and then turned into the appropriate model elements
+//            IApplication pApplication = ProductHelper.getApplication();
+//                        /* TODO
+//                        CDragAndDropSupport dragSupport = null;         // Used to help interpret what's on the clipboard
+//                        IElements pMEs = null;               			// The elements represented by the strings on the clipboard
+//                        ETList <IPresentationElement> pPEs = null;   	// The PE's represented by the strings on the clipboard
+//                        ETList < String > diagramLocations = null;		// The diagrams on the clipboard
+//                        int num = dragSupport.getElementsOnClipboard(str, pApplication, "DRAGGEDITEMS", &pMEs, &pPEs, diagramLocations);
+//                        if( num > 0)
+//                        {
+//                                if (pMEs)
+//                                {
+//                                        // only going to deal with one item being dragged
+//                                        int count;
+//                                        pMEs.getCount();
+//                                        if (count == 1)
+//                                        {
+//                                                // get the model element of this item
+//                                                IElement > pElement;
+//                                                pMEs.Item(0, &pElement));
+//                                                if (pElement)
+//                                                {
+//                                                        // if the item being dragged is a collaboration
+//                                                        if (CComQIPtr < ICollaboration > pCollab2 = pElement)
+//                                                        {
+//                         *bAllow = true;
+//                                                                // since we are allowing the drag, we also want to put the part facade objects owned
+//                                                                // by this collaboration onto to the drop context
+//                                                                INamedElements > pOwned;
+//                                                                pCollab2.getOwnedElements(&pOwned));
+//                                                                if (pOwned)
+//                                                                {
+//                                                                        int ownCount;
+//                                                                        pOwned.getCount(&ownCount));
+//                                                                        for (int x = 0; x < ownCount; x++)
+//                                                                        {
+//                                                                                INamedElement > pNamed;
+//                                                                                pOwned.Item(x, &pNamed));
+//                                                                                if (pNamed)
+//                                                                                {
+//                                                                                        pContext.AddAdditionalDropElement(pNamed));
+//                                                                                }
+//                                                                        }
+//                                                                }
+//                                                                pCollab2.CopyTo(pCollab));
+//                                                        }
+//                                                }
+//                                        }
+//                                }
+//                        }
+//                         */
+//        }
+//        return bAllow;
+//    }
+    
+    // TODO: meteora
+//    public ICollaboration getDragAndDropCollab(IDrawingAreaDropContext pContext) {
+//        ICollaboration pCollab = null;
+//        if (pContext != null) {
+//            // get what is being dropped from the context
+//            ADTransferable.ADTransferData data = pContext.getDropData();
+//            // TODO
+//        }
+//        return pCollab;
+//    }
     /**
      * Helper method to determine if the passed in diagram is owned by the passed in project.  This will
      * help in determining whether to draw the collaboration being dropped or apply it.
@@ -3277,101 +3274,102 @@ public class DesignPatternManager implements IDesignPatternManager {
      *
      * @return HRESULT
      */
-    public boolean diagramOwnedByAddInProject(IProject pProject, IDiagram pParentDiagram, IDrawingAreaDropContext pContext) {
-        boolean bOwned = false;
-        if (pContext != null) {
-            IProject pTemp = pProject;
-            // get what is being dropped from the context
-            ADTransferable.ADTransferData data = pContext.getDropData();
-            
-            // this string is a specially designed string that will be interpreted by CDragAndDropSupport
-            // and then turned into the appropriate model elements
-            IApplication pApplication = ProductHelper.getApplication();
-                        /* TODO
-                  CDragAndDropSupport dragSupport;          // Used to help interpret what's on the clipboard
-                  IElements > pMEs;               // The elements represented by the strings on the clipboard
-                  IPresentationElements > pPEs;   // The PE's represented by the strings on the clipboard
-                  std::vector < xstring > diagramLocations; // The diagrams on the clipboard
-                        CString cstr = str;
-                        int num = dragSupport.GetElementsOnClipboard(cstr, pApplication, xstring(_T("DRAGGEDITEMS")), &pMEs,&pPEs, diagramLocations);
-                  if( num > 0)
-                  {
-                                // if there is not a current project, then get it from what is being dropped
-                                if (pTemp == 0)
-                                {
-                                        if (pMEs)
-                                        {
-                                                // only going to deal with one item being dragged
-                                                int count;
-                                                pMEs.getCount();
-                                                if (count == 1)
-                                                {
-                                                        // get the model element of this item
-                                                        IElement > pElement;
-                                                        pMEs.Item(0, &pElement));
-                                                        if (pElement)
-                                                        {
-                                                                // if the item being dragged is a collaboration
-                                                                if (CComQIPtr < ICollaboration > pCollab = pElement)
-                                                                {
-                                                                        // now get its project
-                                                                        Object pDisp;
-                                                                        pCollab.getProject(&pDisp));
-                                                                        if (CComQIPtr < IProject > pProj = pDisp)
-                                                                        {
-                                                                                pTemp = pProj;
-                                                                        }
-                                                                }
-                                                        }
-                                                }
-                                        }
-                                }
-                                // have the project
-                                if (pTemp)
-                                {
-                                        IProxyDiagramManager > pManager;
-                                        pManager.CoCreateInstance(__uuidof(ProxyDiagramManager)));
-                                        if (pManager)
-                                        {
-                                                bool found = false;
-                                                // get the diagrams in this directory
-                                                IProxyDiagrams > pTempDiagrams;
-                                                pManager.GetDiagramsInDirectory2(pTemp, &pTempDiagrams));
-                                                if (pTempDiagrams)
-                                                {
-                                                        String parentDiagName;
-                                                        pParentDiagram.getName(&parentDiagName));
-                                                        // loop through the diagrams owned by this namespace
-                                                        int dcount;
-                                                        pTempDiagrams.getCount(&dcount));
-                                                        for (int x = 0; x < dcount; x++)
-                                                        {
-                                                                IProxyDiagram > pDiagram;
-                                                                pTempDiagrams.Item(x, &pDiagram));
-                                                                if (pDiagram)
-                                                                {
-                                                                        // if this diagram is the same as the one being passed in
-                                                                        String str;
-                                                                        pDiagram.getName(&str);
-                                                                        if (str == parentDiagName)
-                                                                        {
-                                                                                found = true;
-                                                                                break;
-                                                                        }
-                                                                }
-                                                        }
-                                                }
-                                                if (found)
-                                                {
-                         *bOwned = true;
-                                                }
-                                        }
-                                }
-                        }
-                         */
-        }
-        return bOwned;
-    }
+    // TODO: meteora
+//    public boolean diagramOwnedByAddInProject(IProject pProject, IDiagram pParentDiagram, IDrawingAreaDropContext pContext) {
+//        boolean bOwned = false;
+//        if (pContext != null) {
+//            IProject pTemp = pProject;
+//            // get what is being dropped from the context
+//            ADTransferable.ADTransferData data = pContext.getDropData();
+//            
+//            // this string is a specially designed string that will be interpreted by CDragAndDropSupport
+//            // and then turned into the appropriate model elements
+//            IApplication pApplication = ProductHelper.getApplication();
+//                        /* TODO
+//                  CDragAndDropSupport dragSupport;          // Used to help interpret what's on the clipboard
+//                  IElements > pMEs;               // The elements represented by the strings on the clipboard
+//                  IPresentationElements > pPEs;   // The PE's represented by the strings on the clipboard
+//                  std::vector < xstring > diagramLocations; // The diagrams on the clipboard
+//                        CString cstr = str;
+//                        int num = dragSupport.GetElementsOnClipboard(cstr, pApplication, xstring(_T("DRAGGEDITEMS")), &pMEs,&pPEs, diagramLocations);
+//                  if( num > 0)
+//                  {
+//                                // if there is not a current project, then get it from what is being dropped
+//                                if (pTemp == 0)
+//                                {
+//                                        if (pMEs)
+//                                        {
+//                                                // only going to deal with one item being dragged
+//                                                int count;
+//                                                pMEs.getCount();
+//                                                if (count == 1)
+//                                                {
+//                                                        // get the model element of this item
+//                                                        IElement > pElement;
+//                                                        pMEs.Item(0, &pElement));
+//                                                        if (pElement)
+//                                                        {
+//                                                                // if the item being dragged is a collaboration
+//                                                                if (CComQIPtr < ICollaboration > pCollab = pElement)
+//                                                                {
+//                                                                        // now get its project
+//                                                                        Object pDisp;
+//                                                                        pCollab.getProject(&pDisp));
+//                                                                        if (CComQIPtr < IProject > pProj = pDisp)
+//                                                                        {
+//                                                                                pTemp = pProj;
+//                                                                        }
+//                                                                }
+//                                                        }
+//                                                }
+//                                        }
+//                                }
+//                                // have the project
+//                                if (pTemp)
+//                                {
+//                                        IProxyDiagramManager > pManager;
+//                                        pManager.CoCreateInstance(__uuidof(ProxyDiagramManager)));
+//                                        if (pManager)
+//                                        {
+//                                                bool found = false;
+//                                                // get the diagrams in this directory
+//                                                IProxyDiagrams > pTempDiagrams;
+//                                                pManager.GetDiagramsInDirectory2(pTemp, &pTempDiagrams));
+//                                                if (pTempDiagrams)
+//                                                {
+//                                                        String parentDiagName;
+//                                                        pParentDiagram.getName(&parentDiagName));
+//                                                        // loop through the diagrams owned by this namespace
+//                                                        int dcount;
+//                                                        pTempDiagrams.getCount(&dcount));
+//                                                        for (int x = 0; x < dcount; x++)
+//                                                        {
+//                                                                IProxyDiagram > pDiagram;
+//                                                                pTempDiagrams.Item(x, &pDiagram));
+//                                                                if (pDiagram)
+//                                                                {
+//                                                                        // if this diagram is the same as the one being passed in
+//                                                                        String str;
+//                                                                        pDiagram.getName(&str);
+//                                                                        if (str == parentDiagName)
+//                                                                        {
+//                                                                                found = true;
+//                                                                                break;
+//                                                                        }
+//                                                                }
+//                                                        }
+//                                                }
+//                                                if (found)
+//                                                {
+//                         *bOwned = true;
+//                                                }
+//                                        }
+//                                }
+//                        }
+//                         */
+//        }
+//        return bOwned;
+//    }
     /**
      * Determines whether or not the passed in element fulfills all roles of the pattern.  This will
      * determine whether or not to display the gui associated with applying a pattern.
@@ -3690,6 +3688,7 @@ public class DesignPatternManager implements IDesignPatternManager {
      * @return HRESULT
      */
     public void addTaggedValue(IDesignPatternDetails pDetails, IDesignPatternRole pRole, IElement pElement) {
+
 
         if (pDetails != null && pRole != null && pElement != null) {
             // the tagged value is going to be in the format
@@ -4076,26 +4075,27 @@ public class DesignPatternManager implements IDesignPatternManager {
      * @return HRESULT
      *
      */
-    public void refreshDiagrams() {
-        if (m_Details != null) {
-            // how we tell the diagrams to refresh is through this broadcast action
-            IElementBroadcastAction pAction = new ElementBroadcastAction();
-            if (pAction != null) {
-                // get the elements that were affected during the apply
-                ETList <IElement> pElements = getElementsFromDetails(m_Details);
-                if (pElements != null) {
-                    // add them to the action
-                    pAction.add(pElements);
-                    pAction.setKind(DiagramAreaEnumerations.EBK_DEEP_SYNC_AND_RESIZE);
-                }
-                // have the action set up, so now send it to the open diagrams
-                IProxyDiagramManager pDiagManager = ProxyDiagramManager.instance();
-                if (pDiagManager != null) {
-                    pDiagManager.broadcastToAllOpenDiagrams(pAction);
-                }
-            }
-        }
-    }
+    // TODO: meteora
+//    public void refreshDiagrams() {
+//        if (m_Details != null) {
+//            // how we tell the diagrams to refresh is through this broadcast action
+//            IElementBroadcastAction pAction = new ElementBroadcastAction();
+//            if (pAction != null) {
+//                // get the elements that were affected during the apply
+//                ETList <IElement> pElements = getElementsFromDetails(m_Details);
+//                if (pElements != null) {
+//                    // add them to the action
+//                    pAction.add(pElements);
+//                    pAction.setKind(DiagramAreaEnumerations.EBK_DEEP_SYNC_AND_RESIZE);
+//                }
+//                // have the action set up, so now send it to the open diagrams
+//                IProxyDiagramManager pDiagManager = ProxyDiagramManager.instance();
+//                if (pDiagManager != null) {
+//                    pDiagManager.broadcastToAllOpenDiagrams(pAction);
+//                }
+//            }
+//        }
+//    }
     /**
      * Since we turned off the events to perform the apply, we now need to ask the user
      * if they would like to perform code generation on the elements that were affected

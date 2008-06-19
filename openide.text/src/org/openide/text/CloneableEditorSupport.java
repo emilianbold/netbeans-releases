@@ -119,6 +119,9 @@ import org.openide.util.UserCancelException;
 */
 public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     static final RequestProcessor RP = new RequestProcessor("Document Processing");
+
+    /** Thread for postprocessing work in CloneableEditor.DoInitialize.initRest */
+    static final RequestProcessor RPPostprocessing = new RequestProcessor("Document Postprocessing");
     
     /** Common name for editor mode. */
     public static final String EDITOR_MODE = "editor"; // NOI18N
@@ -361,6 +364,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
     void ensureAnnotationsLoaded() {
         if (!annotationsLoaded) {
+            /*ERR.log(Level.FINE,"CES.ensureAnnotationsLoaded Enter Asynchronous"
+            + " Time:" + System.currentTimeMillis()
+            + " Thread:" + Thread.currentThread().getName());*/
             annotationsLoaded = true;
 
             Line.Set lines = getLineSet();
@@ -739,7 +745,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
         case DOCUMENT_RELOADING: // proceed to DOCUMENT_READY
         case DOCUMENT_READY:
-            return getDoc();
+            StyledDocument document = getDoc();
+            assert document != null : "no document although status is " + documentStatus + "; doc=" + doc;
+            return document;
 
         default: // loading
 
@@ -906,6 +914,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                     throw ex;
                 }
             }
+        }
+
+        // Run before-save actions
+        Runnable beforeSaveRunnable = (Runnable) myDoc.getProperty("beforeSaveRunnable");
+        if (beforeSaveRunnable != null) {
+            beforeSaveRunnable.run();
         }
 
         SaveAsReader saveAsReader = new SaveAsReader();
@@ -2275,7 +2289,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         offset = el.getEndOffset();
                     }
                 } else {
-                    offset = pos.getOffset();
+                    offset = Math.min(pos.getOffset(), doc.getLength());
                 }
 
                 caret.setDot(offset);
@@ -2287,7 +2301,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         ePane.scrollRectToVisible(r);
                     }
                 } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
+                    ERR.log(Level.WARNING, "Can't scroll to text: pos.getOffset=" + pos.getOffset() //NOI18N
+                        + ", column=" + column + ", offset=" + offset //NOI18N
+                        + ", doc.getLength=" + doc.getLength(), ex); //NOI18N
                 }
             }
         }
@@ -2340,12 +2356,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     }
 
     private StyledDocument getDoc() {
-        Object o = doc;
-        if (o instanceof WeakReference) {
-            WeakReference<?> w = (WeakReference<?>)o;
-            return (StyledDocument)w.get();
-        }
-        return null;
+        StrongRef _doc = doc;
+        return _doc != null ? _doc.get() : null;
     }
 
     private void setDoc(StyledDocument doc, boolean strong) {
@@ -2355,12 +2367,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         }
         this.doc = new StrongRef(doc, strong);
     }
-    //
-    // Interfaces to abstract away from the DataSystem and FileSystem level
-    //
 
-
-    
     private final class StrongRef extends WeakReference<StyledDocument> 
     implements Runnable {
         private StyledDocument doc;
@@ -2387,7 +2394,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 this.doc = null;
             }
         }
+
+        @Override
+        public String toString() {
+            return "StrongRef[doc=" + doc + ",super.get=" + super.get() + "]";
+        }
+
     } // end of StrongRef
+
     /** Interface for providing data for the support and also
     * locking the source of data.
     */

@@ -42,6 +42,7 @@
 package org.netbeans.modules.groovy.editor;
 
 import java.util.ConcurrentModificationException;
+import java.util.logging.Level;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -59,6 +60,19 @@ public class GroovyLexerIncTest extends NbTestCase {
 
     public GroovyLexerIncTest(String testName) {
         super(testName);
+    }
+    
+    @Override
+    protected void setUp() throws java.lang.Exception {
+        // uncomment to enable logging from GroovyLexer
+//        Logger.getLogger("org.netbeans.modules.groovy.editor.lexer.GroovyLexer").setLevel(Level.FINEST);
+    }
+
+    protected Level logLevel() {
+        // enabling logging
+        return Level.INFO;
+        // we are only interested in a single logger, so we set its level in setUp(),
+        // as returning Level.FINEST here would log from all loggers
     }
     
     public void test1() throws Exception {
@@ -169,58 +183,75 @@ public class GroovyLexerIncTest extends NbTestCase {
     }
     
     // failing
-//    public void test2() throws Exception {
-//        Document doc = new ModificationTextDocument();
-//        // Assign a language to the document
-//        doc.putProperty(Language.class,GroovyTokenId.language());
-//        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-//        assertNotNull("Null token hierarchy for document", hi);
-//        TokenSequence<?> ts = hi.tokenSequence();
-//        assertFalse(ts.moveNext());
-//        
-//        // Insert text into document
-//        String text = "println \"Hello ${name} !\"";
-//        doc.insertString(0, text, null);
-//
-//        // Last token sequence should throw exception - new must be obtained
-//        try {
-//            ts.moveNext();
-//            fail("TokenSequence.moveNext() did not throw exception as expected.");
-//        } catch (ConcurrentModificationException e) {
-//            // Expected exception
-//        }
-//        
-//        ts = hi.tokenSequence();
-//        
-//        next(ts, GroovyTokenId.IDENTIFIER, "println", 0);
-//        next(ts, GroovyTokenId.WHITESPACE, " ", 7);
-//        next(ts, GroovyTokenId.STRING_LITERAL, "\"Hello $", 8);
-//        next(ts, GroovyTokenId.LBRACE, "{", 16);
-//        next(ts, GroovyTokenId.IDENTIFIER, "name", 17);
-//        next(ts, GroovyTokenId.RBRACE, "}", 21);
-//        next(ts, GroovyTokenId.STRING_LITERAL, " !\"", 22);
-//
-//        assertFalse(ts.moveNext());
-//
-//        LexerTestUtilities.incCheck(doc, false);
-//        
-//        int offset = text.length() - 3;
-//
-//        doc.insertString(offset, " ", null);
-//        
-//        ts = hi.tokenSequence();
-//        next(ts, GroovyTokenId.IDENTIFIER, "println", 0);
-//        next(ts, GroovyTokenId.WHITESPACE, " ", 7);
-//        next(ts, GroovyTokenId.STRING_LITERAL, "\"Hello $", 8);
-//        next(ts, GroovyTokenId.LBRACE, "{", 16);
-//        next(ts, GroovyTokenId.IDENTIFIER, "name", 17);
-//        next(ts, GroovyTokenId.RBRACE, "}", 21);
-//        next(ts, GroovyTokenId.STRING_LITERAL, " \"", 22);
-//
-//        assertFalse(ts.moveNext());
-//        
-//        LexerTestUtilities.incCheck(doc, false);
-//    }
+    public void test2() throws Exception {
+        Document doc = new ModificationTextDocument();
+        // Assign a language to the document
+        doc.putProperty(Language.class,GroovyTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        assertNotNull("Null token hierarchy for document", hi);
+        TokenSequence<?> ts = hi.tokenSequence();
+        assertFalse(ts.moveNext());
+        
+        // Insert text into document
+        String text = "println \"Hello ${name} !\"";
+        doc.insertString(0, text, null);
+
+        // Last token sequence should throw exception - new must be obtained
+        try {
+            ts.moveNext();
+            fail("TokenSequence.moveNext() did not throw exception as expected.");
+        } catch (ConcurrentModificationException e) {
+            // Expected exception
+        }
+        
+        ts = hi.tokenSequence();
+        
+        next(ts, GroovyTokenId.IDENTIFIER, "println", 0);
+        next(ts, GroovyTokenId.WHITESPACE, " ", 7);
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"Hello $", 8);
+        next(ts, GroovyTokenId.LBRACE, "{", 16);
+        next(ts, GroovyTokenId.IDENTIFIER, "name", 17);
+        next(ts, GroovyTokenId.RBRACE, "}", 21);
+        next(ts, GroovyTokenId.STRING_LITERAL, " !\"", 22);
+
+        assertFalse(ts.moveNext());
+
+        LexerTestUtilities.incCheck(doc, false);
+        
+        int offset = text.length() - 3;
+
+        doc.insertString(offset, " ", null);
+        
+        ts = hi.tokenSequence();
+        next(ts, GroovyTokenId.IDENTIFIER, "println", 0);
+        next(ts, GroovyTokenId.WHITESPACE, " ", 7);
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"Hello $", 8);
+        next(ts, GroovyTokenId.LBRACE, "{", 16);
+        next(ts, GroovyTokenId.IDENTIFIER, "name", 17);
+        next(ts, GroovyTokenId.RBRACE, "}", 21);
+        next(ts, GroovyTokenId.STRING_LITERAL, "  !\"", 22);
+
+        assertFalse(ts.moveNext());
+
+        LexerTestUtilities.incCheck(doc, false);
+
+        offset = text.length() - 3;
+
+        doc.insertString(offset, " ", null);
+        
+        ts = hi.tokenSequence();
+        next(ts, GroovyTokenId.IDENTIFIER, "println", 0);
+        next(ts, GroovyTokenId.WHITESPACE, " ", 7);
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"Hello $", 8);
+        next(ts, GroovyTokenId.LBRACE, "{", 16);
+        next(ts, GroovyTokenId.IDENTIFIER, "name", 17);
+        next(ts, GroovyTokenId.RBRACE, "}", 21);
+        next(ts, GroovyTokenId.STRING_LITERAL, "   !\"", 22);
+
+        assertFalse(ts.moveNext());
+
+        LexerTestUtilities.incCheck(doc, false);
+    }
     
     void next(TokenSequence<?> ts, GroovyTokenId id, String fixedText, int offset){
         assertTrue(ts.moveNext());

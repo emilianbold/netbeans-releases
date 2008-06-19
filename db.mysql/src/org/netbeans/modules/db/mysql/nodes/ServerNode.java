@@ -39,8 +39,8 @@
 
 package org.netbeans.modules.db.mysql.nodes;
 
-import org.netbeans.modules.db.mysql.impl.*;
 import org.netbeans.modules.db.mysql.*;
+import org.netbeans.modules.db.mysql.actions.DisconnectServerAction;
 import org.netbeans.modules.db.mysql.nodes.DatabaseNode;
 import org.netbeans.modules.db.mysql.actions.PropertiesAction;
 import org.netbeans.modules.db.mysql.actions.StopAction;
@@ -59,6 +59,8 @@ import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.modules.db.mysql.actions.RefreshServerAction;
+import org.netbeans.modules.db.mysql.impl.ServerNodeProvider;
 import org.openide.actions.DeleteAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -141,7 +143,9 @@ public class ServerNode extends AbstractNode implements ChangeListener, Comparab
                 SystemAction.get(StartAction.class),
                 SystemAction.get(StopAction.class),
                 SystemAction.get(ConnectServerAction.class),
+                SystemAction.get(DisconnectServerAction.class),
                 SystemAction.get(DeleteAction.class),
+                SystemAction.get(RefreshServerAction.class),
                 SystemAction.get(AdministerAction.class),
                 SystemAction.get(PropertiesAction.class)
             };

@@ -566,7 +566,13 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                     return token(CppTokenId.FLOAT_LITERAL);
                 case 'u':
                 case 'U':
-                    return token(CppTokenId.UNSIGNED_LITERAL);
+                    c = read(true);
+                    if (c == 'l' || c == 'L') {
+                        return token(CppTokenId.UNSIGNED_LONG_LITERAL);
+                    } else {
+                        backup(1);
+                        return token(CppTokenId.UNSIGNED_LITERAL);
+                    }                   
                 case '0':
                 case '1':
                 case '2':

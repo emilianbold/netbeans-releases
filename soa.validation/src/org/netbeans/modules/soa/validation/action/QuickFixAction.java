@@ -112,16 +112,14 @@ public final class QuickFixAction extends IconAction {
     }
 //out();
 //out("NODE: " + node);
+    Controller controller = node.getLookup().lookup(Controller.class);
+//out("CONTROLLER: " + controller);
 
-    if (myController == null) {
-      myController = node.getLookup().lookup(Controller.class);
-//out("CONTROLLER: " + myController);
-    }
-    if (myController == null) {
+    if (controller == null) {
 //out("CONTROLLER is NULL");
       return quickFixes;
     }
-    List<ResultItem> result = myController.getResult();
+    List<ResultItem> result = controller.getResult();
 
     for (ResultItem item : result) {
       if ( !(item instanceof QuickFixable)) {
@@ -135,6 +133,4 @@ public final class QuickFixAction extends IconAction {
     }
     return quickFixes;
   }
-
-  private Controller myController;
 }

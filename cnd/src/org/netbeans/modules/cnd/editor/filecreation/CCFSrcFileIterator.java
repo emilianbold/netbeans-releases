@@ -54,7 +54,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.cnd.loaders.CndAbstractDataLoaderExt;
 import org.netbeans.modules.cnd.loaders.HDataObject;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -67,7 +66,7 @@ public class CCFSrcFileIterator implements TemplateWizard.Iterator {
     /** Holds list of event listeners */
     private static Vector listenerList = null;
 
-    private WizardDescriptor.Panel targetChooserDescriptorPanel;
+    protected WizardDescriptor.Panel targetChooserDescriptorPanel;
 
     public WizardDescriptor.Panel current() {
 	return targetChooserDescriptorPanel;

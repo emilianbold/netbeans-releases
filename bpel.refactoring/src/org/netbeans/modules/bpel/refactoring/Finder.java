@@ -64,8 +64,7 @@ final class Finder extends Plugin {
   }
 
   public Problem prepare(RefactoringElementsBag refactoringElements) {
-    Referenceable reference =
-      myQuery.getRefactoringSource().lookup(Referenceable.class);
+    Referenceable reference = myQuery.getRefactoringSource().lookup(Referenceable.class);
 
     if (reference == null) {
       return null;

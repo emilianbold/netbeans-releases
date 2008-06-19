@@ -45,11 +45,9 @@ import org.netbeans.modules.websvc.wsitmodelext.security.SecurityQName;
 import org.netbeans.modules.websvc.wsitmodelext.policy.All;
 import org.netbeans.modules.websvc.wsitmodelext.policy.ExactlyOne;
 import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
-import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyReference;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 import java.util.Collections;
@@ -66,22 +64,13 @@ public class PolicyImpl extends PolicyComponentImpl implements Policy {
     public PolicyImpl(WSDLModel model, Element e) {
         super(model, e);
     }
-    
-    public PolicyImpl(WSDLModel model){
-        this(model, createPrefixedElement(PolicyQName.POLICY.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
 
     public void setID(String id) {
-        setAnyAttribute(SecurityQName.SECPOLID.getQName(), id);
+        setAnyAttribute(SecurityQName.SECPOLID.getQName(), id);  // TODO -> update to get correct version 
     }
 
     public String getID() {
-        return getAnyAttribute(SecurityQName.SECPOLID.getQName());
+        return getAnyAttribute(SecurityQName.SECPOLID.getQName()); // TODO -> update to get correct version 
     }
 
     public void setAll(All all) {

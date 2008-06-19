@@ -97,7 +97,10 @@ public class PersistenceXmlPackageRename extends PersistenceXmlRefactoring{
             FileObject folder = renameRefactoring.getRefactoringSource().lookup(FileObject.class);
             ClassPath classPath = ClassPath.getClassPath(folder, ClassPath.SOURCE);
             FileObject root = classPath.findOwnerRoot(folder);
-            
+            // issue 62320. By JavaDoc, ClassPath.fineOwnerRoot can return null
+            if(root == null ) {
+                return null;
+            }
             String prefix = FileUtil.getRelativePath(root, folder.getParent()).replace('/','.');
             String oldName = buildName(prefix, folder.getName());
             // the new package name

@@ -87,7 +87,7 @@ public final class LexerTestUtilities {
     public static void assertConsistency(TokenHierarchy<?> hi) {
         String error = LexerApiPackageAccessor.get().tokenHierarchyOperation(hi).checkConsistency();
         if (error != null) {
-            TestCase.fail("Consistency error:\n" + error);
+            TestCase.fail("\n\nToken Hierarchy CONSISTENCY ERROR!!!!!!!\n" + error + "\n\nINCONSISTENT TOKEN HIERARCHY:\n" + hi);
         }
     }
     
@@ -182,16 +182,6 @@ public final class LexerTestUtilities {
     }
     
     /**
-     * @see #assertTokenSequencesEqual(String,TokenSequence,TokenHierarchy,TokenSequence,TokenHierarchy,boolean)
-     */
-    public static void assertTokenSequencesEqual(
-    TokenSequence<?> expected, TokenHierarchy<?> expectedHi,
-    TokenSequence<?> actual, TokenHierarchy<?> actualHi,
-    boolean testLookaheadAndState) {
-        assertTokenSequencesEqual(null, expected, expectedHi, actual, actualHi, testLookaheadAndState);
-    }
-
-    /**
      * Compare contents of the given token sequences by moving through all their
      * tokens.
      * <br/>
@@ -210,23 +200,17 @@ public final class LexerTestUtilities {
     public static void assertTokenSequencesEqual(String message,
     TokenSequence<?> expected, TokenHierarchy<?> expectedHi,
     TokenSequence<?> actual, TokenHierarchy<?> actualHi,
-    boolean testLookaheadAndState) {
-        boolean success = false;
-        try {
-            String prefix = messagePrefix(message);
-            TestCase.assertEquals(prefix + "Move previous: ", expected.movePrevious(), actual.movePrevious());
-            while (expected.moveNext()) {
-                TestCase.assertTrue(prefix + "Move next: ", actual.moveNext());
-                assertTokensEqual(message, expected, expectedHi, actual, actualHi, testLookaheadAndState);
-            }
-            TestCase.assertFalse(prefix + "Move next not disabled", actual.moveNext());
-            success = true;
-        } finally {
-            if (!success) {
-                System.err.println("Expected token sequence dump:\n" + expected);
-                System.err.println("Test token sequence dump:\n" + actual);
-            }
+    boolean testLookaheadAndState, boolean dumpWholeHi) {
+        String prefix = messagePrefix(message);
+        TestCase.assertEquals(prefix + "Move previous: ", expected.movePrevious(), actual.movePrevious());
+        int i = 0;
+        while (expected.moveNext()) {
+            String prefixI = prefix + "->[" + i + "]";
+            TestCase.assertTrue(prefixI + ": Cannot moveNext() in test token sequence", actual.moveNext());
+            assertTokensEqual(prefixI, expected, expectedHi, actual, actualHi, testLookaheadAndState);
+            i++;
         }
+        TestCase.assertFalse(prefix + "moveNext() possible at end of test token sequence", actual.moveNext());
     }
 
     private static void assertTokensEqual(String message,
@@ -339,7 +323,9 @@ public final class LexerTestUtilities {
     }
     
     public static void incCheck(Document doc, boolean nested) {
-        TokenHierarchy<?> thInc = TokenHierarchy.get(doc);
+        TokenHierarchy<?> incHi = TokenHierarchy.get(doc);
+        assertConsistency(incHi);
+
         Language<?> language = (Language<?>)
                 doc.getProperty(Language.class);
         String docText = null;
@@ -349,35 +335,71 @@ public final class LexerTestUtilities {
             e.printStackTrace();
             TestCase.fail("BadLocationException occurred");
         }
-        TokenHierarchy<?> thBatch = TokenHierarchy.create(docText, language);
-        boolean success = false;
-        TokenSequence<?> batchTS = thBatch.tokenSequence();
+        TokenHierarchy<?> batchHi = TokenHierarchy.create(docText, language);
+        TokenSequence<?> batchTS = batchHi.tokenSequence();
+        TokenSequence<?> incTS = incHi.tokenSequence();
         try {
             // Compare lookaheads and states as well
-            assertTokenSequencesEqual(batchTS, thBatch,
-                    thInc.tokenSequence(), thInc, true);
-            success = true;
-        } finally {
-            if (!success) {
-                // Go forward two tokens to have an extra tokens context
-                batchTS.moveNext();
-                batchTS.moveNext();
-                System.err.println("BATCH token sequence dump:\n" + thBatch.tokenSequence());
-                TokenHierarchy<?> lastHi = (TokenHierarchy<?>)doc.getProperty(LAST_TOKEN_HIERARCHY);
-                if (lastHi != null) {
-                    System.err.println("PREVIOUS batch token sequence dump:\n" + lastHi.tokenSequence());
-                }
+            assertTokenSequencesEqual("TOP", batchTS, batchHi, incTS, incHi, true, false);
+        } catch (Throwable t) {
+            // Go forward two tokens to have an extra tokens context
+            batchTS.moveNext();
+            batchTS.moveNext();
+            StringBuilder sb = new StringBuilder(512);
+            sb.append("BATCH token sequence dump:\n").append(batchTS);
+            sb.append("\n\nTEST token sequence dump:\n").append(incTS);
+            TokenHierarchy<?> lastHi = (TokenHierarchy<?>)doc.getProperty(LAST_TOKEN_HIERARCHY);
+            if (lastHi != null) {
+//                    System.err.println("PREVIOUS batch token sequence dump:\n" + lastHi.tokenSequence());
             }
+            throw new IllegalStateException(sb.toString(), t);
         }
         
+        if (nested) {
+            batchTS.moveStart();
+            incTS.moveStart();
+            try {
+                incCheckNested("TOP", doc, batchTS, batchHi, incTS, incHi);
+            } catch (Throwable t) { // Re-throw with hierarchy info
+                StringBuilder sb = new StringBuilder(512);
+                sb.append("\nERROR in HIERARCHY!!!!!!!!\n");
+                sb.append(t.toString());
+                sb.append("\n\nBATCH token hierarchy:\n").append(batchHi);
+                sb.append("\n\n\n\nTEST token hierarchy:\n").append(incHi);
+                throw new IllegalStateException(sb.toString(), t);
+            }
+        }
+
         // Check the change since last modification
         TokenHierarchy<?> lastHi = (TokenHierarchy<?>)doc.getProperty(LAST_TOKEN_HIERARCHY);
         if (lastHi != null) {
             // TODO comparison
         }
-        doc.putProperty(LAST_TOKEN_HIERARCHY, thBatch); // new last batch token hierarchy
+        doc.putProperty(LAST_TOKEN_HIERARCHY, batchHi); // new last batch token hierarchy
     }
-    
+
+    public static void incCheckNested(String message, Document doc,
+            TokenSequence<?> batch, TokenHierarchy<?> batchTH,
+            TokenSequence<?> inc, TokenHierarchy<?> incTH
+    ) {
+        int i = 0;
+        while (inc.moveNext()) {
+            TestCase.assertTrue("No more tokens in batch token sequence", batch.moveNext());
+            TokenSequence<?> batchE = batch.embedded();
+            TokenSequence<?> incE = inc.embedded();
+            String messageE = message + "->[" + i + "]";
+            if (incE != null) {
+                TestCase.assertNotNull("Inc embedded sequence is null", batchE);
+                assertTokenSequencesEqual(messageE, batchE, batchTH, incE, incTH, true, true);
+
+                incCheckNested(messageE, doc, batchE, batchTH, incE, incTH);
+            } else { // Inc embedded is null
+                TestCase.assertNull("Batch embedded sequence non-null", batchE);
+            }
+            i++;
+        }
+    }
+
     /**
      * Get lookahead for the token to which the token sequence is positioned.
      * <br/>
@@ -387,7 +409,7 @@ public final class LexerTestUtilities {
         return tokenList(ts).lookahead(ts.index());
     }
 
-    /**
+        /**
      * Get state for the token to which the token sequence is positioned.
      * <br/>
      * The method uses reflection to get reference to tokenList field in token sequence.

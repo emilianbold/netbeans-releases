@@ -72,6 +72,7 @@ var DEFAULT_LANGUAGE = "DEFAULT";
 var PAGELANG_SEP = "pagelang=";
 
 var OMNITURE_CODE_JS = "http://www.netbeans.org/images/js/s_code_remote.js";
+var GOOGLE_ANALYTICS_JS = "http://www.google-analytics.com/ga.js";
 
 function getNameById(id,ids,names) {
     for(var i = 0 ; i < ids.length; i++) {
@@ -196,6 +197,19 @@ function startList() {
 	    }
 	}
     }
+}
+
+function getSize(filename) {
+	var size = "";
+	if(typeof file_names!='undefined' && typeof file_sizes!='undefined') {
+            for (var i = 0; i < file_names.length; i++) {		
+		if(file_names[i] == filename) {		
+			size = file_sizes[i];
+			break;
+		}
+            }
+	}
+	return size;
 }
 
 function message(msg) {

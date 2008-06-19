@@ -56,13 +56,14 @@ import org.openide.filesystems.FileUtil;
 public class Validator {
         private static final Logger logger = Logger.getLogger("org.netbeans.modules.uml.core");
 
-	/**
+        /**
 	 * Makes sure that the passed in path contains a valid directory
 	 * spec
 	 *
 	 * @param path An absolute path. If there is a filename, it is handled.
 	 * @return true if the path is a valid path, Otherwise false.
 	 */
+
         public static boolean validatePath(final String path) 
         {
             boolean retVal = true;

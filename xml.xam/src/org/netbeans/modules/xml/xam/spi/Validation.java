@@ -43,11 +43,13 @@ package org.netbeans.modules.xml.xam.spi;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.openide.util.Lookup;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 
 /**
  * Validation clients use this interface to start validation on a model.
@@ -100,6 +102,29 @@ public class Validation {
             myValidatedModels.addAll(result.getValidatedModels());
         }
 //System.out.println();
+        List<ResultItem> errors = new LinkedList<ResultItem>();
+        List<ResultItem> advices = new LinkedList<ResultItem>();
+        List<ResultItem> warnings = new LinkedList<ResultItem>();
+
+        if (myValidationResult == null) {
+            myValidationResult = new ArrayList<ResultItem>();
+            return;
+        }
+        for (ResultItem item : myValidationResult) {
+          if (item.getType() == ResultType.ERROR) {
+            errors.add(item);
+          }
+          else if (item.getType() == ResultType.ADVICE) {
+            advices.add(item);
+          }
+          else if (item.getType() == ResultType.WARNING) {
+            warnings.add(item);
+          }
+        }
+        myValidationResult = new LinkedList<ResultItem>();
+        myValidationResult.addAll(warnings);
+        myValidationResult.addAll(advices);
+        myValidationResult.addAll(errors);
     }
     
     public List<ResultItem> getValidationResult() {

@@ -40,44 +40,18 @@
  */
 package org.netbeans.modules.groovy.editor.options;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import javax.swing.ComboBoxModel;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JComponent;
-import javax.swing.JEditorPane;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.JViewport;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
-import org.netbeans.modules.groovy.editor.Formatter;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
-import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.Exceptions;
 
-import static org.netbeans.modules.groovy.editor.options.CodeStyle.*;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -95,7 +69,7 @@ public class FmtOptions {
     public static final String indentHtml = "indentHtml"; //NOI18N
     public static final String rightMargin = "rightMargin"; //NOI18N
     
-    public static CodeStyleProducer codeStyleProducer;
+    static CodeStyleProducer codeStyleProducer;
         
     public static Preferences lastValues;
     
@@ -172,6 +146,7 @@ public class FmtOptions {
             Integer.parseInt(value);
             return true;            
         } catch (NumberFormatException numberFormatException) {
+            Exceptions.printStackTrace(numberFormatException);
             return false;
         }
     }

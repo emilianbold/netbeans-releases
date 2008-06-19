@@ -55,11 +55,11 @@ public class AttributeIsLocalTest extends HintTestBase {
     }
 
     public void testHint1() throws Exception {
-        findHints(this, new AttributeIsLocal(), "testfiles/localattributes.rb", null);
+        checkHints(this, new AttributeIsLocal(), "testfiles/localattributes.rb", null);
     }
 
     public void testHint2() throws Exception {
-        findHints(this, new AttributeIsLocal(), "testfiles/localattributes2.rb", null);
+        checkHints(this, new AttributeIsLocal(), "testfiles/localattributes2.rb", null);
     }
     
     public void testNoPositives() throws Exception {
@@ -68,6 +68,7 @@ public class AttributeIsLocalTest extends HintTestBase {
             Set<String> exceptions = new HashSet<String>();
             
             // Known exceptions
+            exceptions.add("options.rb");
             exceptions.add("platform.rb");
             exceptions.add("game.rb");
             exceptions.add("routing.rb");
@@ -85,6 +86,9 @@ public class AttributeIsLocalTest extends HintTestBase {
             exceptions.add("baseData.rb");
             exceptions.add("form_helper.rb");
             exceptions.add("url_helper_test.rb");
+            exceptions.add("migration.rb");
+            exceptions.add("route_set.rb");
+            exceptions.add("template_finder.rb");
         
             assertNoJRubyMatches(new AttributeIsLocal(), exceptions);
             

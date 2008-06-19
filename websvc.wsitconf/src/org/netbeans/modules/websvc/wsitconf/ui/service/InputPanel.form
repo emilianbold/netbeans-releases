@@ -20,7 +20,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="tokenComboLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="tokenCombo" pref="306" max="32767" attributes="0"/>
+                      <Component id="tokenCombo" pref="307" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -28,12 +28,13 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="endorsingChBox" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="signedChBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="encryptedChBox" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="216" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="targetsButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="327" max="32767" attributes="0"/>
+                      <EmptySpace pref="328" max="32767" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -52,8 +53,10 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="endorsingChBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
+              <Component id="encryptedChBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="targetsButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -130,6 +133,13 @@
           <ResourceString bundle="org/netbeans/modules/websvc/wsitconf/ui/service/Bundle.properties" key="LBL_InputPanel_Endorsing_ACSD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="encryptedChBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/websvc/wsitconf/ui/service/Bundle.properties" key="LBL_Token_Encrypted" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

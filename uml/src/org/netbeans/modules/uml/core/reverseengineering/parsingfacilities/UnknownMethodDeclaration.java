@@ -113,6 +113,6 @@ public class UnknownMethodDeclaration extends MethodDeclaration
         Node arg = createNode(parentNode, "UML:PrimitiveAction.argument");
         if (arg != null)
             for (int i = 0, count = arguments.size(); i < count; ++i)
-                createInputPin(arg, null, arguments.get(i).getParamOne());
+                createInputPin(arg, null, arguments.get(i).getParamOne(),arguments.get(i).getParamTwo());
     }
 }

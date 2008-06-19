@@ -45,7 +45,7 @@ public interface MapperTreeExtensionModel<TreeItem> {
      * @param dataObjectPath is the list in which the deepest tree item is the first.
      * @return
      */
-    List<TreeItem> getChildren(RestartableIterator<Object> dataObjectPathItr);
+    List<TreeItem> getChildren(Iterable<Object> dataObjectPathItrb);
     
     /**
      * Returns Boolean.TRUE, Boolean.FALSE or null. 

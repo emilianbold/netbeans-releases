@@ -29,32 +29,38 @@
 package org.netbeans.modules.j2ee.weblogic9.util;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.extexecution.api.input.InputProcessors;
+import org.netbeans.modules.extexecution.api.input.InputReaderTask;
+import org.netbeans.modules.extexecution.api.input.InputReaders;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.openide.windows.InputOutput;
 
 /**
  *
  * @author Petr Hejl
- * @deprecated Replace it with some common log api for J2EE servers.
- *             Consider this just a temporary solution until the api will be
- *             implemented.
  */
 public class WLOutputManager {
 
+    private static final Logger LOGGER = Logger.getLogger(WLOutputManager.class.getName());
+
     private final InputOutput io;
 
-    private final WLTailer standardOutputTailer;
+    private final ExecutorService service = Executors.newFixedThreadPool(2);
 
-    private final WLTailer standardErrorTailer;
+    private final Process process;
 
     private boolean finished;
 
     public WLOutputManager(Process process, String uri) {
-        io = UISupport.getServerIO(uri);
-        standardOutputTailer = new WLTailer(process.getInputStream(), io.getOut());
-        standardErrorTailer = new WLTailer(process.getErrorStream(), io.getErr());
+        this.io = UISupport.getServerIO(uri);
+        this.process = process;
     }
 
     public final synchronized void start() {
@@ -70,15 +76,31 @@ public class WLOutputManager {
         }
 
         io.select();
-        standardOutputTailer.start();
-        standardErrorTailer.start();
+
+        service.submit(InputReaderTask.newTask(InputReaders.forStream(
+                process.getInputStream(), Charset.defaultCharset()), InputProcessors.printing(io.getOut(), true)));
+        service.submit(InputReaderTask.newTask(InputReaders.forStream(
+                process.getErrorStream(), Charset.defaultCharset()), InputProcessors.printing(io.getErr(), false)));
     }
 
     public final synchronized void finish() {
         finished = true;
 
-        standardOutputTailer.finish();
-        standardErrorTailer.finish();
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+
+            public Void run() {
+                service.shutdownNow();
+                return null;
+            }
+        });
+        try {
+            io.getIn().close();
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        io.getOut().close();
+        io.getErr().close();
+
     }
 
 }

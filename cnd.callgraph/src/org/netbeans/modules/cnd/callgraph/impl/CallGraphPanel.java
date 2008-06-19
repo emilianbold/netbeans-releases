@@ -41,12 +41,18 @@
 
 package org.netbeans.modules.cnd.callgraph.impl;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
@@ -54,6 +60,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.graph.layout.GraphLayout;
 import org.netbeans.api.visual.graph.layout.GridGraphLayout;
@@ -64,6 +71,7 @@ import org.netbeans.modules.cnd.callgraph.api.CallModel;
 import org.netbeans.modules.cnd.callgraph.api.Function;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.explorer.view.ListView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -71,39 +79,40 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.actions.Presenter;
+import org.openide.windows.TopComponent;
 
 /**
  *
  * @author Alexander Simon
  */
 public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider  {
-    private static final boolean SHOW_GRAPH = Boolean.getBoolean("cnd.callgraph.showgraph");
 
     private ExplorerManager explorerManager = new ExplorerManager();
     private AbstractNode root;
     private Action[] actions;
     private CallModel model;
+    private boolean showGraph;
     private boolean isCalls;
     public static final String IS_CALLS = "CallGraphIsCalls"; // NOI18N
-
     
     private CallGraphScene scene;
     private static double dividerLocation = 0.5;
     
     /** Creates new form CallGraphPanel */
-    public CallGraphPanel() {
+    public CallGraphPanel(boolean showGraph) {
         initComponents();
         isCalls = NbPreferences.forModule(CallGraphPanel.class).getBoolean(IS_CALLS, true);
         getTreeView().setRootVisible(false);
         Children.Array children = new Children.SortedArray();
-        if (SHOW_GRAPH) {
+        this.showGraph = showGraph;
+        if (showGraph) {
             scene = new CallGraphScene();
-            actions = new Action[]{new RefreshAction(),
+            actions = new Action[]{new RefreshAction(), new FocusOnAction(),
                                    null, new WhoIsCalledAction(), new WhoCallsAction(),
                                    null, new ExportAction(scene, this)};
             scene.setExportAction(actions[actions.length-1]);
         } else {
-            actions = new Action[]{new RefreshAction(),
+            actions = new Action[]{new RefreshAction(), new FocusOnAction(),
                                    null, new WhoIsCalledAction(), new WhoCallsAction()};
             
         }
@@ -114,7 +123,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
             }
         };
         getExplorerManager().setRootContext(root);
-        if (SHOW_GRAPH) {
+        if (showGraph) {
             addComponentListener(new ComponentListener() {
                 public void componentResized(ComponentEvent e) {
                     jSplitPane1.setDividerLocation(dividerLocation);
@@ -138,10 +147,24 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         
             initGraph();
         } else {
+            Component left = jSplitPane1.getLeftComponent();
             remove(jSplitPane1);
-            jSplitPane1.remove(treeView);
-            add(treeView, java.awt.BorderLayout.CENTER);
+            jSplitPane1.remove(left);
+            add(left, java.awt.BorderLayout.CENTER);
         }
+        getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                Node[] selectedNodes = getExplorerManager().getSelectedNodes();
+                if (selectedNodes.length == 1) {
+                    Node selected = selectedNodes[0];
+                    if (selected instanceof CallNode) {
+                        getContextPanel().setRootContent((CallNode) selected);
+                    } else {
+                        getContextPanel().setRootContent(null);
+                    }
+                }
+            }
+        });
     }
     
     private void initGraph() {
@@ -162,12 +185,15 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
 
         jToolBar1 = new javax.swing.JToolBar();
         refresh = new javax.swing.JButton();
+        focusOn = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JToolBar.Separator();
         calls = new javax.swing.JToggleButton();
         callers = new javax.swing.JToggleButton();
         jSplitPane1 = new javax.swing.JSplitPane();
-        treeView = new BeanTreeView();
         graphView = new JScrollPane();
+        jSplitPane2 = new javax.swing.JSplitPane();
+        treeView = new BeanTreeView();
+        contextPanel = new ContextPanel();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -186,6 +212,21 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
             }
         });
         jToolBar1.add(refresh);
+
+        focusOn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/callgraph/resources/focus.png"))); // NOI18N
+        focusOn.setToolTipText(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "FocusOnAction")); // NOI18N
+        focusOn.setFocusable(false);
+        focusOn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        focusOn.setMaximumSize(new java.awt.Dimension(28, 28));
+        focusOn.setMinimumSize(new java.awt.Dimension(28, 28));
+        focusOn.setPreferredSize(new java.awt.Dimension(28, 28));
+        focusOn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        focusOn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                focusOnActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(focusOn);
         jToolBar1.add(jSeparator1);
 
         calls.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/callgraph/resources/who_is_called.png"))); // NOI18N
@@ -217,8 +258,17 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         jSplitPane1.setDividerLocation(200);
         jSplitPane1.setResizeWeight(0.5);
         jSplitPane1.setOneTouchExpandable(true);
-        jSplitPane1.setLeftComponent(treeView);
         jSplitPane1.setRightComponent(graphView);
+
+        jSplitPane2.setDividerLocation(-1);
+        jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane2.setResizeWeight(1.0);
+        jSplitPane2.setLeftComponent(treeView);
+
+        contextPanel.setPreferredSize(new java.awt.Dimension(10, 10));
+        jSplitPane2.setRightComponent(contextPanel);
+
+        jSplitPane1.setLeftComponent(jSplitPane2);
 
         add(jSplitPane1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
@@ -240,6 +290,40 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         }
         setDirection(false);
     }//GEN-LAST:event_callersActionPerformed
+
+private void focusOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_focusOnActionPerformed
+        Node[] nodes = getExplorerManager().getSelectedNodes();
+        if (nodes == null || nodes.length != 1){
+            return;
+        }
+        Node node = nodes[0];
+        if (node instanceof FunctionRootNode){
+            update();
+        } else if (node instanceof CallNode){
+            Call call = ((CallNode)node).getCall();
+            if (isCalls) {
+                model.setRoot(call.getCallee());
+            } else {
+                model.setRoot(call.getCaller());
+            }
+            setName(model.getName());
+            setToolTipText(getName()+" - "+NbBundle.getMessage(getClass(), "CTL_CallGraphTopComponent")); // NOI18N
+            Container parent = getParent();
+            while (parent != null) {
+                if (parent instanceof JTabbedPane) {
+                    int i = ((JTabbedPane) parent).getSelectedIndex();
+                    if (i >=0) {
+                        ((JTabbedPane) parent).setTitleAt(i, getName() + "  "); // NOI18N
+                    }
+                    break;
+                } else if (parent instanceof TopComponent) {
+                    ((TopComponent) parent).setName(getToolTipText()); // NOI18N
+                    break;
+                }
+            }
+            update();
+        }
+}//GEN-LAST:event_focusOnActionPerformed
     
     private void setDirection(boolean direction){
         isCalls = direction;
@@ -256,7 +340,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     public void setModel(CallModel model) {
         this.model = model;
         //this.isCalls = model.isCalls();
-        if (SHOW_GRAPH) {
+        if (showGraph) {
             scene.setModel(model);
         }
         updateButtons();
@@ -264,10 +348,9 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     }
 
     private synchronized void update() {
-        if (SHOW_GRAPH) {
+        if (showGraph) {
             scene.clean();
         }
-        model.refresh();
         final Function function = model.getRoot();
         if (function != null){
             final Children children = root.getChildren();
@@ -312,6 +395,10 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         return (BeanTreeView)treeView;
     }
 
+    private ContextPanel getContextPanel(){
+        return (ContextPanel)contextPanel;
+    }
+
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
@@ -323,15 +410,18 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton callers;
     private javax.swing.JToggleButton calls;
+    private javax.swing.JPanel contextPanel;
+    private javax.swing.JButton focusOn;
     private javax.swing.JScrollPane graphView;
     private javax.swing.JToolBar.Separator jSeparator1;
     private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JButton refresh;
     private javax.swing.JScrollPane treeView;
     // End of variables declaration//GEN-END:variables
     
-    private class RefreshAction extends AbstractAction implements Presenter.Popup {
+    private final class RefreshAction extends AbstractAction implements Presenter.Popup {
         private JMenuItem menuItem;
         public RefreshAction() {
             putValue(Action.NAME, NbBundle.getMessage(CallGraphPanel.class, "RefreshAction"));  // NOI18N
@@ -348,7 +438,8 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
             return menuItem;
         }
     }
-    private class WhoCallsAction extends AbstractAction implements Presenter.Popup {
+
+    private final class WhoCallsAction extends AbstractAction implements Presenter.Popup {
         private JRadioButtonMenuItem menuItem;
         public WhoCallsAction() {
             putValue(Action.NAME, NbBundle.getMessage(CallGraphPanel.class, "CallersAction"));  // NOI18N
@@ -367,7 +458,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         }
     }
 
-    private class WhoIsCalledAction extends AbstractAction implements Presenter.Popup {
+    private final class WhoIsCalledAction extends AbstractAction implements Presenter.Popup {
         private JRadioButtonMenuItem menuItem;
         public WhoIsCalledAction() {
             putValue(Action.NAME, NbBundle.getMessage(CallGraphPanel.class, "CallsAction"));  // NOI18N
@@ -385,4 +476,74 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
             return menuItem;
         }
     }
-}
+
+    private final class FocusOnAction extends AbstractAction implements Presenter.Popup {
+        private JMenuItem menuItem;
+        public FocusOnAction() {
+            putValue(Action.NAME, NbBundle.getMessage(CallGraphPanel.class, "FocusOnAction"));  // NOI18N
+            putValue(Action.SMALL_ICON, focusOn.getIcon());
+            menuItem = new JMenuItem((String)getValue(Action.NAME)); 
+            menuItem.setAction(this);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            focusOnActionPerformed(e);
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            return menuItem;
+        }
+    }
+
+    private static final class ContextPanel extends JPanel implements ExplorerManager.Provider {
+        private ExplorerManager managerCtx = new ExplorerManager();
+        private ContextPanel(){
+            ListView listView = new ListView();
+            setLayout(new java.awt.BorderLayout());
+            add(listView, java.awt.BorderLayout.CENTER);
+        }
+        public ExplorerManager getExplorerManager() {
+            return managerCtx;
+        }
+        
+        private void setRootContent(CallNode node){
+            Collection<Node> list;
+            if (node == null) {
+                list = Collections.<Node>emptyList();
+            } else {
+                list = new ArrayList<Node>(1);
+                Call call = node.getCall();
+                list.add(new CallContext(call));
+            }
+            CallContextRoot root = new CallContextRoot(new ContextList(list));
+            getExplorerManager().setRootContext(root);
+        }
+        private static final class ContextList extends Children.Array {
+            private ContextList(Collection<Node> nodes){
+                super(nodes);
+            }
+        }
+
+        private static final class CallContextRoot extends AbstractNode {
+            public CallContextRoot(Children.Array array) {
+                super(array);
+            }
+        }
+
+        public static class CallContext extends AbstractNode {
+            private Call call;
+            public CallContext(Call element) {
+                super( Children.LEAF);
+                call = element;
+            }
+
+            @Override
+            public String getHtmlDisplayName() {
+                if (call != null) {
+                    return call.getHtmlDisplayName();
+                }
+                return super.getHtmlDisplayName();
+            }
+        }
+    }
+ }

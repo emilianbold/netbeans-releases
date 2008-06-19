@@ -40,10 +40,13 @@
 package org.netbeans.modules.cnd.api.model.services;
 
 import java.util.Iterator;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.openide.util.Lookup;
 
@@ -56,7 +59,11 @@ public abstract class CsmSelect {
 
     public abstract CsmFilterBuilder getFilterBuilder();
     public abstract Iterator<CsmMacro> getMacros(CsmFile file, CsmFilter filter);
+    public abstract Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFile file, CsmFilter filter);
     public abstract Iterator<CsmOffsetableDeclaration> getDeclarations(CsmNamespace namespace, CsmFilter filter);
+    public abstract Iterator<CsmOffsetableDeclaration> getDeclarations(CsmNamespaceDefinition namespace, CsmFilter filter);
+    public abstract Iterator<CsmMember> getClassMembers(CsmClass cls, CsmFilter filter);
+
     
     protected CsmSelect() {
     }
@@ -112,6 +119,30 @@ public abstract class CsmSelect {
         public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmNamespace namespace, CsmFilter filter) {
             for (CsmSelect selector : res.allInstances()) {
                 return selector.getDeclarations(namespace, filter);
+            }
+            return null;
+        }
+
+        @Override
+        public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFile file, CsmFilter filter) {
+            for (CsmSelect selector : res.allInstances()) {
+                return selector.getDeclarations(file, filter);
+            }
+            return null;
+        }
+
+        @Override
+        public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmNamespaceDefinition namespace, CsmFilter filter) {
+            for (CsmSelect selector : res.allInstances()) {
+                return selector.getDeclarations(namespace, filter);
+            }
+            return null;
+        }
+
+        @Override
+        public Iterator<CsmMember> getClassMembers(CsmClass cls, CsmFilter filter) {
+            for (CsmSelect selector : res.allInstances()) {
+                return selector.getClassMembers(cls, filter);
             }
             return null;
         }

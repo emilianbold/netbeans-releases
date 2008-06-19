@@ -246,7 +246,15 @@ class PropertiesStorage implements NbPreferences.FileStorage {
     private OutputStream outputStream() throws IOException {
         FileObject fo = toPropertiesFile(true);
         final FileLock lock = fo.lock();
-        final OutputStream os = fo.getOutputStream(lock);
+        OutputStream os = null;
+        try {
+            os = fo.getOutputStream(lock);
+        } finally {
+            if(os == null && lock != null) {
+                // release lock if getOutputStream failed
+                lock.releaseLock();
+            }
+        }
         return new FilterOutputStream(os) {
             public void close() throws IOException {
                 super.close();

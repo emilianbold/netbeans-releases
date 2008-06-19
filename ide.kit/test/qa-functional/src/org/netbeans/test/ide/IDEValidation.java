@@ -49,6 +49,7 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
@@ -169,6 +170,8 @@ public class IDEValidation extends JellyTestCase {
     /** Setup called before every test case. */
     @Override
     public void setUp() {
+        //Enable logging from CloneableEditor to investigate hang
+        Logger.getLogger("org.openide.text.CloneableEditor").setLevel(Level.FINE);
         System.out.println("########  "+getName()+"  #######");
         // Close help window if any - it should not stay open between test cases.
         // Otherwise it can break next tests.
@@ -306,6 +309,8 @@ public class IDEValidation extends JellyTestCase {
         // "Refactor"
         String refactorLabel = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "CTL_Finish");
         new JButtonOperator(copyClassDialog, refactorLabel).push();
+        // refactoring is done asynchronously => need to wait until dialog dismisses
+        copyClassDialog.waitClosed();
         
         Node newClassNode = new Node(sample1Node, "SampleClass11"); // NOI18N
         newClassNode.select();
@@ -322,6 +327,8 @@ public class IDEValidation extends JellyTestCase {
         String moveClassTitle = Bundle.getString("org.netbeans.modules.refactoring.java.ui.Bundle", "LBL_MoveClass");
         NbDialogOperator moveClassDialog = new NbDialogOperator(moveClassTitle);
         new JButtonOperator(moveClassDialog, refactorLabel).push();
+        // refactoring is done asynchronously => need to wait until dialog dismisses
+        moveClassDialog.waitClosed();
         // "Delete"
         newClassNode = new Node(sampleProjectPackage, "SampleClass11"); // NOI18N
         new DeleteAction().perform(newClassNode);
@@ -451,7 +458,7 @@ public class IDEValidation extends JellyTestCase {
         }
         /*
         // open Tools|Javadoc Index Search
-        String toolsItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Tools"); // NOI18N
+        String toolsItem = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Tools"); // NOI18N
         String javadocItem = Bundle.getStringTrimmed("org.netbeans.modules.javadoc.search.Bundle", "CTL_SEARCH_MenuItem");
         new Action(toolsItem+"|"+javadocItem, null).perform();
         // "Javadoc Index Search"
@@ -709,7 +716,7 @@ public class IDEValidation extends JellyTestCase {
         String setAsMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetAsMainProjectAction_Name");
         new Action(null, setAsMainProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_PROJECT_NAME));
         // "Build"
-        String buildItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Build");
+        String buildItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/BuildProject");
         // "Build Main Project"
         String buildMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_BuildMainProjectAction_Name");
         // call "Build|Build Main Project" main menu item
@@ -794,7 +801,7 @@ public class IDEValidation extends JellyTestCase {
         ProjectSupport.waitScanFinished();
 
         // "Tools"
-        String toolsItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Tools"); // NOI18N
+        String toolsItem = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Tools"); // NOI18N
         // "Create JUnit Tests"
         String createTestsItem = Bundle.getString("org.netbeans.modules.junit.Bundle", "LBL_Action_CreateTest"); // NOI18N
         ActionNoBlock createTestsAction = new ActionNoBlock(null, toolsItem+"|"+createTestsItem);
@@ -830,7 +837,7 @@ public class IDEValidation extends JellyTestCase {
         
         // go to test
         // "Navigate"
-        String navigateItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/GoTo"); // NOI18N
+        String navigateItem = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/GoTo"); // NOI18N
         // "Go to Test"
         String goToTestItem = Bundle.getString("org.netbeans.modules.junit.Bundle", "LBL_Action_GoToTest");  // NOI18N
         // go to test ("Navigate|Go to Test") - main menu action
@@ -1085,9 +1092,9 @@ public class IDEValidation extends JellyTestCase {
         // set exact comparator because in Japanese there is conflict with Filesystem settings
         optionsOper.treeTable().tree().setComparator(new Operator.DefaultStringComparator(true, true));
         // "IDE Configuration|System|Print Settings"
-        String printSettingsPath = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration") + "|" +
-                                   Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration/System")+"|"+
-                                   Bundle.getString("org.netbeans.core.Bundle", "Services/org-openide-text-PrintSettings.settings");
+        String printSettingsPath = Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration") + "|" +
+                                   Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration/System")+"|"+
+                                   Bundle.getString("org.netbeans.core.ui.resources.Bundle", "Services/org-openide-text-PrintSettings.settings");
         optionsOper.selectOption(printSettingsPath);
         PropertySheetOperator pso = new PropertySheetOperator(optionsOper);
         // "Page Footer Alignment"
@@ -1153,7 +1160,7 @@ public class IDEValidation extends JellyTestCase {
         // check XML Entity Catalogs
         
         // "Tools"
-        String toolsItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Tools"); // NOI18N
+        String toolsItem = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Tools"); // NOI18N
         // "DTDs and XML Schemas"
         String dtdsItem = Bundle.getStringTrimmed("org.netbeans.modules.xml.catalog.Bundle", "LBL_CatalogAction_Name");
         new Action(toolsItem+"|"+dtdsItem, null).perform();
@@ -1415,7 +1422,15 @@ public class IDEValidation extends JellyTestCase {
             bcHandler.saveWhiteList(getLog("whitelist.txt"));
         }
         try {
-            assertTrue(bcHandler.listViolations(), bcHandler.noViolations());
+            if (bcHandler.hasWhitelistStorage()) {
+                bcHandler.saveWhiteList();
+                bcHandler.saveWhiteList(getLog("whitelist.txt"));
+                bcHandler.reportDifference(getLog("diff.txt"));
+                assertTrue(bcHandler.reportViolations(getLog("violations.xml")) 
+                        + bcHandler.reportDifference(), bcHandler.noViolations());
+            } else {
+                assertTrue(bcHandler.reportViolations(getLog("violations.xml")), bcHandler.noViolations());
+            }
         } finally {
             bcHandler.remove();
         }        

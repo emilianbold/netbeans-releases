@@ -65,7 +65,7 @@ public class MarkOccurrencesHighlighterFactory extends CaretAwareSourceTaskFacto
     }
 
     public CancellableTask<CompilationInfo> createTask(FileObject file) {
-        return new MarkOccurencesHighlighter(file);
+        return new MarkOccurrencesHighlighter(file);
     }
 
 }

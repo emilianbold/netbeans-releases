@@ -1827,8 +1827,9 @@ class TreeTable extends JTable implements Runnable {
             editCellAt(row, col, null);
         }
 
+        @Override
         public boolean isEnabled() {
-            return (getSelectedRow() != -1) && (getSelectedColumn() != -1) && !isEditing();
+            return (getSelectedRow() != -1) && (getSelectedColumn() != -1) && !isEditing() && getSelectedColumn() != getTreeColumnIndex();
         }
     }
 

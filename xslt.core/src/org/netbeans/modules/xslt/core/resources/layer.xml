@@ -44,6 +44,11 @@
     <folder name="Loaders">
         <folder name="application">
             <folder name="xslt+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-xslt-core-XSLTDataLoader.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-EditAction.instance">
                         <attr name="position" intvalue="300"/>
@@ -137,4 +142,16 @@
             </folder>
         </folder>
     </folder>
+
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="xml">
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-xslt-core-text-completion-XSLTCompletionProvider.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.core.resources.Bundle"/>
+                    </file>
+                </folder>
+            </folder> <!-- xml -->
+        </folder> <!-- text -->
+    </folder> <!-- Editors -->
 </filesystem>

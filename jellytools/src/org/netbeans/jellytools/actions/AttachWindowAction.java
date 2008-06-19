@@ -77,7 +77,7 @@ public class AttachWindowAction extends Action {
     public static final String AS_LAST_TAB = "As a Last Tab";
     
     /** "Window" main menu item. */
-    private static final String windowItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle",
+    private static final String windowItem = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle",
                                                                      "Menu/Window");
 
     /** Parameter used in API operations. */

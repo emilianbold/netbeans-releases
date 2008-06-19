@@ -64,6 +64,7 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBConnectionDefinition;
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBTable;
 import org.netbeans.modules.jdbcwizard.builder.model.DBQueryModel;
@@ -912,14 +913,15 @@ public class WSDLGenerator {
             final WSDLWriter writer = WSDLGenerator.factory.newWSDLWriter();
             final String outputFileName = this.wsdlFileLocation + File.separator + this.mWSDLFileName + ".wsdl";
             java.io.FileOutputStream fos = new java.io.FileOutputStream(outputFileName);
-            final Writer sink = new java.io.OutputStreamWriter(fos);
+            final Writer sink = new java.io.OutputStreamWriter(fos, FileEncodingQuery.getDefaultEncoding());
             writer.writeWSDL(this.def, sink);
-            WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName);
+            WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName +
+                " using the file encoding:"+ FileEncodingQuery.getDefaultEncoding());
         } catch (final Exception e) {
            if(e instanceof FileNotFoundException){
-                e.printStackTrace();
+               WSDLGenerator.logger.log(Level.SEVERE, e.getMessage());
             }else if(e instanceof IOException){
-                e.printStackTrace();
+               WSDLGenerator.logger.log(Level.SEVERE, e.getMessage());
             }else if(e instanceof WSDLException){ 
             if((((WSDLException)e).getMessage()).indexOf("Unsupported Java encoding for writing wsdl file") != -1){
                 try{ 
@@ -928,12 +930,13 @@ public class WSDLGenerator {
                    java.io.FileOutputStream fos = new java.io.FileOutputStream(outputFileName);
                    final Writer sink = new java.io.OutputStreamWriter(fos,"UTF-8");
                    writer.writeWSDL(this.def, sink);
-                   WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName);
+                   WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName +
+                        " using the file encoding: UTF-8");
                    }catch(Exception ex){
-                       ex.printStackTrace();
+                       WSDLGenerator.logger.log(Level.SEVERE, ex.getMessage());
                    }
-                }else e.printStackTrace();
-            }else e.printStackTrace();
+                }else WSDLGenerator.logger.log(Level.SEVERE, e.getMessage());
+            }else WSDLGenerator.logger.log(Level.SEVERE, e.getMessage());
         }
     }
     

@@ -8,6 +8,7 @@
     <script src="netbeans-firefox-extension-utils.js"/>
     <script src="netbeans-firefox-extension-logger.js"/>
     <script src="netbeans-firefox-extension-socket.js"/>
+    <script src="netbeans-firefox-extension-netmonitor.js"/>
     <script src="netbeans-firefox-extension-debugger.js"/>
     <script src="netbeans-firefox-extension-debugger-launcher.js"/>
     <script src="netbeans-firefox-extension-overlay.js"/>

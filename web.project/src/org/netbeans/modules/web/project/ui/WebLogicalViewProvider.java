@@ -51,9 +51,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JSeparator;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.ConnectionListener;
@@ -81,6 +81,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenDatasourceSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -100,6 +101,7 @@ import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
@@ -345,9 +347,9 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
             actions.add(ProjectSensitiveActions.projectCommandAction( WebProjectConstants.COMMAND_REDEPLOY, bundle.getString( "LBL_RedeployAction_Name" ), null )); // NOI18N
             actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_DEBUG, bundle.getString( "LBL_DebugAction_Name" ), null )); // NOI18N
 
-            addFromLayers(actions, "Projects/Profiler_Actions_temporary"); //NOI18N
+            actions.addAll(Utilities.actionsForPath("Projects/Profiler_Actions_temporary")); //NOI18N
             
-            addFromLayers(actions, "Projects/Rest_Actions_holder"); //NOI18N
+            actions.addAll(Utilities.actionsForPath("Projects/Rest_Actions_holder")); //NOI18N
             actions.add(null);
             actions.add(CommonProjectActions.setAsMainProjectAction());
             actions.add(CommonProjectActions.openSubprojectsAction());
@@ -362,7 +364,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
             
             // honor 57874 contact
             
-            addFromLayers(actions, "Projects/Actions"); //NOI18N
+            actions.addAll(Utilities.actionsForPath("Projects/Actions")); //NOI18N
             
             actions.add(null);
             
@@ -380,17 +382,6 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
             return actions.toArray(new Action[actions.size()]);
         }
         
-        private void addFromLayers(List<Action> actions, String path) {
-            Lookup look = Lookups.forPath(path);
-            for (Object next : look.lookupAll(Object.class)) {
-                if (next instanceof Action) {
-                    actions.add((Action) next);
-                } else if (next instanceof JSeparator) {
-                    actions.add(null);
-                }
-            }
-        }        
-
         /** This action is created only when project has broken references.
          * Once these are resolved the action is disabled.
          */
@@ -471,6 +462,13 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
             public void actionPerformed(ActionEvent e) {
                 String j2eeSpec = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).
                         getProperty(WebProjectProperties.J2EE_PLATFORM);
+                if (j2eeSpec == null) {
+                    j2eeSpec = ProjectProperties.JAVA_EE_5; // NOI18N
+                    Logger.getLogger(WebLogicalViewProvider.class.getName()).warning(
+                            "project ["+project.getProjectDirectory()+"] is missing "+WebProjectProperties.J2EE_PLATFORM+". " + // NOI18N
+                            "default value will be used instead: "+j2eeSpec); // NOI18N
+                    updateJ2EESpec(project, project.getAntProjectHelper(), j2eeSpec);
+                }
                 String instance = BrokenServerSupport.selectServer(j2eeSpec, J2eeModule.WAR);
                 if (instance != null) {
                     WebProjectProperties.setServerInstance(
@@ -479,6 +477,21 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
                 checkMissingServer();
             }
 
+            private void updateJ2EESpec(final Project project, final AntProjectHelper helper, final String j2eeSpec) {
+                ProjectManager.mutex().postWriteRequest(new Runnable() {
+                    public void run() {
+                        try {
+                            EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            projectProps.put(WebProjectProperties.J2EE_PLATFORM, j2eeSpec);
+                            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
+                            ProjectManager.getDefault().saveProject(project);
+                        } catch (IOException e) {
+                            Exceptions.printStackTrace(e);
+                        }
+                    }
+                });
+            }
+            
             public void propertyChange(PropertyChangeEvent evt) {
                 if (WebProjectProperties.J2EE_SERVER_INSTANCE.equals(evt.getPropertyName())) {
                     checkMissingServer();
@@ -531,7 +544,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
                 boolean isLegacyProject = false;
                 
                 // Check if Web module is a visualweb 5.5.x or Creator project
-                AuxiliaryConfiguration ac = (AuxiliaryConfiguration)project.getLookup().lookup(AuxiliaryConfiguration.class);
+                AuxiliaryConfiguration ac = ProjectUtils.getAuxiliaryConfiguration(project);
                 Element auxElement = ac.getConfigurationFragment("creator-data", "http://www.sun.com/creator/ns", true); //NOI18N
                 
                 // if project is a visualweb or creator project then find out whether it is a legacy project

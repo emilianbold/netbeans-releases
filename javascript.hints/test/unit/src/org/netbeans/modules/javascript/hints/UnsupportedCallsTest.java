@@ -48,12 +48,12 @@ public class UnsupportedCallsTest extends HintTestBase {
     public void testHint1() throws Exception {
         initializeRegistry();
         
-        findHints(this, new UnsupportedCalls(), "testfiles/unsupportedcalls.js", null);
+        checkHints(this, new UnsupportedCalls(), "testfiles/unsupportedcalls.js", null);
     }
 
     public void testXHR() throws Exception {
         initializeRegistry();
         
-        findHints(this, new UnsupportedCalls(), "testfiles/gameboard.js", null);
+        checkHints(this, new UnsupportedCalls(), "testfiles/gameboard.js", null);
     }
 }

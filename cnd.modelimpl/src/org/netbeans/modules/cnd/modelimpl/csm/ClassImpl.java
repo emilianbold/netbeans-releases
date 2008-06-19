@@ -48,6 +48,7 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -91,6 +92,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 		MutableDeclarationsContainer container1, MutableDeclarationsContainer container2,CsmScope scope) {
 	    type = TemplateUtils.checkTemplateType(type, ClassImpl.this);
             FieldImpl field = new FieldImpl(offsetAst, file, type, name, ClassImpl.this, curentVisibility);
+            field.setStatic(_static);
             ClassImpl.this.addMember(field);
             return field;
         }
@@ -106,7 +108,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                     case CPPTokenTypes.LITERAL_template:
                         template = true;
                         templateSuffix = '<' + TemplateUtils.getClassSpecializationSuffix(token) + '>';
-                        templateParams = TemplateUtils.getTemplateParameters(token, ClassImpl.this);
+                        templateParams = TemplateUtils.getTemplateParameters(token, ClassImpl.this.getContainingFile(), ClassImpl.this);
                         break;
                     case CPPTokenTypes.CSM_BASE_SPECIFIER:
                         inheritances.add(new InheritanceImpl(token, getContainingFile()));
@@ -409,6 +411,14 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
             out = UIDCsmConverter.UIDsToDeclarations(members);
         }
         return out;
+    }
+
+    public Iterator<CsmMember> getMembers(CsmFilter filter) {
+        Collection<CsmUID<CsmMember>> uids = new ArrayList<CsmUID<CsmMember>>();
+        synchronized (members) {
+            uids.addAll(members);
+        }
+        return UIDCsmConverter.UIDsToDeclarations(uids, filter);
     }
 
     public Collection<CsmFriend> getFriends() {

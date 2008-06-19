@@ -151,8 +151,8 @@ public class BundleTest extends JellyTestCase {
         String value = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "CTL_FMT_SavingMessage");
         assertTrue("Characters '{' should be cut off from \""+valueRaw+"\".", value.indexOf('{') == -1);
         // "&Help"
-        valueRaw = Bundle.getString("org.netbeans.core.Bundle", "Menu/Help");
-        value = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Help");
+        valueRaw = Bundle.getString("org.netbeans.core.ui.resources.Bundle", "Menu/Help");
+        value = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Help");
         assertTrue("Characters '&' should be removed from \""+valueRaw+"\".", value.indexOf('&') == -1);
     }
     

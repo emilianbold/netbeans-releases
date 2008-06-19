@@ -41,17 +41,16 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.tokens.impl;
 
+import org.netbeans.modules.websvc.wsitmodelext.security.impl.SecurityPolicyComponentImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.Issuer;
-import org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokensQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author Martin Grebac
  */
-public class IssuerImpl extends TokensComponentImpl implements Issuer {
+public class IssuerImpl extends SecurityPolicyComponentImpl implements Issuer {
     
     /**
      * Creates a new instance of IssuerImpl
@@ -60,13 +59,4 @@ public class IssuerImpl extends TokensComponentImpl implements Issuer {
         super(model, e);
     }
     
-    public IssuerImpl(WSDLModel model){
-        this(model, createPrefixedElement(TokensQName.ISSUER.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
 }

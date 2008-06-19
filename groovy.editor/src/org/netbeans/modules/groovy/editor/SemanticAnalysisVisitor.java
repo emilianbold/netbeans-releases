@@ -43,6 +43,7 @@ package org.netbeans.modules.groovy.editor;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ConstructorNode;
@@ -65,15 +66,15 @@ public class SemanticAnalysisVisitor extends ClassCodeVisitorSupport {
 
     private final ModuleNode root;
     private final BaseDocument doc;
-    private final Map<OffsetRange, ColoringAttributes> highlights;
+    private final Map<OffsetRange, Set<ColoringAttributes>> highlights;
 
     public SemanticAnalysisVisitor(ModuleNode root, BaseDocument document) {
         this.root = root;
         this.doc = document;
-        this.highlights = new HashMap<OffsetRange, ColoringAttributes>();
+        this.highlights = new HashMap<OffsetRange, Set<ColoringAttributes>>();
     }
 
-    public Map<OffsetRange, ColoringAttributes> annotate() {
+    public Map<OffsetRange, Set<ColoringAttributes>> annotate() {
         highlights.clear();
 
         for (Object object : root.getClasses()) {
@@ -98,10 +99,10 @@ public class SemanticAnalysisVisitor extends ClassCodeVisitorSupport {
     public void visitField(FieldNode node) {
         if (node.getLineNumber() > 0) {
             OffsetRange range = AstUtilities.getRange(node, doc);
-            highlights.put(range, ColoringAttributes.FIELD);
+            highlights.put(range, ColoringAttributes.FIELD_SET);
 
             if (node.isStatic()) {
-                highlights.put(range, ColoringAttributes.STATIC);
+                highlights.put(range, ColoringAttributes.STATIC_SET);
             }
         }
         super.visitField(node);
@@ -113,7 +114,7 @@ public class SemanticAnalysisVisitor extends ClassCodeVisitorSupport {
             // Beware, a ConstructorNode is a MethodNode as well, (see below)
             // but we have to catch the Constructors first.
             OffsetRange range = AstUtilities.getRange(node, doc);
-            highlights.put(range, ColoringAttributes.CONSTRUCTOR);
+            highlights.put(range, ColoringAttributes.CONSTRUCTOR_SET);
         }
         super.visitConstructor(node);
     }
@@ -122,10 +123,10 @@ public class SemanticAnalysisVisitor extends ClassCodeVisitorSupport {
     public void visitMethod(MethodNode node) {
         if (node.getLineNumber() > 0) {
             OffsetRange range = AstUtilities.getRange(node, doc);
-            highlights.put(range, ColoringAttributes.METHOD);
+            highlights.put(range, ColoringAttributes.METHOD_SET);
 
             if (node.isStatic()) {
-                highlights.put(range, ColoringAttributes.STATIC);
+                highlights.put(range, ColoringAttributes.STATIC_SET);
             }
         }
         super.visitMethod(node);
@@ -145,7 +146,7 @@ public class SemanticAnalysisVisitor extends ClassCodeVisitorSupport {
     public void visitClass(ClassNode node) {
         if (node.getLineNumber() > 0) {
             OffsetRange range = AstUtilities.getRange(node, doc);
-            highlights.put(range, ColoringAttributes.CLASS);
+            highlights.put(range, ColoringAttributes.CLASS_SET);
         }
         super.visitClass(node);
     }
@@ -157,7 +158,7 @@ public class SemanticAnalysisVisitor extends ClassCodeVisitorSupport {
         if (var instanceof FieldNode) {
             if (node.getLineNumber() > 0) {
                 OffsetRange range = AstUtilities.getRange(node, doc);
-                highlights.put(range, ColoringAttributes.FIELD);
+                highlights.put(range, ColoringAttributes.FIELD_SET);
             }
         }
         super.visitVariableExpression(node);

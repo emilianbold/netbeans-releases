@@ -40,14 +40,19 @@
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import java.util.Iterator;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -79,9 +84,34 @@ public class SelectImpl extends CsmSelect {
         return namespace.getDeclarations().iterator();
     }
 
+    @Override
+    public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmNamespaceDefinition namespace, CsmFilter filter) {
+        if (namespace instanceof NamespaceDefinitionImpl){
+            return ((NamespaceDefinitionImpl)namespace).getDeclarations(filter);
+        }
+        return namespace.getDeclarations().iterator();
+    }
+
+    @Override
+    public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFile file, CsmFilter filter) {
+        if (file instanceof FileImpl){
+            return ((FileImpl)file).getDeclarations(filter);
+        }
+        return file.getDeclarations().iterator();
+    }
+
+    @Override
+    public Iterator<CsmMember> getClassMembers(CsmClass cls, CsmFilter filter) {
+        if (cls instanceof ClassImpl){
+            return ((ClassImpl)cls).getMembers(filter);
+        }
+        return cls.getMembers().iterator();
+    }
+
     private static interface Filter extends CsmFilter, UIDFilter {
     }
     
+    @SuppressWarnings("unchecked")
     static class FilterBuilder implements CsmFilterBuilder {
         public CsmFilter createKindFilter(final CsmDeclaration.Kind[] kinds) {
             return new Filter(){
@@ -99,6 +129,7 @@ public class SelectImpl extends CsmSelect {
             };
         }
 
+        @SuppressWarnings("unchecked")
         public CsmFilter createNameFilter(final String strPrefix, final boolean match, final boolean caseSensitive, final boolean allowEmptyName) {
             return new Filter(){
                 public boolean accept(CsmUID uid) {
@@ -122,6 +153,7 @@ public class SelectImpl extends CsmSelect {
             };
         }
 
+        @SuppressWarnings("unchecked")
         public CsmFilter createNameFilter(final NameAcceptor nameAcceptor) {
             return new Filter(){
                 public boolean accept(CsmUID uid) {
@@ -131,4 +163,5 @@ public class SelectImpl extends CsmSelect {
             };
         }
     }
+
 }

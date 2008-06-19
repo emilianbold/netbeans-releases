@@ -28,44 +28,37 @@
 
 package org.netbeans.modules.ruby.rhtml;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.CompletionProposal;
-import org.netbeans.modules.gsf.api.HtmlFormatter;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.ruby.CodeCompleter;
+import org.netbeans.modules.gsf.api.CodeCompletionContext;
+import org.netbeans.modules.gsf.api.CodeCompletionResult;
+import org.netbeans.modules.ruby.RubyCodeCompleter;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
-import org.openide.util.Exceptions;
 
 /**
- * RHTML code completer
+ * RHTML code completer. All it does is determine whether we're inside Ruby,
+ * and if so, delegates to the Ruby completer.
  * 
  * @author Tor Norbye
  */
-public class RhtmlCompleter extends CodeCompleter {
+public class RhtmlCompleter extends RubyCodeCompleter {
     /**
      *  @todo Pass in the completion type? (Smart versus documentation etc.)
      *  @todo Pass in the line offsets? Nah, just make the completion provider figure those out.
      */
     @Override
-    public List<CompletionProposal> complete(@NonNull CompilationInfo info, int caretOffset, String prefix,
-        NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
-        try {
-            Document doc = info.getDocument();
-            if (isWithinRuby(doc, caretOffset)) {
-                return super.complete(info, caretOffset, prefix, kind, queryType, caseSensitive, formatter);
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+    public CodeCompletionResult complete(CodeCompletionContext context) {
+        CompilationInfo info = context.getInfo();
+        int caretOffset = context.getCaretOffset();
+        Document doc = info.getDocument();
+        if (doc != null && isWithinRuby(doc, caretOffset)) {
+            return super.complete(context);
         }
-        return Collections.emptyList();
+        
+        return CodeCompletionResult.NONE;
     }
 
     /**
@@ -78,7 +71,7 @@ public class RhtmlCompleter extends CodeCompleter {
     public QueryType getAutoQuery(JTextComponent component, String typedText) {
         Document doc = component.getDocument();
         int caretOffset =  component.getCaret().getDot();
-        if (isWithinRuby(component.getDocument(), caretOffset)) {
+        if (isWithinRuby(doc, caretOffset)) {
             return super.getAutoQuery(component, typedText);
         }
         

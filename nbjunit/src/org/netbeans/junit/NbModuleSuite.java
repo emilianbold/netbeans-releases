@@ -49,6 +49,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -109,17 +110,38 @@ public class NbModuleSuite {
     public static Test create(Class<? extends Test> clazz, String clustersRegExp, String moduleRegExp) {
         return new S(clazz, clustersRegExp, moduleRegExp);
     }
-
     static final class S extends NbTestSuite {
         private final Class<?> clazz;
         private final String clusterRegExp;
         private final String moduleRegExp;
+        private NbTestSuite delegate;
+        private static int invocations;
 
         public S(Class<?> aClass, String clusterRegExp, String moduleRegExp) {
             super();
             this.clazz = aClass;
             this.clusterRegExp = clusterRegExp;
             this.moduleRegExp = moduleRegExp;
+        }
+
+        @Override
+        public Enumeration tests() {
+            return delegate != null ? delegate.tests() : Collections.enumeration(Collections.emptyList());
+        }
+
+        @Override
+        public int testCount() {
+            return delegate != null ? delegate.testCount() : 0;
+        }
+
+        @Override
+        public Test testAt(int arg0) {
+            return delegate != null ? delegate.testAt(arg0) : null;
+        }
+
+        @Override
+        public int countTestCases() {
+            return delegate != null ? delegate.countTestCases() : 0;
         }
 
         @Override
@@ -157,7 +179,7 @@ public class NbModuleSuite {
             System.setProperty("netbeans.logger.console", "true");
             System.setProperty("netbeans.home", platform.getPath());
 
-            File ud = new File(new File(Manager.getWorkDirPath()), "userdir");
+            File ud = new File(new File(Manager.getWorkDirPath()), "userdir" + invocations++);
             ud.mkdirs();
             NbTestCase.deleteSubFiles(ud);
 
@@ -197,7 +219,8 @@ public class NbModuleSuite {
             try {
                 testLoader.loadClass("junit.framework.Test");
                 Class<?> sndClazz = testLoader.loadClass(clazz.getName());
-                new NbTestSuite(sndClazz).run(result);
+                delegate = new NbTestSuite(sndClazz);
+                delegate.run(result);
             } catch (ClassNotFoundException ex) {
                 result.addError(this, ex);
             }

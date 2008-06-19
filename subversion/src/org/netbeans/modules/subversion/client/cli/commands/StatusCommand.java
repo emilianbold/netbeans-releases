@@ -51,13 +51,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
-import org.netbeans.modules.subversion.client.cli.SvnCommand.Arguments;
 import org.openide.xml.XMLUtil;
-import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
-import org.tigris.subversion.svnclientadapter.SVNStatusKind;
+import org.tigris.subversion.svnclientadapter.*;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -73,7 +69,7 @@ public class StatusCommand extends SvnCommand {
 
     private static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss Z");
 
-    private StringBuffer output = new StringBuffer();
+    private byte[] output;
     
     private final File files[];
     private final boolean getAll;
@@ -88,6 +84,11 @@ public class StatusCommand extends SvnCommand {
         this.checkUpdates = checkUpdates;
         this.ignoreExternals = ignoreExternals;
     }
+
+    @Override
+    protected boolean hasBinaryOutput() {
+        return true;
+    }        
     
     @Override
     protected boolean notifyOutput() {
@@ -120,19 +121,19 @@ public class StatusCommand extends SvnCommand {
     }
 
     @Override
-    public void outputText(String lineString) {
-        output.append(lineString);
-        super.outputText(lineString);        
+    public void output(byte[] bytes) {
+        output = bytes;
     }
     
     public Status[] getStatusValues() throws SVNClientException {
+        if (output == null || output.length == 0) return new Status[0];
         try {
             XMLReader saxReader = XMLUtil.createXMLReader();
 
             XmlEntriesHandler xmlEntriesHandler = new XmlEntriesHandler();
             saxReader.setContentHandler(xmlEntriesHandler);
             saxReader.setErrorHandler(xmlEntriesHandler);
-            InputSource source = new InputSource(new ByteArrayInputStream(output.toString().getBytes()));
+            InputSource source = new InputSource(new ByteArrayInputStream(output));
 
             saxReader.parse(source);
             return xmlEntriesHandler.getStatusValues();
@@ -196,7 +197,7 @@ public class StatusCommand extends SvnCommand {
         <!ATTLIST commit revision CDATA #REQUIRED>
         <!ELEMENT author (#PCDATA)>  <!-- author -->
         <!ELEMENT date (#PCDATA)>  <!-- date in ISO format -->
-
+   
         <!-- Lock info stored in WC or repos. -->
         <!ELEMENT lock (token, owner, comment?, created, expires?)>
 
@@ -275,11 +276,12 @@ public class StatusCommand extends SvnCommand {
 
         @Override
         public void characters(char[] ch, int start, int length) throws SAXException {
-            if(values == null) {
+            if(values == null || tag == null) {
                 return;
             }
             String s = toString(length, ch, start);
             values.put(tag, s);
+            tag = null;                 
         }                
         
         @Override
@@ -329,7 +331,7 @@ public class StatusCommand extends SvnCommand {
                         path, wcStatus, wcPropsStatus, wcRev, locked, copied, switched, 
                         ciRev, author, date, owner, lockComment, lockCreated, repoStatus, repoPropsStatus));
                 }
-                values = null;
+                values = null;           
             } 
         }
                 

@@ -905,24 +905,19 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         }
 
         public void storeSettings(WizardDescriptor settings) {
-            WizardDescriptor wiz = settings;
-            Object buttonPressed = wiz.getValue();
-            if (buttonPressed.equals(WizardDescriptor.NEXT_OPTION) ||
-                    buttonPressed.equals(WizardDescriptor.FINISH_OPTION)) {
-                RelatedCMPHelper helper = RelatedCMPWizard.getHelper(wizardDescriptor);
+            RelatedCMPHelper helper = RelatedCMPWizard.getHelper(wizardDescriptor);
 
-                SchemaElement sourceSchemaElement = getComponent().getSourceSchemaElement();
-                DatabaseConnection dbconn = getComponent().getDatabaseConnection();
-                FileObject dbschemaFile = getComponent().getDBSchemaFile();
-                String datasourceName = getComponent().getDatasourceName();
+            SchemaElement sourceSchemaElement = getComponent().getSourceSchemaElement();
+            DatabaseConnection dbconn = getComponent().getDatabaseConnection();
+            FileObject dbschemaFile = getComponent().getDBSchemaFile();
+            String datasourceName = getComponent().getDatasourceName();
 
-                if (dbschemaFile != null) {
-                    helper.setTableSource(sourceSchemaElement, dbschemaFile);
-                } else {
-                    helper.setTableSource(sourceSchemaElement, dbconn, datasourceName);
-                }
-                helper.setTableClosure(getComponent().getTableClosure());
+            if (dbschemaFile != null) {
+                helper.setTableSource(sourceSchemaElement, dbschemaFile);
+            } else {
+                helper.setTableSource(sourceSchemaElement, dbconn, datasourceName);
             }
+            helper.setTableClosure(getComponent().getTableClosure());
         }
 
         public void stateChanged(ChangeEvent event) {

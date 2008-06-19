@@ -150,7 +150,9 @@ public class RecurrentSuiteFactory {
             ProjectSupport.waitScanFinished();
         }
         String editPropertiesTitle = "Edit Project Properties";
-        while (JDialogOperator.findJDialog(editPropertiesTitle, true, true) != null) {
+        int count = 0;
+        while ((JDialogOperator.findJDialog(editPropertiesTitle, true, true) != null) && (count < 10)) {
+            count ++;
             new NbDialogOperator(editPropertiesTitle).cancel();
             log.info("Closing buildscript regeneration");
             try {

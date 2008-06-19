@@ -47,7 +47,7 @@ public class BlockVarTest extends HintTestBase {
 //    }
     
     public void testHint1() throws Exception {
-        findHints(this, new BlockVarReuse(), "testfiles/blockvars.rb", null);
+        checkHints(this, new BlockVarReuse(), "testfiles/blockvars.rb", null);
     }
 
     public void testBlockVarReuse() throws Exception {

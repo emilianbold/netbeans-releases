@@ -55,7 +55,7 @@ public class UnsafeIdentifierCharsTest extends HintTestBase {
     }
     
 //    public void testHint1() throws Exception {
-//        findHints(this, new UnsafeIdentifierChars(), "testfiles/unsafeidentifiers.rb", null);
+//        checkHints(this, new UnsafeIdentifierChars(), "testfiles/unsafeidentifiers.rb", null);
 //    }
     
     public void testUnsafeChars() throws Exception {

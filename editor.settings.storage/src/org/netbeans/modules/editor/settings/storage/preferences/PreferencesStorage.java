@@ -40,17 +40,20 @@
  */
 package org.netbeans.modules.editor.settings.storage.preferences;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 import org.netbeans.lib.editor.util.CharacterConversions;
-import org.netbeans.modules.editor.settings.storage.preferences.PreferencesImpl.TypedValue;
 import org.netbeans.modules.editor.settings.storage.spi.StorageDescription;
 import org.netbeans.modules.editor.settings.storage.spi.StorageReader;
 import org.netbeans.modules.editor.settings.storage.spi.StorageWriter;
+import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
 import org.netbeans.modules.editor.settings.storage.spi.support.StorageSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.xml.XMLUtil;
@@ -64,7 +67,7 @@ import org.xml.sax.SAXException;
  *
  * @author Vita Stejskal
  */
-public final class PreferencesStorage implements StorageDescription<String, PreferencesImpl.TypedValue> {
+public final class PreferencesStorage implements StorageDescription<String, TypedValue> {
 
     private static final Logger LOG = Logger.getLogger(PreferencesStorage.class.getName());
 
@@ -117,6 +120,7 @@ public final class PreferencesStorage implements StorageDescription<String, Pref
     private static final String A_VALUE = "value"; //NOI18N
     private static final String A_VALUE_ID = "valueId"; //NOI18N
     private static final String A_JAVA_TYPE = "javaType"; //NOI18N
+    private static final String A_CATEGORY = "category"; //NOI18N
     private static final String A_REMOVE = "remove"; //NOI18N
     private static final String A_XML_SPACE = "xml:space"; //NOI18N
     private static final String V_PRESERVE = "preserve"; //NOI18N
@@ -143,6 +147,7 @@ public final class PreferencesStorage implements StorageDescription<String, Pref
         private String name = null;
         private String value = null;
         private String javaType = null;
+        private String apiCategory = null;
 
         private StringBuilder text = null;
         private StringBuilder cdataText = null;
@@ -211,6 +216,9 @@ public final class PreferencesStorage implements StorageDescription<String, Pref
                     
                     // Read the type of the value
                     javaType = attributes.getValue(A_JAVA_TYPE);
+                    
+                    // Read the API category
+                    apiCategory = attributes.getValue(A_CATEGORY);
                 }
             } else if (name != null && qName.equals(E_VALUE)) {
                 // Initiate the new builder for the entry value
@@ -231,7 +239,11 @@ public final class PreferencesStorage implements StorageDescription<String, Pref
                 if (name != null) {
                     if (value != null) {
                         if (!entriesMap.containsKey(name)) {
-                            entriesMap.put(name, new TypedValue(CharacterConversions.lineSeparatorToLineFeed(value), javaType));
+                            TypedValue typedValue = new TypedValue(CharacterConversions.lineSeparatorToLineFeed(value), javaType);
+                            if (apiCategory != null && apiCategory.length() > 0) {
+                                typedValue.setApiCategory(checkApiCategory(apiCategory));
+                            }
+                            entriesMap.put(name, typedValue);
                         } else {
                             LOG.warning("Ignoring duplicate editor preferences entry '" + name + "'!"); //NOI18N
                         }
@@ -256,6 +268,17 @@ public final class PreferencesStorage implements StorageDescription<String, Pref
             if (cdataText != null) {
                 insideCdata = false;
             }
+        }
+        
+        // for the list see EditorPreferences-1_0.dtd
+        private static final String [] ALL_API_CATEGORIES = new String [] { "private", "stable", "devel", "friend", "deprecated" }; //NOI18N
+        private static String checkApiCategory(String apiCategory) {
+            for(String c : ALL_API_CATEGORIES) {
+                if (c.equalsIgnoreCase(apiCategory)) {
+                    return c;
+                }
+            }
+            return ALL_API_CATEGORIES[0];
         }
     } // End of Reader class
     
@@ -318,7 +341,8 @@ public final class PreferencesStorage implements StorageDescription<String, Pref
             Document doc = XMLUtil.createDocument(E_ROOT, null, PUBLIC_ID, SYSTEM_ID);
             Node root = doc.getElementsByTagName(E_ROOT).item(0);
 
-            for(String name : getAdded().keySet()) {
+            TreeMap<String, TypedValue> added = new  TreeMap<String, TypedValue>(getAdded());
+            for(String name : added.keySet()) {
                 Element element = doc.createElement(E_ENTRY);
                 root.appendChild(element);
 
@@ -341,12 +365,20 @@ public final class PreferencesStorage implements StorageDescription<String, Pref
                 if (javaType != null && javaType.length() > 0) {
                     element.setAttribute(A_JAVA_TYPE, javaType);
                 }
+
+                // Store entry's API stability (if any)
+                String apiCategory = getAdded().get(name).getApiCategory();
+                if (apiCategory != null && apiCategory.length() > 0) {
+                    element.setAttribute(A_CATEGORY, apiCategory);
+                }
                 
                 // Just some XML crap to preserve whitespace
                 element.setAttribute(A_XML_SPACE, V_PRESERVE);
             }
 
-            for(String name : getRemoved()) {
+            List<String> removed = new ArrayList<String>(getRemoved());
+            Collections.sort(removed);
+            for(String name : removed) {
                 Element element = doc.createElement(E_ENTRY);
                 root.appendChild(element);
 

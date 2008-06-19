@@ -184,7 +184,11 @@ public final class GenerateBeanInfoAction extends NodeAction implements java.awt
             checkState(2);
             state = 3;
 //            task.schedule(0);
-            run();
+            try {
+                run();
+            } finally {
+                state = 2;
+            }
         }
         
         public boolean isCancelled() {

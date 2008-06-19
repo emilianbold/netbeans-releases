@@ -41,17 +41,16 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.tokens.impl;
 
+import org.netbeans.modules.websvc.wsitmodelext.security.impl.SecurityPolicyComponentImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.RequireKeyIdentifierReference;
-import org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokensQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author Martin Grebac
  */
-public class RequireKeyIdentifierReferenceImpl extends TokensComponentImpl implements RequireKeyIdentifierReference {
+public class RequireKeyIdentifierReferenceImpl extends SecurityPolicyComponentImpl implements RequireKeyIdentifierReference {
     
     /**
      * Creates a new instance of RequireKeyIdentifierReferenceImpl
@@ -60,13 +59,4 @@ public class RequireKeyIdentifierReferenceImpl extends TokensComponentImpl imple
         super(model, e);
     }
     
-    public RequireKeyIdentifierReferenceImpl(WSDLModel model){
-        this(model, createPrefixedElement(TokensQName.REQUIREKEYIDENTIFIERREFERENCE.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
 }

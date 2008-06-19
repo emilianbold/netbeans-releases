@@ -47,7 +47,7 @@ package org.netbeans.modules.ruby.testrunner.ui;
  */
 enum Status {
 
-    PASSED("00CC00"), FAILED("FF0000"), ERROR("FF0000"), PENDING("800080");
+    PASSED("00CC00"), FAILED("FF0000"), ERROR("FF0000"), PENDING("800080"); //NOI18N
     
     private final String displayColor;
 

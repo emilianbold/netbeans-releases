@@ -45,7 +45,7 @@ import javax.xml.namespace.QName;
  * @author ads
  *
  */
-public interface ApplyTemplates extends Instruction, SelectSpec {
+public interface ApplyTemplates extends Instruction, SelectSpec, WithParamContainer {
     
     String CHILD_ELEMENTS   = "sort_or_with-param";        // NOI18N
     

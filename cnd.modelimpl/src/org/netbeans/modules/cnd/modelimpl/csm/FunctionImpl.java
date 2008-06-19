@@ -295,7 +295,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         setFlags(FLAGS_TEMPLATE, _template);
         if (_template) {
-            this.templateParams = TemplateUtils.getTemplateParameters(node.getFirstChild(), this);
+            //AST ast, CsmFile file, CsmScope scope, String name
+            this.templateParams = TemplateUtils.getTemplateParameters(node.getFirstChild(), getContainingFile(), this);
         }
     }
     
@@ -654,21 +655,17 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
     
     private static boolean initConst(AST node) {
-        boolean ret = false;
         AST token = node.getFirstChild();
         while( token != null &&  token.getType() != CPPTokenTypes.CSM_QUALIFIED_ID) {
             token = token.getNextSibling();
         }
         while( token != null ) {
-            if( token.getType() == CPPTokenTypes.LITERAL_const ||
-                token.getType() == CPPTokenTypes.LITERAL___const ||
-                token.getType() == CPPTokenTypes.LITERAL___const__) {
-                ret = true;
-                break;
+            if (AstRenderer.isConstQualifier(token.getType())) {
+                return true;
             }
             token = token.getNextSibling();
         }
-        return ret;
+        return false;
     }
     
     /**

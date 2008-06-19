@@ -251,6 +251,7 @@ public class ExportDiffChangesAction extends ContextAction {
             logger.outputInRed(
                     NbBundle.getMessage(ExportDiffChangesAction.class,
                     "MSG_EXPORT_CHANGES_TITLE_SEP")); // NOI18N
+            logger.outputInRed(NbBundle.getMessage(ExportDiffChangesAction.class, "MSG_EXPORT_CHANGES", destination)); // NOI18N
 
             String sep = System.getProperty("line.separator"); // NOI18N
             out = new BufferedOutputStream(new FileOutputStream(destination));

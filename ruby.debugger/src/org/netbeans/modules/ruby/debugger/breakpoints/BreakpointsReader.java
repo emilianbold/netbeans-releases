@@ -54,29 +54,32 @@ import org.openide.filesystems.URLMapper;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
 
-/** Stores {@link RubyBreakpoint}s. */
+/** Stores and reads {@link RubyBreakpoint}s. */
 public final class BreakpointsReader implements Properties.Reader {
     
     private static final String PROPERTY_URL = "url"; // NOI18N
     private static final String PROPERTY_LINE_NUMBER = "lineNumber"; // NOI18N
     private static final String PROPERTY_CONDITION = "condition"; // NOI18N
+    private static final String PROPERTY_EXCEPTION = "exception"; // NOI18N
     
     public String [] getSupportedClassNames() {
         return new String[] {
             RubyBreakpoint.class.getName(),
         };
     }
-    
+
     public Object read(final String typeID, final Properties props) {
-        if (!(typeID.equals(RubyBreakpoint.class.getName()))) {
-            return null;
+        if (typeID.equals(RubyLineBreakpoint.class.getName())) {
+            Line line = getLine(props.getString(PROPERTY_URL, null), props.getInt(PROPERTY_LINE_NUMBER, 1));
+            if (line != null) {
+                String condition = props.getString(PROPERTY_CONDITION, null);
+                return RubyBreakpointManager.createLineBreakpoint(line, condition);
+            }
+        } else if (typeID.equals(RubyExceptionBreakpoint.class.getName())) {
+            String exception = props.getString(PROPERTY_EXCEPTION, null);
+            return RubyBreakpointManager.createExceptionBreakpoint(exception);
         }
-        Line line = getLine(props.getString(PROPERTY_URL, null), props.getInt(PROPERTY_LINE_NUMBER, 1));
-        if (line == null) {
-            return null;
-        }
-        String condition = props.getString(PROPERTY_CONDITION, null);
-        return RubyBreakpointManager.createLineBreakpoint(line, condition);
+        return null;
     }
     
     public void write(final Object object, final Properties props) {
@@ -91,7 +94,8 @@ public final class BreakpointsReader implements Properties.Reader {
                 Exceptions.printStackTrace(ex);
             }
         } else if (object instanceof RubyExceptionBreakpoint) {
-            // TODO throw new UnsupportedOperationException("not implemented yet");
+            RubyExceptionBreakpoint bp = (RubyExceptionBreakpoint) object;
+            props.setString(PROPERTY_EXCEPTION, bp.getException());
         } else {
             throw new IllegalArgumentException("Unknown breakpoint type: " + object);
         }

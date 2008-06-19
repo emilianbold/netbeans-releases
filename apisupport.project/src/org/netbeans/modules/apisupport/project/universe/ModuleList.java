@@ -1097,7 +1097,8 @@ public final class ModuleList {
                     continue;
                 }
                 if (!_entries.isEmpty()) {
-                    entries.putAll(_entries);
+                    _entries.putAll(entries);
+                    entries = _entries;
                     e = _entries.get(codeNameBase);
                     if (e != null) {
                         LOG.log(Level.FINE, "Found entry for {0} by direct guess in {1}", new Object[] {codeNameBase, basedir});

@@ -134,8 +134,10 @@ final class TestMethodNode extends AbstractNode {
         String callstackFrameInfo =
                 ((trouble != null)
                         && (trouble.stackTrace != null)
-                        && (trouble.stackTrace.length != 0))
-                ? trouble.stackTrace[0]
+                        && (trouble.stackTrace.length >= 2))
+                // index 0 represents the error/failure message, 
+                // so using index 1 for navigating to the right line
+                ? trouble.stackTrace[1]
                 : null;
         
         return new JumpAction(this, callstackFrameInfo);
@@ -152,19 +154,19 @@ final class TestMethodNode extends AbstractNode {
 
         private static Map< Status,String> initNoTimeKeys() {
             Map< Status,String> result = new HashMap< Status,String>(4);
-            result.put(Status.PASSED, "MSG_TestMethodPassed_HTML");
-            result.put(Status.ERROR, "MSG_TestMethodError_HTML");
-            result.put(Status.FAILED, "MSG_TestMethodFailed_HTML");
-            result.put(Status.PENDING, "MSG_TestMethodPending_HTML");
+            result.put(Status.PASSED, "MSG_TestMethodPassed_HTML"); //NOI18N
+            result.put(Status.ERROR, "MSG_TestMethodError_HTML"); //NOI18N
+            result.put(Status.FAILED, "MSG_TestMethodFailed_HTML"); //NOI18N
+            result.put(Status.PENDING, "MSG_TestMethodPending_HTML"); //NOI18N
             return result;
         }
 
         private static Map< Status,String> initTimeKeys() {
             Map< Status,String> result = new HashMap< Status,String>(4);
-            result.put(Status.PASSED, "MSG_TestMethodPassed_HTML_time");
-            result.put(Status.ERROR, "MSG_TestMethodError_HTML_time");
-            result.put(Status.FAILED, "MSG_TestMethodFailed_HTML_time");
-            result.put(Status.PENDING, "MSG_TestMethodPending_HTML_time");
+            result.put(Status.PASSED, "MSG_TestMethodPassed_HTML_time"); //NOI18N
+            result.put(Status.ERROR, "MSG_TestMethodError_HTML_time"); //NOI18N
+            result.put(Status.FAILED, "MSG_TestMethodFailed_HTML_time"); //NOI18N
+            result.put(Status.PENDING, "MSG_TestMethodPending_HTML_time"); //NOI18N
             return result;
         }
         

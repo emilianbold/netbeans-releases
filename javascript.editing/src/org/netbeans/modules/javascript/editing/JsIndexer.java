@@ -611,7 +611,7 @@ public class JsIndexer implements Indexer {
                         while (cts.moveNext()) {
                             org.netbeans.api.lexer.Token<? extends JsCommentTokenId> token = cts.token();
                             TokenId cid = token.id();
-                            if (cid == JsCommentTokenId.TAG) {
+                            if (cid == JsCommentTokenId.COMMENT_TAG) {
                                 CharSequence text = token.text();
                                 if (TokenUtilities.textEquals("@id", text)) { // NOI18N
                                     id = JsCommentLexer.nextIdentGroup(cts);
@@ -938,22 +938,23 @@ public class JsIndexer implements Indexer {
         return null;
     }
     
-    private static FileObject preindexedDb;
-
-    /** For testing only */
-    public static void setPreindexedDb(FileObject preindexedDb) {
-        JsIndexer.preindexedDb = preindexedDb;
-    }
+//    private static FileObject preindexedDb;
+//
+//    /** For testing only */
+//    public static void setPreindexedDb(FileObject preindexedDb) {
+//        JsIndexer.preindexedDb = preindexedDb;
+//    }
     
     public FileObject getPreindexedDb() {
-        if (preindexedDb == null) {
-            File preindexed = InstalledFileLocator.getDefault().locate(
-                    "preindexed-javascript", "org.netbeans.modules.javascript.editing", false); // NOI18N
-            if (preindexed == null || !preindexed.isDirectory()) {
-                throw new RuntimeException("Can't locate preindexed directory. Installation might be damaged"); // NOI18N
-            }
-            preindexedDb = FileUtil.toFileObject(preindexed);
-        }
-        return preindexedDb;
+//        if (preindexedDb == null) {
+//            File preindexed = InstalledFileLocator.getDefault().locate(
+//                    "preindexed-javascript", "org.netbeans.modules.javascript.editing", false); // NOI18N
+//            if (preindexed == null || !preindexed.isDirectory()) {
+//                throw new RuntimeException("Can't locate preindexed directory. Installation might be damaged"); // NOI18N
+//            }
+//            preindexedDb = FileUtil.toFileObject(preindexed);
+//        }
+//        return preindexedDb;
+        return null;
     }
 }

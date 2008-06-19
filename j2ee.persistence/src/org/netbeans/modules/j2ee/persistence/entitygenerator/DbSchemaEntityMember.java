@@ -90,6 +90,10 @@ class DbSchemaEntityMember extends EntityMember {
         if (element.isCharacterType()) {
             length = element.getLength();
         }
+        if (element.isNumericType()) {
+            precision = element.getPrecision();
+            scale = element.getScale();
+        }
     }
 
     public boolean isNullable() {
@@ -99,7 +103,7 @@ class DbSchemaEntityMember extends EntityMember {
     public boolean isPrimaryKey() {
         return isPrimaryKey;
     }
-
+    
     public void setPrimaryKey(boolean isPk, boolean isPkField) {
         isPrimaryKey = isPk;
 
@@ -158,18 +162,33 @@ class DbSchemaEntityMember extends EntityMember {
         return SQLTypeUtil.isLob(getColumnElement().getType());
     }
 
+    /** 
+     * Get the length of the column - for character type fields only.
+     * 
+     * @return the length, <code>null</code> if it is not a character type
+     * field or there is no length.
+     */
     public Integer getLength() {
         return length;
     }
 
+    /** 
+     * Get the precision of the column - for numeric type fields only.
+     * 
+     * @return the precision, <code>null</code> if it is not a numeric type
+     * field or there is no precision.
+     */
     public Integer getPrecision() {
         return precision;
     }
 
+    /** 
+     * Get the scale of the column - for numeric type fields only.
+     * 
+     * @return the scale, <code>null</code> if it is not a numeric type
+     * field or there is no scale.
+     */
     public Integer getScale() {
         return scale;
     }
-    
-    
-    
 }

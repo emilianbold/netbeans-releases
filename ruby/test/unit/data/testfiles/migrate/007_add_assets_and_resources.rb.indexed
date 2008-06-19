@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/007_add_assets_and_resources.rb
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   class : AddAssetsAndResources
   class-ig : addassetsandresources
   extends : ActiveRecord::Migration
@@ -14,39 +9,39 @@ Indexed:
   method : down|STATIC|
   method : up|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
 
 
-Document 2
-Indexed:
+Document 1
+Searchable Keys:
   class : OldTemplate
   class-ig : oldtemplate
   extends : ActiveRecord::Base
   fqn : AddAssetsAndResources::OldTemplate
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : AddAssetsAndResources
 
 
-Document 3
-Indexed:
+Document 2
+Searchable Keys:
   class : Template
   class-ig : template
   extends : ActiveRecord::Base
   fqn : AddAssetsAndResources::Template
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : AddAssetsAndResources
 
 
-Document 4
-Indexed:
+Document 3
+Searchable Keys:
   dbtable : assets
 
-Not Indexed:
+Not Searchable Keys:
   dbcolumn : content_type;string
   dbcolumn : db_file_id;integer
   dbcolumn : filename;string
@@ -59,10 +54,10 @@ Not Indexed:
   dbversion : 007
 
 
-Document 5
-Indexed:
+Document 4
+Searchable Keys:
   dbtable : db_files
 
-Not Indexed:
+Not Searchable Keys:
   dbcolumn : data;binary
   dbversion : 007

@@ -47,6 +47,7 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.Registry;
+import org.netbeans.installer.utils.EngineUtils;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.LogManager;
@@ -79,7 +80,7 @@ public class CacheEngineAction extends WizardAction {
             final Progress progress = new Progress();
             
             getWizardUi().setProgress(progress);
-            Installer.cacheInstallerEngine(progress);            
+            EngineUtils.cacheEngine(progress);            
         } catch (IOException e) {
             ErrorManager.notifyCritical(ResourceUtils.getString(
                     CacheEngineAction.class,

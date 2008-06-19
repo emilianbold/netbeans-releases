@@ -39,59 +39,35 @@
 
 package org.netbeans.modules.vmd.componentssupport.ui.helpers;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.Writer;
 import java.net.URL;
-import java.nio.charset.Charset;
-import java.text.DateFormat;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-import javax.swing.text.PlainDocument;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.vmd.componentssupport.ui.wizard.CustomComponentWizardIterator;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.loaders.CreateFromTemplateAttributesProvider;
-import org.openide.loaders.DataObject;
-import org.openide.text.IndentEngine;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  * Helper class for performing new library descriptor instantiation.
@@ -116,12 +92,10 @@ public class JavaMELibsConfigurationHelper extends BaseHelper{
     public static final String LIB_EXTRACT_SOURCES  = LIB_EXTRACT_RELEASE+"sources/"; //NOI18N
     public static final String LIB_EXTRACT_DOCS     = LIB_EXTRACT_RELEASE+"docs/"; //NOI18N
     
+    public static final String FILE_PROTOCOL        = "file"; //NOI18N
+
     // browsing layer.xml dom tree
     //// names
-    private static final String LAYER_FILESYSTEM    = "filesystem";             //NOI18N
-    private static final String LAYER_FOLDER        = "folder";                 //NOI18N
-    private static final String LAYER_NAME          = "name";                   //NOI18N
-    private static final String LAYER_URL           = "url";                    //NOI18N
     private static final String LAYER_RESOURCE      = "resource";               //NOI18N
     //// tags identifiers (e.g. attribute values)
     private static final String LAYER_TAG_LIBRARIES_ROOT 
@@ -132,31 +106,18 @@ public class JavaMELibsConfigurationHelper extends BaseHelper{
     private static final String LAYER_TAG_RESOURCE_CLOSE 
                                                     = "</"+LAYER_RESOURCE+">";  //NOI18N
     //// xpaths to tags
-    private static final String LAYER_XPATH_FILESYSTEM 
-                                                    = "/"+LAYER_FILESYSTEM;     //NOI18N
     private static final String LAYER_XPATH_LIBRARIES_ROOT 
                         = "./folder[@name=\""+LAYER_TAG_LIBRARIES_ROOT+"\"]";    //NOI18N
     private static final String LAYER_XPATH_LIBRARIES 
                         = "./folder[@name=\""+LAYER_TAG_LIBRARIES+"\"]";         //NOI18N
     
     
-    private static final String TPL_ENGINE          = "freemarker";             //NOI18N
     private static final String TPL_TOKEN_NAME      = "NAME";                   //NOI18N
     private static final String TPL_TOKEN_BUNDLE    = "BUNDLE";                 //NOI18N
     private static final String TPL_TOKEN_CLASSPATH = "CLASSPATH";              //NOI18N
     private static final String TPL_TOKEN_SRC       = "SRC";                    //NOI18N
     private static final String TPL_TOKEN_JAVADOC   = "JAVADOC";                //NOI18N
-    // TODO check if these are really used (copied together with code)
-    private static final String TPL_TOKEN_NAME_LOWER = "name";                  //NOI18N
-    private static final String TPL_TOKEN_USER      = "user";                   //NOI18N
-    private static final String TPL_TOKEN_DATE      = "date";                   //NOI18N
-    private static final String TPL_TOKEN_TIME      = "time";                   //NOI18N
-    private static final String TPL_TOKEN_NAME_AND_EXT = "nameAndExt";          //NOI18N
-    private static final String TPL_TOKEN_ENCODING  = "encoding";               //NOI18N
 
-    
-    public static final String SYSTEM_USER          = "user.name"; //NOI18N
-    public static final String FILE_PROTOCOL        = "file"; //NOI18N
     
     
     /**
@@ -224,7 +185,7 @@ public class JavaMELibsConfigurationHelper extends BaseHelper{
      * @param libName library name
      * @param project
      * @param wizard WizardDescriptor
-     * @return path to created xml file relative to project directory
+     * @return targetPath to created xml file relative to project directory
      * @throws java.io.IOException
      */
     private static void configureLibXml(FileObject template, 
@@ -237,15 +198,7 @@ public class JavaMELibsConfigurationHelper extends BaseHelper{
                 CustomComponentWizardIterator.CODE_BASE_NAME)).replace('.', '/'); //NOI18N
         String xmlPath = SRC + codeNameBase + "/" + libName + XML_EXTENSION; //NOI18N
         
-        FileObject prjDir = project.getProjectDirectory();
-        FileObject targetFO = FileUtil.createData(prjDir, xmlPath);
-        if (template != null) {
-            if (tokens == null) {
-                copyByteAfterByte(template, targetFO);
-            } else {
-                copyAndSubstituteTokens(template, targetFO, tokens);
-            }
-        }
+        doCopyFile(project.getProjectDirectory(), xmlPath, template, tokens);
     }
                     
     /**
@@ -255,7 +208,7 @@ public class JavaMELibsConfigurationHelper extends BaseHelper{
      * @param project Project is used just to know it's directry 
      * (to find bundle properties file inside)
      * @param wizard WizardDescriptor with library configuration data 
-     * (used to get relative path to bundle properties file)
+     * (used to get relative targetPath to bundle properties file)
      * @throws java.io.IOException
      */
     private static void configureBundle(String libName, String libDisplayName, 
@@ -286,22 +239,22 @@ public class JavaMELibsConfigurationHelper extends BaseHelper{
         // to org-netbeans-api-project-libraries/Libraries
         /////////////////////////////
         try {
-            Document doc = parseXmlDocument(layerXmlFO);
+            Document doc = LayerXmlHelper.parseXmlDocument(layerXmlFO);
             Element docRoot = doc.getDocumentElement();
 
             XPath xpath = XPathFactory.newInstance().newXPath();
 
-            Node fsNode = goToFilesystemNode(doc, xpath, docRoot);
+            Node fsNode = LayerXmlHelper.goToFilesystemNode(doc, xpath, docRoot);
             Node libsAreaNode = goToLibsRootNode(doc, xpath, fsNode);
             Node libsNode = goToLibsNode(doc, xpath, libsAreaNode);
 
             // create record for new library descriptor
-            Element library = doc.createElement(LAYER_FOLDER);
-            library.setAttribute(LAYER_NAME, libName + XML_EXTENSION);
-            library.setAttribute(LAYER_URL, libName + XML_EXTENSION);
+            Element library = doc.createElement(LayerXmlHelper.LAYER_FOLDER);
+            library.setAttribute(LayerXmlHelper.LAYER_NAME, libName + XML_EXTENSION);
+            library.setAttribute(LayerXmlHelper.LAYER_URL, libName + XML_EXTENSION);
             libsNode.appendChild(library);
             
-            saveXmlDocument(doc, layerXmlFO);
+            LayerXmlHelper.saveXmlDocument(doc, layerXmlFO);
         }
         catch (Exception ex) {
             Exceptions.printStackTrace(ex);
@@ -309,26 +262,14 @@ public class JavaMELibsConfigurationHelper extends BaseHelper{
         
     }
 
-    private static Node goToFilesystemNode(Document doc, XPath xpath, Node parent)
-            throws XPathExpressionException 
-    {
-        String expression = LAYER_XPATH_FILESYSTEM;
-        Node fsNode = (Node) xpath.evaluate(expression, parent, XPathConstants.NODE);
-        if (fsNode == null) {
-            fsNode = doc.createElement(LAYER_FILESYSTEM);
-            parent.appendChild(fsNode);
-        }
-        return fsNode;
-    }
-    
     private static Node goToLibsRootNode(Document doc, XPath xpath, Node parent) 
             throws XPathExpressionException
     {
         String expression = LAYER_XPATH_LIBRARIES_ROOT;
         Node libsAreaNode = (Node) xpath.evaluate(expression, parent, XPathConstants.NODE);
         if (libsAreaNode == null) {
-            Element libsAreaElement = doc.createElement(LAYER_FOLDER);
-            libsAreaElement.setAttribute(LAYER_NAME, LAYER_TAG_LIBRARIES_ROOT);
+            Element libsAreaElement = doc.createElement(LayerXmlHelper.LAYER_FOLDER);
+            libsAreaElement.setAttribute(LayerXmlHelper.LAYER_NAME, LAYER_TAG_LIBRARIES_ROOT);
             parent.appendChild(libsAreaElement);
             libsAreaNode = libsAreaElement;
         }
@@ -342,40 +283,14 @@ public class JavaMELibsConfigurationHelper extends BaseHelper{
         String expression = LAYER_XPATH_LIBRARIES;
         Node libsNode = (Node) xpath.evaluate(expression, parent, XPathConstants.NODE);
         if (libsNode == null) {
-            Element libsElement = doc.createElement(LAYER_FOLDER);
-            libsElement.setAttribute(LAYER_NAME, LAYER_TAG_LIBRARIES);
+            Element libsElement = doc.createElement(LayerXmlHelper.LAYER_FOLDER);
+            libsElement.setAttribute(LayerXmlHelper.LAYER_NAME, LAYER_TAG_LIBRARIES);
             parent.appendChild(libsElement);
             libsNode = libsElement;
         }
         return libsNode;
     }
     
-    private static Document parseXmlDocument(FileObject xmlFO) 
-            throws SAXException, IOException, FileNotFoundException 
-    {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        InputStream in = xmlFO.getInputStream();
-        try {
-            FileUtil.copy(in, baos);
-        } finally {
-            in.close();
-        }
-        return XMLUtil.parse(new InputSource(
-                new ByteArrayInputStream(baos.toByteArray())), 
-                false, false, null, null);
-    }
-
-    private static void saveXmlDocument(Document doc, FileObject xmlFO) 
-            throws IOException 
-    {
-        OutputStream out = xmlFO.getOutputStream();
-        try {
-            XMLUtil.write(doc, out, UTF_8);
-        } finally {
-            out.close();
-        }
-    }
-
     /*
      * some parts of code were copied from 
      * org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor.CreatedModifiedFilesProvider
@@ -444,7 +359,7 @@ public class JavaMELibsConfigurationHelper extends BaseHelper{
             FileObject archiv = URLMapper.findFileObject(archivURL);
             assert archiv != null : archivURL; // #129617
             archName = archiv.getNameExt();
-            doCopyFile(project, pathPrefix + archName, archiv, null);
+            doCopyFile(project.getProjectDirectory(), pathPrefix + archName, archiv, null);
         } else {
             if (FILE_PROTOCOL.equals(originalURL.getProtocol())) {
                 FileObject folderToZip;
@@ -457,18 +372,6 @@ public class JavaMELibsConfigurationHelper extends BaseHelper{
             }
         }
         return archName;
-    }
-    
-    private static void doCopyFile(Project project, String path, 
-            FileObject content, Map<String, String> tokens) 
-            throws IOException
-    {
-        FileObject target = FileUtil.createData(project.getProjectDirectory(), path);
-        if (tokens == null) {
-            copyByteAfterByte(content, target);
-        } else {
-            copyAndSubstituteTokens(content, target, tokens);
-        }
     }
     
     private static void doZipAndCopyFolder(Project project, 
@@ -542,53 +445,6 @@ public class JavaMELibsConfigurationHelper extends BaseHelper{
         }
     }
 
-    
-    private static void copyAndSubstituteTokens(FileObject content, FileObject target, Map<String,String> tokens) throws IOException {
-        ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
-        ScriptEngine engine = scriptEngineManager.getEngineByName(TPL_ENGINE);
-        assert engine != null : scriptEngineManager.getEngineFactories();
-        Map<String,Object> bindings = engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE);
-        String basename = target.getName();
-        for (CreateFromTemplateAttributesProvider provider : Lookup.getDefault().lookupAll(CreateFromTemplateAttributesProvider.class)) {
-            DataObject d = DataObject.find(content);
-            Map<String,?> map = provider.attributesFor(d, d.getFolder(), basename);
-            if (map != null) {
-                bindings.putAll(map);
-            }
-        }
-        bindings.put(TPL_TOKEN_NAME_LOWER, basename.replaceFirst("\\.[^./]+$", "")); // NOI18N
-        bindings.put(TPL_TOKEN_USER, System.getProperty(SYSTEM_USER)); 
-        Date d = new Date();
-        bindings.put(TPL_TOKEN_DATE, DateFormat.getDateInstance().format(d)); 
-        bindings.put(TPL_TOKEN_TIME, DateFormat.getTimeInstance().format(d)); 
-        bindings.put(TPL_TOKEN_NAME_AND_EXT, target.getNameExt()); 
-        bindings.putAll(tokens);
-        Charset targetEnc = FileEncodingQuery.getEncoding(target);
-        Charset sourceEnc = FileEncodingQuery.getEncoding(content);
-        bindings.put(TPL_TOKEN_ENCODING, targetEnc.name());
-        Writer w = new OutputStreamWriter(target.getOutputStream(), targetEnc);
-        try {
-            IndentEngine format = IndentEngine.find(content.getMIMEType());
-            if (format != null) {
-                PlainDocument doc = new PlainDocument();
-                doc.putProperty(PlainDocument.StreamDescriptionProperty, content);
-                w = format.createWriter(doc, 0, w);
-            }
-            engine.getContext().setWriter(w);
-            engine.getContext().setAttribute(FileObject.class.getName(), content, ScriptContext.ENGINE_SCOPE);
-            engine.getContext().setAttribute(ScriptEngine.FILENAME, content.getNameExt(), ScriptContext.ENGINE_SCOPE);
-            Reader is = new InputStreamReader(content.getInputStream(), sourceEnc);
-            try {
-                engine.eval(is);
-            } catch (ScriptException x) {
-                throw (IOException) new IOException(x.toString()).initCause(x);
-            } finally {
-                is.close();
-            }
-        } finally {
-            w.close();
-        }
-    }
     
     private static String transformURL(final String cnb, final String pathPrefix, final String archiveName) {
         StringBuffer sb = new StringBuffer();

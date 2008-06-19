@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<palette_item version="1.0">
+
+  <element name="Transition" />
+  <icon16 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/state-transition.png" />
+  <icon32 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/state-transition-32.png" />
+
+  <description localizing-bundle="org.netbeans.modules.uml.diagrams.resources.context.Bundle"
+               display-name-key="NAME_StateTransition" 
+               tooltip-key="HINT_StateTransition" />
+</palette_item>

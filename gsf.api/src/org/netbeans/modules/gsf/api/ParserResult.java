@@ -95,8 +95,8 @@ public abstract class ParserResult {
     }
     
     /**
-     * Returns the errors in the file represented by the {@link Source}.
-     *
+     * Returns the errors in the file represented by the {@link CompilationInfo}
+     * for one particular mime type.
      *
      * @todo Rename to getErrors()
      * @return an list of {@link Error}

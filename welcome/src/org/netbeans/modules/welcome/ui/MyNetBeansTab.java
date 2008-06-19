@@ -47,6 +47,7 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
@@ -54,6 +55,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.ContentSection;
 import org.netbeans.modules.welcome.content.RecentProjectsPanel;
+import org.netbeans.modules.welcome.content.Utils;
 
 /**
  *
@@ -67,8 +69,11 @@ class MyNetBeansTab extends AbstractTab {
 
     protected void buildContent() {
         JPanel main = new JPanel( new GridBagLayout() );
-        main.setOpaque( false );
+        main.setOpaque( true );
+        main.setBackground(Utils.getColor(COLOR_SCREEN_BACKGROUND));
+        main.setBorder(BorderFactory.createEmptyBorder());
         add( main, BorderLayout.CENTER );
+        setBorder(BorderFactory.createEmptyBorder());
         
         main.add( new Stripe(true),
                 new GridBagConstraints(0,0,2,1,1.0,1.0,GridBagConstraints.CENTER,

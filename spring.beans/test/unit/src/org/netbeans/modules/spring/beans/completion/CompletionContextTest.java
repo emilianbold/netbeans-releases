@@ -45,7 +45,7 @@ import junit.framework.TestCase;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.spring.beans.TestUtils;
 import org.netbeans.modules.spring.beans.completion.CompletionContext.CompletionType;
-import org.netbeans.spi.editor.completion.CompletionProvider;
+import static org.netbeans.spi.editor.completion.CompletionProvider.COMPLETION_QUERY_TYPE;
 
 /**
  *
@@ -53,17 +53,15 @@ import org.netbeans.spi.editor.completion.CompletionProvider;
  */
 public class CompletionContextTest extends TestCase {
 
-    private static final int QUERY_TYPE = CompletionProvider.COMPLETION_QUERY_TYPE;
-    
     public void testAttributeValueCompletion() throws Exception {
         String config = TestUtils.createXMLConfigText("<bean id='petStore' " +
                 "class='org.springframework.PetStoreImpl'/>");
         BaseDocument doc = TestUtils.createSpringXMLConfigDocument(config);
-        CompletionContext ctx = new CompletionContext(doc, config.indexOf("'petStore'"), QUERY_TYPE);
+        CompletionContext ctx = new CompletionContext(doc, config.indexOf("'petStore'"), COMPLETION_QUERY_TYPE);
         assertContext(ctx, CompletionType.NONE, "", "bean");
-        ctx = new CompletionContext(doc, config.indexOf("petStore"), QUERY_TYPE);
+        ctx = new CompletionContext(doc, config.indexOf("petStore"), COMPLETION_QUERY_TYPE);
         assertContext(ctx, CompletionType.ATTRIBUTE_VALUE, "", "bean");
-        ctx = new CompletionContext(doc, config.indexOf("Store"), QUERY_TYPE);
+        ctx = new CompletionContext(doc, config.indexOf("Store"), COMPLETION_QUERY_TYPE);
         assertContext(ctx, CompletionType.ATTRIBUTE_VALUE, "pet", "bean");
     }
 
@@ -71,13 +69,13 @@ public class CompletionContextTest extends TestCase {
         String config = TestUtils.createXMLConfigText("<bean id='petStore' " +
                 "class='org.springframework.PetStoreImpl' p:name ='Sample Petstore' p:ag   ='29'/>");
         BaseDocument doc = TestUtils.createSpringXMLConfigDocument(config);
-        CompletionContext ctx = new CompletionContext(doc, config.indexOf("id='petStore"), QUERY_TYPE);
+        CompletionContext ctx = new CompletionContext(doc, config.indexOf("id='petStore"), COMPLETION_QUERY_TYPE);
         assertContext(ctx, CompletionType.ATTRIBUTE, "", "bean");
-        ctx = new CompletionContext(doc, config.indexOf("id='petStore"), QUERY_TYPE);
+        ctx = new CompletionContext(doc, config.indexOf("id='petStore"), COMPLETION_QUERY_TYPE);
         assertContext(ctx, CompletionType.ATTRIBUTE, "", "bean");
-        ctx = new CompletionContext(doc, config.indexOf("lass='org."), QUERY_TYPE);
+        ctx = new CompletionContext(doc, config.indexOf("lass='org."), COMPLETION_QUERY_TYPE);
         assertContext(ctx, CompletionType.ATTRIBUTE, "c", "bean");
-        ctx = new CompletionContext(doc, config.indexOf(" ='29'"), QUERY_TYPE);
+        ctx = new CompletionContext(doc, config.indexOf(" ='29'"), COMPLETION_QUERY_TYPE);
         assertContext(ctx, CompletionType.NONE, "", "bean");
     }
     
@@ -87,33 +85,33 @@ public class CompletionContextTest extends TestCase {
         String config = TestUtils.createXMLConfigText("<bean id='petStore' " +
                 "class='org.springframework.PetStoreImpl' p:name ='Sample Petstore' />");
         BaseDocument doc = TestUtils.createSpringXMLConfigDocument(config);
-        CompletionContext ctx = new CompletionContext(doc, config.indexOf("/>"), QUERY_TYPE);
+        CompletionContext ctx = new CompletionContext(doc, config.indexOf("/>"), COMPLETION_QUERY_TYPE);
         assertContext(ctx, CompletionType.ATTRIBUTE, "", "bean");
-        ctx = new CompletionContext(doc, config.indexOf("/>") + 1, QUERY_TYPE);
+        ctx = new CompletionContext(doc, config.indexOf("/>") + 1, COMPLETION_QUERY_TYPE);
         assertContext(ctx, CompletionType.NONE, "", "bean");
-        ctx = new CompletionContext(doc, config.indexOf(" />"), QUERY_TYPE);
+        ctx = new CompletionContext(doc, config.indexOf(" />"), COMPLETION_QUERY_TYPE);
         assertContext(ctx, CompletionType.NONE, "", "bean");
-        ctx = new CompletionContext(doc, config.indexOf("name"), QUERY_TYPE);
+        ctx = new CompletionContext(doc, config.indexOf("name"), COMPLETION_QUERY_TYPE);
         assertContext(ctx, CompletionType.ATTRIBUTE, "p:", "bean");
         
         config = TestUtils.createXMLConfigText("<bean id='petStore' " +
                 "class='org.springframework.PetStoreImpl' p:name ='Sample Petstore'/>");
         doc = TestUtils.createSpringXMLConfigDocument(config);
-        ctx = new CompletionContext(doc, config.indexOf("/>"), QUERY_TYPE);
+        ctx = new CompletionContext(doc, config.indexOf("/>"), COMPLETION_QUERY_TYPE);
         assertContext(ctx, CompletionType.NONE, "", "bean");
         
         // start tag
         config = TestUtils.createXMLConfigText("<bean id='petStore' " +
                 "class='org.springframework.PetStoreImpl' p:name ='Sample Petstore' ></bean>");
         doc = TestUtils.createSpringXMLConfigDocument(config);
-        ctx = new CompletionContext(doc, config.indexOf("></bean>"), QUERY_TYPE);
+        ctx = new CompletionContext(doc, config.indexOf("></bean>"), COMPLETION_QUERY_TYPE);
         assertContext(ctx, CompletionType.ATTRIBUTE, "", "bean");
-        ctx = new CompletionContext(doc, config.indexOf(" ></bean>"), QUERY_TYPE);
+        ctx = new CompletionContext(doc, config.indexOf(" ></bean>"), COMPLETION_QUERY_TYPE);
         assertContext(ctx, CompletionType.NONE, "", "bean");
         
         config = TestUtils.createXMLConfigText("<bean id='petStore' " +
                 "class='org.springframework.PetStoreImpl' p:name ='Sample Petstore'></bean>");
-        ctx = new CompletionContext(doc, config.indexOf("></bean>"), QUERY_TYPE);
+        ctx = new CompletionContext(doc, config.indexOf("></bean>"), COMPLETION_QUERY_TYPE);
         assertContext(ctx, CompletionType.NONE, "", "bean");
     }
 

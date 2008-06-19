@@ -97,7 +97,7 @@ public class TransportPanelClient extends SectionInnerPanel {
             }
 
             if (source.equals(optimalTransportChBox)) {
-                TransportModelHelper.setAutoTransport(binding, optimalTransportChBox.isSelected());
+                TransportModelHelper.enableAutoTransport(binding, optimalTransportChBox.isSelected());
             }
             enableDisable();
         }

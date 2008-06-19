@@ -41,10 +41,8 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.impl;
 
-import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.SignedParts;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -60,13 +58,4 @@ public class SignedPartsImpl extends SecurityPolicyComponentImpl implements Sign
         super(model, e);
     }
     
-    public SignedPartsImpl(WSDLModel model){
-        this(model, createPrefixedElement(SecurityPolicyQName.SIGNEDPARTS.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
 }

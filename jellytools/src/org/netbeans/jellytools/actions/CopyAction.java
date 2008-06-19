@@ -51,7 +51,7 @@ import org.netbeans.jellytools.Bundle;
 public class CopyAction extends Action {
 
     private static final String copyPopup = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Copy");
-    private static final String copyMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Edit")
+    private static final String copyMenu = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Edit")
                                             + "|" + copyPopup;
     private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
             KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.META_MASK) :

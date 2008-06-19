@@ -181,14 +181,22 @@ public class PanelBodyContainer extends javax.swing.JPanel {
             handle.progress (progressDisplayName);
         } else {
             assert estimatedTime > 0 : "Estimated time " + estimatedTime;
-            handle.start ((int) estimatedTime * 10, estimatedTime); 
+            final long friendlyEstimatedTime = estimatedTime + 2/*friendly constant*/;
+            handle.start ((int) friendlyEstimatedTime * 10, friendlyEstimatedTime); 
             handle.progress (progressDisplayName, 0);
+
             RequestProcessor.getDefault ().post (new Runnable () {
                 public void run () {
                     int i = 0;
-                    while (true) {
+                    while (isWaiting) {
                         try {
-                            handle.progress (progressDisplayName, (int) (estimatedTime * 10 > i++ ? i : estimatedTime * 10));
+                            if (friendlyEstimatedTime * 10 > i++) {
+                                handle.progress (progressDisplayName, i);
+                            } else {
+                                handle.switchToIndeterminate ();
+                                handle.progress (progressDisplayName);
+                                return ;
+                            }
                             Thread.sleep (100);
                         } catch (InterruptedException ex) {
                             // no worries

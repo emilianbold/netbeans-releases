@@ -82,6 +82,7 @@ import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.exceptions.XMLException;
+import org.netbeans.installer.utils.helper.EngineResources;
 import org.netbeans.installer.utils.helper.ExecutionMode;
 import org.netbeans.installer.utils.helper.Feature;
 import org.netbeans.installer.utils.helper.FinishHandler;
@@ -1732,6 +1733,8 @@ public class Registry implements PropertyContainer {
     
     public static final String DEFAULT_LOCAL_REGISTRY_FILE_NAME =
             "registry.xml";
+    public static final String DEFAULT_BUNDLED_REGISTRY_FILE_NAME =
+            "registry.xml";
     
     public static final String LOCAL_PRODUCT_REGISTRY_PROPERTY =
             "nbi.product.local.registry.file.name";
@@ -1745,7 +1748,8 @@ public class Registry implements PropertyContainer {
     
     public static final String DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI =
             FileProxy.RESOURCE_SCHEME_PREFIX +
-            "data/registry.xml";
+            EngineResources.DATA_DIRECTORY + StringUtils.FORWARD_SLASH + 
+            DEFAULT_BUNDLED_REGISTRY_FILE_NAME;
     
     public static final String BUNDLED_PRODUCT_REGISTRY_URI_PROPERTY =
             "nbi.product.bundled.registry.uri";
@@ -1803,6 +1807,8 @@ public class Registry implements PropertyContainer {
     
     public static final String CREATE_BUNDLE_PATH_PROPERTY =
             "nbi.create.bundle.path";
+    public static final String CREATE_BUNDLE_SKIP_NATIVE_LAUNCHER_PROPERTY =
+            "nbi.create.bundle.skip.native.launcher";
     
     public static final String LAZY_LOAD_ICONS_PROPERTY =
             "nbi.product.lazy.load.icons";

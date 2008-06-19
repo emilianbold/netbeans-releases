@@ -252,7 +252,7 @@ public class NewUMLDiagWizardPanel1
         String message = null;
         if( currentNamespace != null )
         {
-            IProxyDiagramManager diagramManager = new ProxyDiagramManager();
+            IProxyDiagramManager diagramManager = ProxyDiagramManager.instance();
             if ( diagramManager != null )
             {
                 ETList<IProxyDiagram> proxyDiagrams =

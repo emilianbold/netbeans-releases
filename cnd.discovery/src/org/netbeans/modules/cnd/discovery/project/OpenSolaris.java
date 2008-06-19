@@ -75,6 +75,7 @@ import org.netbeans.modules.cnd.discovery.wizard.tree.ProjectConfigurationImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -83,9 +84,9 @@ import org.openide.util.Exceptions;
 public class OpenSolaris extends KnownProject {
     private static final boolean TRACE = true;
     /*package-local*/ static final boolean READ_MAP_FILE_VERS = false;
-    public static final String PROJECT_NAME = "OpenSolaris"; // NOI18N
-    public static final String LOG_FILE = "NightlyLog"; // NOI18N
-    public static final String BUILD_SCRIPT = "BuildScript"; // NOI18N
+    public static final String PROJECT_NAME = "open-solaris"; // NOI18N
+    public static final String LOG_FILE = "nightly-log"; // NOI18N
+    public static final String BUILD_SCRIPT = "build-script"; // NOI18N
     private String root;
     private String nb_root;
     private String nightly_log;
@@ -151,11 +152,13 @@ public class OpenSolaris extends KnownProject {
     @Override
     public boolean create(Map<String, String> parameters){
         try{
+            if (TRACE) System.out.println(NbBundle.getMessage(OpenSolaris.class, "CREATE_PROJECT")); //NOI18N
             if (TRACE) System.out.println(KnownProject.PROJECT+"="+OpenSolaris.PROJECT_NAME); //NOI18N
             if (TRACE) System.out.println(KnownProject.ROOT+"="+root); //NOI18N
             if (TRACE) System.out.println(KnownProject.NB_ROOT+"="+nb_root); //NOI18N
             if (TRACE) System.out.println(OpenSolaris.LOG_FILE+"="+nightly_log); //NOI18N
-            if (TRACE) System.out.println("Scaning log..."); //NOI18N
+            if (TRACE) System.out.println(OpenSolaris.BUILD_SCRIPT+"="+buildScript); //NOI18N
+            if (TRACE) System.out.println(NbBundle.getMessage(OpenSolaris.class, "SCANNING_LOG")); //NOI18N
             sources = scan(nightly_log, root);
             if (sources == null || sources.size() == 0) {
                 return false;
@@ -203,7 +206,7 @@ public class OpenSolaris extends KnownProject {
     private boolean createImpl() throws IOException{
         File proto = new File(root+"/proto"); // NOI18N
         if (!proto.exists()) {
-            if (TRACE) System.out.println("Iinstalling proto..."); //NOI18N
+            if (TRACE) System.out.println(NbBundle.getMessage(OpenSolaris.class, "INSTALLING_PROTO")); //NOI18N
             for(InstallLine il : copyHeader){
                 il.install();
             }
@@ -266,15 +269,15 @@ public class OpenSolaris extends KnownProject {
             } else {
                 display = "os."+display; // NOI18N
             }
-            if (TRACE) System.out.println("Creating "+n+"..."); //NOI18N
+            if (TRACE) System.out.println(NbBundle.getMessage(OpenSolaris.class, "CREATING_PROJECT", n)); //NOI18N
             createImpl(r, n, name, display, projectList, entry.getValue().myFileProperties);
         }
         // and super projects
-        if (TRACE) System.out.println("Creating "+nb_root+"/commands..."); //NOI18N
+        if (TRACE) System.out.println(NbBundle.getMessage(OpenSolaris.class, "CREATING_COMMANDS", nb_root)); //NOI18N
         createImpl(srcRoot+"cmd", nb_root+"/commands", "commands", "os.commands", projectList, sources); // NOI18N
-        if (TRACE)  System.out.println("Creating "+nb_root+"/libraries..."); //NOI18N
+        if (TRACE) System.out.println(NbBundle.getMessage(OpenSolaris.class, "CREATING_LIBRARIES", nb_root)); //NOI18N
         createImpl(srcRoot+"lib", nb_root+"/libraries", "libraries", "os.libraries", projectList, sources); // NOI18N
-        if (TRACE)  System.out.println("Creating "+nb_root+"/sources..."); //NOI18N
+        if (TRACE) System.out.println(NbBundle.getMessage(OpenSolaris.class, "CREATING_SOURCES", nb_root)); //NOI18N
         createImpl(root+"/usr/src", nb_root+"/sources", "sources", "os.sources", projectList, sources); // NOI18N
         return true;
     }
@@ -319,7 +322,7 @@ public class OpenSolaris extends KnownProject {
             }
         }
         if (res.size() > 0) {
-            if (TRACE) System.out.println("Project libraries "+res); //NOI18N
+            if (TRACE) System.out.println(NbBundle.getMessage(OpenSolaris.class, "REQUIRED_PROJECTS", ""+res)); //NOI18N
         }
         return res;
     }
@@ -337,7 +340,7 @@ public class OpenSolaris extends KnownProject {
                 return;
             }
             try {
-                if (TRACE) System.out.println("Write "+res.size()+" globals..."); //NOI18N
+                if (TRACE) System.out.println(NbBundle.getMessage(OpenSolaris.class, "WRITING_GLOBALS", ""+res.size())); //NOI18N
                 grepDefinitions(res, list);
                 OutputStream os = new FileOutputStream(nbRoot + "/nbproject/private/globals.xml");
                 res.storeToXML(os, "Globals");
@@ -605,9 +608,15 @@ public class OpenSolaris extends KnownProject {
 
                 private List<SourceFileProperties> getSourceFileProperties() {
                     List<SourceFileProperties> res = new ArrayList<SourceFileProperties>();
+                    HashSet<String> set = new HashSet<String>();
                     for (SourceFileProperties s : sources){
                         if (s.getCompilePath().startsWith(root)) {
-                            res.add(s);
+                            File file = new File(s.getItemPath());
+                            String p = FileUtil.normalizeFile(file).getAbsolutePath();
+                            if (!set.contains(p)) {
+                                res.add(s);
+                                set.add(p);
+                            }
                         }
                     }
                     return res;

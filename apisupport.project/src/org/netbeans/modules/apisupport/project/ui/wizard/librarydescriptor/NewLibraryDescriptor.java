@@ -42,6 +42,8 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Set;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
@@ -121,9 +123,23 @@ final class NewLibraryDescriptor extends BasicWizardIterator {
         }
 
         public boolean isValidLibraryName() {
-            // XXX may need additional conditions, TBD (would need new message in that case)
-            return getLibraryName() != null && 
-                    getLibraryName().trim().length() != 0;
+            if (getLibraryName() == null 
+                    || getLibraryName().trim().length() == 0 
+                    || getLibraryName().indexOf('/') != -1) {
+                return false;
+            }
+            try {
+                // additional conditions based on what is done with library name
+                String path = CreatedModifiedFilesProvider.getLibraryDescriptorEntryPath(getLibraryName());
+                // would throw IAE
+                new URI(path);
+                LayerUtils.findGeneratedName(null, path);
+            } catch (URISyntaxException e) {
+                return false;
+            } catch (IllegalArgumentException e) {
+                return false;
+            }
+            return true;
         }
         
         public String getLibraryDisplayName() {

@@ -99,7 +99,7 @@ public class CompletionQuery extends AsyncCompletionQuery {
         context = new CompletionContextImpl(primaryFile, support, caretOffset);
         
         //Step 2: Accumulate all models and initialize the context
-        if(!context.initModels() || !context.initContext()) {
+        if(!context.initContext() || !context.initModels() ) {
             return null;
         }
                 
@@ -109,12 +109,16 @@ public class CompletionQuery extends AsyncCompletionQuery {
                 completionItems = CompletionUtil.getElements(context);
                 break;
                 
+            case COMPLETION_TYPE_ELEMENT_VALUE:
+                completionItems = CompletionUtil.getElementValues(context);
+                break;            
+                
             case COMPLETION_TYPE_ATTRIBUTE:
                 completionItems = CompletionUtil.getAttributes(context);
                 break;
             
-            case COMPLETION_TYPE_VALUE:
-                completionItems = CompletionUtil.getElementValues(context);
+            case COMPLETION_TYPE_ATTRIBUTE_VALUE:
+                completionItems = CompletionUtil.getAttributeValues(context);
                 break;            
             
             case COMPLETION_TYPE_ENTITY:

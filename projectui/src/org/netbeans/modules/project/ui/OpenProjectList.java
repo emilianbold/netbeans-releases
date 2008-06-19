@@ -141,7 +141,7 @@ public final class OpenProjectList {
 
     /** List which holds the open projects */
     private List<Project> openProjects;
-    private HashMap<ModuleInfo, List<Project>> openProjectsModuleInfos;
+    private final HashMap<ModuleInfo, List<Project>> openProjectsModuleInfos;
     
     /** Main project */
     private Project mainProject;
@@ -149,8 +149,6 @@ public final class OpenProjectList {
     /** List of recently closed projects */
     private final RecentProjectList recentProjects;
 
-    /** lock to prevent modifications of the recentTemplates variable from multiple threads */
-    private static Object RECENT_TEMPLATES_LOCK = new Object();
     /** LRU List of recently used templates */
     private final List<String> recentTemplates;
     
@@ -183,9 +181,6 @@ public final class OpenProjectList {
     // Implementation of the class ---------------------------------------------
     
     public static OpenProjectList getDefault() {
-        boolean needNotify = false;
-        
-        Project[] inital = null;
         synchronized ( OpenProjectList.class ) {
             if ( INSTANCE == null ) {
                 INSTANCE = new OpenProjectList();
@@ -239,7 +234,7 @@ public final class OpenProjectList {
         final RequestProcessor RP = new RequestProcessor("Load Open Projects"); // NOI18N
         final RequestProcessor.Task TASK = RP.create(this);
         private int action;
-        private LinkedList<Project> toOpenProjects = new LinkedList<Project>();
+        private final LinkedList<Project> toOpenProjects = new LinkedList<Project>();
         private List<Project> lazilyOpenedProjects;
         private List<String> recentTemplates;
         private Project lazyMainProject;
@@ -453,7 +448,11 @@ public final class OpenProjectList {
 	open(projects, openSubprojects, false);
     }
     
-    public void open(final Project[] projects, final boolean openSubprojects, final boolean asynchronously ) {
+    public void open(final Project[] projects, final boolean openSubprojects, final boolean asynchronously) {
+        open(projects, openSubprojects, asynchronously, null);
+    }
+    
+    public void open(final Project[] projects, final boolean openSubprojects, final boolean asynchronously, final Project/*|null*/ mainProject) {
         if (projects.length == 0) {
             //nothing to do:
             return ;
@@ -465,7 +464,7 @@ public final class OpenProjectList {
             if (!EventQueue.isDispatchThread()) { // #89935
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        open(projects, openSubprojects, asynchronously);
+                        open(projects, openSubprojects, asynchronously, mainProject);
                     }
                 });
                 return;
@@ -492,6 +491,9 @@ public final class OpenProjectList {
 		public void run() {
 		    try {
 			doOpen(projects, openSubprojects, handle, panel);
+                        if (mainProject != null && Arrays.asList(projects).contains(mainProject) && openProjects.contains(mainProject)) {
+                            setMainProject(mainProject);
+                        }
 		    } finally {
 			SwingUtilities.invokeLater(new Runnable() {
 			    public void run() {
@@ -512,6 +514,9 @@ public final class OpenProjectList {
 	    dialog.setVisible(true);
 	} else {
 	    doOpen(projects, openSubprojects, null, null);
+            if (mainProject != null && Arrays.asList(projects).contains(mainProject) && openProjects.contains(mainProject)) {
+                setMainProject(mainProject);
+            }
 	}
         
         long end = System.currentTimeMillis();
@@ -761,7 +766,7 @@ public final class OpenProjectList {
         synchronized ( this ) {
             if (mainProject != null && !openProjects.contains(mainProject)) {
                 logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
-                throw new IllegalArgumentException("Project " + ProjectUtils.getInformation(mainProject).getDisplayName() + " is not open and cannot be set as main.");
+                throw new IllegalArgumentException("NB_REPORTER_IGNORE: Project " + ProjectUtils.getInformation(mainProject).getDisplayName() + " is not open and cannot be set as main.");
             }
         
             this.mainProject = mainProject;
@@ -771,8 +776,8 @@ public final class OpenProjectList {
     }
     
     public List<Project> getRecentProjects() {
-        return ProjectManager.mutex().readAccess(new Mutex.Action<List>() {
-            public List run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<List<Project>>() {
+            public List<Project> run() {
                 synchronized (OpenProjectList.class) {
                     return recentProjects.getProjects();
                 }
@@ -791,8 +796,8 @@ public final class OpenProjectList {
     }
     
     public List<UnloadedProjectInformation> getRecentProjectsInformation() {
-        return ProjectManager.mutex().readAccess(new Mutex.Action<List>() {
-            public List run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<List<UnloadedProjectInformation>>() {
+            public List<UnloadedProjectInformation> run() {
                 synchronized (OpenProjectList.class) {
                     return recentProjects.getRecentProjectsInfo();
                 }

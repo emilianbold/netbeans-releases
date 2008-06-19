@@ -42,7 +42,7 @@
 package org.netbeans.modules.php.editor.completion;
 
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Completable.QueryType;
+import org.netbeans.modules.gsf.api.CodeCmpletionHandler.QueryType;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.php.model.SourceElement;

@@ -46,7 +46,7 @@ import org.netbeans.jellytools.Bundle;
  * @see Action
  * @author mmirilovic@netbeans.org */
 public class PaletteViewAction extends Action {
-    private static final String projectMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window")
+    private static final String projectMenu = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window")
                                            + "|"
                                            + Bundle.getStringTrimmed("org.netbeans.modules.palette.Bundle", "CTL_PaletteAction");
 

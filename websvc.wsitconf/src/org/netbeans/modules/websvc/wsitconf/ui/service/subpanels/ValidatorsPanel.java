@@ -51,6 +51,7 @@ import javax.swing.*;
 import java.util.Set;
 import org.netbeans.modules.websvc.wsitconf.ui.ClassDialog;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 
 /**
  *
@@ -64,12 +65,15 @@ public class ValidatorsPanel extends JPanel {
     
     private boolean inSync = false;
     private String profile;
+    
+    private ConfigVersion cfgVersion = null;
         
-    public ValidatorsPanel(WSDLComponent comp, Project p, String profile) {
+    public ValidatorsPanel(WSDLComponent comp, Project p, String profile, ConfigVersion cfgVersion) {
         super();
         this.comp = comp;
         this.p = p;
         this.profile = profile;
+        this.cfgVersion = cfgVersion;
         
         initComponents();
 
@@ -100,7 +104,7 @@ public class ValidatorsPanel extends JPanel {
         if (Validator.SAML_VALIDATOR.equals(type)) this.samlValidatorTextField.setText(validator);
     }
     
-    public void sync() {
+    private void sync() {
         inSync = true;
                 
         String usernameValidator = ProprietarySecurityPolicyModelHelper.getValidator(comp, Validator.USERNAME_VALIDATOR);
@@ -167,48 +171,6 @@ public class ValidatorsPanel extends JPanel {
         certificateValidatorButton.setEnabled(certRequired);
         certificateValidatorLabel.setEnabled(certRequired);
         certificateValidatorTextField.setEnabled(certRequired);
-    }
-    
-    public void setValue(javax.swing.JComponent source, Object value) {
-        if (source.equals(usernameValidatorTextField)) {
-            String validator = getValidator(Validator.USERNAME_VALIDATOR);
-            if ((validator != null) && (validator.length() == 0)) {
-                ProprietarySecurityPolicyModelHelper.setValidator(comp, Validator.USERNAME_VALIDATOR, null, false);
-            } else {
-                ProprietarySecurityPolicyModelHelper.setValidator(comp, Validator.USERNAME_VALIDATOR, validator, false);
-            }
-            return;
-        }
-
-        if (source.equals(timestampValidatorTextField)) {
-            String validator = getValidator(Validator.TIMESTAMP_VALIDATOR);
-            if ((validator != null) && (validator.length() == 0)) {
-                ProprietarySecurityPolicyModelHelper.setValidator(comp, Validator.TIMESTAMP_VALIDATOR, null, false);
-            } else {
-                ProprietarySecurityPolicyModelHelper.setValidator(comp, Validator.TIMESTAMP_VALIDATOR, validator, false);
-            }
-            return;
-        }
-
-        if (source.equals(certificateValidatorTextField)) {
-            String validator = getValidator(Validator.CERTIFICATE_VALIDATOR);
-            if ((validator != null) && (validator.length() == 0)) {
-                ProprietarySecurityPolicyModelHelper.setValidator(comp, Validator.CERTIFICATE_VALIDATOR, null, false);
-            } else {
-                ProprietarySecurityPolicyModelHelper.setValidator(comp, Validator.CERTIFICATE_VALIDATOR,validator, false);
-            }
-            return;
-        }
-
-        if (source.equals(samlValidatorTextField)) {
-            String validator = getValidator(Validator.SAML_VALIDATOR);
-            if ((validator != null) && (validator.length() == 0)) {
-                ProprietarySecurityPolicyModelHelper.setValidator(comp, Validator.SAML_VALIDATOR, null, false);
-            } else {
-                ProprietarySecurityPolicyModelHelper.setValidator(comp, Validator.SAML_VALIDATOR, validator, false);
-            }
-            return;
-        }
     }
     
     public void storeState() {
@@ -308,31 +270,32 @@ public class ValidatorsPanel extends JPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(126, 126, 126)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(timestampValidatorTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
-                                    .add(certificateValidatorTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
-                                    .add(usernameValidatorTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, samlValidatorTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(samlValidatorButton)
-                                    .add(certificateValidatorButton)
-                                    .add(timestampValidatorButton)
-                                    .add(usernameValidatorButton)))
-                            .add(timestampValidatorLabel))
-                        .add(20, 20, 20)
-                        .add(jToggleButton1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 0, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(certificateValidatorLabel)
-                            .add(samlValidatorLabel)
-                            .add(usernameValidatorLabel))
-                        .addContainerGap(402, Short.MAX_VALUE))))
+                    .add(timestampValidatorLabel)
+                    .add(certificateValidatorLabel)
+                    .add(samlValidatorLabel)
+                    .add(usernameValidatorLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                        .add(layout.createSequentialGroup()
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(samlValidatorTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 296, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
+                        .add(certificateValidatorTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 305, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(timestampValidatorTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 308, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(usernameValidatorTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 308, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(samlValidatorButton)
+                    .add(certificateValidatorButton)
+                    .add(timestampValidatorButton)
+                    .add(usernameValidatorButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jToggleButton1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 0, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
+
+        layout.linkSize(new java.awt.Component[] {certificateValidatorTextField, samlValidatorTextField, timestampValidatorTextField, usernameValidatorTextField}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
@@ -344,23 +307,23 @@ public class ValidatorsPanel extends JPanel {
                         .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(usernameValidatorLabel)
-                            .add(usernameValidatorTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(usernameValidatorButton))
+                            .add(usernameValidatorButton)
+                            .add(usernameValidatorTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(timestampValidatorLabel)
-                            .add(timestampValidatorTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(timestampValidatorButton))
+                            .add(timestampValidatorButton)
+                            .add(timestampValidatorTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(certificateValidatorLabel)
-                            .add(certificateValidatorTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(certificateValidatorButton))
+                            .add(certificateValidatorButton)
+                            .add(certificateValidatorTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(samlValidatorLabel)
-                            .add(samlValidatorTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(samlValidatorButton))))
+                            .add(samlValidatorButton)
+                            .add(samlValidatorTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents

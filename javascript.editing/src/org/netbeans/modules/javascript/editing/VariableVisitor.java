@@ -331,7 +331,7 @@ public class VariableVisitor implements ParseTreeVisitor {
                     // A variable read
                     Scope scope = scopes.getCurrent();
                     String str = node.getString();
-                    if (!str.equals("undefined") && !str.equals("arguments")) { // NOI18N
+                    if (!str.equals("undefined") && !str.equals("arguments") && !str.equals("debugger")) { // NOI18N
                         scope.readVars.add(str);
                     }
                 }

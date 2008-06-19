@@ -43,28 +43,100 @@ package org.netbeans.modules.print.api;
 import javax.swing.Action;
 
 /**
+ * <p class="nonnormative">
+ * The Print Manager is powerful functionality to preview and
+ * send data out to printer. Print Preview action from <code>File</code>
+ * menu (<code>Ctrl+Alt+Shift+P</code> shortcut) invokes the Print Preview
+ * dialog for selected nodes or opened views. The Print Preview dialog
+ * provides page layout, the set of options including font, color, header,
+ * footer, printer settings such as paper size and orientation, number
+ * of copies, margins, collation and system properties.</p>
+ *
+ * There are several ways to enable print preview for a custom data:<p>
+ *
+ * If the data is a Swing component which extends <code>javax.swing.JComponent</code>
+ * and shown in a <code>org.openide.windows.TopComponent</code>, the
+ * key {@link #PRINT_PRINTABLE} with value <code>"Boolean.TRUE"</code>
+ * in the component must be set as a client property, see example:
+ *
+ * <blockquote><pre>
+ * public class CustomComponent extends javax.swing.JComponent {
+ *   public CustomComponent() {
+ *     ...
+ *     putClientProperty("print.printable", Boolean.TRUE); // NOI18N
+ *   }
+ *   ...
+ * }</pre></blockquote>
+ *
+ * The key {@link #PRINT_NAME} is used to specify the name of the component
+ * which will be printed in the header/footer:
+ *
+ * <blockquote><pre>
+ * putClientProperty("print.name", &lt;name&gt;);  // NOI18N</pre></blockquote>
+ *
+ * If the key is not set at all, the display name of the top
+ * component is used by default. The content of the header/footer
+ * can be adjusted in the Print Options dialog.<p>
+ *
+ * If the custom data is presented by several components, all of them can
+ * be enabled for print preview. The key {@link #PRINT_WEIGHT} is used for
+ * this purpose, all visible and printable components are sorted by weight
+ * and shown in the Print Preview dialog from the left to right:
+ *
+ * <blockquote><pre>
+ * putClientProperty("print.weight", &lt;weight&gt;);  // NOI18N</pre></blockquote>
+ *
+ * If the custom data is presented by another classes, print provider
+ * {@link org.netbeans.modules.print.spi.PrintProvider} should be implemented
+ * and put into the lookup of the top component where the custom data lives.
+ *
+ * @see org.netbeans.modules.print.spi.PrintProvider
+ *
  * @author Vladimir Yaroslavskiy
  * @version 2005.12.12
  */
 public final class PrintManager {
 
+  /**
+   * This key indicates the name of the component being printed.
+   * By default, the name is shown in the left part of the header.
+   */
+  public static final String PRINT_NAME = "print.name"; // NOI18N
+
+  /**
+   * This key indicates the weight of the component being printed.
+   * The value of the key must be Integer. All visible and printable
+   * components are sorted by weight and shown in the Print Preview
+   * dialog from the left to right.
+   */
+  public static final String PRINT_WEIGHT = "print.weight"; // NOI18N
+
+  /**
+   * This key indicates whether the component is printable. To be printable
+   * the value Boolean.TRUE must be set as a client property of the component.
+   */
+  public static final String PRINT_PRINTABLE = "print.printable"; // NOI18N
+
+  /**
+   * Creates a new instance of <code>PrintManager</code>.
+   */
   private PrintManager() {}
 
   /**
-   * Returns Print Manager instance.
-   * @return Print Manager instance
-   */
-  public static PrintManager getDefault() {
-    return DEFAULT;
-  }
-
-  /**
-   * Returns Print Preview action.
+   * Returns Print Preview action. See example how to put
+   * the Print Preview action on custom Swing tool bar:
+   *
+   * <blockquote><pre>
+   * JToolBar toolbar = new JToolBar();
+   * ...
+   * // print preview
+   * toolbar.addSeparator();
+   * toolbar.add(PrintManager.printPreviewAction());
+   * ...</pre></blockquote>
+   *
    * @return Print Preview action
    */
-  public Action getPrintPreviewAction() {
+  public static Action printPreviewAction() {
     return org.netbeans.modules.print.impl.action.PrintPreviewAction.DEFAULT;
   }
-
-  private static final PrintManager DEFAULT = new PrintManager();
 }

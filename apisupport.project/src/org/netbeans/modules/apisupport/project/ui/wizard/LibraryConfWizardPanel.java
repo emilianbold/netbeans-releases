@@ -68,8 +68,7 @@ final class LibraryConfWizardPanel extends BasicWizardPanel.NewTemplatePanel {
     
     void reloadData() {
         if (getData().getCodeNameBase() == null) {
-            String dotName = BasicConfVisualPanel.EXAMPLE_BASE_NAME + getData().getProjectName();
-            getData().setCodeNameBase(Util.normalizeCNB(dotName));
+            getData().setCodeNameBase(BasicConfVisualPanel.EXAMPLE_BASE_NAME + Util.normalizeCNB(getData().getProjectName()));
         }
         if (getData().getProjectDisplayName() == null) {
             getData().setProjectDisplayName(getData().getProjectName());

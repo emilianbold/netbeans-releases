@@ -343,10 +343,14 @@ public class SolarisLogReader {
     private enum CompilerType {
         CPP, C, UNKNOWN;
     };
+    private enum CompilerFamily {
+        SUN, GNU, UNKNOWN;
+    };
     
     private class LineInfo {
         public String compileLine;
         public CompilerType compilerType = CompilerType.UNKNOWN;
+        public CompilerFamily compilerFamily = CompilerFamily.UNKNOWN;
         
         LineInfo(String line) {
             compileLine = line;
@@ -375,6 +379,7 @@ public class SolarisLogReader {
             start = line.indexOf(INVOKE_GNU_C);
             if (start>=0) {
                 li.compilerType = CompilerType.C;
+                li.compilerFamily = CompilerFamily.GNU;
                 end = start + INVOKE_GNU_C.length();
             }
         } 
@@ -382,6 +387,7 @@ public class SolarisLogReader {
             start = line.indexOf(INVOKE_GNU_CC);
             if (start>=0) {
                 li.compilerType = CompilerType.CPP;
+                li.compilerFamily = CompilerFamily.GNU;
                 end = start + INVOKE_GNU_CC.length();
             }
         } 
@@ -389,6 +395,7 @@ public class SolarisLogReader {
             start = line.indexOf(INVOKE_SUN_C);
             if (start>=0) {
                 li.compilerType = CompilerType.C;
+                li.compilerFamily = CompilerFamily.SUN;
                 end = start + INVOKE_SUN_C.length();
             }
         } 
@@ -396,6 +403,7 @@ public class SolarisLogReader {
             start = line.indexOf(INVOKE_SUN_CC);
             if (start>=0) {
                 li.compilerType = CompilerType.CPP;
+                li.compilerFamily = CompilerFamily.SUN;
                 end = start + INVOKE_SUN_CC.length();
             }
         }
@@ -456,7 +464,7 @@ public class SolarisLogReader {
        
        LineInfo li = testCompilerInvocation(line);
        if (li.compilerType != CompilerType.UNKNOWN) {
-           return gatherLine(li.compileLine, line.startsWith("+"), li.compilerType == CompilerType.CPP);
+           return gatherLine(li.compileLine, line.startsWith("+"), li.compilerType == CompilerType.CPP, li.compilerFamily);
        }
        return false;
     }
@@ -480,7 +488,7 @@ public class SolarisLogReader {
         }
     }
     
-    private boolean gatherLine(String line, boolean isScriptOutput, boolean isCPP) {
+    private boolean gatherLine(String line, boolean isScriptOutput, boolean isCPP, CompilerFamily compiler) {
         // /set/c++/bin/5.9/intel-S2/prod/bin/CC -c -g -DHELLO=75 -Idist  main.cc -Qoption ccfe -prefix -Qoption ccfe .XAKABILBpivFlIc.
         // /opt/SUNWspro/bin/cc -xO3 -xarch=amd64 -Ui386 -U__i386 -Xa -xildoff -errtags=yes -errwarn=%all
         // -erroff=E_EMPTY_TRANSLATION_UNIT -erroff=E_STATEMENT_NOT_REACHED -xc99=%none -W0,-xglobalstatic
@@ -536,14 +544,14 @@ public class SolarisLogReader {
                     file = getWorkingDir()+"/"+what;  //NOI18N
                     f = new File(file);
                     if (f.exists() && f.isFile()) {
-                        addToResult(new CommandLineSource(isCPP, getWorkingDir(), what, userIncludesCached, userMacrosCached));
+                        addToResult(new CommandLineSource(isCPP, compiler==CompilerFamily.SUN, getWorkingDir(), what, userIncludesCached, userMacrosCached));
                         return true;
                     }
                 }
                 String search = findFiles(what, getWorkingDir(), relative);
                 if (search != null) {
                     setWorkingDir(search);
-                    addToResult(new CommandLineSource(isCPP, getWorkingDir(), what, userIncludesCached, userMacrosCached));
+                    addToResult(new CommandLineSource(isCPP, compiler==CompilerFamily.SUN, getWorkingDir(), what, userIncludesCached, userMacrosCached));
                     if (TRACE) System.err.println("** Gotcha: " + search + File.separator + what);
                     // kinda adventure but it works
                     return true;
@@ -554,7 +562,7 @@ public class SolarisLogReader {
         } else if (TRACE) {
             if (TRACE) System.err.println("**** Gotcha: " + file);
         }
-        addToResult(new CommandLineSource(isCPP, getWorkingDir(), what, userIncludesCached, userMacrosCached));
+        addToResult(new CommandLineSource(isCPP, compiler==CompilerFamily.SUN, getWorkingDir(), what, userIncludesCached, userMacrosCached));
         return true;
     }
     
@@ -565,11 +573,16 @@ public class SolarisLogReader {
                 // first compilation is GNU, second is SUN
                 if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
                     // Rplace GNU compilation on SUN
-                    result.set(result.size()-1, source);
+                    if (!prev.isSunCompiler && source.isSunCompiler) {
+                        result.set(result.size()-1, source);
+                        return;
+                    }
                 } else {
                     // Skip SUN compilation
+                    if (!prev.isSunCompiler && source.isSunCompiler) {
+                        return;
+                    }
                 }
-                return;
             }
         }
         result.add(source);
@@ -732,14 +745,16 @@ public class SolarisLogReader {
         private Map<String, String> userMacros;
         private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
         private Set<String> includedFiles = Collections.<String>emptySet();
+        private boolean isSunCompiler;
 
-        private CommandLineSource(boolean isCPP, String compilePath, String sourcePath, 
+        private CommandLineSource(boolean isCPP, boolean isSunCompiler, String compilePath, String sourcePath, 
                 List<String> userIncludes, Map<String, String> userMacros) {
             if (isCPP) {
                 language = ItemProperties.LanguageKind.CPP;
             } else {
                 language = ItemProperties.LanguageKind.C;
             }
+            this.isSunCompiler = isSunCompiler;
             this.compilePath =compilePath;
             sourceName = sourcePath;
             if (sourceName.startsWith("/")) { // NOI18N

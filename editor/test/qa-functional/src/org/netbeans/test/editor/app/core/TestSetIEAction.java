@@ -41,7 +41,7 @@
 package org.netbeans.test.editor.app.core;
 
 import java.util.ArrayList;
-import org.netbeans.modules.java.editor.options.JavaOptions;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.test.editor.app.gui.*;
 import javax.swing.text.EditorKit;
 import javax.swing.JEditorPane;
@@ -51,13 +51,16 @@ import org.openide.text.IndentEngine;
 import org.openide.options.SystemOption;
 import org.netbeans.modules.editor.options.BaseOptions;
 import java.util.Enumeration;
+import java.util.prefs.Preferences;
 import org.netbeans.test.editor.app.util.Scheduler;
 import javax.swing.SwingUtilities;
 
 import javax.swing.text.Document;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.java.JavaIndentEngine;
 import org.netbeans.modules.editor.java.JavaKit;
+import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.options.AllOptions;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.test.editor.app.Main;
@@ -87,7 +90,9 @@ public class TestSetIEAction extends TestSetAction {
     
     public TestSetIEAction(String name) {
         super(name);
-        indentEngine=((BaseOptions)(SystemOption.findObject(JavaOptions.class, true))).getIndentEngine();
+        MimePath mimePath = MimePath.parse("text/x-java");
+        Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
+        SettingsConversions.callFactory(prefs, mimePath, org.netbeans.modules.editor.NbEditorDocument.INDENT_ENGINE, null);
     }
     
     public TestSetIEAction(Element node) {
