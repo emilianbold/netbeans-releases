@@ -282,8 +282,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             String documentRoot = ls.getDocumentRoot();
             assert documentRoot != null;
             String srcRoot = ls.getSrcRoot();
-            int idx = documentRoot.length();
-            assert idx > 0;
             String urlSuffix = getUrlSuffix(documentRoot, srcRoot);
             if (urlSuffix == null) {
                 // user changed path to a different place => use the name of the directory
