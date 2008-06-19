@@ -87,7 +87,7 @@ public class RestClientSaasBean extends SaasBean {
         setIsDropTargetWeb(isDropTargetWeb);
         init();
     }
-
+    
     public WadlSaasMethod getMethod() {
         return m;
     }

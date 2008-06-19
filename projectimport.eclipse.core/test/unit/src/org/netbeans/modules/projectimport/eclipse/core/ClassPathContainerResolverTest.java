@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,72 +37,29 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript.editing;
+package org.netbeans.modules.projectimport.eclipse.core;
 
-/**
- *
- * @author tor
- */
-public class JsSemanticAnalyzerTest extends JsTestBase {
+import org.netbeans.junit.NbTestCase;
+
+public class ClassPathContainerResolverTest extends NbTestCase {
     
-    public JsSemanticAnalyzerTest(String testName) {
+    public ClassPathContainerResolverTest(String testName) {
         super(testName);
-    }           
-    
-    public void testSemantic1() throws Exception {
-        checkSemantic("testfiles/semantic1.js");
+    }            
+
+    public void testIsJUnit() {
+        assertTrue(ClassPathContainerResolver.isJUnit(EclipseProjectTestUtils.createDotClassPathEntry(
+                        "kind", "con",
+                        "path", "org.eclipse.jdt.junit.JUNIT_CONTAINER/")));
+        assertTrue(ClassPathContainerResolver.isJUnit(EclipseProjectTestUtils.createDotClassPathEntry(
+                        "kind", "var",
+                        "path", "MAVEN_REPO/junit/jars/junit-3.8.1.jar")));
+        assertTrue(ClassPathContainerResolver.isJUnit(EclipseProjectTestUtils.createDotClassPathEntry(
+                        "kind", "lib",
+                        "path", "lib/junit.jar")));
+        assertFalse(ClassPathContainerResolver.isJUnit(EclipseProjectTestUtils.createDotClassPathEntry(
+                        "kind", "lib",
+                        "path", "some_folder/")));
     }
 
-    public void testSemantic2() throws Exception {
-        checkSemantic("testfiles/semantic2.js");
-    }
-
-    public void testSemantic3() throws Exception {
-        checkSemantic("testfiles/semantic3.js");
-    }
-
-    public void testSemantic4() throws Exception {
-        checkSemantic("testfiles/semantic4.js");
-    }
-
-    public void testSemantic5() throws Exception {
-        checkSemantic("testfiles/semantic5.js");
-    }
-
-    public void testSemantic6() throws Exception {
-        checkSemantic("testfiles/semantic6.js");
-    }
-
-    public void testSemantic7() throws Exception {
-        checkSemantic("testfiles/semantic7.js");
-    }
-
-    public void testSemantic8() throws Exception {
-        checkSemantic("testfiles/semantic8.js", "new^");
-    }
-
-    public void testSemanticE4x() throws Exception {
-        checkSemantic("testfiles/e4x.js", "order^");
-    }
-
-    // This test fails because there are overlaps in the offsets
-    //public void testSemanticE4x2() throws Exception {
-    //    checkSemantic("testfiles/e4x2.js", "order^");
-    //}
-
-    public void testSemanticTryCatch() throws Exception {
-        checkSemantic("testfiles/tryblocks.js");
-    }
-
-    public void testSemanticPrototype() throws Exception {
-        checkSemantic("testfiles/prototype.js");
-    }
-
-    public void testSemanticPrototypeNew() throws Exception {
-        checkSemantic("testfiles/prototype-new.js");
-    }
-
-    public void testDebuggerKeyword() throws Exception {
-        checkSemantic("testfiles/debugger.js");
-    }
 }

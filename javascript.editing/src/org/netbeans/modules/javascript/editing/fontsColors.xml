@@ -2,6 +2,8 @@
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
+    <fontcolor name="keyword" default="keyword"/>
+
     <fontcolor name="FLOAT_LITERAL" default="number"/>
     <fontcolor name="ANY_OPERATOR" default="operator"/>
     <fontcolor name="STRING_LITERAL" default="string"/>
@@ -13,7 +15,6 @@
     <fontcolor name="LINE_COMMENT" default="comment"/>
     <fontcolor name="IDENTIFIER" default="identifier"/>
     <fontcolor name="WHITESPACE" default="whitespace"/>
-    <fontcolor name="ANY_KEYWORD" default="keyword"/>
 
     <fontcolor name="mod-unused" waveUnderlined="999999"/>
     <fontcolor name="mod-parameter" foreColor="A06001"/> 

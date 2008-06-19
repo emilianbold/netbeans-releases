@@ -97,7 +97,7 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
         obj = sobj;
         setMIMEType(ETLDataLoader.MIME_TYPE);
         PRJ_PATH = sobj.getFolder().getPrimaryFile().getParent().getPath();
-        PRJ_PATH = PRJ_PATH.replace('/', '\\');
+        //PRJ_PATH = PRJ_PATH.replace('/', '\\');
         PRJ_NAME = sobj.getFolder().getPrimaryFile().getParent().getName();
         //Project prj = FileOwnerQuery.getOwner(obj.getPrimaryFile());
         //java.util.logging.Logger.getLogger(ETLEditorSupport.class.getName()).info("ETLEditorSupport project " + prj);
