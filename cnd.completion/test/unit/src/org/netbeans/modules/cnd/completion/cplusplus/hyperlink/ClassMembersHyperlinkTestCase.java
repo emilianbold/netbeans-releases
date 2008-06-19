@@ -327,6 +327,13 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz136975.cc", 23, 10, "iz136975.cc", 15, 5); // PointerType in PointerType operator->() {
     }
     
+    public void testIZ137483() throws Exception {
+        performTest("main.cc", 75, 39, "main.cc", 75, 34);
+        performTest("main.cc", 75, 24, "main.cc", 75, 15);
+        performTest("main.cc", 76, 15, "main.cc", 75, 34);
+        performTest("main.cc", 77, 18, "main.cc", 75, 15);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
         
         protected Class getTestCaseDataClass() {
