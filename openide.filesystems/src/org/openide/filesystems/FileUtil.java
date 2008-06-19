@@ -1353,16 +1353,12 @@ public final class FileUtil extends Object {
 
     private static File normalizeFileOnUnixAlike(File file) {
         // On Unix, do not want to traverse symlinks.
+        // URI.normalize removes ../ and ./ sequences nicely.
+        file = new File(file.toURI().normalize()).getAbsoluteFile();
         if (file.getAbsolutePath().equals("/..")) { // NOI18N
-
             // Special treatment.
             file = new File("/"); // NOI18N
-            // XXX not fully idempotent: /../. => /.. => /
-        } else {
-            // URI.normalize removes ../ and ./ sequences nicely.
-            file = new File(file.toURI().normalize()).getAbsoluteFile();
         }
-
         return file;
     }
 
