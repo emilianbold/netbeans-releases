@@ -268,12 +268,7 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.netbeans.modules.java.editor</code-name-base>
                         <recursive/>
                         <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.html</code-name-base>
-                        <recursive/>
-                        <compile-dependency/>
-                    </test-dependency>
+                    </test-dependency>                    
                     <test-dependency>
                         <code-name-base>org.openide.filesystems</code-name-base>
                         <compile-dependency/>
@@ -342,12 +337,7 @@ made subject to such option by the copyright holder.
                     <test-dependency>
                         <code-name-base>org.netbeans.libs.xerces</code-name-base>
                         <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.html.editor</code-name-base>
-                        <recursive/>
-                        <compile-dependency/>
-                    </test-dependency>
+                    </test-dependency>                    
                 </test-type>
             </test-dependencies>
             <public-packages>
