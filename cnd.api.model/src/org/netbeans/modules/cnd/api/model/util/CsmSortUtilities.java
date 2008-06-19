@@ -123,8 +123,11 @@ public class CsmSortUtilities {
 
     
     public static List<CsmNamedElement> filterList(Collection<? extends CsmDeclaration> list, CharSequence strPrefix, boolean match, boolean caseSensitive) {
+        return filterList(list.iterator(), strPrefix, match, caseSensitive);
+    }
+
+    public static List<CsmNamedElement> filterList(Iterator<? extends CsmDeclaration> it, CharSequence strPrefix, boolean match, boolean caseSensitive) {
 	List<CsmNamedElement> res = new ArrayList<CsmNamedElement>();
-	Iterator it = list.iterator();
 	while (it.hasNext()) {
 	    Object elem = it.next();
 	    if (CsmKindUtilities.isNamedElement(elem) && 

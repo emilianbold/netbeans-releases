@@ -66,8 +66,8 @@ import static org.netbeans.modules.print.impl.ui.UI.*;
  */
 public final class TextProvider extends ComponentProvider {
 
-  public TextProvider(EditorCookie editor, Date modified) {
-    super(null, getName(editor), modified);
+  public TextProvider(EditorCookie editor, Date lastModified) {
+    super(null, getName(editor), lastModified);
     myEditor = editor;
   }
 

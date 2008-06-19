@@ -650,10 +650,6 @@ public class DesignView extends JPanel implements
             int printHeight = (int) Math.round(dim.height
                     + 2 * LayoutManager.VMARGIN);
 
-            putClientProperty(Dimension.class, new Dimension(printWidth, printHeight));
-
-
-
             processView.revalidate();
             consumersView.revalidate();
             providersView.revalidate();
