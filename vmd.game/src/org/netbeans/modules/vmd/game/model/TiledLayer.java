@@ -45,6 +45,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -148,11 +149,11 @@ public class TiledLayer extends Layer implements ImageResourceListener {
 	 * Assigns a tile index to multiple positions.
 	 */
 	public void setTileAtPositions(int tileIndex, Set positions) {
-		for (Iterator it = positions.iterator(); it.hasNext();) {
-			Position pos = (Position) it.next();
-			this.updateIndexGrid(tileIndex, pos.getRow(), pos.getCol());
-		}
-		this.fireTilesChanged(positions);
+            Position[] copy = (Position[]) positions.toArray(new Position[positions.size()]);
+            for (Position pos : copy) {
+                this.updateIndexGrid(tileIndex, pos.getRow(), pos.getCol());
+            }
+            this.fireTilesChanged(positions);
 	}
 	
 	private void fireTilesChanged(Set positions) {
