@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,11 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,41 +35,26 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.ruby.railsprojects;
 
-package org.netbeans.modules.cnd.api.model.xref;
+import java.io.File;
+import org.openide.modules.InstalledFileLocator;
 
-import java.util.EnumSet;
-import java.util.Set;
+public final class InstalledFileLocatorImpl extends InstalledFileLocator {
 
-/**
- *
- * @author Vladimir Voskresensky
- */
-public enum CsmReferenceKind {
-    DEFINITION,
-    DECLARATION,        
-    DIRECT_USAGE, // references like "var" in var.foo or var->foo are interested
-    AFTER_DEREFERENCE_USAGE, // references like "foo" in var.foo or var->foo are interested
-    IN_PREPROCESSOR_DIRECTIVE, // references in #preprocessor directives are interested
-    IN_DEAD_BLOCK, // references in dead code are interested
-    UNKNOWN;
-
-    /**
-     * all references in active code
-     */
-    public static final Set<CsmReferenceKind> ANY_REFERENCE_IN_ACTIVE_CODE;
-    /**
-     * all references
-     */
-    public static final Set<CsmReferenceKind> ALL;
-    
-    static {
-        ANY_REFERENCE_IN_ACTIVE_CODE = EnumSet.range(DEFINITION, AFTER_DEREFERENCE_USAGE);
-        ALL = EnumSet.range(DEFINITION, IN_DEAD_BLOCK);
+    public InstalledFileLocatorImpl() {
     }
+
+    public @Override File locate( String relativePath, String codeNameBase, boolean localized) {
+        if (relativePath.equals("rake_tasks_info.rb")) {
+            String script = System.getProperty("xtest.rake_tasks_info.rb");
+            if (script == null) {
+                throw new RuntimeException("xtest.rake_tasks_info.rb property has to be set when running within binary distribution");
+            }
+            return new File(script);
+        }
+        return null;
+    }
+    
 }

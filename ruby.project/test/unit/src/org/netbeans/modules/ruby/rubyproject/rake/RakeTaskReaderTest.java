@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,35 +37,33 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.model.xref;
+package org.netbeans.modules.ruby.rubyproject.rake;
 
-import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.ruby.rubyproject.RubyProject;
+import org.netbeans.modules.ruby.rubyproject.RubyProjectTestBase;
 
-/**
- *
- * @author Vladimir Voskresensky
- */
-public enum CsmReferenceKind {
-    DEFINITION,
-    DECLARATION,        
-    DIRECT_USAGE, // references like "var" in var.foo or var->foo are interested
-    AFTER_DEREFERENCE_USAGE, // references like "foo" in var.foo or var->foo are interested
-    IN_PREPROCESSOR_DIRECTIVE, // references in #preprocessor directives are interested
-    IN_DEAD_BLOCK, // references in dead code are interested
-    UNKNOWN;
-
-    /**
-     * all references in active code
-     */
-    public static final Set<CsmReferenceKind> ANY_REFERENCE_IN_ACTIVE_CODE;
-    /**
-     * all references
-     */
-    public static final Set<CsmReferenceKind> ALL;
+public class RakeTaskReaderTest extends RubyProjectTestBase {
     
-    static {
-        ANY_REFERENCE_IN_ACTIVE_CODE = EnumSet.range(DEFINITION, AFTER_DEREFERENCE_USAGE);
-        ALL = EnumSet.range(DEFINITION, IN_DEAD_BLOCK);
+    public RakeTaskReaderTest(String testName) {
+        super(testName);
     }
+
+    public void testGetRakeTaskTree() throws Exception {
+        registerLayer();
+        RubyProject project = createTestProject();
+        RakeTaskReader rakeTaskReader = new RakeTaskReader(project);
+        Set<RakeTask> tasks = rakeTaskReader.getRakeTaskTree();
+        assertNotNull("rake file output dumped", tasks);
+        assertFalse("has rake tasks", tasks.isEmpty());
+    }
+
+    public void testRawRead() throws Exception {
+        registerLayer();
+        RubyProject project = createTestProject();
+        RakeTaskReader rakeTaskReader = new RakeTaskReader(project);
+        assertNotNull("rake file output dumped", rakeTaskReader.rawRead());
+    }
+
 }

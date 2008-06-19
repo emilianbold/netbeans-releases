@@ -34,38 +34,43 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.xml.text.indent;
 
-package org.netbeans.modules.cnd.api.model.xref;
-
-import java.util.EnumSet;
-import java.util.Set;
+import junit.framework.*;
+import org.netbeans.api.xml.lexer.XMLTokenId;
+import org.netbeans.editor.BaseDocument;
 
 /**
- *
- * @author Vladimir Voskresensky
+ * Formatting related tests based on new formatter. See XMLLexerFormatter.
+ * 
+ * @author Samaresh (samaresh.panda@sun.com)
  */
-public enum CsmReferenceKind {
-    DEFINITION,
-    DECLARATION,        
-    DIRECT_USAGE, // references like "var" in var.foo or var->foo are interested
-    AFTER_DEREFERENCE_USAGE, // references like "foo" in var.foo or var->foo are interested
-    IN_PREPROCESSOR_DIRECTIVE, // references in #preprocessor directives are interested
-    IN_DEAD_BLOCK, // references in dead code are interested
-    UNKNOWN;
-
-    /**
-     * all references in active code
-     */
-    public static final Set<CsmReferenceKind> ANY_REFERENCE_IN_ACTIVE_CODE;
-    /**
-     * all references
-     */
-    public static final Set<CsmReferenceKind> ALL;
+public class XMLLexerFormatterTest extends AbstractTestCase {
     
-    static {
-        ANY_REFERENCE_IN_ACTIVE_CODE = EnumSet.range(DEFINITION, AFTER_DEREFERENCE_USAGE);
-        ALL = EnumSet.range(DEFINITION, IN_DEAD_BLOCK);
+    public XMLLexerFormatterTest(String testName) {
+        super(testName);
     }
+
+    public static Test suite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new XMLLexerFormatterTest("testFormat"));
+        return suite;
+    }
+    
+    /**
+     * Formats an input document and then compares the formatted doc
+     * with a document that represents expected outcome.
+     */
+    public void testFormat() throws Exception {
+        BaseDocument inputDoc = getDocument("input.xml");
+        //format the inputDoc
+        XMLLexerFormatter formatter = new XMLLexerFormatter(null);
+        BaseDocument formattedDoc = formatter.doReformat(inputDoc, -1, -1);
+        System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
+        BaseDocument outputDoc = getDocument("output.xml");        
+        assert(compare(formattedDoc, outputDoc));
+    }
+    
 }

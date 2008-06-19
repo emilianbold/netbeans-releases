@@ -127,9 +127,7 @@ public final class RubyProjectGenerator {
         createFileWithContent(dirFO, "README", "TXT_README_Content", prjName); // NOI18N
         createFileWithContent(dirFO, "LICENSE", "TXT_LICENSE_Content", prjName); // NOI18N
         
-        // Run Rake -T silently to determine the available tasks and write into private area
         RakeSupport.refreshTasks(project);
-        
         return helper;
     }
 
