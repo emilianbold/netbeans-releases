@@ -46,6 +46,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
@@ -90,7 +91,7 @@ public class PersistenceManager {
                     NodeWriter nWriter = new NodeWriter(getWriter());
                     Widget nWidget = scene.findWidget(elt);
                     if (nWidget instanceof DiagramNodeWriter) {
-                        if (nWidget.getParentWidget() instanceof ContainerWidget || nWidget instanceof SubWidget) {
+                        if (hasContainerWidgetAsParent(nWidget) || nWidget instanceof SubWidget) {
                         //do nothing..
                         // do not write now.. this node will be written as a part of its container
                             System.out.println(" Parent is a container widget ");
@@ -119,6 +120,32 @@ public class PersistenceManager {
         }
         float elapsedTimeSec = (System.currentTimeMillis() - start) / 1000F;
         System.err.println(" !!!!!!!!!!!!!!!!!!!! Total time to SAVE the diagram : " +elapsedTimeSec);
+    }
+    
+    private boolean hasContainerWidgetAsParent(Widget widget) {
+        boolean retVal = false;
+        Widget parent;
+        Widget child = widget;
+        if ((child != null) && !(child instanceof Scene))
+        {
+            while (true) 
+            {
+                parent = child.getParentWidget();                
+                if (parent instanceof Scene)                 
+                {
+                    return false;
+                }
+                else if (parent instanceof ContainerWidget)
+                {
+                    return true;
+                }
+                else
+                {
+                    child = parent;
+                }
+            }           
+        }        
+        return retVal;
     }
 
     public BufferedWriter getWriter() {

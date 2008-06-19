@@ -381,6 +381,13 @@
 	        <set property="sjsas.build.number" value="20080515"/>
 	</if>
 
+
+	<set property="glassfish-mod.milestone.number"      value="10"/>
+	<set property="glassfish-mod.milestone.number.real" value="10d"/>
+	<set property="glassfish-mod.build.type"            value="preview"/>
+	<set property="glassfish-mod.build.number"          value="20080610"/>
+
+
         <!--
         -->
         <!--
@@ -485,6 +492,11 @@ glassfish.milestone.number=${glassfish.milestone.number}
 glassfish.milestone.number.real=${glassfish.milestone.number.real}
 glassfish.build.type=${glassfish.build.type}
 glassfish.build.number=${glassfish.build.number}
+
+glassfish-mod.milestone.number=${glassfish-mod.milestone.number}
+glassfish-mod.milestone.number.real=${glassfish-mod.milestone.number.real}
+glassfish-mod.build.type=${glassfish-mod.build.type}
+glassfish-mod.build.number=${glassfish-mod.build.number}
 
 sjsas.milestone.number=${sjsas.milestone.number}
 sjsas.milestone.number.real=${sjsas.milestone.number.real}
@@ -609,7 +621,8 @@ jarsigner.storepass=${jarsigner.storepass}
                 <!-- glassfish -->
                 <include name="**/glassfish*"/>
                 <exclude name="**/glassfish*2.0.2.${glassfish.milestone.number}.*"/>
-                
+                <exclude name="**/glassfish-mod*3.0.0.${glassfish-mod.milestone.number}.*"/>
+
                 <!-- openesb -->
 		<include name="**/openesb*"/>
                 <exclude name="**/openesb*${glassfish.milestone.number}.${openesb.build.number}*"/>
@@ -707,6 +720,7 @@ jarsigner.storepass=${jarsigner.storepass}
         <antcall target="build-nb-soa"/>
         <antcall target="build-nb-uml"/>
         <antcall target="build-nb-ruby"/>
+	<antcall target="build-nb-groovy"/>
         <antcall target="build-nb-cnd"/>
         <antcall target="build-nb-php"/>
     </target>
@@ -741,6 +755,7 @@ jarsigner.storepass=${jarsigner.storepass}
      <target name="build-runtimes" if="do.build.netbeans">
          <antcall target="build-runtimes-group"/>
          <antcall target="build-glassfish"/>
+         <antcall target="build-glassfish-mod"/>
          <antcall target="build-tomcat"/>
          <antcall target="build-openesb"/>
      </target>
@@ -1114,6 +1129,32 @@ jarsigner.storepass=${jarsigner.storepass}
         </ant>
     </target>
 
+    <target name="build-nb-groovy">        
+        <echo message="BUILDING NB-GROOVY ======================================="/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/products/nb-groovy" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/products/nb-groovy"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+            
+            <property
+                name="release.parent.uid"
+                value="${netbeans.group.uid}"/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+    </target>
+
 
     <target name="build-nb-cnd">
 	<echo message="BUILDING NB-CND =========================================="/>
@@ -1196,6 +1237,32 @@ jarsigner.storepass=${jarsigner.storepass}
             <property 
                 name="basedir" 
                 value="${nbi.netbeans.dir}/infra/build/products/glassfish"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+                
+            <property
+                name="release.parent.uid"
+                value="runtimes-group"/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+     </target>
+
+     <target name="build-glassfish-mod">        
+        <echo message="BUILDING GLASSFISH MODULAR ========================================"/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/products/glassfish-mod" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/products/glassfish-mod"/>
             <property 
                 name="environment.properties" 
                 value="${environment.properties}"/>
@@ -1736,7 +1803,9 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-groovy" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat" version="6.0.16.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
@@ -1746,7 +1815,9 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-groovy" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat" version="6.0.16.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
@@ -1756,7 +1827,9 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-groovy" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat" version="6.0.16.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
@@ -1766,7 +1839,9 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-groovy" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat" version="6.0.16.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
@@ -1776,7 +1851,9 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-groovy" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat" version="6.0.16.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
@@ -1786,7 +1863,9 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-groovy" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat" version="6.0.16.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
@@ -1832,6 +1911,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ruby-windows.exe">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
 	    <bundleProperty name="${welcome.type}" value="ruby"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
@@ -1839,6 +1919,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ruby-linux.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
 	    <bundleProperty name="${welcome.type}" value="ruby"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
@@ -1846,6 +1927,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ruby-solaris-x86.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
 	    <bundleProperty name="${welcome.type}" value="ruby"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
@@ -1853,6 +1935,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ruby-solaris-sparc.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
 	    <bundleProperty name="${welcome.type}" value="ruby"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
@@ -1860,6 +1943,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ruby-macosx-x86.zip">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
 	    <bundleProperty name="${welcome.type}" value="ruby"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
@@ -1867,6 +1951,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ruby-macosx-ppc.zip">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
 	    <bundleProperty name="${welcome.type}" value="ruby"/>
         </create-bundle>
         <antcall target="zip-to-tgz">
@@ -2014,9 +2099,11 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa" version="${nb.full.version}"/>
             <component uid="nb-uml" version="${nb.full.version}"/>
             <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="nb-groovy" version="${nb.full.version}"/>
             <component uid="nb-cnd" version="${nb.full.version}"/>
             <component uid="nb-php" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat" version="6.0.16.0.0"/>
             <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
         </create-bundle>
@@ -2030,9 +2117,11 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa" version="${nb.full.version}"/>
             <component uid="nb-uml" version="${nb.full.version}"/>
             <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="nb-groovy" version="${nb.full.version}"/>
             <component uid="nb-cnd" version="${nb.full.version}"/> 
             <component uid="nb-php" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat" version="6.0.16.0.0"/>
             <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
         </create-bundle>
@@ -2045,9 +2134,11 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa" version="${nb.full.version}"/>
             <component uid="nb-uml" version="${nb.full.version}"/>
             <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="nb-groovy" version="${nb.full.version}"/>
             <component uid="nb-cnd" version="${nb.full.version}"/> 
             <component uid="nb-php" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat" version="6.0.16.0.0"/>
             <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
         </create-bundle>
@@ -2060,9 +2151,11 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa" version="${nb.full.version}"/>
             <component uid="nb-uml" version="${nb.full.version}"/>
             <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="nb-groovy" version="${nb.full.version}"/>
             <component uid="nb-cnd" version="${nb.full.version}"/> 
             <component uid="nb-php" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat" version="6.0.16.0.0"/>
             <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
         </create-bundle>
@@ -2075,9 +2168,11 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa" version="${nb.full.version}"/>
             <!--<component uid="nb-uml" version="${nb.full.version}"/>-->
             <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="nb-groovy" version="${nb.full.version}"/>
             <component uid="nb-cnd" version="${nb.full.version}"/> 
             <component uid="nb-php" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat" version="6.0.16.0.0"/>
             <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
         </create-bundle>
@@ -2090,9 +2185,11 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa" version="${nb.full.version}"/>
             <!--<component uid="nb-uml" version="${nb.full.version}"/>-->
             <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="nb-groovy" version="${nb.full.version}"/>
             <component uid="nb-cnd" version="${nb.full.version}"/> 
             <component uid="nb-php" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat" version="6.0.16.0.0"/>
             <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
         </create-bundle>

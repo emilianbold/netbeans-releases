@@ -56,22 +56,21 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
- *
  * @author  Radek Matous
  */
 public class CustomizerRun extends javax.swing.JPanel {
     private static final long serialVersionUID = -5493589817914071L;
-    private final PhpProjectProperties properties;
     private final ConfigComboBoxModel comboModel;
+    private final ConfigManager manager;
+    private final RunAsPanel.InsidePanel[] insidePanels;
 
-    private ConfigManager manager;
-    private Category category;
-
-    /** Creates new form SwitchConfigPanel */
     public CustomizerRun(PhpProjectProperties properties, final Category category) {
-        this.manager = new ConfigManager(properties);
-        this.properties = properties;
-        this.category = category;
+        manager = new ConfigManager(properties);
+        insidePanels = new RunAsPanel.InsidePanel[] {
+            new RunAsLocalWeb(manager, category),
+            new RunAsRemoteWeb(manager, category),
+            new RunAsScript(manager, category),
+        };
         initComponents();
         comboModel = new ConfigComboBoxModel();
         configCombo.setModel(comboModel);
@@ -89,11 +88,12 @@ public class CustomizerRun extends javax.swing.JPanel {
 
     private void selectCurrentItem() {
         final Configuration config = manager.currentConfiguration();
-        configCombo.setSelectedItem(config.getName());//NOI18N
+        configCombo.setSelectedItem(config.getName());
         configDel.setEnabled(!config.isDefault());
     }
 
     private class ConfigComboBoxModel extends DefaultComboBoxModel {
+        private static final long serialVersionUID = -2086330612256611127L;
 
         public ConfigComboBoxModel() {
             Set<String> alphaConfigs = new TreeSet<String>(getComparator());
@@ -105,7 +105,6 @@ public class CustomizerRun extends javax.swing.JPanel {
 
         private Comparator<String> getComparator() {
             return new Comparator<String>() {
-
                 Collator coll = Collator.getInstance();
 
                 public int compare(String s1, String s2) {
@@ -118,6 +117,7 @@ public class CustomizerRun extends javax.swing.JPanel {
     }
 
     private final class ConfigListCellRenderer extends JLabel implements ListCellRenderer, UIResource {
+        private static final long serialVersionUID = 21963218553211553L;
 
         public ConfigListCellRenderer() {
             setOpaque(true);
@@ -143,6 +143,7 @@ public class CustomizerRun extends javax.swing.JPanel {
         }
 
         // #93658: GTK needs name to render cell renderer "natively"
+        @Override
         public String getName() {
             String name = super.getName();
             return name == null ? "ComboBox.renderer" : name;  // NOI18N
@@ -164,7 +165,7 @@ public class CustomizerRun extends javax.swing.JPanel {
         configNew = new javax.swing.JButton();
         configDel = new javax.swing.JButton();
         separator = new javax.swing.JSeparator();
-        runPanel = new RunAsPanel(manager, properties, category);
+        runPanel = new RunAsPanel(insidePanels);
 
         configLabel.setLabelFor(configCombo);
         org.openide.awt.Mnemonics.setLocalizedText(configLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_Configuration")); // NOI18N
@@ -249,7 +250,7 @@ public class CustomizerRun extends javax.swing.JPanel {
             }
             Configuration cfg = manager.createNew(config, name);
             comboModel.addElement(config);
-            manager.markAsCurrentConfiguration(config);        
+            manager.markAsCurrentConfiguration(config);
             selectCurrentItem();
         }
     }//GEN-LAST:event_configNewActionPerformed
@@ -257,7 +258,7 @@ public class CustomizerRun extends javax.swing.JPanel {
     private void configDelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configDelActionPerformed
         String config = (String) configCombo.getSelectedItem();
         assert config != null;
-        comboModel.removeElement(config);    
+        comboModel.removeElement(config);
         configurationFor(config).delete();
         selectCurrentItem();
     }//GEN-LAST:event_configDelActionPerformed

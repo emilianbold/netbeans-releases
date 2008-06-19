@@ -1,8 +1,8 @@
 #
-# Gererated Makefile - do not edit!
+# Generated Makefile - do not edit!
 #
 # Edit the Makefile in the project folder instead (../Makefile). Each target
-# has a -pre and a -post target defined where you can add custumized code.
+# has a -pre and a -post target defined where you can add customized code.
 #
 # This makefile implements configuration specific macros and targets.
 
@@ -21,19 +21,19 @@ FC=
 include Makefile
 
 # Object Directory
-OBJECTDIR=build/Debug/GNU-Generic
+OBJECTDIR=build/Debug/GNU-MacOSX
 
 # Object Files
 OBJECTFILES= \
-	${OBJECTDIR}/_ext/Users/lipin/tmp/nbi/engine/native/jnilib/macosx/../.common/src/CommonUtils.o \
-	${OBJECTDIR}/_ext/Users/lipin/tmp/nbi/engine/native/jnilib/macosx/../.unix/src/jni_UnixNativeUtils.o
+	${OBJECTDIR}/_ext/Users/tester/tmp/NB-IDE/main/nbi/engine/native/jnilib/macosx/../.common/src/CommonUtils.o \
+	${OBJECTDIR}/_ext/Users/tester/tmp/NB-IDE/main/nbi/engine/native/jnilib/macosx/../.unix/src/jni_UnixNativeUtils.o
 
 # C Compiler Flags
-CFLAGS=-arch i386 -arch ppc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -dynamiclib
+CFLAGS=-arch i386 -arch ppc -arch ppc64 -arch x86_64 -isysroot /Developer/SDKs/MacOSX10.4u.sdk -dynamiclib
 
 # CC Compiler Flags
-CCFLAGS=-arch i386 -arch ppc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -dynamiclib
-CXXFLAGS=-arch i386 -arch ppc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -dynamiclib
+CCFLAGS=-arch i386 -arch ppc -arch ppc64 -arch x86_64 -isysroot /Developer/SDKs/MacOSX10.4u.sdk -dynamiclib
+CXXFLAGS=-arch i386 -arch ppc -arch ppc64 -arch x86_64 -isysroot /Developer/SDKs/MacOSX10.4u.sdk -dynamiclib
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -46,15 +46,15 @@ LDLIBSOPTIONS=
 
 dist/macosx.dylib: ${OBJECTFILES}
 	${MKDIR} -p dist
-	${LINK.c} -Wl,-syslibroot /Developer/SDKs/MacOSX10.4u.sdk -arch i386 -arch ppc -dynamiclib -o dist/macosx.dylib ${OBJECTFILES} ${LDLIBSOPTIONS} 
+	${LINK.c} -Wl,-syslibroot /Developer/SDKs/MacOSX10.4u.sdk -arch i386 -arch ppc -arch ppc64 -arch x86_64 -dynamiclib -install_name macosx.dylib -o dist/macosx.dylib -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
-${OBJECTDIR}/_ext/Users/lipin/tmp/nbi/engine/native/jnilib/macosx/../.common/src/CommonUtils.o: ../.common/src/CommonUtils.c 
-	${MKDIR} -p ${OBJECTDIR}/_ext/Users/lipin/tmp/nbi/engine/native/jnilib/macosx/../.common/src
-	$(COMPILE.c) -s -I/usr/java/include -o ${OBJECTDIR}/_ext/Users/lipin/tmp/nbi/engine/native/jnilib/macosx/../.common/src/CommonUtils.o ../.common/src/CommonUtils.c
+${OBJECTDIR}/_ext/Users/tester/tmp/NB-IDE/main/nbi/engine/native/jnilib/macosx/../.common/src/CommonUtils.o: ../.common/src/CommonUtils.c 
+	${MKDIR} -p ${OBJECTDIR}/_ext/Users/tester/tmp/NB-IDE/main/nbi/engine/native/jnilib/macosx/../.common/src
+	$(COMPILE.c) -s -I/Library/Java/Home/include -fPIC  -o ${OBJECTDIR}/_ext/Users/tester/tmp/NB-IDE/main/nbi/engine/native/jnilib/macosx/../.common/src/CommonUtils.o ../.common/src/CommonUtils.c
 
-${OBJECTDIR}/_ext/Users/lipin/tmp/nbi/engine/native/jnilib/macosx/../.unix/src/jni_UnixNativeUtils.o: ../.unix/src/jni_UnixNativeUtils.c 
-	${MKDIR} -p ${OBJECTDIR}/_ext/Users/lipin/tmp/nbi/engine/native/jnilib/macosx/../.unix/src
-	$(COMPILE.c) -s -I/usr/java/include -o ${OBJECTDIR}/_ext/Users/lipin/tmp/nbi/engine/native/jnilib/macosx/../.unix/src/jni_UnixNativeUtils.o ../.unix/src/jni_UnixNativeUtils.c
+${OBJECTDIR}/_ext/Users/tester/tmp/NB-IDE/main/nbi/engine/native/jnilib/macosx/../.unix/src/jni_UnixNativeUtils.o: ../.unix/src/jni_UnixNativeUtils.c 
+	${MKDIR} -p ${OBJECTDIR}/_ext/Users/tester/tmp/NB-IDE/main/nbi/engine/native/jnilib/macosx/../.unix/src
+	$(COMPILE.c) -s -I/Library/Java/Home/include -fPIC  -o ${OBJECTDIR}/_ext/Users/tester/tmp/NB-IDE/main/nbi/engine/native/jnilib/macosx/../.unix/src/jni_UnixNativeUtils.o ../.unix/src/jni_UnixNativeUtils.c
 
 # Subprojects
 .build-subprojects:

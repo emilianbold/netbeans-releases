@@ -268,7 +268,6 @@ public class EditorUtil {
         return getBasicNodeType((BpelEntity)component);
     }
 
-
     public static String getUsageContextPath(String suffix, BpelEntity entity, Class<? extends BpelEntity> filter) {
         String resultStr = getUsageContextPath(entity, filter);
         if (resultStr != null) {
@@ -1007,6 +1006,10 @@ public class EditorUtil {
         return false;
     }
 
+    public static String getAccentedString(String message) {
+        return "<html><b>" + message + "</b></html>";// NOI18N
+    }
+    
     private static final int MAX_SIMPLE_NAME_LENGTH = 50;
     public static final String ENTITY_SEPARATOR = "."; // NOI18N
 }

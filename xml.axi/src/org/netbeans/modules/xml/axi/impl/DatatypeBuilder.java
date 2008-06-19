@@ -410,6 +410,13 @@ public class DatatypeBuilder extends DeepSchemaVisitor {
                     SimpleRestriction r = (SimpleRestriction)def;
                     facetParent = r;
                     findFacets(r);
+                    //add enums
+                    Collection<Enumeration> enums = ((SimpleTypeRestriction)def).getEnumerations();
+                    for(Enumeration e : enums) {
+                        datatype.addEnumeration(e.getValue());
+                    }
+                    
+                    
                 } else
                     datatype = doCreateDatatype(((SimpleTypeRestriction)def).getInlineType());
             } else if(def instanceof org.netbeans.modules.xml.schema.model.List) {

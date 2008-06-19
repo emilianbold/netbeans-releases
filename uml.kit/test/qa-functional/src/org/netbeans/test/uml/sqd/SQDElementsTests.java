@@ -146,7 +146,7 @@ public class SQDElementsTests extends UMLTestCase {
         lastTestCase=getCurrentTestMethodName();
         org.netbeans.test.umllib.util.Utils.makeScreenShotCustom("startTest");
         final String LINE_NAME = "SQDLine"; 
-        final String PATH_TO_CLASS = "Model|"+LINE_NAME;
+        final String PATH_TO_CLASS = PKG_PATH + "|" + LINE_NAME;
         final String DIAGRAM_NAME = "testCreateLifelinePalette";
             util.addDiagram(DIAGRAM_NAME, PKG_PATH);
             org.netbeans.test.umllib.util.Utils.makeScreenShotCustom("afterDiagramCreate");

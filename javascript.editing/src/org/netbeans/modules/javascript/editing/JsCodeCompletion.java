@@ -81,6 +81,7 @@ import org.netbeans.modules.javascript.editing.JsParser.Sanitize;
 import org.netbeans.modules.javascript.editing.lexer.Call;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
+import org.netbeans.modules.javascript.editing.lexer.JsLexer;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
@@ -124,7 +125,7 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class JsCodeCompletion implements CodeCompletionHandler {
-    private static final int MAX_COMPLETION_ITEMS = JsIndex.MAX_SEARCH_ITEMS;
+    static int MAX_COMPLETION_ITEMS = JsIndex.MAX_SEARCH_ITEMS;
     private static ImageIcon keywordIcon;
     private boolean caseSensitive;
     private static final String[] REGEXP_WORDS =
@@ -1533,7 +1534,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                 // See if we're in the identifier - "foo" in "def foo"
                 // I could also be a keyword in case the prefix happens to currently
                 // match a keyword, such as "next"
-                if ((id == JsTokenId.IDENTIFIER) || (id == JsTokenId.CONSTANT) || id.primaryCategory().equals("keyword")) {
+                if ((id == JsTokenId.IDENTIFIER) || id.primaryCategory().equals(JsLexer.KEYWORD_CAT)) {
                     if (!ts.movePrevious()) {
                         return false;
                     }
@@ -1747,7 +1748,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                             while (ts != null && ts.moveNext()) {
                                 Token<? extends JsCommentTokenId> token = ts.token();
                                 TokenId id = token.id();
-                                if (id == JsCommentTokenId.TAG) {
+                                if (id == JsCommentTokenId.COMMENT_TAG) {
                                     CharSequence text = token.text();
                                     if (TokenUtilities.textEquals("@param", text) ||  // NOI18N
                                             TokenUtilities.textEquals("@argument", text)) { // NOI18N
@@ -1781,7 +1782,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                                             boolean truncated = false;
                                             while (ts.moveNext()) {
                                                 text = ts.token().text();
-                                                if (text.length() > 0 && text.charAt(0) == '@' && ts.token().id() == JsCommentTokenId.TAG) {
+                                                if (text.length() > 0 && text.charAt(0) == '@' && ts.token().id() == JsCommentTokenId.COMMENT_TAG) {
                                                     break;
                                                 } else {
                                                     if (!truncated) {
@@ -1926,9 +1927,9 @@ public class JsCodeCompletion implements CodeCompletionHandler {
 //            }
 
             // TODO - handle embedded JavaScript
-            if ("comment".equals(id.primaryCategory()) || // NOI18N
-                    "string".equals(id.primaryCategory()) ||  // NOI18N
-                    "regexp".equals(id.primaryCategory())) { // NOI18N
+            if (JsLexer.COMMENT_CAT.equals(id.primaryCategory()) || // NOI18N
+                    JsLexer.STRING_CAT.equals(id.primaryCategory()) ||  // NOI18N
+                    JsLexer.REGEXP_CAT.equals(id.primaryCategory())) { // NOI18N
                 return QueryType.NONE;
             }
             
@@ -1965,8 +1966,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         }
         
         TokenId id = ts.token().id();
-        if ("comment".equals(id.primaryCategory()) || "string".equals(id.primaryCategory()) || // NOI18N
-                "regexp".equals(id.primaryCategory())) { // NOI18N
+        if (JsLexer.COMMENT_CAT.equals(id.primaryCategory()) || JsLexer.STRING_CAT.equals(id.primaryCategory()) || // NOI18N
+                JsLexer.REGEXP_CAT.equals(id.primaryCategory())) { // NOI18N
             return false;
         }
         

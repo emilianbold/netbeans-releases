@@ -27,8 +27,8 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 PROJECTNAME=macosx
 
 # Active Configuration
-ACTIVECONF=Debug
-CONF=${ACTIVECONF}
+DEFAULTCONF=Debug
+CONF=${DEFAULTCONF}
 
 # All Configurations
 ALLCONFS=Debug Release 
@@ -107,7 +107,5 @@ ALLCONFS=Debug Release
 	@echo "Target 'all' will will build all configurations and, unless 'SUB=no',"
 	@echo "    also build subprojects."
 	@echo "Target 'help' prints this message."
-	@echo ""
-	@echo "The active configuration (${ACTIVECONF}) is being used if the configuration is not specified."
 	@echo ""
 

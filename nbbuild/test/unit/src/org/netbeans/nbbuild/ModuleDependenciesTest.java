@@ -956,12 +956,11 @@ public class ModuleDependenciesTest extends NbTestCase {
     public void testGenerateImplementationModuleDependencies () throws Exception {
         Manifest m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "my.module/3");
-        m.getMainAttributes ().putValue ("OpenIDE-Module-IDE-Dependencies", "IDE/1 > 4.17");
         File withoutPkgs = generateJar (new String[] { "notneeded" }, m);
         
         m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "my.another.module/3");
-        m.getMainAttributes ().putValue ("OpenIDE-Module-Module-Dependencies", "my.module/3 = Ahoj, org.openide/1 > 4.17");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Module-Dependencies", "my.module/3 = Ahoj");
         File withPkgs = generateJar (new String[] { "some content"}, m);
         
         File parent = withoutPkgs.getParentFile ();
@@ -1012,17 +1011,17 @@ public class ModuleDependenciesTest extends NbTestCase {
     
     public void testCanOutputJustDependenciesBetweenClusters () throws Exception {
         Manifest m = createManifest ();
-        m.getMainAttributes ().putValue ("OpenIDE-Module", "org.openide/1");
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "org.openidex/1");
         File openide = generateJar (new String[] { "notneeded" }, m);
         
         m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "my.module/3");
-        m.getMainAttributes ().putValue ("OpenIDE-Module-IDE-Dependencies", "IDE/1 > 4.17");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Module-Dependencies", "org.openidex/1");
         File withoutPkgs = generateJar (new String[] { "notneeded" }, m);
         
         m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "my.another.module/3");
-        m.getMainAttributes ().putValue ("OpenIDE-Module-Module-Dependencies", "my.module/3 = Ahoj, org.openide/1 > 4.17");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Module-Dependencies", "my.module/3 = Ahoj, org.openidex/1");
         File withPkgs = generateJar (new String[] { "some content"}, m);
         
         File parent = withoutPkgs.getParentFile ();
@@ -1077,17 +1076,17 @@ public class ModuleDependenciesTest extends NbTestCase {
     
     public void testCanOutputJustDependenciesBetweenClustersForOneCluster() throws Exception {
         Manifest m = createManifest ();
-        m.getMainAttributes ().putValue ("OpenIDE-Module", "org.openide/1");
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "org.openidex/1");
         File openide = generateJar (new String[] { "notneeded" }, m);
         
         m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "my.module/3");
-        m.getMainAttributes ().putValue ("OpenIDE-Module-Module-Dependencies", "org.openide/1 > 4.17");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Module-Dependencies", "org.openidex/1");
         File withoutPkgs = generateJar (new String[] { "notneeded" }, m);
         
         m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "my.another.module/3");
-        m.getMainAttributes ().putValue ("OpenIDE-Module-Module-Dependencies", "my.module/3 = Ahoj, org.openide/1 > 4.17");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Module-Dependencies", "my.module/3 = Ahoj, org.openidex/1");
         File withPkgs = generateJar (new String[] { "some content"}, m);
         
         File parent = withoutPkgs.getParentFile ();
@@ -1150,7 +1149,7 @@ public class ModuleDependenciesTest extends NbTestCase {
 
     public void testCanOutputJustImplDependenciesBetweenClusters () throws Exception {
         Manifest m = createManifest ();
-        m.getMainAttributes ().putValue ("OpenIDE-Module", "org.openide/1");
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "org.openidex/1");
         File openide = generateJar (new String[] { "notneeded" }, m);
         
         m = createManifest ();
@@ -1159,12 +1158,12 @@ public class ModuleDependenciesTest extends NbTestCase {
         
         m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "my.module/3");
-        m.getMainAttributes ().putValue ("OpenIDE-Module-IDE-Dependencies", "IDE/1 > 4.17");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Module-Dependencies", "org.openidex/1");
         File withoutPkgs = generateJar (new String[] { "notneeded" }, m);
         
         m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "my.another.module/3");
-        m.getMainAttributes ().putValue ("OpenIDE-Module-Module-Dependencies", "my.module/3 = Ahoj, org.openide/1 > 4.17");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Module-Dependencies", "my.module/3 = Ahoj, org.openidex/1");
         File withPkgs = generateJar (new String[] { "some content"}, m);
 
         m = createManifest ();
@@ -1232,12 +1231,12 @@ public class ModuleDependenciesTest extends NbTestCase {
     public void testRangeDependencyNeedsToBeParsed () throws Exception {
         Manifest m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "my.module/3");
-        m.getMainAttributes ().putValue ("OpenIDE-Module-IDE-Dependencies", "IDE/1 > 4.17");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Module-Dependencies", "org.openidex/1");
         File withoutPkgs = generateJar (new String[] { "notneeded" }, m);
         
         m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "my.another.module/3");
-        m.getMainAttributes ().putValue ("OpenIDE-Module-Module-Dependencies", "my.module/2-3 = Ahoj, org.openide/1-2 > 4.17");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Module-Dependencies", "my.module/2-3 = Ahoj, org.openidex/1-2 > 4.17");
         File withPkgs = generateJar (new String[] { "some content"}, m);
         
         File parent = withoutPkgs.getParentFile ();

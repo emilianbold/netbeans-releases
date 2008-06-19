@@ -28,4 +28,10 @@ void sameNameDiffScope(int name) {
         strlen(name);     
     }
     name--;
+    
+    char* globalvar = 0;
+    fun(::globalvar, &globalvar);
+    ::globalvar = ++::globalvar + globalvar;
 }
+
+char* globalvar;

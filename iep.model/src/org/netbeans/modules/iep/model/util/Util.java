@@ -126,7 +126,7 @@ public class Util {
     }
     
     
-    private static void collectWsdlModelsViaImports( WLMModel model, String namespace, 
+    private static void collectWsdlModelsViaImports( IEPModel model, String namespace, 
             List<WSDLModel> list ) throws CatalogModelException 
     {
        Collection <TImport> imports = model.getTasks().getImports();

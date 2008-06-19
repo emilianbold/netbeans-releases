@@ -53,6 +53,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.editor.bookmarks.api.Bookmark;
 import org.netbeans.lib.editor.bookmarks.api.BookmarkList;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -188,29 +189,26 @@ public class PersistentBookmarks {
      * Get a map of urls to line-numbers for the given project.
      */
     private static FileBookmarksMap loadBookmarksMap(Project project) {
-        AuxiliaryConfiguration ac = (AuxiliaryConfiguration)project.getLookup().lookup(
-                AuxiliaryConfiguration.class);
+        AuxiliaryConfiguration ac = ProjectUtils.getAuxiliaryConfiguration(project);
         FileBookmarksMap projectBookmarksMap = new FileBookmarksMap();
-        if (ac != null) {
-            Element bookmarksElem = ac.getConfigurationFragment(
-                    BookmarksXMLHandler.EDITOR_BOOKMARKS_ELEM,
-                    BookmarksXMLHandler.EDITOR_BOOKMARKS_NAMESPACE_URI,
-                    false
+        Element bookmarksElem = ac.getConfigurationFragment(
+                BookmarksXMLHandler.EDITOR_BOOKMARKS_ELEM,
+                BookmarksXMLHandler.EDITOR_BOOKMARKS_NAMESPACE_URI,
+                false
+        );
+        URL projectFolderURL;
+        try {
+            projectFolderURL = project.getProjectDirectory().getURL();
+        } catch (FileStateInvalidException e) {
+            // Use global naming in such case
+            projectFolderURL = null;
+        }
+        // If bookmarks element exists load the data from it
+        if (bookmarksElem != null) {
+            BookmarksXMLHandler.loadFileBookmarksMap(
+                    projectBookmarksMap, bookmarksElem,
+                    projectFolderURL
             );
-            URL projectFolderURL;
-            try {
-                projectFolderURL = project.getProjectDirectory().getURL();
-            } catch (FileStateInvalidException e) {
-                // Use global naming in such case
-                projectFolderURL = null;
-            }
-            // If bookmarks element exists load the data from it
-            if (bookmarksElem != null) {
-                BookmarksXMLHandler.loadFileBookmarksMap(
-                        projectBookmarksMap, bookmarksElem,
-                        projectFolderURL
-                );
-            }
         }
         return projectBookmarksMap;
     }

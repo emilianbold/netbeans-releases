@@ -74,8 +74,7 @@ public class EclipseUtils {
         return projectDir != null
                 && FileUtil.toFileObject(FileUtil.normalizeFile(projectDir)) != null
                 && projectDir.isDirectory()
-                && new File(projectDir, EclipseProject.PROJECT_FILE).isFile()
-                && new File(projectDir, EclipseProject.CLASSPATH_FILE).isFile();
+                && new File(projectDir, EclipseProject.PROJECT_FILE).isFile();
     }
     
     /**
@@ -92,7 +91,6 @@ public class EclipseUtils {
      * <code>workspaceDir</code>.
      */
     public static boolean isRegularWorkSpace(File workspaceDir) {
-        FileUtil.toFileObject(FileUtil.normalizeFile(workspaceDir));
         return workspaceDir != null
                 && FileUtil.toFileObject(FileUtil.normalizeFile(workspaceDir)) != null
                 && workspaceDir.isDirectory()
@@ -142,6 +140,19 @@ public class EclipseUtils {
             i = v.length();
         }
         return new String[]{v.substring(0, i), v.substring(i)};
+    }        
+
+    /**
+     * Splits Eclipse internal jar reference into project name and path wihtin project, 
+     * eg. /some-project/commons/1.jar is split into some-project and /commons/1.jar.
+     */
+    public static String[] splitProject(String v) {
+        assert v.startsWith("/") : v;
+        int i = v.replace('\\', '/').indexOf('/', 1);
+        if (i == -1) {
+            i = v.length();
+        }
+        return new String[]{v.substring(1, i), v.substring(i)};
     }        
 
 }

@@ -2,9 +2,9 @@
 ${licenseFirst}
 </#if>
 ${licensePrefix}DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-${licensePrefix}
+${licensePrefix?replace(" +$", "", "r")}
 ${licensePrefix}Copyright ${date?date?string("yyyy")} Sun Microsystems, Inc. All rights reserved.
-${licensePrefix}
+${licensePrefix?replace(" +$", "", "r")}
 ${licensePrefix}The contents of this file are subject to the terms of either the GNU
 ${licensePrefix}General Public License Version 2 only ("GPL") or the Common
 ${licensePrefix}Development and Distribution License("CDDL") (collectively, the
@@ -22,7 +22,7 @@ ${licensePrefix}accompanied this code. If applicable, add the following below th
 ${licensePrefix}License Header, with the fields enclosed by brackets [] replaced by
 ${licensePrefix}your own identifying information:
 ${licensePrefix}"Portions Copyrighted [year] [name of copyright owner]"
-${licensePrefix}
+${licensePrefix?replace(" +$", "", "r")}
 ${licensePrefix}If you wish your version of this file to be governed by only the CDDL
 ${licensePrefix}or only the GPL Version 2, indicate your decision by adding
 ${licensePrefix}"[Contributor] elects to include this software in this distribution
@@ -33,9 +33,9 @@ ${licensePrefix}to extend the choice of license to its licensees as provided abo
 ${licensePrefix}However, if you add GPL Version 2 code and therefore, elected the GPL
 ${licensePrefix}Version 2 license, then the option applies only if the new code is
 ${licensePrefix}made subject to such option by the copyright holder.
-${licensePrefix}
+${licensePrefix?replace(" +$", "", "r")}
 ${licensePrefix}Contributor(s):
-${licensePrefix}
+${licensePrefix?replace(" +$", "", "r")}
 ${licensePrefix}Portions Copyrighted ${date?date?string("yyyy")} Sun Microsystems, Inc.
 <#if licenseLast??>
 ${licenseLast}

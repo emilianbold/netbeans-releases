@@ -75,6 +75,9 @@ public class FileBuilder
 {
    public static final int HEADER_ONLY = 0;
    public static final int HEADER_AND_BODY = 1;
+
+   public static final String MARKER_REGEN_BODY = "Marker-regenbody";
+   public static final String MARKER_REGEN = "Marker-regen";   
         
    private static final String SPACE = " ";
    private static final String NEWLINE ="\n";
@@ -452,15 +455,28 @@ public class FileBuilder
 	    if (m.type == ModDesc.REMOVE) {
 		continue;
 	    }
-            long addPos = -1;
+            long addPosStart = -1;
+            long addPosEnd = -1;
+            String rbValue = "no";
             if (m.type == ModDesc.REPLACE 
                 && m.newElem != null 
                 && m.oldElem != null 
-                && m.oldElem.getPosition("Marker-regenbody") > -1 
-                && m.newElem.getPosition("Marker-regenbody") == -1
+                && m.oldElem.getPosition(MARKER_REGEN_BODY) > -1 
                 && ElementMatcher.isMarked(m.newElem.getNode())) 
             {
-                addPos = m.newElem.getPosition("Marker-regen") + m.newElem.getLength("Marker-regen");
+                if (m.newElem.getPosition(MARKER_REGEN_BODY) > -1) 
+                {
+                    addPosStart = m.newElem.getPosition(MARKER_REGEN_BODY);
+                    addPosEnd = addPosStart + m.newElem.getLength(MARKER_REGEN_BODY);
+                } 
+                else 
+                {
+                    addPosStart = m.newElem.getPosition(MARKER_REGEN) + m.newElem.getLength(MARKER_REGEN);
+                }
+                if (ElementMatcher.isRegenBody(m.oldElem.getNode())) 
+                {
+                    rbValue = "yes";
+                } 
             }
                 
 	    pnt++;
@@ -484,24 +500,37 @@ public class FileBuilder
 			espace.setLength(0);
 			start = pnt + 1;
 			nli = -1;
-		    }		   
-		//} else if (pnt == m.newStart) {		  
-		    
+		    }		   		    
 		} else if (pnt <= m.newEnd) {
-		    espace.append((char)c);
-		    if (pnt == m.newEnd) {
-			String pc;
-			if (nli != -1) {
-			    pc = espace.substring((int)(nli - start));
-			} else {
-			    pc = espace.substring(0); //(int)(start - start));
-			}
-			m.storePatchContent(pc);
-			break;
-		    } 
-                    else if (addPos > -1 && pnt == addPos) 
+                    if (addPosEnd > -1 
+                        && pnt > addPosStart 
+                        && pnt <= addPosEnd) 
                     {
-                        espace.append(",regenBody=yes");
+                        ; // skip old regenBody parameter
+                    }
+                    else 
+                    {
+                        if (addPosEnd > -1 && pnt == addPosEnd + 1) 
+                        {
+                            espace.append("regenBody="+rbValue);
+                        }
+                        espace.append((char)c);
+                        if (addPosStart > -1 
+                            && pnt == addPosStart 
+                            && (! (addPosEnd  > -1 )))
+                        {
+                            espace.append(",regenBody="+rbValue);
+                        }
+                        if (pnt == m.newEnd) {
+                            String pc;
+                            if (nli != -1) {
+                                pc = espace.substring((int)(nli - start));
+                            } else {
+                                pc = espace.substring(0); //(int)(start - start));
+                            }
+                            m.storePatchContent(pc);
+                            break;
+                        } 
                     }
 		} else {		    
 		    break;

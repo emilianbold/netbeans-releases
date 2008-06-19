@@ -43,6 +43,9 @@ package org.netbeans.modules.form.editors2;
 
 import java.awt.CardLayout;
 import java.awt.Component;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.beans.PropertyEditorSupport;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -99,6 +102,23 @@ public class SpinnerModelEditor extends PropertyEditorSupport
         }
         fireChanges = true;
         return customizerPanel;
+    }
+
+    @Override
+    public String getAsText() {
+        return null;
+    }
+
+    @Override
+    public boolean isPaintable() {
+        return true;
+    }
+
+    @Override
+    public void paintValue(Graphics g, Rectangle rectangle) {
+        String msg = NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_SpinnerModel"); // NOI18N
+        FontMetrics fm = g.getFontMetrics();
+        g.drawString(msg, rectangle.x, rectangle.y + (rectangle.height - fm.getHeight())/2 + fm.getAscent());
     }
 
     /**

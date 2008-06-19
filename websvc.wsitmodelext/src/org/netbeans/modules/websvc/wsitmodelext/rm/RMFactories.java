@@ -80,22 +80,11 @@ public class RMFactories {
         }
     }
 
-    public static class InactivityTimeoutFactory extends ElementFactory {
-        @Override
-        public Set<QName> getElementQNames() {
-            return Collections.singleton(RMQName.INACTIVITYTIMEOUT.getQName(ConfigVersion.CONFIG_1_0));
-        }
-        @Override
-        public WSDLComponent create(WSDLComponent context, Element element) {
-            return new InactivityTimeoutImpl(context.getModel(), element);
-        }
-    }
-
     public static class DeliveryAssuranceFactory extends ElementFactory {
 
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(RMQName.DELIVERYASSURANCE.getQName(ConfigVersion.CONFIG_1_2));
+            return Collections.singleton(RMQName.DELIVERYASSURANCE.getQName(ConfigVersion.CONFIG_1_3));
         }
 
         @Override
@@ -108,7 +97,7 @@ public class RMFactories {
 
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(RMQName.EXACTLYONCE.getQName(ConfigVersion.CONFIG_1_2));
+            return Collections.singleton(RMQName.EXACTLYONCE.getQName(ConfigVersion.CONFIG_1_3));
         }
 
         @Override
@@ -121,7 +110,7 @@ public class RMFactories {
 
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(RMQName.ATMOSTONCE.getQName(ConfigVersion.CONFIG_1_2));
+            return Collections.singleton(RMQName.ATMOSTONCE.getQName(ConfigVersion.CONFIG_1_3));
         }
 
         @Override
@@ -134,7 +123,7 @@ public class RMFactories {
 
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(RMQName.ATLEASTONCE.getQName(ConfigVersion.CONFIG_1_2));
+            return Collections.singleton(RMQName.ATLEASTONCE.getQName(ConfigVersion.CONFIG_1_3));
         }
 
         @Override
@@ -147,7 +136,7 @@ public class RMFactories {
 
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(RMQName.INORDER.getQName(ConfigVersion.CONFIG_1_2));
+            return Collections.singleton(RMQName.INORDER.getQName(ConfigVersion.CONFIG_1_3));
         }
 
         @Override
@@ -160,7 +149,7 @@ public class RMFactories {
 
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(RMQName.SEQUENCESTR.getQName(ConfigVersion.CONFIG_1_2));
+            return Collections.singleton(RMQName.SEQUENCESTR.getQName(ConfigVersion.CONFIG_1_3));
         }
 
         @Override
@@ -173,7 +162,7 @@ public class RMFactories {
 
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(RMQName.SEQUENCETRANSPORTSECURITY.getQName(ConfigVersion.CONFIG_1_2));
+            return Collections.singleton(RMQName.SEQUENCETRANSPORTSECURITY.getQName(ConfigVersion.CONFIG_1_3));
         }
 
         @Override

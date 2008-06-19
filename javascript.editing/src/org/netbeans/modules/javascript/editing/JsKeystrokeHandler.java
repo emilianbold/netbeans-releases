@@ -1023,7 +1023,7 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
 //                return OffsetRange.NONE;
             } else if (id == JsTokenId.RBRACKET) {
                 return LexUtilities.findBwd(doc, ts, JsTokenId.LBRACKET, JsTokenId.RBRACKET);
-//            } else if (id.primaryCategory().equals("keyword")) {
+//            } else if (id.primaryCategory().equals(JsLexer.KEYWORD_CAT)) {
 //                if (LexUtilities.isBeginToken(id, doc, ts)) {
 //                    return LexUtilities.findEnd(doc, ts);
 //                } else if ((id == JsTokenId.END) || LexUtilities.isIndentToken(id)) { // Find matching block
@@ -1587,33 +1587,6 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
                 return ranges;
             }
             length = doc.getLength();
-
-//            if (RubyUtils.isRhtmlDocument(doc)) {
-//                TokenHierarchy th = TokenHierarchy.get(doc);
-//                TokenSequence ts = th.tokenSequence();
-//                ts.move(caretOffset);
-//                if (ts.moveNext() || ts.movePrevious()) {
-//                    Token t = ts.token();
-//                    if (t.id().primaryCategory().startsWith("ruby")) { // NOI18N
-//                        min = ts.offset();
-//                        max = min+t.length();
-//                        // Try to extend with delimiters too
-//                        if (ts.movePrevious()) {
-//                            t = ts.token();
-//                            if ("ruby-delimiter".equals(t.id().primaryCategory())) { // NOI18N
-//                                min = ts.offset();
-//                                if (ts.moveNext() && ts.moveNext()) {
-//                                    t = ts.token();
-//                                    if ("ruby-delimiter".equals(t.id().primaryCategory())) { // NOI18N
-//                                        max = ts.offset()+t.length();
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-
             
             TokenSequence<?extends JsTokenId> ts = LexUtilities.getPositionedSequence(doc, caretOffset);
             if (ts != null) {
@@ -1755,7 +1728,7 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
             
         }
 
-        if (id == JsTokenId.IDENTIFIER || id == JsTokenId.CONSTANT || id == JsTokenId.GLOBAL_VAR) {
+        if (id == JsTokenId.IDENTIFIER) {
             String s = token.text().toString();
             int length = s.length();
             int wordOffset = offset-ts.offset();

@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xslt.core.text.completion.XSLTCompletionResultItem;
 import org.netbeans.modules.xslt.core.text.completion.XSLTCompletionUtil;
 import org.netbeans.modules.xslt.core.text.completion.XSLTEditorComponentHolder;
@@ -53,7 +54,7 @@ import org.netbeans.modules.xslt.model.Template;
  * @author Alex Petrov (06.06.2008)
  */
 public class HandlerCallTemplateName extends BaseCompletionHandler {
-    private static final String
+    protected static final String
         XSLT_TAG_NAME_CALL_TEMPLATE = "call-template";
     
     @Override
@@ -64,15 +65,19 @@ public class HandlerCallTemplateName extends BaseCompletionHandler {
     }
     
     private List<XSLTCompletionResultItem> getNamedTemplateNameList() {
-        if ((activeXslComponent == null) || (attributeName == null) ||
-            (xslModel == null)) return Collections.EMPTY_LIST;
+        if ((schemaModel == null) || (surroundTag == null) || 
+            (attributeName == null) || (xslModel == null)) 
+            return Collections.EMPTY_LIST;
         
-        String activeXslComponentName = activeXslComponent.getPeer().getLocalName();
-        if (! activeXslComponentName.contains(XSLT_TAG_NAME_CALL_TEMPLATE))
+        String tagName = surroundTag.getTagName(); //getLocalName();
+        if (! tagName.contains(XSLT_TAG_NAME_CALL_TEMPLATE))
             return Collections.EMPTY_LIST;
         if (! attributeName.equals(XSLTCompletionUtil.ATTRIB_NAME))
             return Collections.EMPTY_LIST;
 
+        if ((xslModel != null) && (xslModel.getState().equals(State.NOT_WELL_FORMED))) {
+            return getIncorrectDocumentResultItem();
+        }
         return findNamedTemplates();
     }
     
@@ -88,8 +93,11 @@ public class HandlerCallTemplateName extends BaseCompletionHandler {
             if (valueofAttributeName != null) {
                 String templateName = valueofAttributeName.toString();
                 if ((templateName != null) && (templateName.length() > 0)) {
-                    resultItemList.add(new XSLTCompletionResultItem(
-                        templateName, document, caretOffset));
+                    
+                    XSLTCompletionResultItem resultItem = new XSLTCompletionResultItem(
+                        templateName, document, caretOffset);
+                    resultItem.setSortPriority(resultItemList.size());
+                    resultItemList.add(resultItem);
                 }
             }   
         }

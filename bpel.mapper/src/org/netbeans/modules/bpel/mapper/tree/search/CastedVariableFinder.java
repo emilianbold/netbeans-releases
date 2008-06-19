@@ -20,12 +20,9 @@
 package org.netbeans.modules.bpel.mapper.tree.search;
 
 import org.netbeans.modules.bpel.mapper.cast.AbstractTypeCast;
-import org.netbeans.modules.bpel.mapper.cast.TypeCast;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableDeclarationWrapper;
-import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Variable;
-import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 
 /**
  *

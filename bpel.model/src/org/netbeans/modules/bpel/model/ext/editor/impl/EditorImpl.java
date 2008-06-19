@@ -24,6 +24,7 @@ import org.netbeans.modules.bpel.model.api.ExtensionEntity;
 import org.netbeans.modules.bpel.model.api.support.EntityUpdater;
 import org.netbeans.modules.bpel.model.ext.editor.api.Casts;
 import org.netbeans.modules.bpel.model.ext.editor.api.Editor;
+import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComps;
 import org.netbeans.modules.bpel.model.ext.editor.xam.EditorElements;
 import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl;
 import org.netbeans.modules.bpel.model.impl.BpelModelImpl;
@@ -34,6 +35,7 @@ import org.w3c.dom.Element;
 /**
  *
  * @author Vitaly Bychkov
+ * @author nk160297
  * @version 1.0
  */
 public class EditorImpl extends EditorEntityImpl implements Editor {
@@ -117,6 +119,19 @@ public class EditorImpl extends EditorEntityImpl implements Editor {
         setChild(value, Casts.class);
     }
 
+
+    public PseudoComps getPseudoComps() {
+        return getChild(PseudoComps.class);
+    }
+
+    public void removePseudoComps() {
+        removeChild(PseudoComps.class);
+    }
+
+    public void setPseudoComps(PseudoComps pseudoComps) {
+        setChild(pseudoComps, PseudoComps.class);
+    }
+    
     /*
      * (non-Javadoc)
      *
@@ -130,6 +145,5 @@ public class EditorImpl extends EditorEntityImpl implements Editor {
         }
         return null;
     }
-
 
 }

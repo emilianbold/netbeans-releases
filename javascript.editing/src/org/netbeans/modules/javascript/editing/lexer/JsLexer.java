@@ -88,6 +88,17 @@ Effect.Transitions = {
  * @author Tor Norbye
  */
 public final class JsLexer implements Lexer<JsTokenId> {
+    public static final String COMMENT_CAT = "comment";
+    public static final String KEYWORD_CAT = "keyword"; // NOI18N
+    public static final String REGEXP_CAT = "mod-regexp"; // NOI18N
+    public static final String STRING_CAT = "string"; // NOI18N
+    public static final String WHITESPACE_CAT = "whitespace"; // NOI18N
+    public static final String OPERATOR_CAT = "operator"; // NOI18N
+    public static final String SEPARATOR_CAT = "separator"; // NOI18N
+    public static final String ERROR_CAT = "error"; // NOI18N
+    public static final String NUMBER_CAT = "number"; // NOI18N
+    public static final String IDENTIFIER_CAT = "identifier"; // NOI18N
+
     private static final boolean DEBUG_TOKENS = false;
     /** This is still not working; I wonder if release() is called correctly at all times...*/
     private static final boolean REUSE_LEXERS = false;

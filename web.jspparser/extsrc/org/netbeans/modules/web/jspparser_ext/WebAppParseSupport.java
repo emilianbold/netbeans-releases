@@ -56,18 +56,19 @@ import java.net.URLConnection;
 import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.servlet.ServletContext;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
@@ -211,6 +212,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             /*, URLClassLoader waClassLoader*/) {
         // PENDING - do caching for individual JSPs
         //  in fact should not be needed - see FastOpenInfoParser.java
+        checkReinitCachesTask();
         JspCompilationContext ctxt = createCompilationContext(jspFile, useEditor);
         ExtractPageData epd = new ExtractPageData(ctxt);
         try {
@@ -255,9 +257,12 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         }
     }
     
+    // #134455 (see #67017 and #128360 as well)
+    // commenting for NB 6.5M1, let's see whether some issues caused by this change will happen or whether this code can be removed
     private boolean isUnexpectedLibrary(URL url) {
-        Matcher m = RE_PATTERN_COMMONS_LOGGING.matcher(url.getFile());
-        return m.matches();
+        return false;
+//        Matcher m = RE_PATTERN_COMMONS_LOGGING.matcher(url.getFile());
+//        return m.matches();
     }
     
     private void createClassLoaders() {
@@ -405,6 +410,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     public JspParserAPI.ParseResult analyzePage(FileObject jspFile, /*String compilationURI, */
             int errorReportingMode) {
         // PENDING - do caching for individual JSPs
+        checkReinitCachesTask();
         JspCompilationContext ctxt = createCompilationContext(jspFile, true);
         
         return callTomcatParser(jspFile, ctxt, waContextClassLoader, errorReportingMode);
@@ -421,11 +427,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         // useEditor not needed, both caches are the same
         // we have to clear all the caches when the class path is not current or the taglibmap is not initialized yet
 
-        // process sliding task
-        if (!reinitCachesTask.isFinished()) {
-            reinitCachesTask.cancel();
-            reinitCaches();
-        }
+        checkReinitCachesTask();
         // XXX return deep copy (not needed now, only jsp editor uses it)
         return new HashMap<String, String[]>(mappings);
     }
@@ -712,6 +714,14 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         return returnMap;
     }
 
+    private synchronized void checkReinitCachesTask() {
+        // process sliding task
+        if (!reinitCachesTask.isFinished()) {
+            reinitCachesTask.cancel();
+            reinitCaches();
+        }
+    }
+
     void reinitCaches() {
         assert Thread.holdsLock(this);
         final long counter = cpCurrent.get();
@@ -780,13 +790,15 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
          * locking (just due to commons logging).
          */
         private static final String LOGGING_CONFIG = "commons-logging.properties"; // NOI18N
-
         private static final String SERVICES_FOLDER = "META-INF/services/"; // NOI18N
-
         private static final Set<String> FORBIDDEN_PACKAGES = new HashSet<String>();
+        // suppress annoying warning
+        private static final List<String> LOG4J_CONFIGS = Arrays.asList("log4j.properties", "log4j.xml");
 
         static {
-            Collections.addAll(FORBIDDEN_PACKAGES, "org.apache.log4j", "org.apache.commons.logging"); // NOI18N
+            // #134455 (see #67017 and #128360 as well)
+            // commenting for NB 6.5M1, let's see whether some issues caused by this change will happen or whether this code can be removed
+            //Collections.addAll(FORBIDDEN_PACKAGES, "org.apache.log4j", "org.apache.commons.logging"); // NOI18N
         }
 
         private final URL[] tomcatURLs;
@@ -822,6 +834,9 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
 
         @Override
         public URL getResource(String name) {
+            if (LOG4J_CONFIGS.contains(name)) {
+                return null;
+            }
             URL url;
             if (parent != null) {
                 url = parent.getResource(name);
@@ -955,6 +970,11 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                         || (FileUtil.isParentOf(webInf, fo))) {
                     LOG.fine("File " + fo + " has changed, reinitCaches() called");
                     // our file => process caches
+                    // #133702
+                    if (fo.getNameExt().equals("web.xml")) {
+                        // clear JspConfig cache as well
+                        cpCurrent.incrementAndGet();
+                    }
                     reinitCachesTask.schedule(REINIT_CACHES_DELAY);
                 }
             }

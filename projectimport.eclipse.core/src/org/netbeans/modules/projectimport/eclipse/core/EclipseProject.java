@@ -43,17 +43,20 @@ package org.netbeans.modules.projectimport.eclipse.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-import org.netbeans.modules.projectimport.eclipse.core.Workspace.Variable;
 import org.netbeans.modules.projectimport.eclipse.core.spi.DotClassPathEntry;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 /**
@@ -89,6 +92,8 @@ public final class EclipseProject implements Comparable {
     private final File prjFile;
     private String jdkDirectory;
     
+    private List<String> importProblems = new ArrayList<String>();
+    
     /**
      * Returns <code>EclipseProject</code> instance representing Eclipse project
      * found in the given <code>projectDir</code>. If a project is not found in
@@ -108,7 +113,8 @@ public final class EclipseProject implements Comparable {
     /** Sets up a project directory. */
     /*private*/ EclipseProject(File projectDir) {
         this.projectDir = projectDir;
-        this.cpFile = new File(projectDir, CLASSPATH_FILE);
+        File f = new File(projectDir, CLASSPATH_FILE);
+        this.cpFile = f.exists() ? f : null;
         this.prjFile = new File(projectDir, PROJECT_FILE);
     }
     
@@ -127,7 +133,9 @@ public final class EclipseProject implements Comparable {
     void setClassPath(DotClassPath cp) {
         this.cp = cp;
         calculateAbsolutePaths();
-        evaluateContainers();
+        convertFileVariablesToFolderVariables();
+        updateSourcePathAttribute();
+        updateJavaDocLocationAttribute();
     }
     
     public List<DotClassPathEntry> getClassPathEntries() {
@@ -187,7 +195,7 @@ public final class EclipseProject implements Comparable {
         return importSupported.booleanValue();
     }
     
-    ProjectTypeFactory getProjectTypeFactory() {
+    public ProjectTypeFactory getProjectTypeFactory() {
         performRecognitionIfNeeded();
         return projectFactory;
     }
@@ -214,7 +222,7 @@ public final class EclipseProject implements Comparable {
      * @return JDK directory for the project
      */
     public String getJDKDirectory() {
-        if (jdkDirectory == null && workspace != null) {
+        if (jdkDirectory == null && workspace != null && cp.getJREContainer() != null) {
             logger.finest("Getting JDK directory for project " + this.getName()); // NOI18N
             jdkDirectory = workspace.getJDKDirectory(cp.getJREContainer().getRawPath());
             logger.finest("Resolved JDK directory: " + jdkDirectory); // NOI18N
@@ -248,25 +256,28 @@ public final class EclipseProject implements Comparable {
             Collections.EMPTY_SET : projectsWeDependOn;
     }
 
-    private void evaluateContainers() {
+    void evaluateContainers(List<String> importProblems) {
         for (DotClassPathEntry entry : cp.getClassPathEntries()) {
             if (entry.getKind() != DotClassPathEntry.Kind.CONTAINER) {
                 continue;
             }
-            ClassPathContainerResolver.resolve(entry);
+            ClassPathContainerResolver.resolve(workspace, entry, importProblems);
         }
     }
     
-    void setupEvaluatedContainers() throws IOException {
+    void setupEvaluatedContainers(List<String> importProblems) throws IOException {
         for (DotClassPathEntry entry : cp.getClassPathEntries()) {
             if (entry.getKind() != DotClassPathEntry.Kind.CONTAINER) {
                 continue;
             }
-            ClassPathContainerResolver.setup(workspace, entry);
+            ClassPathContainerResolver.setup(workspace, entry, importProblems);
         }
     }
     
-    void setupEnvironmentVariables() throws IOException {
+    void setupEnvironmentVariables(List<String> importProblems) throws IOException {
+        if (workspace == null) {
+            return;
+        }
         EditableProperties ep = PropertyUtils.getGlobalProperties();
         boolean changed = false;
         for (DotClassPathEntry entry : cp.getClassPathEntries()) {
@@ -274,20 +285,106 @@ public final class EclipseProject implements Comparable {
                 continue;
             }
             String s = EclipseUtils.splitVariable(entry.getRawPath())[0];
-            for (Variable v : workspace.getVariables()) {
-                if (v.getName().equals(s)) {
-                    s = "var."+PropertyUtils.getUsablePropertyName(s);
-                    if (ep.getProperty(s) == null) {
-                        ep.setProperty(s, v.getLocation());
-                        changed = true;
-                    }
-                    continue;
+            Workspace.Variable v = getVariable(s);
+            if (v != null) {
+                s = "var."+PropertyUtils.getUsablePropertyName(s);
+                if (ep.getProperty(s) == null) {
+                    ep.setProperty(s, v.getLocation());
+                    changed = true;
+                } else if (!ep.getProperty(s).equals(v.getLocation())) {
+                    importProblems.add("IDE variable '"+s+"' is configured with value '"+ep.getProperty(s)+"' but project expects it to be '"+v.getLocation()+"'");
                 }
+            } else {
+                importProblems.add("IDE variable '"+s+"' was not found in workspace. Set the value in NetBeans.");
+                ep.setProperty(s, "");
+                changed = true;
             }
         }
         if (changed) {
             PropertyUtils.putGlobalProperties(ep);
         }
+    }
+    
+    void convertFileVariablesToFolderVariables() {
+        if (workspace == null) {
+            return;
+        }
+        for (DotClassPathEntry entry : cp.getClassPathEntries()) {
+            if (entry.getKind() != DotClassPathEntry.Kind.VARIABLE) {
+                continue;
+            }
+            String s = EclipseUtils.splitVariable(entry.getRawPath())[0];
+            Workspace.Variable v = getVariable(s);
+            if (v != null && v.isFileVariable()) {
+                // convert eclipse file variable to folder variable
+                entry.updateVariableValue(v.getName()+'/'+v.getFileName());
+            }
+        }
+    }
+    
+    private void updateSourcePathAttribute() {
+        if (workspace == null) {
+            return;
+        }
+        for (DotClassPathEntry entry : cp.getClassPathEntries()) {
+            String sourcePath = entry.getProperty(DotClassPathEntry.ATTRIBUTE_SOURCEPATH);
+            if (sourcePath == null) {
+                continue;
+            }
+            // test whether sourcePath starts with variable:
+            for (Workspace.Variable v : workspace.getVariables()) {
+                if (sourcePath.startsWith(v.getName())) {
+                    String s[] = EclipseUtils.splitVariable(sourcePath);
+                    // change value to Ant style property directly usable in NB:
+                    entry.updateSourcePath("${"+s[0]+"}"+s[1]); // NOI18N
+                    break;
+                }
+            }
+        }
+    }
+    
+    private void updateJavaDocLocationAttribute() {
+        if (workspace == null) {
+            return;
+        }
+        for (DotClassPathEntry entry : cp.getClassPathEntries()) {
+            String javadoc = entry.getProperty(DotClassPathEntry.ATTRIBUTE_JAVADOC);
+            if (javadoc == null) {
+                continue;
+            }
+            URL u;
+            try {
+                u = new URL(javadoc);
+            } catch (MalformedURLException ex) {
+                importProblems.add("javadoc location is not valid URL and will be ignored: '"+javadoc+"'");
+                continue;
+            }
+            URL u2 = FileUtil.getArchiveFile(u);
+            if (u2 != null) {
+                if (javadoc.indexOf("!/") != javadoc.length()-2) { // NOI18N
+                    importProblems.add("this javadoc url cannot be imported and will be ignored: '"+u.toExternalForm()+"'");
+                    continue;
+                }
+                u = u2;
+            }
+            if (!"file".equals(u.getProtocol())) { // NOI18N
+                // XXX this is just a warning rather then import problem
+                // Perhaps instead of List<String> for import problems define
+                // a class which could have two lists: import problems and import warnings
+                importProblems.add("javadoc location contains unsupported URL protocol which will be ignored: '"+u.toExternalForm()+"'");
+                continue;
+            }
+            try {
+                File f = new File(u.toURI());
+                entry.updateJavadoc(f.getPath());
+            } catch (URISyntaxException ex) {
+                importProblems.add("javadoc location cannot be resolved: '"+u.toExternalForm()+"'");
+            }
+        }
+    }
+
+    public List<String> getImportProblems() {
+        return importProblems;
     }
     
     private void calculateAbsolutePaths() {
@@ -326,20 +423,13 @@ public final class EclipseProject implements Comparable {
         
         // try to resolve entry as a VARIABLE
         if (entry.getKind() == DotClassPathEntry.Kind.VARIABLE) {
-            String rawPath = entry.getRawPath();
-            int slashIndex = rawPath.indexOf('/');
-            if (slashIndex != -1) {
-                Workspace.Variable parent = getVariable(
-                        rawPath.substring(0, slashIndex));
-                if (parent != null) {
-                    entry.setAbsolutePath(parent.getLocation() +
-                            rawPath.substring(slashIndex));
-                }
+            String var[] = EclipseUtils.splitVariable(entry.getRawPath());
+            Workspace.Variable variable = getVariable(var[0]);
+            if (variable != null) {
+                entry.setAbsolutePath(variable.getLocation() +var[1]);
             } else {
-                Workspace.Variable var = getVariable(entry);
-                if (var != null) {
-                    entry.setAbsolutePath(var.getLocation());
-                }
+                logger.warning("cannot resolve variable '"+var[0]+"'. used in project "+
+                        getProjectFile().getPath()+" in entry "+entry);
             }
             return;
         }
@@ -363,7 +453,20 @@ public final class EclipseProject implements Comparable {
                     + entry.getRawPath());
         } else {
             // external src or lib
-            entry.setAbsolutePath(entry.getRawPath());
+            String absolutePath = entry.getRawPath();
+            if (entry.getKind() == DotClassPathEntry.Kind.LIBRARY && workspace != null) {
+                String path = entry.getRawPath();
+                File f = new File(path);
+                // test whether it is file within a project, e.g. "/some-project/lib/file.jar"
+                if (path.startsWith("/") && !f.exists()) {
+                    String s[] = EclipseUtils.splitProject(path);
+                    String projectPath = workspace.getProjectAbsolutePath(s[0]);
+                    if (projectPath != null) {
+                        absolutePath = projectPath + s[1];
+                    }
+                }
+            }
+            entry.setAbsolutePath(absolutePath);
         }
     }
 
@@ -377,26 +480,12 @@ public final class EclipseProject implements Comparable {
             logger.fine("Workspace wasn't set for the project \"" + getName() + "\""); // NOI18N
             return null;
         }
-        Set variables = workspace.getVariables();
-        if (variables != null) {
-            for (Iterator it = workspace.getVariables().iterator(); it.hasNext(); ) {
-                Workspace.Variable variable = (Workspace.Variable) it.next();
-                if (variable.getName().equals(rawPath)) {
-                    return variable;
-                }
+        for (Workspace.Variable variable : workspace.getVariables()) {
+            if (variable.getName().equals(rawPath)) {
+                return variable;
             }
         }
-        logger.info("Cannot resolve variable for raw path: " + rawPath); // NOI18N
         return null;
-    }
-    
-    /**
-     * Recongises if a given entry represents variable. If yes returns variable
-     * it represents otherwise null. Note that this method returns null if
-     * workspace wasn't set for this project.
-     */
-    private Workspace.Variable getVariable(DotClassPathEntry entry) {
-        return getVariable(entry.getRawPath());
     }
     
     public String toString() {

@@ -62,6 +62,10 @@
                     <file name="org-netbeans-modules-php-editor-codegen-PHPCodeTemplateProcessor$Factory.instance"/>
                 </folder>
                 
+                <folder name="CodeTemplateFilterFactories">
+                    <file name="org-netbeans-modules-php-editor-PHPCodeTemplateFilter$Factory.instance"/>
+                </folder>  
+                
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
                         <file name="org-netbeans-modules-php-editor-codetemplates.xml" url="code-templates.xml">
@@ -96,6 +100,9 @@
                     </file>
                     <file name="format">
                         <attr name="position" intvalue="750" />
+                    </file>
+                    <file name="generate-code">
+                        <attr name="position" intvalue="760" />
                     </file>
                     <file name="SeparatorAfterFormat.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />

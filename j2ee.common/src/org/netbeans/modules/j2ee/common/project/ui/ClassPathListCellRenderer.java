@@ -145,7 +145,13 @@ class ClassPathListCellRenderer extends DefaultListCellRenderer {
                         return NbBundle.getMessage( ClassPathListCellRenderer.class, "LBL_MISSING_FILE", getFileRefName( item ) );
                     }
                     else {
-                        return item.getFilePath();
+                        if (item.getVariableBasedProperty() != null) {
+                            String s = item.getVariableBasedProperty();
+                            // convert "${var.XXX}/path" to "XXX/path"
+                            return s.substring(6, s.indexOf("}")) + s.substring(s.indexOf("}")+1); // NOI18N
+                        } else {
+                            return item.getFilePath();
+                        }
                     }
             }
             
@@ -217,7 +223,7 @@ class ClassPathListCellRenderer extends DefaultListCellRenderer {
                 case ClassPathSupport.Item.TYPE_JAR:
                     File f = item.getResolvedFile();
                     // if not absolute path:
-                    if (!f.getPath().equals(item.getFilePath())) {
+                    if (!f.getPath().equals(item.getFilePath()) || item.getVariableBasedProperty() != null) {
                         return f.getPath();
                     }
             }

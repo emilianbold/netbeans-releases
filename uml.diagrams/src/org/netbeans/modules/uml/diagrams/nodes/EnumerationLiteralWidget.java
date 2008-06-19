@@ -40,8 +40,12 @@
  */
 package org.netbeans.modules.uml.diagrams.nodes;
 
+import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import org.netbeans.api.visual.border.BorderFactory;
+import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.widget.LabelWidget.Alignment;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.diagrams.DefaultWidgetContext;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
@@ -65,8 +69,8 @@ public class EnumerationLiteralWidget extends FeatureWidget implements PropertyC
     {
         super(scene);
 
-        lookupContent.add(new DefaultWidgetContext("Literal"));
-//        createActions(DesignerTools.SELECT).addAction(new FeatureMoveAction());
+        lookupContent.add(new DefaultWidgetContext("EnumerationLiteral"));
+        setAlignment(Alignment.CENTER);
     }
 
     @Override

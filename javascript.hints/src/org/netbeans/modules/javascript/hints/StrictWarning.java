@@ -149,6 +149,15 @@ public class StrictWarning extends JsErrorRule {
             range = new OffsetRange(lexOffset, lexOffset + 1);
         } else if (RESERVED_KEYWORD.equals(key)) {
             String keyword = (String) error.getParameters()[1];
+            
+            // The debugger keyword seems to have graduated from reserved word to
+            // getting used in the field. I should consider enabling this based on specific
+            // language support values
+            if ("debugger".equals(keyword)) { // NOI18N
+                context.remove = true;
+                return;
+            }
+
             range = new OffsetRange(lexOffset - keyword.length(), lexOffset);
         } else if (error.getParameters() != null) {
             Node node = (Node) error.getParameters()[0];
@@ -165,6 +174,13 @@ public class StrictWarning extends JsErrorRule {
                     }
                     c = c.getParentNode();
                 }
+            }
+
+            if (key.equals(NO_SIDE_EFFECTS) && node.hasChildren() && node.getFirstChild().getType() == Token.NAME &&
+                    "debugger".equals(node.getFirstChild().getString())) { // NOI18N
+                // Don't warn about no side effects on the debugger keyword...
+                context.remove = true;
+                return;
             }
 
             // In HTML etc ignore these

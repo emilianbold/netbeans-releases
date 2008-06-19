@@ -42,8 +42,14 @@
 package org.netbeans.modules.projectimport.eclipse.core;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.projectimport.eclipse.core.Workspace.Variable;
+import org.netbeans.modules.projectimport.eclipse.core.spi.DotClassPathEntry;
 
 /**
  * @author Martin Krauskopf
@@ -60,12 +66,37 @@ public class ClassPathParserTest extends NbTestCase {
         assertEquals("1 sources entry", 1, cp.getSourceRoots().size());
         assertNotNull("non empty output", cp.getOutput());
         assertNotNull("non empty JDK", cp.getJREContainer());
+        
+        DotClassPathEntry entry = cp.getClassPathEntries().get(0);
+        assertEquals("lib", entry.getProperty("kind"));
+        assertEquals("C:/MyProjects/JavaAPI/integrationServerApi.jar", entry.getProperty("path"));
+        assertEquals("jar:file:/C:/MyProjects/JavaAPI/docs/javaApiDoc.jar!/", entry.getProperty("javadoc_location"));
     }
     
     public void testAccessrulesDoesNotCauseException() throws Exception { // #91669
         DotClassPath cp = DotClassPathParser.parse(new File(getDataDir(), "91669.classpath"), Collections.<Link>emptyList());
         assertEquals("one classpath entries", 0, cp.getClassPathEntries().size());
         assertNotNull("non empty JDK", cp.getJREContainer());
+    }
+    
+    public void testParseExternalSourceRoots() throws Exception {
+        Set<String> natures = new HashSet<String>();
+        List<Link> links = new ArrayList<Link>();
+        Set<Variable> variables = new HashSet<Variable>();
+        variables.add(new Variable("SOME_ROOT", "/tmp"));
+        ProjectParser.parse(new File(getDataDir(), "external-source-roots.project"), natures, links, variables);
+        assertEquals(2, links.size());
+        assertEquals(new Link("java-app-src", false, "/home/david/projs/JavaApplication1/src"), links.get(0));
+        assertEquals(new Link("src2", false, "/tmp/JavaApplication2/src"), links.get(1));
+        
+        DotClassPath cp = DotClassPathParser.parse(new File(getDataDir(), "external-source-roots.classpath"), links);
+        assertEquals("3 sources entry", 3, cp.getSourceRoots().size());
+        DotClassPathEntry entry = cp.getSourceRoots().get(0);
+        assertEquals("src", entry.getProperty("path"));
+        entry = cp.getSourceRoots().get(1);
+        assertEquals("/tmp/JavaApplication2/src", entry.getProperty("path"));
+        entry = cp.getSourceRoots().get(2);
+        assertEquals("/home/david/projs/JavaApplication1/src", entry.getProperty("path"));
     }
     
 }

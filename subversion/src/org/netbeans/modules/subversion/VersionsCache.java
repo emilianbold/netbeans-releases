@@ -148,12 +148,9 @@ public class VersionsCache {
     }
     
     private File getMetadataDir(File dir) {
-        File svnDir = new File(dir, ".svn");  // NOI18N
+        File svnDir = new File(dir, SvnUtils.SVN_ADMIN_DIR);  // NOI18N
         if (!svnDir.isDirectory()) {
-            svnDir = new File(dir, "_svn");  // NOI18N
-            if (!svnDir.isDirectory()) {
-                return null;
-            }
+            return null;
         }
         return svnDir;
     }

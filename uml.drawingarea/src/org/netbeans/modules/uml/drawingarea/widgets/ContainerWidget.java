@@ -46,8 +46,11 @@ import java.awt.datatransfer.Transferable;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.graph.GraphScene;
@@ -65,6 +68,8 @@ import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ICombinedFragment;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
+import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
+import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
 import org.netbeans.modules.uml.drawingarea.actions.SceneAcceptProvider;
 import org.netbeans.modules.uml.drawingarea.actions.WidgetAcceptAction;
 import org.netbeans.modules.uml.drawingarea.util.Util;
@@ -169,6 +174,7 @@ public class ContainerWidget extends Widget
         
         createActions(DesignerTools.SELECT).addAction(acceptAction);
         createActions(DesignerTools.PALETTE).addAction(new WidgetAcceptAction(provider));
+        createActions(DesignerTools.CONTEXT_PALETTE).addAction(acceptAction);
     }
     
     private boolean addChildNode(INamespace namespace, Object nodeData, Widget node)
@@ -363,10 +369,17 @@ public class ContainerWidget extends Widget
     protected boolean isFullyContained(Widget widget)
     {
         Rectangle area = widget.getClientArea();
-        Rectangle sceneArea = widget.convertLocalToScene(area);
         
-        Rectangle localArea = convertSceneToLocal(sceneArea);
-        return getClientArea().contains(localArea);
+        boolean retVal = false;
+        if(area != null)
+        {
+            Rectangle sceneArea = widget.convertLocalToScene(area);
+
+            Rectangle localArea = convertSceneToLocal(sceneArea);
+            retVal = getClientArea().contains(localArea);
+        }
+        
+        return retVal;
     }
     
     public class ContainerAcceptProvider extends SceneAcceptProvider
@@ -390,7 +403,8 @@ public class ContainerWidget extends Widget
             Widget[] target = null;
             ObjectScene scene = (ObjectScene) widget.getScene();
             boolean convertLocation = false;
-            
+            boolean isMovingWidget = false;
+            Set <Object> selected = null;
             if(isWidgetMove(transferable) == true)
             {
                 try
@@ -404,13 +418,15 @@ public class ContainerWidget extends Widget
                 {
                     target = new Widget[0];
                 }
+                
+                isMovingWidget = true;
             }
             else
             {
                 // Now the new Nodes should be selected.  So get the widgets and 
                 // add them to the container.
                 target = new Widget[scene.getSelectedObjects().size()];
-                Set <Object> selected = (Set<Object>) scene.getSelectedObjects();
+                selected = (Set<Object>) scene.getSelectedObjects();
                 Object[] selectedArray = new Object[selected.size()];
                 selected.toArray(selectedArray);
 
@@ -421,12 +437,13 @@ public class ContainerWidget extends Widget
                     target[i] = curWidget;
                 }
             }
-            
+            final Set finalselected=selected!=null ? new HashSet(selected):null;
+            boolean reselect=false;
             for(Widget curWidget : target)
             {
                 // Only add the node to the container if it is fully contained
                 // by the container.
-                if(isFullyContained(curWidget) == false)
+                if((isMovingWidget == true) && (isFullyContained(curWidget) == false))
                 {
                     break;
                 }
@@ -436,16 +453,22 @@ public class ContainerWidget extends Widget
                     curWidget.getParentWidget().removeChild(curWidget);
                 }
                 
-                Point curPt = curWidget.getLocation();
+                Point curPt = curWidget.getPreferredLocation();
+                if(curPt==null)curPt = curWidget.getLocation();
                 addChild(curWidget);
+                Object data = scene.findObject(curWidget);
+                INamedElement element = (INamedElement) ((IPresentationElement)data).getFirstSubject();
                 
                 if(convertLocation == true)
                 {
                     curWidget.setPreferredLocation(convertSceneToLocal(curPt));
                 }
+                else if(element instanceof ILifeline)//lifeline need correction because need to be on certain level, not on dropped position
+                {
+                    curPt.y=convertSceneToLocal(curPt).y;
+                    curWidget.setPreferredLocation(curPt);
+                }
                 
-                Object data = scene.findObject(curWidget);
-                INamedElement element = (INamedElement) ((IPresentationElement)data).getFirstSubject();
                 INamespace ns = getContainerNamespace();
                 IElement containerElem = getContainerElement();
                 
@@ -478,10 +501,25 @@ public class ContainerWidget extends Widget
                     }
                 }
                 //some elements(like combined fragment) are not namespace but can contain other element graphically
-                else if(containerElem instanceof ICombinedFragment && element instanceof ILifeline)
+                else if(containerElem instanceof ICombinedFragment)
                 {
-                    ((ICombinedFragment) containerElem).addCoveredLifeline((ILifeline) element);
-                }
+                    ICombinedFragment cf=(ICombinedFragment) containerElem;
+                    INamespace cfNs=cf.getNamespace();
+                    if(element instanceof ILifeline)
+                    {
+                        ILifeline ll=(ILifeline) element;
+                        cf.addCoveredLifeline(ll);
+                    }
+                    if(element.getNamespace()!=cfNs)
+                    {
+                        if(element.getNamespace()!=null)
+                        {
+                            element.getNamespace().removeOwnedElement(element);
+                        }
+                        cfNs.addOwnedElement(element);
+                    }
+                    reselect=true;
+               }
             }
             
             if(target.length > 0)
@@ -489,6 +527,7 @@ public class ContainerWidget extends Widget
                 firePropertyChange(CHILDREN_CHANGED, null, null);
             }
             revalidate();
+            scene.validate();
         }
         
         @Override
@@ -496,7 +535,7 @@ public class ContainerWidget extends Widget
         {
             return getContainerNamespace();
         }
-        
+
         protected boolean isWidgetMove(Transferable transferable)
         {
             return transferable.isDataFlavorSupported(MoveWidgetTransferable.FLAVOR);

@@ -40,6 +40,7 @@ package org.netbeans.modules.hibernate.service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,6 +53,8 @@ import static org.junit.Assert.*;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataLoader;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
+import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
+import org.netbeans.modules.hibernate.service.spi.HibernateEnvironmentImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
@@ -112,14 +115,14 @@ public class HibernateEnvironmentTest extends NbTestCase {
         Util.prepareDB();
         HibernateConfiguration[] configurations = new HibernateConfiguration[1];
         configurations[0] = hibernateConfiguration;
-        HibernateEnvironment instance = new HibernateEnvironment(
+        HibernateEnvironment instance = new HibernateEnvironmentImpl(
                 Util.getProject(
                     new java.io.File(getDataDir().getAbsolutePath() + java.io.File.separator + "WebApplication1")
                 )
                 );
         ArrayList<String> expResult = Util.getAllDatabaseTables();
 
-        ArrayList<String> result = instance.getAllDatabaseTables(configurations);
+        List<String> result = instance.getAllDatabaseTables(configurations);
 
         Util.clearDB();
         Util.stopDB(getDataDir().getAbsolutePath() + java.io.File.separator + "db-derby-10.2.2.0-bin");
@@ -166,8 +169,8 @@ public class HibernateEnvironmentTest extends NbTestCase {
             }
         }
    
-        HibernateEnvironment instance = new HibernateEnvironment(project);
-        ArrayList<HibernateConfiguration> result = instance.getAllHibernateConfigurationsFromProject();
+        HibernateEnvironment instance = new HibernateEnvironmentImpl(project);
+        List<HibernateConfiguration> result = instance.getAllHibernateConfigurationsFromProject();
         assertEquals(expResult, result);
     }
 
@@ -177,7 +180,7 @@ public class HibernateEnvironmentTest extends NbTestCase {
     @Test
     public void testGetAllHibernateMappingsFromConfiguration() {
         System.out.println("getAllHibernateMappings");
-        HibernateEnvironment instance = new HibernateEnvironment(
+        HibernateEnvironment instance = new HibernateEnvironmentImpl(
                 Util.getProject(
                     new java.io.File(getDataDir().getAbsolutePath() + java.io.File.separator + "WebApplication1")
                 )
@@ -187,7 +190,7 @@ public class HibernateEnvironmentTest extends NbTestCase {
         expResult.add("map1.xml"); expResult.add("map2.xml"); expResult.add("map3.xml");
         expResult.add("map$1.xml");
 
-        ArrayList<String> result = instance.getAllHibernateMappingsFromConfiguration(hibernateConfiguration);
+        List<String> result = instance.getAllHibernateMappingsFromConfiguration(hibernateConfiguration);
         assertEquals(expResult, result);
 
     }

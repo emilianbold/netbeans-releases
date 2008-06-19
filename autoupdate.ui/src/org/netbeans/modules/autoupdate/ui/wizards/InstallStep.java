@@ -68,6 +68,7 @@ import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.InstallSupport.Installer;
 import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.autoupdate.InstallSupport.Validator;
+import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.WizardDescriptor;
@@ -198,9 +199,10 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     
     private Validator handleDownload () {
         validator = null;
+        OperationContainer installContainer = model.getBaseContainer ();
         final InstallSupport support = model.getInstallSupport ();
         assert support != null : "OperationSupport cannot be null because OperationContainer " +
-                "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
+                "contains elements: " + installContainer.listAll () + " and invalid elements " + installContainer.listInvalid ();
         
         boolean finish = false;
         while (! finish) {
@@ -421,6 +423,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         if (untrusted.size () > 0 || unsigned.size () > 0 && ! runInBackground ()) {
             ValidationWarningPanel p = new ValidationWarningPanel (unsigned, untrusted);
             final JButton showCertificate = new JButton ();
+            final boolean verifyCertificate = ! untrusted.isEmpty () && certs.length () > 0;
             Mnemonics.setLocalizedText (showCertificate, getBundle ("ValidationWarningPanel_ShowCertificateButton"));
             final String certificate = certs;
             showCertificate.addActionListener (new ActionListener () {
@@ -435,11 +438,13 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             final JButton canContinue = new JButton ();
             Mnemonics.setLocalizedText (canContinue, getBundle ("ValidationWarningPanel_ContinueButton"));
             final JButton cancel = model.getCancelButton (wd);
-            DialogDescriptor dd = new DialogDescriptor (p, getBundle ("ValidationWarningPanel_Title"));
+            DialogDescriptor dd = new DialogDescriptor (p, verifyCertificate ?
+                getBundle ("ValidationWarningPanel_VerifyCertificate_Title") :
+                getBundle ("ValidationWarningPanel_Title"));
             dd.setOptions (new JButton [] {canContinue, cancel});
             dd.setClosingOptions (new JButton [] {canContinue, cancel});
-            dd.setOptionType (NotifyDescriptor.WARNING_MESSAGE);
-            if (! untrusted.isEmpty () && certs.length () > 0) {
+            dd.setMessageType (NotifyDescriptor.WARNING_MESSAGE);
+            if (verifyCertificate) {
                 dd.setAdditionalOptions (new JButton [] {showCertificate});
             }
             final Dialog dlg = DialogDisplayer.getDefault ().createDialog (dd);

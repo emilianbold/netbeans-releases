@@ -61,20 +61,14 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
-import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
-import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 
 import org.openide.windows.TopComponent;
@@ -500,66 +494,7 @@ public class DesignCenterComponent extends TopComponent {
        */
       protected Action[] getActionsFromRegistry(String path)
       {
-          ArrayList<Action> actions = new ArrayList<Action>();
-          FileSystem system = Repository.getDefault().getDefaultFileSystem();
-          
-          try
-          {
-              if (system != null)
-              {
-                  FileObject lookupDir = system.findResource(path);
-                  
-                  if (lookupDir != null)
-                  {
-                      FileObject[] children = lookupDir.getChildren();
-                      
-                      for (FileObject curObj : children)
-                      {
-                          try
-                          {
-                              DataObject dObj = DataObject.find(curObj);
-                              
-                              if (dObj != null)
-                              {
-                                  InstanceCookie cookie = (InstanceCookie)dObj
-                                          .getCookie(InstanceCookie.class);
-                                  
-                                  if (cookie != null)
-                                  {
-                                      Object obj = cookie.instanceCreate();
-                                      
-                                      if (obj instanceof Action)
-                                      {
-                                          actions.add((Action)obj);
-                                      }
-                                      else if (obj instanceof JSeparator)
-                                      {
-                                          actions.add(null);
-                                      }
-                                  }
-                              } // dObj != null
-                          }
-                          
-                          catch(ClassNotFoundException e)
-                          {
-                              // Unable to create the instance for some reason.  So the
-                              // do not worry about adding the instance to the list.
-                          }
-                      } // for-each FileObject
-                  } // if lookupDir != null
-              } // if system != null
-          }
-          
-          catch(DataObjectNotFoundException e)
-          {
-              // Basically Bail at this time.
-          }
-          
-          catch(IOException ioE)
-          {
-              
-          }
-          
+          List<? extends Action> actions = Utilities.actionsForPath(path);
           Action[] retVal = new Action[actions.size()];
           actions.toArray(retVal);
           return retVal;

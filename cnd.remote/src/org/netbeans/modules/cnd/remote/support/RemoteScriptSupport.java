@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.remote.support;
 
+import org.netbeans.modules.cnd.remote.support.managers.ScriptManager;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
@@ -60,7 +61,7 @@ public class RemoteScriptSupport extends RemoteConnectionSupport {
 
     @Override
     protected Channel createChannel() throws JSchException {
-        echannel = (ChannelExec) session.openChannel("exec");
+        echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
         return echannel;
     }
     

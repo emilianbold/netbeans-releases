@@ -138,6 +138,9 @@ public abstract class BpelValidator extends Validator {
 
   private Component checkElement(Component component) {
 //out("CHECK E: " + component);
+    if (component == null) {
+      return null;
+    }
     List children = component.getChildren();
 
     if (children == null || children.size() != 1) {

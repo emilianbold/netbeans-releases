@@ -154,4 +154,17 @@ public final class StringUtils {
         }
         return sb.toString();
     }
+    
+    /**
+     * Converts the specified string (typically upper camel case) to 
+     * lower camel case
+     * 
+     * @param str input string (typically upper camel case)
+     * @return lower camel case representation of the input string
+     */
+    public static String toLowerCamelCase(String str) {
+        char[] cs = str.toCharArray();
+        cs[0] = Character.toLowerCase(cs[0]);
+        return String.valueOf(cs);
+    }
 }

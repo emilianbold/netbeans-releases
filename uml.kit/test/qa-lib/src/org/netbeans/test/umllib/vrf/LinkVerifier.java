@@ -95,7 +95,8 @@ public class LinkVerifier  extends GenericVerifier{
             eventTool.waitNoEvent(500);
             
             //create target element
-            Point point = dia.getDrawingArea().getFreePoint(170);
+            //Point point = dia.getDrawingArea().getFreePoint(170);
+            Point point = new Point(200, 300);
             DiagramElementOperator el2 = createElement(EL_NAME + "T", targetElementType, point.x, point.y);
             eventTool.waitNoEvent(500);
             
@@ -153,7 +154,8 @@ public class LinkVerifier  extends GenericVerifier{
             eventTool.waitNoEvent(500);
             
             //create target element
-            Point point = dia.getDrawingArea().getFreePoint(170);
+            //Point point = dia.getDrawingArea().getFreePoint(170);
+            Point point = new Point(200, 300);
             DiagramElementOperator el2 = createElement(EL_NAME + "T", targetElementType, point.x, point.y);
             eventTool.waitNoEvent(500);
             
@@ -207,7 +209,8 @@ public class LinkVerifier  extends GenericVerifier{
             eventTool.waitNoEvent(500);
             
             //create target element
-            Point point = dia.getDrawingArea().getFreePoint(170);
+            //Point point = dia.getDrawingArea().getFreePoint(170);
+            Point point = new Point(200, 300);
             DiagramElementOperator el2 = createElement(EL_NAME + "T", targetElementType, point.x, point.y);
             eventTool.waitNoEvent(500);
             
@@ -290,7 +293,8 @@ public class LinkVerifier  extends GenericVerifier{
             eventTool.waitNoEvent(500);
             
             //create target element
-            Point point = dia.getDrawingArea().getFreePoint(170);
+            //Point point = dia.getDrawingArea().getFreePoint(170);
+            Point point = new Point(200, 300);
             DiagramElementOperator el2 = createElement(EL_NAME + "T", targetElementType, point.x, point.y);
             eventTool.waitNoEvent(500);
             
@@ -373,7 +377,8 @@ public class LinkVerifier  extends GenericVerifier{
             eventTool.waitNoEvent(500);
             
             //create target element
-            Point point = dia.getDrawingArea().getFreePoint(170);
+            //Point point = dia.getDrawingArea().getFreePoint(170);
+            Point point = new Point(200, 300);
             DiagramElementOperator el2 = createElement(EL_NAME + "T", targetElementType, point.x, point.y);
             eventTool.waitNoEvent(500);
             
@@ -437,7 +442,8 @@ public class LinkVerifier  extends GenericVerifier{
             eventTool.waitNoEvent(500);
             
             //create target element
-            Point point = dia.getDrawingArea().getFreePoint(170);
+            //Point point = dia.getDrawingArea().getFreePoint(170);
+            Point point = new Point(200, 300);
             DiagramElementOperator el2 = createElement(EL_NAME + "T", targetElementType, point.x, point.y);
             eventTool.waitNoEvent(500);
             
@@ -501,12 +507,14 @@ public class LinkVerifier  extends GenericVerifier{
             eventTool.waitNoEvent(500);
             
             //create target element
-            Point point = dia.getDrawingArea().getFreePoint(170);
+            //Point point = dia.getDrawingArea().getFreePoint(170);
+            Point point = new Point(200, 300);
             DiagramElementOperator el2 = createElement(EL_NAME + "T", targetElementType, point.x, point.y);
             eventTool.waitNoEvent(500);
 
             //create element to redirect
-            point = dia.getDrawingArea().getFreePoint(170);
+            //point = dia.getDrawingArea().getFreePoint(170);
+            point = new Point(100, 250);
             DiagramElementOperator el3 = createElement(EL_NAME + "R", redirectElementType, point.x, point.y);
             eventTool.waitNoEvent(500);
             
@@ -545,12 +553,14 @@ public class LinkVerifier  extends GenericVerifier{
             eventTool.waitNoEvent(500);
             
             //create target element
-            Point point = dia.getDrawingArea().getFreePoint(170);
+            //Point point = dia.getDrawingArea().getFreePoint(170);
+            Point point = new Point(200, 300);
             DiagramElementOperator el2 = createElement(EL_NAME + "T", targetElementType, point.x, point.y);
             eventTool.waitNoEvent(500);
 
             //create element to redirect
-            point = dia.getDrawingArea().getFreePoint(170);
+            //point = dia.getDrawingArea().getFreePoint(170);
+            point = new Point(100, 400);
             DiagramElementOperator el3 = createElement(EL_NAME + "R", redirectElementType, point.x, point.y);
             eventTool.waitNoEvent(500);
             
@@ -564,6 +574,7 @@ public class LinkVerifier  extends GenericVerifier{
             //redirect source
             LinkOperator lnk = new LinkOperator(el1, el2);
             
+            //6.5 Need find correct point manually
             point = lnk.getNearTargetPoint();
             dia.getDrawingArea().clickMouse(point.x, point.y, 1);
             eventTool.waitNoEvent(500);

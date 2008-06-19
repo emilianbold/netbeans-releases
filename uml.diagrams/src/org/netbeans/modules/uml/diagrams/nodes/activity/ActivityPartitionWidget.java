@@ -46,6 +46,7 @@ import java.awt.Paint;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
 import org.netbeans.api.visual.border.BorderFactory;
@@ -54,12 +55,19 @@ import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivity;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityPartition;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
+import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
+import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
 import org.netbeans.modules.uml.diagrams.nodes.ContainerNode;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
+import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
+import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
+import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
+import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
 import org.netbeans.modules.uml.drawingarea.view.ResourceType;
@@ -85,6 +93,11 @@ public class ActivityPartitionWidget extends UMLNodeWidget
     {
         super(scene);
         this.scene = scene;
+        
+        // initialize context palette
+        DefaultContextPaletteModel paletteModel = new DefaultContextPaletteModel(this);
+        paletteModel.initialize("UML/context-palette/ActivityFinal");
+        addToLookup(paletteModel);
     }
 
     @Override
@@ -128,7 +141,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget
         partitionPanel.setMinimumSize(new Dimension(100, 85));
         // TODO: need to find a way to figure out the exisiting orientation of sub parttition
         //setOrientation(Orientation.VERTICAL);   
-        populateAllPartitions(partitionElement);
+//        populateAllPartitions(partitionElement);
         mainView.addChild(partitionPanel, 1);
 
         return mainView;
@@ -312,13 +325,13 @@ public class ActivityPartitionWidget extends UMLNodeWidget
                 Widget w = children.get(i);
                 if (w instanceof SubPartitionWidget)
                 {
-                    partitionPanel.setChildConstraint(w, i == (count - 1) ? 1 :0);
+                    partitionPanel.setChildConstraint(w, i == (count - 1) ? 1 : 0);
                     ((SubPartitionWidget) w).showPartitionDivider(i != (count - 1));
                 }
             }
         }
     }
-
+    
     @Override
     public void propertyChange(PropertyChangeEvent event)
     {
@@ -368,6 +381,65 @@ public class ActivityPartitionWidget extends UMLNodeWidget
     public IActivityPartition getParentPartition()
     {
         return parentPartition;
+    }
+
+    public SubPartitionWidget getSubPartitionWidget(IActivityPartition subPart)
+    {
+        if (subPart != null)
+        {
+            List<Widget> children = partitionPanel.getChildren();
+            if (children != null && children.size() > 0)
+            {
+                for (int i = 0; i < children.size(); i++)
+                {
+                    Widget w = children.get(i);
+                    if (w instanceof SubPartitionWidget)
+                    {
+                        if (PersistenceUtil.getModelElement(w).isSame(subPart))
+                            return (SubPartitionWidget)w;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    IElementLocator locator = new ElementLocator();
+    
+    @Override
+    public void load(NodeInfo nodeReader)
+    {
+        IElement elt = nodeReader.getModelElement();
+        if (elt == null)
+        {
+            elt = locator.findByID(nodeReader.getProject(), nodeReader.getMEID());
+        }   
+        if (elt != null && elt instanceof IActivityPartition)
+        {
+            if (elt.getOwner() instanceof IActivity)
+            {
+                String or = nodeReader.getProperties().get("Orientation").toString();
+                this.setOrientation(SeparatorWidget.Orientation.valueOf(or));
+                populateAllPartitions((IActivityPartition)elt);
+                super.load(nodeReader);                
+            }
+            SubPartitionWidget subPart = getSubPartitionWidget((IActivityPartition) elt);
+            if (subPart != null)
+            {
+                //fix the size/location/properties
+                subPart.setPreferredSize(nodeReader.getSize());
+                IPresentationElement pElt = PersistenceUtil.getPresentationElement(subPart);
+                nodeReader.setPresentationElement(pElt);
+            }
+        }
+    }
+
+    @Override
+    public void save(NodeWriter nodeWriter)
+    {
+        HashMap map = nodeWriter.getProperties();
+        map.put("Orientation", this.getOrientation().toString());
+        nodeWriter.setProperties(map);
+        super.save(nodeWriter);
     }
 
     private class MainViewWidget extends CustomizableWidget
