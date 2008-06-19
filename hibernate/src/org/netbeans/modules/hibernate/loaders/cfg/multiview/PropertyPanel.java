@@ -1,7 +1,40 @@
 /*
- * PropertyPanel.java
- *
- * Created on January 24, 2008, 12:18 PM
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * 
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * 
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.hibernate.loaders.cfg.multiview;
 
@@ -22,9 +55,8 @@ import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
  */
 public class PropertyPanel extends javax.swing.JPanel implements ActionListener {
 
-    JTextField valueTextField = null;
-    JComboBox valueComboBox = null;
-    ValueComboBoxEditor editor = null;
+    private JTextField valueTextField = null;
+    private JComboBox valueComboBox = null;
     
     /** Creates new form PropertyPanel */
     public PropertyPanel(String propCat, boolean add, SessionFactory sessionFactory, String propName, String propValue) {
@@ -39,11 +71,7 @@ public class PropertyPanel extends javax.swing.JPanel implements ActionListener 
         }
 
         valueTextField = new JTextField();
-        valueTextField.setPreferredSize(new java.awt.Dimension(200, 19));
-        
         valueComboBox = new JComboBox();
-        editor = new ValueComboBoxEditor(valueTextField);
-        valueComboBox.setPreferredSize(new java.awt.Dimension(200, 19));
 
         // Add the appropriate component for the value 
         String selectedPropName = (String) nameComboBox.getSelectedItem();
@@ -53,6 +81,10 @@ public class PropertyPanel extends javax.swing.JPanel implements ActionListener 
 
         // Disable the name combo box for editing
         nameComboBox.setEnabled(add);
+    }
+    
+    public void addNameComboBoxListener(ActionListener listener) {
+        nameComboBox.addActionListener(listener);
     }
 
     public void addValueComponent(String propName, String propValue) {
@@ -65,10 +97,8 @@ public class PropertyPanel extends javax.swing.JPanel implements ActionListener 
             
         } else if (possibleValue instanceof String[]) {
             
-            //valueComboBox = new JComboBox();
             valueComboBox.setModel( new DefaultComboBoxModel((String[]) possibleValue));
             valueComboBox.setEditable(true);
-            valueComboBox.setEditor( editor );
 
             valuePanel.add(valueComboBox, java.awt.BorderLayout.CENTER);
             
@@ -83,12 +113,11 @@ public class PropertyPanel extends javax.swing.JPanel implements ActionListener 
     }
 
     public JTextField getValueTextField() {
-        /*if (valuePanel.getComponents()[0] instanceof JTextField) {
-            return (JTextField) valuePanel.getComponents()[0];
-        } else {
-            return (JTextField) ((JComboBox) valuePanel.getComponents()[0]).getEditor().getEditorComponent();
-        }*/
         return this.valueTextField;
+    }
+    
+    public JTextField getValueComboBoxTextField() {
+        return (JTextField)this.valueComboBox.getEditor().getEditorComponent();
     }
 
     public String getPropertyName() {
@@ -96,7 +125,12 @@ public class PropertyPanel extends javax.swing.JPanel implements ActionListener 
     }
 
     public String getPropertyValue() {
-        return getValueTextField().getText().trim();
+        Object possibleValue = HibernateCfgProperties.getPossiblePropertyValue(getPropertyName());
+        if(possibleValue == null) {
+            return getValueTextField().getText().trim();
+        } else {
+            return getValueComboBoxTextField().getText().trim();
+        }
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -141,11 +175,12 @@ public class PropertyPanel extends javax.swing.JPanel implements ActionListener 
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(nameComboBox, gridBagConstraints);
 
+        valuePanel.setPreferredSize(new java.awt.Dimension(27, 22));
         valuePanel.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(valuePanel, gridBagConstraints);
