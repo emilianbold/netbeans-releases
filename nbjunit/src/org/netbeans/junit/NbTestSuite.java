@@ -165,7 +165,7 @@ public class NbTestSuite extends TestSuite implements NbTest {
      * @param repeat number of times to repeat the test
      */
     public static NbTestSuite speedSuite (Class clazz, int slowness, int repeat) {
-        if (Boolean.getBoolean("ignore.random.failures")) {
+        if (ignoreRandomFailures()) {
             return new NbTestSuite("skipping");
         }
         return new SpeedSuite (clazz, repeat, slowness, SpeedSuite.CONSTANT);
@@ -183,7 +183,7 @@ public class NbTestSuite extends TestSuite implements NbTest {
      * @param repeat number of times to repeat the test
      */
     public static NbTestSuite linearSpeedSuite (Class clazz, int slowness, int repeat) {
-        if (Boolean.getBoolean("ignore.random.failures")) {
+        if (ignoreRandomFailures()) {
             return new NbTestSuite("skipping");
         }
         return new SpeedSuite (clazz, repeat, slowness, SpeedSuite.LINEAR);
