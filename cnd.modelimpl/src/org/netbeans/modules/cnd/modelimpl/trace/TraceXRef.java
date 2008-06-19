@@ -457,27 +457,19 @@ public class TraceXRef extends TraceModel {
                 // skip it
             }
         } else {
-            if (params.analyzeSmartAlgorith) {
-                if (params.interestedReferences.contains(ref.getKind())) { 
-                    XRefResultSet.DeclarationKind declaration = classifyDeclaration(target, printOut);
-                    XRefResultSet.DeclarationScope declarationScope = classifyDeclarationScopeForFunction(declaration, target, fun, printOut);
-                    XRefResultSet.IncludeLevel declarationIncludeLevel = classifyIncludeLevel(target, fun.objFile, printOut);
-                    XRefResultSet.UsageStatistics usageStat = XRefResultSet.UsageStatistics.FIRST_USAGE;
-                    if (objectsUsedInScope.contains(target)) {
-                        usageStat = XRefResultSet.UsageStatistics.NEXT_USAGE;
-                    } else {
-                        objectsUsedInScope.add(target);
-                    }
-                    entry = new XRefResultSet.ContextEntry(declaration, declarationScope, declarationIncludeLevel, usageStat);
+            if (params.interestedReferences.contains(ref.getKind())) { 
+                XRefResultSet.DeclarationKind declaration = classifyDeclaration(target, printOut);
+                XRefResultSet.DeclarationScope declarationScope = classifyDeclarationScopeForFunction(declaration, target, fun, printOut);
+                XRefResultSet.IncludeLevel declarationIncludeLevel = classifyIncludeLevel(target, fun.objFile, printOut);
+                XRefResultSet.UsageStatistics usageStat = XRefResultSet.UsageStatistics.FIRST_USAGE;
+                if (objectsUsedInScope.contains(target)) {
+                    usageStat = XRefResultSet.UsageStatistics.NEXT_USAGE;
                 } else {
-                    entry = null;
+                    objectsUsedInScope.add(target);
                 }
+                entry = new XRefResultSet.ContextEntry(declaration, declarationScope, declarationIncludeLevel, usageStat);
             } else {
-                if (params.interestedReferences == CsmReferenceKind.ALL || params.interestedReferences.contains(ref.getKind())) {
-                    entry = XRefResultSet.ContextEntry.RESOLVED;
-                } else {
-                    entry = null;
-                }
+                entry = null;
             }
         }
         return entry;
