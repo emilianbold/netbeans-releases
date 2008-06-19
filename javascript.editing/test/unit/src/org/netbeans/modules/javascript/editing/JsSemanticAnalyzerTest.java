@@ -101,4 +101,8 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
     public void testSemanticPrototypeNew() throws Exception {
         checkSemantic("testfiles/prototype-new.js");
     }
+
+    public void testDebuggerKeyword() throws Exception {
+        checkSemantic("testfiles/debugger.js");
+    }
 }

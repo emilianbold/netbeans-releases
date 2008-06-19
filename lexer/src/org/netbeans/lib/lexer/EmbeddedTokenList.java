@@ -469,8 +469,8 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
         sb.append("ETL<").append(startOffset());
         sb.append(",").append(endOffset());
         sb.append("> TC=").append(tokenCountCurrent());
-        sb.append("(").append(joinTokenCount()).append(')');
         if (joinInfo != null) {
+            sb.append("(").append(joinTokenCount()).append(')');
             sb.append(" JI:");
             joinInfo.dumpInfo(sb);
         }
