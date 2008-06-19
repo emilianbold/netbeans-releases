@@ -43,6 +43,7 @@ import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -157,6 +158,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
 
         adjustUrl();
         runAsLocalWeb.setLocalServerModel(getLocalServerModel());
+        runAsLocalWeb.setCopyFiles(getCopyFiles());
 
         // register back to receive events
         addListeners();
@@ -197,15 +199,25 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         if (model != null) {
             return model;
         }
-        model = new LocalServer.ComboBoxModel();
 
         List<DocumentRoot> copyToFolderRoots = PhpEnvironment.get().getDocumentRoots();
+        int size = copyToFolderRoots.size();
+        List<LocalServer> localServers = new ArrayList<LocalServer>(size);
         for (DocumentRoot root : copyToFolderRoots) {
             String srcRoot = new File(root.getDocumentRoot(), sourcesFolderNameProvider.getSourcesFolderName()).getAbsolutePath();
             LocalServer ls = new LocalServer(null, root.getUrl(), root.getDocumentRoot(), srcRoot, true);
-            model.addElement(ls);
+            localServers.add(ls);
         }
-        return model;
+
+        return new LocalServer.ComboBoxModel(localServers.toArray(new LocalServer[size]));
+    }
+
+    private boolean getCopyFiles() {
+        Boolean copyFiles = (Boolean) descriptor.getProperty(COPY_SRC_FILES);
+        if (copyFiles != null) {
+            return copyFiles;
+        }
+        return false;
     }
 
     private void storeRunAsLocalWeb(WizardDescriptor settings) {
