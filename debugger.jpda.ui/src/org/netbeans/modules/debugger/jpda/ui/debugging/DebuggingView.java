@@ -52,6 +52,7 @@ import java.awt.event.AdjustmentListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
@@ -93,6 +94,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -314,6 +316,16 @@ private void sessionComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//G
     // End of variables declaration//GEN-END:variables
 
     public void setRootContext(Models.CompoundModel model, DebuggerEngine engine) {
+        {   // Destroy the old node
+            Node root = manager.getRootContext();
+            if (root != null) {
+                try {
+                    root.destroy();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
         if (engine != null) {
             final JPDADebugger deb = engine.lookupFirst(null, JPDADebugger.class);
             synchronized (this) {

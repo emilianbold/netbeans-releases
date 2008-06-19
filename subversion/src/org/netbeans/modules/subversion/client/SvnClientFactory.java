@@ -93,8 +93,19 @@ public class SvnClientFactory {
     public synchronized static void init() {                        
         if(instance == null) {
             instance = new SvnClientFactory();
+            instance.setup();
         }
-        instance.setup();        
+    }
+    
+    /**
+     * Initializes the SvnClientFactory instance
+     */ 
+    public synchronized static void reset() {                        
+        if(instance == null) {
+            init(); // calls setup            
+        } else {
+            instance.setup();
+        }
     }    
     
     /**

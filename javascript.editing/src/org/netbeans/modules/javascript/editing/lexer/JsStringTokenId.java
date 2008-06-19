@@ -114,7 +114,7 @@ public enum JsStringTokenId implements TokenId {STRING_TEXT("string"),
 
                 @Override
                 public String mimeType() {
-                    return "text/x-ruby-string-double";
+                    return "text/x-javascript-string";
                 }
             }.language();
 

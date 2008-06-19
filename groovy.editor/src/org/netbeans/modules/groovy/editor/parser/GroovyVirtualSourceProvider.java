@@ -133,7 +133,7 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
     }
 
     @SuppressWarnings("unchecked")
-    private static List<ClassNode> getClassNodes(File file) {
+    static List<ClassNode> getClassNodes(File file) {
         List<ClassNode> resultList = new ArrayList<ClassNode>();
         
         final FileObject fo = FileUtil.toFileObject(file);
@@ -193,7 +193,7 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
     }
 
     @SuppressWarnings("unchecked")
-    private class JavaStubGenerator {
+    static final class JavaStubGenerator {
 
         private boolean java5 = false;
         private boolean requireSuperResolved = false;
