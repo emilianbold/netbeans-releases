@@ -161,8 +161,10 @@ import org.dom4j.Node;
 import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityGroup;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityNode;
+import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumeration;
 import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramTypesManager;
 import org.netbeans.modules.uml.ui.controls.newdialog.NewElementUI;
+import org.netbeans.modules.uml.ui.support.MetaModelHelper;
 import org.netbeans.modules.uml.ui.support.diagramsupport.DiagramAreaEnumerations;
 import org.netbeans.modules.uml.ui.support.diagramsupport.DrawingAreaEventsAdapter;
 import org.openide.DialogDisplayer;
@@ -629,70 +631,69 @@ public class ADProjectTreeEngine
               {
                   // TODO: meteora
                    
-//                  // The C++ version first checks if changed Item is actually an
-//                  // IElement instance.  However, since INamedElement extends IElement
-//                  // I do not have to worry about that.
-//                  
-//                  MetaModelHelper helper = new MetaModelHelper();
-//                  MetaModelHelper.RelationEnds ends = helper.getRelationshipEnds(changedItem);
-//                  
-//                  if((ends.getStartElement() != null) &&
-//                          (elementsToRefresh.contains(ends.getStartElement()) == false))
-//                  {
-//                      elementsToRefresh.add(ends.getStartElement());
-//                  }
-//                  
-//                  if((ends.getEndElement() != null) &&
-//                          (elementsToRefresh.contains(ends.getEndElement()) == false))
-//                  {
-//                      elementsToRefresh.add(ends.getEndElement());
-//                  }
-//
-//                  if((ends.getStartElement() == null) && (ends.getEndElement() == null))
-//                  {
-//                      // We have changed an item that isn't a relationship.  Add
-//                      // special handing for the attributes and operations and other
-//                      // element types just get the owner
-//                      if ((changedItem instanceof IAttribute) ||
-//                              (changedItem instanceof IOperation))
-//                      {
-//                          IFeature feature = (IFeature)changedItem;
-//                          IClassifier classifier = feature.getFeaturingClassifier();
-//                          
-//                          if((classifier != null) &&
-//                             (elementsToRefresh.contains(ends.getEndElement()) == false))
-//                          {
-//                              elementsToRefresh.add(classifier);
-//                          }
-//                      }
-//                      
-//                      else if (changedItem instanceof IEnumerationLiteral)
-//                      {
-//                          IEnumerationLiteral enumLit = 
-//                              (IEnumerationLiteral)changedItem;
-//                          
-//                          IEnumeration enumeration = enumLit.getEnumeration();
-//                          
-//                          if (enumeration != null &&
-//                              !elementsToRefresh.contains(ends.getEndElement()))
-//                          {
-//                              elementsToRefresh.add(enumeration);
-//                          }
-//                          
-//                      }
-//                      
-//                      else
-//                      {
-//                          if(changedItem.getOwner() != null)
-//                          {
-//                              elementsToRefresh.add(changedItem.getOwner());
-//                          }
-//                      }
-//                  }
+                  // The C++ version first checks if changed Item is actually an
+                  // IElement instance.  However, since INamedElement extends IElement
+                  // I do not have to worry about that.
+                  
+                  MetaModelHelper helper = new MetaModelHelper();
+                  MetaModelHelper.RelationEnds ends = helper.getRelationshipEnds(changedItem);
+                  
+                  if((ends.getStartElement() != null) &&
+                          (elementsToRefresh.contains(ends.getStartElement()) == false))
+                  {
+                      elementsToRefresh.add(ends.getStartElement());
+                  }
+                  
+                  if((ends.getEndElement() != null) &&
+                          (elementsToRefresh.contains(ends.getEndElement()) == false))
+                  {
+                      elementsToRefresh.add(ends.getEndElement());
+                  }
+
+                  if((ends.getStartElement() == null) && (ends.getEndElement() == null))
+                  {
+                      // We have changed an item that isn't a relationship.  Add
+                      // special handing for the attributes and operations and other
+                      // element types just get the owner
+                      if ((changedItem instanceof IAttribute) ||
+                              (changedItem instanceof IOperation))
+                      {
+                          IFeature feature = (IFeature)changedItem;
+                          IClassifier classifier = feature.getFeaturingClassifier();
+                          
+                          if((classifier != null) &&
+                             (elementsToRefresh.contains(ends.getEndElement()) == false))
+                          {
+                              elementsToRefresh.add(classifier);
+                          }
+                      }
+                      
+                      else if (changedItem instanceof IEnumerationLiteral)
+                      {
+                          IEnumerationLiteral enumLit = 
+                              (IEnumerationLiteral)changedItem;
+                          
+                          IEnumeration enumeration = enumLit.getEnumeration();
+                          
+                          if (enumeration != null &&
+                              !elementsToRefresh.contains(ends.getEndElement()))
+                          {
+                              elementsToRefresh.add(enumeration);
+                          }
+                      }
+                      
+                      else
+                      {
+                          if(changedItem.getOwner() != null)
+                          {
+                              elementsToRefresh.add(changedItem.getOwner());
+                          }
+                      }
+                  }
               }
               
               // Go over the list of elements finding them in the tree and verifying
-              // they are correctly displayingtheir children.
+              // they are correctly displaying their children.
               updateTree(elementsToRefresh, paths);
           }
       }
@@ -785,7 +786,7 @@ public class ADProjectTreeEngine
                  }
              }
          }
-      }
+        }
    }
 
   
