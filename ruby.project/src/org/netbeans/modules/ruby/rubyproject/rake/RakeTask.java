@@ -38,18 +38,16 @@
  */
 package org.netbeans.modules.ruby.rubyproject.rake;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
-// XXX: do not mix Rake 'task' and 'namespace' => better abstraction.
-
-public final class RakeTask {
+public final class RakeTask implements Comparable<RakeTask> {
 
     private final String task;
     private final String description;
     private final String displayName;
     
-    private List<RakeTask> children;
+    private Set<RakeTask> children;
 
     public static RakeTask newNameSpace(final String displayName) {
         return new RakeTask(null, displayName, null);
@@ -69,7 +67,7 @@ public final class RakeTask {
         return task;
     }
 
-    public List<RakeTask> getChildren() {
+    public Set<RakeTask> getChildren() {
         return children;
     }
 
@@ -83,13 +81,13 @@ public final class RakeTask {
 
     public void addChild(RakeTask child) {
         if (children == null) {
-            children = new ArrayList<RakeTask>();
+            children = new TreeSet<RakeTask>();
         }
 
         children.add(child);
     }
 
-    public @Override boolean equals( Object obj) {
+    public @Override boolean equals(Object obj) {
         if (obj == null) {
             return false;
         }
@@ -107,6 +105,15 @@ public final class RakeTask {
         int hash = 7;
         hash = 59 * hash + (this.task != null ? this.task.hashCode() : 0);
         return hash;
+    }
+
+    public int compareTo(final RakeTask o) {
+        if (task == null || o.getTask() == null) {
+            assert displayName != null : "displayName not null";
+            assert o.getDisplayName() != null : "other displayName not null";
+            return displayName.compareTo(o.getDisplayName());
+        }
+        return this.getTask().compareTo(o.getTask());
     }
 
     public @Override String toString() {

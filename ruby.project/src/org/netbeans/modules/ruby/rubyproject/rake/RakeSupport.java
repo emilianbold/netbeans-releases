@@ -52,7 +52,8 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
@@ -62,7 +63,6 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.ExecutionService;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
@@ -78,6 +78,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.nodes.FilterNode;
 import org.openide.util.Exceptions;
 import org.openide.util.actions.SystemAction;
@@ -89,15 +90,14 @@ public final class RakeSupport {
 
     private static final Logger LOGGER = Logger.getLogger(RakeSupport.class.getName());
     
-    /** File storing the 'rake -T' output. */
-    static final String RAKE_T_OUTPUT = "nbproject/private/rake-t.txt"; // NOI18N
+    /** File storing the 'rake -D' output. */
+    static final String RAKE_D_OUTPUT = "nbproject/private/rake-d.txt"; // NOI18N
 
     /** Standard names used for Rakefile. */
     static final String[] RAKEFILE_NAMES = new String[] {
         "rakefile", "Rakefile", "rakefile.rb", "Rakefile.rb" // NOI18N
     };
 
-    private boolean test;
     private final Project project;
 
     public RakeSupport(Project project) {
@@ -163,26 +163,26 @@ public final class RakeSupport {
     }
 
     /**
-     * Runs 'rake -T' and writes the output into the {@link #RAKE_T_OUTPUT} if
+     * Runs 'rake -D' and writes the output into the {@link #RAKE_D_OUTPUT} if
      * succeed.
      * 
      * @param project project for which tasks are read
      */
     public static void refreshTasks(final Project project) {
-        if (!RubyPlatform.hasValidRake(project, true)) {
-            return;
-        }
-
         try {
-            FileObject rakeT = project.getProjectDirectory().getFileObject(RAKE_T_OUTPUT);
+            FileObject rakeD = project.getProjectDirectory().getFileObject(RAKE_D_OUTPUT);
             // clean old content
-            if (rakeT != null && rakeT.isData()) {
-                rakeT.delete();
+            if (rakeD != null && rakeD.isData()) {
+                rakeD.delete();
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
-        
+
+        if (!RubyPlatform.hasValidRake(project, true)) {
+            return;
+        }
+
         String rakeOutput = readRakeTasksOutput(project);
         if (rakeOutput != null) {
             writeRakeTasks(project, rakeOutput);
@@ -190,7 +190,7 @@ public final class RakeSupport {
     }
 
     /**
-     * Runs 'rake -T' and returns the output.
+     * Runs 'rake -D' and returns the output.
      *
      * @param project project for which tasks are read
      * @return rake output; might be <tt>null</tt> when underlaying rake command fails.
@@ -205,10 +205,9 @@ public final class RakeSupport {
         }
 
         // Install the given gem
-        String rakeCmd = RubyPlatform.gemManagerFor(project).getRake();
         RubyPlatform platform = RubyPlatform.platformFor(project);
 
-        return hiddenRakeRunner(platform, rakeCmd, pwd, "-T");
+        return dumpRakeTasksInfo(platform, pwd);
         // TODO: we are not able to parse complex Rakefile (e.g. rails'), using -P argument, yet
         // sb.append(hiddenRakeRunner(cmd, rakeCmd, pwd, "-P"));
     }
@@ -216,7 +215,7 @@ public final class RakeSupport {
     /**
      * Returns namespace-task tree for the given project.
      */
-    public static List<RakeTask> getRakeTaskTree(final Project project) {
+    public static Set<RakeTask> getRakeTaskTree(final Project project) {
         RakeTaskReader rtreader = new RakeTaskReader(project);
         return rtreader.getRakeTaskTree();
     }
@@ -225,14 +224,14 @@ public final class RakeSupport {
      * Returns flat, namespace-ignoring, list of Rake tasks for the given
      * project.
      */
-    static List<RakeTask> getRakeTasks(final Project project) {
-        List<RakeTask> taskTree = RakeSupport.getRakeTaskTree(project);
-        List<RakeTask> tasks = new ArrayList<RakeTask>();
+    static Set<RakeTask> getRakeTasks(final Project project) {
+        Set<RakeTask> taskTree = RakeSupport.getRakeTaskTree(project);
+        Set<RakeTask> tasks = new TreeSet<RakeTask>();
         addTasks(tasks, taskTree);
         return tasks;
     }
 
-    private static void addTasks(final List<RakeTask> flatAccumulator, final List<RakeTask> taskTree) {
+    private static void addTasks(final Set<RakeTask> flatAccumulator, final Set<RakeTask> taskTree) {
         for (RakeTask task : taskTree) {
             if (task.isNameSpace()) {
                 addTasks(flatAccumulator, task.getChildren());
@@ -250,7 +249,7 @@ public final class RakeSupport {
      * @return <tt>null</tt> if not found; {@link RakeTask} instance othewise
      */
     public static RakeTask getRakeTask(final Project project, final String task) {
-        List<RakeTask> tasks = getRakeTasks(project);
+        Set<RakeTask> tasks = getRakeTasks(project);
         for (RakeTask rakeTask : tasks) {
             if (rakeTask.getTask().equals(task)) {
                 return rakeTask;
@@ -259,7 +258,7 @@ public final class RakeSupport {
         return null;
     }
 
-    private static String hiddenRakeRunner(RubyPlatform platform, String rakeCmd, File pwd, String rakeArg) {
+    private static String dumpRakeTasksInfo(RubyPlatform platform, File pwd) {
         List<String> argList = new ArrayList<String>();
         File cmd = platform.getInterpreterFile();
         if (!cmd.getName().startsWith("jruby") || RubyExecution.LAUNCH_JRUBY_SCRIPT) { // NOI18N
@@ -268,8 +267,13 @@ public final class RakeSupport {
 
         argList.addAll(RubyExecution.getRubyArgs(platform));
 
-        argList.add(rakeCmd);
-        argList.add(rakeArg);
+        File platformInfoScript = InstalledFileLocator.getDefault().locate(
+                "rake_tasks_info.rb", "org.netbeans.modules.ruby.project", false);  // NOI18N
+        if (platformInfoScript == null) {
+            throw new IllegalStateException("Cannot locate rake_tasks_info.rb script"); // NOI18N
+        }
+        
+        argList.add(platformInfoScript.getAbsolutePath());
 
         String[] args = argList.toArray(new String[argList.size()]);
         ProcessBuilder pb = new ProcessBuilder(args);
@@ -277,8 +281,7 @@ public final class RakeSupport {
         pb.redirectErrorStream(true);
 
         // PATH additions for JRuby etc.
-        Map<String, String> env = pb.environment();
-        new RubyExecution(new ExecutionDescriptor(platform, "rake", pwd).cmd(cmd)).setupProcessEnvironment(env); // NOI18N
+        RubyExecution.setupProcessEnvironment(pb.environment(), cmd.getParent(), false);
 
         int exitCode = -1;
 
@@ -321,24 +324,23 @@ public final class RakeSupport {
         return sb.toString();
     }
 
-    static void writeRakeTasks(Project project, final String rakeTOutput) {
+    static void writeRakeTasks(Project project, final String rakeDOutput) {
         final FileObject projectDir = project.getProjectDirectory();
 
         try {
             projectDir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-
                 public void run() throws IOException {
-                    FileObject rakeTasksFile = projectDir.getFileObject(RAKE_T_OUTPUT);
+                    FileObject rakeTasksFile = projectDir.getFileObject(RAKE_D_OUTPUT);
 
                     if (rakeTasksFile != null) {
                         rakeTasksFile.delete();
                     }
 
-                    rakeTasksFile = FileUtil.createData(projectDir, RAKE_T_OUTPUT);
+                    rakeTasksFile = FileUtil.createData(projectDir, RAKE_D_OUTPUT);
 
                     OutputStream os = rakeTasksFile.getOutputStream();
                     Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-                    writer.write(rakeTOutput);
+                    writer.write(rakeDOutput);
                     writer.close();
                 }
             });
