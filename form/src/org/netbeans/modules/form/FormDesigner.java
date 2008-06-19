@@ -323,7 +323,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         getMenuEditLayer();
 
         // vlv: print
-        designPanel.putClientProperty(java.awt.print.Printable.class, ""); // NOI18N
+        designPanel.putClientProperty("print.printable", Boolean.TRUE); // NOI18N
     }
 
     void reset(FormEditor formEditor) {
