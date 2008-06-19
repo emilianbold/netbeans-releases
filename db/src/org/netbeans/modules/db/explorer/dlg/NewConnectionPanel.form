@@ -22,12 +22,12 @@
                           <Component id="additionalPropsLabel" alignment="0" min="-2" max="-2" attributes="1"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="passwordLabel" alignment="0" min="-2" pref="72" max="-2" attributes="0"/>
+                                  <Component id="passwordLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="userLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="hostLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="databaseLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="portLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="templateLabel" alignment="0" min="-2" pref="54" max="-2" attributes="0"/>
+                                  <Component id="templateLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="sidLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="serviceLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="tnsLabel" alignment="0" min="-2" max="-2" attributes="0"/>

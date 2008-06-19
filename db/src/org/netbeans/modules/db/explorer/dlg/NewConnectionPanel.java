@@ -51,7 +51,6 @@ import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -372,12 +371,12 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
                             .add(additionalPropsLabel)
                             .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(passwordLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 72, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(passwordLabel)
                                     .add(userLabel)
                                     .add(hostLabel)
                                     .add(databaseLabel)
                                     .add(portLabel)
-                                    .add(templateLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(templateLabel)
                                     .add(sidLabel)
                                     .add(serviceLabel)
                                     .add(tnsLabel)
@@ -683,12 +682,14 @@ private void urlFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event
             return;
         }
         
-        
+        templateLabel.setText("ABCDEFGHIJKLMNOPQRSTUVWXYZ:");
         userField.setVisible(true);
         userLabel.setVisible(true);
+        userLabel.setText("ABCDEFGHIJKLMNOPQRSTUVWXYZ:");
         
         passwordField.setVisible(true);
         passwordLabel.setVisible(true);
+        passwordLabel.setText("ABCDEFGHIJKLMNOPQRSTUVWXYZ:");
 
         passwordCheckBox.setVisible(true);
         
@@ -701,6 +702,8 @@ private void urlFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event
             entry.getValue().getField().setVisible(jdbcurl.supportsToken(entry.getKey()));
             entry.getValue().getLabel().setVisible(jdbcurl.supportsToken(entry.getKey()));
             entry.getValue().getLabel().setFont(jdbcurl.requiresToken(entry.getKey()) ? boldFont : regularFont);
+            // Testing
+            entry.getValue().getLabel().setText("ABCDEFGHIJKLMNOPQRSTUVWXYZ:");
         }
 
         if (! jdbcurl.urlIsParsed()) {
