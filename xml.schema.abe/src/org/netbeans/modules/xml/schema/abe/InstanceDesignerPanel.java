@@ -168,7 +168,7 @@ public class InstanceDesignerPanel extends ABEBaseDropPanel {
         context.setFocusTraversalManager(new FocusTraversalManager(context));
 
         // vlv: print
-        wrapperPanel.putClientProperty(java.awt.print.Printable.class, ""); // NOI18N
+        wrapperPanel.putClientProperty("print.printable", Boolean.TRUE); // NOI18N
     }
     
     private static String globalElementsStr = NbBundle.getMessage(InstanceDesignerPanel.class,"" +

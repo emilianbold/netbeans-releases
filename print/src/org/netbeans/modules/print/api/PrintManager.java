@@ -100,16 +100,6 @@ import javax.swing.Action;
  */
 public final class PrintManager {
 
-  private PrintManager() {}
-
-  /**
-   * Returns Print Manager instance.
-   * @return Print Manager instance
-   */
-  public static PrintManager getDefault() {
-    return DEFAULT;
-  }
-
   /**
    * Returns Print Preview action. See example how to put
    * Print Preview action on custom Swing tool bar:
@@ -124,9 +114,14 @@ public final class PrintManager {
    *
    * @return Print Preview action
    */
-  public Action getPrintPreviewAction() {
+  public static Action printPreviewAction() {
     return org.netbeans.modules.print.impl.action.PrintPreviewAction.DEFAULT;
   }
 
-  private static final PrintManager DEFAULT = new PrintManager();
+  // todo javadoc
+  public static final String PRINT_NAME = "print.name"; // NOI18N
+  public static final String PRINT_DATE = "print.date"; // NOI18N
+  public static final String PRINT_SIZE = "print.size"; // NOI18N
+  public static final String PRINT_WEIGHT = "print.weight"; // NOI18N
+  public static final String PRINT_PRINTABLE = "print.printable"; // NOI18N
 }

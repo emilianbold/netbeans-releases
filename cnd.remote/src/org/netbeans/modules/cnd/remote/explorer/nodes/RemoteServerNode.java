@@ -74,13 +74,17 @@ public class RemoteServerNode extends AbstractNode implements PropertyChangeList
     
     @Override
     public Action[] getActions(boolean context) {
-        Action[] actions = {
-            new DisplayPathMapperAction(record),
-            new SetDefaultAction(record),
-            null,
-            new DeleteServerAction(record),
-        };
-        return actions;
+        if (Boolean.getBoolean("cnd.remote.enable")) { // DEBUG
+            Action[] actions = {
+                new DisplayPathMapperAction(record),
+                new SetDefaultAction(record),
+                null,
+                new DeleteServerAction(record),
+            };
+            return actions;
+        } else {
+            return super.getActions(context);
+        }
     }
     
     @Override

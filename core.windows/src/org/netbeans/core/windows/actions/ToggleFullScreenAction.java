@@ -85,7 +85,7 @@ public class ToggleFullScreenAction extends SystemAction implements DynamicMenuC
     /** Updates state of action. Uses Runnable interface impl to save one class */ 
     public void run () {
         MainWindow frame = (MainWindow)WindowManager.getDefault().getMainWindow();
-        menuItems[0].setSelected(frame.isFullScreenMode());
+        menuItems[0].setSelected(null != frame && frame.isFullScreenMode());
     }
     
     private void createItems() {

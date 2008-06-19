@@ -238,6 +238,22 @@ public class CodeCompleter implements CodeCompletionHandler {
     }
     
     
+    boolean checkForPackageStatement(final CompletionRequest request) {
+        TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, 1);
+        ts.move(1);
+        
+        while (ts.isValid() && ts.moveNext() && ts.offset() < request.doc.getLength()) {
+            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+            
+            if (t.id() == GroovyTokenId.LITERAL_package ) {
+                return true;
+            } 
+        }
+        
+        return false;
+    }
+    
+    
     public CaretLocation getCaretLocationFromRequest(final CompletionRequest request) {
         
         // Are we above the package statement?
@@ -473,16 +489,25 @@ public class CodeCompleter implements CodeCompletionHandler {
             return false;
         }
         
+        // Is there already a "package"-statement in the sourcecode?
+        boolean havePackage = checkForPackageStatement(request);
+        
         Token<? extends GroovyTokenId> previousLiteral = getNextUpstreamLiteral(request);
 
         Set<GroovyKeyword> keywords = EnumSet.allOf(GroovyKeyword.class);
 
         for (GroovyKeyword groovyKeyword : keywords) {
+            
+            // filter-out package-statemen, if there's already one
+            if(groovyKeyword.name.equals("package") && havePackage) {
+                continue;
+            }
+            
             if (groovyKeyword.name.startsWith(prefix)) {
                 if (checkKeywordAllowance(groovyKeyword, request.location)) {
                     if (checkKeywordOrder(groovyKeyword, previousLiteral)) {
+                        LOG.log(Level.FINEST, "Adding keyword proposal : {0}", groovyKeyword.name); // NOI18N
                         KeywordItem item = new KeywordItem(groovyKeyword.name, null, anchor, request, groovyKeyword.isGroovy);
-                        item.setSymbol(true);
                         proposals.add(item);
                     }
                 } 

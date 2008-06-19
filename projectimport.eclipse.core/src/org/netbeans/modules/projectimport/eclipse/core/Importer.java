@@ -156,6 +156,9 @@ final class Importer {
         assert eclProject != null : "Eclipse project cannot be null"; // NOI18N
 
         List<String> projectImportProblems = new ArrayList<String>();
+
+        // add problems which appeared during project opening/parsing
+        projectImportProblems.addAll(eclProject.getImportProblems());
         
         // evaluate classpath containers
         eclProject.evaluateContainers(projectImportProblems);

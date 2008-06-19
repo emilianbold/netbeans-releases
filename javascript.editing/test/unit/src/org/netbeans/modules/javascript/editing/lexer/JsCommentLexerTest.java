@@ -66,7 +66,7 @@ public class JsCommentLexerTest extends NbTestCase {
         
         TokenHierarchy<?> hi = TokenHierarchy.create(text, JsCommentTokenId.language());
         TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.TAG, "@param");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.COMMENT_TAG, "@param");
         LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.OTHER_TEXT, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.IDENT, "aaa");
         LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.OTHER_TEXT, " ");
@@ -77,7 +77,7 @@ public class JsCommentLexerTest extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.IDENT, "xyz");
         LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.OTHER_TEXT, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.LCURL, "{");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.TAG, "@link");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.COMMENT_TAG, "@link");
         LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.OTHER_TEXT, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.IDENT, "org");
         LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.DOT, ".");
@@ -135,7 +135,7 @@ public class JsCommentLexerTest extends NbTestCase {
         
         TokenHierarchy<?> hi = TokenHierarchy.create(text, JsCommentTokenId.language());
         TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.TAG, "@type");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.COMMENT_TAG, "@type");
         LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.OTHER_TEXT, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.IDENT, "String");
         LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.OTHER_TEXT, "[]\n");

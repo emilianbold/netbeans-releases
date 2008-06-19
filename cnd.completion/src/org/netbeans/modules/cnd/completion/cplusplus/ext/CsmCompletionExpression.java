@@ -174,8 +174,14 @@ public class CsmCompletionExpression {
     /** 'goto' keyword */
     public static final int LABEL = 35;
 
+    /** 'class', 'struct, 'union' keywords */
+    public static final int CLASSIFIER = 36;
+    
+    /** Cast expression ids. */
+    public static final int CONVERSION_OPEN = 37;
+
     /** Last used id of the expression ids. */
-    private static final int LAST_ID = LABEL;
+    private static final int LAST_ID = CONVERSION_OPEN;
 
     private static final int cppTokenIDsLength
         = CCTokenContext.context.getTokenIDs().length;

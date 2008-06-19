@@ -257,5 +257,23 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
     public void testRestrictPointers2() throws Exception {
         super.performTest("restrict.c", 15, 5);
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // tests for cast completion
+    // IZ#92198 : Code completion works wrong with static_cast expression
+    public void testCast1() throws Exception {
+        super.performTest("cast.cc", 9, 23);
+    }
+
+    public void testCast2() throws Exception {
+        super.performTest("cast.cc", 10, 34);
+    }
     
+    public void testCast3() throws Exception {
+        super.performTest("cast.cc", 19, 21);
+    }
+
+    public void testCast4() throws Exception {
+        super.performTest("cast.cc", 20, 33);
+    }
 }

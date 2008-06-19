@@ -47,17 +47,23 @@ import org.w3c.dom.Element;
 
 import javax.xml.namespace.QName;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.websvc.wsitmodelext.trust.impl.KeySizeImpl;
 import org.netbeans.modules.websvc.wsitmodelext.trust.impl.KeyTypeImpl;
 import org.netbeans.modules.websvc.wsitmodelext.trust.impl.TokenTypeImpl;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 
 public class TrustFactories {
 
     public static class TokenTypeFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TrustQName.TOKENTYPE.getQName());
+            HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(TrustQName.TOKENTYPE.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -68,7 +74,11 @@ public class TrustFactories {
     public static class KeyTypeFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TrustQName.KEYTYPE.getQName());
+            HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(TrustQName.KEYTYPE.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -79,7 +89,11 @@ public class TrustFactories {
     public static class KeySizeFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TrustQName.KEYSIZE.getQName());
+            HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(TrustQName.KEYSIZE.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {

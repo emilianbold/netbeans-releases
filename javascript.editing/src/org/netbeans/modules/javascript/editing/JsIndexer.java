@@ -611,7 +611,7 @@ public class JsIndexer implements Indexer {
                         while (cts.moveNext()) {
                             org.netbeans.api.lexer.Token<? extends JsCommentTokenId> token = cts.token();
                             TokenId cid = token.id();
-                            if (cid == JsCommentTokenId.TAG) {
+                            if (cid == JsCommentTokenId.COMMENT_TAG) {
                                 CharSequence text = token.text();
                                 if (TokenUtilities.textEquals("@id", text)) { // NOI18N
                                     id = JsCommentLexer.nextIdentGroup(cts);

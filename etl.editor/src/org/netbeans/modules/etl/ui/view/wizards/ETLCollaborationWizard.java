@@ -65,6 +65,7 @@ import org.openide.WizardDescriptor;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 
@@ -108,7 +109,7 @@ public class ETLCollaborationWizard extends ETLWizard {
             // selected.
             //
             String nbBundle1 = mLoc.t("BUND053: Enter a Unique Name for This Collaboration.");
-            collaborationNamePanel = new ETLCollaborationWizardNameFinishPanel(ETLCollaborationWizard.this,nbBundle1.substring(15));
+            collaborationNamePanel = new ETLCollaborationWizardNameFinishPanel(ETLCollaborationWizard.this, nbBundle1.substring(15));
         }
 
         public String name() {
@@ -177,7 +178,9 @@ public class ETLCollaborationWizard extends ETLWizard {
                     if (conns[i] == null) {
                         model.add("<NULL>");
                     } else {
-                        model.add(conns[i]);
+                        if (!(conns[i].getName().contains("jdbc:axiondb"))) {
+                            model.add(conns[i]);
+                        }
                     }
                 }
             } else if (model.size() == 0) {
@@ -194,10 +197,13 @@ public class ETLCollaborationWizard extends ETLWizard {
             storeSettings(wiz, dbModels);
 
             Project project = Templates.getProject(wiz);
-            String prj_locn = project.getProjectDirectory().getPath();
+            String prj_locn = FileUtil.toFile(project.getProjectDirectory()).getPath();
+            String prj_name = FileUtil.toFile(project.getProjectDirectory()).getName();
             try {
                 prj_locn = project.getProjectDirectory().getFileSystem().getRoot().toString() + prj_locn;
                 ETLEditorSupport.PRJ_PATH = prj_locn;
+                ETLEditorSupport.PRJ_NAME = prj_name;
+                
             } catch (FileStateInvalidException ex) {
                 //Exceptions.printStackTrace(ex);
             }
@@ -259,13 +265,13 @@ public class ETLCollaborationWizard extends ETLWizard {
                 String nbBundle8 = mLoc.t("BUND056: Select Target Tables");
                 String nbBundle10 = mLoc.t("BUND059: Choose File Type");
                 return new String[]{
-                    //TODO - need make wizard steps text match actual panel being viewed
-                    nbBundle10.substring(15), //TODO - use bundle property
-                    nbBundle5.substring(15),
-                    nbBundle6.substring(15),
-                    nbBundle7.substring(15),
-                    nbBundle8.substring(15),
-                };
+                            //TODO - need make wizard steps text match actual panel being viewed
+                            nbBundle10.substring(15), //TODO - use bundle property
+                            nbBundle5.substring(15),
+                            nbBundle6.substring(15),
+                            nbBundle7.substring(15),
+                            nbBundle8.substring(15),
+                        };
             } catch (MissingResourceException e) {
                 mLogger.errorNoloc(mLoc.t("EDIT029: Could not locate steps strings.{0}", LOG_CATEGORY), e);
                 return new String[]{};

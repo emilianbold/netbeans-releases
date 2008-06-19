@@ -468,4 +468,20 @@ public class TokenSequenceTest extends NbTestCase {
         assertFalse(ts.moveNext());
     }
 
+    public void testSubSequenceInvalidOffset137564() throws Exception {
+        Document doc = new ModificationTextDocument();
+        //             012345678
+        String text = "ab cd efg";
+        doc.insertString(0, text, null);
+        
+        doc.putProperty(Language.class,TestTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        
+        TokenSequence<?> ts = hi.tokenSequence();
+        assertTrue(ts.moveNext());
+        
+        ts = ts.subSequence(-2, -1);
+        assertFalse(ts.moveNext());
+    }
+
 }

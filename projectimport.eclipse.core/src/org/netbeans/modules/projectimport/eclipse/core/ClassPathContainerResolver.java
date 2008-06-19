@@ -139,5 +139,21 @@ public class ClassPathContainerResolver {
             assert entry.getContainerMapping() != null : entry;
         }
     }
+    
+    public static boolean isJUnit(DotClassPathEntry entry) {
+        if (entry.getKind() == DotClassPathEntry.Kind.CONTAINER && 
+                entry.getRawPath().startsWith(JUNIT_CONTAINER)) {
+            return true;
+        }
+        if (entry.getKind() == DotClassPathEntry.Kind.LIBRARY ||  
+            entry.getKind() == DotClassPathEntry.Kind.VARIABLE) {
+            int i = entry.getRawPath().replace('\\', '/').lastIndexOf('/'); // NOI18N
+            if (i != -1) {
+                String s = entry.getRawPath().substring(i+1);
+                return s.startsWith("junit") && s.endsWith(".jar"); // NOI18N
+            }
+        }
+        return false;
+    }
         
 }
