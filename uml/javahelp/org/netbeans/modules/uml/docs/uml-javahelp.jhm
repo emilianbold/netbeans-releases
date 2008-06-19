@@ -189,12 +189,6 @@
 	<mapID target="uml_editors_windows_discovering_navigating_links" url="editors_windows/discovering_navigating_links.html"/>
 	<mapID target="uml_editors_windows_display_drawing_preferences_db" url="editors_windows/display_drawing_preferences_db.html"/>
 	<mapID target="uml_editors_windows_filtering_element_types_from_projects_window" url="editors_windows/filtering_element_types_from_projects_window.html"/>
-	<mapID target="uml_editors_windows_layout_properties_sheet" url="editors_windows/layout_properties_sheet.html"/>
-	<mapID target="uml_editors_windows_layout_properties_sheet_disconnected_tab" url="editors_windows/layout_properties_sheet_disconnected_tab.html"/>
-	<mapID target="uml_editors_windows_layout_properties_sheet_hierarchical_tab" url="editors_windows/layout_properties_sheet_hierarchical_tab.html"/>
-	<mapID target="uml_editors_windows_layout_properties_sheet_orthogonal_tab" url="editors_windows/layout_properties_sheet_orthogonal_tab.html"/>
-	<mapID target="uml_editors_windows_layout_properties_sheet_routing_tab" url="editors_windows/layout_properties_sheet_routing_tab.html"/>
-	<mapID target="uml_editors_windows_layout_properties_sheet_symmetric_tab" url="editors_windows/layout_properties_sheet_symmetric_tab.html"/>
 	<mapID target="uml_editors_windows_modifying_diagram_layouts" url="editors_windows/modifying_diagram_layouts.html"/>
 	<mapID target="uml_editors_windows_navigating_between_instances_classifiers" url="editors_windows/navigating_between_instances_classifiers.html"/>
 	<mapID target="uml_editors_windows_navigating_by_links_in_diagrams" url="editors_windows/navigating_by_links_in_diagrams.html"/>
