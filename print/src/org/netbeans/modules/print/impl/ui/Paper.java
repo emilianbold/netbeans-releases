@@ -61,10 +61,10 @@ import static org.netbeans.modules.print.impl.ui.UI.*;
  */
 final class Paper extends JComponent {
 
-  Paper(PrintPage page, String name, Date modified) {
+  Paper(PrintPage page, String name, Date lastModified) {
     myPage = page;
     myName = name;
-    myLastModifiedDate = modified;
+    myLastModified = lastModified;
 
     myPaperWidth = Option.getDefault().getPaperWidth();
     myPaperHeight = Option.getDefault().getPaperHeight();
@@ -274,8 +274,8 @@ final class Paper extends JComponent {
     t = replace(t, Macro.COLUMN.getName(), myColumnNumber);
     t = replace(t, Macro.USER.getName(), USER_NAME);
     t = replace(t, Macro.COUNT.getName(), myCount);
-    t = replace(t, Macro.MODIFIED_DATE.getName(),getDate(myLastModifiedDate));
-    t = replace(t, Macro.MODIFIED_TIME.getName(),getTime(myLastModifiedDate));
+    t = replace(t, Macro.MODIFIED_DATE.getName(),getDate(myLastModified));
+    t = replace(t, Macro.MODIFIED_TIME.getName(),getTime(myLastModified));
     t = replace(t, Macro.PRINTED_DATE.getName(), getDate(printed));
     t = replace(t, Macro.PRINTED_TIME.getName(), getTime(printed));
 
@@ -333,7 +333,7 @@ final class Paper extends JComponent {
   private String myCount;
   private String myRowNumber;
   private String myColumnNumber;
-  private Date myLastModifiedDate;
+  private Date myLastModified;
 
   private int myRow;
   private int myColumn;
