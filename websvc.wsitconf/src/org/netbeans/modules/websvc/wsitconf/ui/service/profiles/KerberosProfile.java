@@ -83,7 +83,7 @@ public class KerberosProfile extends ProfileBase
     @Override
     public boolean isProfileSupported(Project p, WSDLComponent component, boolean sts) {
         ConfigVersion configVersion = PolicyModelHelper.getConfigVersion(component);
-        return ConfigVersion.CONFIG_1_2.equals(configVersion);
+        return ConfigVersion.CONFIG_1_3.equals(configVersion);
     }
     
     /**

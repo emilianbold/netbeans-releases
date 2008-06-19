@@ -61,7 +61,7 @@ public class AddressingModelHelper {
     
     private static HashMap<ConfigVersion, AddressingModelHelper> instances =
             new HashMap<ConfigVersion, AddressingModelHelper>();
-    private ConfigVersion configVersion = ConfigVersion.CONFIG_1_2;
+    private ConfigVersion configVersion = ConfigVersion.CONFIG_1_3;
 
     /**
      * Creates a new instance of AddressingModelHelper

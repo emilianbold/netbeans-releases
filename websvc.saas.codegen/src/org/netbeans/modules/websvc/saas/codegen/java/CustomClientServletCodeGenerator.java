@@ -40,11 +40,13 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
+import java.io.IOException;
 import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
 import org.netbeans.modules.websvc.saas.codegen.Constants.SaasAuthenticationType;
+import org.netbeans.modules.websvc.saas.codegen.model.CustomClientSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
@@ -59,6 +61,11 @@ public class CustomClientServletCodeGenerator extends CustomClientPojoCodeGenera
 
     public CustomClientServletCodeGenerator() {
         setDropFileType(Constants.DropFileType.SERVLET);
+    }
+    
+    @Override
+    public void init(SaasMethod m, Document doc) throws IOException {
+        super.init(m, new CustomClientSaasBean((CustomSaasMethod) m, true), doc);
     }
     
     @Override

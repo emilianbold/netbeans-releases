@@ -91,12 +91,17 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
     
     @Override
     public void init(SaasMethod m, Document doc) throws IOException {
+        init(m, new RestClientSaasBean((WadlSaasMethod) m), doc);
+    }
+    
+    public void init(SaasMethod m, RestClientSaasBean saasBean, Document doc) throws IOException {
         super.init(m, doc);
-        setBean(new RestClientSaasBean((WadlSaasMethod) m)); 
+        setBean(saasBean); 
         targetSource = JavaSource.forFileObject(getTargetFile());
         String packageName = JavaSourceHelper.getPackageName(targetSource);
         getBean().setPackageName(packageName);
         
+        serviceFolder = null;
         saasServiceFile = SourceGroupSupport.findJavaSourceFile(getProject(),
                 getBean().getSaasServiceName());
         if (saasServiceFile != null) {
@@ -293,9 +298,9 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
             }
         } else if (httpMethod == HttpMethodType.POST) {
             if (hasRequestRep) {
-                methodBody += "             " + returnStatement + ".post(" + headerUsage + ", " + Constants.QUERY_PARAMS + ");\n";
-            } else {
                 methodBody += "             " + returnStatement + ".post(" + headerUsage + ", " + Constants.PUT_POST_CONTENT + ");\n";
+            } else {
+                methodBody += "             " + returnStatement + ".post(" + headerUsage + ", " + Constants.QUERY_PARAMS + ");\n";
             }
         } else if (httpMethod == HttpMethodType.DELETE) {
             methodBody += "             " + returnStatement + ".delete(" + headerUsage + ");\n";

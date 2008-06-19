@@ -40,8 +40,9 @@ public class ProcessView extends DiagramView implements
         super(designView);
 
         // vlv: print
-        putClientProperty(java.awt.print.Printable.class, getProcessName(designView.getBPELModel()));
-        putClientProperty(java.lang.Integer.class, new Integer(1));
+        putClientProperty("print.printable", Boolean.TRUE); // NOI18N
+        putClientProperty("print.name", getProcessName(designView.getBPELModel())); // NOI18N
+        putClientProperty("print.weight", new Integer(1)); // NOI18N
     }
 
     private String getProcessName(BpelModel model) {

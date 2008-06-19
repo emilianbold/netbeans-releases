@@ -49,13 +49,11 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
 import org.netbeans.modules.websvc.saas.codegen.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.openide.filesystems.FileObject;
-import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.codegen.model.CustomClientSaasBean;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
 
@@ -65,24 +63,16 @@ import org.netbeans.modules.websvc.saas.model.SaasMethod;
  * @author nam
  */
 public class CustomClientPojoCodeGenerator extends CustomClientRestResourceCodeGenerator {
-    
-    private JavaSource targetSource;
-    
+
     public CustomClientPojoCodeGenerator() {
         setDropFileType(Constants.DropFileType.JAVA_CLIENT);
     }
     
     @Override
     public void init(SaasMethod m, Document doc) throws IOException {
-        super.init(m, doc); 
-        targetSource = JavaSource.forFileObject(getTargetFile());
-        String packageName = JavaSourceHelper.getPackageName(targetSource);
-        getBean().setPackageName(packageName);
+        super.init(m, new CustomClientSaasBean((CustomSaasMethod) m, false), doc); 
     }
-    
-    protected JavaSource getTargetSource() {
-        return this.targetSource;
-    }
+
     
     @Override
     public boolean canAccept(SaasMethod method, Document doc) {

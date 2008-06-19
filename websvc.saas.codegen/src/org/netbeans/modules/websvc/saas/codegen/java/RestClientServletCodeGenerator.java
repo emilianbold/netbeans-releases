@@ -52,6 +52,7 @@ import org.netbeans.modules.websvc.saas.codegen.Constants;
 import org.netbeans.modules.websvc.saas.codegen.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.saas.codegen.model.RestClientSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
 
@@ -68,8 +69,7 @@ public class RestClientServletCodeGenerator extends RestClientPojoCodeGenerator 
     
     @Override
     public void init(SaasMethod m, Document doc) throws IOException {
-        super.init(m, doc);
-        getBean().setIsDropTargetWeb(true);
+        super.init(m, new RestClientSaasBean((WadlSaasMethod) m, true), doc);
     }
     
     @Override

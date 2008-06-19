@@ -123,7 +123,7 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
                     
                     if (!Character.isLetter(ch)) {
                         input.backup(1);
-                        return tokenFactory.createToken(JsCommentTokenId.TAG, input.readLength());
+                        return tokenFactory.createToken(JsCommentTokenId.COMMENT_TAG, input.readLength());
                     }
                 }
             case '<':
@@ -168,7 +168,7 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
         while (ts.moveNext()) {
             Token<? extends JsCommentTokenId> token = ts.token();
             TokenId id = token.id();
-            if (id == JsCommentTokenId.TAG) {
+            if (id == JsCommentTokenId.COMMENT_TAG) {
                 CharSequence text = token.text();
                 if (TokenUtilities.textEquals("@param", text) ||  // NOI18N
                         TokenUtilities.textEquals("@argument", text)) { // NOI18N
