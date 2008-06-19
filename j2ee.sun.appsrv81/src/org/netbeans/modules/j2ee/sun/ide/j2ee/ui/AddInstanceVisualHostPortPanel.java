@@ -64,7 +64,6 @@ public final class AddInstanceVisualHostPortPanel extends JPanel {
         initComponents();
         portValue.setModel(valueModel);
         portValue.setEditor(new javax.swing.JSpinner.NumberEditor(portValue, "#####"));
-        //new javax.swing.JSpinner.NumberEditor(
         portValue.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent ev) {
                 fireChangeEvent();
