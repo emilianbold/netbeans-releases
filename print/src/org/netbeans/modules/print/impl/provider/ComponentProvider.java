@@ -57,9 +57,9 @@ import org.netbeans.modules.print.impl.util.Percent;
  */
 public class ComponentProvider implements PrintProvider {
 
-  public ComponentProvider(List<JComponent> components, String name, Date modified) {
+  public ComponentProvider(List<JComponent> components, String name, Date lastModified) {
     myName = name;
-    myLastModifiedDate = modified;
+    myLastModified = lastModified;
 
     if (components != null) {
       myComponent = new ComponentPanel(components);
@@ -154,11 +154,11 @@ public class ComponentProvider implements PrintProvider {
     return myName;
   }
 
-  public Date getLastModifiedDate() {
-    return myLastModifiedDate;
+  public Date lastModified() {
+    return myLastModified;
   }
 
   private String myName;
+  private Date myLastModified;
   private JComponent myComponent;
-  private Date myLastModifiedDate;
 }

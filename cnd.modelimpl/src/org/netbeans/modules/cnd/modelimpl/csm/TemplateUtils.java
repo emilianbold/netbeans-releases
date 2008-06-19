@@ -132,27 +132,41 @@ public class TemplateUtils {
     public static List<CsmTemplateParameter> getTemplateParameters(AST ast, CsmFile file, CsmDeclaration template) {
         assert (ast != null && ast.getType() == CPPTokenTypes.LITERAL_template);
         List<CsmTemplateParameter> res = new ArrayList<CsmTemplateParameter>();
+        AST parameterStart = null;
         for (AST child = ast.getFirstChild(); child != null; child = child.getNextSibling()) {
             switch (child.getType()) {
-                case CPPTokenTypes.LITERAL_typename:
-                    break;
                 case CPPTokenTypes.LITERAL_class:
+                case CPPTokenTypes.LITERAL_typename:
+                    parameterStart = child;
                     break;
                 case CPPTokenTypes.ID:
                     // now create parameter
-                    res.add(new TemplateParameterImpl(child, file, (CsmScope)template));
+                    if (parameterStart == null) {
+                        parameterStart = child;
+                    }
+                    res.add(new TemplateParameterImpl(parameterStart, child.getText(), file, (CsmScope)template));
+                    parameterStart = null;
                     break;
                 case CPPTokenTypes.CSM_PARAMETER_DECLARATION:
                     // now create parameter
+                    parameterStart = child;
                     for (AST paramChild = child.getFirstChild(); paramChild != null; paramChild = paramChild.getNextSibling()) {
                         switch (paramChild.getType()) {
                             case CPPTokenTypes.CSM_TYPE_BUILTIN:
                             case CPPTokenTypes.CSM_TYPE_COMPOUND:
-                                AST typeName = paramChild.getFirstChild();
-                                if (typeName != null) {
-                                    res.add(new TemplateParameterImpl(typeName, file, (CsmScope)template));
+                                for(AST p = paramChild.getFirstChild(); p != null; p = paramChild.getNextSibling()){
+                                    if (p.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
+                                        AST pn = p.getFirstChild();
+                                        if (pn != null) {
+                                            res.add(new TemplateParameterImpl(parameterStart, pn.getText(), file, (CsmScope)template));
+                                            break;
+                                        }
+                                    } else if (p.getType() == CPPTokenTypes.ID) {
+                                       res.add(new TemplateParameterImpl(parameterStart, p.getText(), file, (CsmScope)template));
+                                       break;
+                                    }
                                 }
-                                break;
+                               break;
                         }
                     }
                     break;

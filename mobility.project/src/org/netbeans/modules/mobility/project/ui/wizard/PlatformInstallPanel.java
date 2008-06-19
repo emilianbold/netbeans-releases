@@ -187,17 +187,26 @@ public class PlatformInstallPanel extends javax.swing.JPanel {
     
     public static boolean isPlatformInstalled(String subType,String platformType) {
         JavaPlatform platforms[]=JavaPlatformManager.getDefault().getPlatforms(null, new Specification(platformType, null));
-        if (subType==null || !(platformType.equals(CDCPlatform.PLATFORM_CDC) || platformType.equals(J2MEPlatform.SPECIFICATION_NAME)))
-            return platforms.length > 0;
-        else
-            for (JavaPlatform platform : platforms)
-            {
+        if (subType==null || !(platformType.equals(CDCPlatform.PLATFORM_CDC) || platformType.equals(J2MEPlatform.SPECIFICATION_NAME))){
+            int cnt = platforms.length;
+            for (JavaPlatform javaPlatform : platforms) {
+                if (javaPlatform.getInstallFolders().size() == 0){ //invalid platform
+                    cnt--;
+                }
+            }
+            return cnt > 0;
+        } else {
+            for (JavaPlatform platform : platforms) {
+                if (platform.getInstallFolders().size() == 0){ //platform is not valid
+                    continue;
+                }
                 if (platform instanceof J2MEPlatform)
                     if (subType.equals(((J2MEPlatform)platform).getType())) return true;
                 if (platform instanceof CDCPlatform)
                     if (subType.equals(((CDCPlatform)platform).getType())) return true;
             }
-        return false;    
+            return false;
+        }
     }
     
     public static boolean isPlatformInstalled(String platformType) {

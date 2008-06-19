@@ -44,16 +44,20 @@ package org.netbeans.modules.j2ee.clientproject.ui.customizer;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import javax.swing.UIManager;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.plaf.UIResource;
@@ -62,6 +66,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -73,6 +80,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
     private String originalEncoding;
     private AppClientProjectProperties uiProperties;
     private File projectFld;
+    private boolean notified;
     
     public CustomizerSources( AppClientProjectProperties uiProperties ) {
         initComponents();
@@ -137,6 +145,16 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         
         this.encoding.setModel(new EncodingModel(this.originalEncoding));
         this.encoding.setRenderer(new EncodingRenderer());
+        final String lafid = UIManager.getLookAndFeel().getID();
+        if (!"Aqua".equals(lafid)) { // NOI18N
+             encoding.putClientProperty("JComboBox.isTableCellEditor", Boolean.TRUE); // NOI18N
+             encoding.addItemListener(new ItemListener() {
+                 public void itemStateChanged(ItemEvent e) {
+                     JComboBox combo = (JComboBox) e.getSource();
+                     combo.setPopupVisible(false);
+                 }
+             });
+        }
         
         
         this.encoding.addActionListener(new ActionListener() {
@@ -551,6 +569,11 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             encName = enc.name();
         } else {
             encName = originalEncoding;
+        }
+        if (!notified && encName != null && !encName.equals(originalEncoding)) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(CustomizerSources.class, "MSG_EncodingWarning"), NotifyDescriptor.WARNING_MESSAGE));
+            notified = true;
         }
         this.uiProperties.putAdditionalProperty(AppClientProjectProperties.SOURCE_ENCODING, encName);
     }
