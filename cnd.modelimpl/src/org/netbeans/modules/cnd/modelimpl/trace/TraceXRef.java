@@ -298,16 +298,13 @@ public class TraceXRef extends TraceModel {
     public static String toString(CsmReference ref, CsmObject targetDecl, CsmObject targetDef) {
         String out = CsmTracer.getOffsetString(ref, true);
         CsmReferenceKind kind = ref.getKind();
-        String postfix;
+        String postfix = "";
         if (kind == CsmReferenceKind.DECLARATION) {
             postfix = " (DECLARATION)"; // NOI18N
         } else if (kind == CsmReferenceKind.DEFINITION) {
             postfix = " (DEFINITION)"; // NOI18N
-        } else if (CsmReferenceKind.ANY_USAGE.contains(kind)) {
-            postfix = "";
-        } else {
+        } else if (kind == CsmReferenceKind.UNKNOWN) {
             System.err.println("unknown reference kind " + kind + " for " + ref);           
-            postfix = "";
         }
         return out + postfix;
     }
@@ -1007,9 +1004,6 @@ public class TraceXRef extends TraceModel {
         public final Set<CsmReferenceKind> interestedReferences;
         public final boolean analyzeSmartAlgorith;
         
-        public StatisticsParameters(Set<CsmReferenceKind> kinds) {
-            this(kinds, false);
-        }
         public StatisticsParameters(Set<CsmReferenceKind> kinds, boolean analyzeSmartAlgorith) {
             this.analyzeSmartAlgorith = analyzeSmartAlgorith;
             this.interestedReferences = kinds;

@@ -145,7 +145,7 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
         final OutputWriter err = io.getErr();
         final long[] time = new long[2];
         time[0] = System.currentTimeMillis();
-        Set<CsmReferenceKind> interestedElems = this.allReferences ? CsmReferenceKind.ALL : EnumSet.<CsmReferenceKind>of(CsmReferenceKind.DIRECT_USAGE);
+        Set<CsmReferenceKind> interestedElems = this.allReferences ? CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE : EnumSet.<CsmReferenceKind>of(CsmReferenceKind.DIRECT_USAGE);
             
         TraceXRef.traceProjectRefsStatistics(p, new TraceXRef.StatisticsParameters(interestedElems, analyzeStatistics), out, err, new CsmProgressAdapter() {
             private int handled = 0;
