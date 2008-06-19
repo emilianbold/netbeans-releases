@@ -42,8 +42,7 @@ if [ "$action" = "build" ]; then
     ant commit-validation || echo commit-validation >$RESULT
     ant commit-validation-junit-format
 
-# XXX some modules excluded because they have unresolved failures:
-#   testmodule ant.freeform
+    testmodule ant.freeform
     testmodule api.java
     testmodule api.java.classpath
     testmodule api.progress
@@ -60,10 +59,10 @@ if [ "$action" = "build" ]; then
     testmodule editor.mimelookup.impl
     testmodule favorites
     testmodule java.api.common
-#   testmodule java.freeform
+    testmodule java.freeform
     testmodule java.j2seplatform
     testmodule java.platform
-#   testmodule java.project
+    testmodule java.project
     testmodule javahelp
     testmodule masterfs
     testmodule nbjunit
@@ -89,12 +88,12 @@ if [ "$action" = "build" ]; then
     testmodule options.api
     testmodule options.keymap
     testmodule progress.ui
-#   testmodule project.ant
+    testmodule project.ant
     testmodule project.libraries
     testmodule projectapi
     testmodule projectimport.eclipse.core
     testmodule projectui
-#   testmodule projectuiapi
+    testmodule projectuiapi
     testmodule queries
     testmodule sendopts
     testmodule settings
