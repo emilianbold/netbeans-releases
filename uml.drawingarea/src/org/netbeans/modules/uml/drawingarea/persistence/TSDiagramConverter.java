@@ -52,7 +52,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -61,13 +60,14 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
 
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.IApplication;
 import org.netbeans.modules.uml.core.eventframework.IEventPayload;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityPartition;
-import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
+import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IState;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
@@ -80,7 +80,6 @@ import org.netbeans.modules.uml.core.metamodel.dynamics.IInteractionOperand;
 import org.netbeans.modules.uml.core.metamodel.dynamics.Lifeline;
 import org.netbeans.modules.uml.core.metamodel.dynamics.Message;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociation;
-import org.netbeans.modules.uml.core.metamodel.structure.AssociationClass;
 import org.netbeans.modules.uml.core.metamodel.structure.IAssociationClass;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlsupport.FileExtensions;
@@ -108,7 +107,6 @@ import org.netbeans.modules.uml.drawingarea.support.ProxyPresentationElement;
 import org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator.SQDDiagramEngineExtension;
 import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget.UMLWidgetIDString;
-import org.netbeans.modules.uml.drawingarea.widgets.CombinedFragment;
 import org.netbeans.modules.uml.drawingarea.widgets.ContainerNode;
 import org.netbeans.modules.uml.ui.support.DispatchHelper;
 import org.netbeans.modules.uml.ui.support.diagramsupport.IDrawingAreaEventDispatcher;
@@ -259,6 +257,7 @@ public class TSDiagramConverter
     
     private void createDiagram()
     {
+        PersistenceUtil.setDiagramLoading(true);
         if(diagramDetails.getDiagramType() == IDiagramKind.DK_SEQUENCE_DIAGRAM)
         {
             topComponent = new SQDDiagramTopComponent(
@@ -339,6 +338,7 @@ public class TSDiagramConverter
                 processArchiveWithValidationWait();
                 scene.revalidate();
                 scene.validate();
+                PersistenceUtil.setDiagramLoading(false);
             }
         }, scene);
     }
@@ -453,6 +453,17 @@ public class TSDiagramConverter
                     widgetsList.add(widget);
                     if (widget!=null && widget instanceof UMLNodeWidget)
                     {
+                        if(nodeInfo.getModelElement() instanceof IState)
+                        {//workaround for reverted composite state
+                            if(SeparatorWidget.Orientation.VERTICAL.toString().equals(nodeInfo.getProperty("Orientation")))
+                            {
+                                nodeInfo.setProperty("Orientation",SeparatorWidget.Orientation.HORIZONTAL.toString());
+                            }
+                            else if(SeparatorWidget.Orientation.HORIZONTAL.toString().equals(nodeInfo.getProperty("Orientation")))
+                            {
+                                nodeInfo.setProperty("Orientation",SeparatorWidget.Orientation.VERTICAL.toString());
+                            }
+                        }
                         ((UMLNodeWidget) widget).load(nodeInfo);
                         if(nodeInfo.getModelElement() instanceof ICombinedFragment)
                         {
@@ -481,14 +492,15 @@ public class TSDiagramConverter
                                 }
                             }
                         }
- //                       else if(nodeInfo.getModelElement() instanceof IActivityPartition)
-//                        {
-//                            
-//                        }
-//                        else if(nodeInfo.getModelElement() instanceof COMPOSITE-STATE)
-//                        {
-//                            
-//                        }
+                        else if(nodeInfo.getModelElement() instanceof IActivityPartition)
+                        {
+                            IActivityPartition ap=(IActivityPartition)nodeInfo.getModelElement();
+                            
+                        }
+                        //else if(nodeInfo.getModelElement() instanceof COMPOSITE-STATE)
+                        {
+                            
+                        }
                     }
                 }
                 else
@@ -1143,6 +1155,31 @@ public class TSDiagramConverter
                     else if(readerPres.getLocalName().equals("Divider"))
                     {
                         ninfo.addDeviderOffset(readerPres.getAttributeValue(null, "offset"));
+                    }
+                    else if(readerPres.getLocalName().equals("compartment"))
+                    {
+                        String name=readerPres.getAttributeValue(null, "name");
+                        if("3".equals(name))
+                        {
+                            String orientation=readerPres.getAttributeValue(null, "orientation");
+                            if(orientation!=null && orientation.length()>0)
+                            {
+                                if("0".equals(orientation))
+                                {
+                                    //horizontal
+                                    ninfo.setProperty("Orientation", SeparatorWidget.Orientation.HORIZONTAL.toString());
+                                }
+                                else if("1".equals(orientation))
+                                {
+                                    //vertical
+                                     ninfo.setProperty("Orientation", SeparatorWidget.Orientation.VERTICAL.toString());
+                                }
+                                else
+                                {
+                                    System.out.println("***WARNING: UNKNOWN ORIENTATION: "+orientation);
+                                }
+                            }
+                        }
                     }
                 }
                 readerPres.next();
