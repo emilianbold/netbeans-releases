@@ -265,7 +265,9 @@
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="hostField"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="&amp;Host:"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionHost" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="passwordLabel">

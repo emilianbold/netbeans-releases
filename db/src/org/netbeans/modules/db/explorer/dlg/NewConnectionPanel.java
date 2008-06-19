@@ -297,7 +297,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
         org.openide.awt.Mnemonics.setLocalizedText(portLabel, bundle.getString("NewConnectionPort")); // NOI18N
 
         hostLabel.setLabelFor(hostField);
-        org.openide.awt.Mnemonics.setLocalizedText(hostLabel, "&Host:");
+        org.openide.awt.Mnemonics.setLocalizedText(hostLabel, bundle.getString("NewConnectionHost")); // NOI18N
 
         passwordLabel.setLabelFor(passwordField);
         org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionPassword")); // NOI18N
