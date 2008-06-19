@@ -1,3 +1,0 @@
-Vector v=new Vector();
-v.add("Hi!");
-((String)(v.get(0))).endsWith("!");
