@@ -372,7 +372,11 @@ public class TSDiagramConverter
         Collection<EdgeInfo> einfos = presIdEdgeInfoMap.values();
         for (EdgeInfo einfo : einfos)
         {
-            addEdgeToScene(einfo);
+            Widget connWidget=addEdgeToScene(einfo);
+            if (connWidget != null && connWidget instanceof UMLEdgeWidget)
+            {
+                ((UMLEdgeWidget) connWidget).load(einfo);
+            }
         }
         if(messagesInfo.size()>0)addMessagesToSQD(messagesInfo);
     }
