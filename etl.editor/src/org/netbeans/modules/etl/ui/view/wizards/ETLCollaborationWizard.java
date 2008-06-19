@@ -193,9 +193,6 @@ public class ETLCollaborationWizard extends ETLWizard {
             List srcModel = new ArrayList();
             List destModel = new ArrayList();
 
-            List dbModels = getModelConnections();
-            storeSettings(wiz, dbModels);
-
             Project project = Templates.getProject(wiz);
             String prj_locn = FileUtil.toFile(project.getProjectDirectory()).getPath();
             String prj_name = FileUtil.toFile(project.getProjectDirectory()).getName();
@@ -203,10 +200,12 @@ public class ETLCollaborationWizard extends ETLWizard {
                 prj_locn = project.getProjectDirectory().getFileSystem().getRoot().toString() + prj_locn;
                 ETLEditorSupport.PRJ_PATH = prj_locn;
                 ETLEditorSupport.PRJ_NAME = prj_name;
-                
+
             } catch (FileStateInvalidException ex) {
                 //Exceptions.printStackTrace(ex);
             }
+            List dbModels = getModelConnections();
+            storeSettings(wiz, dbModels);
             //java.util.logging.Logger.getLogger(ETLCollaborationWizard.class.getName()).info("ETLCollaborationWizard prj_locn ******* "+prj_locn);
             if (project != null) {
                 Sources sources = ProjectUtils.getSources(project);
