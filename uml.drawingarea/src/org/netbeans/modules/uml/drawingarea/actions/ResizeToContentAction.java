@@ -53,6 +53,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 
 /**
@@ -79,6 +80,12 @@ public class ResizeToContentAction extends NodeAction
         }
         Set selectedObjs = scene.getSelectedObjects();
 
+        ContextPaletteManager manager = scene.getContextPaletteManager();
+        if(manager != null)
+        {
+            manager.cancelPalette();
+        }
+        
         for(Object selected: selectedObjs) 
         {
             if (selected instanceof IPresentationElement)
@@ -89,6 +96,12 @@ public class ResizeToContentAction extends NodeAction
             }
         }
         scene.validate();
+        
+        if(manager != null)
+        {
+            manager.selectionChanged(null);
+        }
+        
     }
 
     protected boolean enable(Node[] activatedNodes)
