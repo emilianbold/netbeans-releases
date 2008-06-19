@@ -72,9 +72,9 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
-import org.openide.util.Utilities;
 
 /**
  * @author Petr Hrebejk, Tomas Mysik
@@ -210,8 +210,8 @@ public final class IncludePathUiSupport {
         private static final String RESOURCE_ICON_CLASSPATH
                 = "org/netbeans/modules/php/project/ui/resources/referencedClasspath.gif"; //NOI18N
 
-        private static final ImageIcon ICON_BROKEN_BADGE = new ImageIcon(Utilities.loadImage(RESOURCE_ICON_BROKEN_BADGE));
-        private static final ImageIcon ICON_CLASSPATH = new ImageIcon(Utilities.loadImage(RESOURCE_ICON_CLASSPATH));
+        private static final ImageIcon ICON_BROKEN_BADGE = new ImageIcon(ImageUtilities.loadImage(RESOURCE_ICON_BROKEN_BADGE));
+        private static final ImageIcon ICON_CLASSPATH = new ImageIcon(ImageUtilities.loadImage(RESOURCE_ICON_CLASSPATH));
         private static ImageIcon ICON_FOLDER = null;
         private static ImageIcon ICON_BROKEN_FOLDER = null;
 
@@ -270,7 +270,7 @@ public final class IncludePathUiSupport {
                 default:
                     if (item.isBroken()) {
                         if (ICON_BROKEN_FOLDER == null) {
-                            ICON_BROKEN_FOLDER = new ImageIcon(Utilities.mergeImages(getFolderIcon().getImage(),
+                            ICON_BROKEN_FOLDER = new ImageIcon(ImageUtilities.mergeImages(getFolderIcon().getImage(),
                                     ICON_BROKEN_BADGE.getImage(), 7, 7));
                         }
                         return ICON_BROKEN_FOLDER;
