@@ -48,9 +48,6 @@
 			<tocitem text="Diagram Types" target="uml_basics_diagram_types">
 				<tocitem text="About Activity Diagrams" target="uml_basics_diagram_types_activity" />
 				<tocitem text="About Class Diagrams" target="uml_basics_diagram_types_class" />
-				<tocitem text="About Collaboration Diagrams" target="uml_basics_diagram_types_collaboration" />
-				<tocitem text="About Component Diagrams" target="uml_basics_diagram_types_component" />
-				<tocitem text="About Deployment Diagrams" target="uml_basics_diagram_types_deployment" />
 				<tocitem text="About Sequence Diagrams" target="uml_basics_diagram_types_sequence" />
 				<tocitem text="About State Diagrams" target="uml_basics_diagram_types_state" />
 				<tocitem text="About Use Case Diagrams" target="uml_basics_diagram_types_use_case" />
