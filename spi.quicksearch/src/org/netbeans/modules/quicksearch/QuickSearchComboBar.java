@@ -43,6 +43,7 @@ import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.lang.ref.WeakReference;
 import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
