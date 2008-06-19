@@ -37,13 +37,40 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.client.javascript.debugger.api;
+package org.netbeans.modules.web.client.tools.projectsupport;
 
-import org.netbeans.modules.web.client.javascript.debugger.js.api.JSAbstractLocation;
+import java.util.Collection;
+import org.openide.awt.HtmlBrowser;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Sandip V. Chitale <sandipchitale@netbeans.org>
+ * Utility class that allows access to a specific browser, regardless of the
+ * default browser settings in NetBeans.  This is intended to be used for invoking
+ * the JavaScript debugger.
+ * 
+ * @author Quy Nguyen <quynguyen@netbeans.org>
  */
-public interface NbJSLocation  extends JSAbstractLocation {
+public final class BrowserUtilities {
+
+    public static HtmlBrowser.Factory getFirefoxBrowser() {
+        return findBrowser("org.netbeans.modules.extbrowser.FirefoxBrowser"); // NOI18N
+    }
+    
+    public static HtmlBrowser.Factory getInternetExplorerBrowser() {
+        return findBrowser("org.netbeans.modules.extbrowser.IExplorerBrowser"); // NOI18N
+    }
+    
+    
+    private static HtmlBrowser.Factory findBrowser(String browserClass) {
+        Collection<? extends HtmlBrowser.Factory> htmlBrowserFactories = Lookup.getDefault().lookupAll(HtmlBrowser.Factory.class);
+        for (HtmlBrowser.Factory factory : htmlBrowserFactories) {
+            if (factory.getClass().getName().equals(browserClass)) {
+                return factory;
+            }
+        }
+        return null;
+    }
+    
+    
 }
