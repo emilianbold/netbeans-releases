@@ -1357,6 +1357,7 @@ public final class FileUtil extends Object {
 
             // Special treatment.
             file = new File("/"); // NOI18N
+            // XXX not fully idempotent: /../. => /.. => /
         } else {
             // URI.normalize removes ../ and ./ sequences nicely.
             file = new File(file.toURI().normalize()).getAbsoluteFile();
