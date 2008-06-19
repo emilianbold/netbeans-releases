@@ -170,9 +170,9 @@ public class SubPartitionWidget extends Widget implements PropertyChangeListener
                                                          orientation, STROKE,
                                                          STROKE_THICKNESS);
         addChild(subPartitionPanel, 1);
-        addChild(separatorWidget, 0);
+        addChild(separatorWidget, 0);        
     }
-
+    
     public void showPartitionDivider(boolean show)
     {
         if (separatorWidget != null)
