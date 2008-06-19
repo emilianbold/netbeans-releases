@@ -43,7 +43,9 @@ package org.netbeans.modules.db.dataview.output;
 import org.netbeans.modules.db.dataview.meta.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 
 /**
@@ -92,6 +94,14 @@ class DBTableWrapper {
         
     public int getColumnCount() {
         return columns.size();
+    }
+    
+    public synchronized  Map getColumns(){
+        Map colMap = new HashMap();
+         for (DBTable tbl : dbTable) {
+            colMap.putAll(tbl.getColumns());
+        }
+         return colMap;
     }
 
     public synchronized  String[] getColumnToolTips() {

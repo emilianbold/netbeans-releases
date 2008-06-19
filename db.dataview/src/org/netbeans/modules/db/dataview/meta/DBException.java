@@ -101,7 +101,7 @@ public final class DBException extends Exception {
                 buf.append("Error code ").append(e.getErrorCode());
                 buf.append(", SQL state ").append(e.getSQLState());
             }
-            buf.append(" -- ").append(t.getMessage());
+            buf.append(super.getMessage()).append(" -- ").append(t.toString());
         } else {
             buf.append(super.getMessage());
         }

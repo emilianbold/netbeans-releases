@@ -54,9 +54,13 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.text.CloneableEditorSupport;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
+import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.windows.WindowManager;
 
 /**
@@ -70,15 +74,15 @@ public class InsertRecordDialog extends javax.swing.JDialog {
 
     private DataViewOutputPanel dvParent;
     private SQLExecutionHelper execHelper;
-    private StatementBuilder stmtBldr;
+    private SQLStatementGenerator stmtBldr;
     private static Logger mLogger = Logger.getLogger(InsertRecordDialog.class.getName());
 
     /** Creates new form InsertRecordDialog */
     public InsertRecordDialog(DataViewOutputPanel dvParent) {
         super(WindowManager.getDefault().getMainWindow(), true);
         this.dvParent = dvParent;
-        execHelper = new SQLExecutionHelper();
-        stmtBldr = new StatementBuilder();
+        execHelper = new SQLExecutionHelper(dvParent);
+        stmtBldr = new SQLStatementGenerator(dvParent.getDBTableWrapper(), null);
 
         initComponents();
         addInputFields();
@@ -95,7 +99,6 @@ public class InsertRecordDialog extends javax.swing.JDialog {
         };
         getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escape, "ESCAPE");
         getRootPane().getActionMap().put("ESCAPE", escapeAction);
-
     }
 
     /** This method is called from within the constructor to
@@ -236,11 +239,25 @@ private void cancelBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 }//GEN-LAST:event_cancelBtnActionPerformed
 
 private void executeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeBtnActionPerformed
-    Object[] insertedRow = getInsertValues();
-    String[] insertSQL = stmtBldr.generateSQL(insertedRow, dvParent);
-    mLogger.info("Insert Statement: " + insertSQL[1]);
-    if (execHelper.executeInsert(insertSQL, insertedRow, dvParent)) {
-        dvParent.generateResult();
+    String[] insertSQL = null;
+    try {
+        Object[] insertedRow = getInsertValues();
+        insertSQL = stmtBldr.generateInsertStatement(insertedRow, dvParent);
+        mLogger.info("Statement: " + insertSQL[1]);
+        dvParent.printinfoToOutputTab("Statement: " + insertSQL[1]);
+        if(execHelper.executeInsert(insertSQL, insertedRow, dvParent)) {
+            dvParent.generateResult();
+        }
+    } catch (DBException ex) {
+        if (jSplitPane1.getBottomComponent() == null) {
+            jSplitPane1.setDividerLocation(250);
+            jSplitPane1.setBottomComponent(jScrollPane2);
+            previewBtn.setText("Hide SQL");
+        }
+        jEditorPane1.setContentType("text/plain");
+        jEditorPane1.setText("Invalid Data\n" + ex.getMessage());
+
+        return;
     }
     dispose();
 }//GEN-LAST:event_executeBtnActionPerformed
@@ -250,10 +267,10 @@ private void clearBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     for (int i = 0; i < rows; i++) {
         if (dvParent.getDBTableWrapper().getColumn(i).isGenerated()) {
             colValueTextField[i].setText("<GENERATED>");
-            colValueTextField[i].setEnabled(false);
+            colValueTextField[i].setEditable(false);
         } else {
             colValueTextField[i].setText("");
-            colValueTextField[i].setEnabled(true);
+            colValueTextField[i].setEditable(true);
         }
     }
     refreshSQL();
@@ -263,7 +280,7 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     if (evt.getActionCommand().equalsIgnoreCase("Show SQL")) {
         jSplitPane1.setDividerLocation(250);
         jSplitPane1.setBottomComponent(jScrollPane2);
-        jEditorPane1.setText(stmtBldr.generateSQL(getInsertValues(), dvParent)[1]);
+        refreshSQL();
         previewBtn.setText("Hide SQL");
     } else {
         jSplitPane1.setBottomComponent(null);
@@ -272,8 +289,16 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 }//GEN-LAST:event_previewBtnActionPerformed
 
     private void refreshSQL() {
-        if (jSplitPane1.getBottomComponent() != null) {
-            jEditorPane1.setText(stmtBldr.generateSQL(getInsertValues(), dvParent)[1]);
+        try {
+            if (jSplitPane1.getBottomComponent() != null) {
+                String sql = stmtBldr.generateInsertStatement(getInsertValues(), dvParent)[1];
+                jEditorPane1.setContentType("text/x-sql");
+                jEditorPane1.setText(sql);
+            }
+        } catch (DBException ex) {
+            jEditorPane1.setContentType("text/plain");
+            jEditorPane1.setText(ex.getMessage());
+            return;
         }
     }
     JTextField[] colValueTextField;
@@ -301,7 +326,7 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             jPanel3.add(colNameLabel[i], gridBagConstraints);
 
             colValueTextField[i] = new JTextField();
-            
+
             addColValueChangeListeners(i, col);
 
             colValueTextField[i].setText("");
@@ -317,7 +342,7 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
             if (col.isGenerated()) {
                 colValueTextField[i].setText("<GENERATED>");
-                colValueTextField[i].setEnabled(false);
+                colValueTextField[i].setEditable(false);
             }
 
             colDataType[i] = new JLabel();
@@ -333,7 +358,7 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             gridy = gridy + 2;
         }
     }
-    
+
     private void addColValueChangeListeners(int i, final DBColumn col) {
         final int index = i;
         colValueTextField[i].addKeyListener(new KeyListener() {
@@ -345,9 +370,12 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 if (ke.isControlDown() && ke.getKeyChar() == KeyEvent.VK_0) {
                     if (col.isGenerated() || !col.isNullable()) {
                         Toolkit.getDefaultToolkit().beep();
-                    } else if (colValueTextField[index].isEnabled()) {
+                    } else if (colValueTextField[index].isEditable()) {
                         colValueTextField[index].setText("<NULL>");
-                        colValueTextField[index].setEnabled(false);
+                        colValueTextField[index].setEditable(false);
+                    } else if (!colValueTextField[index].isEditable()) {
+                        colValueTextField[index].setText("");
+                        colValueTextField[index].setEditable(true);
                     }
                 }
             }
@@ -357,40 +385,32 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         });
 
         colValueTextField[i].addFocusListener(new FocusListener() {
-
             public void focusGained(FocusEvent e) {
             }
 
             public void focusLost(FocusEvent e) {
-                refreshSQL();
+                    refreshSQL();
             }
         });
-    }    
+    }
 
-    private Object[] getInsertValues() {
+    private Object[] getInsertValues() throws DBException {
         Object[] insertData = new String[colValueTextField.length];
-        boolean oneNonNull = false;
         for (int i = 0; i < colValueTextField.length; i++) {
             JTextField textField = colValueTextField[i];
             DBColumn col = dvParent.getDBTableWrapper().getColumn(i);
             Object val;
-            if ((col.isNullable() || col.isGenerated()) && textField.isEnabled() == false) {
+            if ((col.isNullable() || col.isGenerated()) && !textField.isEditable()) {
                 val = null;
             } else {
                 val = textField.getText();
-            }
-            if (val != null) {
-                oneNonNull = true;
+                DBReadWriteHelper.validate(val, col);
             }
             insertData[i] = val;
         }
-        if (!oneNonNull) {
-            dvParent.printerrToOutputTab("Nothing to insert, please valid column values");
-            return null;
-        }
         return insertData;
     }
-       
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelBtn;
     private javax.swing.JButton clearBtn;

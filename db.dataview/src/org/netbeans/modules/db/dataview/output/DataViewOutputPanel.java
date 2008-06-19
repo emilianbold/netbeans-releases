@@ -40,11 +40,9 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
-import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -54,7 +52,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
 import org.netbeans.modules.db.dataview.meta.DBException;
-import java.sql.PreparedStatement;
 import java.util.Collection;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseConnection;
@@ -79,6 +76,7 @@ public class DataViewOutputPanel extends JPanel {
     private DBMetaDataFactory dbMeta;
     private DBTableWrapper tblMeta;
     private ResultSetPageContext dataPage;
+    private SQLExecutionHelper execHelper;
     
     private DataViewOutputPanelUI dataViewUI;
     private static Logger mLogger = Logger.getLogger(DataViewOutputPanel.class.getName());
@@ -96,6 +94,7 @@ public class DataViewOutputPanel extends JPanel {
         dataPage = new ResultSetPageContext();
         Connection conn = DBConnectionFactory.getInstance().getConnection(dbConn);
         dbMeta = new DBMetaDataFactory(conn);
+        execHelper = new SQLExecutionHelper(this);
     }
 
     DBTableWrapper getDBTableWrapper() {
@@ -126,51 +125,12 @@ public class DataViewOutputPanel extends JPanel {
         }
     }
 
-    protected void executeUpdate(String key) throws NumberFormatException, SQLException, DBException {
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        String errorMsg = "";
-
-        ResultSetUpdatedRowContext tblContext = dataViewUI.getResultSetRowContext();
-        int row = Integer.parseInt(key.substring(0, key.indexOf(";")));
-        int col = Integer.parseInt(key.substring(key.indexOf(";") + 1, key.length()));
-        String updateStmt = tblContext.getUpdateStmt(key);
-        String rawUpdateStmt = tblContext.getRawUpdateStmt((key));
-        List<Object> values = tblContext.getValueList(key);
-        List<Integer> types = tblContext.getTypeList(key);
-
-        int rowCount = 0;
-        try {
-            conn = DBConnectionFactory.getInstance().getConnection(dbConn);
-            conn.setAutoCommit(false);
-            pstmt = conn.prepareStatement(updateStmt);
-            int pos = 1;
-            for (Object val : values) {
-                DBReadWriteHelper.setAttributeValue(pstmt, pos, types.get(pos - 1), val);
-                pos++;
-            }
-
-            mLogger.info(rawUpdateStmt);
-            rowCount = pstmt.executeUpdate();
-        } catch (SQLException ex) {
-            errorMsg = "Update failed at Row:" + row + ", Column:" + col;
-            errorMsg += "\nErrorCode:" + ex.getErrorCode() + ", " + ex.getMessage();
-        } finally {
-            if (rowCount == 0) {
-                if (DataViewUtils.isNullString(errorMsg)) {
-                    errorMsg = "No rows updated using " + rawUpdateStmt;
-                }
-                printerrToOutputTab(errorMsg);
-                rollback(conn);
-            } else if (rowCount > 1) {
-                errorMsg = "Unable to find unique row using " + rawUpdateStmt;
-                printerrToOutputTab(errorMsg);
-                rollback(conn);
-            } else {
-                conn.commit();
-            }
-            DataViewUtils.closeResources(pstmt);
-        }
+    ResultSetUpdatedRowContext getResultSetUpdatedRowContext(){
+        return dataViewUI.getResultSetRowContext();
+    }
+    
+    ResulSetTable getResulSetTable(){
+        return dataViewUI.getResulSetTable();
     }
 
     protected void refreshActionPerformed() {
@@ -244,7 +204,7 @@ public class DataViewOutputPanel extends JPanel {
             try {
                 ResultSetUpdatedRowContext tblContext = dataViewUI.getResultSetRowContext();
                 for (String key : tblContext.getUpdateKeys()) {
-                    executeUpdate(key);
+                    execHelper.executeUpdate(key);
                 }
             } catch (Exception ex) {
                 String errorMsg = DBException.getMessage(ex);
@@ -259,15 +219,6 @@ public class DataViewOutputPanel extends JPanel {
     void insertActionPerformed() {
         InsertRecordDialog dialog = new InsertRecordDialog(this);
         dialog.setVisible(true);
-    }
-
-    void rollback(Connection conn) {
-        try {
-            conn.rollback();
-        } catch (SQLException ex) {
-            String errorMsg = "Fail to rollback.\n";
-            printerrToOutputTab(errorMsg + DBException.getMessage(ex));
-        }
     }
 
     void resetToolbar(boolean wasError) {
@@ -306,7 +257,7 @@ public class DataViewOutputPanel extends JPanel {
                 if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
                     int[] rows = rsTable.getSelectedRows();
                     for (int j = 0; j < rows.length; j++) {
-                        executeDeleteRow(rows[j]);
+                        execHelper.executeDeleteRow(rows[j]);
                     }
                     generateResult();
                 }
@@ -317,58 +268,7 @@ public class DataViewOutputPanel extends JPanel {
         }
     }
 
-    int executeDeleteRow(int rowNum) {
-        List<Object> values = new ArrayList<Object>();
-        List<Integer> types = new ArrayList<Integer>();
-        ResultSetUpdatedRowContext tblcContext = dataViewUI.getResultSetRowContext();
-        String[] deleteStmt = tblcContext.cteateDeleteStatement(types, values, rowNum);
-        String rawDeleteStmt = deleteStmt[1];
-        mLogger.info("Delete Statement: " + rawDeleteStmt);
-        PreparedStatement pstmt = null;
-        Connection conn = null;
-        boolean error = false;
-        String errorMsg = "";
 
-        try {
-            conn = DBConnectionFactory.getInstance().getConnection(dbConn);
-            conn.setAutoCommit(false);
-            pstmt = conn.prepareStatement(deleteStmt[0]);
-            int pos = 1;
-            for (Object val : values) {
-                DBReadWriteHelper.setAttributeValue(pstmt, pos, types.get(pos - 1), val);
-                pos++;
-            }
-            int rows = pstmt.executeUpdate();
-            if (rows == 0) {
-                error = true;
-                errorMsg = errorMsg + " No rows deleted.\n";
-            } else if (rows > 1) {
-                error = true;
-                errorMsg = errorMsg + "No unique row.\n";
-            }
-
-            return rows;
-        } catch (Exception ex) {
-            error = true;
-            errorMsg = errorMsg + DBException.getMessage(ex);
-        } finally {
-            DataViewUtils.closeResources(pstmt);
-            if (!error) {
-                try {
-                    conn.commit();
-                } catch (SQLException ex) {
-                    printerrToOutputTab("Commit Failed\n");
-                    printerrToOutputTab("Using SQL:" + rawDeleteStmt + "\n");
-                    printerrToOutputTab(DBException.getMessage(ex));
-                }
-            } else {
-                printerrToOutputTab("Delete command failed\n" + errorMsg);
-                printerrToOutputTab("Using SQL:" + rawDeleteStmt + "\n");
-                printerrToOutputTab(errorMsg);
-            }
-        }
-        return 0;
-    }
 
     void setTotalCount(ResultSet rs) {
         try {

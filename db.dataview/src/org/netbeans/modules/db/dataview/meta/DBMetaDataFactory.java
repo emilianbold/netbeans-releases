@@ -62,7 +62,7 @@ import org.netbeans.modules.db.dataview.util.DataViewUtils;
  *
  * @author Ahimanikya Satapathy
  */
-public class DBMetaDataFactory {
+public final class DBMetaDataFactory {
 
     public static final int NAME = 0;
     public static final int CATALOG = 1;

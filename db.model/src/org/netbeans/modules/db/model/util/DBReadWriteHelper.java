@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.db.dataview.util;
+package org.netbeans.modules.db.model.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.StringReader;
@@ -63,8 +63,7 @@ import java.util.StringTokenizer;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.logging.Logger;
-import org.netbeans.modules.db.dataview.meta.DBColumn;
-import org.netbeans.modules.db.dataview.meta.DBException;
+import org.netbeans.modules.db.model.api.DBException;
 
 /**
  *
@@ -73,7 +72,6 @@ import org.netbeans.modules.db.dataview.meta.DBException;
 public class DBReadWriteHelper {
 
     private static Logger mLogger = Logger.getLogger(DBReadWriteHelper.class.getName());
-
     @SuppressWarnings(value = "fallthrough")
     public static Object readResultSet(ResultSet rs, int colType, int index) throws SQLException {
         switch (colType) {
@@ -321,7 +319,7 @@ public class DBReadWriteHelper {
 
                 case Types.CHAR:
                 case Types.VARCHAR:
-                    ps.setString(index, valueObj.toString());
+                    ps.setString(index, makeStringOracleSafe(valueObj.toString()));
                     break;
 
                 case Types.CLOB:
@@ -334,65 +332,16 @@ public class DBReadWriteHelper {
                     ps.setObject(index, valueObj, jdbcType);
             }
         } catch (Exception e) {
-            mLogger.severe("Invalid Data for " + jdbcType + " type --" + e);
-            throw new DBException("Invalid Data for " + jdbcType + " type ", e);
+            String details = e.getMessage();
+            if (DBReadWriteHelper.isNullString(details)) {
+                details = e.toString();
+            }
+            mLogger.info("details" + e);
+            throw new DBException(details, e);
         }
 
     }
 
-    public static boolean validate (Object valueObj, DBColumn col) throws DBException {
-        int jdbcType = col.getJdbcType();
-        try {
-            if (valueObj == null) {
-                return true;
-            }
-
-            switch (jdbcType) {
-                case Types.DOUBLE:
-                    Number numberObj = (valueObj instanceof Number) ? (Number) valueObj : Double.valueOf(valueObj.toString());
-                    break;
-
-                case Types.BIGINT:
-                case Types.NUMERIC:
-                case Types.DECIMAL:
-                    numberObj = (valueObj instanceof Number) ? (Number) valueObj : new BigDecimal(valueObj.toString());
-                    break;
-
-                case Types.FLOAT:
-                case Types.REAL:
-                    numberObj = (valueObj instanceof Number) ? (Number) valueObj : Float.valueOf(valueObj.toString());
-                    break;
-
-                case Types.INTEGER:
-                case Types.SMALLINT:
-                case Types.TINYINT:
-                    numberObj = (valueObj instanceof Number) ? (Number) valueObj : Integer.valueOf(valueObj.toString());
-                    break;
-
-                case Types.TIMESTAMP:
-                case Types.DATE:
-                case Types.TIME:
-                    DBReadWriteHelper.convertFromIso8601(valueObj.toString());
-                    break;
-                    
-                case Types.CHAR:
-                case Types.VARCHAR:
-                    if(valueObj.toString().length() > col.getPrecision()){
-                        String colName = col.getQualifiedName();
-                        String errMsg = "Too large data \'" + valueObj + "\' for column " + colName;
-                        throw new DBException(errMsg);
-                    }
-            }
-            return true;
-        } catch (Exception e) {
-            String type = DataViewUtils.getStdSqlType(jdbcType);
-            String colName = col.getQualifiedName();
-            String errMsg = "Invalid data \'" + valueObj + "\' for column " + colName + "\nEnter Valid data of " + type + " type";
-            throw new DBException(errMsg, e);
-        }
-    }
-
-    
     /**
      * Indicates whether a string is null or empty.
      *

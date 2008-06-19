@@ -63,7 +63,6 @@ import org.openide.NotifyDescriptor;
 /**
  * Renders rows and columns of an arbitrary ResultSet via JTable.
  *
- * @author Jonathan Giron
  * @author Ahimanikya Satapathy
  */
 class ResultSetTablePanel extends JPanel {
@@ -75,7 +74,8 @@ class ResultSetTablePanel extends JPanel {
     private DataViewOutputPanelUI parent;
     private int MAX_COLUMN_WIDTH = 50;
     private TableModel model;
-    protected ResulSetTable table;
+    private ResulSetTable table;
+    private SQLStatementGenerator stmtBlrd;
     private Logger mLogger = Logger.getLogger(ResultSetTablePanel.class.getName());
 
     public ResultSetTablePanel(DBTableWrapper tblMeta, DataViewOutputPanelUI parent) {
@@ -88,7 +88,8 @@ class ResultSetTablePanel extends JPanel {
         JScrollPane sp = new JScrollPane(table);
         this.add(sp, BorderLayout.CENTER);
 
-        tblContext = new ResultSetUpdatedRowContext(tblMeta, table);
+        stmtBlrd = new SQLStatementGenerator(tblMeta, table);
+        tblContext = new ResultSetUpdatedRowContext(stmtBlrd);
     }
 
     public void clearView() {
@@ -276,25 +277,20 @@ class ResultSetTablePanel extends JPanel {
             }
 
             Object oldVal = getValueAt(row, col);
-            if (oldVal != null && oldVal.equals(value) || (oldVal == null && value == null)) {
-                return;
-            }
-
-            boolean isValid = DBReadWriteHelper.validate(tblMeta.getColumnType(col), value);
-            if (!isValid) {
-                String type = DataViewUtils.getStdSqlType(tblMeta.getColumnType(col));
-                String errMsg = "Invalid data '" + value + "' for column " + tblMeta.getQualifiedName(col) + "\nEnter Valid data of " + type + " type";
-                NotifyDescriptor nd = new NotifyDescriptor.Message(errMsg);
-                DialogDisplayer.getDefault().notify(nd);
+            if (oldVal != null && oldVal.toString().equals(value) || (oldVal == null && value == null)) {
                 return;
             }
 
             try {
+                DBReadWriteHelper.validate(value, tblMeta.getColumn(col));
                 tblContext.createUpdateStatement(row, col, value);
                 isDirty = true;
                 super.setValueAt(value, row, col);
                 parent.setCommitEnabled(true);
                 fireTableDataChanged();
+            } catch (DBException dbe) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message(dbe.getMessage());
+                DialogDisplayer.getDefault().notify(nd);
             } catch (Exception ex) {
                 //ignore
                 mLogger.warning(new DBException(ex).getMessage());

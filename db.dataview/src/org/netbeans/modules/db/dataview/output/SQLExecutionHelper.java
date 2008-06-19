@@ -43,6 +43,9 @@ package org.netbeans.modules.db.dataview.output;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
 import org.netbeans.modules.db.dataview.meta.DBConnectionFactory;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
@@ -54,6 +57,12 @@ import org.netbeans.modules.db.dataview.util.DataViewUtils;
  */
 class SQLExecutionHelper {
 
+    private static Logger mLogger = Logger.getLogger(SQLExecutionHelper.class.getName());
+    private DataViewOutputPanel parent; 
+    SQLExecutionHelper(DataViewOutputPanel parent){
+        this.parent = parent;
+    }
+    
     boolean executeInsert(String[] insertSQL, Object[] insertedRow, DataViewOutputPanel dvParent) {
         PreparedStatement pstmt = null;
         Connection conn = null;
@@ -98,7 +107,7 @@ class SQLExecutionHelper {
                 dvParent.printerrToOutputTab("Insert command failed.\n");
                 dvParent.printerrToOutputTab(errorMsg);
                 dvParent.printinfoToOutputTab("\nUsing SQL:" + insertSQL[1]);
-                dvParent.rollback(conn);
+                rollback(conn);
             }
 
             DataViewUtils.closeResources(pstmt);
@@ -112,7 +121,120 @@ class SQLExecutionHelper {
                     //ignore
                 }
             }
-            return error;
+            return !error;
+        }
+    }
+
+    int executeDeleteRow(int rowNum) {
+        List<Object> values = new ArrayList<Object>();
+        List<Integer> types = new ArrayList<Integer>();
+        ResultSetUpdatedRowContext tblContext = parent.getResultSetUpdatedRowContext();
+
+        SQLStatementGenerator generator = new SQLStatementGenerator(parent.getDBTableWrapper(), parent.getResulSetTable());
+        String[] deleteStmt = generator.generateDeleteStatement(types, values, rowNum);
+        String rawDeleteStmt = deleteStmt[1];
+        mLogger.info("Statement: " + rawDeleteStmt);
+        parent.printinfoToOutputTab("Statement: " + rawDeleteStmt);
+        PreparedStatement pstmt = null;
+        Connection conn = null;
+        boolean error = false;
+        String errorMsg = "";
+
+        try {
+            conn = DBConnectionFactory.getInstance().getConnection(parent.dbConn);
+            conn.setAutoCommit(false);
+            pstmt = conn.prepareStatement(deleteStmt[0]);
+            int pos = 1;
+            for (Object val : values) {
+                DBReadWriteHelper.setAttributeValue(pstmt, pos, types.get(pos - 1), val);
+                pos++;
+            }
+            int rows = pstmt.executeUpdate();
+            if (rows == 0) {
+                error = true;
+                errorMsg = errorMsg + " No rows deleted.\n";
+            } else if (rows > 1) {
+                error = true;
+                errorMsg = errorMsg + "No unique row.\n";
+            }
+
+            return rows;
+        } catch (Exception ex) {
+            error = true;
+            errorMsg = errorMsg + DBException.getMessage(ex);
+        } finally {
+            DataViewUtils.closeResources(pstmt);
+            if (!error) {
+                try {
+                    conn.commit();
+                } catch (SQLException ex) {
+                    parent.printerrToOutputTab("Commit Failed\n");
+                    parent.printerrToOutputTab("Using SQL:" + rawDeleteStmt + "\n");
+                    parent.printerrToOutputTab(DBException.getMessage(ex));
+                }
+            } else {
+                parent.printerrToOutputTab("Delete command failed\n" + errorMsg);
+                parent.printerrToOutputTab("Using SQL:" + rawDeleteStmt + "\n");
+                parent.printerrToOutputTab(errorMsg);
+            }
+        }
+        return 0;
+    }
+
+    protected void executeUpdate(String key) throws NumberFormatException, SQLException, DBException {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        String errorMsg = "";
+
+        ResultSetUpdatedRowContext tblContext = parent.getResultSetUpdatedRowContext();
+        int row = Integer.parseInt(key.substring(0, key.indexOf(";")));
+        int col = Integer.parseInt(key.substring(key.indexOf(";") + 1, key.length()));
+        String updateStmt = tblContext.getUpdateStmt(key);
+        String rawUpdateStmt = tblContext.getRawUpdateStmt((key));
+        List<Object> values = tblContext.getValueList(key);
+        List<Integer> types = tblContext.getTypeList(key);
+
+        int rowCount = 0;
+        try {
+            conn = DBConnectionFactory.getInstance().getConnection(parent.dbConn);
+            conn.setAutoCommit(false);
+            pstmt = conn.prepareStatement(updateStmt);
+            int pos = 1;
+            for (Object val : values) {
+                DBReadWriteHelper.setAttributeValue(pstmt, pos, types.get(pos - 1), val);
+                pos++;
+            }
+
+            mLogger.info(rawUpdateStmt);
+            parent.printinfoToOutputTab("Statement: " + rawUpdateStmt);
+            rowCount = pstmt.executeUpdate();
+        } catch (SQLException ex) {
+            errorMsg = "Update failed at Row:" + row + ", Column:" + col;
+            errorMsg += "\nErrorCode:" + ex.getErrorCode() + ", " + ex.getMessage();
+        } finally {
+            if (rowCount == 0) {
+                if (DataViewUtils.isNullString(errorMsg)) {
+                    errorMsg = "No rows updated using " + rawUpdateStmt;
+                }
+                parent.printerrToOutputTab(errorMsg);
+                rollback(conn);
+            } else if (rowCount > 1) {
+                errorMsg = "Unable to find unique row using " + rawUpdateStmt;
+                parent.printerrToOutputTab(errorMsg);
+                rollback(conn);
+            } else {
+                conn.commit();
+            }
+            DataViewUtils.closeResources(pstmt);
+        }
+    }
+    
+    private void rollback(Connection conn) {
+        try {
+            conn.rollback();
+        } catch (SQLException ex) {
+            String errorMsg = "Fail to rollback.\n";
+            parent.printerrToOutputTab(errorMsg + DBException.getMessage(ex));
         }
     }
 }

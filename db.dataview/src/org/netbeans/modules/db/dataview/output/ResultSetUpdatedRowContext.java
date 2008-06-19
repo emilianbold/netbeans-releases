@@ -46,9 +46,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.swing.JTable;
-import javax.swing.table.TableModel;
-import org.netbeans.modules.db.dataview.meta.DBPrimaryKey;
+import org.netbeans.modules.db.dataview.meta.DBException;
 
 /**
  * Holds the updated row data
@@ -61,72 +59,22 @@ import org.netbeans.modules.db.dataview.meta.DBPrimaryKey;
     private Map<String, String> rawUpdateSQL = new LinkedHashMap<String, String>();
     private Map<String, List<Object>> valuesList = new LinkedHashMap<String, List<Object>>();
     private Map<String, List<Integer>> typesList = new LinkedHashMap<String, List<Integer>>();
-    private DBTableWrapper tblMeta;
-    private JTable table;
-
-    public ResultSetUpdatedRowContext(DBTableWrapper tblMeta, JTable table) {
-        this.tblMeta = tblMeta;
-        this.table = table;
+    private SQLStatementGenerator stmtBldr;
+    
+    public ResultSetUpdatedRowContext(SQLStatementGenerator stmtBldr) {
+        this.stmtBldr = stmtBldr;
     }
 
-    public void createUpdateStatement(int row, int col, Object value) {
+    public void createUpdateStatement(int row, int col, Object value) throws DBException {
         List<Object> values = new ArrayList<Object>();
         List<Integer> types = new ArrayList<Integer>();
-        String updateStmt = "UPDATE " + tblMeta.getFullyQualifiedName(0) + " SET ";
-        String rawUpdateStmt = updateStmt + tblMeta.getQualifiedName(col) + " = \'" + value + "\' WHERE ";
-        updateStmt += tblMeta.getQualifiedName(col) + " = ?" + " WHERE ";
-        values.add(value);
-        types.add(tblMeta.getColumnType(col));
-        String[] whereCond = generateWhereCondition(types, values, row);
-        updateStmt += whereCond[0];
-        rawUpdateStmt += whereCond[1];
         String changeData = (row + 1) + ";" + (col + 1);
+        String[] updateStmt = stmtBldr.generateUpdateStatement(row, col, value, values, types);
 
-        updateStatements.put(changeData, updateStmt);
-        rawUpdateSQL.put(changeData, rawUpdateStmt);
+        updateStatements.put(changeData, updateStmt[0]);
+        rawUpdateSQL.put(changeData, updateStmt[1]);
         valuesList.put(changeData, values);
         typesList.put(changeData, types);
-    }
-
-    private String[] generateWhereCondition(List<Integer> types, List<Object> values, int rowNum) {
-        TableModel model = table.getModel();
-        StringBuilder result = new StringBuilder();
-        StringBuilder raw = new StringBuilder();
-        DBPrimaryKey key = tblMeta.geTable(0).getPrimaryKey();
-        if (key != null) {
-            int j = 0;
-            for (String keyName : key.getColumnNames()) {
-                String and = j++ != 0 ? " AND " : "";
-                result.append(and);
-                raw.append(and);
-                
-                for (int i = 0; i < table.getColumnCount(); i++) {
-                    if (table.getColumnModel().getColumn(i).getHeaderValue().equals(keyName)) {
-                        if (model.getValueAt(rowNum, i) != null) {
-                            result.append(keyName + " = ? ");
-                            Object value = model.getValueAt(rowNum, i);
-                            raw.append(keyName + " = \'").append(value).append("\'");
-                            values.add(value);
-                            types.add(tblMeta.getColumnType(i));
-                            break;
-                        }
-                    }
-                }
-            }
-        } else {
-            for (int i = 0; i < table.getColumnCount(); i++) {
-                if (model.getValueAt(rowNum, i) != null) {
-                    String columnName = tblMeta.getQualifiedName(i);
-                    result.append(i != 0 ? " AND " : "");
-                    result.append(columnName + " = ? ");
-                    Object value = model.getValueAt(rowNum, i);
-                    raw.append(columnName + " = \'").append(value).append("\'");
-                    values.add(value);
-                    types.add(tblMeta.getColumnType(i));
-                }
-            }
-        }
-        return new String[]{result.toString(), raw.toString()};
     }
 
     public void resetUpdateState() {
@@ -155,13 +103,4 @@ import org.netbeans.modules.db.dataview.meta.DBPrimaryKey;
     public List<Object> getValueList(String key) {
         return valuesList.get(key);
     }
-
-    public String[] cteateDeleteStatement(List<Integer> types, List<Object> values, int rowNum) {
-        String deleteStmt = "DELETE FROM " + tblMeta.getFullyQualifiedName(0) + " WHERE ";
-        String[] whereCond = generateWhereCondition(types, values, rowNum);
-        String rawDeleteStmt = deleteStmt + whereCond[1];
-        deleteStmt += whereCond[0];
-        return new String[] {deleteStmt, rawDeleteStmt};
-    }
-    
 }

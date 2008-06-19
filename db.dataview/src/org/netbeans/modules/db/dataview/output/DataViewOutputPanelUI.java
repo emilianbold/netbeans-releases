@@ -272,16 +272,25 @@ class DataViewOutputPanelUI {
 
     private void initToolbar(JToolBar toolbar, ActionListener outputListener) {
 
+        toolbar.addSeparator(new Dimension(10, 10));
+        
+       //add refresh button
+        URL url = getClass().getResource(imgPrefix + "refresh.png");
+        refreshButton = new JButton(new ImageIcon(url));
+        String nbBundle2 = "Refresh records";
+        refreshButton.setToolTipText(nbBundle2);
+        refreshButton.addActionListener(outputListener);
+        toolbar.add(refreshButton);; 
+        
         // add navigation buttons
-        URL url = getClass().getResource(imgPrefix + "navigate_beginning.png");
+        url = getClass().getResource(imgPrefix + "navigate_beginning.png");
         first = new JButton(new ImageIcon(url));
         String nbBundle3 = "Go to the first page";
         first.setToolTipText(nbBundle3);
         first.addActionListener(outputListener);
         first.setEnabled(false);
         toolbar.add(first);
-        toolbar.addSeparator(new Dimension(10, 10));
-
+        
         url = getClass().getResource(imgPrefix + "navigate_left.png");
         previous = new JButton(new ImageIcon(url));
         String nbBundle4 = "Go to the previous page";
@@ -289,8 +298,7 @@ class DataViewOutputPanelUI {
         previous.addActionListener(outputListener);
         previous.setEnabled(false);
         toolbar.add(previous);
-        toolbar.addSeparator(new Dimension(10, 10));
-
+        
         url = getClass().getResource(imgPrefix + "navigate_right.png");
         next = new JButton(new ImageIcon(url));
         String nbBundle5 = "Go to the next page";
@@ -298,8 +306,7 @@ class DataViewOutputPanelUI {
         next.addActionListener(outputListener);
         next.setEnabled(false);
         toolbar.add(next);
-        toolbar.addSeparator(new Dimension(10, 10));
-
+        
         url = getClass().getResource(imgPrefix + "navigate_end.png");
         last = new JButton(new ImageIcon(url));
         String nbBundle6 = "Go to the last page";
@@ -344,30 +351,13 @@ class DataViewOutputPanelUI {
 
     private void initVerticalToolbar(ActionListener outputListener) {
 
-        //add truncate button
-        String nbBundle14 = "Truncate parent table";
-        TruncateTableAction truncAction = new TruncateTableAction(parent);
-        truncAction.putValue(Action.SHORT_DESCRIPTION, nbBundle14);
-        URL url = getClass().getResource(imgPrefix + "stop.gif");
-        truncAction.putValue(Action.SMALL_ICON, new ImageIcon(url));
-        truncateButton = new JButton(truncAction);
-        editButtons[0] = truncateButton;
-
-        //add refresh button
-        url = getClass().getResource(imgPrefix + "refresh.png");
-        refreshButton = new JButton(new ImageIcon(url));
-        String nbBundle2 = "Refresh records";
-        refreshButton.setToolTipText(nbBundle2);
-        refreshButton.addActionListener(outputListener);
-        editButtons[1] = refreshButton;
-
-        url = getClass().getResource(imgPrefix + "row_add.png");
+        URL url = getClass().getResource(imgPrefix + "row_add.png");
         insert = new JButton(new ImageIcon(url));
         String nbBundle9 = " Insert a record.";
         insert.setToolTipText(nbBundle9);
         insert.addActionListener(outputListener);
         insert.setEnabled(false);
-        editButtons[2] = insert;
+        editButtons[0] = insert;
 
         url = getClass().getResource(imgPrefix + "row_delete.png");
         deleteRow = new JButton(new ImageIcon(url));
@@ -375,15 +365,24 @@ class DataViewOutputPanelUI {
         deleteRow.setToolTipText(nbBundle10);
         deleteRow.addActionListener(outputListener);
         deleteRow.setEnabled(false);
-        editButtons[3] = deleteRow;
+        editButtons[1] = deleteRow;
 
-        url = getClass().getResource(imgPrefix + "row_preferences.png");
+        url = getClass().getResource(imgPrefix + "row_commit.png");
         commit = new JButton(new ImageIcon(url));
         String nbBundle11 = "Commit the Changes done on parent page.";
         commit.setToolTipText(nbBundle11);
         commit.addActionListener(outputListener);
         commit.setEnabled(false);
-        editButtons[4] = commit;
+        editButtons[2] = commit;
+        
+        //add truncate button
+        String nbBundle14 = "Truncate parent table";
+        TruncateTableAction truncAction = new TruncateTableAction(parent);
+        truncAction.putValue(Action.SHORT_DESCRIPTION, nbBundle14);
+        url = getClass().getResource(imgPrefix + "table_truncate.png");
+        truncAction.putValue(Action.SMALL_ICON, new ImageIcon(url));
+        truncateButton = new JButton(truncAction);
+        editButtons[3] = truncateButton;
     }
 
     private JPanel initializeMainPanel(int toolbarType) {

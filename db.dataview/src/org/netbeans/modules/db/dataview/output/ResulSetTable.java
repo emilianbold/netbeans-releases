@@ -87,7 +87,23 @@ class ResulSetTable extends JTable {
             }
 
             public void keyPressed(KeyEvent e) {
-                makeNull(e);
+                if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_0) {
+                    int row = getSelectedRow();
+                    int col = getSelectedColumn();
+                    editCellAt(row, col);
+                    TableCellEditor editor = getCellEditor();
+                    if (editor != null) {
+                        DBColumn dbcol = ResulSetTable.this.parent.getDBTableWrapper().getColumn(col);
+                        if (dbcol.isGenerated() || !dbcol.isNullable()) {
+                            Toolkit.getDefaultToolkit().beep();
+                            editor.stopCellEditing();
+                        } else {
+                            editor.getTableCellEditorComponent(ResulSetTable.this, null, rowSelectionAllowed, row, col);
+                            setValueAt(null, row, col);
+                            editor.stopCellEditing();
+                        }
+                    }
+                }
             }
 
             public void keyReleased(KeyEvent e) {
@@ -192,24 +208,6 @@ class ResulSetTable extends JTable {
         });
     }
 
-    private void makeNull(KeyEvent e) {
-        if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_0) {
-            TableCellEditor editor = getCellEditor();
-            if (editor != null) {
-                int row = getEditingRow();
-                int col = getEditingColumn();
-                DBColumn dbcol = ResulSetTable.this.parent.getDBTableWrapper().getColumn(col);
-                if (dbcol.isGenerated() || !dbcol.isNullable()) {
-                    Toolkit.getDefaultToolkit().beep();
-                } else {
-                    editor.getTableCellEditorComponent(ResulSetTable.this, null, rowSelectionAllowed, row, col);
-                    setValueAt(null, row, col);
-                    editor.stopCellEditing();
-                }
-            }
-        }
-    }
-
     class ResultSetTableCellEditor extends DefaultCellEditor {
 
         Object val;
@@ -237,16 +235,23 @@ class ResulSetTable extends JTable {
             textField.addActionListener(delegate);
             textField.addKeyListener(new KeyListener() {
 
-                public void keyTyped(KeyEvent arg0) {
-                    
+                public void keyTyped(KeyEvent e) {
                 }
 
-                public void keyPressed(KeyEvent arg0) {
-                    makeNull(arg0);
+                public void keyPressed(KeyEvent e) {
+                    if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_0) {
+                        int col = getEditingColumn();
+                        DBColumn dbcol = ResulSetTable.this.parent.getDBTableWrapper().getColumn(col);
+                        if (dbcol.isGenerated() || !dbcol.isNullable()) {
+                            Toolkit.getDefaultToolkit().beep();
+                        } else {
+                            delegate.setValue(null);
+                            ResultSetTableCellEditor.this.stopCellEditing();
+                        }
+                    }
                 }
 
-                public void keyReleased(KeyEvent arg0) {
-                    
+                public void keyReleased(KeyEvent e) {
                 }
             });
         }
@@ -412,7 +417,7 @@ class ResulSetTable extends JTable {
             if (isSelected) {
                 c.setForeground(Color.ORANGE);
             } else {
-                setForeground(green);
+                c.setForeground(green);
             }
 
             return c;
