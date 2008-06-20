@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,10 +21,8 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,48 +36,25 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.ruby.railsprojects;
 
-package org.netbeans.modules.groovy.editor.parser;
+import java.io.File;
+import org.openide.modules.InstalledFileLocator;
 
-import java.io.IOException;
-import java.util.List;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import org.openide.filesystems.FileUtil;
+public final class InstalledFileLocatorImpl extends InstalledFileLocator {
 
-/**
- *
- * @author Martin Adamek
- */
-public class GroovyVirtualSourveProviderTest extends GroovyTestBase {
-
-    public GroovyVirtualSourveProviderTest(String testName) {
-        super(testName);
+    public InstalledFileLocatorImpl() {
     }
 
-    public void testGenerator() throws IOException {
-        copyStringToFileObject(testFO,
-                "class Foo {\n" +
-                "  def closure1 = {\n" +
-                "    println 'closure1'\n" +
-                "  }\n" +
-                "  def method1() {\n" +
-                "    println 'method1'\n" +
-                "  }\n" +
-                "}");
-        List<ClassNode> classNodes = GroovyVirtualSourceProvider.getClassNodes(FileUtil.toFile(testFO));
-        assertEquals(classNodes.size(), 1);
-
-//        ClassNode node = classNodes.get(0);
-//        for (Object object : node.getAllDeclaredMethods()) {
-//            MethodNode method = (MethodNode) object;
-//            System.out.println("> " + method.getName() + ", " + method.getLineNumber());
-//        }
-
-//        GroovyVirtualSourceProvider.JavaStubGenerator generator = new GroovyVirtualSourceProvider.JavaStubGenerator();
-//        CharSequence charSequence = generator.generateClass(classNodes.get(0));
-//        System.out.println(charSequence);
+    public @Override File locate( String relativePath, String codeNameBase, boolean localized) {
+        if (relativePath.equals("rake_tasks_info.rb")) {
+            String script = System.getProperty("xtest.rake_tasks_info.rb");
+            if (script == null) {
+                throw new RuntimeException("xtest.rake_tasks_info.rb property has to be set when running within binary distribution");
+            }
+            return new File(script);
+        }
+        return null;
     }
-
+    
 }

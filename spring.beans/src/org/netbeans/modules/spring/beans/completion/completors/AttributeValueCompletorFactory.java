@@ -54,7 +54,7 @@ public class AttributeValueCompletorFactory implements CompletorFactory {
         this.itemTextAndDocs = itemTextAndDocs;
     }
 
-    public Completor createCompletor() {
-        return new AttributeValueCompletor(itemTextAndDocs);
+    public Completor createCompletor(int invocationOffset) {
+        return new AttributeValueCompletor(itemTextAndDocs, invocationOffset);
     }
 }

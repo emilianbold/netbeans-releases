@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,27 +34,43 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.xml.text.indent;
 
-package org.netbeans.modules.spring.beans.completion;
+import junit.framework.*;
+import org.netbeans.api.xml.lexer.XMLTokenId;
+import org.netbeans.editor.BaseDocument;
 
 /**
- *
- * @author Rohan Ranade
+ * Formatting related tests based on new formatter. See XMLLexerFormatter.
+ * 
+ * @author Samaresh (samaresh.panda@sun.com)
  */
-public final class QueryProgress {
-
-    private volatile boolean state = false;
+public class XMLLexerFormatterTest extends AbstractTestCase {
     
-    public QueryProgress() {
+    public XMLLexerFormatterTest(String testName) {
+        super(testName);
     }
 
-    public boolean isCancelled() {
-        return state;
+    public static Test suite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new XMLLexerFormatterTest("testFormat"));
+        return suite;
     }
     
-    public void cancel() {
-        state = true;
+    /**
+     * Formats an input document and then compares the formatted doc
+     * with a document that represents expected outcome.
+     */
+    public void testFormat() throws Exception {
+        BaseDocument inputDoc = getDocument("input.xml");
+        //format the inputDoc
+        XMLLexerFormatter formatter = new XMLLexerFormatter(null);
+        BaseDocument formattedDoc = formatter.doReformat(inputDoc, -1, -1);
+        System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
+        BaseDocument outputDoc = getDocument("output.xml");        
+        assert(compare(formattedDoc, outputDoc));
     }
+    
 }

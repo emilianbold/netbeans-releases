@@ -36,75 +36,34 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.spring.beans.completion;
 
-import java.io.IOException;
-import junit.framework.TestCase;
-import org.openide.util.Exceptions;
+package org.netbeans.modules.ruby.rubyproject.rake;
 
-/**
- *
- * @author Rohan Ranade
- */
-public class CompletorTest extends TestCase {
+import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.ruby.rubyproject.RubyProject;
+import org.netbeans.modules.ruby.rubyproject.RubyProjectTestBase;
 
-    public CompletorTest(String testName) {
+public class RakeTaskReaderTest extends RubyProjectTestBase {
+    
+    public RakeTaskReaderTest(String testName) {
         super(testName);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    public void testGetRakeTaskTree() throws Exception {
+        registerLayer();
+        RubyProject project = createTestProject();
+        RakeTaskReader rakeTaskReader = new RakeTaskReader(project);
+        Set<RakeTask> tasks = rakeTaskReader.getRakeTaskTree();
+        assertNotNull("rake file output dumped", tasks);
+        assertFalse("has rake tasks", tasks.isEmpty());
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    public void testRawRead() throws Exception {
+        registerLayer();
+        RubyProject project = createTestProject();
+        RakeTaskReader rakeTaskReader = new RakeTaskReader(project);
+        assertNotNull("rake file output dumped", rakeTaskReader.rawRead());
     }
 
-    public void testCompletorHaltOnFilter() throws Exception {
-        final TestCompletor completor = new TestCompletor();
-        final QueryProgress progress = new QueryProgress();
-        Thread t = new Thread(new Runnable() {
-            public void run() {
-                try {
-                    completor.computeCompletionItems(null, progress);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        });
-        
-        t.start();
-        Thread.currentThread().sleep(400);
-        progress.cancel();
-        t.join();
-        
-        assertFalse(String.valueOf(completor.getExitCount()), completor.getExitCount() == 100);
-    }
-
-    private static final class TestCompletor extends Completor {
-
-        private int exitCount = 100;
-        
-        @Override
-        protected void computeCompletionItems(CompletionContext context, QueryProgress progress) throws IOException {
-            try {
-                for (int i = 0; i < 100; i++) {
-                    if(progress.isCancelled()) {
-                        exitCount = i;
-                        return;
-                    }
-                    Thread.currentThread().sleep(100);
-                    String text = String.valueOf(i);
-                }
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-        public int getExitCount() {
-            return exitCount;
-        }
-    }
 }

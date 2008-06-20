@@ -68,6 +68,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
@@ -89,6 +90,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     
     private RailsProject project;
     private String originalEncoding;
+    private boolean notified;
     
     private JTextField[] data;
     private JLabel[] dataLabels;
@@ -195,6 +197,17 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         this.encoding.setModel(new EncodingModel(this.originalEncoding));
         this.encoding.setRenderer(new EncodingRenderer());
         
+        final String lafid  = UIManager.getLookAndFeel().getID();
+        if (!"Aqua".equals(lafid)) { //NOI18N
+            this.encoding.putClientProperty("JComboBox.isTableCellEditor", Boolean.TRUE);    //NOI18N
+            this.encoding.addItemListener(new java.awt.event.ItemListener() {
+
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    javax.swing.JComboBox combo = (javax.swing.JComboBox) e.getSource();
+                    combo.setPopupVisible(false);
+                }
+            });
+        }
 
         this.encoding.addActionListener(new ActionListener () {
             public void actionPerformed(ActionEvent arg0) {
@@ -271,6 +284,12 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         } else {
             encName = originalEncoding;
         }
+        if (!notified && encName != null && !encName.equals(originalEncoding)) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(CustomizerRun.class, "MSG_EncodingWarning"), NotifyDescriptor.WARNING_MESSAGE));
+            notified = true;
+        }
+
         this.uiProperties.putAdditionalProperty(RailsProjectProperties.SOURCE_ENCODING, encName);
     }
 

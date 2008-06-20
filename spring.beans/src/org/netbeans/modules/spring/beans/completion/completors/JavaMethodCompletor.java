@@ -39,6 +39,7 @@
 package org.netbeans.modules.spring.beans.completion.completors;
 
 import java.io.IOException;
+import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -52,7 +53,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.spring.beans.completion.CompletionContext;
 import org.netbeans.modules.spring.beans.completion.Completor;
-import org.netbeans.modules.spring.beans.completion.QueryProgress;
+import org.netbeans.modules.spring.beans.completion.CompletorUtils;
 import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
 import org.netbeans.modules.spring.java.JavaUtils;
 import org.netbeans.modules.spring.java.Public;
@@ -64,8 +65,17 @@ import org.netbeans.modules.spring.java.Static;
  */
 public abstract class JavaMethodCompletor extends Completor {
 
+    public JavaMethodCompletor(int invocationOffset) {
+        super(invocationOffset);
+    }
+
     @Override
-    protected void computeCompletionItems(final CompletionContext context, QueryProgress progress) throws IOException {
+    protected int initAnchorOffset(CompletionContext context) {
+        return context.getCurrentToken().getOffset() + 1;
+    }
+
+    @Override
+    protected void compute(final CompletionContext context) throws IOException {
         final String classBinaryName = getTypeName(context);
         final Public publicFlag = getPublicFlag(context);
         final Static staticFlag = getStaticFlag(context);
@@ -135,22 +145,28 @@ public abstract class JavaMethodCompletor extends Completor {
                     }
                 };
 
-                int substitutionOffset = context.getCurrentToken().getOffset() + 1;
                 Iterable<? extends Element> methods = eu.getMembers(classElem.asType(), acceptor);
 
                 methods = filter(methods);
 
                 for (Element e : methods) {
                     SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createMethodItem(
-                            substitutionOffset, (ExecutableElement) e, e.getEnclosingElement() != classElem,
+                            getAnchorOffset(), (ExecutableElement) e, e.getEnclosingElement() != classElem,
                             controller.getElements().isDeprecated(e));
-                    addItem(item);
+                    addCacheItem(item);
                 }
-
-                setAnchorOffset(substitutionOffset);
-
             }
         }, false);
+    }
+
+    @Override
+    public boolean canFilter(CompletionContext context) {
+        return CompletorUtils.canFilter(context.getDocument(), getInvocationOffset(), context.getCaretOffset(), getAnchorOffset(), CompletorUtils.JAVA_IDENTIFIER_ACCEPTOR);
+    }
+    
+    @Override
+    protected List<SpringXMLConfigCompletionItem> doFilter(CompletionContext context) {
+        return CompletorUtils.filter(getCacheItems(), context.getDocument(), getInvocationOffset(), context.getCaretOffset(), getAnchorOffset());
     }
 
     /**
