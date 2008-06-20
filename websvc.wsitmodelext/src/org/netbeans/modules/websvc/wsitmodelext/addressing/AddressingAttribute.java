@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.wsitmodelext.addressing.impl;
+package org.netbeans.modules.websvc.wsitmodelext.addressing;
 
 import org.netbeans.modules.xml.xam.dom.Attribute;
 
@@ -47,23 +47,24 @@ import org.netbeans.modules.xml.xam.dom.Attribute;
  *
  * @author Martin Grebac
  */
-public enum Addressing10Attribute implements Attribute {
-        PORTNAME("PortName");
+public enum AddressingAttribute implements Attribute {
+        PORTNAME("PortName"),
+        ACTION("Action");
     
     private String name;
     private Class type;
     private Class subtype;
     
     /**
-     * Creates a new instance of Addressing10Attribute
+     * Creates a new instance of AddressingAttribute
      */
-    Addressing10Attribute(String name) {
+    AddressingAttribute(String name) {
         this(name, String.class);
     }
-    Addressing10Attribute(String name, Class type) {
+    AddressingAttribute(String name, Class type) {
         this(name, type, null);
     }
-    Addressing10Attribute(String name, Class type, Class subtype) {
+    AddressingAttribute(String name, Class type, Class subtype) {
         this.name = name;
         this.type = type;
         this.subtype = subtype;
