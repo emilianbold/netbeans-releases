@@ -781,7 +781,6 @@ TestSupport.prototype = {
     },
     
     prettyPrint : function (/*Node*/ node) {
-       var lineBrk = 30;
        printIndented(node, 0);
 
        function printIndented(/*Node*/ node, /*int*/ indent) {
@@ -789,15 +788,15 @@ TestSupport.prototype = {
              prettyContent += node.nodeValue;
          } else {
              var nd = getIndent(indent);
-             prettyContent += nd + breakLine(getContent(node, true), this.lineBrk, nd);
+             prettyContent += nd + getContent(node, true);
              if(node.childNodes != null && node.childNodes.length > 0) {
                  for (var i = 0; i < node.childNodes.length; ++i) {
                    printIndented(node.childNodes[i], indent+2);
                  }
                  if(node.childNodes[0].nodeValue == null)
-                    prettyContent += nd + breakLine(getContent(node, false), this.lineBrk, nd);
+                    prettyContent += nd + getContent(node, false);
                  else
-                    prettyContent += breakLine(getContent(node, false), this.lineBrk, nd);
+                    prettyContent += getContent(node, false);
              }
          }
        }
@@ -817,7 +816,10 @@ TestSupport.prototype = {
                            c += ' ' + attr.nodeName + '="' + attr.nodeValue+'"';
                         }
                     }
-                    c += '>';
+                    if(n.childNodes != null && n.childNodes.length > 0)
+                        c += '&gt;';
+                    else
+                        c += '/&gt;';
                 } else {
                     c += '&lt;/'+n.nodeName+'&gt;';
                 }
@@ -841,8 +843,7 @@ TestSupport.prototype = {
        }
        
        function breakLine(line, len, indent) {
-         //var c = breakLine2(line, len, indent);
-         var c = line;
+         var c = breakLine2(line, len, indent);
          return c;
        }
        
@@ -997,8 +998,7 @@ TestSupport.prototype = {
         }
         if(id == null)
             id = '-';
-        this.tcCount++;
-        str += '<tr><th align="left" scope="row" class="TblTdLyt_sun4" ><span id="j_id9"><span class="">'+id+'</span></span></th>';
+        str += '<tr><th align="left" scope="row" class="TblTdLyt_sun4" ><span id="j_id9"><span class="">'+(++this.tcCount)+'</span></span></th>';
         var uri = refChild.attributes.getNamedItem('uri').nodeValue;
         str += '<td align="left" class="TblTdLyt_sun4" ><span id="j_id10"><span class="">';
         var disp = this.getDisplayUri(uri);
@@ -1023,15 +1023,14 @@ TestSupport.prototype = {
         var c = content.replace(/\\\//g,"/");   
         var uris = c.split('\"');
         var str = '';
-        var count = 1;
         var cvl = this.currentValidUrl.indexOf("?");
         if(cvl == -1)
             cvl = this.currentValidUrl.length;
-        this.tcCount = uris.length;
+        this.tcCount = 0;
         for(var i=0;i<uris.length;i++) {
             var uri = uris[i];
             if(uri.indexOf(baseURL) == 0 && uri.length > cvl) {
-                str += '<tr><th align="left" scope="row" class="TblTdLyt_sun4" ><span id="j_id9"><span class="">'+(count++)+'</span></span></th>';    
+                str += '<tr><th align="left" scope="row" class="TblTdLyt_sun4" ><span id="j_id9"><span class="">'+(++this.tcCount)+'</span></span></th>';    
                 str += '<td align="left" class="TblTdLyt_sun4" ><span id="j_id10"><span class="">';
                 var disp = this.getDisplayUri(uri);
                 str += "<a id='"+uri+"' href=javascript:ts.doShowContent('"+uri+"') >"+this.getDisplayURL(disp, 70)+"</a>";

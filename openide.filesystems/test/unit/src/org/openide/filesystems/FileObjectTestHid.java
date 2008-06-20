@@ -50,6 +50,7 @@ import java.io.*;
 import java.util.*;
 import java.net.*;
 import org.netbeans.junit.MockServices;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
@@ -399,18 +400,17 @@ public class FileObjectTestHid extends TestBaseHid {
     
     /** Test whether the read is forbiden while somebody is writing
      */
+    @RandomlyFails
     public void testWriteReadExclusion() throws Exception {
         testWriteReadExclusion(false);
     }
 
+    @RandomlyFails
     public void testWriteReadExclusionDeadlock() throws Exception {
         testWriteReadExclusion(true);
     }
 
     private void testWriteReadExclusion(final boolean deadlockInWrite) throws Exception {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return;
-        }
         checkSetUp();
         FileObject fold = getTestFolder1(root);
         final FileObject fo1 = getTestFile1(fold);
