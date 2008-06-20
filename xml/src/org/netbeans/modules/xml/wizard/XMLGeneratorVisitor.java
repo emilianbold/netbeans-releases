@@ -181,10 +181,9 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
         if(component instanceof Element) {
             Element element = (Element)component;
             
-            System.out.println("visit " + element.getName());
             //set prefix
             setPrefixForElement(element);
-            System.out.println("Do I come here " + element.getName());
+            
             //dont print the root element 
             if(element.getName().equals(rootElement))
                 return;
