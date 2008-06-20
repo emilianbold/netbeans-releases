@@ -49,6 +49,47 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="Lookup.asynchronous">
+        <api name="lookup"/>
+        <summary>AbstractLookup and ProxyLookup fires changes asynchronously</summary>
+        <version major="7" minor="16"/>
+        <date day="27" month="6" year="2008"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible"/>
+        <description>
+            <p>
+                All modification methods in <code>AbstractLookup</code> and <code>ProxyLookup</code>
+                were extended to accept an 
+                <a href="@JDK@/java/util/concurrent/Executor.html">Executor</a>.
+                If not null, it is used to dispatch events to listeners sometime
+                "later". Also the <code>AbstractLookup.Content</code> 
+                and <code>InstanceContent</code> constructors
+                have been extended to accept such <code>Executor</code>.
+            </p>
+        </description> 
+        <class package="org.openide.util.lookup" name="AbstractLookup"/>
+        <class package="org.openide.util.lookup" name="ProxyLookup"/>
+        <class package="org.openide.util.lookup" name="InstanceContent"/>
+        <issue number="134297"/>
+    </change>
+    <change id="RequestProcessor.Executor">
+        <api name="util"/>
+        <summary>RequestProcessor implements Executor interface</summary>
+        <version major="7" minor="16"/>
+        <date day="27" month="6" year="2008"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                In order to align <code>RequestProcessor</code> closer to standard 
+                Java 5 concurency utilities, the class now implements
+                <a href="@JDK@/java/util/concurrent/Executor.html">Executor</a>
+                interfaces and its <code>execute(Runnable)</code> method.
+            </p>
+        </description> 
+        <class package="org.openide.util" name="RequestProcessor"/>
+        <issue number="134297"/>
+    </change>
     <change id="Utilities.toolTips">
         <api name="util"/>
         <summary>Image methods were made deprecated in Utilities, replacement is 
