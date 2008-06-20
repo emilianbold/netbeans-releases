@@ -47,7 +47,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
@@ -103,7 +102,7 @@ final class MIMESupport extends Object {
         try {
             synchronized (lock) {
                 CachedFileObject lcfo = (CachedFileObject)lastCfo.get();
-                if (lcfo == null || fo != lastFo.get() || timeOf(fo) != timeOf(lcfo)) {
+                if (lcfo == null || fo != lastFo.get()) {
                     cfo = new CachedFileObject(fo);
                 } else {
                     cfo = lcfo;
@@ -119,14 +118,6 @@ final class MIMESupport extends Object {
                 lastCfo = new WeakReference<FileObject>(cfo);
             }
         }
-    }
-    private static long timeOf(FileObject fo) {
-        if (fo == null) {
-            throw new NullPointerException();
-        }
-        Date d = fo.lastModified();
-        assert d != null : "Null lastModified from " + fo;
-        return d.getTime();
     }
     
     /** Testing purposes.

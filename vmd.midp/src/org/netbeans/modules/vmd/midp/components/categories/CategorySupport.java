@@ -52,6 +52,7 @@ public interface CategorySupport {
     String ICON_PATH_CATEGORY_DISPLAYABLES = "org/netbeans/modules/vmd/midp/resources/components/category_displayables_16.png"; // NOI18N
     String ICON_PATH_CATEGORY_POINTS = "org/netbeans/modules/vmd/midp/resources/components/category_points_16.png"; // NOI18N
     String ICON_PATH_CATEGORY_RESOURCES = "org/netbeans/modules/vmd/midp/resources/components/category_resources_16.png"; // NOI18N
+    String ICON_PATH_CATEGORY_DATABINDING = "org/netbeans/modules/vmd/midp/resources/components/category_resources_16.png"; // NOI18N
     String ICON_PATH_CATEGORY_ELEMENTS = "org/netbeans/modules/vmd/midp/resources/components/category_elements_16.png"; // NOI18N
     String ICON_PATH_CATEGORY_ITEMS = "org/netbeans/modules/vmd/midp/resources/components/category_items_16.png"; // NOI18N
     String ICON_PATH_CATEGORY_FLOW = "org/netbeans/modules/vmd/midp/resources/components/category_flow_16.png"; // NOI18N

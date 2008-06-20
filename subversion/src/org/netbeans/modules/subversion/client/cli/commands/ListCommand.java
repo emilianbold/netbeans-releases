@@ -50,7 +50,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
-import org.netbeans.modules.subversion.client.cli.SvnCommand.Arguments;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
@@ -74,7 +73,7 @@ public class ListCommand extends SvnCommand {
 
     private static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
-    private StringBuffer output = new StringBuffer();
+    private byte[] output;
     private final SVNUrl url;
     private final SVNRevision revision;
     private final boolean recursive;
@@ -86,6 +85,10 @@ public class ListCommand extends SvnCommand {
         dateFormat.setTimeZone(java.util.TimeZone.getTimeZone("GMT"));        
     }
     
+    protected boolean hasBinaryOutput() {
+        return true;
+    }
+
     @Override
     protected boolean notifyOutput() {
         return false;
@@ -108,18 +111,19 @@ public class ListCommand extends SvnCommand {
     }
 
     @Override
-    public void outputText(String lineString) {
-        output.append(lineString);
+    public void output(byte[] bytes) {
+        output = bytes;
     }
     
     public ISVNDirEntry[] getEntries() throws SVNClientException {
+        if (output == null || output.length == 0) return new ISVNDirEntry[0];
         try {
             XMLReader saxReader = XMLUtil.createXMLReader();
 
             XmlEntriesHandler xmlEntriesHandler = new XmlEntriesHandler();
             saxReader.setContentHandler(xmlEntriesHandler);
             saxReader.setErrorHandler(xmlEntriesHandler);
-            InputSource source = new InputSource(new ByteArrayInputStream(output.toString().getBytes()));
+            InputSource source = new InputSource(new ByteArrayInputStream(output));
 
             saxReader.parse(source);
             return xmlEntriesHandler.getEntryAttributes();
@@ -192,11 +196,12 @@ public class ListCommand extends SvnCommand {
 
         @Override
         public void characters(char[] ch, int start, int length) throws SAXException {
-            if(values == null) {
+            if(values == null || tag == null) {
                 return;
             }
             String s = toString(length, ch, start);
             values.put(tag, s);
+            tag = null;
         }                
         
         @Override
@@ -253,7 +258,7 @@ public class ListCommand extends SvnCommand {
                     entries.add(new DirEntry(name, date, revision, false, author, kind, size));
                 }
                 values = null;
-            } 
+            }            
         }
                 
         public void error(SAXParseException e) throws SAXException {

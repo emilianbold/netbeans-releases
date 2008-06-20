@@ -75,7 +75,7 @@ import javax.swing.JLabel;
  * Useful static methods for manipulation with images/icons, results are cached.
  * 
  * @author Jaroslav Tulach, Tomas Holy
- * @since 7.14
+ * @since 7.15
  */
 public final class ImageUtilities {
     /** separator for individual parts of tool tip text */

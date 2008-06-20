@@ -130,7 +130,7 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
         }
         if (contextDataObject == null) {
             try {
-                contextDataObject = DataObject.find(FileUtil.toFileObject(contextXml));
+                contextDataObject = DataObject.find(FileUtil.toFileObject(FileUtil.normalizeFile(contextXml)));
                 contextDataObject.addPropertyChangeListener(this);
             } catch(DataObjectNotFoundException donfe) {
                 LOGGER.log(Level.FINE, null, donfe);

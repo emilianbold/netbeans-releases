@@ -127,6 +127,7 @@ public final class EclipseProject implements Comparable {
     void setClassPath(DotClassPath cp) {
         this.cp = cp;
         calculateAbsolutePaths();
+        convertFileVariablesToFolderVariables();
     }
     
     public List<DotClassPathEntry> getClassPathEntries() {
@@ -276,25 +277,16 @@ public final class EclipseProject implements Comparable {
                 continue;
             }
             String s = EclipseUtils.splitVariable(entry.getRawPath())[0];
-            boolean resolved = false;
-            for (Variable v : workspace.getVariables()) {
-                if (v.getName().equals(s)) {
-                    resolved = true;
-                    s = "var."+PropertyUtils.getUsablePropertyName(s);
-                    if (ep.getProperty(s) == null) {
-                        ep.setProperty(s, v.getLocation());
-                        changed = true;
-                    } else if (!ep.getProperty(s).equals(v.getLocation())) {
-                        importProblems.add("IDE variable '"+s+"' is configured with value '"+ep.getProperty(s)+"' but project expects it to be '"+v.getLocation()+"'");
-                    }
-                    if (v.isFileVariable()) {
-                        // convert eclipse file variable to folder variable
-                        entry.updateVariableValue(v.getName()+'/'+v.getFileName());
-                    }
-                    continue;
+            Workspace.Variable v = getVariable(s);
+            if (v != null) {
+                s = "var."+PropertyUtils.getUsablePropertyName(s);
+                if (ep.getProperty(s) == null) {
+                    ep.setProperty(s, v.getLocation());
+                    changed = true;
+                } else if (!ep.getProperty(s).equals(v.getLocation())) {
+                    importProblems.add("IDE variable '"+s+"' is configured with value '"+ep.getProperty(s)+"' but project expects it to be '"+v.getLocation()+"'");
                 }
-            }
-            if (!resolved) {
+            } else {
                 importProblems.add("IDE variable '"+s+"' was not found in workspace. Set the value in NetBeans.");
                 ep.setProperty(s, "");
                 changed = true;
@@ -302,6 +294,23 @@ public final class EclipseProject implements Comparable {
         }
         if (changed) {
             PropertyUtils.putGlobalProperties(ep);
+        }
+    }
+    
+    void convertFileVariablesToFolderVariables() {
+        if (workspace == null) {
+            return;
+        }
+        for (DotClassPathEntry entry : cp.getClassPathEntries()) {
+            if (entry.getKind() != DotClassPathEntry.Kind.VARIABLE) {
+                continue;
+            }
+            String s = EclipseUtils.splitVariable(entry.getRawPath())[0];
+            Workspace.Variable v = getVariable(s);
+            if (v != null && v.isFileVariable()) {
+                // convert eclipse file variable to folder variable
+                entry.updateVariableValue(v.getName()+'/'+v.getFileName());
+            }
         }
     }
     

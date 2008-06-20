@@ -40,7 +40,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<?xml-stylesheet type="text/xml" href="../xtest/../../../../nbbuild/javadoctools/apichanges.xsl"?>
+<?xml-stylesheet type="text/xml" href="../nbbuild/javadoctools/apichanges.xsl"?>
 <!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../nbbuild/javadoctools/apichanges.dtd">
 
 
@@ -55,6 +55,21 @@ made subject to such option by the copyright holder.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="NbModuleSuite.Configuration.reuseUserDir">
+        <api name="nbjunit"/>
+        <summary>NbModuleSuite.Configuration.reuseUserDir(boolean reuse)</summary>
+        <version major="1" minor="52"/>
+        <date day="18" month="6" year="2008"/>
+        <author login="mrkam"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>NbModuleSuite.Configuration now has 
+            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#reuseUserDir(boolean)">reuseUserDir(boolean)</a>
+            method which enables test suite to reuse userdir from previous suite run.
+            </p>
+        </description>
+        <class package="org.netbeans.junit" name="NbModuleSuite"/>
+    </change>
     <change id="NbModuleSuite.Configuration.addTest">
         <api name="nbjunit"/>
         <summary>NbModuleSuite.Configuration.addTest(Class &lt; ? extends Test> test)</summary>
@@ -65,7 +80,7 @@ made subject to such option by the copyright holder.
         <description>
             <p>NbModuleSuite.Configuration now has 
             <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#addTest(java.lang.Class)">addTest(java.lang.Class)</a>
-            method which which allows to add Test implementation classes into configuration
+            method which allows to add Test implementation classes into configuration
             and execution of the NbModuleSuite.
             </p>
         </description>

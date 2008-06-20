@@ -71,8 +71,10 @@ public class QuickSearchPopup extends javax.swing.JPanel implements ListDataList
 
     void invoke() {
         ItemResult result = ((ItemResult) jList1.getModel().getElementAt(jList1.getSelectedIndex()));
-        RecentSearches.getDefault().add(result);
-        result.getAction().run();
+        if (result != null) {
+            RecentSearches.getDefault().add(result);
+            result.getAction().run();
+        }
     }
 
     void selectNext() {

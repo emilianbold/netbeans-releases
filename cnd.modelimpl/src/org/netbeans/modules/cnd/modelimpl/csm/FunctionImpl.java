@@ -655,21 +655,17 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
     
     private static boolean initConst(AST node) {
-        boolean ret = false;
         AST token = node.getFirstChild();
         while( token != null &&  token.getType() != CPPTokenTypes.CSM_QUALIFIED_ID) {
             token = token.getNextSibling();
         }
         while( token != null ) {
-            if( token.getType() == CPPTokenTypes.LITERAL_const ||
-                token.getType() == CPPTokenTypes.LITERAL___const ||
-                token.getType() == CPPTokenTypes.LITERAL___const__) {
-                ret = true;
-                break;
+            if (AstRenderer.isConstQualifier(token.getType())) {
+                return true;
             }
             token = token.getNextSibling();
         }
-        return ret;
+        return false;
     }
     
     /**

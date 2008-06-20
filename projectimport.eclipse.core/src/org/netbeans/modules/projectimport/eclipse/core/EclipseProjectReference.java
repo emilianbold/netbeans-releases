@@ -63,7 +63,7 @@ import org.openide.util.NbPreferences;
  * for eclipse project location and eclipse workspace location is shown. These
  * are stored in NbPreferences in userdir for now.
  */
-class EclipseProjectReference {
+public class EclipseProjectReference {
 
     private Project project;
     private File eclipseProjectLocation;
@@ -75,16 +75,14 @@ class EclipseProjectReference {
     private EclipseProject eclipseProject;
     private ProjectImportModel importModel;
     
-    private static final String NS = "http://www.netbeans.org/ns/eclipse-reference/1";
-    
-    public EclipseProjectReference(Project project, String eclipseProjectLocation, String eclipseWorkspaceLocation, String timestamp, String key) {
+    public EclipseProjectReference(Project project, String eclipseProjectLocation, String eclipseWorkspaceLocation, long timestamp, String key) {
         this.eclipseProjectLocation = PropertyUtils.resolveFile(FileUtil.toFile(project.getProjectDirectory()), eclipseProjectLocation);
         if (eclipseWorkspaceLocation != null) {
             this.eclipseWorkspaceLocation = PropertyUtils.resolveFile(FileUtil.toFile(project.getProjectDirectory()), eclipseWorkspaceLocation);
         } else {
             this.eclipseWorkspaceLocation = null;
         }
-        this.timestamp = Long.parseLong(timestamp);
+        this.timestamp = timestamp;
         this.key = key;
         this.project = project;
     }
@@ -136,7 +134,7 @@ class EclipseProjectReference {
         if (projectLoc == null) {
             return null;
         }
-        return new EclipseProjectReference(project, projectLoc, prefs.get("workspace", null), prefs.get("timestamp", null), prefs.get("key", null));
+        return new EclipseProjectReference(project, projectLoc, prefs.get("workspace", null), Long.parseLong(prefs.get("timestamp", null)), prefs.get("key", null));
     }
     
     public static void write(Project project, EclipseProjectReference ref) {
@@ -213,7 +211,7 @@ class EclipseProjectReference {
                  (eclipseWorkspaceLocation != null && EclipseUtils.isRegularWorkSpace(getFallbackWorkspaceProjectLocation())));
     }
 
-    private EclipseProject getEclipseProject(boolean forceReload) {
+    public EclipseProject getEclipseProject(boolean forceReload) {
         if (forceReload || !initialized) {
             try {
                 eclipseProject = ProjectFactory.getInstance().load(getFallbackEclipseProjectLocation(), getFallbackWorkspaceProjectLocation());
@@ -224,7 +222,7 @@ class EclipseProjectReference {
                 return null;
             }
             File f = FileUtil.toFile(project.getProjectDirectory());
-            importModel = new ProjectImportModel(eclipseProject, f.getAbsolutePath(), 
+            importModel = new ProjectImportModel(eclipseProject, f, 
                     JavaPlatformSupport.getJavaPlatformSupport().getJavaPlatform(eclipseProject, new ArrayList<String>()), Collections.<Project>emptyList());
             initialized = true;
         }

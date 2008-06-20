@@ -52,6 +52,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -71,7 +72,7 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         if (map == null) {
             map = new HashMap<String, RemoteUserInfo>();
         }
-        String key = host + ":" + user;
+        String key = host + ':' + user;
         RemoteUserInfo ui = map.get(key);
         if (ui == null) {
             ui = new RemoteUserInfo();
@@ -83,9 +84,9 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
     public String getPassword() { return passwd; }
 
     public boolean promptYesNo(String str) {
-        System.err.println("RPB.MUI.promptYesNo: Warning: " + str);
-        Object[] options = { "yes", "no" };
-        int foo = JOptionPane.showOptionDialog(null, str, "Warning", JOptionPane.DEFAULT_OPTION, 
+        Object[] options = { "yes", "no" }; // NOI18N
+        int foo = JOptionPane.showOptionDialog(null, str,
+                NbBundle.getMessage(RemoteUserInfo.class, "TITLE_YN_Warning"), JOptionPane.DEFAULT_OPTION, 
              JOptionPane.WARNING_MESSAGE, null, options, options[0]);
        return foo == 0;
     }
@@ -146,8 +147,9 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
             gbc.gridy++;
         }
 
-        if (JOptionPane.showConfirmDialog(null, panel, destination + ": " + name, JOptionPane.OK_CANCEL_OPTION,
-                                   JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
+        if (JOptionPane.showConfirmDialog(null, panel,
+                    NbBundle.getMessage(RemoteUserInfo.class, "TITLE_KeyboardInteractive", destination, name),
+                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
             String[] response = new String[prompt.length];
             for (int i = 0; i < prompt.length; i++) {
                 response[i] = texts[i].getText();

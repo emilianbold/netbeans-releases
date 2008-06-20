@@ -753,7 +753,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     
     // private method for deleting every subfiles/subdirectories of a file object
     static void deleteSubFiles(File file) throws IOException {
-        if (file.isDirectory()) {
+        if (file.isDirectory() && file.exists()) {
             File files[] = file.listFiles();
             for (int i = 0; i < files.length; i++) {
                 deleteFile(files[i]);

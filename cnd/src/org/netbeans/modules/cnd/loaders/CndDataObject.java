@@ -53,7 +53,6 @@ import org.openide.loaders.MultiDataObject.Entry;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
-import org.openide.nodes.CookieSet;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.cnd.execution.BinaryExecSupport;
@@ -76,6 +75,11 @@ public abstract class CndDataObject extends MultiDataObject {
 	init();
     }
 
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
+    }
+    
     /**
      *  Initialize cookies for this DataObject. This method may get overridden
      *  by derived classes who need to use a different set of cookies.

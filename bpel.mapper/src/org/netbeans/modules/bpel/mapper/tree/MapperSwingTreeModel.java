@@ -260,7 +260,9 @@ public class MapperSwingTreeModel implements ExtTreeModel<MapperTreeNode>,
 //        JMenuItem newItem = new JMenuItem(new DeleteGraphSelectionAction(
 //                getMapperTcContext().getMapper()));
 //        newMenu.add(newItem);
-        JMenuItem newItem = new JMenuItem(PrintManager.getDefault().getPrintPreviewAction());
+
+        // vlv: print
+        JMenuItem newItem = new JMenuItem(PrintManager.printPreviewAction());
         newItem.setText("Print Preview");
         newItem.setMnemonic(KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_DOWN_MASK + 
                 KeyEvent.SHIFT_DOWN_MASK + KeyEvent.ALT_DOWN_MASK).getKeyCode());

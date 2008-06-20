@@ -642,7 +642,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
             }
         }
 
-        java.util.Set set = getMultiFileSystem().createLocksOn(getPath());
+        Set<? extends FileSystem> set = getMultiFileSystem().createLocksOn(getPath());
         MfLock l = new MfLock(leader, delegates(), set);
 
         lock = new WeakReference<MfLock>(l);
@@ -1573,7 +1573,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
         * @param systems a set of filesystems we should create lock on
         * @exception IOException if the lock cannot be obtained
         */
-        public MfLock(FileObject leader, Enumeration<FileObject> delegates, Set systems)
+        public MfLock(FileObject leader, Enumeration<FileObject> delegates, Set<? extends FileSystem> systems)
         throws IOException {
             while (delegates.hasMoreElements()) {
                 FileObject fo = delegates.nextElement();

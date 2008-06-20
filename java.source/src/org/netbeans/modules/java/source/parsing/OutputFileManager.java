@@ -43,14 +43,12 @@ package org.netbeans.modules.java.source.parsing;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.tools.JavaFileManager.Location;
 import javax.tools.JavaFileObject;
@@ -73,8 +71,6 @@ public class OutputFileManager extends CachingFileManager {
     public class InvalidSourcePath extends IllegalStateException {
         
     }
-
-    private static boolean debug = Boolean.getBoolean("org.netbeans.modules.java.source.parsing.OutputFileManager.debug");      //NOI18N
 
     private ClassPath scp;
     private final Set<File> filteredFiles = new HashSet<File>();
@@ -139,11 +135,12 @@ public class OutputFileManager extends CachingFileManager {
                 //Deleted project
                 throw new InvalidSourcePath ();
             }
-            if (index < 0 && sibling != null && !(new File (sibling.toUri()).exists())) {
-                //Deleted project
+            if (index < 0) {                
+                //Deleted project or source path changed during the scan, log & ignore it
+                Logger.getLogger(OutputFileManager.class.getName()).warning(
+                    "No output for class: " + className +" sibling: " + sibling +" srcRoots: " + this.scp + " cacheRoots: "  + this.cp);    //NOI18N
                 throw new InvalidSourcePath ();
-            }
-            assert index >= 0 : "class: " + className +" sibling: " + sibling +" srcRoots: " + this.scp + " cacheRoots: "  + this.cp;
+            }            
             assert index < this.cp.entries().size() : "index "+ index +" class: " + className +" sibling: " + sibling +" srcRoots: " + this.scp + " cacheRoots: " + this.cp;
             File activeRoot = new File (URI.create(this.cp.entries().get(index).getURL().toExternalForm()));
             String baseName = className.replace('.', File.separatorChar);       //NOI18N
@@ -253,12 +250,5 @@ public class OutputFileManager extends CachingFileManager {
         }        
 	return -2;
     }
-    
-    private static boolean debug (String message) {
-        if (debug) {
-            Logger.getLogger("global").log(Level.INFO, message);
-        }
-        return true;
-    }        
-    
+        
 }

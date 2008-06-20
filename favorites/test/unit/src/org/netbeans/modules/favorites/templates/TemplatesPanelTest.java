@@ -51,6 +51,7 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.test.MockLookup;
 
 /**
  * Tests creating/renaming/removing templates via TemplatesPanel.
@@ -70,6 +71,7 @@ public class TemplatesPanelTest extends NbTestCase {
     }
     
     protected void setUp () {
+        MockLookup.setInstances(new Repository(FileUtil.createMemoryFileSystem()));
         try {
             templateFolder = Repository.getDefault ().getDefaultFileSystem ().getRoot ().createFolder ("TestTemplates");
         } catch (IOException ioe) {
