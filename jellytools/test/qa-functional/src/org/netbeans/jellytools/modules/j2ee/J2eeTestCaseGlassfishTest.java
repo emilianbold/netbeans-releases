@@ -38,10 +38,11 @@
  */
 package org.netbeans.jellytools.modules.j2ee;
 
+import java.io.File;
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestResult;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.modules.j2ee.J2eeTestCase.Server;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbModuleSuite.Configuration;
 import static org.netbeans.jellytools.modules.j2ee.J2eeTestCase.Server.*;
@@ -50,9 +51,9 @@ import static org.netbeans.jellytools.modules.j2ee.J2eeTestCase.Server.*;
  *
  * @author Jindrich Sedek
  */
-public class J2eeTestCaseTest extends JellyTestCase {
+public class J2eeTestCaseGlassfishTest extends JellyTestCase {
 
-    public J2eeTestCaseTest(String name) {
+    public J2eeTestCaseGlassfishTest(String name) {
         super(name);
     }
 
@@ -69,63 +70,35 @@ public class J2eeTestCaseTest extends JellyTestCase {
         System.clearProperty("testA");
     }
 
-    public void testNoServer() {
+    public void testGlassfishWithoutDomain() {
+        System.setProperty("j2ee.appserver.path", getDataDir().getPath());
         Configuration conf = NbModuleSuite.createConfiguration(TD.class);
-        conf = J2eeTestCase.addServerTests(conf).gui(false);
+        conf = J2eeTestCase.addServerTests(GLASSFISH, conf, "testA", "testB").gui(false);
         Test t = NbModuleSuite.create(conf);
         t.run(new TestResult());
-        assertEquals("just empty test - no server is registered", 1, t.countTestCases());
+        assertEquals("just empty test", 1, t.countTestCases());
     }
 
-    public void testAnyServer() {
-        System.setProperty("tomcat.home", getDataDir().getPath());
+    public void testGlassfishWithDomain() throws IOException {
+        System.setProperty("j2ee.appserver.path", getWorkDirPath());
+        new File(getWorkDir(), "domains/domain1").mkdirs();
         Configuration conf = NbModuleSuite.createConfiguration(TD.class);
-        conf = J2eeTestCase.addServerTests(conf).gui(false);
+        conf = J2eeTestCase.addServerTests(GLASSFISH, conf, "testA", "testB").gui(false);
         Test t = NbModuleSuite.create(conf);
-        t.run(new TestResult());
-        assertEquals("both TD tests and emptyTest", 3, t.countTestCases());
-    }
-
-    public void testAnyServerByNames() {
-        System.setProperty("jboss.home", getDataDir().getPath());
-        Configuration conf = NbModuleSuite.createConfiguration(TD.class);
-        conf = J2eeTestCase.addServerTests(conf, "testA", "testB").gui(false);
-        Test t = NbModuleSuite.create(conf);
-        t.run(new TestResult());
-        assertEquals("both TD tests and emptyTest", 2, t.countTestCases());
-    }
-
-    public void testTomcatSByNames() {
-        System.setProperty("tomcat.home", getDataDir().getPath());
-        Configuration conf = NbModuleSuite.createConfiguration(TD.class);
-        conf = J2eeTestCase.addServerTests(TOMCAT, conf, "testA", "testB").gui(false);
-        Test t = NbModuleSuite.create(conf);
-        t.run(new TestResult());
-        assertEquals("both TD tests and emptyTest", 2, t.countTestCases());
-    }
-
-    public void testCreateAllModulesServerSuite() {
-        System.setProperty("tomcat.home", getWorkDirPath());
-        Test t = J2eeTestCase.createAllModulesServerSuite(ANY, TD.class, "testA", "testB");
         t.run(new TestResult());
         assertEquals("both tests", 2, t.countTestCases());
     }
 
-    public void testIsRegistered() {
-        testServer(GLASSFISH, "com.sun.aas.installRoot");
-        testServer(TOMCAT, "org.netbeans.modules.tomcat.autoregister.catalinaHome");
-        testServer(JBOSS, "org.netbeans.modules.j2ee.jboss4.installRoot");
+    public void testGlassfishHome() throws IOException {
+        System.setProperty("glassfish.home", getWorkDirPath());
+        new File(getWorkDir(), "domains/domain1").mkdirs();
+        Configuration conf = NbModuleSuite.createConfiguration(TD.class);
+        conf = J2eeTestCase.addServerTests(GLASSFISH, conf, "testA", "testB").gui(false);
+        Test t = NbModuleSuite.create(conf);
+        t.run(new TestResult());
+        assertEquals("both tests", 2, t.countTestCases());
     }
 
-    private void testServer(Server server, String property) {
-        assertFalse(J2eeTestCase.isRegistered(server));
-        assertFalse(J2eeTestCase.isRegistered(ANY));
-
-        System.setProperty(property, getDataDir().getPath());
-        assertTrue(J2eeTestCase.isRegistered(server));
-        assertTrue(J2eeTestCase.isRegistered(ANY));
-        System.clearProperty(property);
-    }
 
     public static class TD extends J2eeTestCase {
 

@@ -64,7 +64,10 @@ public class J2eeTestCase extends JellyTestCase {
 
     private static Configuration addGlassfishTests(Configuration conf, Class<? extends TestCase> clazz, String... testNames) {
         Configuration result = conf;
-        String glassfishPath = System.getProperty("j2ee.appserver.path");
+        String glassfishPath = System.getProperty("glassfish.home");
+        if (glassfishPath == null){
+            glassfishPath = System.getProperty("j2ee.appserver.path");
+        }
         if (isValidPath(glassfishPath) && isValidPath(glassfishPath + "/domains/domain1")) {
             LOG.info("Setting server path " + glassfishPath);
             System.setProperty(GLASSFISH_PATH, glassfishPath);
@@ -272,6 +275,9 @@ public class J2eeTestCase extends JellyTestCase {
     }
     
     private static Configuration addTest(Configuration conf, Class<? extends TestCase> clazz, String... testNames){
+        if ((testNames == null) || (testNames.length == 0)){
+            return conf;
+        }
         if (clazz == null){
             return conf.addTest(testNames);
         }else{
