@@ -150,8 +150,8 @@ public class EditControlField implements IEditControlField
 	 */
 	public void setText(String newVal)
 	{
-		boolean modified = newVal.equals(m_Text) ? false : true;
-		setModified(modified);
+//		boolean modified = newVal.equals(m_Text) ? false : true;
+		setModified(true);
 		m_Text = newVal;
 		
 		// force recalc of our position based on new text size
