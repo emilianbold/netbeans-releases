@@ -52,6 +52,7 @@ import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 
 
 /**
@@ -80,6 +81,10 @@ public final class ServerUtilities {
      */
     public static ServerInstance getServerInstance(String uri) {
         return GlassfishInstanceProvider.getDefault().getInstance(uri);
+    }
+    
+    public static Lookup getLookupFor(ServerInstance instance) {
+        return GlassfishInstanceProvider.getDefault().getLookupFor(instance);
     }
     
     /**
@@ -128,13 +133,9 @@ public final class ServerUtilities {
     
     /**
      * Returns an instance of the AddServerWizard for this server plugin.
-     * (Formerly used by glassfish.javaee module.)
      * 
      * @return instance of the AddServerWizard for this server.
-     * 
-     * @deprecated
      */
-    @Deprecated
     public static InstantiatingIterator getAddInstanceIterator() {
         return new ServerWizardIterator();
     }
