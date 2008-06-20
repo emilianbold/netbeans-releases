@@ -293,11 +293,26 @@ public class PhpStructureScanner implements StructureScanner {
                     String name = null;
                     Expression parameter = formalParameter.getParameterName();
                     if (parameter != null) {
-                        if (parameter instanceof Variable) {
-                            Variable variable = (Variable)parameter;
+                        Variable variable = null;
+                        boolean isReference = false;
+                        if (parameter instanceof Reference) {
+                            Reference reference = (Reference)parameter;
+                            isReference = true;
+                            if (reference.getExpression() instanceof Variable) {
+                                variable = (Variable)reference.getExpression();
+                            }
+                        }
+                        else if (parameter instanceof Variable) {
+                            variable = (Variable)parameter;
+                        }
+
+                        if (variable != null) {
                             name = Utils.resolveVariableName(variable);
                             if (name != null) {
                                 name = (variable.isDollared() ? "$" + name: name); //NOI18N
+                                if (isReference) {
+                                    name = '&' + name; //NOI18N
+                                }
                             }
                         }
                         else {

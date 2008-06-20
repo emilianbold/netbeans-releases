@@ -73,6 +73,10 @@ public class PhpStructureScannerTest extends ParserTestBase{
 
     }
 
+    public void test133484() throws Exception {
+        performTest("referenceParameter_001");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         StringBuffer sb = new StringBuffer();
