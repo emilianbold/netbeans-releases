@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,47 +37,29 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.vmd.midp.components.databinding;
-
-import java.util.Collection;
-import org.netbeans.modules.vmd.api.io.DataObjectContext;
-import org.netbeans.modules.vmd.api.io.serialization.ComponentElement;
-import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
-import org.netbeans.modules.vmd.api.io.serialization.DocumentSerializationController;
-import org.netbeans.modules.vmd.api.io.serialization.PropertyElement;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
-import org.netbeans.modules.vmd.midp.components.categories.DatabindingCategoryCD;
+package org.netbeans.modules.vmd.componentssupport.options;
 
 /**
  *
- * @author karolharezlak
+ * @author Karol Harezlak
  */
-public class DatabindingDataSerializationController extends DocumentSerializationController{
 
-    @Override
-    public void approveComponents(DataObjectContext context, DesignDocument loadingDocument, String documentVersion, Collection<ComponentElement> componentElements, DocumentErrorHandler errorHandler) {
-        
+import org.netbeans.spi.options.AdvancedOption;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.NbBundle;
+
+public final class ComponentssupportAdvancedOption extends AdvancedOption {
+
+    public String getDisplayName() {
+        return NbBundle.getMessage(ComponentssupportAdvancedOption.class, "AdvancedOption_DisplayName_Componentssupport");
     }
 
-    @Override
-    public void approveProperties(DataObjectContext context, DesignDocument loadingDocument, String documentVersion, DesignComponent component, Collection<PropertyElement> propertyElements, DocumentErrorHandler errorHandler) {
-        
+    public String getTooltip() {
+        return NbBundle.getMessage(ComponentssupportAdvancedOption.class, "AdvancedOption_Tooltip_Componentssupport");
     }
 
-    @Override
-    public void postValidateDocument(DataObjectContext context, DesignDocument loadingDocument, String documentVersion, DocumentErrorHandler errorHandler) {
-        if (context.getProjectType().equals("vmd-midp")) { //NOI18N
-            MidpDocumentSupport.getCategoryComponent(loadingDocument, DatabindingCategoryCD.TYPEID);
-        }
-        
+    public OptionsPanelController create() {
+        return new ComponentssupportOptionsPanelController();
     }
-
 }
