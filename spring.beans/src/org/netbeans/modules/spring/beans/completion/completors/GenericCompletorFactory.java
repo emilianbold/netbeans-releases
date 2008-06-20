@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.spring.beans.completion.completors;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.spring.beans.completion.Completor;
 import org.netbeans.modules.spring.beans.completion.CompletorFactory;
 import org.openide.util.Exceptions;
@@ -54,12 +56,21 @@ public class GenericCompletorFactory implements CompletorFactory {
         this.clazz = clazz;
     }
 
-    public Completor createCompletor() {
+    public Completor createCompletor(int invocationOffset) {
         try {
-            return clazz.newInstance();
+            Constructor<? extends Completor> constructor = clazz.getConstructor(int.class);
+            return constructor.newInstance(invocationOffset);
         } catch (InstantiationException ex) {
             Exceptions.printStackTrace(ex);
         } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SecurityException ex) {
             Exceptions.printStackTrace(ex);
         }
 
