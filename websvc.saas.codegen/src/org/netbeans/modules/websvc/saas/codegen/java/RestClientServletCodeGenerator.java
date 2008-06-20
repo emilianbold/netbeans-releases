@@ -53,6 +53,7 @@ import org.netbeans.modules.websvc.saas.codegen.Constants.SaasAuthenticationType
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.codegen.model.RestClientSaasBean;
+import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
 
@@ -66,19 +67,19 @@ public class RestClientServletCodeGenerator extends RestClientPojoCodeGenerator 
     public RestClientServletCodeGenerator() {
         setDropFileType(Constants.DropFileType.SERVLET);
     }
-    
-    @Override
-    public void init(SaasMethod m, Document doc) throws IOException {
-        super.init(m, new RestClientSaasBean((WadlSaasMethod) m, true), doc);
-    }
-    
+
     @Override
     public boolean canAccept(SaasMethod method, Document doc) {
-        if (method instanceof WadlSaasMethod && 
+        if (SaasBean.canAccept(method, WadlSaasMethod.class, getDropFileType()) &&
                 Util.isServlet(NbEditorUtilities.getDataObject(doc))) {
             return true;
         }
         return false;
+    }
+    
+    @Override
+    public void init(SaasMethod m, Document doc) throws IOException {
+        super.init(m, new RestClientSaasBean((WadlSaasMethod) m, true), doc);
     }
     
     @Override

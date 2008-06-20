@@ -41,8 +41,10 @@
 package org.netbeans.modules.quicksearch;
 
 import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
+import javax.swing.JLayeredPane;
 import javax.swing.JList;
-import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
@@ -58,6 +60,9 @@ public class QuickSearchPopup extends javax.swing.JPanel implements ListDataList
     private QuickSearchComboBar comboBar;
     
     private ResultsModel rModel;
+
+    /* Rect to store repetitive bounds computation */
+    private Rectangle popupBounds = new Rectangle();
 
     /** Creates new form SilverPopup */
     public QuickSearchPopup (QuickSearchComboBar comboBar) {
@@ -89,11 +94,10 @@ public class QuickSearchPopup extends javax.swing.JPanel implements ListDataList
         return jList1;
     }
     
-    void update(String text) {
+    void update (String text) {
         // TBD - fast coming evaluation requests coalescing
         CommandEvaluator.evaluate(text, rModel);
     }
-    
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -111,6 +115,8 @@ public class QuickSearchPopup extends javax.swing.JPanel implements ListDataList
 
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+
+        jList1.setFocusable(false);
         jScrollPane1.setViewportView(jList1);
 
         add(jScrollPane1, java.awt.BorderLayout.CENTER);
@@ -138,35 +144,57 @@ public class QuickSearchPopup extends javax.swing.JPanel implements ListDataList
     }
 
     /**
-     * Runnable implementation, updates popup.
-     * This "updatePopup" is invoked using SwingUtilities.invokeLater to let
-     * JList compute its preferred size well. 
+     * Updates size and visibility of this panel according to model content
      */
-    private void updatePopup() {
-        JWindow popup = comboBar.getPopup();
-        if (popup == null) {
-            return;
-        }
+    private void updatePopup () {
+        
+        // TBD - coalesce fast coming update requests to lower popup flickering
         
         int modelSize = rModel.getSize();
+        
         if (modelSize > 0) {
-            // hack to make jList.getpreferredSize work correctly
-            // JList is listening on ResultsModel same as us and order of listeners
-            // is undefined, so we have to force update of JList's layout data            
-            jList1.setFixedCellHeight(15);
-            jList1.setFixedCellHeight(-1);
-            // end of hack
-            jList1.setVisibleRowCount(modelSize);
-            Dimension preferredSize = jList1.getPreferredSize();
-            popup.setSize(preferredSize.width + 3, preferredSize.height + 3);
-            if (!popup.isVisible()) {
+            // plug this popup into layered pane if needed
+            JLayeredPane lPane = JLayeredPane.getLayeredPaneAbove(comboBar);
+            if (!isDisplayable()) {
+                lPane.add(this, new Integer(JLayeredPane.POPUP_LAYER-1) );
+            }
+
+            computePopupBounds(popupBounds, lPane, modelSize);
+            setBounds(popupBounds);
+            
+            if (!isVisible()) {
                 jList1.setSelectedIndex(0);
-                popup.setVisible(true);
+                setVisible(true);
                 comboBar.getCommand().requestFocus();
             }
+            // needed on JDK 1.5.x to repaint correctly
+            revalidate();
         } else {
-            popup.setVisible(false);
+            // empty model, so hide us
+            setVisible(false);
         }
     }
+    
+    private void computePopupBounds (Rectangle result, JLayeredPane lPane, int modelSize) {
+        Point location = new Point(-SearchResultRender.shift - 6, comboBar.getSize().height - 1);
+        location = SwingUtilities.convertPoint(comboBar, location, lPane);
+        result.setLocation(location);
+
+        // hack to make jList.getpreferredSize work correctly
+        // JList is listening on ResultsModel same as us and order of listeners
+        // is undefined, so we have to force update of JList's layout data
+        jList1.setFixedCellHeight(15);
+        jList1.setFixedCellHeight(-1);
+        // end of hack
+        
+        jList1.setVisibleRowCount(modelSize);
+        Dimension preferredSize = jList1.getPreferredSize();
+        
+        preferredSize.width += 3;
+        preferredSize.height += 3;
+        
+        result.setSize(preferredSize);
+    }
+    
 
 }

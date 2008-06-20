@@ -102,6 +102,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -395,22 +396,16 @@ public class RefactoringUtils {
         return false;
     }
 
-    public static boolean isFromEditor(EditorCookie ec) {
+    static boolean isFromEditor(EditorCookie ec) {
         if (ec != null && ec.getOpenedPanes() != null) {
-            // This doesn't seem to work well - a lot of the time, I'm right clicking
-            // on the editor and it still has another activated view (this is on the mac)
-            // and as a result does file-oriented refactoring rather than the specific
-            // editor node...
-            //            TopComponent activetc = TopComponent.getRegistry().getActivated();
-            //            if (activetc instanceof CloneableEditorSupport.Pane) {
-            //
-            return true;
-        //            }
+            TopComponent activetc = TopComponent.getRegistry().getActivated();
+            if (activetc instanceof CloneableEditorSupport.Pane) {
+                return true;
+            }
         }
-
         return false;
     }
-
+    
     public static List<ASTNode> underCaret(CompilationInfo info, final int offset) {
         class Result extends Error {
 

@@ -217,6 +217,10 @@ public class ProviderUtil {
      * @provider the provider whose table generation property will be used.
      */
     public static void setTableGeneration(PersistenceUnit persistenceUnit, String tableGenerationStrategy, Provider provider){
+        // issue 123224. The user can have a persistence.xml in J2SE project without provider specified
+        if(provider == null ) {
+            return;
+        }
         Property tableGenerationProperty = provider.getTableGenerationProperty(tableGenerationStrategy);
         Properties properties = persistenceUnit.getProperties();
         if (properties == null) {

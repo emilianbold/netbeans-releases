@@ -124,7 +124,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     /** @see "#66278" */
     public static final String JAVAC_COMPILERARGS = "javac.compilerargs"; // NOI18N
     
-    static final String[] SOURCE_LEVELS = {"1.4", "1.5"}; // NOI18N
+    static final String[] SOURCE_LEVELS = {"1.4", "1.5", "1.6"}; // NOI18N
     
     private final static Map<String, String> DEFAULTS;
     

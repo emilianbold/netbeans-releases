@@ -76,6 +76,7 @@ import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.w3c.dom.svg.SVGSVGElement;
 
@@ -463,7 +464,12 @@ public class AnimationRasterizer {
         
         if (params.isInSingleImage()) {
             BufferedImage img = rasterizeFramesInSingleImage( svgImage, params);
-            FileObject fo = dir.createData(createFileName(filenameRoot, params, -1, -1));
+            String name = createFileName(filenameRoot, params, -1, -1);
+            FileObject fo  = dir.getFileObject(name);
+            if (fo != null){
+                fo.delete();
+            }
+            fo = dir.createData(name);
             
             writeImageToFile( img, fo, params);
             file = fo;

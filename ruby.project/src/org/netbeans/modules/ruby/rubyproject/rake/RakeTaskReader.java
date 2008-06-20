@@ -44,22 +44,20 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
+import org.openide.util.io.ReaderInputStream;
 
 final class RakeTaskReader {
-
-    /** Error message emitted by 'rake' tool during fail. */
-    private static final String RAKE_ABORTED = "rake aborted!"; // NOI18N
 
     private final Project project;
 
@@ -67,15 +65,15 @@ final class RakeTaskReader {
         this.project = project;
     }
 
-    List<RakeTask> getRakeTaskTree() {
+    Set<RakeTask> getRakeTaskTree() {
         try {
             String rawOutput = rawRead();
             return rawOutput == null
-                    ? Collections.<RakeTask>emptyList()
+                    ? Collections.<RakeTask>emptySet()
                     : parseTasks(new StringReader(rawOutput));
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
-            return Collections.emptyList();
+            return Collections.emptySet();
         }
     }
 
@@ -85,7 +83,7 @@ final class RakeTaskReader {
             final StringBuilder sb = new StringBuilder(5000);
             projectDir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
-                    FileObject rakeTasksFile = projectDir.getFileObject(RakeSupport.RAKE_T_OUTPUT);
+                    FileObject rakeTasksFile = projectDir.getFileObject(RakeSupport.RAKE_D_OUTPUT);
 
                     if (rakeTasksFile == null) {
                         return;
@@ -119,48 +117,22 @@ final class RakeTaskReader {
         }
     }
 
-    private static List<RakeTask> parseTasks(Reader is) throws IOException {
-        BufferedReader reader = new BufferedReader(is);
-        List<RakeTask> tasks = new ArrayList<RakeTask>(40);
+    private static Set<RakeTask> parseTasks(Reader is) throws IOException {
+        Properties tasksProps = new Properties();
+        tasksProps.load(new ReaderInputStream(is));
+        
+        Set<RakeTask> tasks = new TreeSet<RakeTask>();
         Map<String, RakeTask> map = new HashMap<String, RakeTask>(50);
         Set<String> processedTasks = new HashSet<String>();
 
-        while (true) {
-            String line = reader.readLine();
-
-            if (line == null) {
-                break;
-            }
-
-            if (line.startsWith(RAKE_ABORTED)) {
-                continue;
-            }
-
-            if (!line.startsWith("rake ")) { // NOI18N
-                continue;
-            }
-
-            int start = 5;
-            int end = line.indexOf(' ', start);
-
-            if (end == -1) {
-                end = line.indexOf('#');
-                if (end == -1) {
-                    end = line.length();
-                }
-            }
-
-            String task = line.substring(start, end);
+        for (Map.Entry<Object, Object> entry : tasksProps.entrySet()) {
+            String task = (String) entry.getKey();
+            String description = (String) entry.getValue();
+            
             if (!processedTasks.add(task)) {
                 continue;
             }
-            String description = null;
-            int descIndex = line.indexOf('#', end);
-
-            if ((descIndex != -1) && (descIndex < (line.length() - 2))) {
-                description = line.substring(descIndex + 2);
-            }
-
+            
             // Tokenize into categories (db:fixtures:load -> db | fixtures | load)
             RakeTask parent = null;
             String[] path = task.split(":"); // NOI18N
