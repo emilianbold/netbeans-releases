@@ -102,11 +102,14 @@ public class NewEventPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        eventTypeLabel.setText(org.openide.util.NbBundle.getMessage(NewEventPanel.class, "NewEventPanel.eventTypeLabel.text")); // NOI18N
+        eventTypeLabel.setLabelFor(eventTypeComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(eventTypeLabel, org.openide.util.NbBundle.getMessage(NewEventPanel.class, "NewEventPanel.eventTypeLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(eventTypeLabel, gridBagConstraints);
+        eventTypeLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NewEventPanel.class, "NewEventPanel.eventTypeLabel.text")); // NOI18N
+        eventTypeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewEventPanel.class, "NewEventPanel.eventTypeLabel.text")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;

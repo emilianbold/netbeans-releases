@@ -155,13 +155,13 @@ public class PropertyPanel extends javax.swing.JPanel implements ActionListener 
 
         setLayout(new java.awt.GridBagLayout());
 
-        nameLabel.setText(org.openide.util.NbBundle.getMessage(PropertyPanel.class, "PropertyPanel.nameLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(PropertyPanel.class, "PropertyPanel.nameLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(nameLabel, gridBagConstraints);
 
-        valueLabel.setText(org.openide.util.NbBundle.getMessage(PropertyPanel.class, "PropertyPanel.valueLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(valueLabel, org.openide.util.NbBundle.getMessage(PropertyPanel.class, "PropertyPanel.valueLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
