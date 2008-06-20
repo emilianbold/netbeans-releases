@@ -42,7 +42,6 @@ package org.netbeans.modules.extexecution;
 
 import java.awt.event.ActionEvent;
 
-import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
@@ -51,8 +50,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptor.RerunCondition;
 import org.netbeans.modules.extexecution.api.ExecutionService;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 
@@ -72,7 +71,7 @@ public final class RerunAction extends AbstractAction implements ChangeListener 
 
     public RerunAction() {
         setEnabled(false); // initially, until ready
-        putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage(
+        putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(
                 "org/netbeans/modules/extexecution/resources/rerun.png"))); // NOI18N
         putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(RerunAction.class, "Rerun"));
     }
@@ -106,7 +105,7 @@ public final class RerunAction extends AbstractAction implements ChangeListener 
         }
 
         if (actionService != null) {
-            Accessor.getDefault().run(actionService);
+            actionService.run();
         }
     }
 
@@ -128,40 +127,5 @@ public final class RerunAction extends AbstractAction implements ChangeListener 
         synchronized (this) {
             return super.isEnabled() && (condition == null || condition.isRerunPossible());
         }
-    }
-
-    /**
-     * The accessor pattern class.
-     */
-    public abstract static class Accessor {
-
-        private static volatile Accessor accessor;
-
-        public static void setDefault(Accessor accessor) {
-            assert Accessor.accessor == null : "Already initialized accessor";
-
-            Accessor.accessor = accessor;
-        }
-
-        public static Accessor getDefault() {
-            if (accessor != null) {
-                return accessor;
-            }
-
-            // invokes static initializer of ExecutionService.class
-            // that will assign value to the DEFAULT field above
-            Class c = ExecutionService.class;
-            try {
-                Class.forName(c.getName(), true, c.getClassLoader());
-            } catch (ClassNotFoundException ex) {
-                assert false : ex;
-            }
-
-            assert accessor != null : "The DEFAULT field must be initialized";
-            return accessor;
-        }
-
-        public abstract Future<Integer> run(ExecutionService service);
-
     }
 }

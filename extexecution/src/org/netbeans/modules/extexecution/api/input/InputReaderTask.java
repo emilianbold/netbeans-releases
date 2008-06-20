@@ -157,8 +157,6 @@ public final class InputReaderTask implements Runnable {
                     break;
                 }
             }
-
-            inputReader.readInput(inputProcessor);
         } catch (Exception ex) {
             if (!interrupted && !Thread.currentThread().isInterrupted()) {
                 LOGGER.log(Level.FINE, null, ex);

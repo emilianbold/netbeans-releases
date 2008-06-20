@@ -41,15 +41,14 @@
 
 package org.netbeans.modules.extexecution;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeSet;
 import java.util.WeakHashMap;
-import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
 
-public final class ManagedInputOutput {
+public final class ManagedInputOutput implements Comparable<ManagedInputOutput> {
 
     /**
      * All tabs which were used for some process which has now ended.
@@ -69,22 +68,6 @@ public final class ManagedInputOutput {
         this.data = data;
     }
 
-    public InputOutput getInputOutput() {
-        return io;
-    }
-
-    public String getDisplayName() {
-        return data.displayName;
-    }
-
-    public StopAction getStopAction() {
-        return data.stopAction;
-    }
-
-    public RerunAction getRerunAction() {
-        return data.rerunAction;
-    }
-
     public static void addInputOutput(InputOutput io, String displayName,
             StopAction stopAction, RerunAction rerunAction) {
 
@@ -101,8 +84,10 @@ public final class ManagedInputOutput {
      */
     public static ManagedInputOutput getInputOutput(String name, boolean actions) {
         ManagedInputOutput result = null;
-        
-        synchronized (AVAILABLE) {    
+
+        TreeSet<ManagedInputOutput> candidates = new TreeSet<ManagedInputOutput>();
+
+        synchronized (AVAILABLE) {
             for (Iterator<Entry<InputOutput, Data>> it = AVAILABLE.entrySet().iterator(); it.hasNext();) {
                 Entry<InputOutput, Data> entry = it.next();
 
@@ -118,13 +103,37 @@ public final class ManagedInputOutput {
                     if ((actions && data.rerunAction != null && data.stopAction != null)
                             || !actions && data.rerunAction == null && data.stopAction == null) {
                         // Reuse it.
-                        result = new ManagedInputOutput(free, data);
-                        it.remove();
+                        candidates.add(new ManagedInputOutput(free, data));
                     } // continue to remove all closed tabs
                 }
             }
         }
+
+        if (!candidates.isEmpty()) {
+            result = candidates.first();
+            AVAILABLE.remove(result.io);
+        }
         return result;
+    }
+
+    public InputOutput getInputOutput() {
+        return io;
+    }
+
+    public String getDisplayName() {
+        return data.displayName;
+    }
+
+    public StopAction getStopAction() {
+        return data.stopAction;
+    }
+
+    public RerunAction getRerunAction() {
+        return data.rerunAction;
+    }
+
+    public int compareTo(ManagedInputOutput o) {
+        return data.displayName.compareTo(o.data.displayName);
     }
 
     private static boolean isAppropriateName(String base, String toMatch) {
@@ -147,5 +156,6 @@ public final class ManagedInputOutput {
             this.stopAction = stopAction;
             this.rerunAction = rerunAction;
         }
+
     }
 }
