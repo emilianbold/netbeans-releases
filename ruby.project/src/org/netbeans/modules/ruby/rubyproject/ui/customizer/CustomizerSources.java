@@ -56,9 +56,13 @@ import javax.swing.plaf.UIResource;
 import java.io.File;
 import java.nio.charset.Charset;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -67,8 +71,9 @@ import org.openide.util.HelpCtx;
 public class CustomizerSources extends JPanel implements HelpCtx.Provider {
     
     private String originalEncoding;
+    private boolean notified;
     private final RubyProjectProperties uiProperties;
-
+    
     public CustomizerSources( RubyProjectProperties uiProperties ) {
         this.uiProperties = uiProperties;
         initComponents();
@@ -114,6 +119,18 @@ public class CustomizerSources extends JPanel implements HelpCtx.Provider {
         this.encoding.setModel(new EncodingModel(this.originalEncoding));
         this.encoding.setRenderer(new EncodingRenderer());
         
+        final String lafid = UIManager.getLookAndFeel().getID();
+        if (!"Aqua".equals(lafid)) { //NOI18N
+            this.encoding.putClientProperty("JComboBox.isTableCellEditor", Boolean.TRUE);    //NOI18N
+            this.encoding.addItemListener(new java.awt.event.ItemListener() {
+
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    javax.swing.JComboBox combo = (javax.swing.JComboBox) e.getSource();
+                    combo.setPopupVisible(false);
+                }
+            });
+        }
+
 
         this.encoding.addActionListener(new ActionListener () {
             public void actionPerformed(ActionEvent arg0) {
@@ -123,15 +140,20 @@ public class CustomizerSources extends JPanel implements HelpCtx.Provider {
     }
 
     private void handleEncodingChange () {
-            Charset enc = (Charset) encoding.getSelectedItem();
-            String encName;
-            if (enc != null) {
-                encName = enc.name();
-            }
-            else {
-                encName = originalEncoding;
-            }
-            this.uiProperties.putAdditionalProperty(RubyProjectProperties.SOURCE_ENCODING, encName);
+        Charset enc = (Charset) encoding.getSelectedItem();
+        String encName;
+        if (enc != null) {
+            encName = enc.name();
+        } else {
+            encName = originalEncoding;
+        }
+        if (!notified && encName != null && !encName.equals(originalEncoding)) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(CustomizerSources.class, "MSG_EncodingWarning"), NotifyDescriptor.WARNING_MESSAGE));
+            notified = true;
+        }
+
+        this.uiProperties.putAdditionalProperty(RubyProjectProperties.SOURCE_ENCODING, encName);
     }
 
     public HelpCtx getHelpCtx() {

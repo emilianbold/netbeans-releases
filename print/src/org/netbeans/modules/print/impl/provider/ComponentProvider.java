@@ -77,8 +77,7 @@ public class ComponentProvider implements PrintProvider {
     int componentWidth = component.getWidth();
     int componentHeight = component.getHeight();
 
-    double zoom =
-      getZoom(pageZoom, pageWidth, pageHeight, componentWidth, componentHeight);
+    double zoom = getZoom(pageZoom, pageWidth, pageHeight, componentWidth, componentHeight);
 
     componentWidth = (int) Math.floor(componentWidth * zoom);
     componentHeight = (int) Math.floor(componentHeight * zoom);

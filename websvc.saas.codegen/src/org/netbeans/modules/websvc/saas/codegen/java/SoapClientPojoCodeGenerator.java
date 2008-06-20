@@ -41,18 +41,16 @@
 package org.netbeans.modules.websvc.saas.codegen.java;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.modules.websvc.saas.codegen.Constants;
 import org.netbeans.modules.websvc.saas.codegen.model.SoapClientOperationInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
 import org.netbeans.modules.websvc.saas.codegen.model.SoapClientSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
-import org.openide.filesystems.FileObject;
 
 /**
  * Code generator for REST services wrapping WSDL-based web service.
@@ -62,11 +60,13 @@ import org.openide.filesystems.FileObject;
 public class SoapClientPojoCodeGenerator extends SoapClientRestResourceCodeGenerator {
         
     public SoapClientPojoCodeGenerator() {
-        super();
+        setDropFileType(Constants.DropFileType.JAVA_CLIENT);
     }
     
+    @Override
     public boolean canAccept(SaasMethod method, Document doc) {
-        if (method instanceof WsdlSaasMethod && Util.isJava(doc)) {
+        if (SaasBean.canAccept(method, WsdlSaasMethod.class, getDropFileType()) &&
+                Util.isJava(doc)) {
             return true;
         }
         return false;
@@ -75,56 +75,6 @@ public class SoapClientPojoCodeGenerator extends SoapClientRestResourceCodeGener
     @Override
     public SoapClientSaasBean getBean() {
         return (SoapClientSaasBean) super.getBean();
-    }
-    
-    @Override
-    public Set<FileObject> generate() throws IOException {
-        preGenerate();
-        
-        insertSaasServiceAccessCode(isInBlock(getTargetDocument()));
-        //addImportsToTargetFile();
-        
-        finishProgressReporting();
-
-        return new HashSet<FileObject>(Collections.EMPTY_LIST);
-    }
-    
-    @Override
-    protected String getCustomMethodBody() throws IOException {
-        String methodBody = INDENT + "try {\n";
-        for (ParameterInfo param : getBean().getQueryParameters()) {
-            String name = param.getName();
-            methodBody += INDENT_2 + param.getType().getName() + " " + name + " = "+
-                    resolveInitValue(param)+"\n";
-        }
-        SoapClientOperationInfo[] operations = getBean().getOperationInfos();
-        for (SoapClientOperationInfo info : operations) {
-            methodBody += getWSInvocationCode(info);
-        }
-        methodBody += INDENT + "} catch (Exception ex) {\n";
-        methodBody += INDENT_2 + "ex.printStackTrace();\n";
-        methodBody += INDENT + "}\n";
-        return methodBody;
-    }
-    
-    /**
-     *  Insert the Saas client call
-     */
-    protected void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
-        try {
-            String code = "";
-            if(isInBlock) {
-                code = getCustomMethodBody();
-            } else {
-                code = "\nprivate String call"+getBean().getName()+"Service() {\n";
-                code += getCustomMethodBody()+"\n";
-                code += "return result;\n";
-                code += "}\n";
-            }
-            insert(code, true);
-        } catch (BadLocationException ex) {
-            throw new IOException(ex.getMessage());
-        }
     }
     
 }

@@ -43,6 +43,7 @@ package org.netbeans.modules.autoupdate.services;
 
 import java.io.File;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
@@ -56,11 +57,9 @@ public class InstallTest extends OperationsTestImpl {
     protected String moduleCodeNameBaseForTest() {
         return "org.yourorghere.independent";//NOI18N
     } 
-    
+
+    @RandomlyFails
     public void testSelf () throws Exception {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return;
-        }
         File pf = getWorkDir ();
         File lastModified = new File (pf, ".lastModified"); // NOI18N
         lastModified.createNewFile ();

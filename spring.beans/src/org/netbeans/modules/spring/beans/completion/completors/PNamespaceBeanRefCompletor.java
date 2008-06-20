@@ -39,10 +39,13 @@
 package org.netbeans.modules.spring.beans.completion.completors;
 
 import java.io.IOException;
+import java.util.List;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.spring.beans.completion.CompletionContext;
 import org.netbeans.modules.spring.beans.completion.Completor;
-import org.netbeans.modules.spring.beans.completion.QueryProgress;
+import org.netbeans.modules.spring.beans.completion.CompletorUtils;
+import org.netbeans.modules.spring.beans.completion.SpringCompletionResult;
+import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 
 /**
@@ -51,11 +54,17 @@ import org.netbeans.modules.spring.beans.editor.ContextUtilities;
  */
 public class PNamespaceBeanRefCompletor extends Completor {
 
-    public PNamespaceBeanRefCompletor() {
+    public PNamespaceBeanRefCompletor(int invocationOffset) {
+        super(invocationOffset);
     }
 
     @Override
-    protected void computeCompletionItems(CompletionContext context, QueryProgress progress) throws IOException {
+    protected int initAnchorOffset(CompletionContext context) {
+        return context.getCurrentToken().getOffset() + 1;
+    }
+
+    @Override
+    protected void compute(CompletionContext context) throws IOException {
         TokenItem attribToken = ContextUtilities.getAttributeToken(context.getCurrentToken());
         if (attribToken == null) {
             return;
@@ -72,7 +81,20 @@ public class PNamespaceBeanRefCompletor extends Completor {
 
         // XXX: Ideally find out the property name and it's expected type
         // to list bean proposals intelligently
-        BeansRefCompletor beansRefCompletor = new BeansRefCompletor(true);
-        beansRefCompletor.computeCompletionItems(context, progress);
+        BeansRefCompletor beansRefCompletor = new BeansRefCompletor(true, context.getCaretOffset());
+        SpringCompletionResult result = beansRefCompletor.complete(context);
+        for (SpringXMLConfigCompletionItem item : result.getItems()) {
+            addCacheItem(item);
+        }
+    }
+
+    @Override
+    public boolean canFilter(CompletionContext context) {
+        return CompletorUtils.canFilter(context.getDocument(), getInvocationOffset(), context.getCaretOffset(), getAnchorOffset(), CompletorUtils.BEAN_NAME_ACCEPTOR);
+    }
+
+    @Override
+    protected List<SpringXMLConfigCompletionItem> doFilter(CompletionContext context) {
+        return CompletorUtils.filter(getCacheItems(), context.getDocument(), getInvocationOffset(), context.getCaretOffset(), getAnchorOffset());
     }
 }

@@ -190,6 +190,8 @@ public class PhpStructureScanner implements StructureScanner {
                     items.add(item);
                     children = null;
                 }
+                PHPStructureItem item = new PHPInterfaceStructureItem(new GSFPHPElementHandle.InterfaceDeclarationHandle(info, indec), formatter.getText(), children, "in"); //NOI18N
+                items.add(item);
             }
         }
 
@@ -200,7 +202,8 @@ public class PhpStructureScanner implements StructureScanner {
                 String functionName = function.getFunctionName().getName();
                 PHPStructureItem item;
                 appendFunctionDescription(function);
-                if (className.equals(functionName) || "__construct".equals(functionName)) { //NOI8N
+                // className doesn't have to be defined if it's interace
+                if (className!= null && (className.equals(functionName) || "__construct".equals(functionName))) { //NOI8N
                     item = new PHPConstructorStructureItem(new GSFPHPElementHandle.MethodDeclarationHandle(info, method), formatter.getText(), null, "con"); //NOI18N
                 }
                 else {

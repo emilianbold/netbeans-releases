@@ -66,8 +66,6 @@ public class SubversionVisibilityQuery implements VisibilityQueryImplementation2
     private FileStatusCache       cache;
 
     public SubversionVisibilityQuery() {
-        cache = Subversion.getInstance().getStatusCache();
-        cache.addVersioningListener(this);
     }
 
     public boolean isVisible(FileObject fileObject) {
@@ -85,13 +83,21 @@ public class SubversionVisibilityQuery implements VisibilityQueryImplementation2
             return true;
         }
         try {
-            return cache.getStatus(file).getStatus() != FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY;
+            return getCache().getStatus(file).getStatus() != FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY;
         } catch (Exception e) {
             Subversion.LOG.log(Level.SEVERE, e.getMessage(), e);
             return true;
         }        
     }
 
+    private synchronized FileStatusCache getCache() {
+        if (cache == null) {
+            cache = Subversion.getInstance().getStatusCache();
+            cache.addVersioningListener(this);
+        }
+        return cache;
+    }
+    
     public synchronized void addChangeListener(ChangeListener l) {
         ArrayList<ChangeListener> newList = new ArrayList<ChangeListener>(listeners);
         newList.add(l);

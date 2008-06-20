@@ -101,13 +101,16 @@ public class GrantPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        roleLabel.setText(org.openide.util.NbBundle.getMessage(GrantPanel.class, "LBL_Role2")); // NOI18N
+        roleLabel.setLabelFor(roleTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(roleLabel, org.openide.util.NbBundle.getMessage(GrantPanel.class, "LBL_Role2")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(roleLabel, gridBagConstraints);
+        roleLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GrantPanel.class, "LBL_Role2")); // NOI18N
+        roleLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GrantPanel.class, "LBL_Role2")); // NOI18N
 
         roleTextField.setText(org.openide.util.NbBundle.getMessage(GrantPanel.class, "GrantPanel.roleTextField.text")); // NOI18N
         roleTextField.setPreferredSize(new java.awt.Dimension(200, 19));
@@ -119,13 +122,16 @@ public class GrantPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(roleTextField, gridBagConstraints);
 
-        entityNameLabel.setText(org.openide.util.NbBundle.getMessage(GrantPanel.class, "LBL_Entity_Name2")); // NOI18N
+        entityNameLabel.setLabelFor(entityNameTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(entityNameLabel, org.openide.util.NbBundle.getMessage(GrantPanel.class, "LBL_Entity_Name2")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(entityNameLabel, gridBagConstraints);
+        entityNameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GrantPanel.class, "LBL_Entity_Name2")); // NOI18N
+        entityNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GrantPanel.class, "LBL_Entity_Name2")); // NOI18N
 
         entityNameTextField.setText(org.openide.util.NbBundle.getMessage(GrantPanel.class, "GrantPanel.entityNameTextField.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -136,13 +142,16 @@ public class GrantPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(entityNameTextField, gridBagConstraints);
 
-        actionsLabel.setText(org.openide.util.NbBundle.getMessage(GrantPanel.class, "LBL_Actions2")); // NOI18N
+        actionsLabel.setLabelFor(actionsTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(actionsLabel, org.openide.util.NbBundle.getMessage(GrantPanel.class, "LBL_Actions2")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(actionsLabel, gridBagConstraints);
+        actionsLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GrantPanel.class, "LBL_Actions2")); // NOI18N
+        actionsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GrantPanel.class, "LBL_Actions2")); // NOI18N
 
         actionsTextField.setText(org.openide.util.NbBundle.getMessage(GrantPanel.class, "GrantPanel.actionsTextField.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
