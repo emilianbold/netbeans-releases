@@ -100,8 +100,6 @@ public class Subversion {
     private SvnClient noUrlClientWithoutListeners;
     private SvnClient noUrlClientWithListeners;
     private List<ISVNNotifyListener> svnNotifyListeners;
-    
-    private Set<File> unversionedParents = Collections.synchronizedSet(new HashSet<File>(20));
         
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
@@ -128,6 +126,9 @@ public class Subversion {
         filesystemHandler  = new FilesystemHandler(this);
         refreshHandler = new SvnClientRefreshHandler();
         cleanup();
+        // this should be registered in SubversionVCS but we needed to reduce number of classes loaded  
+        fileStatusCache.addVersioningListener(SubversionVCS.getInstance());
+        addPropertyChangeListener(SubversionVCS.getInstance());
     }
                            
     /**
@@ -275,48 +276,7 @@ public class Subversion {
     }
 
     public void versionedFilesChanged() {
-        unversionedParents.clear();
         support.firePropertyChange(PROP_VERSIONED_FILES_CHANGED, null, null);
-    }
-    
-    /**
-     * Tests whether the file is managed by this versioning system. If it is, the method should return the topmost 
-     * parent of the file that is still versioned.
-     *  
-     * @param file a file
-     * @return File the file itself or one of its parents or null if the supplied file is NOT managed by this versioning system
-     */
-    File getTopmostManagedParent(File file) {          
-        if(unversionedParents.contains(file)) return null;
-        try {
-            SvnClientFactory.checkClientAvailable();
-        } catch (SVNClientException ex) {
-            return null;
-        }
-        if (SvnUtils.isPartOfSubversionMetadata(file)) {
-            for (;file != null; file = file.getParentFile()) {
-                if (SvnUtils.isAdministrative(file)) {
-                    file = file.getParentFile();
-                    break;
-                }
-            }
-        }
-        File topmost = null;
-        Set<File> done = new HashSet<File>();
-        for (; file != null; file = file.getParentFile()) {
-            if(unversionedParents.contains(file)) break;
-            if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
-            if (new File(file, SvnUtils.SVN_ENTRIES_DIR).canRead()) { // NOI18N
-                topmost = file;
-                done.clear();
-            } else {
-                done.add(file);
-            }
-        }
-        if(done.size() > 0) {
-            unversionedParents.addAll(done);
-        }
-        return topmost;
     }
     
     /**
