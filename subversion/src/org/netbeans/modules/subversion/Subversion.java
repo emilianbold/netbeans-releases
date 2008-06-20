@@ -53,6 +53,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
@@ -125,6 +126,9 @@ public class Subversion {
         filesystemHandler  = new FilesystemHandler(this);
         refreshHandler = new SvnClientRefreshHandler();
         cleanup();
+        // this should be registered in SubversionVCS but we needed to reduce number of classes loaded  
+        fileStatusCache.addVersioningListener(SubversionVCS.getInstance());
+        addPropertyChangeListener(SubversionVCS.getInstance());
     }
                            
     /**
@@ -273,37 +277,6 @@ public class Subversion {
 
     public void versionedFilesChanged() {
         support.firePropertyChange(PROP_VERSIONED_FILES_CHANGED, null, null);
-    }
-    
-    /**
-     * Tests whether the file is managed by this versioning system. If it is, the method should return the topmost 
-     * parent of the file that is still versioned.
-     *  
-     * @param file a file
-     * @return File the file itself or one of its parents or null if the supplied file is NOT managed by this versioning system
-     */
-    File getTopmostManagedParent(File file) {           
-        try {
-            SvnClientFactory.checkClientAvailable();
-        } catch (SVNClientException ex) {
-            return null;
-        }
-        if (SvnUtils.isPartOfSubversionMetadata(file)) {
-            for (;file != null; file = file.getParentFile()) {
-                if (SvnUtils.isAdministrative(file)) {
-                    file = file.getParentFile();
-                    break;
-                }
-            }
-        }
-        File topmost = null;
-        for (; file != null; file = file.getParentFile()) {
-            if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
-            if (new File(file, SvnUtils.SVN_ENTRIES_DIR).canRead()) { // NOI18N
-                topmost = file;
-            }
-        }
-        return topmost;
     }
     
     /**

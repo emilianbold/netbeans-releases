@@ -74,7 +74,7 @@ import org.openide.util.Exceptions;
 /**
  *
  * @author radval
- * 
+ *
  */
 public class DBExplorerUtil {
 
@@ -83,11 +83,12 @@ public class DBExplorerUtil {
     private static List localConnectionList = new ArrayList();
     private static transient final Logger mLogger = Logger.getLogger(DBExplorerUtil.class.getName());
     //private static transient final Localizer mLoc = Localizer.get();
+    private static String fs = File.separator;
 
     public static String adjustDatabaseURL(String url) {
         if (url.indexOf(AXION_URL_PREFIX) != -1) {
             String[] urlParts = parseConnUrl(url);
-            String relativePath = "\\nbproject\\private\\databases\\";
+            String relativePath =  fs + "nbproject" + fs + "private" + fs + "databases" + fs;
             if (urlParts[1].startsWith(ETLEditorSupport.PRJ_PATH)) {
                 urlParts[0] =  urlParts[0].toUpperCase();
                 String adjustedName = urlParts[0].contains(ETLEditorSupport.PRJ_NAME.toUpperCase()) ? urlParts[0] : ETLEditorSupport.PRJ_NAME.toUpperCase() + "_" + urlParts[0];
@@ -178,7 +179,7 @@ public class DBExplorerUtil {
         JDBCDriver drv = null;
         Connection conn = null;
         try {
-           
+
                 url = adjustDatabaseURL(url);
             drv = registerDriver(driverName);
 
@@ -231,7 +232,7 @@ public class DBExplorerUtil {
         JDBCDriver drv = null;
         String schema = null;
         try {
-            
+
                 url = adjustDatabaseURL(url);
             drv = registerDriver(driverName);
 
@@ -254,14 +255,17 @@ public class DBExplorerUtil {
                 }
                 dbconn = DatabaseConnection.create(drv, url, username, schema, password, true);
 
-              
-                 if (url.indexOf("InstanceDB") == -1 && url.indexOf("MonitorDB") == -1 && !(MashupTableWizardIterator.IS_PROJECT_CALL)) {
-                    ConnectionManager.getDefault().addConnection(dbconn);
+                //Fix for 6697129: No mashup database found when try to add external table Tools - MashupDatabase.
+                //ETLEditorSupport.PRJ_PATH  is "" and url.indexOf(ETLEditorSupport.PRJ_PATH) returns 0 if no projects are
+                //opened in the netbeans and gives a warning no mashup db found if we try to add an external table from Tools menu.
+                //!(MashupTableWizardIterator.IS_PROJECT_CALL)
+                if (url.indexOf("InstanceDB") == -1 && url.indexOf("MonitorDB") == -1) {
+                    if ((url.indexOf(ETLEditorSupport.PRJ_PATH) == -1) || !(MashupTableWizardIterator.IS_PROJECT_CALL)) {
+                        ConnectionManager.getDefault().addConnection(dbconn);
+                    }
                 }
             }
-
             return dbconn;
-
         } catch (Exception e) {
             throw new DBSQLException("Connection could not be established.", e);
         }
@@ -386,7 +390,7 @@ public class DBExplorerUtil {
             for (int i = 0; i < db.length; i++) {
                 String ver = null;
                 try {
-                    ver = db[i].getCanonicalPath() + "\\" + db[i].getName().toUpperCase() + ".VER";
+                    ver = db[i].getCanonicalPath() + fs + db[i].getName().toUpperCase() + ".VER";
                     File version = new File(ver);
                     if (version.exists()) {
                         String url = AXION_URL_PREFIX + db[i].getName() + ":" + workDir + db[i].getName();
@@ -409,7 +413,7 @@ public class DBExplorerUtil {
 
     public static List<DatabaseConnection> getDatabasesForCurrentProject() {
         List<DatabaseConnection> dbConns = new ArrayList<DatabaseConnection>();
-        String workDir = ETLEditorSupport.PRJ_PATH + "\\nbproject\\private\\databases\\";
+        String workDir = ETLEditorSupport.PRJ_PATH +  fs + "nbproject" + fs + "private" + fs + "databases" + fs;
         File f = new File(workDir);
         File[] db = null;
         if (f.exists()) {
@@ -417,7 +421,7 @@ public class DBExplorerUtil {
             for (int i = 0; i < db.length; i++) {
                 String ver = null;
                 try {
-                    ver = db[i].getCanonicalPath() + "\\" + (ETLEditorSupport.PRJ_NAME + "_" + db[i].getName()).toUpperCase() + ".VER";
+                    ver = db[i].getCanonicalPath() + fs + (ETLEditorSupport.PRJ_NAME + "_" + db[i].getName()).toUpperCase() + ".VER";
                     File version = new File(ver);
                     if (version.exists()) {
                         String url = DBExplorerUtil.AXION_URL_PREFIX + db[i].getName() + ":" + workDir + db[i].getName();

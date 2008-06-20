@@ -312,8 +312,7 @@ public class UnsupportedCalls extends JsAstRule {
         }
         
         public void implement() throws Exception {
-            // TODO - how can I configure it to show the JsOptions item within the Advanced panel?
-            OptionsDisplayer.getDefault().open("Advanced");
+            OptionsDisplayer.getDefault().open("Advanced/JsOptions"); // NOI18N
         }
 
         public boolean isSafe() {

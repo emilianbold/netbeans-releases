@@ -156,6 +156,9 @@ final class Importer {
         assert eclProject != null : "Eclipse project cannot be null"; // NOI18N
 
         List<String> projectImportProblems = new ArrayList<String>();
+
+        // add problems which appeared during project opening/parsing
+        projectImportProblems.addAll(eclProject.getImportProblems());
         
         // evaluate classpath containers
         eclProject.evaluateContainers(projectImportProblems);
@@ -200,6 +203,7 @@ final class Importer {
                         eclProject.getDirectory().getAbsolutePath(), 
                         eclProject.getWorkspace() != null ? eclProject.getWorkspace().getDirectory().getAbsolutePath() : null, 0, key);
                 EclipseProjectReference.write(p, ref);
+                ProjectManager.getDefault().saveProject(p);
             }
         }
         if (projectImportProblems.size() > 0) {

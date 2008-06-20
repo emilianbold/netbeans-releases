@@ -38,6 +38,4 @@ The following files are each a Redistributable:
 
 (2) JGo 5.1,
 
-(3) Tom Sawyer 6.0 provided that if you choose to distribute the Tom Sawyer
-code, you must provide attribution via an "About Box." 
 

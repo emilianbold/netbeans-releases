@@ -42,9 +42,11 @@ package org.netbeans.modules.ruby.rubyproject;
 
 import java.io.File;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.openide.filesystems.FileObject;
 
@@ -76,7 +78,7 @@ public class RubyProjectGeneratorTest extends RubyProjectTestBase {
 
             RubyBaseProject p = (RubyBaseProject) ProjectManager.getDefault().findProject(prjDirFO);
             assertNotNull("has project", p);
-            List<?> tasks = RakeSupport.getRakeTaskTree(p);
+            Set<RakeTask> tasks = RakeSupport.getRakeTaskTree(p);
             assertSame("correct Rakefile", 11, tasks.size());
 
             // test main class without extension in the next run
@@ -103,7 +105,7 @@ public class RubyProjectGeneratorTest extends RubyProjectTestBase {
     public void testGeneratedRakeFile() throws Exception {
         registerLayer();
         RubyProject project = createTestProject();
-        List<?> tasks = RakeSupport.getRakeTaskTree(project);
+        Set<RakeTask> tasks = RakeSupport.getRakeTaskTree(project);
         assertSame("correct Rakefile", 11, tasks.size());
         assertNotNull("has 'spec' task", RakeSupport.getRakeTask(project, "spec"));
         assertNotNull("has 'test' task", RakeSupport.getRakeTask(project, "test"));

@@ -55,7 +55,9 @@ import java.util.Map;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.spring.beans.BeansAttributes;
 import org.netbeans.modules.spring.beans.BeansElements;
+import org.netbeans.modules.spring.beans.completion.completors.BeanDependsOnCompletor;
 import org.netbeans.modules.spring.beans.completion.completors.BeanIdCompletor;
+import org.netbeans.modules.spring.beans.completion.completors.BeansRefCompletor;
 import org.netbeans.modules.spring.beans.completion.completors.PNamespaceCompletor;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
@@ -112,10 +114,9 @@ public final class CompletorRegistry {
         registerCompletorFactory(BeansElements.VALUE, BeansAttributes.TYPE, javaClassCompletorFactory);
         registerCompletorFactory(BeansElements.CONSTRUCTOR_ARG, BeansAttributes.TYPE, javaClassCompletorFactory);
         
-        BeansRefCompletorFactory beansRefCompletorFactory = new BeansRefCompletorFactory(true);
+        BeansRefCompletorFactory beansRefCompletorFactory = new BeansRefCompletorFactory(true, BeansRefCompletor.class);
         registerCompletorFactory(BeansElements.ALIAS, BeansAttributes.NAME, beansRefCompletorFactory);
         registerCompletorFactory(BeansElements.BEAN, BeansAttributes.PARENT, beansRefCompletorFactory);
-        registerCompletorFactory(BeansElements.BEAN, BeansAttributes.DEPENDS_ON, beansRefCompletorFactory);
         registerCompletorFactory(BeansElements.BEAN, BeansAttributes.FACTORY_BEAN, beansRefCompletorFactory);
         registerCompletorFactory(BeansElements.CONSTRUCTOR_ARG, BeansAttributes.REF, beansRefCompletorFactory);
         registerCompletorFactory(BeansElements.REF, BeansAttributes.BEAN, beansRefCompletorFactory);
@@ -126,7 +127,7 @@ public final class CompletorRegistry {
         registerCompletorFactory(BeansElements.LOOKUP_METHOD, BeansAttributes.BEAN, beansRefCompletorFactory);
         registerCompletorFactory(BeansElements.REPLACED_METHOD, BeansAttributes.REPLACER, beansRefCompletorFactory);
         
-        beansRefCompletorFactory = new BeansRefCompletorFactory(false);
+        beansRefCompletorFactory = new BeansRefCompletorFactory(false, BeansRefCompletor.class);
         registerCompletorFactory(BeansElements.REF, BeansAttributes.LOCAL, beansRefCompletorFactory);
         registerCompletorFactory(BeansElements.IDREF, BeansAttributes.LOCAL, beansRefCompletorFactory);
         
@@ -148,6 +149,9 @@ public final class CompletorRegistry {
         
         GenericCompletorFactory beanIdCompletorFactory = new GenericCompletorFactory(BeanIdCompletor.class);
         registerCompletorFactory(BeansElements.BEAN, BeansAttributes.ID, beanIdCompletorFactory);
+        
+        BeansRefCompletorFactory dependsOnFactory = new BeansRefCompletorFactory(true, BeanDependsOnCompletor.class);
+        registerCompletorFactory(BeansElements.BEAN, BeansAttributes.DEPENDS_ON, dependsOnFactory);
     }
     private static CompletorRegistry INSTANCE = new CompletorRegistry();
 
@@ -170,7 +174,7 @@ public final class CompletorRegistry {
         String attribName = attrib != null ? attrib.getImage() : null;
         CompletorFactory completorFactory = locateCompletorFactory(tagName, attribName);
         if (completorFactory != null) {
-            Completor completor = completorFactory.createCompletor();
+            Completor completor = completorFactory.createCompletor(context.getCaretOffset());
             return completor;
         }
         
@@ -180,7 +184,7 @@ public final class CompletorRegistry {
     private Completor getAttributeCompletor(final CompletionContext context) {
         String tagName = context.getTag().getNodeName();
         if(tagName.equals(BeansElements.BEAN) && ContextUtilities.isPNamespaceAdded(context.getDocumentContext())) {
-            return new PNamespaceCompletor();
+            return new PNamespaceCompletor(context.getCaretOffset());
         }
         
         return null;

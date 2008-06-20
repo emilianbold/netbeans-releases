@@ -52,7 +52,7 @@ import org.netbeans.modules.refactoring.spi.ui.*;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -75,7 +75,7 @@ public class SourceGroupTreeElement implements TreeElement {
         if ( icon == null ) {
             try {
                 Image image = DataObject.find(sg.getRootFolder()).getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
-                image = Utilities.mergeImages( image, Utilities.loadImage(PACKAGE_BADGE), 7, 7 );
+                image = ImageUtilities.mergeImages( image, ImageUtilities.loadImage(PACKAGE_BADGE), 7, 7 );
                 icon = new ImageIcon(image);
             } catch (DataObjectNotFoundException d) {
             }

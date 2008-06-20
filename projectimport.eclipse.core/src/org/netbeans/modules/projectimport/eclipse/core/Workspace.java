@@ -69,7 +69,7 @@ public final class Workspace {
     
     
     /** Represents variable in Eclipse project's classpath. */
-    static class Variable {
+    public static class Variable {
         private String name;
         private String location;
         private boolean fileVar;
@@ -146,8 +146,8 @@ public final class Workspace {
     private File resourceProjectsDir;
     private File workspaceDir;
     
-    private Set<Variable> variables;
-    private Set<Variable> resourcesVariables;
+    private Set<Variable> variables = new HashSet<Variable>();
+    private Set<Variable> resourcesVariables = new HashSet<Variable>();
     private Set projects = new HashSet();
     private Map jreContainers;
     private Map<String, List<String>> userLibraries;
@@ -171,7 +171,7 @@ public final class Workspace {
     }
     
     /** Sets up a workspace directory. */
-    private Workspace(File workspaceDir) {
+    Workspace(File workspaceDir) {
         this.workspaceDir = workspaceDir;
         corePrefFile = new File(workspaceDir, CORE_PREFERENCE);
         resourcesPrefFile = new File(workspaceDir, RESOURCES_PREFERENCE);
@@ -200,23 +200,23 @@ public final class Workspace {
     }
     
     void addVariable(Variable var) {
-        if (variables == null) {
-            variables = new HashSet<Variable>();
-        }
         variables.add(var);
     }
     
     void addResourcesVariable(Variable var) {
-        if (resourcesVariables == null) {
-            resourcesVariables = new HashSet<Variable>();
-        }
         resourcesVariables.add(var);
     }
     
+    /**
+     * @return set of variables; never null; can be empty
+     */
     Set<Variable> getVariables() {
         return variables;
     }
     
+    /**
+     * @return set of variables; never null; can be empty
+     */
     Set<Variable> getResourcesVariables() {
         return resourcesVariables;
     }

@@ -1441,7 +1441,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     }
                 } else {
                     GdbBreakpoint breakpoint = impl.getBreakpoint();
-                    if (breakpoint.getSuspend() == GdbBreakpoint.SUSPEND_NONE) {
+                    if (breakpoint.getSuspend() == GdbBreakpoint.SUSPEND_NONE && lastGo == LAST_GO_WAS_CONTINUE) {
                         fireBreakpointEvent(breakpoint, new GdbBreakpointEvent(
                                     breakpoint, this, GdbBreakpointEvent.CONDITION_NONE, null));
                         gdb.exec_continue();

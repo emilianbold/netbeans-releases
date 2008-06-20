@@ -298,7 +298,7 @@ public class BeanClassFinder {
         }
         
         name = beanAttribs.get(BeansAttributes.NAME);
-        if(name != null) {
+        if(StringUtils.hasText(name)) {
             name = StringUtils.tokenize(name, SpringXMLConfigEditorUtils.BEAN_NAME_DELIMITERS).get(0);
         }
         

@@ -158,9 +158,12 @@ public class AssociationConnector extends AbstractUMLConnectionWidget
         {
             throw new NullPointerException();
         }
-
-        Widget w = widget.getSourceAnchor().getRelatedWidget();
-        if (w.getScene() instanceof ObjectScene)
+        Widget w=null;
+        if (widget.getSourceAnchor() != null)
+        {
+            w = widget.getSourceAnchor().getRelatedWidget();
+        }
+        if (w != null && (w.getScene() instanceof ObjectScene))
         {
             ObjectScene scene = (ObjectScene) w.getScene();
             IPresentationElement element = (IPresentationElement) scene.findObject(w);
@@ -171,6 +174,31 @@ public class AssociationConnector extends AbstractUMLConnectionWidget
         return retVal;
     }
 
+        public static boolean isTargetEnd(ConnectionWidget widget,
+                                        IAssociationEnd end)
+    {
+        boolean retVal = false;
+
+        if ((widget == null) || (end == null))
+        {
+            throw new NullPointerException();
+        }
+        Widget w=null;
+        if (widget.getTargetAnchor() != null)
+        {
+            w = widget.getTargetAnchor().getRelatedWidget();
+        }
+        if (w != null && (w.getScene() instanceof ObjectScene))
+        {
+            ObjectScene scene = (ObjectScene) w.getScene();
+            IPresentationElement element = (IPresentationElement) scene.findObject(w);
+            retVal = end.isSameParticipant(element.getFirstSubject());
+        }
+
+
+        return retVal;
+    }
+        
     @Override
     public void propertyChange(PropertyChangeEvent evt)
     {
@@ -266,7 +294,7 @@ public class AssociationConnector extends AbstractUMLConnectionWidget
                     setSourceAnchorShape(AnchorShape.NONE);
                 }
             }
-            else
+            else if (isTargetEnd(this, curEnd) == true)
             {
                 if (curEnd.getIsNavigable() == true)
                 {

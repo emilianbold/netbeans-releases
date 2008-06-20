@@ -94,7 +94,7 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         ProjectFactorySupport.updateSourceRootLabels(model.getEclipseSourceRoots(), nbProject.getSourceRoots());
         ProjectFactorySupport.updateSourceRootLabels(model.getEclipseTestSourceRoots(), nbProject.getTestSourceRoots());
         
-        // TODO: setup include/exclude here
+        ProjectFactorySupport.setupSourceExcludes(helper, model);
         
         // Make sure PCPM knows who owns this (J2SEProject will do the same later on anyway):
         if (!nbProjectDir.equals(model.getEclipseProjectFolder())) {

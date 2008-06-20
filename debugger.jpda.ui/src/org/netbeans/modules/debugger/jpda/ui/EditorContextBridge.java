@@ -447,14 +447,22 @@ public class EditorContextBridge {
             if (value instanceof List) {
                 for (Iterator iter = ((List) value).iterator(); iter.hasNext();) {
                     CompoundAnnotation ca = (CompoundAnnotation) iter.next();
-                    cp1.removeAnnotation (ca.annotation1);
-                    cp2.removeAnnotation (ca.annotation2);
+                    if (ca.annotation1 != null) {
+                        cp1.removeAnnotation (ca.annotation1);
+                    }
+                    if (ca.annotation2 != null) {
+                        cp2.removeAnnotation (ca.annotation2);
+                    }
                 }
                 return;
             }
             CompoundAnnotation ca = (CompoundAnnotation) value;
-            cp1.removeAnnotation (ca.annotation1);
-            cp2.removeAnnotation (ca.annotation2);
+            if (ca.annotation1 != null) {
+                cp1.removeAnnotation (ca.annotation1);
+            }
+            if (ca.annotation2 != null) {
+                cp2.removeAnnotation (ca.annotation2);
+            }
         }
 
         public Object annotate (
@@ -468,14 +476,27 @@ public class EditorContextBridge {
                 (sourceName, lineNumber, annotationType, timeStamp);
             ca.annotation2 = cp2.annotate
                 (sourceName, lineNumber, annotationType, timeStamp);
-            return ca;
+            if (ca.annotation1 != null || ca.annotation2 != null) {
+                return ca;
+            } else {
+                return null;
+            }
         }
 
         public int getLineNumber (Object annotation, Object timeStamp) {
             CompoundAnnotation ca = new CompoundAnnotation ();
-            int ln = cp1.getLineNumber (ca.annotation1, timeStamp);
+            int ln;
+            if (ca.annotation1 != null) {
+                ln = cp1.getLineNumber (ca.annotation1, timeStamp);
+            } else {
+                ln = -1;
+            }
             if (ln >= 0) return ln;
-            return cp2.getLineNumber (ca.annotation2, timeStamp);
+            if (ca.annotation2 != null) {
+                return cp2.getLineNumber (ca.annotation2, timeStamp);
+            } else {
+                return -1;
+            }
         }
 
         public boolean showSource (String sourceName, int lineNumber, Object timeStamp) {
