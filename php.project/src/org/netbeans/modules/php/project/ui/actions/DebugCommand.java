@@ -43,7 +43,12 @@ package org.netbeans.modules.php.project.ui.actions;
 import java.net.MalformedURLException;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Message;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -79,7 +84,17 @@ public class DebugCommand extends Command implements Displayable {
             //temporary; after narrowing deps. will be changed
             XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
             if (dbgStarter != null) {
-                dbgStarter.start(getProject(), runnable, fileForProject(), useInterpreter());
+                final FileObject fileForProject = fileForProject();
+                if (fileForProject != null) {
+                    dbgStarter.start(getProject(), runnable,fileForProject, useInterpreter());
+                } else {
+                    String idxFileName = getProperty(PhpProjectProperties.INDEX_FILE);
+                    String err = NbBundle.getMessage(DebugLocalCommand.class, 
+                            "ERR_Missing_IndexFile",idxFileName);//NOI18N
+                    final Message messageDecriptor = new NotifyDescriptor.Message(err,
+                            NotifyDescriptor.WARNING_MESSAGE);
+                    DialogDisplayer.getDefault().notify(messageDecriptor);
+                }
             }
         }
     }

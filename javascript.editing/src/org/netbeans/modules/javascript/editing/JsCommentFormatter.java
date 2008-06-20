@@ -228,13 +228,13 @@ public class JsCommentFormatter {
     }
     
     private void process() {
-        while (ts.moveNext() && ts.token().id() != JsCommentTokenId.TAG) {
+        while (ts.moveNext() && ts.token().id() != JsCommentTokenId.COMMENT_TAG) {
             summary.append(ts.token().text());
         }
         ts.movePrevious();
         StringBuilder sb = null;
         while (ts.moveNext()) {
-            if (ts.token().id() == JsCommentTokenId.TAG) {
+            if (ts.token().id() == JsCommentTokenId.COMMENT_TAG) {
                 if (sb != null) {
                     processTag(sb.toString().trim());
                 }

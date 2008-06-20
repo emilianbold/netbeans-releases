@@ -49,11 +49,13 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
@@ -67,12 +69,13 @@ import org.netbeans.modules.websvc.saas.codegen.model.SoapClientOperationInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.SoapClientSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
-import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import static com.sun.source.tree.Tree.Kind.*;
 
@@ -89,7 +92,15 @@ public class SoapClientRestResourceCodeGenerator extends SaasClientCodeGenerator
     public static final String SET_HEADER_PARAMS = "setHeaderParameters";
     
     public SoapClientRestResourceCodeGenerator() {
-        super();
+        setDropFileType(Constants.DropFileType.RESOURCE);
+    }
+    
+    public boolean canAccept(SaasMethod method, Document doc) {
+        if (SaasBean.canAccept(method, WsdlSaasMethod.class, getDropFileType()) &&
+                Util.isRestJavaFile(NbEditorUtilities.getDataObject(doc))) {
+            return true;
+        }
+        return false;
     }
     
     @Override
@@ -104,20 +115,59 @@ public class SoapClientRestResourceCodeGenerator extends SaasClientCodeGenerator
     public SoapClientSaasBean getBean() {
         return (SoapClientSaasBean) super.getBean();
     }
-    
-    public boolean canAccept(SaasMethod method, Document doc) {
-        if (method instanceof WsdlSaasMethod && Util.isJsp(doc)) {
-            return true;
-        }
-        return false;
-    }
 
     @Override
     protected void preGenerate() throws IOException {
     }
+
+    @Override
+    public Set<FileObject> generate() throws IOException {
+        preGenerate();
         
+        insertSaasServiceAccessCode(isInBlock(getTargetDocument()));
+        //addImportsToTargetFile();
+        
+        finishProgressReporting();
+
+        return new HashSet<FileObject>(Collections.EMPTY_LIST);
+    }
+    
+    /**
+     *  Insert the Saas client call
+     */
+    protected void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
+        try {
+            String code = "";
+            if(isInBlock) {
+                code = getCustomMethodBody();
+            } else {
+                code = "\nprivate String call"+getBean().getName()+"Service() {\n";
+                code += getCustomMethodBody()+"\n";
+                code += "return result;\n";
+                code += "}\n";
+            }
+            insert(code, true);
+        } catch (BadLocationException ex) {
+            throw new IOException(ex.getMessage());
+        }
+    }
+    
+    @Override
     protected String getCustomMethodBody() throws IOException {
-        return "";
+        String methodBody = INDENT + "try {\n";
+        for (ParameterInfo param : getBean().getQueryParameters()) {
+            String name = param.getName();
+            methodBody += INDENT_2 + param.getType().getName() + " " + name + " = "+
+                    resolveInitValue(param)+"\n";
+        }
+        SoapClientOperationInfo[] operations = getBean().getOperationInfos();
+        for (SoapClientOperationInfo info : operations) {
+            methodBody += getWSInvocationCode(info);
+        }
+        methodBody += INDENT + "} catch (Exception ex) {\n";
+        methodBody += INDENT_2 + "ex.printStackTrace();\n";
+        methodBody += INDENT + "}\n";
+        return methodBody;
     }
     
      /**

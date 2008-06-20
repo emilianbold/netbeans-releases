@@ -46,47 +46,71 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
-import org.netbeans.modules.websvc.saas.codegen.Constants.DropFileType;
 import org.netbeans.modules.websvc.saas.codegen.Constants.HttpMethodType;
+import org.netbeans.modules.websvc.saas.codegen.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.model.CustomClientSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo.ParamFilter;
 import org.netbeans.modules.websvc.saas.codegen.java.support.SourceGroupSupport;
+import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 
 /**
- * Code generator for REST services wrapping WSDL-based web service.
+ * Code generator for REST services wrapping custom service.
  *
  * @author Ayub Khan
  */
 public class CustomClientRestResourceCodeGenerator extends SaasClientCodeGenerator {
     
-    private DropFileType dropFileType;
+    private JavaSource targetSource;  
     private FileObject serviceFolder;
     private SaasClientJavaAuthenticationGenerator authGen;
 
     public CustomClientRestResourceCodeGenerator() {
         setDropFileType(Constants.DropFileType.RESOURCE);
     }
-
+    
+    public boolean canAccept(SaasMethod method, Document doc) {
+        if (SaasBean.canAccept(method, CustomSaasMethod.class, getDropFileType()) &&
+                Util.isRestJavaFile(NbEditorUtilities.getDataObject(doc))) {
+            return true;
+        }
+        return false;
+    }
+    
     @Override
     public void init(SaasMethod m, Document doc) throws IOException {
+        init(m, new CustomClientSaasBean((CustomSaasMethod) m, true), doc);
+    }
+    
+    public void init(SaasMethod m, CustomClientSaasBean saasBean, Document doc) throws IOException {
         super.init(m, doc);
-        setBean(new CustomClientSaasBean((CustomSaasMethod) m));
+        setBean(saasBean);
+
+        this.targetSource = JavaSource.forFileObject(getTargetFile());
+        String packageName = JavaSourceHelper.getPackageName(getTargetSource());
+        getBean().setPackageName(packageName);
+        
+        this.serviceFolder = null;
+        
         this.authGen = new SaasClientJavaAuthenticationGenerator(getBean(), getProject());
         this.authGen.setLoginArguments(getLoginArguments());
         this.authGen.setAuthenticatorMethodParameters(getAuthenticatorMethodParameters());
         this.authGen.setSaasServiceFolder(getSaasServiceFolder());
-
     }
 
     @Override
@@ -97,13 +121,9 @@ public class CustomClientRestResourceCodeGenerator extends SaasClientCodeGenerat
     public SaasClientJavaAuthenticationGenerator getAuthenticationGenerator() {
         return authGen;
     }
-    
-    public DropFileType getDropFileType() {
-        return dropFileType;
-    }
-
-    void setDropFileType(DropFileType dropFileType) {
-        this.dropFileType = dropFileType;
+        
+    protected JavaSource getTargetSource() {
+        return this.targetSource;
     }
 
     public FileObject getSaasServiceFolder() throws IOException {
@@ -113,14 +133,6 @@ public class CustomClientRestResourceCodeGenerator extends SaasClientCodeGenerat
                     getBean().getSaasServicePackageName(), true);
         }
         return serviceFolder;
-    }
-    
-    public boolean canAccept(SaasMethod method, Document doc) {
-        if (method instanceof CustomSaasMethod && 
-                Util.isRestJavaFile(NbEditorUtilities.getDataObject(doc))) {
-            return true;
-        }
-        return false;
     }
     
     @Override
@@ -153,19 +165,101 @@ public class CustomClientRestResourceCodeGenerator extends SaasClientCodeGenerat
         });
     }
 
-    protected String getCustomMethodBody() throws IOException {
-        String paramStr = "";       //NOI18N
-    
-        int count = 0;
-        for (ParameterInfo param : getBean().getInputParameters()) {
-            if (count++ > 0) {
-                paramStr += ", ";       //NOI18N
-            }
-            
-            paramStr += getParameterName(param, true, true);
-        }
+    @Override
+    public Set<FileObject> generate() throws IOException {
+        preGenerate();
+
+        //Create Authenticator classes
+        getAuthenticationGenerator().createAuthenticatorClass();
         
-        return "return execute(" + paramStr + ")";
+        //Create Authorization classes
+        getAuthenticationGenerator().createAuthorizationClasses();
+                
+        //Modify Authenticator class
+        getAuthenticationGenerator().modifyAuthenticationClass(); 
+        
+        //execute this block before insertSaasServiceAccessCode() 
+        setJaxbWrapper();
+        insertSaasServiceAccessCode(isInBlock(getTargetDocument()));
+        addImportsToTargetFile();
+        
+        finishProgressReporting();
+
+        return new HashSet<FileObject>(Collections.EMPTY_LIST);
+    }
+    
+    private void setJaxbWrapper() {
+        //TODO
+//        List<QName> repTypesFromWadl = getBean().findRepresentationTypes(getBean().getMethod());
+//        if(!repTypesFromWadl.isEmpty()) {
+//            getBean().setOutputWrapperName(repTypesFromWadl.get(0).getLocalPart());
+//            getBean().setOutputWrapperPackageName(
+//                    (getBean().getGroupName()+"."+
+//                        getBean().getDisplayName()).toLowerCase());
+//        }
+    }
+
+    @Override
+    protected String getCustomMethodBody() throws IOException {
+        String paramUse = "";
+        String paramDecl = "";
+        
+        //Evaluate parameters (query(not fixed or apikey), header, template,...)
+        String indent = "        ";
+        String indent2 = "             ";
+        List<ParameterInfo> filterParams = getServiceMethodParameters();
+        paramUse += Util.getHeaderOrParameterUsage(getBean().getInputParameters());
+        paramDecl += getHeaderOrParameterDeclaration(filterParams, indent2);
+        
+        String methodBody = indent+"try {\n";
+        
+        //Insert authentication code before invoking custom service
+        methodBody += "             " +
+                getAuthenticationGenerator().getPreAuthenticationCode() + "\n";
+        
+        methodBody += paramDecl + "\n";
+        methodBody += indent2+REST_RESPONSE+" result = " + getBean().getSaasServiceName() + 
+                "." + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
+        methodBody += Util.createPrintStatement(
+                getBean().getOutputWrapperPackageName(), 
+                getBean().getOutputWrapperName(),
+                getDropFileType(), 
+                getBean().getHttpMethod(), 
+                getBean().canGenerateJAXBUnmarshaller(), indent2);
+        methodBody += indent+"} catch (Exception ex) {\n";
+        methodBody += indent2+"ex.printStackTrace();\n";
+        methodBody += indent+"}\n";
+       
+        return methodBody;
+    }
+    
+    /**
+     *  Insert the Saas client call
+     */
+    protected void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
+        try {
+            String code = "";
+            if (isInBlock) {
+                code = getCustomMethodBody();
+            } else {
+                code = "\nprivate String call" + getBean().getName() + "Service() {\n"; // NOI18n
+                code += getCustomMethodBody() + "\n";
+                code += "return result;\n";
+                code += "}\n";
+            }
+            insert(code, true);
+        } catch (BadLocationException ex) {
+            throw new IOException(ex.getMessage());
+        }
+    }
+
+    protected void addImportsToTargetFile() throws IOException {
+        List<String> imports = new ArrayList<String>();
+        imports.add(getBean().getSaasServicePackageName() + "." + getBean().getSaasServiceName());
+        if(getBean().getAuthenticationType() != SaasAuthenticationType.PLAIN)
+            imports.add(getBean().getSaasServicePackageName() + "." + getBean().getAuthenticatorClassName());
+        imports.add(REST_CONNECTION_PACKAGE + "." + REST_RESPONSE);
+        Util.addImportsToSource(getTargetSource(), imports);
     }
     
     protected List<ParameterInfo> getServiceMethodParameters() {
