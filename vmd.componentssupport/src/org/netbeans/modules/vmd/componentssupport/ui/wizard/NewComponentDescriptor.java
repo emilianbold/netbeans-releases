@@ -287,7 +287,15 @@ public final class NewComponentDescriptor implements WizardDescriptor.Instantiat
               new ComponentFinalWizardPanel()
         };
     }
-
+    
+    protected static String createDefaultCDClass(String prefix){
+        return prefix + COMPONENT_DESCRIPTOR_POSTFIX;
+    }
+            
+    protected static String createDefaultProducerClass(String prefix){
+        return prefix + COMPONENT_PRODUCER_POSTFIX;
+    }
+            
     private String[] createSteps() {
         return new String[] { 
                 NbBundle.getMessage(NewComponentDescriptor.class, 
