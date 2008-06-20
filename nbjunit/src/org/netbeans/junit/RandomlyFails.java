@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,50 +31,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.configurations;
+package org.netbeans.junit;
 
-import java.util.List;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.openide.util.Lookup;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- *
- * @author gordonp
+ * Indicates that this test can fail randomly.
+ * <p>When used on a method in a class extending {@link NbTestCase},
+ * the implicit suite will exclude this test in case the system property
+ * <code>ignore.random.failures</code> is set to <code>true</code>.
+ * When used on a class passed to {@link NbTestSuite#NbTestSuite(Class)} or {@link NbTestSuite#addTestSuite(Class)},
+ * the suite will be empty if the system property is set;
+ * the same if it is used on a class extending {@link NbTestCase}.
+ * <p>Test runs which must be reliable should define the system property.
+ * (E.g. for NetBeans modules: <code>ant -Dtest-unit-sys-prop.ignore.random.failures=true test</code>)
+ * Developers running tests interactively should not.
+ * @since 1.51
  */
-public class ServerConfiguration extends IntConfiguration {
-    
-    private static ServerList serverList = null;
-
-    public ServerConfiguration() {
-        super((IntConfiguration) null, getDefaultServerIndex(), getServerNames(), null);
-    }
-    
-    private static int getDefaultServerIndex() {
-        if (getServerList() != null) {
-            return serverList.getDefaultServerIndex();
-        }
-        return 0;
-    }
-    
-    private static String[] getServerNames() {
-        if (getServerList() != null) {
-            return serverList.getServerNames();
-        }
-        return new String[] { "localhost" }; // NOI18N
-    }
-    
-    private static ServerList getServerList() {
-        if (Boolean.getBoolean("cnd.remote.enable")) // DEBUG
-        if (serverList == null) {
-            serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
-        }
-        return serverList;
-    }
-}
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD})
+@Inherited
+public @interface RandomlyFails {}

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,48 +31,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.xml.text.indent;
 
-package org.netbeans.modules.groovy.editor;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.Set;
-import org.openide.modules.ModuleInstall;
+import junit.framework.*;
+import org.netbeans.api.xml.lexer.XMLTokenId;
+import org.netbeans.editor.BaseDocument;
 
 /**
+ * Formatting related tests based on new formatter. See XMLLexerFormatter.
  * 
- * @author mkleint
- * @author Martin Adamek
+ * @author Samaresh (samaresh.panda@sun.com)
  */
-public class GroovyModuleInstall extends ModuleInstall {
+public class XMLLexerFormatterTest extends AbstractTestCase {
+    
+    public XMLLexerFormatterTest(String testName) {
+        super(testName);
+    }
 
+    public static Test suite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new XMLLexerFormatterTest("testFormat"));
+        return suite;
+    }
+    
     /**
-     * screw friend dependency.
-     * Hack to enable this module as friend to NB 6.0 modules
+     * Formats an input document and then compares the formatted doc
+     * with a document that represents expected outcome.
      */
-    @Override
-    @SuppressWarnings("unchecked")
-    public void validate() throws IllegalStateException {
-        try {
-            java.lang.Class main = java.lang.Class.forName("org.netbeans.core.startup.Main", false, //NOI18N
-                    Thread.currentThread().getContextClassLoader());
-            Method meth = main.getMethod("getModuleSystem", new Class[0]); //NOI18N
-            Object moduleSystem = meth.invoke(null, new Object[0]);
-            meth = moduleSystem.getClass().getMethod("getManager", new Class[0]); //NOI18N
-            Object mm = meth.invoke(moduleSystem, new Object[0]);
-            Method moduleMeth = mm.getClass().getMethod("get", new Class[]{String.class}); //NOI18N
-            Object gsfapi = moduleMeth.invoke(mm, "org.netbeans.modules.gsf.api"); //NOI18N
-            if (gsfapi != null) {
-                Field frField = gsfapi.getClass().getSuperclass().getDeclaredField("friendNames"); //NOI18N
-                frField.setAccessible(true);
-                Set friends = (Set) frField.get(gsfapi);
-                friends.add("org.netbeans.modules.groovy.editor"); //NOI18N
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            new IllegalStateException("Cannot fix dependencies for org.netbeans.modules.groovy.editor."); //NOI18N
-        }
+    public void testFormat() throws Exception {
+        BaseDocument inputDoc = getDocument("input.xml");
+        //format the inputDoc
+        XMLLexerFormatter formatter = new XMLLexerFormatter(null);
+        BaseDocument formattedDoc = formatter.doReformat(inputDoc, -1, -1);
+        System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
+        BaseDocument outputDoc = getDocument("output.xml");        
+        assert(compare(formattedDoc, outputDoc));
     }
     
 }

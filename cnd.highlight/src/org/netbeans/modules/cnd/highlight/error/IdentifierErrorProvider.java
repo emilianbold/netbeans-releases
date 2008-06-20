@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.openide.util.NbBundle;
 
 /**
@@ -70,7 +71,7 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
                                 ref.getEndOffset(), ref.getText().toString()));
                     }
                 }
-            });
+            }, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE);
         }
         return result;
     }

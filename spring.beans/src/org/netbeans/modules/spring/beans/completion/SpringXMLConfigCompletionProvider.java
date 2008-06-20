@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.spring.beans.completion;
 
-import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.spring.beans.completion.CompletionContext.CompletionType;
@@ -59,8 +58,7 @@ public class SpringXMLConfigCompletionProvider implements CompletionProvider {
 
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if ((queryType & COMPLETION_QUERY_TYPE) == COMPLETION_QUERY_TYPE) {
-            return new AsyncCompletionTask(new SpringXMLConfigCompletionQuery(queryType,
-                    component.getSelectionStart()), component);
+            return new AsyncCompletionTask(new SpringXMLConfigCompletionQuery(queryType), component);
         }
 
         return null;
@@ -72,14 +70,12 @@ public class SpringXMLConfigCompletionProvider implements CompletionProvider {
 
     private static class SpringXMLConfigCompletionQuery extends AsyncCompletionQuery {
         
-        private int queryType;
-        private int caretOffset;
+        private final int queryType;
         private JTextComponent component;
-        private Completor completor;
+        private volatile Completor completor;
 
-        public SpringXMLConfigCompletionQuery(int queryType, int caretOffset) {
+        public SpringXMLConfigCompletionQuery(int queryType) {
             this.queryType = queryType;
-            this.caretOffset = caretOffset;
         }
 
         @Override
@@ -95,8 +91,6 @@ public class SpringXMLConfigCompletionProvider implements CompletionProvider {
         
         @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            this.caretOffset = caretOffset;
-
             CompletionContext context = new CompletionContext(doc, caretOffset, queryType);
             if (context.getCompletionType() == CompletionType.NONE) {
                 resultSet.finish();
@@ -105,8 +99,8 @@ public class SpringXMLConfigCompletionProvider implements CompletionProvider {
 
             completor = CompletorRegistry.getDefault().getCompletor(context);
             if(completor != null) {
-                List<SpringXMLConfigCompletionItem> items = completor.complete(context);
-                populateResultSet(resultSet, completor, items);
+                SpringCompletionResult springCompletionResult = completor.complete(context);
+                populateResultSet(resultSet, springCompletionResult);
             }
 
             resultSet.finish();
@@ -118,29 +112,37 @@ public class SpringXMLConfigCompletionProvider implements CompletionProvider {
                 return false;
             }
             
-            return completor.canFilter(new CompletionContext(component.getDocument(), 
+            boolean retVal = completor.canFilter(new CompletionContext(component.getDocument(), 
                     component.getCaretPosition(), queryType));
+            if(!retVal) {
+                completor.cancel();
+        }
+
+            return retVal;
         }
 
         @Override
         protected void filter(CompletionResultSet resultSet) {
             CompletionContext context = new CompletionContext(component.getDocument(), 
                     component.getCaretPosition(), queryType);
-            List<SpringXMLConfigCompletionItem> filteredItems = completor.filter(context);
-            populateResultSet(resultSet, completor, filteredItems);
+            SpringCompletionResult springCompletionResult = completor.filter(context);
+            populateResultSet(resultSet, springCompletionResult);
             resultSet.finish();
         }
         
-        private void populateResultSet(CompletionResultSet resultSet, Completor completor,
-                List<SpringXMLConfigCompletionItem> items) {
-            resultSet.addAllItems(items);
+        private void populateResultSet(CompletionResultSet resultSet, SpringCompletionResult springCompletionResult) {
+            if(springCompletionResult == SpringCompletionResult.NONE) {
+                return;
+            }
+            
+            resultSet.addAllItems(springCompletionResult.getItems());
             if (completor.getAnchorOffset() != -1) {
                 resultSet.setAnchorOffset(completor.getAnchorOffset());
             }
             
-            if(completor.hasAdditionalItems()) {
+            if(springCompletionResult.hasAdditionalItems()) {
                 resultSet.setHasAdditionalItems(true);
-                resultSet.setHasAdditionalItemsText(completor.getAdditionalItemsText());
+                resultSet.setHasAdditionalItemsText(springCompletionResult.getAdditionalItemsText());
             }
         }
     }

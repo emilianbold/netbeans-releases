@@ -39,9 +39,10 @@
 package org.netbeans.modules.spring.beans.completion.completors;
 
 import java.io.IOException;
+import java.util.List;
 import org.netbeans.modules.spring.beans.completion.CompletionContext;
 import org.netbeans.modules.spring.beans.completion.Completor;
-import org.netbeans.modules.spring.beans.completion.QueryProgress;
+import org.netbeans.modules.spring.beans.completion.CompletorUtils;
 import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
 
 /**
@@ -54,29 +55,44 @@ import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionIte
  */
 public class AttributeValueCompletor extends Completor {
 
-    private String[] itemTextAndDocs;
+    private final String[] itemTextAndDocs;
 
-    public AttributeValueCompletor(String[] itemTextAndDocs) {
+    public AttributeValueCompletor(String[] itemTextAndDocs, int invocationOffset) {
+        super(invocationOffset);
         this.itemTextAndDocs = itemTextAndDocs;
     }
 
     @Override
-    protected void computeCompletionItems(CompletionContext context, QueryProgress progress) throws IOException {
+    protected int initAnchorOffset(CompletionContext context) {
+        return context.getCurrentToken().getOffset() + 1;
+    }
+    
+    @Override
+    protected void compute(CompletionContext context) throws IOException {
         int caretOffset = context.getCaretOffset();
         String typedChars = context.getTypedPrefix();
         
         for (int i = 0; i < itemTextAndDocs.length; i += 2) {
-            if(progress.isCancelled()) {
+            if(isCancelled()) {
                 return;
             }
             
             if (itemTextAndDocs[i].startsWith(typedChars)) {
                 SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
                         itemTextAndDocs[i], itemTextAndDocs[i + 1]);
-                addItem(item);
+                addCacheItem(item);
             }
         }
-        
-        setAnchorOffset(context.getCurrentToken().getOffset() + 1);
     }
+        
+    @Override
+    public boolean canFilter(CompletionContext context) {
+        return CompletorUtils.canFilter(context.getDocument(), getInvocationOffset(), context.getCaretOffset(), getAnchorOffset(), CompletorUtils.CHARACTER_STRING_ACCEPTOR);
+    }
+
+    @Override
+    protected List<SpringXMLConfigCompletionItem> doFilter(CompletionContext context) {
+        return CompletorUtils.filter(getCacheItems(), context.getDocument(), getInvocationOffset(), context.getCaretOffset(), getAnchorOffset());
+}
+            
 }

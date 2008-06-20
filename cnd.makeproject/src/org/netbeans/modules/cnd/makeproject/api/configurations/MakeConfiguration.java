@@ -48,7 +48,6 @@ import java.util.Vector;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
@@ -87,7 +86,7 @@ public class MakeConfiguration extends Configuration {
     private LanguageBooleanConfiguration cRequired;
     private LanguageBooleanConfiguration cppRequired;
     private LanguageBooleanConfiguration fortranRequired;
-    private IntConfiguration server;
+    private IntConfiguration developmentHost;
     private IntConfiguration platform;
     private BooleanConfiguration dependencyChecking;
     private CCompilerConfiguration cCompilerConfiguration;
@@ -98,7 +97,6 @@ public class MakeConfiguration extends Configuration {
     private PackagingConfiguration packagingConfiguration;
     private RequiredProjectsConfiguration requiredProjectsConfiguration;
     private boolean languagesDirty = true;
-    private ServerList serverList = null;
 
     // Constructors
     public MakeConfiguration(MakeConfigurationDescriptor makeConfigurationDescriptor, String name, int configurationTypeValue) {
@@ -108,7 +106,7 @@ public class MakeConfiguration extends Configuration {
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue) {
         super(baseDir, name);
         configurationType = new IntConfiguration(null, configurationTypeValue, TYPE_NAMES, null);
-        server = new ServerConfiguration();
+        developmentHost = new DevelopmentHostConfiguration();
         compilerSet = new CompilerSet2Configuration();
         cRequired = new LanguageBooleanConfiguration();
         cppRequired = new LanguageBooleanConfiguration();
@@ -124,26 +122,6 @@ public class MakeConfiguration extends Configuration {
         packagingConfiguration = new PackagingConfiguration(this);
         requiredProjectsConfiguration = new RequiredProjectsConfiguration();
     }
-    
-//    private String[] getServerList() {
-//        String[] names;
-//        
-//        if (serverList == null) {
-//            serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
-//        }
-//        
-//        if (serverList instanceof List) {
-//            ServerRecord[] records = (ServerRecord[]) ((List) serverList).toArray(new ServerRecord[0]);
-//            names = new String[records.length];
-//            int i = 0;
-//            for (ServerRecord record : records) {
-//                names[i++] = record.getName();
-//            }
-//        } else {
-//            names = new String[] { "localhost" }; // NOI18N
-//        }
-//        return names;
-//    }
 
     public void setMakefileConfiguration(MakefileConfiguration makefileConfiguration) {
         this.makefileConfiguration = makefileConfiguration;
@@ -201,12 +179,12 @@ public class MakeConfiguration extends Configuration {
         this.fortranRequired = fortranRequired;
     }
 
-    public IntConfiguration getServer() {
-        return server;
+    public IntConfiguration getDevelopmentHost() {
+        return developmentHost;
     }
 
-    public void setServer(IntConfiguration server) {
-        this.server = server;
+    public void setDevelopmentHost(IntConfiguration developmentHost) {
+        this.developmentHost = developmentHost;
     }
 
     public IntConfiguration getPlatform() {
@@ -307,6 +285,7 @@ public class MakeConfiguration extends Configuration {
         setName(makeConf.getName());
         setBaseDir(makeConf.getBaseDir());
         getConfigurationType().assign(makeConf.getConfigurationType());
+        getDevelopmentHost().assign(makeConf.getDevelopmentHost());
         getCompilerSet().assign(makeConf.getCompilerSet());
         getCRequired().assign(makeConf.getCRequired());
         getCppRequired().assign(makeConf.getCppRequired());
@@ -367,6 +346,7 @@ public class MakeConfiguration extends Configuration {
         super.cloneConf(clone);
         clone.setCloneOf(this);
 
+        clone.setDevelopmentHost((IntConfiguration) getDevelopmentHost().clone());
         clone.setCompilerSet((CompilerSet2Configuration) getCompilerSet().clone());
         clone.setCRequired((LanguageBooleanConfiguration) getCRequired().clone());
         clone.setCppRequired((LanguageBooleanConfiguration) getCppRequired().clone());
@@ -405,7 +385,7 @@ public class MakeConfiguration extends Configuration {
         set.setName("ProjectDefaults"); // NOI18N
         set.setDisplayName(getString("ProjectDefaultsTxt"));
         set.setShortDescription(getString("ProjectDefaultsHint"));
-        set.put(new IntNodeProp(getServer(), true, null, getString("DevelopmentServerTxt"), getString("DevelopmentServerHint"))); // NOI18N
+        set.put(new IntNodeProp(getDevelopmentHost(), true, null, getString("DevelopmentHostTxt"), getString("DevelopmentHostHint"))); // NOI18N
         set.put(new CompilerSetNodeProp(getCompilerSet(), true, "CompilerSCollection2", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
         set.put(new BooleanNodeProp(getCRequired(), true, "cRequired", getString("CRequiredTxt"), getString("CRequiredHint"))); // NOI18N
         set.put(new BooleanNodeProp(getCppRequired(), true, "cppRequired", getString("CppRequiredTxt"), getString("CppRequiredHint"))); // NOI18N

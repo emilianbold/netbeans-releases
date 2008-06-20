@@ -4180,6 +4180,8 @@ org.netbeans.modules.projectapi.ProjectSharabilityQuery
 org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation
 org.netbeans.modules.projectapi.TimedWeakReference
 org.netbeans.modules.projectimport.eclipse.core.ImportProjectAction
+org.netbeans.modules.projectimport.eclipse.core.Installer
+org.netbeans.modules.projectimport.eclipse.core.Installer$1
 org.netbeans.modules.properties.PresentableFileEntry
 org.netbeans.modules.properties.PropertiesDataLoader
 org.netbeans.modules.properties.PropertiesDataObject

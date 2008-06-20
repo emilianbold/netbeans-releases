@@ -78,6 +78,7 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
         description.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, 
                 "LBL_Description", new Object[] {getProductVersionValue(), getJavaValue(), getVMValue(), 
                 getOperatingSystemValue(), getEncodingValue(), getSystemLocaleValue(), getUserDirValue()}));
+        description.setCaretPosition(0); // so that text is not scrolled down
         description.addHyperlinkListener(this);
         copyright.addHyperlinkListener(this);
         copyright.setBackground(getBackground());
@@ -124,6 +125,7 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
         copyright.setContentType("text/html");
         copyright.setEditable(false);
         copyright.setText(getCopyrightText());
+        copyright.setCaretPosition(0); // so that text is not scrolled down
         copyright.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 copyrightMouseClicked(evt);

@@ -62,10 +62,12 @@ import org.w3c.dom.Node;
  */
 public class FactoryMethodCompletor extends JavaMethodCompletor {
 
-    public FactoryMethodCompletor() {
-    }
     private Static staticFlag = Static.YES;
 
+    public FactoryMethodCompletor(int invocationOffset) {
+        super(invocationOffset);
+    }
+    
     @Override
     protected Public getPublicFlag(CompletionContext context) {
         return Public.DONT_CARE;

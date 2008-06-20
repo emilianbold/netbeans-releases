@@ -66,8 +66,8 @@ import org.openide.util.NbPreferences;
 public class EclipseProjectReference {
 
     private Project project;
-    private File eclipseProjectLocation;
-    private File eclipseWorkspaceLocation;
+    private final File eclipseProjectLocation;
+    private final File eclipseWorkspaceLocation;
     private long timestamp;
     private String key;
     
@@ -109,7 +109,7 @@ public class EclipseProjectReference {
         }
         String path = getPreferences().get(getEclipseWorkspaceLocation().getPath(), null);
         if (path != null) {
-            return new File(path);
+            return FileUtil.normalizeFile(new File(path));
         }
         return getEclipseWorkspaceLocation();
     }
