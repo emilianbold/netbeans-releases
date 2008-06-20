@@ -81,6 +81,5 @@ public class UpdaterDispatcherTest extends NbTestCase {
         Thread.sleep (5000);
         UpdaterDispatcher.touchLastModified (cluster);
         assertTrue ("Was touched again", firstTouch < stamp.lastModified ());
-        assertTrue ("No problem", stamp.setLastModified (System.currentTimeMillis ()));
     }
 }
