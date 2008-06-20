@@ -39,10 +39,18 @@
 
 package org.netbeans.modules.uml.drawingarea.persistence;
 
+import java.awt.Dimension;
 import java.util.ArrayList;
 import org.netbeans.api.visual.widget.SeparatorWidget.Orientation;
+import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IRegion;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IState;
+import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.Region;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
+import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 
 /**
@@ -64,7 +72,66 @@ class LoadRegionsProvider implements ActionProvider {
     }
 
     public void perfomeAction() {
-        
+        ETList<IRegion> regions=state.getContents();
+        DesignerScene scene=(DesignerScene) stateWidget.getScene();
+        offsets.add(0, "0");
+        int totalInitialWidth=0;
+        ArrayList<NodeInfo> nis=new ArrayList<NodeInfo>();
+        for(int i=0;i<regions.size();i++)
+        {
+            Widget subW=null;
+            IPresentationElement subPE=null;
+            Region subEl=(Region) regions.get(i);
+            for(IPresentationElement subPETmp:subEl.getPresentationElements())
+            {
+                Widget tmp=scene.findWidget(subPETmp);
+                for(Widget par=tmp.getParentWidget();par!=null;par=par.getParentWidget())
+                {
+                    if(par==stateWidget)
+                    {
+                        subW=tmp;
+                        subPE=subPETmp;
+                        break;
+                    }
+                }
+                if(subW!=null)break;
+            }
+            if(subW!=null)
+            {
+                Dimension size=subW.getBounds().getSize();
+                if(orientation==orientation.VERTICAL)
+                {
+                    totalInitialWidth+=size.height;
+                    int bottom=Integer.parseInt(offsets.get(i));
+                    int up=totalInitialWidth;
+                    if((i+1)<offsets.size())
+                    {
+                        up=Integer.parseInt(offsets.get(i+1));
+                    }
+                    size.height=up-bottom;
+                }
+                else///vertical
+                {
+                    totalInitialWidth+=size.width;
+                    int bottom=Integer.parseInt(offsets.get(i));
+                    int up=totalInitialWidth;
+                    if((i+1)<offsets.size())
+                    {
+                        up=Integer.parseInt(offsets.get(i+1));
+                    }
+                    size.width=up-bottom;
+                }
+                NodeInfo ni=new NodeInfo();
+                ni.setPresentationElement(subPE);
+                ni.setModelElement(subEl);
+                ni.setSize(size);
+                nis.add(ni);
+            }
+        }
+        for(int i=0;i<nis.size();i++)
+        {
+            stateWidget.load(nis.get(i));
+        }
     }
 
 }
