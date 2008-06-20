@@ -52,7 +52,16 @@ import org.netbeans.modules.projectimport.eclipse.core.spi.DotClassPathEntry;
 public class EclipseProjectTestUtils {
 
     public static EclipseProject createEclipseProject(File proj, DotClassPath cp) {
+        return createEclipseProject(proj, cp, null, null);
+    }
+    
+    public static EclipseProject createEclipseProject(File proj, DotClassPath cp, Workspace w, String name) {
         EclipseProject ep = new EclipseProject(proj);
+        if (w != null) {
+            ep.setName(name);
+            ep.setWorkspace(w);
+            w.addProject(ep);
+        }
         ep.setClassPath(cp);
         ep.evaluateContainers(new ArrayList<String>());
         return ep;
@@ -64,5 +73,13 @@ public class EclipseProjectTestUtils {
             map.put(keyvalue[i], keyvalue[i+1]);
         }
         return new DotClassPathEntry(map, null);
+    }
+    
+    public static Workspace createWorkspace(File workspace, Workspace.Variable ... variables) {
+        Workspace w = new Workspace(workspace);
+        for (Workspace.Variable v : variables) {
+            w.addVariable(v);
+        }
+        return w;
     }
 }
