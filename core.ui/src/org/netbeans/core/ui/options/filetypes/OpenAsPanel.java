@@ -38,6 +38,7 @@
  */
 package org.netbeans.core.ui.options.filetypes;
 
+import org.netbeans.core.ui.options.filetypes.FileAssociationsModel.MimeItem;
 import org.openide.util.NbBundle;
 
 /** Panel with list of available MIME types.
@@ -61,7 +62,7 @@ public class OpenAsPanel extends javax.swing.JPanel {
     /** Returns selected MIME type. */
     String getMimeType() {
         if(lstMimeTypes.getSelectedValue() != null) {
-            return lstMimeTypes.getSelectedValue().toString();
+            return ((MimeItem)lstMimeTypes.getSelectedValue()).getMimeType();
         }
         return null;
     }
@@ -73,7 +74,7 @@ public class OpenAsPanel extends javax.swing.JPanel {
     }
     
     void updateList() {
-        lstMimeTypes.setListData(model.getMimeTypes().toArray());
+        lstMimeTypes.setListData(model.getMimeItems().toArray());
     }
 
     /** This method is called from within the constructor to
