@@ -52,6 +52,7 @@ import org.netbeans.modules.websvc.wsitconf.ui.security.listmodels.ServiceProvid
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.STSConfiguration;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.ServiceProvider;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.multiview.ui.DefaultTablePanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -77,14 +78,17 @@ public class ServiceProvidersTablePanel extends DefaultTablePanel {
     private RemoveActionListener removeActionListener;
     private AddActionListener addActionListener;
     private EditActionListener editActionListener;
+
+    private ConfigVersion cfgVersion;
     
     /**
      * Creates a new instance of ServiceProvidersTablePanel
      */
-    public ServiceProvidersTablePanel(ServiceProvidersTableModel tablemodel, STSConfiguration stsConfig) {
+    public ServiceProvidersTablePanel(ServiceProvidersTableModel tablemodel, STSConfiguration stsConfig, ConfigVersion cfgVersion) {
         super(tablemodel);
         this.stsConfig = stsConfig;
         this.tablemodel = tablemodel;
+        this.cfgVersion = cfgVersion;
         
         this.editButton.setVisible(true);
 
@@ -156,7 +160,7 @@ public class ServiceProvidersTablePanel extends DefaultTablePanel {
                     ServiceProviderElement spe = new ServiceProviderElement(url, alias, ttype, ktype);
                     addedProviders.put(url, spe);
                     ServiceProvidersTablePanel.this.tablemodel.addRow(spe);
-                    ProprietarySecurityPolicyModelHelper.addSTSServiceProvider(stsConfig, spe);
+                    ProprietarySecurityPolicyModelHelper.addSTSServiceProvider(stsConfig, spe, cfgVersion);
                 }
             }
         }
@@ -194,7 +198,7 @@ public class ServiceProvidersTablePanel extends DefaultTablePanel {
                     ServiceProvidersTablePanel.this.tablemodel.removeRow(row);
                     ServiceProvidersTablePanel.this.tablemodel.addRow(speNew);
                     ProprietarySecurityPolicyModelHelper.removeSTSServiceProvider(stsConfig, speNew);
-                    ProprietarySecurityPolicyModelHelper.addSTSServiceProvider(stsConfig, speNew);
+                    ProprietarySecurityPolicyModelHelper.addSTSServiceProvider(stsConfig, speNew, cfgVersion);
                 }
             }
         }

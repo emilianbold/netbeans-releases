@@ -41,10 +41,10 @@
 
 package org.netbeans.core.filesystems;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.cookies.InstanceCookie;
@@ -93,6 +93,35 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
         InstanceContent ic = new InstanceContent();
         ic.add(new Impl(fo));
         return ic;
+    }
+    
+    /** Returns list of extension and MIME type pairs for given MIMEResolver
+     * FileObject. The list can contain duplicates and also [null, MIME] pairs.
+     * @param fo MIMEResolver FileObject
+     * @return list of extension and MIME type pairs. The list can contain 
+     * duplicates and also [null, MIME] pairs.
+     */
+    public static ArrayList<String[]> getExtensionsAndMIMETypes(FileObject fo) {
+        assert fo.getPath().startsWith("Services/MIMEResolver");  //NOI18N
+        ArrayList<String[]> result = new ArrayList<String[]>();
+        Impl impl = new Impl(fo);
+        impl.parseDesc();
+        FileElement[] elements = impl.smell;
+        if(elements != null) {
+            for (int i = 0; i < elements.length; i++) {
+                FileElement fileElement = elements[i];
+                String mimeType = fileElement.getMimeType();
+                String[] extensions = fileElement.getExtensions();
+                if(extensions != null) {
+                    for (int j = 0; j < extensions.length; j++) {
+                        result.add(new String[] {extensions[j], mimeType});
+                    }
+                } else {
+                    result.add(new String[] {null, mimeType});
+                }
+            }
+        }
+        return result;
     }
     
     // MIMEResolver ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -414,6 +443,14 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
         private String mime = null;
         private MIMEComponent rule = null;
 
+        private String[] getExtensions() {
+            return fileCheck.exts;
+        }
+        
+        private String getMimeType() {
+            return mime;
+        }
+        
         private void setMIME(String mime) {
             if ("null".equals(mime)) return;  // NOI18N
             this.mime = mime;

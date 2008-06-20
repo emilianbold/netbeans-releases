@@ -40,6 +40,7 @@ import org.netbeans.modules.sql.project.dbmodel.Parameter;
 import org.netbeans.modules.sql.project.dbmodel.Procedure;
 
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.queries.FileEncodingQuery;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -1239,9 +1240,10 @@ public class WSDLGenerator {
             final WSDLWriter writer = WSDLGenerator.factory.newWSDLWriter();
             final String outputFileName = this.wsdlFileLocation + File.separator + this.wsdlFileName + ".wsdl";
             java.io.FileOutputStream fos = new java.io.FileOutputStream(outputFileName);
-            final Writer sink = new java.io.OutputStreamWriter(fos);
+            final Writer sink = new java.io.OutputStreamWriter(fos, FileEncodingQuery.getDefaultEncoding());
             writer.writeWSDL(this.def, sink);
-            WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName);
+            WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName +
+                " using the file encoding:"+ FileEncodingQuery.getDefaultEncoding());
         } catch (final Exception e) {
            if(e instanceof FileNotFoundException){
                 WSDLGenerator.logger.log(Level.SEVERE, e.getMessage());
@@ -1255,7 +1257,8 @@ public class WSDLGenerator {
                    java.io.FileOutputStream fos = new java.io.FileOutputStream(outputFileName);
                    final Writer sink = new java.io.OutputStreamWriter(fos,"UTF-8");
                    writer.writeWSDL(this.def, sink);
-                   WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName);
+                   WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName +
+                        " using the file encoding: UTF-8");
                    }catch(Exception ex){
                        WSDLGenerator.logger.log(Level.SEVERE, ex.getMessage());
                    }

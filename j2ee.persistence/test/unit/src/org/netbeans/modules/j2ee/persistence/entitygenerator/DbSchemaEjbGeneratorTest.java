@@ -125,11 +125,11 @@ public class DbSchemaEjbGeneratorTest extends NbTestCase {
             return tableName;
         }
 
-        public String getSchema(String tableName) {
+        public String getSchema() {
             return null;
         }
 
-        public String getCatalog(String tableName) {
+        public String getCatalog() {
             return null;
         }
 

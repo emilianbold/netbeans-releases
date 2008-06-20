@@ -44,6 +44,12 @@ package org.netbeans.modules.cnd.api.remote;
  * @author gordonp
  */
 public interface ServerRecord {
+    
+    public String getServerName();
+    
+    public String getUserName();
+    
+    public String getName();
 
     public boolean isRemote();
     

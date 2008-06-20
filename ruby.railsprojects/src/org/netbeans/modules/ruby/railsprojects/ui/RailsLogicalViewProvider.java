@@ -55,7 +55,6 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import javax.swing.Action;
-import javax.swing.JSeparator;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.ruby.railsprojects.GenerateAction;
@@ -99,6 +98,7 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
@@ -229,7 +229,7 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
         RailsProjectProperties.JAVAC_TEST_CLASSPATH,
     };
     
-//    private static Image brokenProjectBadge = Utilities.loadImage("org/netbeans/modules/ruby/railsprojects/ui/resources/brokenProjectBadge.gif", true);
+//    private static Image brokenProjectBadge = ImageUtilities.loadImage("org/netbeans/modules/ruby/railsprojects/ui/resources/brokenProjectBadge.gif", true);
     
     /** Filter node containin additional features for the Ruby physical
      */
@@ -369,7 +369,7 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
         
         private Image getMyIcon(int type) {
             Image original = super.getIcon(type);
-//            return broken || illegalState ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
+//            return broken || illegalState ? ImageUtilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
             return original;
         }
         
@@ -390,7 +390,7 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
         
         private Image getMyOpenedIcon(int type) {
             Image original = super.getOpenedIcon(type);
-            //return broken || illegalState ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
+            //return broken || illegalState ? ImageUtilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
             return original;
         }
         
@@ -520,18 +520,8 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
             actions.add(SystemAction.get(FindAction.class));
             
             // honor 57874 contact
-            
-            Collection<? extends Object> res = Lookups.forPath("Projects/Actions").lookupAll(Object.class); // NOI18N
-            if (!res.isEmpty()) {
-                actions.add(null);
-                for (Object next : res) {
-                    if (next instanceof Action) {
-                        actions.add((Action) next);
-                    } else if (next instanceof JSeparator) {
-                        actions.add(null);
-                    }
-                }
-            }
+            actions.add(null);
+            actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
 
             actions.add(null);
             actions.add(CommonProjectActions.customizeProjectAction());

@@ -608,9 +608,9 @@ public final class RubyPlatform {
      */
     String[] getRequiredRDebugIDEVersions() {
         if (isJRuby() && Util.compareVersions(info.getJVersion(), "1.1.1") >= 0) { // NOI18N
-            return new String[]{"0.1.11"}; // NOI18N
+            return new String[]{"0.2.0"}; // NOI18N
         } else {
-            return new String[]{"0.1.10", "0.1.11"}; // NOI18N
+            return new String[]{"0.1.10", "0.2.0"}; // NOI18N
         }
     }
 
@@ -650,6 +650,12 @@ public final class RubyPlatform {
         return versions[versions.length - 1];
     }
     
+    /**
+     * Tries to install fast Ruby debugger for the platform. That is an
+     * appropriate version of <em>ruby-debug-ide</em> gem.
+     * 
+     * @return <tt>true</tt> whether the installation succeed; <tt>false</tt> otherwise
+     */
     public boolean installFastDebugger() {
         assert gemManager != null : "has gemManager when trying to install fast debugger";
         gemManager.installGem(RUBY_DEBUG_IDE_NAME, false, false, getLatestRequiredRDebugIDEVersion());
@@ -861,7 +867,7 @@ public final class RubyPlatform {
             String ver = isJRuby() ? jversion
                     : version + (patchlevel != null ? "-p" + patchlevel : ""); // NOI18N
             return (isDefault ? NbBundle.getMessage(RubyPlatform.class, "RubyPlatformManager.CTL_BundledJRubyLabel") : kind)
-                    + " (" + ver + ')'; // NOI18N
+                    + ' ' + ver;
         }
         
         public String getLongDescription() {

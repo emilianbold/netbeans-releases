@@ -63,7 +63,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
@@ -108,7 +107,7 @@ final class ProjectSelectionPanel extends JPanel {
                 label.setText(project.getName() + " ("+project.getProjectTypeFactory().getProjectTypeName()+")"); // NOI18N
                 label.setIcon(project.getProjectTypeFactory().getProjectTypeIcon());
             } else {
-                label.setText(project.getName()); // NOI18N
+                label.setText(project.getName() + " (unknown project type)"); // NOI18N
             }
             checkbox.setSelected(selectedProjects.contains(project) ||
                     requiredProjects.contains(project));
@@ -120,7 +119,7 @@ final class ProjectSelectionPanel extends JPanel {
             } else {
                 // required and non-java project are disabled
                 checkbox.setEnabled(false);
-                label.setEnabled(false);
+                //label.setEnabled(false);
                 if (!project.isImportSupported()) {
                     checkbox.setToolTipText(ProjectImporterWizard.getMessage(
                             "MSG_NonJavaProject", project.getName())); // NOI18N
@@ -328,7 +327,7 @@ final class ProjectSelectionPanel extends JPanel {
     }
     
     /** Loads project from workspace in the given <code>workspaceDir</code>. */
-    void loadProjects(String workspaceDir) {
+    void loadProjects(File workspaceDir) {
         Workspace workspace = null;
         try {
             workspace = WorkspaceFactory.getInstance().load(workspaceDir);
@@ -360,6 +359,13 @@ final class ProjectSelectionPanel extends JPanel {
     List<EclipseProject> getProjects() {
         List<EclipseProject> list = new ArrayList<EclipseProject>();
         addProjects(selectedProjects, list);
+        Iterator<EclipseProject> it = list.iterator();
+        while (it.hasNext()) {
+            EclipseProject eclipseProject = it.next();
+            if (!eclipseProject.isImportSupported()) {
+                it.remove();
+            }
+        }
         return list;
     }
     

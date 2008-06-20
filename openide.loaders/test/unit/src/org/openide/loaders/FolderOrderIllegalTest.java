@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.logging.Level;
 import org.openide.filesystems.FileObject;
-import java.util.Enumeration;
 import java.util.logging.Logger;
 import org.netbeans.junit.*;
 import org.openide.filesystems.FileUtil;
@@ -62,9 +61,6 @@ public class FolderOrderIllegalTest extends NbTestCase {
         LOG = Logger.getLogger("org.openide.loaders.FolderList." + getName());
     }
     public void testRenameBehaviour() throws Exception {
-//        if (Boolean.getBoolean("ignore.random.failures")) {
-//            return;
-//        }
         File dir = new File(getWorkDir(), "dir");
         dir.mkdirs();
         File old = new File(getWorkDir(), "old");

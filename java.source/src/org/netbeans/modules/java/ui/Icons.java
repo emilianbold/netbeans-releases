@@ -109,6 +109,7 @@ public final class Icons {
 	    case CONSTRUCTOR:
 		img = Utilities.loadImage( getIconName(elementKind, ICON_BASE + "constructor", PNG_EXTENSION, modifiers ) );
 		break;
+	    case INSTANCE_INIT: 	
 	    case STATIC_INIT: 	
 		img = Utilities.loadImage( getIconName(elementKind, ICON_BASE + "initializer", PNG_EXTENSION, modifiers ) );      
 		break;

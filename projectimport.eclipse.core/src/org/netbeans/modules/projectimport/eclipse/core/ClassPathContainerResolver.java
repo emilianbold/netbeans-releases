@@ -68,9 +68,9 @@ public class ClassPathContainerResolver {
      * 
      * Eg. for "org.eclipse.jdt.junit.JUNIT_CONTAINER/3.8.1" it would be "libs.junit.classpath"
      * 
-     * This method is called after .classpath file was parsed.
+     * This method is called during project import.
      */
-    public static boolean resolve(Workspace workspace, DotClassPathEntry entry) {
+    public static boolean resolve(Workspace workspace, DotClassPathEntry entry, List<String> importProblems) {
         assert entry.getKind() == DotClassPathEntry.Kind.CONTAINER : entry;
         
         String container = entry.getRawPath();
@@ -99,6 +99,10 @@ public class ClassPathContainerResolver {
             entry.setContainerMapping("");
             return true;
         }
+        
+        importProblems.add("unsupported classpath container found. It will be ignored and " +
+                "you may need to update NetBeans project classpath by hand. Internal name of this container is: '"+
+                container+"'");
         
         return false;
     }
@@ -134,6 +138,22 @@ public class ClassPathContainerResolver {
             lm.createLibrary("j2se", library, content);
             assert entry.getContainerMapping() != null : entry;
         }
+    }
+    
+    public static boolean isJUnit(DotClassPathEntry entry) {
+        if (entry.getKind() == DotClassPathEntry.Kind.CONTAINER && 
+                entry.getRawPath().startsWith(JUNIT_CONTAINER)) {
+            return true;
+        }
+        if (entry.getKind() == DotClassPathEntry.Kind.LIBRARY ||  
+            entry.getKind() == DotClassPathEntry.Kind.VARIABLE) {
+            int i = entry.getRawPath().replace('\\', '/').lastIndexOf('/'); // NOI18N
+            if (i != -1) {
+                String s = entry.getRawPath().substring(i+1);
+                return s.startsWith("junit") && s.endsWith(".jar"); // NOI18N
+            }
+        }
+        return false;
     }
         
 }

@@ -49,6 +49,7 @@ made subject to such option by the copyright holder.
                     stringvalue="org.netbeans.modules.dbschema.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" 
                     urlvalue="nbresloc:/org/nb/modules/dbschema/resources/database.gif"/>
+                <attr name="position" intvalue="1010"/>
             </file>
         </folder>
     </folder>

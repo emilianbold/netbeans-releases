@@ -40,9 +40,7 @@
  */
 package org.netbeans.modules.print.impl.provider;
 
-import java.awt.Dimension;
 import java.awt.Graphics;
-
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -50,6 +48,7 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
+import org.netbeans.modules.print.api.PrintManager;
 import static org.netbeans.modules.print.impl.ui.UI.*;
 
 /**
@@ -67,12 +66,11 @@ final class ComponentPanel extends JPanel {
     for (int i=0; i < myComponents.size(); i++) {
       JComponent component = myComponents.get(i);
 //out();
-//out("see: " + component.getClass().getName() + " " + component.getClientProperty(Integer.class));
-      int width = getWidth(component);
-      int height = getHeight(component);
+//out("see: " + component.getClass().getName());
+      int width = component.getWidth();
+      int height = component.getHeight();
 //out("   width: " + width);
 //out("  height: " + height);
-
       myWidth += width;
 
       if (height > myHeight) {
@@ -86,8 +84,8 @@ final class ComponentPanel extends JPanel {
     for (JComponent component : myComponents) {
       component.print(g);
 //    g.setColor(java.awt.Color.green);
-//    g.drawRect(0, 0, getWidth(component), getHeight(component));
-      g.translate(getWidth(component), 0);
+//    g.drawRect(0, 0, component.getWidth(), component.getHeight());
+      g.translate(component.getWidth(), 0);
     }
   }
 
@@ -99,33 +97,6 @@ final class ComponentPanel extends JPanel {
   @Override
   public int getHeight() {
     return myHeight;
-  }
-
-  private int getWidth(JComponent component) {
-    Dimension dimension = getDimension(component);
-
-    if (dimension == null) {
-      return component.getWidth();
-    }
-    return dimension.width;
-  }
-
-  private int getHeight(JComponent component) {
-    Dimension dimension = getDimension(component);
-
-    if (dimension == null) {
-      return component.getHeight();
-    }
-    return dimension.height;
-  }
-
-  private Dimension getDimension(JComponent component) {
-    Object object = component.getClientProperty(Dimension.class);
-      
-    if (object instanceof Dimension) {
-      return (Dimension) object;
-    }
-    return null;
   }
 
   private List<JComponent> sort(List<JComponent> components) {
@@ -144,7 +115,7 @@ final class ComponentPanel extends JPanel {
       }
 
       private Integer getInteger(JComponent component) {
-        Object object = component.getClientProperty(java.lang.Integer.class);
+        Object object = component.getClientProperty(PrintManager.PRINT_WEIGHT);
 
         if (object instanceof Integer) {
           return (Integer) object;

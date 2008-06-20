@@ -824,7 +824,7 @@ public class CommitAction extends ContextAction {
         File file = node.getFile();
         File parent = file.getParentFile();
         while (true) {
-            if (new File(parent, ".svn/entries").canRead() || new File(parent, "_svn/entries").canRead()) { // NOI18N
+            if (new File(parent, SvnUtils.SVN_ENTRIES_DIR).canRead()) { // NOI18N
                 break;
             }
             unmanaged.add(0, parent);

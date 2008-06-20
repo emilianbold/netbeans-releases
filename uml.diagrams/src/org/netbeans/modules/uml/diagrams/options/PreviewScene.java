@@ -57,6 +57,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramTypesManager;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
+import org.netbeans.modules.uml.drawingarea.NodeWidgetFactory;
 import org.netbeans.modules.uml.drawingarea.palette.NodeInitializer;
 import org.netbeans.modules.uml.drawingarea.view.Customizable;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
@@ -78,7 +79,7 @@ import org.openide.util.NbBundle;
 public class PreviewScene extends GraphScene<IPresentationElement, IPresentationElement> implements Customizable
 {
     private ResourceType[] customizableResTypes = Customizable.DEFAULT_RESTYPES;
-    private static Map<String, Constructor> map = new HashMap<String, Constructor>();
+    private static Map<String, NodeWidgetFactory> map = new HashMap<String, NodeWidgetFactory>();
     private static IPresentationElement[] elements;
     public static final int[] diagramTypes = new int[]
     {
@@ -232,8 +233,8 @@ public class PreviewScene extends GraphScene<IPresentationElement, IPresentation
     {
         try
         {
-            Constructor c = map.get(element.getFirstSubject().getExpandedElementType());
-            UMLNodeWidget widget = (UMLNodeWidget) c.newInstance(this);
+            NodeWidgetFactory c = map.get(element.getFirstSubject().getExpandedElementType());
+            UMLNodeWidget widget = (UMLNodeWidget) c.createNode(this);
             widget.initializeNode(element, true);
             return widget;
 
@@ -265,15 +266,16 @@ public class PreviewScene extends GraphScene<IPresentationElement, IPresentation
                             Class cl = ic.instanceClass();
                             if (cl != null)
                             {
-                                Constructor constructor = cl.getConstructor(Scene.class);
-                                if (constructor != null)
+                                //Constructor constructor = cl.getConstructor(Scene.class);
+                                if (cl.isAssignableFrom(NodeWidgetFactory.class));
                                 {
-                                    map.put(pe.getFirstSubject().getExpandedElementType(), constructor);
+                                    map.put(pe.getFirstSubject().getExpandedElementType(),(NodeWidgetFactory) cl.getConstructor().newInstance());
                                 }
                             }
                         } catch (Exception e)
                         {
                             //Exceptions.printStackTrace(e);
+                            e.printStackTrace();
                             continue;
                         }
                     }

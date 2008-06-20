@@ -44,10 +44,8 @@ package org.netbeans.modules.apisupport.project.ui;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import javax.swing.Action;
-import javax.swing.JSeparator;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -67,8 +65,8 @@ import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
 
 /**
  * Defines actions available on a suite.
@@ -86,7 +84,7 @@ public final class SuiteActions implements ActionProvider {
         actions.add(null);
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_run"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_debug"), null));
-        addFromLayers(actions, "Projects/Profiler_Actions_temporary"); //NOI18N
+        actions.addAll(Utilities.actionsForPath("Projects/Profiler_Actions_temporary")); //NOI18N
         actions.add(null);
         NbPlatform platform = project.getPlatform(true); //true -> #96095
         if (platform != null && platform.getHarnessVersion() >= NbPlatform.HARNESS_VERSION_61) {
@@ -117,31 +115,11 @@ public final class SuiteActions implements ActionProvider {
         
         actions.add(null);
         actions.add(SystemAction.get(FindAction.class));
-        Collection<? extends Object> res = Lookups.forPath("Projects/Actions").lookupAll(Object.class); // NOI18N
-        if (!res.isEmpty()) {
-            actions.add(null);
-            for (Object next : res) {
-                if (next instanceof Action) {
-                    actions.add((Action) next);
-                } else if (next instanceof JSeparator) {
-                    actions.add(null);
-                }
-            }
-        }
+        actions.add(null);
+        actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
         actions.add(null);
         actions.add(CommonProjectActions.customizeProjectAction());
         return actions.toArray(new Action[actions.size()]);
-    }
-    
-    private static void addFromLayers(List<Action> actions, String path) {
-        Lookup look = Lookups.forPath(path);
-        for (Object next : look.lookupAll(Object.class)) {
-            if (next instanceof Action) {
-                actions.add((Action) next);
-            } else if (next instanceof JSeparator) {
-                actions.add(null);
-            }
-        }
     }
     
     private final SuiteProject project;
@@ -189,11 +167,17 @@ public final class SuiteActions implements ActionProvider {
     
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
         if (ActionProvider.COMMAND_DELETE.equals(command)) {
-            DefaultProjectOperations.performDefaultDeleteOperation(project);
+            if (SuiteOperations.canRun(project)) {
+                DefaultProjectOperations.performDefaultDeleteOperation(project);
+            }
         } else if (ActionProvider.COMMAND_RENAME.equals(command)) {
-            DefaultProjectOperations.performDefaultRenameOperation(project, null);
+            if (SuiteOperations.canRun(project)) {
+                DefaultProjectOperations.performDefaultRenameOperation(project, null);
+            }
         } else if (ActionProvider.COMMAND_MOVE.equals(command)) {
-            DefaultProjectOperations.performDefaultMoveOperation(project);
+            if (SuiteOperations.canRun(project)) {
+                DefaultProjectOperations.performDefaultMoveOperation(project);
+            }
         } else {
             NbPlatform plaf = project.getPlatform(false);
             if (plaf != null) {
@@ -227,8 +211,16 @@ public final class SuiteActions implements ActionProvider {
         } else if (command.equals(ActionProvider.COMMAND_REBUILD)) {
             targetNames = new String[] {"clean", "build"}; // NOI18N
         } else if (command.equals(ActionProvider.COMMAND_RUN)) {
+            if (project.getTestUserDirLockFile().isFile()) {
+                ModuleActions.notifyCannotReRun();
+                return null;
+            }
             targetNames = new String[] {"run"}; // NOI18N
         } else if (command.equals(ActionProvider.COMMAND_DEBUG)) {
+            if (project.getTestUserDirLockFile().isFile()) {
+                ModuleActions.notifyCannotReRun();
+                return null;
+            }
             targetNames = new String[] {"debug"}; // NOI18N
         } else if (command.equals(ActionProvider.COMMAND_TEST)) {
             targetNames = new String[] {"test"}; // NOI18N

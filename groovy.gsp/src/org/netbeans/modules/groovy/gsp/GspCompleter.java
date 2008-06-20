@@ -33,7 +33,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.groovy.editor.CodeCompleter;
+import org.netbeans.modules.groovy.editor.completion.CodeCompleter;
 import org.netbeans.modules.groovy.gsp.lexer.api.GspTokenId;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;

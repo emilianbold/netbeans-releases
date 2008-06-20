@@ -110,6 +110,8 @@ public final class InputReaderTask implements Runnable {
     /**
      * Creates the new task. The task will read the data from reader
      * throwing them away.
+     * <p>
+     * {@link InputReader} must be responsive to interruption.
      *
      * @param reader data producer
      * @return task handling the read process
@@ -121,6 +123,8 @@ public final class InputReaderTask implements Runnable {
     /**
      * Creates the new task. The task will read the data from reader processing
      * them through processor (if any).
+     * <p>
+     * {@link InputReader} must be responsive to interruption.
      *
      * @param reader data producer
      * @param processor processor consuming the data, may be <code>null</code>

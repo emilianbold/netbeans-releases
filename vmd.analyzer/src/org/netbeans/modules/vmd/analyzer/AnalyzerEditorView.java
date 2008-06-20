@@ -141,7 +141,7 @@ public class AnalyzerEditorView implements DataEditorView, DesignDocumentAwarene
         toolbar.add (refreshButton);
         
         // vlv: print
-        panel.putClientProperty(java.awt.print.Printable.class, ""); // NOI18N
+        panel.putClientProperty("print.printable", Boolean.TRUE); // NOI18N
     }
 
     public DataObjectContext getContext () {

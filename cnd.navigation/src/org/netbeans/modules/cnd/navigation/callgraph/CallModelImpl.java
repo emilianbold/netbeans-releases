@@ -121,7 +121,7 @@ public class CallModelImpl implements CallModel {
         CsmFunction owner = functionImpl.getDeclaration();
         if (CsmKindUtilities.isFunction(owner) && owner.getContainingFile().isValid()) {
             HashMap<CsmFunction,CsmReference> set = new HashMap<CsmFunction,CsmReference>();
-            for(CsmReference r : repository.getReferences(owner, project, CsmReferenceKind.ANY_USAGE)){
+            for(CsmReference r : repository.getReferences(owner, project, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE)){
                 CsmFunction o = getFunctionDeclaration(getOwner(r));
                 if (o != null) {
                     if (!set.containsKey(o)) {

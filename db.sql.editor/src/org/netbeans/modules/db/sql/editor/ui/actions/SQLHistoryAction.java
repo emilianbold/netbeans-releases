@@ -47,6 +47,11 @@ import org.openide.util.NbBundle;
  * @author test
  */
 public class SQLHistoryAction extends SQLExecutionBaseAction {
+    private static final String ICON_PATH = "org/netbeans/modules/db/sql/editor/resources/sql_history_16.png"; // NOI18N
+
+    protected String getIconBase() {
+        return ICON_PATH;
+    }
 
     protected String getDisplayName(SQLExecution sqlExecution) { 
         return NbBundle.getMessage(SQLHistoryAction.class, "LBL_SQLHistoryAction");

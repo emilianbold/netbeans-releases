@@ -51,7 +51,8 @@ import org.w3c.dom.Node;
  */
 public class InitDestroyMethodCompletor extends JavaMethodCompletor {
 
-    public InitDestroyMethodCompletor() {
+    public InitDestroyMethodCompletor(int invocationOffset) {
+        super(invocationOffset);
     }
 
     @Override

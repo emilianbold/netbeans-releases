@@ -323,8 +323,9 @@ public class PlanCanvas extends JGoView implements JGoViewListener, GuiConstants
         this.mModel.addComponentListener(new IEPModelListener());
         this.setDocument(new PdModel(model));
         init();
+
         // vlv: print
-        getCanvas().putClientProperty(java.awt.print.Printable.class, "");
+        getCanvas().putClientProperty("print.printable", Boolean.TRUE); // NOI18N
         
         mPopupMenu.add(new IEPTemplateAction(this.mModel.getModelSource().getLookup().lookup(PlanDataObject.class)));
     }

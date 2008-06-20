@@ -118,15 +118,10 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.bpel.editors</friend>
-                <friend>org.netbeans.modules.bpel.mapper</friend>
-                <friend>org.netbeans.modules.compapp.casaeditor</friend>
-                <friend>org.netbeans.modules.iep.editor</friend>
-                <friend>org.netbeans.modules.xml.search</friend>
+            <public-packages>
                 <package>org.netbeans.modules.print.api</package>
                 <package>org.netbeans.modules.print.spi</package>
-            </friend-packages>
+            </public-packages>
         </data>
     </configuration>
 </project>

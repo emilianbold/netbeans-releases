@@ -47,21 +47,26 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.spring.java.JavaUtils;
+import org.netbeans.modules.spring.java.PropertyType;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -77,6 +82,40 @@ public class SpringRefactorings {
 
     public static boolean isJavaFile(FileObject fo) {
         return JAVA_MIME_TYPE.equals(fo.getMIMEType());
+    }
+    
+    public static RenamedProperty getRenamedProperty(final TreePathHandle oldHandle, final JavaSource javaSource, final String newName) throws IOException {
+        final RenamedProperty[] result = { null };
+        javaSource.runUserActionTask(new Task<CompilationController>() {
+
+            public void run(CompilationController cc) throws Exception {
+                cc.toPhase(Phase.ELEMENTS_RESOLVED);
+                Element element = oldHandle.resolveElement(cc);
+                if (element == null || element.getKind() != ElementKind.METHOD) {
+                    return;
+                }
+
+                PropertyType type = null;
+                ExecutableElement ee = (ExecutableElement) element;
+                if (JavaUtils.isGetter(ee)) {
+                    type = PropertyType.READ_ONLY;
+                } else if (JavaUtils.isSetter(ee)) {
+                    type = PropertyType.WRITE_ONLY;
+                } else {
+                    return;
+                }
+
+                // gather and keep all overridden methods plus current method
+                Collection<ElementHandle<ExecutableElement>> methodHandles = JavaUtils.getOverridenMethodsAsHandles(ee, cc);
+                methodHandles = new ArrayList<ElementHandle<ExecutableElement>>(methodHandles);
+                methodHandles.add(ElementHandle.create(ee));
+                
+                String oldName = JavaUtils.getPropertyName(element.getSimpleName().toString());
+                element = element.getEnclosingElement();
+                result[0] = new RenamedProperty(methodHandles, oldName, JavaUtils.getPropertyName(newName), type);
+            }
+        }, true);
+        return result[0];
     }
 
     public static RenamedClassName getRenamedClassName(final TreePathHandle oldHandle, final JavaSource javaSource, final String newName) throws IOException {
@@ -232,6 +271,37 @@ public class SpringRefactorings {
 
         public String getNewBinaryName() {
             return newBinaryName;
+        }
+    }
+    
+    public static final class RenamedProperty {
+        
+        private final String oldName;
+        private final String newName;
+        private final PropertyType type;
+        private final Collection<ElementHandle<ExecutableElement>> methodHandles;
+
+        public RenamedProperty(Collection<ElementHandle<ExecutableElement>> methodHandles, String oldName, String newName, PropertyType type) {
+            this.methodHandles = methodHandles;
+            this.oldName = oldName;
+            this.newName = newName;
+            this.type = type;
+        }
+
+        public String getNewName() {
+            return newName;
+        }
+
+        public String getOldName() {
+            return oldName;
+        }
+
+        public PropertyType getType() {
+            return type;
+        }
+
+        public Collection<ElementHandle<ExecutableElement>> getMethodHandles() {
+            return methodHandles;
         }
     }
 }

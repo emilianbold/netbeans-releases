@@ -911,4 +911,8 @@ public class CsmUtilities {
 
     private CsmUtilities() {
     }
+    
+    /* package */ static boolean isUnitTestsMode() {
+        return Boolean.getBoolean("cnd.mode.unittest");
+    }
 }

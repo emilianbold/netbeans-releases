@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -46,7 +46,7 @@ import java.awt.Component;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.openide.awt.StatusLineElementProvider;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -72,7 +72,7 @@ public final class NetworkProblemNotification implements StatusLineElementProvid
      */
     private static Component getUpdatesVisualizer () {
         if (null == flasher) {
-            ImageIcon img1 = new ImageIcon (Utilities.loadImage ("org/netbeans/modules/autoupdate/ui/resources/error.png", false)); // NOI18N
+            ImageIcon img1 = new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/autoupdate/ui/resources/error.png", false)); // NOI18N
             assert img1 != null : "Icon cannot be null.";
             flasher = new UpdatesFlasher (img1);
         }

@@ -1020,12 +1020,6 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
                     }
                 }
             }
-            if (project != null) {
-                String file = project.getProperty("ant.file"); // NOI18N
-                if (file != null) {
-                    return scriptLocation = new File(file);
-                }
-            }
             // #49464: guess at task.
             Task lastTask = getLastTask();
             if (lastTask != null) {
@@ -1035,6 +1029,14 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
                     if (file != null) {
                         return scriptLocation = new File(file);
                     }
+                }
+            }
+            // #104103: lastTask is more likely to be accurate.
+            // Consider a call to Project.log from within a task run in an imported script.
+            if (project != null) {
+                String file = project.getProperty("ant.file"); // NOI18N
+                if (file != null) {
+                    return scriptLocation = new File(file);
                 }
             }
             return null;

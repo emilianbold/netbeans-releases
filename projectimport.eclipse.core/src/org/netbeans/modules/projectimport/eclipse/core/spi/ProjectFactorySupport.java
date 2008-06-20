@@ -46,6 +46,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -57,11 +58,16 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
+import org.netbeans.modules.projectimport.eclipse.core.ClassPathContainerResolver;
+import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
+import org.netbeans.modules.projectimport.eclipse.core.EclipseProjectReference;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseUtils;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -79,7 +85,7 @@ public class ProjectFactorySupport {
      * Default translation of eclipse classpath to netbeans classpath. Should
      * be useful for most of the project types.
      */
-    public static void updateProjectClassPath(AntProjectHelper helper, ProjectImportModel model, 
+    public static void updateProjectClassPath(AntProjectHelper helper, ReferenceHelper refHelper, ProjectImportModel model, 
             List<String> importProblems) throws IOException {
         if (model.getEclipseSourceRootsAsFileArray().length == 0) {
             importProblems.add("No source roots found and therefore no classpath will be configured.");
@@ -87,7 +93,7 @@ public class ProjectFactorySupport {
         }
         FileObject sourceRoot = FileUtil.toFileObject(model.getEclipseSourceRootsAsFileArray()[0]);
         for (DotClassPathEntry entry : model.getEclipseClassPathEntries()) {
-            addItemToClassPath(helper, entry, model.getAlreadyImportedProjects(), model.getProjectName(), importProblems, sourceRoot);
+            addItemToClassPath(helper, refHelper, entry, model.getAlreadyImportedProjects(), importProblems, sourceRoot);
         }
     }
 
@@ -96,7 +102,7 @@ public class ProjectFactorySupport {
      * @return newKey updated according to progress of update, that is if removal of an item failed then it will be kept in key
      *  and similarly for adding an item
      */
-    public static String synchronizeProjectClassPath(Project project, AntProjectHelper helper, ProjectImportModel model, 
+    public static String synchronizeProjectClassPath(Project project, AntProjectHelper helper, ReferenceHelper refHelper, ProjectImportModel model, 
             String oldKey, String newKey, List<String> importProblems) throws IOException {
         // compare old and new key and add and remove items from classpath;
         FileObject sourceRoot = FileUtil.toFileObject(model.getEclipseSourceRootsAsFileArray()[0]);
@@ -113,7 +119,7 @@ public class ProjectFactorySupport {
             if (!oldKey.contains(t)) {
                 DotClassPathEntry entry = findEntryByEncodedValue(model.getEclipseClassPathEntries(), t);
                 // TODO: items appended to the end of classpath; there is no API to control this apart from editting javac.classpath directly
-                addItemToClassPath(helper, entry, model.getAlreadyImportedProjects(), model.getProjectName(), importProblems, sourceRoot);
+                addItemToClassPath(helper, refHelper, entry, model.getAlreadyImportedProjects(), importProblems, sourceRoot);
                 if (Boolean.FALSE.equals(entry.getImportSuccessful())) {
                     // adding of item failed: remove it from key so that it can be retried
                     resultingKey = resultingKey.replace(t+";", "");
@@ -177,20 +183,24 @@ public class ProjectFactorySupport {
         if (model.getJavaPlatform() != null) {
             sb.append("jre="+model.getJavaPlatform().getDisplayName()+";");
         }
-        if (model.getOuput() != null) {
-            sb.append("output="+model.getOuput().getRawPath()+";");
+        if (model.getOutput() != null) {
+            sb.append("output="+model.getOutput().getRawPath()+";");
         }
         return sb.toString().replace("con=;", ""); // remove empty container entries
     }
     
     private static String encodeDotClassPathEntryToKey(DotClassPathEntry entry) {
+        if (ClassPathContainerResolver.isJUnit(entry)) {
+            // always ignore junit and never add it to key
+            return null;
+        }
         String value = getValueTag(entry);
         if (value == null || value.length() == 0) {
             return null;
         }
         return getKindTag(entry.getKind()) + "=" + value;
     }
-    
+
     private static String getKindTag(DotClassPathEntry.Kind kind) {
         switch (kind) {
             case PROJECT:
@@ -229,14 +239,18 @@ public class ProjectFactorySupport {
     /**
      * Adds single DotClassPathEntry to NB project classpath.
      */
-    private static boolean addItemToClassPath(AntProjectHelper helper, DotClassPathEntry entry, 
-            List<Project> alreadyCreatedProjects, String projName, 
-            List<String> importProblems, FileObject sourceRoot) throws IOException {
+    private static boolean addItemToClassPath(AntProjectHelper helper, ReferenceHelper refHelper, DotClassPathEntry entry, 
+            List<Project> alreadyCreatedProjects, List<String> importProblems, FileObject sourceRoot) throws IOException {
+        if (ClassPathContainerResolver.isJUnit(entry)) {
+            // always ignore junit and never add it to NB project compilation classpath
+            return true;
+        }
         if (entry.getKind() == DotClassPathEntry.Kind.PROJECT) {
             Project requiredProject = null;
             // first try to find required project in list of already created projects.
             // if this is workspace import than required project must be there:
             for (Project p : alreadyCreatedProjects) {
+                // XXX use of ProjectInformation.displayName here is very suspicious:
                 if (entry.getRawPath().substring(1).equals(p.getLookup().lookup(ProjectInformation.class).getDisplayName())) {
                     requiredProject = p;
                     break;
@@ -246,6 +260,7 @@ public class ProjectFactorySupport {
                 // try to find project by its name in list of opened projects.
                 // if this is single project import than project might have already been imported:
                 for (Project p : OpenProjects.getDefault().getOpenProjects()) {
+                    // XXX this will not work well in the case of synchronizing an existing import:
                     if (entry.getRawPath().substring(1).equals(p.getLookup().lookup(ProjectInformation.class).getDisplayName())) {
                         requiredProject = p;
                         break;
@@ -263,13 +278,29 @@ public class ProjectFactorySupport {
                 elements.addAll(Arrays.asList(art.getArtifactLocations()));
             }
             if (artifact.length == 0) {
-                importProblems.add("Required project '"+requiredProject.getProjectDirectory()+"' does not provide any JAR articfacts.");
+                importProblems.add("Required project '" + requiredProject.getProjectDirectory() + "' does not provide any JAR artifacts.");
                 entry.setImportSuccessful(Boolean.FALSE);
                 return false;
             } else {
                 ProjectClassPathModifier.addAntArtifacts(artifact, elements.toArray(new URI[elements.size()]), sourceRoot, ClassPath.COMPILE);
-                entry.setImportSuccessful(Boolean.TRUE);
             }
+            EclipseProjectReference ref = EclipseProjectReference.read(requiredProject);
+            if (ref != null) {
+                EclipseProject ecprj = ref.getEclipseProject(false);
+                if (ecprj != null) {
+                    for (DotClassPathEntry transentry : ecprj.getClassPathEntries()) {
+                        if (transentry.isExported()) {
+                            boolean result = addItemToClassPath(helper, refHelper, transentry, alreadyCreatedProjects, importProblems, sourceRoot);
+                            if (!result) {
+                                importProblems.add("Transitive export " + transentry.getRawPath() + " cannot be resolved.");
+                                entry.setImportSuccessful(Boolean.FALSE);
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+            entry.setImportSuccessful(Boolean.TRUE);
         } else if (entry.getKind() == DotClassPathEntry.Kind.LIBRARY) {
             File f = new File(entry.getAbsolutePath());
             if (!f.exists()) {
@@ -279,7 +310,7 @@ public class ProjectFactorySupport {
             entry.setImportSuccessful(Boolean.TRUE);
         } else if (entry.getKind() == DotClassPathEntry.Kind.VARIABLE) {
             // add property directly to Ant property
-            String antProp = ProjectFactorySupport.asAntVariable(entry);
+            String antProp = createFileReference(helper, refHelper, entry);
             addToBuildProperties(helper, "javac.classpath", antProp);
             testProperty(antProp, helper, importProblems);
             entry.setImportSuccessful(Boolean.TRUE);
@@ -295,7 +326,7 @@ public class ProjectFactorySupport {
         }
         return true;
     }
-    
+
     private static void testProperty(String property, AntProjectHelper helper, List<String> importProblems) {
         String value = helper.getStandardPropertyEvaluator().evaluate(property);
         if (value.contains("${")) {
@@ -352,7 +383,8 @@ public class ProjectFactorySupport {
             }
         } else if ("var".equals(encodedKind)) { // NOI18N
             String v[] = EclipseUtils.splitVariable(encodedValue);
-            boolean b = removeFromBuildProperties(helper, "javac.classpath", "${var."+v[0]+"}"+v[1]); // NOI18N
+            String antProp = findFileReference(helper, "${var."+v[0]+"}"+v[1]);
+            boolean b = removeFromBuildProperties(helper, "javac.classpath", antProp); // NOI18N
             if (!b) {
                 importProblems.add("reference to variable based JAR/Folder '"+encodedValue+"' was not succesfully removed");
                 return false;
@@ -367,6 +399,31 @@ public class ProjectFactorySupport {
         return true;
     }
 
+    private static String createFileReference(AntProjectHelper helper, ReferenceHelper refHelper, DotClassPathEntry entry) {
+        String filePath = entry.getAbsolutePath();
+        if (filePath == null) {
+            filePath = entry.getRawPath();
+        }
+        // setup a file.reference.xxx property
+        String ref = refHelper.createForeignFileReferenceAsIs(filePath, null);
+        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        // update value of file.reference.xxx to "var.xxx":
+        ep.setProperty(CommonProjectUtils.getAntPropertyName(ref),
+                ProjectFactorySupport.asAntVariable(entry));
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        return ref;
+    }
+    
+    private static String findFileReference(AntProjectHelper helper, String value) {
+        for (Map.Entry<String, String> e : helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).entrySet()) {
+            if (value.equals(e.getValue())) {
+                return "${"+e.getKey()+"}";
+            }
+        }
+        assert false : value + " " +helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        return value;
+    }
+    
     /**
      * Add given value to given classpath-like Ant property.
      */
@@ -406,10 +463,22 @@ public class ProjectFactorySupport {
             arr[i] += ":"; // NOI18N
         }
         ep.setProperty(property, arr);
+        if (referenceToRemove.startsWith("${file.reference.") && isLastReference(ep, CommonProjectUtils.getAntPropertyName(referenceToRemove))) {
+            ep.remove(CommonProjectUtils.getAntPropertyName(referenceToRemove));
+        }
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         return result;
     }
 
+    private static boolean isLastReference(EditableProperties ep, String referenceToRemove) {
+        for (String value : ep.values()) {
+            if (referenceToRemove.equals(value)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
     private static DotClassPathEntry findEntryByEncodedValue(List<DotClassPathEntry> eclipseClassPathEntries, String t) {
         for (DotClassPathEntry e : eclipseClassPathEntries) {
             if (t.equals(encodeDotClassPathEntryToKey(e))) {

@@ -603,7 +603,10 @@ public final class CsmProjectContentResolver {
                             if (clsfr != null) {
                                 if (CsmKindUtilities.isUnion(clsfr)) {
                                     CsmClass cls = (CsmClass) clsfr;
-                                    Collection filtered = CsmSortUtilities.filterList(cls.getMembers(), strPrefix, match, caseSensitive);
+                                    Iterator<CsmMember> i = CsmSelect.getDefault().getClassMembers(cls, 
+                                            CsmSelect.getDefault().getFilterBuilder().createNameFilter(strPrefix,
+                                                                           match, caseSensitive, true));
+                                    Collection filtered = CsmSortUtilities.filterList(i, strPrefix, match, caseSensitive);
                                     out.addAll(filtered);
                                 }
                             }
@@ -725,14 +728,6 @@ public final class CsmProjectContentResolver {
         List res = getNamespaceMembers(ns, classKinds, strPrefix, match, searchNested, false);
         Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
         filterDeclarations(used.iterator(), res, classKinds, strPrefix, match, false);
-        if (!ns.getProject().isArtificial() && !ns.isGlobal()){
-            for(CsmProject lib : ns.getProject().getLibraries()){
-                CsmNamespace n = lib.findNamespace(ns.getQualifiedName());
-                if (n != null) {
-                    res.addAll(getNamespaceMembers(n, classKinds, strPrefix, match, searchNested, false));
-                }
-            }
-        }
         if (isSortNeeded() && res != null) {
             CsmSortUtilities.sortClasses(res, isCaseSensitive());
         }
@@ -898,9 +893,11 @@ public final class CsmProjectContentResolver {
         
         handledClasses.add(clazz);
         Map<String, CsmMember> res = new StringMap();
-        Iterator it = clazz.getMembers().iterator();
+        CsmFilter filter = CsmContextUtilities.createFilter(kinds,
+                                strPrefix, match, caseSensitive, returnUnnamedMembers);
+        Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers(clazz, filter);
         while (it.hasNext()) {
-            CsmMember member = (CsmMember) it.next();
+            CsmMember member = it.next();
             if (isKindOf(member.getKind(), kinds) &&
                     (!staticOnly || member.isStatic()) &&
                     matchVisibility(member, minVisibility)) {
@@ -922,9 +919,10 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.STRUCT,
             CsmDeclaration.Kind.CLASS,
         };
-        it = clazz.getMembers().iterator();
+        filter = CsmContextUtilities.createFilter(memberKinds, "*", true, false, true);
+        it = CsmSelect.getDefault().getClassMembers(clazz, filter);
         while (it.hasNext()) {
-            CsmMember member = (CsmMember) it.next();
+            CsmMember member = it.next();
             if (isKindOf(member.getKind(), memberKinds) &&
                     matchVisibility(member, minVisibility)) {
                 CharSequence memberName = member.getName();
@@ -938,8 +936,8 @@ public final class CsmProjectContentResolver {
         
         if (inspectParentClasses) {
             // handle base classes in context of original class/function
-            for (it = clazz.getBaseClasses().iterator(); it.hasNext();) {
-                CsmInheritance inherit = (CsmInheritance) it.next();
+            for (Iterator<CsmInheritance> it2 = clazz.getBaseClasses().iterator(); it2.hasNext();) {
+                CsmInheritance inherit = it2.next();
                 CsmClass baseClass = inherit.getCsmClass();
                 if (baseClass != null) {
                     CsmVisibility nextMinVisibility;
@@ -991,6 +989,15 @@ public final class CsmProjectContentResolver {
         //it = ns.getDeclarations().iterator();
         //filterDeclarations(it, res, kinds, strPrefix, match, returnUnnamedMembers);
         filterDeclarations(ns, res, kinds, strPrefix, match, returnUnnamedMembers);
+        if (!ns.getProject().isArtificial() && !ns.isGlobal()){
+            for(CsmProject lib : ns.getProject().getLibraries()){
+                CsmNamespace n = lib.findNamespace(ns.getQualifiedName());
+                if (n != null && ! handledNS.contains(n)) {
+                    filterDeclarations(n, res, kinds, strPrefix, match, returnUnnamedMembers);
+                    handledNS.add(n);
+                }
+            }
+        }
         // handle all nested namespaces
         if (searchNested) {
             for (it = ns.getNestedNamespaces().iterator(); it.hasNext();) {

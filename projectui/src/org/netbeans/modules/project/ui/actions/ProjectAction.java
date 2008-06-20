@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.awt.EventQueue;
 import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.api.project.Project;
@@ -126,11 +127,11 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
         
         if ( command != null ) {
-            setEnabled( projects.length == 1 );
+            enable( projects.length == 1 );
         } else if ( performer != null && projects.length == 1 ) {
-            setEnabled( performer.enable( projects[0] ) );
+            enable( performer.enable( projects[0] ) );
         } else {
-            setEnabled( false );
+            enable( false );
         }
         
         String presenterName = ActionsUtil.formatProjectSensitiveName( namePattern, projects );
@@ -141,6 +142,19 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
         }
                         
         putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
+    }
+    
+    // #131674
+    private void enable(final boolean enable) {
+        if (!EventQueue.isDispatchThread()) {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    setEnabled(enable);
+                }
+            });
+        } else {
+            setEnabled(enable);
+        }
     }
     
     protected final String getCommand() {

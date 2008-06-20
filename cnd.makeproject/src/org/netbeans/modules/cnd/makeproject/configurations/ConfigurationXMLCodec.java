@@ -308,6 +308,11 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
 		currentText = currentText.equals("1") ? "GNU" : "Sun"; // NOI18N
             }
             ((MakeConfiguration) currentConf).getCompilerSet().setNameAndFlavor(currentText, descriptorVersion);
+        } else if (element.equals(DEVELOPMENT_SERVER_ELEMENT)) {
+	    if (descriptorVersion <= 46) {
+		currentText = "localhost"; // NOI18N
+            }
+            ((MakeConfiguration) currentConf).getCompilerSet().setNameAndFlavor(currentText, descriptorVersion);
         } else if (element.equals(C_REQUIRED_ELEMENT)) {
             if (descriptorVersion <= 41) {
                 return; // ignore

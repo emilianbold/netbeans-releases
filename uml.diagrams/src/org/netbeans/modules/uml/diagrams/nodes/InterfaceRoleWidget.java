@@ -43,14 +43,10 @@ package org.netbeans.modules.uml.diagrams.nodes;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.diagrams.DefaultWidgetContext;
-import org.netbeans.modules.uml.diagrams.actions.ClassifierSelectAction;
 import org.netbeans.modules.uml.drawingarea.actions.SceneSelectAction;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteButtonModel;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteModel;
@@ -67,8 +63,8 @@ public class InterfaceRoleWidget extends InterfaceWidget
         WidgetAction.Chain actions = createActions(DesignerTools.SELECT);
         actions.addAction(new SceneSelectAction());
         
-        addToLookup(initializeContextPalette());
-        addToLookup(new DefaultWidgetContext("Class"));        
+        //addToLookup(initializeContextPalette());
+        //addToLookup(new DefaultWidgetContext("Class"));        
     }
 
     public InterfaceRoleWidget(Scene scene, IPresentationElement pe)
@@ -77,8 +73,9 @@ public class InterfaceRoleWidget extends InterfaceWidget
         initializeNode(pe);
     }
 
-    private DefaultContextPaletteModel initializeContextPalette()
+    protected DefaultContextPaletteModel initializeContextPalette()
     {
+        addToLookup(super.initializeContextPalette());
         Lookup l = getLookup();
         Collection<? extends ContextPaletteModel> c = l.lookupAll(ContextPaletteModel.class);
         if (c != null) 

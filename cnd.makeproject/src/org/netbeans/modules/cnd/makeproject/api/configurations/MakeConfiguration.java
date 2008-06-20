@@ -47,7 +47,6 @@ import java.util.Set;
 import java.util.Vector;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
@@ -87,6 +86,7 @@ public class MakeConfiguration extends Configuration {
     private LanguageBooleanConfiguration cRequired;
     private LanguageBooleanConfiguration cppRequired;
     private LanguageBooleanConfiguration fortranRequired;
+    private IntConfiguration developmentHost;
     private IntConfiguration platform;
     private BooleanConfiguration dependencyChecking;
     private CCompilerConfiguration cCompilerConfiguration;
@@ -105,6 +105,7 @@ public class MakeConfiguration extends Configuration {
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue) {
         super(baseDir, name);
         configurationType = new IntConfiguration(null, configurationTypeValue, TYPE_NAMES, null);
+        developmentHost = new DevelopmentHostConfiguration();
         compilerSet = new CompilerSet2Configuration();
         cRequired = new LanguageBooleanConfiguration();
         cppRequired = new LanguageBooleanConfiguration();
@@ -174,6 +175,14 @@ public class MakeConfiguration extends Configuration {
 
     public void setFortranRequired(LanguageBooleanConfiguration fortranRequired) {
         this.fortranRequired = fortranRequired;
+    }
+
+    public IntConfiguration getDevelopmentHost() {
+        return developmentHost;
+    }
+
+    public void setDevelopmentHost(IntConfiguration developmentHost) {
+        this.developmentHost = developmentHost;
     }
 
     public IntConfiguration getPlatform() {
@@ -266,6 +275,7 @@ public class MakeConfiguration extends Configuration {
         setName(makeConf.getName());
         setBaseDir(makeConf.getBaseDir());
         getConfigurationType().assign(makeConf.getConfigurationType());
+        getDevelopmentHost().assign(makeConf.getDevelopmentHost());
         getCompilerSet().assign(makeConf.getCompilerSet());
         getCRequired().assign(makeConf.getCRequired());
         getCppRequired().assign(makeConf.getCppRequired());
@@ -325,6 +335,7 @@ public class MakeConfiguration extends Configuration {
         super.cloneConf(clone);
         clone.setCloneOf(this);
 
+        clone.setDevelopmentHost((IntConfiguration) getDevelopmentHost().clone());
         clone.setCompilerSet((CompilerSet2Configuration) getCompilerSet().clone());
         clone.setCRequired((LanguageBooleanConfiguration) getCRequired().clone());
         clone.setCppRequired((LanguageBooleanConfiguration) getCppRequired().clone());
@@ -362,7 +373,7 @@ public class MakeConfiguration extends Configuration {
         set.setName("ProjectDefaults"); // NOI18N
         set.setDisplayName(getString("ProjectDefaultsTxt"));
         set.setShortDescription(getString("ProjectDefaultsHint"));
-        //set.put(new IntNodeProp(getCompilerSet2(), true, "CompilerSCollection", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
+        set.put(new IntNodeProp(getDevelopmentHost(), true, null, getString("DevelopmentHostTxt"), getString("DevelopmentHostHint"))); // NOI18N
         set.put(new CompilerSetNodeProp(getCompilerSet(), true, "CompilerSCollection2", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
         set.put(new BooleanNodeProp(getCRequired(), true, "cRequired", getString("CRequiredTxt"), getString("CRequiredHint"))); // NOI18N
         set.put(new BooleanNodeProp(getCppRequired(), true, "cppRequired", getString("CppRequiredTxt"), getString("CppRequiredHint"))); // NOI18N

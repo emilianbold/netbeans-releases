@@ -54,6 +54,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
@@ -62,6 +67,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -72,7 +78,18 @@ import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.fold.FoldUtilities;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.AttributesUtilities;
+import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
+import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  *  Code Folding Side Bar. Component responsible for drawing folding signs and responding 
@@ -80,14 +97,39 @@ import org.openide.util.NbBundle;
  *
  *  @author  Martin Roskanin
  */
-public class CodeFoldingSideBar extends JComponent implements SettingsChangeListener, Accessible {
-    
-    protected JTextComponent component;    
-    
-    protected Font font;
-    protected Color foreColor;
+public class CodeFoldingSideBar extends JComponent implements Accessible {
+
+    private static final Logger LOG = Logger.getLogger(CodeFoldingSideBar.class.getName());
+
+    /** This field should be treated as final. Subclasses are forbidden to change it. 
+     * @deprecated Without any replacement.
+     */
     protected Color backColor;
-    private boolean enabled;
+    /** This field should be treated as final. Subclasses are forbidden to change it. 
+     * @deprecated Without any replacement.
+     */
+    protected Color foreColor;
+    /** This field should be treated as final. Subclasses are forbidden to change it. 
+     * @deprecated Without any replacement.
+     */
+    protected Font font;
+    
+    /** This field should be treated as final. Subclasses are forbidden to change it. */
+    protected /*final*/ JTextComponent component;
+    private volatile AttributeSet attribs;
+    private Lookup.Result<? extends FontColorSettings> fcsLookupResult;
+    private final LookupListener fcsTracker = new LookupListener() {
+        public void resultChanged(LookupEvent ev) {
+            attribs = null;
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    CodeFoldingSideBar.this.repaint();
+                }
+            });
+        }
+    };
+    
+    private boolean enabled = false;
     
     protected List visibleMarks = new ArrayList();
     
@@ -98,18 +140,35 @@ public class CodeFoldingSideBar extends JComponent implements SettingsChangeList
     public static final int PAINT_END_MARK         = 3;
     public static final int SINGLE_PAINT_MARK      = 4;
     
+    private final Preferences prefs;
+    private final PreferenceChangeListener prefsListener = new PreferenceChangeListener() {
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            String key = evt == null ? null : evt.getKey();
+            if (key == null || SimpleValueNames.CODE_FOLDING_ENABLE.equals(key)) {
+                updateColors();
+                
+                boolean newEnabled = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, EditorPreferencesDefaults.defaultCodeFoldingEnable);
+                if (enabled != newEnabled) {
+                    enabled = newEnabled;
+                    updatePreferredSize();
+                }
+            }
+            SettingsConversions.callSettingsChange(CodeFoldingSideBar.this);
+        }
+    };
     
-    /** Creates a new instance of CodeFoldingSideBar */
+    /**
+     * @deprecated Don't use this constructor, it does nothing!
+     */
     public CodeFoldingSideBar() {
-        setOpaque(true);
+        component = null;
+        prefs = null;
+        throw new IllegalStateException("Do not use this constructor!"); //NOI18N
     }
-    
+
     public CodeFoldingSideBar(JTextComponent component){
         super();
         this.component = component;
-
-        Settings.addSettingsChangeListener(this);
-        settingsChange(null); // ensure that the settings get initialized
 
         FoldingMouseListener listener = new FoldingMouseListener();
         addMouseListener(listener);
@@ -140,158 +199,68 @@ public class CodeFoldingSideBar extends JComponent implements SettingsChangeList
                 
             });
         setOpaque(true);
-    }
-    
-    /**
-     * Enable or disable visibility of the side bar.
-     *
-     * @param enable whether the side bar should be enabled or not.
-     * @return whether visibility change occurred or not.
-     */
-    private boolean enableSideBarComponent(boolean enable){
-        if (enable == enabled) {
-            return false;
-        }
-        enabled = enable;
-        updatePreferredSize();
-        return true;
+        
+        prefs = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(component)).lookup(Preferences.class);
+        prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs));
+        prefsListener.preferenceChange(null);
     }
     
     private void updatePreferredSize() {
         if (enabled) {
-            setPreferredSize(new Dimension(getColoringFont().getSize(), component.getHeight()));    
+            setPreferredSize(new Dimension(getColoring().getFont().getSize(), component.getHeight()));
             setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         }else{
             setPreferredSize(new Dimension(0,0));
             setMaximumSize(new Dimension(0,0));
         }
         revalidate();
-}
-    
-    private Font getDefaultColoringFont(){
-        // font in folding coloring not available, get default (or inherited)
-        EditorUI eui = getEditorUI();
-        if (eui != null) {
-            Coloring defaultColoring = eui.getDefaultColoring();
-            if (defaultColoring!=null) {
-                if (defaultColoring.getFont() != null) {
-                    return defaultColoring.getFont(); 
-                }
-            }
-        }
-        return SettingsDefaults.defaultFont;
-    }
-    
-    protected Font getColoringFont(){
-        if (font == null) {
-            EditorUI eui = getEditorUI();
-            if (eui != null) {
-                Coloring foldColoring = eui.getColoring(SettingsNames.CODE_FOLDING_BAR_COLORING);
-                if (foldColoring != null) {
-                    if (foldColoring.getFont() != null) {
-                        font = foldColoring.getFont();
-                    }
-                }
-            }
-            
-            if (font == null) {
-                font = getDefaultColoringFont();
-            }
-        }
-        return font;
     }
 
-    // overriding due to issue #60304
-    public @Override void update(Graphics g) {
+    private void updateColors() {
+        Coloring c = getColoring();
+        this.backColor = c.getBackColor();
+        this.foreColor = c.getForeColor();
+        this.font = c.getFont();
     }
-    
-    
-    protected Color getForeColor(){
-        if (foreColor != null) return foreColor;
-        Coloring foldColoring = getEditorUI().getColoring(SettingsNames.CODE_FOLDING_BAR_COLORING);
-        if (foldColoring != null && foldColoring.getForeColor()!=null){
-            foreColor = foldColoring.getForeColor();
-            return foreColor;
+
+    /**
+     * This method should be treated as final. Subclasses are forbidden to override it.
+     * @return The background color used for painting this component.
+     * @deprecated Without any replacement.
+     */
+    protected Color getBackColor() {
+        if (backColor == null) {
+            updateColors();
         }
-        foreColor = getDefaultForeColor();
-        return foreColor;
-    }
-    
-    private Color getDefaultForeColor(){
-        // font in folding coloring not available, get default (or inherited)
-        Coloring defaultColoring = getEditorUI().getDefaultColoring();
-        if (defaultColoring!=null && defaultColoring.getForeColor()!=null){
-            return defaultColoring.getForeColor();
-        }
-        return SettingsDefaults.defaultForeColor;
-    }
-    
-    private Color getDefaultBackColor(){
-        // font in folding coloring not available, get default (or inherited)
-        EditorUI eui = getEditorUI();
-        if (eui != null) {
-            Coloring defaultColoring = eui.getDefaultColoring();
-            if (defaultColoring != null) {
-                return defaultColoring.getBackColor();
-            }
-        }
-        return SettingsDefaults.defaultBackColor;
-    }
-    
-    protected Color getBackColor(){
-        if (backColor != null) return backColor;
-        Coloring foldColoring = getEditorUI().getColoring(SettingsNames.CODE_FOLDING_BAR_COLORING);
-        if (foldColoring != null && foldColoring.getBackColor()!=null){
-            backColor = foldColoring.getBackColor();
-            return backColor;
-        }
-        backColor = getDefaultBackColor();
         return backColor;
     }
     
-    public void settingsChange(SettingsChangeEvent evt) {
-        EditorUI editorUI = getEditorUI();
-        if (editorUI == null) {
-            return;
-        }
-
-        // enable/disable the side bar
-        Document doc = component.getDocument();
-        Class kitClass = (doc instanceof BaseDocument)
-            ? Utilities.getKitClass(component)
-            : BaseKit.class;
-        
-        Font origFont = font;
-        
-        Coloring foldingColoring = editorUI.getColoring(SettingsNames.CODE_FOLDING_BAR_COLORING);
-        
-        if (foldingColoring != null) {
-            font = foldingColoring.getFont();
-            foreColor = foldingColoring.getForeColor();
-            backColor = foldingColoring.getBackColor();
-        }
-        
-        if (font == null) {
-            font = getDefaultColoringFont();
-        }
+    /**
+     * This method should be treated as final. Subclasses are forbidden to override it.
+     * @return The foreground color used for painting this component.
+     * @deprecated Without any replacement.
+     */
+    protected Color getForeColor() {
         if (foreColor == null) {
-            this.foreColor = getDefaultForeColor();
+            updateColors();
         }
-        if (backColor == null) {
-            backColor = getDefaultBackColor();
+        return foreColor;
+    }
+    
+    /**
+     * This method should be treated as final. Subclasses are forbidden to override it.
+     * @return The font used for painting this component.
+     * @deprecated Without any replacement.
+     */
+    protected Font getColoringFont() {
+        if (font == null) {
+            updateColors();
         }
-
-        Boolean newEnabled = (Boolean)Settings.getValue(kitClass, SettingsNames.CODE_FOLDING_ENABLE);
-        boolean change = enableSideBarComponent((newEnabled != null) ? newEnabled.booleanValue() : false);
-
-        if (!change) { // not revalidated yet
-            if (font != null && font.equals(origFont)) {
-                repaint();
-            } else {
-                updatePreferredSize();
-                revalidate();
-            }
-        }
+        return font;
+    }
+    
+    // overriding due to issue #60304
+    public @Override void update(Graphics g) {
     }
     
     protected void collectPaintInfos(Fold fold, Map map, int level, int startIndex, int endIndex){
@@ -393,10 +362,9 @@ public class CodeFoldingSideBar extends JComponent implements SettingsChangeList
                     }
                 }
             }
-        }catch(BadLocationException ble){
-            ble.printStackTrace();
+        } catch (BadLocationException ble) {
+            LOG.log(Level.WARNING, null, ble);
         }
-        
     }
     
     protected List getPaintInfo(int startPos, int endPos){
@@ -501,14 +469,14 @@ public class CodeFoldingSideBar extends JComponent implements SettingsChangeList
                 adoc.readUnlock();
             }
             //System.out.println((mark.isFolded ? "Unfold" : "Fold") + " action performed on:"+view); //[TEMP]
-        }catch(BadLocationException ble){
-            ble.printStackTrace();
+        } catch (BadLocationException ble) {
+            LOG.log(Level.WARNING, null, ble);
         }
     }
     
     protected int getMarkSize(Graphics g){
         if (g != null){
-            FontMetrics fm = g.getFontMetrics(getColoringFont());
+            FontMetrics fm = g.getFontMetrics(getColoring().getFont());
             if (fm != null){
                 int ret = fm.getAscent() - fm.getDescent();
                 return ret - ret%2;
@@ -522,9 +490,11 @@ public class CodeFoldingSideBar extends JComponent implements SettingsChangeList
         if (!enabled) return;
         Rectangle clip = getVisibleRect();//g.getClipBounds();
         visibleMarks.clear();
-        g.setColor(getBackColor());
+        
+        Coloring coloring = getColoring();
+        g.setColor(coloring.getBackColor());
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
-        g.setColor(getForeColor());
+        g.setColor(coloring.getForeColor());
 
         javax.swing.plaf.TextUI textUI = component.getUI(); 
         if (!(textUI instanceof BaseTextUI)) return;
@@ -535,7 +505,7 @@ public class CodeFoldingSideBar extends JComponent implements SettingsChangeList
             int endPos = baseTextUI.viewToModel(component, Short.MAX_VALUE/2, clip.y+clip.height);
         
             List ps = getPaintInfo(startPos, endPos);
-            Font defFont = getColoringFont();
+            Font defFont = coloring.getFont();
             
             for (int i = 0; i <ps.size(); i++){
 
@@ -578,8 +548,8 @@ public class CodeFoldingSideBar extends JComponent implements SettingsChangeList
                 }
                 
             }
-        }catch(BadLocationException ble){
-            ble.printStackTrace();
+        } catch (BadLocationException ble) {
+            LOG.log(Level.WARNING, null, ble);
         }
     }
 
@@ -750,4 +720,24 @@ public class CodeFoldingSideBar extends JComponent implements SettingsChangeList
         return accessibleContext;
     }
 
+    private Coloring getColoring() {
+        if (attribs == null) {
+            if (fcsLookupResult == null) {
+                fcsLookupResult = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(component))
+                        .lookupResult(FontColorSettings.class);
+                fcsLookupResult.addLookupListener(WeakListeners.create(LookupListener.class, fcsTracker, fcsLookupResult));
+            }
+            
+            FontColorSettings fcs = fcsLookupResult.allInstances().iterator().next();
+            AttributeSet attr = fcs.getFontColors(FontColorNames.CODE_FOLDING_BAR_COLORING);
+            if (attr == null) {
+                attr = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
+            } else {
+                attr = AttributesUtilities.createComposite(attr, fcs.getFontColors(FontColorNames.DEFAULT_COLORING));
+            }
+            attribs = attr;
+        }        
+        return Coloring.fromAttributeSet(attribs);
+    }
+    
 }

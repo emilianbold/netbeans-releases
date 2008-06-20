@@ -52,6 +52,7 @@ import javax.swing.text.Document;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
+import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 
 /**
@@ -70,7 +71,8 @@ public class RestClientJspCodeGenerator extends RestClientServletCodeGenerator {
 
     @Override
     public boolean canAccept(SaasMethod method, Document doc) {
-        if (method instanceof WadlSaasMethod && Util.isJsp(doc)) {
+        if (SaasBean.canAccept(method, WadlSaasMethod.class, getDropFileType()) &&
+                Util.isJsp(doc)) {
             return true;
         }
         return false;

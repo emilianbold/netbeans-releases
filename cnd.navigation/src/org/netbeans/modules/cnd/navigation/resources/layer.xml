@@ -134,7 +134,8 @@
             <file name="HierarchyTopComponent.settings" url="HierarchyTopComponentSettings.xml"/>
         </folder>
         <folder name="Modes">
-            <folder name="commonpalette"> 
+            <!--folder name="commonpalette"--> 
+            <folder name="rightSlidingSide"> 
                 <file name="HierarchyTopComponent.wstcref" url="HierarchyTopComponentWstcref.xml">
                     <attr name="position" intvalue="1100"/>
                 </file>

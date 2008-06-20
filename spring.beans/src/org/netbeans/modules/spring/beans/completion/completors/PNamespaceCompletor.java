@@ -40,6 +40,7 @@
 package org.netbeans.modules.spring.beans.completion.completors;
 
 import java.io.IOException;
+import java.util.List;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
@@ -47,12 +48,13 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.spring.beans.completion.CompletionContext;
 import org.netbeans.modules.spring.beans.completion.Completor;
-import org.netbeans.modules.spring.beans.completion.QueryProgress;
+import org.netbeans.modules.spring.beans.completion.CompletorUtils;
 import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
 import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.spring.java.JavaUtils;
+import org.netbeans.modules.spring.java.MatchType;
 import org.netbeans.modules.spring.java.Property;
 import org.netbeans.modules.spring.java.PropertyFinder;
 
@@ -62,9 +64,19 @@ import org.netbeans.modules.spring.java.PropertyFinder;
  */
 public class PNamespaceCompletor extends Completor {
 
+    public PNamespaceCompletor(int invocationOffset) {
+        super(invocationOffset);
+    }
+
     @Override
-    protected void computeCompletionItems(final CompletionContext context, QueryProgress progress) throws IOException {
-            final JavaSource js = JavaUtils.getJavaSource(context.getFileObject());
+    protected int initAnchorOffset(CompletionContext context) {
+        String typedPrefix = context.getTypedPrefix();
+        return context.getCaretOffset() - typedPrefix.length();
+    }
+
+    @Override
+    protected void compute(final CompletionContext context) throws IOException {
+        final JavaSource js = JavaUtils.getJavaSource(context.getFileObject());
         if (js == null) {
             return;
         }
@@ -85,7 +97,7 @@ public class PNamespaceCompletor extends Completor {
                     return;
                 }
                 ElementUtilities eu = cc.getElementUtilities();
-                Property[] props = new PropertyFinder(te.asType(), "", eu).findProperties(); // NOI18N
+                Property[] props = new PropertyFinder(te.asType(), "", eu, MatchType.PREFIX).findProperties(); // NOI18N
 
                 for (Property prop : props) {
                     if (prop.getSetter() == null) {
@@ -96,20 +108,26 @@ public class PNamespaceCompletor extends Completor {
                     if (!context.getExistingAttributes().contains(attribName) && attribName.startsWith(typedPrefix)) {
                         SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createPropertyAttribItem(substitutionOffset,
                                 attribName, prop);
-                        addItem(item);
+                        addCacheItem(item);
                     }
                     attribName += "-ref"; // NOI18N
-
                     if (!context.getExistingAttributes().contains(attribName) && attribName.startsWith(typedPrefix)) {
                         SpringXMLConfigCompletionItem refItem = SpringXMLConfigCompletionItem.createPropertyAttribItem(substitutionOffset,
                                 attribName, prop); // NOI18N
-
-                        addItem(refItem);
+                        addCacheItem(refItem);
                     }
                 }
             }
         }, true);
+    }
 
-        setAnchorOffset(substitutionOffset);
+    @Override
+    public boolean canFilter(CompletionContext context) {
+        return CompletorUtils.canFilter(context.getDocument(), getInvocationOffset(), context.getCaretOffset(), getAnchorOffset(), CompletorUtils.P_ATTRIBUTE_ACCEPTOR);
+    }
+
+    @Override
+    protected List<SpringXMLConfigCompletionItem> doFilter(CompletionContext context) {
+        return CompletorUtils.filter(getCacheItems(), context.getDocument(), getInvocationOffset(), context.getCaretOffset(), getAnchorOffset());
     }
 }

@@ -44,7 +44,7 @@ package org.netbeans.modules.groovy.editor.test;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.Formatter;
 import org.netbeans.modules.groovy.editor.GroovyIndex;
-import org.netbeans.modules.groovy.editor.GroovyLanguage;
+import org.netbeans.modules.groovy.editor.parser.GroovyLanguage;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.gsf.GsfTestBase;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
@@ -84,9 +84,10 @@ public class GroovyTestBase extends GsfTestBase {
 
     @Override
     public org.netbeans.modules.gsf.api.Formatter getFormatter(IndentPrefs preferences) {
+        /* Findbugs-removed: 
         if (preferences == null) {
-            preferences = new IndentPrefs(4,4);
-        }
+        preferences = new IndentPrefs(4,4);
+        }*/
 
 //        Preferences prefs = NbPreferences.forModule(JsFormatterTest.class);
 //        prefs.put(FmtOptions.indentSize, Integer.toString(preferences.getIndentation()));

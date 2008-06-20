@@ -48,6 +48,7 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.drawingarea.actions.ConnectAction;
 import org.netbeans.modules.uml.drawingarea.actions.SceneConnectProvider;
 import org.netbeans.modules.uml.drawingarea.dataobject.ContextPaletteItem;
+import org.netbeans.modules.uml.drawingarea.palette.NodeInitializer;
 import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.openide.filesystems.FileObject;
@@ -69,6 +70,7 @@ public class DefaultPaletteButtonModel implements ContextPaletteButtonModel
     private RelationshipFactory factory = null;
     private ContextPaletteModel paletteModel = null;
     private String stereotype = "";
+    private NodeInitializer defaulttargetInitializer;
         
     public DefaultPaletteButtonModel()
     {
@@ -95,6 +97,7 @@ public class DefaultPaletteButtonModel implements ContextPaletteButtonModel
         }
         
         defaultTargetType = (String)fo.getAttribute("default-node");
+        defaulttargetInitializer=(NodeInitializer)fo.getAttribute("default-node-initializer");
         factory = (RelationshipFactory) fo.getAttribute("factory");
         stereotype = (String)fo.getAttribute("stereotype");
         
@@ -117,7 +120,8 @@ public class DefaultPaletteButtonModel implements ContextPaletteButtonModel
             SceneConnectProvider connector = new SceneConnectProvider(getDefaultTargetType(),
                                                                       getStereotype());
             connector.setRelationshipFactory(getFactory());
-
+            connector.setDefaultNodeInitializer(getDefaultNodeInitializer());
+            
             LayerWidget layer = designScene.getInterractionLayer();
             WidgetAction action = new ConnectAction(new ContextPaletteConnectDecorator(),
                                                                     layer, 
@@ -209,6 +213,10 @@ public class DefaultPaletteButtonModel implements ContextPaletteButtonModel
     public void setStereotype(String stereotype)
     {
         this.stereotype = stereotype;
+    }
+
+    private NodeInitializer getDefaultNodeInitializer() {
+        return defaulttargetInitializer;
     }
     
     
