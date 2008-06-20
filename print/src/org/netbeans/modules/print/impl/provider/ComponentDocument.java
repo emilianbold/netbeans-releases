@@ -87,8 +87,7 @@ final class ComponentDocument extends JComponent {
     LineTokenizer stk = new LineTokenizer(text);
 
     while (stk.hasMoreTokens()) {
-      ComponentLine line = new ComponentLine(
-        trimEnded(stk.nextToken()), myTextFont, myTextColor);
+      ComponentLine line = new ComponentLine(trimEnded(stk.nextToken()), myTextFont, myTextColor);
 //out();
 //out(line.getWidth() + " '" + line + "'");
 //line.show();
@@ -98,8 +97,7 @@ final class ComponentDocument extends JComponent {
 
   private void prepare(AttributedCharacterIterator [] iterators) {
     for(AttributedCharacterIterator iterator : iterators) {
-      ComponentLine line =
-        new ComponentLine(iterator, myTextFont, myTextColor);
+      ComponentLine line = new ComponentLine(iterator, myTextFont, myTextColor);
 //out();
 //out(line.getWidth() + " '" + line + "'");
 //line.show();

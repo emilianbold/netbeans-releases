@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,49 +31,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.xml.text.indent;
 
-package org.netbeans.modules.groovy.editor.parser;
-
-import java.io.IOException;
-import java.util.List;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import org.openide.filesystems.FileUtil;
+import junit.framework.*;
+import org.netbeans.api.xml.lexer.XMLTokenId;
+import org.netbeans.editor.BaseDocument;
 
 /**
- *
- * @author Martin Adamek
+ * Formatting related tests based on new formatter. See XMLLexerFormatter.
+ * 
+ * @author Samaresh (samaresh.panda@sun.com)
  */
-public class GroovyVirtualSourveProviderTest extends GroovyTestBase {
-
-    public GroovyVirtualSourveProviderTest(String testName) {
+public class XMLLexerFormatterTest extends AbstractTestCase {
+    
+    public XMLLexerFormatterTest(String testName) {
         super(testName);
     }
 
-    public void testGenerator() throws IOException {
-        copyStringToFileObject(testFO,
-                "class Foo {\n" +
-                "  def closure1 = {\n" +
-                "    println 'closure1'\n" +
-                "  }\n" +
-                "  def method1() {\n" +
-                "    println 'method1'\n" +
-                "  }\n" +
-                "}");
-        List<ClassNode> classNodes = GroovyVirtualSourceProvider.getClassNodes(FileUtil.toFile(testFO));
-        assertEquals(classNodes.size(), 1);
-
-//        ClassNode node = classNodes.get(0);
-//        for (Object object : node.getAllDeclaredMethods()) {
-//            MethodNode method = (MethodNode) object;
-//            System.out.println("> " + method.getName() + ", " + method.getLineNumber());
-//        }
-
-//        GroovyVirtualSourceProvider.JavaStubGenerator generator = new GroovyVirtualSourceProvider.JavaStubGenerator();
-//        CharSequence charSequence = generator.generateClass(classNodes.get(0));
-//        System.out.println(charSequence);
+    public static Test suite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new XMLLexerFormatterTest("testFormat"));
+        return suite;
     }
-
+    
+    /**
+     * Formats an input document and then compares the formatted doc
+     * with a document that represents expected outcome.
+     */
+    public void testFormat() throws Exception {
+        BaseDocument inputDoc = getDocument("input.xml");
+        //format the inputDoc
+        XMLLexerFormatter formatter = new XMLLexerFormatter(null);
+        BaseDocument formattedDoc = formatter.doReformat(inputDoc, -1, -1);
+        System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
+        BaseDocument outputDoc = getDocument("output.xml");        
+        assert(compare(formattedDoc, outputDoc));
+    }
+    
 }

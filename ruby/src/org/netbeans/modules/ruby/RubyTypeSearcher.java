@@ -234,7 +234,7 @@ public class RubyTypeSearcher implements TypeSearcher {
                 initProjectInfo();
             }
             //if (isLibrary) {
-            //    return new ImageIcon(org.openide.util.Utilities.loadImage(RUBY_KEYWORD));
+            //    return new ImageIcon(org.openide.util.ImageUtilities.loadImage(RUBY_KEYWORD));
             //}
             //return helper.getIcon(element);
             return helper.getIcon(element);
@@ -284,7 +284,7 @@ public class RubyTypeSearcher implements TypeSearcher {
                 initProjectInfo();
             }
             if (isLibrary) {
-                return new ImageIcon(org.openide.util.Utilities.loadImage(RUBY_KEYWORD));
+                return new ImageIcon(org.openide.util.ImageUtilities.loadImage(RUBY_KEYWORD));
             }
             return projectIcon;
         }

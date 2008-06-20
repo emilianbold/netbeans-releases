@@ -81,23 +81,23 @@ import org.openide.util.Lookup;
 public class LanguageRegistry implements Iterable<Language> {
 
     private static LanguageRegistry instance;
-    private static final String ICON_BASE = "iconBase";
-    private static final String LANGUAGE = "language.instance";
-    private static final String PARSER = "parser.instance";
-    private static final String COMPLETION = "completion.instance";
-    private static final String RENAMER = "renamer.instance";
-    private static final String FORMATTER = "formatter.instance";
-    private static final String BRACKET_COMPLETION = "bracket.instance";
-    private static final String DECLARATION_FINDER = "declarationfinder.instance";
-    private static final String INDEXER = "indexer.instance";
-    //private static final String PALETTE = "palette.instance";
-    private static final String STRUCTURE = "structure.instance";
-    private static final String HINTS = "hints.instance";
-    private static final String SEMANTIC = "semantic.instance";
-    private static final String OCCURRENCES = "occurrences.instance";
+    private static final String ICON_BASE = "iconBase"; // NOI18N
+    private static final String LANGUAGE = "language.instance"; // NOI18N
+    private static final String PARSER = "parser.instance"; // NOI18N
+    private static final String COMPLETION = "completion.instance"; // NOI18N
+    private static final String RENAMER = "renamer.instance"; // NOI18N
+    private static final String FORMATTER = "formatter.instance"; // NOI18N
+    private static final String BRACKET_COMPLETION = "bracket.instance"; // NOI18N
+    private static final String DECLARATION_FINDER = "declarationfinder.instance"; // NOI18N
+    private static final String INDEXER = "indexer.instance"; // NOI18N
+    //private static final String PALETTE = "palette.instance"; // NOI18N
+    private static final String STRUCTURE = "structure.instance"; // NOI18N
+    private static final String HINTS = "hints.instance"; // NOI18N
+    private static final String SEMANTIC = "semantic.instance"; // NOI18N
+    private static final String OCCURRENCES = "occurrences.instance"; // NOI18N
 
     /** Location in the system file system where languages are registered */
-    private static final String FOLDER = "GsfPlugins";
+    private static final String FOLDER = "GsfPlugins"; // NOI18N
     private List<Language> languages;
     private Map<String,Language> mimeToLanguage;
     private boolean languagesInitialized;
@@ -330,6 +330,20 @@ public class LanguageRegistry implements Iterable<Language> {
 
         doc.readLock(); // Read-lock due to Token hierarchy use
         try {
+            // TODO - I should only do this for languages which CAN have it
+            /*
+     at org.netbeans.lib.lexer.inc.IncTokenList.reinit(IncTokenList.java:113)
+        at org.netbeans.lib.lexer.TokenHierarchyOperation.setActiveImpl(TokenHierarchyOperation.java:257)
+        at org.netbeans.lib.lexer.TokenHierarchyOperation.isActiveImpl(TokenHierarchyOperation.java:308)
+        at org.netbeans.lib.lexer.TokenHierarchyOperation.tokenSequence(TokenHierarchyOperation.java:344)
+        at org.netbeans.lib.lexer.TokenHierarchyOperation.tokenSequence(TokenHierarchyOperation.java:338)
+        at org.netbeans.api.lexer.TokenHierarchy.tokenSequence(TokenHierarchy.java:183)
+        at org.netbeans.modules.gsf.LanguageRegistry.getEmbeddedLanguages(LanguageRegistry.java:336)
+        at org.netbeans.modules.gsfret.hints.infrastructure.SuggestionsTask.getHintsProviderLanguage(SuggestionsTask.java:70)
+        at org.netbeans.modules.gsfret.hints.infrastructure.SuggestionsTask.run(SuggestionsTask.java:94)
+        at org.netbeans.modules.gsfret.hints.infrastructure.SuggestionsTask.run(SuggestionsTask.java:63)
+[catch] at org.netbeans.napi.gsfret.source.Source$CompilationJob.run(Source.java:1272)             * 
+             */
             TokenSequence ts = TokenHierarchy.get(doc).tokenSequence();
             if (ts != null) {
                 addLanguages(result, ts, offset);
@@ -488,7 +502,7 @@ public class LanguageRegistry implements Iterable<Language> {
             for (int j = 0; j < innerChildren.length; j++) {
                 FileObject mimeFile = innerChildren[j];
 
-                String mime = mimePrefixFile.getName() + "/" + mimeFile.getName();
+                String mime = mimePrefixFile.getName() + "/" + mimeFile.getName(); // NOI18N
                 Language language = new Language(mime);
                 languages.add(language);
 
@@ -498,7 +512,7 @@ public class LanguageRegistry implements Iterable<Language> {
                 }
                 
                 // Try to obtain icon from (new) IDE location for icons per mime type:
-                FileObject loaderMimeFile = sfs.findResource("Loaders/" + mime);
+                FileObject loaderMimeFile = sfs.findResource("Loaders/" + mime); // NOI18N
 
                 if (loaderMimeFile != null) {
                     String iconBase = (String)loaderMimeFile.getAttribute(ICON_BASE);
@@ -561,7 +575,7 @@ public class LanguageRegistry implements Iterable<Language> {
         // of the language objects too early (before registry is populated),
         // so just check if we potentially have a structure scanner
         if (language.hasStructureScanner()) {
-            String navFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance";
+            String navFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance"; // NOI18N
 
             FileObject fo = fs.findResource(navFileName);
 
@@ -574,7 +588,7 @@ public class LanguageRegistry implements Iterable<Language> {
             }
         } else {
             // Remove obsolete panel file
-            String navFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance";
+            String navFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance"; // NOI18N
 
             FileObject old = fs.findResource(navFileName);
 
@@ -587,7 +601,7 @@ public class LanguageRegistry implements Iterable<Language> {
             }
         }
         
-        String oldNavFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-retouche-navigation-ClassMemberPanel.instance";
+        String oldNavFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-retouche-navigation-ClassMemberPanel.instance"; // NOI18N
         // Delete the old navigator description - I have moved the class name
         FileObject old = fs.findResource(oldNavFileName);
 
@@ -614,6 +628,16 @@ public class LanguageRegistry implements Iterable<Language> {
     void initializeLanguageForEditor(Language l) {
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
         final FileObject root = fs.findResource("Editors/" + l.getMimeType()); // NOI18N
+
+        // Clean up the settings files
+        FileObject settings = root.getFileObject("Settings.settings"); // NOI18N
+        if (settings != null) {
+            try {
+                settings.delete();
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
 
         // init code folding bar
         if ((root.getFileObject("SideBar/org-netbeans-modules-editor-gsfret-GsfCodeFoldingSideBarFactory.instance") == null) && (l.getParser() != null)) {

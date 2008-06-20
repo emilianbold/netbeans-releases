@@ -145,13 +145,15 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
         final OutputWriter err = io.getErr();
         final long[] time = new long[2];
         time[0] = System.currentTimeMillis();
-        Set<CsmReferenceKind> interestedElems = this.allReferences ? CsmReferenceKind.ALL : EnumSet.<CsmReferenceKind>of(CsmReferenceKind.DIRECT_USAGE);
+        Set<CsmReferenceKind> interestedElems = this.allReferences ? CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE : EnumSet.<CsmReferenceKind>of(CsmReferenceKind.DIRECT_USAGE);
             
         TraceXRef.traceProjectRefsStatistics(p, new TraceXRef.StatisticsParameters(interestedElems, analyzeStatistics), out, err, new CsmProgressAdapter() {
             private int handled = 0;
             @Override
             public void projectFilesCounted(CsmProject project, int filesCount) {
+                err.flush();
                 out.println("Project " + project.getName() + " has " + filesCount + " files"); // NOI18N
+                out.flush();
                 handle.switchToDeterminate(filesCount);
             }
 
@@ -167,5 +169,7 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
         }, canceled);
         handle.finish();
         out.println("Analyzing " + p.getProjectDisplayName() + " took " + (time[1]-time[0]) + "ms"); // NOI18N
+        err.flush();
+        out.flush();
     }
 }

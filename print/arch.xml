@@ -60,7 +60,7 @@
   -->
   <answer id="arch-overall">
   <p>
-      <api group="java" name="PrintAPI" type="export" category="friend"></api>
+      <api group="java" name="PrintAPI" type="export" category="stable"></api>
       Provides print preview functionality.
   </p>
   </answer>

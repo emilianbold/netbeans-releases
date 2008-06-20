@@ -36,75 +36,56 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.spring.beans.completion;
 
-import java.io.IOException;
-import junit.framework.TestCase;
-import org.openide.util.Exceptions;
+import java.util.Collections;
+import java.util.List;
 
 /**
  *
  * @author Rohan Ranade
  */
-public class CompletorTest extends TestCase {
-
-    public CompletorTest(String testName) {
-        super(testName);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
-    public void testCompletorHaltOnFilter() throws Exception {
-        final TestCompletor completor = new TestCompletor();
-        final QueryProgress progress = new QueryProgress();
-        Thread t = new Thread(new Runnable() {
-            public void run() {
-                try {
-                    completor.computeCompletionItems(null, progress);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        });
-        
-        t.start();
-        Thread.currentThread().sleep(400);
-        progress.cancel();
-        t.join();
-        
-        assertFalse(String.valueOf(completor.getExitCount()), completor.getExitCount() == 100);
-    }
-
-    private static final class TestCompletor extends Completor {
-
-        private int exitCount = 100;
-        
-        @Override
-        protected void computeCompletionItems(CompletionContext context, QueryProgress progress) throws IOException {
-            try {
-                for (int i = 0; i < 100; i++) {
-                    if(progress.isCancelled()) {
-                        exitCount = i;
-                        return;
-                    }
-                    Thread.currentThread().sleep(100);
-                    String text = String.valueOf(i);
-                }
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+public final class SpringCompletionResult {
+    private final List<SpringXMLConfigCompletionItem> items;
+    private final int anchorOffset;
+    private final boolean additionalItems;
+    private final String additionalItemsText;
+    
+    public static final SpringCompletionResult NONE = new SpringCompletionResult(Collections.<SpringXMLConfigCompletionItem>emptyList(), -1, false, null);
+    
+    public static SpringCompletionResult create(List<SpringXMLConfigCompletionItem> items, int anchorOffset, boolean hasAdditionalItems, String additionalItemsText) {
+        if(items.isEmpty()) {
+            return SpringCompletionResult.NONE;
         }
+        
+        return new SpringCompletionResult(items, anchorOffset, hasAdditionalItems, additionalItemsText);
+    }
+    
+    public static SpringCompletionResult create(List<SpringXMLConfigCompletionItem> items, int anchorOffset) {
+        return create(items, anchorOffset, false, null);
+    }
+    
+    private SpringCompletionResult(List<SpringXMLConfigCompletionItem> items, int anchorOffset, boolean hasAdditionalItems, String additionalItemsText) {
+        this.items = items;
+        this.anchorOffset = anchorOffset;
+        this.additionalItems = hasAdditionalItems;
+        this.additionalItemsText = additionalItemsText;
+    }
 
-        public int getExitCount() {
-            return exitCount;
-        }
+    public List<SpringXMLConfigCompletionItem> getItems() {
+        return items;
+    }
+
+    public int getAnchorOffset() {
+        return anchorOffset;
+    }
+
+    public String getAdditionalItemsText() {
+        return additionalItemsText;
+    }
+
+    public boolean hasAdditionalItems() {
+        return additionalItems;
     }
 }

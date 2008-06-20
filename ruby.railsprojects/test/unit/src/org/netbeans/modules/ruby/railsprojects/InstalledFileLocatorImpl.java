@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,10 +21,8 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,47 +36,25 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.ruby.railsprojects;
 
-package org.netbeans.modules.groovy.editor;
+import java.io.File;
+import org.openide.modules.InstalledFileLocator;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.Set;
-import org.openide.modules.ModuleInstall;
+public final class InstalledFileLocatorImpl extends InstalledFileLocator {
 
-/**
- * 
- * @author mkleint
- * @author Martin Adamek
- */
-public class GroovyModuleInstall extends ModuleInstall {
+    public InstalledFileLocatorImpl() {
+    }
 
-    /**
-     * screw friend dependency.
-     * Hack to enable this module as friend to NB 6.0 modules
-     */
-    @Override
-    @SuppressWarnings("unchecked")
-    public void validate() throws IllegalStateException {
-        try {
-            java.lang.Class main = java.lang.Class.forName("org.netbeans.core.startup.Main", false, //NOI18N
-                    Thread.currentThread().getContextClassLoader());
-            Method meth = main.getMethod("getModuleSystem", new Class[0]); //NOI18N
-            Object moduleSystem = meth.invoke(null, new Object[0]);
-            meth = moduleSystem.getClass().getMethod("getManager", new Class[0]); //NOI18N
-            Object mm = meth.invoke(moduleSystem, new Object[0]);
-            Method moduleMeth = mm.getClass().getMethod("get", new Class[]{String.class}); //NOI18N
-            Object gsfapi = moduleMeth.invoke(mm, "org.netbeans.modules.gsf.api"); //NOI18N
-            if (gsfapi != null) {
-                Field frField = gsfapi.getClass().getSuperclass().getDeclaredField("friendNames"); //NOI18N
-                frField.setAccessible(true);
-                Set friends = (Set) frField.get(gsfapi);
-                friends.add("org.netbeans.modules.groovy.editor"); //NOI18N
+    public @Override File locate( String relativePath, String codeNameBase, boolean localized) {
+        if (relativePath.equals("rake_tasks_info.rb")) {
+            String script = System.getProperty("xtest.rake_tasks_info.rb");
+            if (script == null) {
+                throw new RuntimeException("xtest.rake_tasks_info.rb property has to be set when running within binary distribution");
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            new IllegalStateException("Cannot fix dependencies for org.netbeans.modules.groovy.editor."); //NOI18N
+            return new File(script);
         }
+        return null;
     }
     
 }
