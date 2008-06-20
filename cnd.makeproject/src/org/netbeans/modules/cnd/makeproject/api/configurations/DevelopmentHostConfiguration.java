@@ -39,20 +39,18 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import java.util.List;
 import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author gordonp
  */
-public class ServerConfiguration extends IntConfiguration {
+public class DevelopmentHostConfiguration extends IntConfiguration {
     
     private static ServerList serverList = null;
 
-    public ServerConfiguration() {
+    public DevelopmentHostConfiguration() {
         super((IntConfiguration) null, getDefaultServerIndex(), getServerNames(), null);
     }
     
