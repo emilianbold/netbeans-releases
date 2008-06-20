@@ -40,8 +40,7 @@
  */
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.PackagingNodeProp;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -61,13 +60,15 @@ public class PackagingConfiguration {
     public static final int TYPE_ZIP = 3;
     
     private IntConfiguration type;
-    private StringConfiguration files;
+    private VectorConfiguration header;
+    private VectorConfiguration files;
     
     // Constructors
     public PackagingConfiguration(MakeConfiguration makeConfiguration) {
         this.makeConfiguration = makeConfiguration;
         type = new IntConfiguration(null, TYPE_ZIP, TYPE_NAMES, null);
-        files = new StringConfiguration(null, ""); // NOI18N
+        header = new VectorConfiguration(null); // NOI18N
+        files = new VectorConfiguration(null); // NOI18N
     }
     
     // MakeConfiguration
@@ -88,11 +89,19 @@ public class PackagingConfiguration {
         this.type = type;
     }
 
-    public StringConfiguration getFiles() {
+    public VectorConfiguration getHeader() {
+        return header;
+    }
+
+    public void setHeader(VectorConfiguration header) {
+        this.header = header;
+    }
+    
+    public VectorConfiguration getFiles() {
         return files;
     }
 
-    public void setFiles(StringConfiguration files) {
+    public void setFiles(VectorConfiguration files) {
         this.files = files;
     }
     
@@ -100,6 +109,7 @@ public class PackagingConfiguration {
     public void assign(PackagingConfiguration conf) {
         setMakeConfiguration(conf.getMakeConfiguration());
         getType().assign(conf.getType());
+        getHeader().assign(conf.getHeader());
         getFiles().assign(conf.getFiles());
     }
     
@@ -107,7 +117,8 @@ public class PackagingConfiguration {
     public Object clone() {
         PackagingConfiguration clone = new PackagingConfiguration(getMakeConfiguration());
         clone.setType((IntConfiguration)getType().clone());
-        clone.setFiles((StringConfiguration)getFiles().clone());
+        clone.setHeader((VectorConfiguration)getHeader().clone());
+        clone.setFiles((VectorConfiguration)getFiles().clone());
         return clone;
     }
     
@@ -118,12 +129,15 @@ public class PackagingConfiguration {
         set.setName("General"); // NOI18N
         set.setDisplayName(getString("GeneralTxt"));
         set.setShortDescription(getString("GeneralHint"));
-        set.put(new IntNodeProp(getType(), true, null, getString("PackageTypeTxt"), getString("PackageTypeHint"))); // NOI18N
-        set.put(new StringNodeProp(getFiles(), "Files", getString("FilesTxt"), getString("FilesHint"))); // NOI18N
+        String[] texts = new String[] {"Packaging", "Packaging", "Packaging..."};
+        set.put(new PackagingNodeProp(this, makeConfiguration, texts)); // NOI18N
         sheet.put(set);
         return sheet;
     }
     
+    public String getDisplayName() {
+        return TYPE_NAMES[getType().getValue()];
+    }
     
     /** Look up i18n strings here */
     private static String getString(String s) {
