@@ -58,8 +58,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 import org.openide.util.Enumerations;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.UserQuestionException;
 
 /** This is the base for all implementations of file objects on a filesystem.
 * Provides basic information about the object (its name, parent,
@@ -749,8 +749,8 @@ public abstract class FileObject extends Object implements Serializable {
      * <li>Then:
      * <ul>
      * <li>If no exception is thrown, proceed with the operation.
-     * <li>If a <code>UserQuestionException</code> is thrown,
-     * call {@link org.openide.util.UserQuestionException#confirmed} on it
+     * <li>If a {@link UserQuestionException} is thrown,
+     * call {@link UserQuestionException#confirmed} on it
      * (asynchronously - do not block any important threads). If <code>true</code>,
      * proceed with the operation. If <code>false</code>, exit.
      * If an <code>IOException</code> is thrown, notify it and exit.

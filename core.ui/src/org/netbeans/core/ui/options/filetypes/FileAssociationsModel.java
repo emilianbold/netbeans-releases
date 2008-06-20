@@ -84,6 +84,8 @@ final class FileAssociationsModel {
     private HashMap<String, String> extensionToMimeUser = new HashMap<String, String>();
     /** Ordered set of all MIME types registered in system. */
     private TreeSet<String> mimeTypes = new TreeSet<String>();
+    /** Maps MIME type to MimeItem object which holds display name. */
+    private HashMap<String, MimeItem> mimeToItem = new HashMap<String, MimeItem>();
     private boolean initialized = false;
     private LookupListener lookupListener = new LookupListenerImpl();
     private FileObject userDefinedResolverFO;
@@ -160,6 +162,11 @@ final class FileAssociationsModel {
         return extensionToMimeAll.get(extension);
     }
 
+    /** Returns MimeItem corresponding to given extension. */
+    MimeItem getMimeItem(String extension) {
+        return mimeToItem.get(getMimeType(extension));
+    }
+
     /** Removes user defined extension to MIME type mapping. */
     void remove(String extension) {
         extensionToMimeUser.remove(extension);
@@ -177,6 +184,7 @@ final class FileAssociationsModel {
     boolean setMimeType(String extension, String newMimeType) {
         String oldMmimeType = getMimeType(extension);
         if (!newMimeType.equals(oldMmimeType)) {
+            LOGGER.fine("setMimeType - " + extension + "=" + newMimeType);
             extensionToMimeUser.put(extension, newMimeType);
             extensionToMimeAll.put(extension, newMimeType);
             return true;
@@ -196,12 +204,25 @@ final class FileAssociationsModel {
     }
     
     /** Returns display name of loader for given MIME type or null if not defined. */
-    static String getLoaderDisplayName(String mimeType) {
-        DataLoader loader = Lookups.forPath("Loaders/"+mimeType+"/Factories").lookup(DataLoader.class);
-        if(loader != null) {
-            return loader.getDisplayName();
+    private static String getLoaderDisplayName(String mimeType) {
+        String displayName = null;
+        DataLoader loader = Lookups.forPath("Loaders/" + mimeType + "/Factories").lookup(DataLoader.class);  //NOI18N
+        if (loader != null) {
+            try {
+                displayName = loader.getDisplayName();
+            } catch (Exception e) {
+                // ignore possible problems like issue 137723
+            }
         }
-        return null;
+        return displayName;
+    }
+
+    /** Returns sorted list of MimeItem objects. */
+    ArrayList<MimeItem> getMimeItems() {
+        init();
+        ArrayList<MimeItem> items = new ArrayList<MimeItem>(mimeToItem.values());
+        Collections.sort(items);
+        return items;
     }
     
     /** Stores current state of model. It deletes user-defined mime resolver
@@ -300,6 +321,11 @@ final class FileAssociationsModel {
             }
         }
         readMimeTypesFromLoaders();
+        // init mimeItems
+        for (String mimeType : mimeTypes) {
+            MimeItem mimeItem = new MimeItem(mimeType, getLoaderDisplayName(mimeType));
+            mimeToItem.put(mimeType, mimeItem);
+        }
         LOGGER.fine("extensionToMimeSystem=" + extensionToMimeSystem);  //NOI18N
         LOGGER.fine("extensionToMimeUser=" + extensionToMimeUser);  //NOI18N
     }
@@ -307,6 +333,31 @@ final class FileAssociationsModel {
     private class LookupListenerImpl implements LookupListener {
         public void resultChanged(LookupEvent ev) {
             initialized = false;
+        }
+    }
+    
+    /** To store MIME type and its loader display name. It is used in combo box. */
+    static final class MimeItem implements Comparable {
+
+        String mimeType;
+        String displayName;
+
+        MimeItem(String mimeType, String displayName) {
+            this.mimeType = mimeType;
+            this.displayName = displayName;
+        }
+
+        String getMimeType() {
+            return mimeType;
+        }
+
+        @Override
+        public String toString() {
+            return displayName == null ? mimeType : displayName + " (" + mimeType + ")";
+        }
+
+        public int compareTo(Object o) {
+            return toString().compareToIgnoreCase(o.toString());
         }
     }
 }

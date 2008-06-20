@@ -42,7 +42,6 @@
 package org.netbeans.modules.projectimport.eclipse.core;
 
 import java.io.File;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Able to load and fill up an <code>EclipseWorkspace</code> from an Eclipse
@@ -60,19 +59,6 @@ public final class WorkspaceFactory {
     
     public static WorkspaceFactory getInstance() {
         return instance;
-    }
-    
-    /**
-     * Loads a workspace contained in the given <code>workspaceDir</code>.
-     *
-     * @throws InvalidWorkspaceException if workspace in the given
-     *     <code>workspaceDir</code> is not a valid Eclipse workspace.
-     */
-    public Workspace load(String workspaceDir) throws ProjectImporterException {
-        if (workspaceDir != null) {
-            return load(FileUtil.normalizeFile(new File(workspaceDir)));
-        }
-        return null;
     }
     
     /**

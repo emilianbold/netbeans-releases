@@ -143,6 +143,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
         refreshSetups();
         refreshComponents();
         refreshTask = org.netbeans.modules.versioning.util.Utils.createTask(new RefreshViewTask());
+        refreshStatuses();
     }
 
     /**
@@ -373,6 +374,10 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
     }
 
     private void onRefreshButton() {
+        refreshStatuses();
+    }
+
+    private void refreshStatuses() {
         if (context == null || context.getRootFiles().size() == 0) {
             return;
         }

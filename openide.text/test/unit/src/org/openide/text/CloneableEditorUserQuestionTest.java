@@ -51,10 +51,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 import javax.swing.SwingUtilities;
-import junit.framework.Test;
-import junit.framework.TestResult;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -68,6 +66,7 @@ import org.openide.windows.CloneableOpenSupport;
  *
  * @author Jaroslav Tulach
  */
+@RandomlyFails
 public class CloneableEditorUserQuestionTest extends NbTestCase
 implements CloneableEditorSupport.Env {
     static {
@@ -90,20 +89,6 @@ implements CloneableEditorSupport.Env {
         super(testName);
     }
     
-    public static Test suite() {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return new Test() {
-                public int countTestCases() {
-                    return 0;
-                }
-                public void run(TestResult arg0) {}
-            };
-        } else {
-            return new NbTestSuite(CloneableEditorUserQuestionTest.class);
-        }
-    }
-    
-
     protected @Override void setUp() {
         MockLookup.setInstances(new DD());
         support = new CES(this, Lookup.EMPTY);

@@ -3947,7 +3947,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         @Override
         public ImageIcon getIcon() {
             if (keywordIcon == null) {
-                keywordIcon = new ImageIcon(org.openide.util.Utilities.loadImage(RUBY_KEYWORD));
+                keywordIcon = new ImageIcon(org.openide.util.ImageUtilities.loadImage(RUBY_KEYWORD));
             }
 
             return keywordIcon;
@@ -4099,7 +4099,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         @Override
         public ImageIcon getIcon() {
             if (symbolIcon == null) {
-                symbolIcon = new ImageIcon(org.openide.util.Utilities.loadImage(CONSTANT_ICON));
+                symbolIcon = new ImageIcon(org.openide.util.ImageUtilities.loadImage(CONSTANT_ICON));
             }
 
             return symbolIcon;

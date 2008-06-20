@@ -81,8 +81,13 @@ class UpdateEclipseReferencePanel extends javax.swing.JPanel implements Document
             }
         }
         if (errorMsg == null && eclipseWorkspaceTextField.isEnabled()) {
-            if (!EclipseUtils.isRegularWorkSpace(eclipseWorkspaceTextField.getText())) {
-                errorMsg = "Eclipse wokrspace must be selected.";
+            String d = eclipseWorkspaceTextField.getText();
+            if (d == null || d.trim().length() == 0) {
+                errorMsg = "Eclipse workspace must be selected.";
+            } else {
+                if (!EclipseUtils.isRegularWorkSpace(FileUtil.normalizeFile(new File(d.trim())))) {
+                    errorMsg = "Eclipse workspace must be selected.";
+                }
             }
         }
         dd.setValid(errorMsg == null);

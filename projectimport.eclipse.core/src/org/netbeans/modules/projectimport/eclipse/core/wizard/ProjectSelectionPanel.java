@@ -63,7 +63,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
@@ -328,7 +327,7 @@ final class ProjectSelectionPanel extends JPanel {
     }
     
     /** Loads project from workspace in the given <code>workspaceDir</code>. */
-    void loadProjects(String workspaceDir) {
+    void loadProjects(File workspaceDir) {
         Workspace workspace = null;
         try {
             workspace = WorkspaceFactory.getInstance().load(workspaceDir);

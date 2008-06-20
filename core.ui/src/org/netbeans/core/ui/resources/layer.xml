@@ -368,12 +368,6 @@ made subject to such option by the copyright holder.
             </file>
             <attr name="helpID" stringvalue="org.netbeans.core.services.Browsers"/>
         </folder>
-        
-        
-        <file name="org-openide-text-PrintSettings.settings" url="PrintSettings.settings">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/text/printSettings.gif"/>
-        </file>
     </folder>
     
     <folder name="UI">
@@ -411,10 +405,6 @@ made subject to such option by the copyright holder.
                     <file name="ObjectTypes.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createObjectTypes"/>
                         <attr name="instanceClass" stringvalue="org.openide.nodes.Node"/>
-                    </file>
-                    
-                    <file name="org-openide-text-PrintSettings.shadow">
-                        <attr name="originalFile" stringvalue="Services/org-openide-text-PrintSettings.settings"/>
                     </file>
                     
                     <file name="org-netbeans-core-IDESettingsNode.instance">
