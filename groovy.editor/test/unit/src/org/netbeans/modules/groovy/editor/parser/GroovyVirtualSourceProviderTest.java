@@ -44,7 +44,6 @@ package org.netbeans.modules.groovy.editor.parser;
 import java.io.IOException;
 import java.util.List;
 import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.MethodNode;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import org.openide.filesystems.FileUtil;
 
@@ -52,13 +51,13 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Martin Adamek
  */
-public class GroovyVirtualSourveProviderTest extends GroovyTestBase {
+public class GroovyVirtualSourceProviderTest extends GroovyTestBase {
 
-    public GroovyVirtualSourveProviderTest(String testName) {
+    public GroovyVirtualSourceProviderTest(String testName) {
         super(testName);
     }
 
-    public void testGenerator() throws IOException {
+    public void testGeneratorWithClass() throws IOException {
         copyStringToFileObject(testFO,
                 "class Foo {\n" +
                 "  def closure1 = {\n" +
@@ -71,15 +70,54 @@ public class GroovyVirtualSourveProviderTest extends GroovyTestBase {
         List<ClassNode> classNodes = GroovyVirtualSourceProvider.getClassNodes(FileUtil.toFile(testFO));
         assertEquals(classNodes.size(), 1);
 
-//        ClassNode node = classNodes.get(0);
-//        for (Object object : node.getAllDeclaredMethods()) {
-//            MethodNode method = (MethodNode) object;
-//            System.out.println("> " + method.getName() + ", " + method.getLineNumber());
-//        }
+        GroovyVirtualSourceProvider.JavaStubGenerator generator = new GroovyVirtualSourceProvider.JavaStubGenerator();
+        CharSequence charSequence = generator.generateClass(classNodes.get(0));
+        assertEquals(
+                "import groovy.util.*;\n" +
+                "import java.util.*;\n" +
+                "import java.io.*;\n" +
+                "import java.lang.*;\n" +
+                "import groovy.lang.*;\n" +
+                "import java.net.*;\n" +
+                "\n" +
+                "public class Foo\n" +
+                "  extends java.lang.Object  implements\n" +
+                "    groovy.lang.GroovyObject {\n" +
+                "public java.lang.Object method1() { return null;}\n" +
+                "public java.lang.Object getClosure1() { return null;}\n" +
+                "public void setClosure1(java.lang.Object value) { }\n" +
+                "}\n", charSequence);
+    }
 
-//        GroovyVirtualSourceProvider.JavaStubGenerator generator = new GroovyVirtualSourceProvider.JavaStubGenerator();
-//        CharSequence charSequence = generator.generateClass(classNodes.get(0));
-//        System.out.println(charSequence);
+    public void testGeneratorWithScript() throws IOException {
+        copyStringToFileObject(testFO,
+                "def closure1 = {\n" +
+                "  println 'closure1'\n" +
+                "}\n" +
+                "def method1() {\n" +
+                "  println 'method1'\n" +
+                "}");
+        List<ClassNode> classNodes = GroovyVirtualSourceProvider.getClassNodes(FileUtil.toFile(testFO));
+        assertEquals(classNodes.size(), 1);
+
+        GroovyVirtualSourceProvider.JavaStubGenerator generator = new GroovyVirtualSourceProvider.JavaStubGenerator();
+        CharSequence charSequence = generator.generateClass(classNodes.get(0));
+        assertEquals(
+                "import groovy.util.*;\n" +
+                "import java.util.*;\n" +
+                "import java.io.*;\n" +
+                "import java.lang.*;\n" +
+                "import groovy.lang.*;\n" +
+                "import java.net.*;\n" +
+                "\n" +
+                "public class Test\n" +
+                "  extends groovy.lang.Script {\n" +
+                "public Test() {}\n" +
+                "public Test(groovy.lang.Binding context) {}\n" +
+                "public static void main(java.lang.String[] args) { }\n" +
+                "public java.lang.Object run() { return null;}\n" +
+                "public java.lang.Object method1() { return null;}\n" +
+                "}\n", charSequence);
     }
 
 }
