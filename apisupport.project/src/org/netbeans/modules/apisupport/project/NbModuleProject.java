@@ -416,6 +416,10 @@ public final class NbModuleProject implements Project {
         return helper.resolveFile(evaluator().evaluate("${cluster}/${module.jar}")); // NOI18N
     }
     
+    public File getTestUserDirLockFile() {
+        return getHelper().resolveFile(evaluator().evaluate("${test.user.dir}/lock"));
+    }
+
     public String getCodeNameBase() {
         Element config = getPrimaryConfigurationData();
         Element cnb = Util.findElement(config, "code-name-base", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N

@@ -167,11 +167,17 @@ public final class SuiteActions implements ActionProvider {
     
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
         if (ActionProvider.COMMAND_DELETE.equals(command)) {
-            DefaultProjectOperations.performDefaultDeleteOperation(project);
+            if (SuiteOperations.canRun(project)) {
+                DefaultProjectOperations.performDefaultDeleteOperation(project);
+            }
         } else if (ActionProvider.COMMAND_RENAME.equals(command)) {
-            DefaultProjectOperations.performDefaultRenameOperation(project, null);
+            if (SuiteOperations.canRun(project)) {
+                DefaultProjectOperations.performDefaultRenameOperation(project, null);
+            }
         } else if (ActionProvider.COMMAND_MOVE.equals(command)) {
-            DefaultProjectOperations.performDefaultMoveOperation(project);
+            if (SuiteOperations.canRun(project)) {
+                DefaultProjectOperations.performDefaultMoveOperation(project);
+            }
         } else {
             NbPlatform plaf = project.getPlatform(false);
             if (plaf != null) {
