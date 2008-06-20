@@ -54,7 +54,7 @@ public class BeansRefCompletorFactory implements CompletorFactory {
         this.includeGlobal = includeGlobal;
     }
 
-    public Completor createCompletor() {
-        return new BeansRefCompletor(includeGlobal);
+    public Completor createCompletor(int invocationOffset) {
+        return new BeansRefCompletor(includeGlobal, invocationOffset);
     }
 }

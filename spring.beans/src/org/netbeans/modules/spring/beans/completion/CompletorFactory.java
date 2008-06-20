@@ -44,5 +44,5 @@ package org.netbeans.modules.spring.beans.completion;
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
 public interface CompletorFactory {
-    Completor createCompletor();
+    Completor createCompletor(int invocationOffset);
 }

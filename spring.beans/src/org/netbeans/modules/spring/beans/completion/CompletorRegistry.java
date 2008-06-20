@@ -170,7 +170,7 @@ public final class CompletorRegistry {
         String attribName = attrib != null ? attrib.getImage() : null;
         CompletorFactory completorFactory = locateCompletorFactory(tagName, attribName);
         if (completorFactory != null) {
-            Completor completor = completorFactory.createCompletor();
+            Completor completor = completorFactory.createCompletor(context.getCaretOffset());
             return completor;
         }
         
@@ -180,7 +180,7 @@ public final class CompletorRegistry {
     private Completor getAttributeCompletor(final CompletionContext context) {
         String tagName = context.getTag().getNodeName();
         if(tagName.equals(BeansElements.BEAN) && ContextUtilities.isPNamespaceAdded(context.getDocumentContext())) {
-            return new PNamespaceCompletor();
+            return new PNamespaceCompletor(context.getCaretOffset());
         }
         
         return null;
