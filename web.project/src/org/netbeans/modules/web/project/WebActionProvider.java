@@ -91,6 +91,7 @@ import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarter;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.netbeans.modules.web.project.ui.ServletUriPanel;
@@ -379,6 +380,13 @@ class WebActionProvider implements ActionProvider {
         // DEBUG-SINGLE
         } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
             setDirectoryDeploymentProperty(p);
+            
+            if (!isJsDebuggerAvailable()) {
+                // If JavaScript debugger is not available, set to server debugging only
+                p.setProperty("debug.client", "false"); // NOI18N
+                p.setProperty("debug.server", "true"); // NOI18N
+            }
+            
             FileObject[] files = findTestSources(context, false);
             if (files != null) {
                 targetNames = setupDebugTestSingle(p, files);
@@ -514,6 +522,12 @@ class WebActionProvider implements ActionProvider {
                 return null;
             }
 
+            if (!isJsDebuggerAvailable()) {
+                // If JavaScript debugger is not available, set to server debugging only
+                p.setProperty("debug.client", "false"); // NOI18N
+                p.setProperty("debug.server", "true"); // NOI18N
+            }
+            
             WebServicesClientSupport wscs = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
             if (wscs != null) { //project contains ws reference
                 List serviceClients = wscs.getServiceClients();
@@ -704,6 +718,10 @@ class WebActionProvider implements ActionProvider {
 
         }
         return targetNames;
+    }
+
+    private boolean isJsDebuggerAvailable() {
+        return Lookup.getDefault().lookup(WebClientToolsSessionStarter.class) != null;
     }
 
     private String[] setupTestSingle(Properties p, FileObject[] files) {

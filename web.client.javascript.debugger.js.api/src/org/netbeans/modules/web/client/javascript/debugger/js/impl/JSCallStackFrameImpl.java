@@ -45,9 +45,9 @@ import java.util.Map;
 
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSCallStackFrame;
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSDebugger;
-import org.netbeans.modules.web.client.javascript.debugger.js.api.JSLocation;
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSProperty;
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSURILocation;
+import org.netbeans.modules.web.client.tools.api.JSLocation;
 
 /**
  *
