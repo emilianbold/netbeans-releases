@@ -258,18 +258,29 @@ public final class ExecutionService {
 
                     process = processCreator.call();
 
-                    executor.submit(InputReaderTask.newDrainingTask(
-                        InputReaders.forStream(process.getInputStream(), Charset.defaultCharset()),
-                        createOutProcessor(out)));
-                    executor.submit(InputReaderTask.newDrainingTask(
-                        InputReaders.forStream(process.getErrorStream(), Charset.defaultCharset()),
-                        createErrProcessor(err)));
-                    if (input) {
-                        executor.submit(InputReaderTask.newTask(
-                            InputReaders.forReader(in),
-                            createInProcessor(process.getOutputStream())));
+                    if (Thread.currentThread().isInterrupted()) {
+                        return null;
                     }
 
+                    synchronized (executor) {
+                        // cancelled externaly, avoid RejectedExecutionException
+                        if (executor.isShutdown()) {
+                            assert Thread.currentThread().isInterrupted();
+                            return null;
+                        }
+
+                        executor.submit(InputReaderTask.newDrainingTask(
+                            InputReaders.forStream(process.getInputStream(), Charset.defaultCharset()),
+                            createOutProcessor(out)));
+                        executor.submit(InputReaderTask.newDrainingTask(
+                            InputReaders.forStream(process.getErrorStream(), Charset.defaultCharset()),
+                            createErrProcessor(err)));
+                        if (input) {
+                            executor.submit(InputReaderTask.newTask(
+                                InputReaders.forReader(in),
+                                createInProcessor(process.getOutputStream())));
+                        }
+                    }
                     process.waitFor();
                 } catch (InterruptedException ex) {
                     LOGGER.log(Level.FINE, null, ex);
@@ -396,7 +407,10 @@ public final class ExecutionService {
 
         boolean interrupted = false;
         try {
-            interrupted = shutdownExecutor(executor);
+            // synchronized with submit
+            synchronized (executor) {
+                interrupted = shutdownExecutor(executor);
+            }
 
             out.close();
             err.close();
@@ -428,7 +442,6 @@ public final class ExecutionService {
                 rerunAction.setEnabled(true);
             }
             if (interrupted) {
-                System.out.println("Cleanup interrupted");
                 Thread.currentThread().interrupt();
             }
         }
