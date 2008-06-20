@@ -90,7 +90,7 @@ public final class TextProvider extends ComponentProvider {
 //out();
 //out("GET ITERATOR");
 //out();
-    PrintContainer container = new PrintContainer();
+      PrintContainer container = new PrintContainer();
       ((BaseDocument) document).print(container, false, true, 0, document.getLength());
       return new ComponentDocument(container.getIterators());
     }
@@ -112,8 +112,7 @@ public final class TextProvider extends ComponentProvider {
     if (document == null) {
       return null;
     }
-    return ((String) document.getProperty(
-      Document.TitleProperty)).replace('\\', '/'); // NOI18N
+    return ((String) document.getProperty(Document.TitleProperty)).replace('\\', '/'); // NOI18N
   }
 
   // --------------------------------------------------------------------------------------
@@ -139,8 +138,7 @@ public final class TextProvider extends ComponentProvider {
     }
   
     AttributedCharacterIterator [] getIterators() {
-      AttributedCharacterIterator [] iterators =
-        new AttributedCharacterIterator [myCharactersList.size()];
+      AttributedCharacterIterator [] iterators = new AttributedCharacterIterator [myCharactersList.size()];
 
       for (int i=0; i < myCharactersList.size(); i++) {
         iterators [i] = myCharactersList.get(i).iterator();

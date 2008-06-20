@@ -224,7 +224,7 @@ final class ComponentProducerVisualPanel extends JPanel {
         String name = (String) mySettings.getProperty(
                 NewComponentDescriptor.CP_CLASS_NAME);
         if (name == null || !isCPClassNameUpdated){
-            name = getPrefix() + NewComponentDescriptor.COMPONENT_PRODUCER_POSTFIX;
+            name = NewComponentDescriptor.createDefaultProducerClass(getPrefix());
             myCPClassName.setText(name);
             isCPClassNameUpdated = false;
         } else {
