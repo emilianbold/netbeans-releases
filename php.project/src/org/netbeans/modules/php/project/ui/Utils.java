@@ -291,6 +291,46 @@ public final class Utils {
         return dir1.startsWith(dir2) || dir2.startsWith(dir1);
     }
 
+    /**
+     * Validate that the text contains only ASCII characters. If not, return an error message.
+     * @param text the text to validate, can be <code>null</code>.
+     * @param propertyName property name of the given text, e.g. "Project folder name".
+     * @return an error message in case that the text contains non-ASCII characters, <code>null</null> otherwise.
+     * @see #isAsciiPrintable(char)
+     */
+    public static String validateAsciiText(String text, String propertyName) {
+        assert propertyName != null;
+        if (text == null) {
+            return null;
+        }
+        for (int i = 0; i < text.length(); ++i) {
+            if (!isAsciiPrintable(text.charAt(i))) {
+                return NbBundle.getMessage(Utils.class, "MSG_NonAsciiCharacterFound", propertyName);
+            }
+        }
+        return null;
+    }
+
+    // from commons-lang
+    /**
+     * <p>Checks whether the character is ASCII 7 bit printable.</p>
+     *
+     * <pre>
+     *   Utils.isAsciiPrintable('a')  = true
+     *   Utils.isAsciiPrintable('A')  = true
+     *   Utils.isAsciiPrintable('3')  = true
+     *   Utils.isAsciiPrintable('-')  = true
+     *   Utils.isAsciiPrintable('\n') = false
+     *   Utils.isAsciiPrintable('&copy;') = false
+     * </pre>
+     *
+     * @param ch the character to check.
+     * @return <code>true</code> if between 32 and 126 inclusive.
+     */
+    public static boolean isAsciiPrintable(char ch) {
+        return ch >= 32 && ch < 127;
+    }
+
     public static class EncodingModel extends DefaultComboBoxModel {
         private static final long serialVersionUID = -3139920099217726436L;
 
