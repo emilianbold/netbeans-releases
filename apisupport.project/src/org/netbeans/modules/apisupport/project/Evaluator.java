@@ -65,6 +65,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
@@ -371,7 +372,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         defaults.put("test.qa-functional.src.dir", "test/qa-functional/src"); // NOI18N
         defaults.put("test.qa-performance.src.dir", "test/qa-performance/src"); // NOI18N
         defaults.put("build.test.unit.classes.dir", "build/test/unit/classes"); // NOI18N
-        defaults.put("javac.source", "1.4"); // NOI18N
+        defaults.put(SingleModuleProperties.JAVAC_SOURCE, "1.4"); // NOI18N
         if (type == NbModuleProvider.NETBEANS_ORG) {
             defaults.put("test.user.dir", "${nb_all}/nbbuild/testuserdir"); // NOI18N
         } else if (type == NbModuleProvider.STANDALONE) {

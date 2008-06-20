@@ -654,7 +654,7 @@ public final class NbModuleProject implements Project {
     
     /** Get the Java source level used for this module. Default is 1.4. */
     public String getJavacSource() {
-        String javacSource = evaluator().getProperty("javac.source");
+        String javacSource = evaluator().getProperty(SingleModuleProperties.JAVAC_SOURCE);
         assert javacSource != null;
         return javacSource;
     }
