@@ -224,11 +224,16 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
     @Override
     public void reformat(Context context, int startOffset, int endOffset)
             throws BadLocationException {        
+        int offset = -1;
+        int line = -1;
+        int col = -1;
+        BaseDocument doc = (BaseDocument) context.document();        
         JTextComponent editor = Utilities.getFocusedComponent();
-        int offset = editor.getCaretPosition();
-        BaseDocument doc = (BaseDocument) context.document();
-        int line = Utilities.getLineOffset(doc, offset);
-        int col = Utilities.getVisualColumn(doc, offset);
+        if(editor != null) {            
+            offset = editor.getCaretPosition();
+            line = Utilities.getLineOffset(doc, offset);
+            col = Utilities.getVisualColumn(doc, offset);
+        }
         BaseDocument formattedDoc = doReformat(doc, startOffset, endOffset);
         doc.atomicLock();
         try {
@@ -236,7 +241,8 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
             formattedDoc.getText(0, formattedDoc.getLength()), null);            
             //find new offset based on last line+col information            
             offset = Utilities.getRowStartFromLineOffset(doc, line) + col;
-            editor.setCaretPosition(offset);
+            if(editor != null && offset >= 0 )
+                editor.setCaretPosition(offset);
         } catch(Exception ex) {
             editor.setCaretPosition(0);
         } finally {
