@@ -1167,8 +1167,6 @@ public class TSDiagramConverter
                     else if(readerPres.getLocalName().equals("compartment"))
                     {
                         String name=readerPres.getAttributeValue(null, "name");
-                        if("3".equals(name))
-                        {
                             String orientation=readerPres.getAttributeValue(null, "orientation");
                             if(orientation!=null && orientation.length()>0)
                             {
@@ -1187,7 +1185,6 @@ public class TSDiagramConverter
                                     System.out.println("***WARNING: UNKNOWN ORIENTATION: "+orientation);
                                 }
                             }
-                        }
                     }
                 }
                 readerPres.next();
