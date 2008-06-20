@@ -179,6 +179,8 @@ public final class ExecutionService {
         synchronized (ACTIVE_DISPLAY_NAMES) {
             workingIO = customInputOutput;
 
+            // try to acquire required one (rerun action)
+            // this will always succeed if this method is called from EDT
             if (workingIO == null) {
                 ManagedInputOutput freeIO = ManagedInputOutput.getInputOutput(
                         required);
@@ -204,7 +206,8 @@ public final class ExecutionService {
                 }
             }
 
-            if (workingIO == null) { // free IO was not found, create new one
+            // free IO was not found, create new one
+            if (workingIO == null) {
                 displayName = getNonActiveDisplayName(originalDisplayName);
 
                 if (descriptor.isControllable()) {
@@ -218,6 +221,7 @@ public final class ExecutionService {
                     workingIO = IOProvider.getDefault().getIO(displayName, true);
                 }
             }
+
             configureInputOutput(workingIO);
             ACTIVE_DISPLAY_NAMES.add(displayName);
         }
