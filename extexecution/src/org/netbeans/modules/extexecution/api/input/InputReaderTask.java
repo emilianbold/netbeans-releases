@@ -88,50 +88,55 @@ public final class InputReaderTask implements Runnable {
 
     private static final Logger LOGGER = Logger.getLogger(InputReaderTask.class.getName());
 
+    // sleep delay
     private static final int DELAY = 50;
+
+    // safety catch
+    private static final int DRAIN_LIMIT = 100;
 
     private final InputReader inputReader;
 
     private final InputProcessor inputProcessor;
 
-    private InputReaderTask(InputReader inputReader) {
-        this(inputReader, null);
-    }
+    private final boolean draining;
 
-    private InputReaderTask(InputReader inputReader,
-            InputProcessor inputProcessor) {
-
-        Parameters.notNull("inputReader", inputReader);
-
+    private InputReaderTask(InputReader inputReader, InputProcessor inputProcessor, boolean draining) {
         this.inputReader = inputReader;
         this.inputProcessor = inputProcessor;
-    }
-
-    /**
-     * Creates the new task. The task will read the data from reader
-     * throwing them away.
-     * <p>
-     * {@link InputReader} must be responsive to interruption.
-     *
-     * @param reader data producer
-     * @return task handling the read process
-     */
-    public static InputReaderTask newTask(InputReader reader) {
-        return new InputReaderTask(reader);
+        this.draining = draining;
     }
 
     /**
      * Creates the new task. The task will read the data from reader processing
      * them through processor (if any).
      * <p>
-     * {@link InputReader} must be responsive to interruption.
+     * <i>{@link InputReader} must be responsive to interruption.</i>
      *
      * @param reader data producer
      * @param processor processor consuming the data, may be <code>null</code>
      * @return task handling the read process
      */
     public static InputReaderTask newTask(InputReader reader, InputProcessor processor) {
-        return new InputReaderTask(reader, processor);
+        Parameters.notNull("reader", reader);
+
+        return new InputReaderTask(reader, processor, false);
+    }
+
+    /**
+     * Creates the new task. The task will read the data from reader processing
+     * them through processor (if any). When interrupted task will try to read
+     * all the remaining data before exiting.
+     * <p>
+     * <i>{@link InputReader} must be non blocking and responsive to interruption.</i>
+     *
+     * @param reader data producer
+     * @param processor processor consuming the data, may be <code>null</code>
+     * @return task handling the read process
+     */
+    public static InputReaderTask newDrainingTask(InputReader reader, InputProcessor processor) {
+        Parameters.notNull("reader", reader);
+
+        return new InputReaderTask(reader, processor, true);
     }
 
     /**
@@ -158,12 +163,27 @@ public final class InputReaderTask implements Runnable {
                 }
             }
 
-            //while(inputReader.readInput(inputProcessor) > 0);
+            if (Thread.interrupted()) {
+                interrupted = true;
+            }
         } catch (Exception ex) {
             if (!interrupted && !Thread.currentThread().isInterrupted()) {
                 LOGGER.log(Level.FINE, null, ex);
             }
         } finally {
+            // drain the rest
+            if (draining) {
+                try {
+                    for (int i = 0; i < DRAIN_LIMIT; i++) {
+                        if (inputReader.readInput(inputProcessor) <= 0) {
+                            break;
+                        }
+                    }
+                } catch (IOException ex) {
+                    LOGGER.log(Level.FINE, null, ex);
+                }
+            }
+
             // perform cleanup
             try {
                 inputReader.close();

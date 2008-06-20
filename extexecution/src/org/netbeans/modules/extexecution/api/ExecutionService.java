@@ -258,10 +258,10 @@ public final class ExecutionService {
 
                     process = processCreator.call();
 
-                    executor.submit(InputReaderTask.newTask(
+                    executor.submit(InputReaderTask.newDrainingTask(
                         InputReaders.forStream(process.getInputStream(), Charset.defaultCharset()),
                         createOutProcessor(out)));
-                    executor.submit(InputReaderTask.newTask(
+                    executor.submit(InputReaderTask.newDrainingTask(
                         InputReaders.forStream(process.getErrorStream(), Charset.defaultCharset()),
                         createErrProcessor(err)));
                     if (input) {
