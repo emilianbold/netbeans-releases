@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,21 +31,24 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.ruby.rubyproject.rake;
 
-import java.util.List;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Set;
+import java.util.SortedSet;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectTestBase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 public class RakeTaskReaderTest extends RubyProjectTestBase {
-    
+
     public RakeTaskReaderTest(String testName) {
         super(testName);
     }
@@ -66,4 +69,33 @@ public class RakeTaskReaderTest extends RubyProjectTestBase {
         assertNotNull("rake file output dumped", rakeTaskReader.rawRead());
     }
 
+    public void testMultilineDescriptions() throws Exception {
+        registerLayer();
+        RubyProject project = createTestProject();
+        String rakeContent =
+                "desc 'Dummy task'\n" +
+                "task :dummy\n" +
+                "\n" +
+                "desc 'Multiline\n" +
+                "dummy'\n" +
+                "task :multiline_dummy";
+        dumpRakefile(rakeContent, project);
+        RakeSupport.refreshTasks(project);
+        RakeTaskReader rakeTaskReader = new RakeTaskReader(project);
+        SortedSet<RakeTask> tasks = (SortedSet<RakeTask>) rakeTaskReader.getRakeTaskTree();
+        assertEquals("two tasks", 2, tasks.size());
+        RakeTask multi = RakeSupport.getRakeTask(project, "multiline_dummy");
+        assertNotNull(multi);
+        assertEquals("has multiline description", "Multiline\ndummy", multi.getDescription());
+    }
+
+    private void dumpRakefile(final String rakefileContent, final RubyProject project) throws IOException {
+        FileObject script = FileUtil.createData(project.getProjectDirectory(), "Rakefile");
+        PrintWriter pw = new PrintWriter(script.getOutputStream());
+        try {
+            pw.print(rakefileContent);
+        } finally {
+            pw.close();
+        }
+    }
 }
