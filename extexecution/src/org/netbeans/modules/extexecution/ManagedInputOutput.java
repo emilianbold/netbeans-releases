@@ -99,7 +99,7 @@ public final class ManagedInputOutput implements Comparable<ManagedInputOutput> 
                     continue;
                 }
 
-                if (result == null && isAppropriateName(name, data.displayName)) {
+                if (isAppropriateName(name, data.displayName)) {
                     if ((actions && data.rerunAction != null && data.stopAction != null)
                             || !actions && data.rerunAction == null && data.stopAction == null) {
                         // Reuse it.
@@ -112,6 +112,30 @@ public final class ManagedInputOutput implements Comparable<ManagedInputOutput> 
         if (!candidates.isEmpty()) {
             result = candidates.first();
             AVAILABLE.remove(result.io);
+        }
+        return result;
+    }
+
+    public static ManagedInputOutput getInputOutput(InputOutput inputOutput) {
+        ManagedInputOutput result = null;
+
+        synchronized (AVAILABLE) {
+            for (Iterator<Entry<InputOutput, Data>> it = AVAILABLE.entrySet().iterator(); it.hasNext();) {
+                Entry<InputOutput, Data> entry = it.next();
+
+                final InputOutput free = entry.getKey();
+                final Data data = entry.getValue();
+
+                if (free.isClosed()) {
+                    it.remove();
+                    continue;
+                }
+
+                if (free.equals(inputOutput)) {
+                    result = new ManagedInputOutput(free, data);
+                    it.remove();
+                }
+            }
         }
         return result;
     }

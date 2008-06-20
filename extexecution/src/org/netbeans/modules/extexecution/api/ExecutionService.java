@@ -101,6 +101,14 @@ public final class ExecutionService {
     private static final Logger LOGGER = Logger.getLogger(ExecutionService.class.getName());
 
     static {
+        RerunAction.Accessor.setDefault(new RerunAction.Accessor() {
+
+            @Override
+            public Future<Integer> run(ExecutionService service, InputOutput required) {
+                return service.run(required);
+            }
+        });
+
         // shutdown hook
         Runtime.getRuntime().addShutdownHook(new ShutdownThread());
     }
@@ -144,6 +152,7 @@ public final class ExecutionService {
         return new ExecutionService(processCreator, displayName, descriptor);
     }
 
+
     /**
      * Runs the process described by this service. Service can be executed
      * only once. If you need to run the same service again, use
@@ -155,7 +164,11 @@ public final class ExecutionService {
      *
      * @return task representing the actual run
      */
-    public synchronized Future<Integer> run() {
+    public Future<Integer> run() {
+        return run(null);
+    }
+
+    private synchronized Future<Integer> run(InputOutput required) {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new IllegalStateException("Method must be invoked from EDT");
         }
@@ -165,6 +178,18 @@ public final class ExecutionService {
 
         synchronized (ACTIVE_DISPLAY_NAMES) {
             workingIO = customInputOutput;
+
+            if (workingIO == null) {
+                ManagedInputOutput freeIO = ManagedInputOutput.getInputOutput(
+                        required);
+
+                if (freeIO != null) {
+                    workingIO = freeIO.getInputOutput();
+                    displayName = freeIO.getDisplayName();
+                    stopAction = freeIO.getStopAction();
+                    rerunAction = freeIO.getRerunAction();
+                }
+            }
 
             // try to find free output windows
             if (workingIO == null) {
@@ -188,6 +213,7 @@ public final class ExecutionService {
 
                     workingIO = IOProvider.getDefault().getIO(displayName,
                             new Action[]{rerunAction, stopAction});
+                    rerunAction.setParent(workingIO);
                 } else {
                     workingIO = IOProvider.getDefault().getIO(displayName, true);
                 }
@@ -195,8 +221,6 @@ public final class ExecutionService {
             configureInputOutput(workingIO);
             ACTIVE_DISPLAY_NAMES.add(displayName);
         }
-
-
 
         resetProcessors();
 

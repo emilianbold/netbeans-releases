@@ -42,6 +42,7 @@ package org.netbeans.modules.extexecution;
 
 import java.awt.event.ActionEvent;
 
+import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
@@ -53,6 +54,7 @@ import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
+import org.openide.windows.InputOutput;
 
 
 /**
@@ -62,6 +64,8 @@ import org.openide.util.WeakListeners;
  * @author Petr Hejl
  */
 public final class RerunAction extends AbstractAction implements ChangeListener {
+
+    private InputOutput parent;
 
     private ExecutionService service;
 
@@ -74,6 +78,16 @@ public final class RerunAction extends AbstractAction implements ChangeListener 
         putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(
                 "org/netbeans/modules/extexecution/resources/rerun.png"))); // NOI18N
         putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(RerunAction.class, "Rerun"));
+    }
+
+    public InputOutput getParent() {
+        return parent;
+    }
+
+    public void setParent(InputOutput parent) {
+        synchronized (this) {
+            this.parent = parent;
+        }
     }
 
     public void setExecutionService(ExecutionService service) {
@@ -100,12 +114,14 @@ public final class RerunAction extends AbstractAction implements ChangeListener 
         setEnabled(false); // discourage repeated clicking
 
         ExecutionService actionService;
+        InputOutput required;
         synchronized (this) {
             actionService = service;
+            required = parent;
         }
 
         if (actionService != null) {
-            actionService.run();
+            Accessor.getDefault().run(actionService, required);
         }
     }
 
@@ -128,4 +144,36 @@ public final class RerunAction extends AbstractAction implements ChangeListener 
             return super.isEnabled() && (condition == null || condition.isRerunPossible());
         }
     }
+
+    public static abstract class Accessor {
+
+        private static Accessor accessor;
+
+        public static void setDefault(Accessor accessor) {
+            if (Accessor.accessor != null) {
+                throw new IllegalStateException("Already initialized accessor");
+            }
+            Accessor.accessor = accessor;
+        }
+
+        public static Accessor getDefault() {
+            if (accessor != null) {
+                return accessor;
+            }
+
+            // invokes static initializer of ExecutionService.class
+            // that will assign value to the DEFAULT field above
+            Class c = ExecutionService.class;
+            try {
+                Class.forName(c.getName(), true, c.getClassLoader());
+            } catch (ClassNotFoundException ex) {
+                assert false : ex;
+            }
+            assert accessor != null : "The accessor field must be initialized";
+            return accessor;
+        }
+
+        public abstract Future<Integer> run(ExecutionService service, InputOutput required);
+    }
+
 }
