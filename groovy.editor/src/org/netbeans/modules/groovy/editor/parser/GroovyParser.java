@@ -662,8 +662,12 @@ class GroovyParser implements Parser {
                         String name = moduleNode != null ? moduleNode.getContext().getName() : context.file.getNameExt();
                         
                         if (sourceLocator != null && name != null && sourceLocator.equals(name)) {
-                            int startOffset = AstUtilities.getOffset(context.document, ex.getStartLine(), ex.getStartColumn());
-                            int endOffset = AstUtilities.getOffset(context.document, ex.getLine(), ex.getEndColumn());
+                            int startLine = ex.getStartLine();
+                            int startColumn = ex.getStartColumn();
+                            int line = ex.getLine();
+                            int endColumn = ex.getEndColumn();
+                            int startOffset = AstUtilities.getOffset(context.document, startLine > 0 ? startLine : 1, startColumn > 0 ? startColumn : 1);
+                            int endOffset = AstUtilities.getOffset(context.document, line > 0 ? line : 1, endColumn > 0 ? endColumn : 1);
                             notifyError(context, null, Severity.ERROR, ex.getMessage(), null, startOffset, endOffset, sanitizing);
                         }
                     } else if (object instanceof SimpleMessage) {
