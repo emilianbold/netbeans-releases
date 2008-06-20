@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,35 +31,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.editor.parser;
 
-import java.io.File;
-import org.netbeans.modules.gsf.GsfTestBase;
-import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
-import org.netbeans.modules.php.editor.PHPLanguage;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import java.util.List;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.netbeans.modules.gsf.api.StructureItem;
 
 /**
  *
  * @author Petr Pisl
  */
-public abstract class ParserTestBase extends GsfTestBase {
+public class PhpStructureScannerTest extends ParserTestBase{
 
-    public ParserTestBase(String testName) {
+    public PhpStructureScannerTest(String testName) {
         super(testName);
     }
 
-    @Override
+     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        clearWorkDir();
     }
 
     @Override
@@ -67,45 +64,52 @@ public abstract class ParserTestBase extends GsfTestBase {
         super.tearDown();
     }
 
-    protected abstract String getTestResult(String filename) throws Exception;
-
-    protected void performTest(String filename) throws Exception {
-        // parse the file
-        String result = getTestResult(filename);
-        
-        String fullClassName = this.getClass().getName();
-        String goldenFileDir = fullClassName.replace('.', '/');
-        
-        // try to find golden file
-        String goldenFolder = getDataSourceDir().getAbsolutePath() + "/goldenfiles/" + goldenFileDir + "/";
-        File goldenFile = new File(goldenFolder + filename + ".pass");
-        if (!goldenFile.exists()) {
-            // if doesn't exist, create it
-            FileObject goldenFO = touch(goldenFolder, filename + ".pass");
-            copyStringToFileObject(goldenFO, result);
-        }
-        else {
-            // if exist, compare it. 
-            goldenFile = getGoldenFile(filename + ".pass");
-            FileObject resultFO = touch(getWorkDir(), filename + ".result");
-            copyStringToFileObject(resultFO, result);
-            assertFile(FileUtil.toFile(resultFO), goldenFile, getWorkDir());
-        }
-    }
+    /**
+     * Test of scan method, of class PhpStructureScanner.
+     */
     
-    
+    public void testScan() throws Exception {
+        performTest("interface_001");
 
-    @Override
-    protected String getPreferredMimeType() {
-        return PHPLanguage.PHP_MIME_TYPE;
     }
 
     @Override
-    protected DefaultLanguageConfig getPreferredLanguage() {
-        return new PHPLanguage();
+    protected String getTestResult(String filename) throws Exception {
+        StringBuffer sb = new StringBuffer();
+        CompilationInfo info = getInfo("testfiles/" + filename +".php");
+        HtmlFormatter formatter = new TestHtmlFormatter() ;
+        PhpStructureScanner instance = new PhpStructureScanner();
+        List<? extends StructureItem> result = instance.scan(info, formatter);
+        for (StructureItem structureItem : result) {
+            sb.append(printStructureItem(structureItem, 0));
+        }
+        return sb.toString();
     }
 
+    private String printStructureItem(StructureItem structureItem, int indent) {
+        StringBuffer sb = new StringBuffer();
+        sb.append(indent(indent));
+        sb.append(structureItem.getName());
+        sb.append(" [");
+        sb.append(structureItem.getPosition());
+        sb.append(", ");
+        sb.append(structureItem.getEndPosition());
+        sb.append("] : ");
+        sb.append(structureItem.getHtml());
+        for (StructureItem item : structureItem.getNestedItems()) {
+            sb.append("\n");
+            sb.append(printStructureItem(item, indent+1));
+        }
+        return sb.toString();
+    }
 
+    private String indent(int indent) {
+        String text = "|-";
+        for (int i = 0; i < indent; i++  ) {
+            text = text + "-";
+        }
+        return text;
+    }
 
 
 }

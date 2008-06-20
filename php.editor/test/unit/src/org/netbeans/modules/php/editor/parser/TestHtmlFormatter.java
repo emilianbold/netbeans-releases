@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,81 +31,91 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor.parser;
 
-import java.io.File;
-import org.netbeans.modules.gsf.GsfTestBase;
-import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
-import org.netbeans.modules.php.editor.PHPLanguage;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
 
 /**
+ * Formatter just for testing purposses
  *
  * @author Petr Pisl
  */
-public abstract class ParserTestBase extends GsfTestBase {
+public class TestHtmlFormatter extends HtmlFormatter {
 
-    public ParserTestBase(String testName) {
-        super(testName);
+    private StringBuilder sb = new StringBuilder();
+
+    @Override
+    public void reset() {
+        sb.setLength(0);
     }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        clearWorkDir();
+    public void appendHtml(String html) {
+        sb.append(html);
     }
 
     @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    public void appendText(String text, int fromInclusive, int toExclusive) {
+        sb.append("ESCAPED{");
+        sb.append(text, fromInclusive, toExclusive);
+        sb.append("}");
     }
 
-    protected abstract String getTestResult(String filename) throws Exception;
-
-    protected void performTest(String filename) throws Exception {
-        // parse the file
-        String result = getTestResult(filename);
-        
-        String fullClassName = this.getClass().getName();
-        String goldenFileDir = fullClassName.replace('.', '/');
-        
-        // try to find golden file
-        String goldenFolder = getDataSourceDir().getAbsolutePath() + "/goldenfiles/" + goldenFileDir + "/";
-        File goldenFile = new File(goldenFolder + filename + ".pass");
-        if (!goldenFile.exists()) {
-            // if doesn't exist, create it
-            FileObject goldenFO = touch(goldenFolder, filename + ".pass");
-            copyStringToFileObject(goldenFO, result);
-        }
-        else {
-            // if exist, compare it. 
-            goldenFile = getGoldenFile(filename + ".pass");
-            FileObject resultFO = touch(getWorkDir(), filename + ".result");
-            copyStringToFileObject(resultFO, result);
-            assertFile(FileUtil.toFile(resultFO), goldenFile, getWorkDir());
+    @Override
+    public void name(ElementKind kind, boolean start) {
+        if (start) {
+            sb.append(kind);
         }
     }
-    
-    
 
     @Override
-    protected String getPreferredMimeType() {
-        return PHPLanguage.PHP_MIME_TYPE;
+    public void active(boolean start) {
+        if (start) {
+            sb.append("ACTIVE{");
+        } else {
+            sb.append("}");
+        }
     }
 
     @Override
-    protected DefaultLanguageConfig getPreferredLanguage() {
-        return new PHPLanguage();
+    public void parameters(boolean start) {
+        if (start) {
+            sb.append("PARAMETERS{");
+        } else {
+            sb.append("}");
+        }
     }
 
+    @Override
+    public void type(boolean start) {
+        if (start) {
+            sb.append("TYPE{");
+        } else {
+            sb.append("}");
+        }
+    }
 
+    @Override
+    public void deprecated(boolean start) {
+        if (start) {
+            sb.append("DEPRECATED{");
+        } else {
+            sb.append("}");
+        }
+    }
 
+    @Override
+    public String getText() {
+        return sb.toString();
+    }
 
+    @Override
+    public void emphasis(boolean start) {
+    }
 }
