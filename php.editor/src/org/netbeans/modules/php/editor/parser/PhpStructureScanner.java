@@ -59,10 +59,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 /**
- * Just s dummy impl. to enable the html, javascript and css navigator
- * Needs to be implemented properly.
  *
- * @author marek
+ * @author Petr Pisl
  */
 public class PhpStructureScanner implements StructureScanner {
 
