@@ -45,10 +45,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
@@ -604,22 +606,25 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         File pwd = FileUtil.toFile(project.getProjectDirectory());
         String script = "script" + File.separator + "console"; // NOI18N
         String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
-        String noreadlineArg = "--irb=irb --noreadline"; //NOI18N
-        String railsEnv = project.evaluator().getProperty(RailsProjectProperties.RAILS_ENV);
-        String[] additionalArgs = null;
-        if (railsEnv != null && !"".equals(railsEnv.trim())) {
-            additionalArgs = new String[]{noreadlineArg, railsEnv};
+        List<String> additionalArgs = new ArrayList<String>();
+        if (Utilities.isWindows() && !getPlatform().isJRuby()) {
+            // see #133066
+            additionalArgs.add("--irb=irb.bat --noreadline"); //NOI18N
         } else {
-            additionalArgs = new String[]{noreadlineArg};
+            additionalArgs.add("--irb=irb --noreadline"); //NOI18N
         }
-
+        String railsEnv = project.evaluator().getProperty(RailsProjectProperties.RAILS_ENV);
+        if (railsEnv != null && !"".equals(railsEnv.trim())) {
+            additionalArgs.add(railsEnv);
+        } 
+        
         new RubyExecution(new ExecutionDescriptor(getPlatform(), displayName, pwd, script).
                 showSuspended(false).
                 showProgress(false).
                 classPath(classPath).
                 allowInput().
                 // see #130264
-                additionalArgs(additionalArgs). //NOI18N
+                additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()])). //NOI18N
                 fileLocator(new RailsFileLocator(context, project)).
                 addStandardRecognizers(),
                 project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING)

@@ -61,8 +61,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.ruby.testrunner.TestRunnerSettings;
 import org.netbeans.modules.ruby.testrunner.TestExecutionManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * Panel containing the toolbar and the tree of test results.
@@ -128,7 +128,7 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
     
     private void createRerunButton() {
         rerunButton = new JButton(new ImageIcon(
-                Utilities.loadImage(
+                ImageUtilities.loadImage(
                     "org/netbeans/modules/ruby/testrunner/ui/res/rerun.png", //NOI18N
                     true)));
         rerunButton.getAccessibleContext().setAccessibleName(
@@ -153,7 +153,7 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
      */
     private void createFilterButton() {
         btnFilter = new JToggleButton(new ImageIcon(
-                Utilities.loadImage(
+                ImageUtilities.loadImage(
                     "org/netbeans/modules/ruby/testrunner/ui/res/filter.png", //NOI18N
                     true)));
         btnFilter.getAccessibleContext().setAccessibleName(
@@ -165,7 +165,7 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
 
     private void createSplitOrientationButton() {
         splitOrientation = new JToggleButton(new ImageIcon(
-                Utilities.loadImage(
+                ImageUtilities.loadImage(
                     "org/netbeans/modules/ruby/testrunner/ui/res/empty.gif", //NOI18N
                     true)));
         splitOrientation.getAccessibleContext().setAccessibleName(

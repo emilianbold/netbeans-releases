@@ -52,6 +52,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -134,6 +135,7 @@ public class FreeformSourcesTest extends TestBase {
         assertEquals("owned by extbuildroot project", extbuildroot, FileOwnerQuery.getOwner(builtFile));
     }
 
+    @RandomlyFails
     public void testIncludesExcludes() throws Exception {
         clearWorkDir();
         File d = getWorkDir();

@@ -346,7 +346,8 @@ public class BindingPanel extends SectionInnerPanel {
 
         if (source.equals(stsChBox)) {
             if (stsChBox.isSelected() != ProprietarySecurityPolicyModelHelper.isSTSEnabled(binding)) {
-                ProprietarySecurityPolicyModelHelper.enableSTS(binding, stsChBox.isSelected());
+                ProprietarySecurityPolicyModelHelper.getInstance(getUserExpectedConfigVersion()).
+                        enableSTS(binding, stsChBox.isSelected());
                 inSync = true; fillProfileCombo(true); inSync = false;
             }
         }

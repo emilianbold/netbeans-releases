@@ -36,65 +36,73 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.spring.beans.completion.completors;
 
-import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import org.netbeans.editor.TokenItem;
+import java.util.Set;
+import javax.swing.text.BadLocationException;
 import org.netbeans.modules.spring.beans.completion.CompletionContext;
-import org.netbeans.modules.spring.beans.completion.Completor;
-import org.netbeans.modules.spring.beans.completion.CompletorUtils;
-import org.netbeans.modules.spring.beans.completion.SpringCompletionResult;
-import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
-import org.netbeans.modules.spring.beans.editor.ContextUtilities;
+import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
+import org.netbeans.modules.spring.beans.utils.StringUtils;
+import org.openide.util.Exceptions;
 
 /**
- *
- * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
+ * Handles the bean tag's depends-on attribute value completion
+ * 
+ * @author Rohan Ranade
  */
-public class PNamespaceBeanRefCompletor extends Completor {
+public class BeanDependsOnCompletor extends BeansRefCompletor {
 
-    public PNamespaceBeanRefCompletor(int invocationOffset) {
-        super(invocationOffset);
+    public BeanDependsOnCompletor(boolean includeGlobal, int invocationOffset) {
+        super(includeGlobal, invocationOffset);
     }
 
     @Override
     protected int initAnchorOffset(CompletionContext context) {
-        return context.getCurrentToken().getOffset() + 1;
+        int index = context.getCurrentToken().getOffset() + 1;
+        String prefix = context.getTypedPrefix();
+        if (StringUtils.hasText(prefix)) {
+            int sepOffset = Math.max(Math.max(prefix.lastIndexOf(','), prefix.lastIndexOf(';')), prefix.lastIndexOf(' ')); // NOI18N
+            if (sepOffset != -1) {
+                index += sepOffset + 1;
+            }
+        }
+
+        return index;
     }
 
     @Override
-    protected void compute(CompletionContext context) throws IOException {
-        TokenItem attribToken = ContextUtilities.getAttributeToken(context.getCurrentToken());
-        if (attribToken == null) {
-            return;
+    protected String getContextPrefix(CompletionContext context) {
+        String contextPrefix = "";
+        try {
+            contextPrefix = context.getDocument().getText(getAnchorOffset(), context.getCaretOffset() - getAnchorOffset());
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
         }
-
-        String attribName = attribToken.getImage();
-        if (!ContextUtilities.isPNamespaceName(context.getDocumentContext(), attribName)) {
-            return;
-        }
-
-        if (!attribName.endsWith("-ref")) { // NOI18N
-            return;
-        }
-
-        // XXX: Ideally find out the property name and it's expected type
-        // to list bean proposals intelligently
-        BeansRefCompletor beansRefCompletor = new BeansRefCompletor(true, context.getCaretOffset());
-        SpringCompletionResult result = beansRefCompletor.complete(context);
-        for (SpringXMLConfigCompletionItem item : result.getItems()) {
-            addCacheItem(item);
-        }
+        
+        return contextPrefix;
     }
 
     @Override
-    public boolean canFilter(CompletionContext context) {
-        return CompletorUtils.canFilter(context.getDocument(), getInvocationOffset(), context.getCaretOffset(), getAnchorOffset(), CompletorUtils.BEAN_NAME_ACCEPTOR);
-    }
-
-    @Override
-    protected List<SpringXMLConfigCompletionItem> doFilter(CompletionContext context) {
-        return CompletorUtils.filter(getCacheItems(), context.getDocument(), getInvocationOffset(), context.getCaretOffset(), getAnchorOffset());
+    protected Set<String> getForbiddenNames(CompletionContext context) {
+        // filter out existing entries in the value string
+        String typedPrefix = context.getTypedPrefix();
+        if(!StringUtils.hasText(typedPrefix)) {
+            return Collections.emptySet();
+        }
+        
+        int startIdx = context.getCurrentToken().getOffset() + 1;
+        int length = getAnchorOffset() - startIdx;
+        
+        if(length <= 0) {
+            return Collections.emptySet();
+        }
+        
+        String existingStr = typedPrefix.substring(0, length);
+        List<String> names = StringUtils.tokenize(existingStr, SpringXMLConfigEditorUtils.BEAN_NAME_DELIMITERS);
+        return new HashSet<String>(names);
     }
 }
