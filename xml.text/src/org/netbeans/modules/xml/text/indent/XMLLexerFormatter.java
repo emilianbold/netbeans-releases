@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Stack;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -222,28 +223,28 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
 
     @Override
     public void reformat(Context context, int startOffset, int endOffset)
-            throws BadLocationException {
-        
-        final BaseDocument doc = (BaseDocument) context.document();
-        final BaseDocument formattedDoc = doReformat(doc, startOffset, endOffset);
+            throws BadLocationException {        
+        JTextComponent editor = Utilities.getFocusedComponent();
+        int offset = editor.getCaretPosition();
+        BaseDocument doc = (BaseDocument) context.document();
+        int line = Utilities.getLineOffset(doc, offset);
+        int col = Utilities.getVisualColumn(doc, offset);
+        BaseDocument formattedDoc = doReformat(doc, startOffset, endOffset);
         doc.atomicLock();
         try {
-            doc.render(new Runnable() {
-                public void run() {
-                    try {
-                        doc.replace(0, doc.getLength(),
-                        formattedDoc.getText(0, formattedDoc.getLength()), null);
-                    } catch (javax.swing.text.BadLocationException e) {
-                        // shouldn't be an issue                        
-                    }
-                }
-            });
+            doc.replace(0, doc.getLength(),
+            formattedDoc.getText(0, formattedDoc.getLength()), null);            
+            //find new offset based on last line+col information            
+            offset = Utilities.getRowStartFromLineOffset(doc, line) + col;
+            editor.setCaretPosition(offset);
+        } catch(Exception ex) {
+            editor.setCaretPosition(0);
         } finally {
             doc.atomicUnlock();
         }
 
     }
-
+    
     BaseDocument doReformat(BaseDocument doc, int startOffset, int endOffset) {
         BaseDocument bufDoc = new BaseDocument(XMLKit.class, false);
         spacesPerTab = IndentUtils.indentLevelSize(doc);
@@ -251,8 +252,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
         try {
             //buffer doc used as a worksheet
             bufDoc.insertString(0, doc.getText(0, doc.getLength()), null);
-
-            List<TokenElement> tags = getTags(doc);
+            List<TokenElement> tags = getTags(doc, startOffset, endOffset);
             for (int i = tags.size() - 1; i >= 0; i--) {
                 TokenElement tag = tags.get(i);
                 int so = tag.getStartOffset();
@@ -320,7 +320,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
      * This method parses the document using lexer and creates folds and adds
      * them to the fold hierarchy.
      */
-    private List<TokenElement> getTags(BaseDocument basedoc)
+    private List<TokenElement> getTags(BaseDocument basedoc, int startOffset, int endOffset)
             throws BadLocationException, IOException {
         List<TokenElement> tags = new ArrayList<TokenElement>();
         basedoc.readLock();
@@ -356,21 +356,21 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                             if (image.startsWith("</")) {
                                 String tagName = image.substring(2);
                                 currentNode = tagName;
-                                int beginOffset = currentTokensSize;
-                                int endOffset = beginOffset + image.length();
+                                int begin = currentTokensSize;
+                                int end = begin + image.length();
                                 int indentLevel = 0;
                                 if (!stack.empty()) {
                                     stack.pop();
                                     indentLevel = stack.size();
                                 }
-                                TokenElement tag = new TokenElement(tokenType, image, beginOffset, endOffset, indentLevel);
+                                TokenElement tag = new TokenElement(tokenType, image, begin, end, indentLevel);
                                 tags.add(tag);
                             } else {
                                 String tagName = image.substring(1);
-                                int beginOffset = currentTokensSize;
-                                int endOffset = beginOffset + image.length();
+                                int begin = currentTokensSize;
+                                int end = begin + image.length();
                                 int indentLevel = stack.size();
-                                TokenElement tag = new TokenElement(tokenType, tagName, beginOffset, endOffset, indentLevel);
+                                TokenElement tag = new TokenElement(tokenType, tagName, begin, end, indentLevel);
                                 tags.add(tag);
                                 stack.push(tag);
                             }
