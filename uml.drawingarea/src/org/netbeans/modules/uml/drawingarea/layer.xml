@@ -79,27 +79,6 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>   
 
-    <folder name="Services">
-        <folder name="MIMEResolver">
-            <file name="ContextPaletteResolver.xml" url="resources/ContextPaletteResolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.drawingarea.Bundle"/>
-                <attr name="position" intvalue="9000"/>
-            </file>
-            <file name="UMLDiagramResolver.xml" url="resources/UMLDiagramResolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.drawingarea.dataobject.Bundle"/>
-                <attr name="position" intvalue="9010"/>
-            </file>
-            <file name="PaletteItemResolver.xml" url="resources/PaletteItemResolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.drawingarea.dataobject.Bundle"/>
-                <attr name="position" intvalue="9020"/>
-            </file>
-            <file name="TSDiagramResolver.xml" url="resources/TSDiagramResolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.drawingarea.Bundle"/>
-                <attr name="position" intvalue="9030"/>
-            </file>
-        </folder>
-    </folder>
-
     <folder name="Shortcuts">
         <file name="D-A.shadow">
             <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-drawingarea-actions-SelectAllAction.instance"/>
@@ -145,24 +124,58 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+
     <folder name="Loaders">
-        <folder name="content">
-            <folder name="unknown">
+        <folder name="text">
+            <folder name="x-diagram">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-uml-drawingarea-dataobject-UMLDiagramDataLoader.instance">
                         <attr name="position" intvalue="98834"/>
                     </file>
+                </folder>
+            </folder>
+            <folder name="x-contextpalette">
+                <folder name="Factories">
                     <file name="org-netbeans-modules-uml-drawingarea-dataobject-ContextPaletteDataLoader.instance">
                         <attr name="position" intvalue="98835"/>
                     </file>
+                </folder>
+            </folder>
+            <folder name="x-modeling_palette_item">
+                <folder name="Factories">
                     <file name="org-netbeans-modules-uml-drawingarea-dataobject-PaletteItemDataLoader.instance">
                         <attr name="position" intvalue="98836"/>
                     </file>
+                </folder>
+            </folder>
+            <folder name="x-tsdiagram">
+                <folder name="Factories">
                     <file name="org-netbeans-modules-uml-drawingarea-dataobject-ts-TSDiagramDataLoader.instance">
                         <attr name="position" intvalue="98837"/>
                     </file>
                 </folder>
             </folder>
+        </folder>
+   </folder>
+   
+   <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="ContextPaletteResolver.xml" url="resources/ContextPaletteResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.drawingarea.Bundle"/>
+                <attr name="position" intvalue="9000"/>
+            </file>
+            <file name="UMLDiagramResolver.xml" url="resources/UMLDiagramResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.drawingarea.Bundle"/>
+                <attr name="position" intvalue="9010"/>
+            </file>
+            <file name="PaletteItemResolver.xml" url="resources/PaletteItemResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.drawingarea.Bundle"/>
+                <attr name="position" intvalue="9020"/>
+            </file>
+            <file name="TSDiagramResolver.xml" url="resources/TSDiagramResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.drawingarea.Bundle"/>
+                <attr name="position" intvalue="9030"/>
+            </file>
         </folder>
     </folder>
 </filesystem>
