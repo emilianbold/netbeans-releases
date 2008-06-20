@@ -211,8 +211,16 @@ public final class SuiteActions implements ActionProvider {
         } else if (command.equals(ActionProvider.COMMAND_REBUILD)) {
             targetNames = new String[] {"clean", "build"}; // NOI18N
         } else if (command.equals(ActionProvider.COMMAND_RUN)) {
+            if (project.getTestUserDirLockFile().isFile()) {
+                ModuleActions.notifyCannotReRun();
+                return null;
+            }
             targetNames = new String[] {"run"}; // NOI18N
         } else if (command.equals(ActionProvider.COMMAND_DEBUG)) {
+            if (project.getTestUserDirLockFile().isFile()) {
+                ModuleActions.notifyCannotReRun();
+                return null;
+            }
             targetNames = new String[] {"debug"}; // NOI18N
         } else if (command.equals(ActionProvider.COMMAND_TEST)) {
             targetNames = new String[] {"test"}; // NOI18N

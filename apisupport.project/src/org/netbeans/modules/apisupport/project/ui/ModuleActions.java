@@ -398,6 +398,13 @@ public final class ModuleActions implements ActionProvider {
             promptForPublicPackagesToDocument();
             return;
         } else {
+            if (command.equals(ActionProvider.COMMAND_RUN) || command.equals(ActionProvider.COMMAND_DEBUG)) { // #63652
+                if (project.getTestUserDirLockFile().isFile()) {
+                    notifyCannotReRun();
+                    // XXX would be nice to offer to delete the lock file and continue
+                    return;
+                }
+            }
             p = null;
             targetNames = globalCommands.get(command);
             if (targetNames == null) {
@@ -600,6 +607,10 @@ public final class ModuleActions implements ActionProvider {
                 }
             }
         };
+    }
+
+    static void notifyCannotReRun() {
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(ModuleActions.class, "LBL_cannot_rerun"), NotifyDescriptor.WARNING_MESSAGE));
     }
     
 }
