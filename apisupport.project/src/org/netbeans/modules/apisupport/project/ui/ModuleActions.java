@@ -522,6 +522,9 @@ public final class ModuleActions implements ActionProvider {
                 if (findBuildXml(project) == null) {
                     return false;
                 }
+                if (Boolean.parseBoolean(project.evaluator().getProperty("is.autoload")) || Boolean.parseBoolean(project.evaluator().getProperty("is.eager"))) { // NOI18N
+                    return false; // #86395
+                }
                 if (!inIDE) {
                     return project.getTestUserDirLockFile().isFile();
                 }
