@@ -373,16 +373,26 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             List<String> sqlList = new ArrayList<String>();
 
             for (SQLHistory sqlHistory : sqlHistoryList) {
-                sqlList.add(sqlHistory.getSql());  // NOI18N
+                String sql = sqlHistory.getSql();
+                if (!sqlList.contains(sql)) {
+                    sqlList.add(sql); 
+                }
             }
             return sqlList;
         }
 
         public List<String> getDateList() {
             List<String> dateList = new ArrayList<String>();
+            List<String> sqlList = new ArrayList<String>();
 
             for (SQLHistory sqlHistory : sqlHistoryList) {
-                dateList.add(DateFormat.getInstance().format(sqlHistory.getDate()));  // NOI18N
+                String date = DateFormat.getInstance().format(sqlHistory.getDate());
+                String sql = sqlHistory.getSql();
+                // need to make sure that the date is the one that belongs with the SQL
+                if (!sqlList.contains(sql)) {                                        
+                    sqlList.add(sql); 
+                    dateList.add(date);
+                }
             }
             return dateList;
         }
@@ -584,9 +594,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                         data[row][1] = dateIterator.next();
                         sqlToolTipText[row] = sql.trim();
                         row++;
-                    } else {
-                        cleanTable();
-                    }
+                    } 
                 }
                 // Refresh the table
                 sqlHistoryTable.repaint();

@@ -363,7 +363,7 @@ public class SQLHistoryPersistenceManager {
         
         /**
          * 
-         * create XML elements from SQL statements
+         * remove XML elements when the number of statements to save is reduced in the SQL History dialog   
          */
         private Node removeElements(Document document) {
             NodeList nodes = null;
