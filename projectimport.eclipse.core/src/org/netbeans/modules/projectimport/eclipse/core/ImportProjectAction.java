@@ -113,7 +113,7 @@ public class ImportProjectAction extends CallableSystemAction {
                     // open created projects when importing finished
                     if (importer.getProjects().length > 0) {
                         OpenProjects.getDefault().open(importer.getProjects(), true);
-                        OpenProjects.getDefault().setMainProject(importer.getProjects()[0]);
+                        OpenProjects.getDefault().setMainProject(importer.getProjects()[importer.getProjects().length-1]);
                     }
                 }
             }
