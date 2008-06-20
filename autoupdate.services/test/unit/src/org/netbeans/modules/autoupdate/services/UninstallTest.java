@@ -42,6 +42,7 @@
 package org.netbeans.modules.autoupdate.services;
 
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
@@ -56,11 +57,9 @@ public class UninstallTest extends OperationsTestImpl {
     protected String moduleCodeNameBaseForTest() {
         return "org.yourorghere.independent";//NOI18N
     } 
-    
+
+    @RandomlyFails
     public void testSelf() throws Exception {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return;
-        }
         UpdateUnit toUnInstall = UpdateManagerImpl.getInstance().getUpdateUnit(moduleCodeNameBaseForTest());
         assertNotNull(toUnInstall);
         installModule(toUnInstall, null);

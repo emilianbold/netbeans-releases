@@ -64,6 +64,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.queries.VisibilityQueryImplementation;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -92,7 +93,8 @@ public class PackageViewTest extends NbTestCase {
         MockLookup.setInstances(new VQImpl());
         root = TestUtil.makeScratchDir(this);
     }
-    
+
+    @RandomlyFails
     public void testFolders() throws Exception {
         assertNull( "source folder should not exist yet", root.getFileObject( "src" ) );
         
@@ -546,7 +548,8 @@ public class PackageViewTest extends NbTestCase {
         
         
     }
-    
+
+    @RandomlyFails
     public void testCopyPaste () throws Exception {
         //Setup 2 sourcegroups
         FileObject root1 = root.createFolder("src1");
