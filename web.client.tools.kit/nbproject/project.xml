@@ -12,12 +12,6 @@
                     </run-dependency>
                 </dependency>                
                 <dependency>
-                    <code-name-base>org.netbeans.modules.web.client.javascript.debugger.api</code-name-base>
-                    <run-dependency>
-                        <specification-version>0.6</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.web.client.javascript.debugger.js.api</code-name-base>
                     <run-dependency>
                         <specification-version>0.6</specification-version>

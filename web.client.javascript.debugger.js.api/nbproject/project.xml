@@ -48,7 +48,6 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.web.client.javascript.debugger.api</friend>
                 <friend>org.netbeans.modules.web.client.javascript.debugger.firefox</friend>
                 <friend>org.netbeans.modules.web.client.tools.impl</friend>
                 <package>org.netbeans.modules.web.client.javascript.debugger.js.api</package>
