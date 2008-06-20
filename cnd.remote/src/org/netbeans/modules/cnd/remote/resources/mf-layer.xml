@@ -7,7 +7,6 @@
             <file name="org-netbeans-modules-cnd-remote-server-RemoteServerList.instance">
                 <attr name="instanceOf" stringvalue="org.netbeans.modules.cnd.api.remote.ServerList"/>
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.remote.server.RemoteServerList.getInstance"/>
-                <attr name="position" intvalue="257"/>
             </file>
         </folder>
     </folder>
