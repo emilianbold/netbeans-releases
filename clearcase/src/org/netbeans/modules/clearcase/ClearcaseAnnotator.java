@@ -308,8 +308,7 @@ public class ClearcaseAnnotator extends VCSAnnotator {
                 actions.add(new CheckoutAction(ctx));
                 actions.add(new ReserveAction(ctx));
                 actions.add(new HijackAction(ctx));
-                actions.add(new AddAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_AddToSourceControl_Name"), ctx)); //NOI18N
-                actions.add(new AddToRepositoryAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_Import_into_Clea&rcase_Repository"), ctx)); //NOI18N
+                actions.add(new AddAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_AddToSourceControl_Name"), ctx)); //NOI18N                
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(RefreshAction.class), NbBundle.getMessage(ClearcaseAnnotator.class, "Action_ShowChanges"), context)); //NOI18N
                 actions.add(new DiffAction(NbBundle.getMessage(ClearcaseAnnotator.class, "Action_Diff"), ctx)); //NOI18N

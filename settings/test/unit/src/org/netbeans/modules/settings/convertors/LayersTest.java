@@ -49,6 +49,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.Manifest;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Lookup;
@@ -105,14 +106,11 @@ public class LayersTest extends NbTestCase {
     }
      */
     
+    // This is supposed to be run in ide mode.
+    // It is meaningless if run in code mode,
+    // and it will furthermore fail if the internet connection is down.
+    @RandomlyFails
     public void testCorrectContentOfSettingsFiles() throws Exception {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            // This is supposed to be run in ide mode.
-            // It is meaningless if run in code mode,
-            // and it will furthermore fail if the internet connection is down.
-            return;
-        }
-
         ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
         assertNotNull ("In the IDE mode, there always should be a classloader", l);
         

@@ -113,11 +113,7 @@ public final class SchemaDataObject extends MultiDataObject {
 
     @Override
     public final Lookup getLookup() {
-        return Lookups.fixed(new Object[]{
-            super.getLookup(),
-            this,
-            new SearchProvider(this),
-            XmlFileEncodingQueryImpl.singleton()});
+        return getCookieSet().getLookup();
     }
     
     public void addSaveCookie(SaveCookie cookie){

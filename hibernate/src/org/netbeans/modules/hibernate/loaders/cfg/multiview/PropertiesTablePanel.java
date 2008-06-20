@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.hibernate.loaders.cfg.multiview;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import org.netbeans.modules.hibernate.loaders.cfg.*;
 import org.netbeans.modules.xml.multiview.ui.DefaultTablePanel;
 import org.netbeans.modules.xml.multiview.ui.EditDialog;
@@ -92,7 +94,7 @@ public class PropertiesTablePanel extends DefaultTablePanel {
     /**
      * Listener for the Add and Edit buttons
      */
-    private class TableActionListener implements java.awt.event.ActionListener {
+    private class TableActionListener implements ActionListener {
 
         private boolean add;
 
@@ -114,14 +116,13 @@ public class PropertiesTablePanel extends DefaultTablePanel {
                     configDataObject.getHibernateConfiguration().getSessionFactory(),
                     propName, propValue);
 
-            EditDialog dialog = new EditDialog(dialogPanel, NbBundle.getMessage(SecurityTablePanel.class, "LBL_Property"), add) {
+            EditDialog dialog = new EditDialog(dialogPanel, NbBundle.getMessage(PropertiesTablePanel.class, "LBL_Property"), add) {
 
                 protected String validate() {
-                    // TODO: more validation code later
                     String propValue = dialogPanel.getPropertyValue();
 
                     if (propValue.length() == 0) {
-                        return NbBundle.getMessage(SecurityTablePanel.class, "TXT_Prop_Value_Empty");
+                        return NbBundle.getMessage(PropertiesTablePanel.class, "TXT_Prop_Value_Empty");
                     }
                     return null;
                 }
@@ -136,11 +137,14 @@ public class PropertiesTablePanel extends DefaultTablePanel {
 
             javax.swing.event.DocumentListener docListener = new EditDialog.DocListener(dialog);
             dialogPanel.getValueTextField().getDocument().addDocumentListener(docListener);
-
+            dialogPanel.getValueComboBoxTextField().getDocument().addDocumentListener(docListener);
+            dialogPanel.addNameComboBoxListener(new PropertyPanelListner(dialog));
+            
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
             d.setVisible(true);
             dialogPanel.getValueTextField().getDocument().removeDocumentListener(docListener);
-
+            dialogPanel.getValueComboBoxTextField().getDocument().removeDocumentListener(docListener);
+            
             if (dialog.getValue().equals(EditDialog.OK_OPTION)) {
                 configDataObject.modelUpdatedFromUI();
 
@@ -155,5 +159,26 @@ public class PropertiesTablePanel extends DefaultTablePanel {
                 }
             }
         }
+    }
+    
+    private class PropertyPanelListner implements ActionListener {
+        
+        private EditDialog dialog;
+        
+        public PropertyPanelListner(EditDialog dialog){
+            this.dialog = dialog;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if( ((PropertyPanel)dialog.getDialogPanel()).getPropertyValue().length() == 0 ) {
+                // disable OK button
+                dialog.setValid(false);
+            } else {
+                dialog.setValid( true );
+            }
+            
+            dialog.checkValues();
+        }
+        
     }
 }

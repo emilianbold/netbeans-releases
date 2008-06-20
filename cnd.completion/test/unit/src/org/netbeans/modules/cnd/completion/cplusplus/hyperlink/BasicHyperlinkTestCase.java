@@ -125,6 +125,13 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("main.c", 34, 28, "main.c", 37, 1);
     }
     
+    public void testConstParameter() throws Exception {
+        // IZ#76032: ClassView component doubles function in some cases
+        // (partial fix: made const parameters resolve correctly)
+        performTest("const.cc", 5, 44, "const.cc", 1, 1);
+        performTest("const.cc", 5, 50, "const.cc", 2, 5);
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // K&R style
 

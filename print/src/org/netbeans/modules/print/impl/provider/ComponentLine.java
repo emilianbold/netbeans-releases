@@ -66,9 +66,7 @@ final class ComponentLine {
     for (char c = it.first(); c != CharacterIterator.DONE; c = it.next()) {
       Font font = (Font) it.getAttribute(TextAttribute.FONT);
       Color color = (Color) it.getAttribute(TextAttribute.FOREGROUND);
-      mySymbols.add(new Symbol(c,
-        createFont(font, defaultFont),
-        createColor(color, defaultColor)));
+      mySymbols.add(new Symbol(c, createFont(font, defaultFont), createColor(color, defaultColor)));
     }
     checkSpaces(defaultFont, defaultColor);
   }
@@ -175,8 +173,7 @@ final class ComponentLine {
       offset = 0;
     }
 //out(this + " " + getOffset());
-    return (int) Math.ceil(
-      getTextLayout().getBounds().getMaxX() - offset);
+    return (int) Math.ceil(getTextLayout().getBounds().getMaxX() - offset);
   }
 
   int getOffset() {
@@ -200,11 +197,7 @@ final class ComponentLine {
     AttributedCharacters characters = new AttributedCharacters();
 
     for (int i=0; i < length(); i++) {
-      characters.append(
-        mySymbols.get(i).getChar(),
-        mySymbols.get(i).getFont(),
-        mySymbols.get(i).getColor()
-      );
+      characters.append(mySymbols.get(i).getChar(), mySymbols.get(i).getFont(), mySymbols.get(i).getColor());
     }
     return characters.iterator();
   }
@@ -261,17 +254,11 @@ final class ComponentLine {
 
     @Override
     public String toString() {
-      return "'" + // NOI18N
-        myChar + "' " + // NOI18N
-        getString(myFont) + " " + // NOI18N
-        getString(myColor);
+      return "'" + myChar + "' " + getString(myFont) + " " + getString(myColor); // NOI18N
     }
 
     private String getString(Color color) {
-      return "(" + // NOI18N
-        color.getRed() + ", " + // NOI18N
-        color.getGreen() + ", " + // NOI18N
-        color.getBlue() + ")"; // NOI18N
+      return "(" + color.getRed() + ", " + color.getGreen() + ", " + color.getBlue() + ")"; // NOI18N
     }
 
     private String getString(Font font) {
@@ -286,10 +273,7 @@ final class ComponentLine {
       else {
         style += " plain"; // NOI18N
       }
-      return "[" + // NOI18N
-         font.getName() + ", " + // NOI18N
-         style + ", " + // NOI18N
-         font.getSize() + "]"; // NOI18N
+      return "[" + font.getName() + ", " + style + ", " + font.getSize() + "]"; // NOI18N
     }
 
     private char myChar;

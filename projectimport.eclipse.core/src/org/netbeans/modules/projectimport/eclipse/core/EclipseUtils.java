@@ -81,18 +81,10 @@ public class EclipseUtils {
      * Returns whether there is a valid workspace in the given
      * <code>workspaceDir</code>.
      */
-    public static boolean isRegularWorkSpace(String workspaceDir) {
-        return workspaceDir != null &&
-                isRegularWorkSpace(new File(workspaceDir.trim()));
-    }
-    
-    /**
-     * Returns whether there is a valid workspace in the given
-     * <code>workspaceDir</code>.
-     */
     public static boolean isRegularWorkSpace(File workspaceDir) {
+        assert workspaceDir == null || workspaceDir.equals(FileUtil.normalizeFile(workspaceDir)) : "#137407 problem: " + workspaceDir + " vs. " + FileUtil.normalizeFile(workspaceDir);
         return workspaceDir != null
-                && FileUtil.toFileObject(FileUtil.normalizeFile(workspaceDir)) != null
+                && FileUtil.toFileObject(workspaceDir) != null
                 && workspaceDir.isDirectory()
                 && new File(workspaceDir, Workspace.CORE_PREFERENCE).isFile()
                 && new File(workspaceDir, Workspace.LAUNCHING_PREFERENCES).isFile()

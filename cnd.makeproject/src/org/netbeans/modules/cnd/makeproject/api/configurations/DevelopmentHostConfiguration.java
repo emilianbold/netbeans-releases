@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,49 +31,48 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.parser;
+package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import java.io.IOException;
-import java.util.List;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Martin Adamek
+ * @author gordonp
  */
-public class GroovyVirtualSourveProviderTest extends GroovyTestBase {
+public class DevelopmentHostConfiguration extends IntConfiguration {
+    
+    private static ServerList serverList = null;
 
-    public GroovyVirtualSourveProviderTest(String testName) {
-        super(testName);
+    public DevelopmentHostConfiguration() {
+        super((IntConfiguration) null, getDefaultServerIndex(), getServerNames(), null);
     }
-
-    public void testGenerator() throws IOException {
-        copyStringToFileObject(testFO,
-                "class Foo {\n" +
-                "  def closure1 = {\n" +
-                "    println 'closure1'\n" +
-                "  }\n" +
-                "  def method1() {\n" +
-                "    println 'method1'\n" +
-                "  }\n" +
-                "}");
-        List<ClassNode> classNodes = GroovyVirtualSourceProvider.getClassNodes(FileUtil.toFile(testFO));
-        assertEquals(classNodes.size(), 1);
-
-//        ClassNode node = classNodes.get(0);
-//        for (Object object : node.getAllDeclaredMethods()) {
-//            MethodNode method = (MethodNode) object;
-//            System.out.println("> " + method.getName() + ", " + method.getLineNumber());
-//        }
-
-//        GroovyVirtualSourceProvider.JavaStubGenerator generator = new GroovyVirtualSourceProvider.JavaStubGenerator();
-//        CharSequence charSequence = generator.generateClass(classNodes.get(0));
-//        System.out.println(charSequence);
+    
+    private static int getDefaultServerIndex() {
+        if (getServerList() != null) {
+            return serverList.getDefaultServerIndex();
+        }
+        return 0;
     }
-
+    
+    private static String[] getServerNames() {
+        if (getServerList() != null) {
+            return serverList.getServerNames();
+        }
+        return new String[] { "localhost" }; // NOI18N
+    }
+    
+    private static ServerList getServerList() {
+        if (Boolean.getBoolean("cnd.remote.enable")) // DEBUG
+        if (serverList == null) {
+            serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+        }
+        return serverList;
+    }
 }

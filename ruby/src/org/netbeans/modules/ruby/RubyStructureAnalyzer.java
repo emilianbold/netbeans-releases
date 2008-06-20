@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -1288,7 +1287,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
         public ImageIcon getCustomIcon() {
             if (keywordIcon == null) {
-                keywordIcon = new ImageIcon(org.openide.util.Utilities.loadImage(RUBY_KEYWORD));
+                keywordIcon = new ImageIcon(org.openide.util.ImageUtilities.loadImage(RUBY_KEYWORD));
             }
             
             return keywordIcon;
