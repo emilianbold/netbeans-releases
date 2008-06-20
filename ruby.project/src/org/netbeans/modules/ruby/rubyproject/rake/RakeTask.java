@@ -117,7 +117,7 @@ public final class RakeTask implements Comparable<RakeTask> {
     }
 
     public @Override String toString() {
-        return "RakeTask[task:" + getTask() + ", displayName:" + getDisplayName() + ", " + getDescription() + ']'; // NOI18N
+        return "RakeTask[task: " + getTask() + ", displayName: " + getDisplayName() + ", description: " + getDescription() + ']'; // NOI18N
     }
 
 }
