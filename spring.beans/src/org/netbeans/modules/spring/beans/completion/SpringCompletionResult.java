@@ -39,22 +39,53 @@
 
 package org.netbeans.modules.spring.beans.completion;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  *
  * @author Rohan Ranade
  */
-public final class QueryProgress {
-
-    private volatile boolean state = false;
+public final class SpringCompletionResult {
+    private final List<SpringXMLConfigCompletionItem> items;
+    private final int anchorOffset;
+    private final boolean additionalItems;
+    private final String additionalItemsText;
     
-    public QueryProgress() {
+    public static final SpringCompletionResult NONE = new SpringCompletionResult(Collections.<SpringXMLConfigCompletionItem>emptyList(), -1, false, null);
+    
+    public static SpringCompletionResult create(List<SpringXMLConfigCompletionItem> items, int anchorOffset, boolean hasAdditionalItems, String additionalItemsText) {
+        if(items.isEmpty()) {
+            return SpringCompletionResult.NONE;
+        }
+        
+        return new SpringCompletionResult(items, anchorOffset, hasAdditionalItems, additionalItemsText);
+    }
+    
+    public static SpringCompletionResult create(List<SpringXMLConfigCompletionItem> items, int anchorOffset) {
+        return create(items, anchorOffset, false, null);
+    }
+    
+    private SpringCompletionResult(List<SpringXMLConfigCompletionItem> items, int anchorOffset, boolean hasAdditionalItems, String additionalItemsText) {
+        this.items = items;
+        this.anchorOffset = anchorOffset;
+        this.additionalItems = hasAdditionalItems;
+        this.additionalItemsText = additionalItemsText;
     }
 
-    public boolean isCancelled() {
-        return state;
+    public List<SpringXMLConfigCompletionItem> getItems() {
+        return items;
     }
-    
-    public void cancel() {
-        state = true;
+
+    public int getAnchorOffset() {
+        return anchorOffset;
+    }
+
+    public String getAdditionalItemsText() {
+        return additionalItemsText;
+    }
+
+    public boolean hasAdditionalItems() {
+        return additionalItems;
     }
 }

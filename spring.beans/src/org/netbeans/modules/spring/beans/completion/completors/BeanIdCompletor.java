@@ -55,7 +55,6 @@ import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.beans.completion.CompletionContext;
 import org.netbeans.modules.spring.beans.completion.Completor;
-import org.netbeans.modules.spring.beans.completion.QueryProgress;
 import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
 import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
@@ -76,18 +75,24 @@ import org.openide.filesystems.FileObject;
  */
 public final class BeanIdCompletor extends Completor {
 
-    public BeanIdCompletor() {
+    public BeanIdCompletor(int invocationOffset) {
+        super(invocationOffset);
     }
 
     @Override
-    protected void computeCompletionItems(final CompletionContext context, QueryProgress progress) throws IOException {
+    protected int initAnchorOffset(CompletionContext context) {
+        return context.getCurrentToken().getOffset() + 1;
+    }
+
+    @Override
+    protected void compute(final CompletionContext context) throws IOException {
         final FileObject fileObject = context.getFileObject();
         JavaSource javaSource = JavaUtils.getJavaSource(fileObject);
         if (javaSource == null) {
             return;
         }
 
-        final int substitutionOffset = context.getCurrentToken().getOffset() + 1;
+        final String typedPrefix = context.getTypedPrefix();
 
         javaSource.runUserActionTask(new Task<CompilationController>() {
 
@@ -108,12 +113,12 @@ public final class BeanIdCompletor extends Completor {
 
                 int i = 10;
                 for (String name : names) {
-                    SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createBeanNameItem(substitutionOffset, name, i);
-                    addItem(item);
+                    if (name.startsWith(typedPrefix)) {
+                        SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createBeanNameItem(getAnchorOffset(), name, i);
+                        addCacheItem(item);
                     i += 10;
                 }
-
-                setAnchorOffset(substitutionOffset);
+            }
             }
         }, true);
     }
