@@ -43,6 +43,7 @@ package org.netbeans.modules.db.dataview.output;
 import org.netbeans.modules.db.dataview.meta.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,27 +54,34 @@ import org.netbeans.modules.db.dataview.util.DataViewUtils;
  *
  * @author Ahimanikya Satapathy
  */
-class DBTableWrapper {
+class DataViewDBTable {
 
-    private final DBTable[] dbTable;
+    private final DBTable[] dbTables;
     private final List<DBColumn> columns;
     private String[] columnTooltipStr;
 
-    public DBTableWrapper(Collection<DBTable> tables) {
-        dbTable = new DBTable[tables.size()];
-        columns = new ArrayList<DBColumn>();
+    public DataViewDBTable(Collection<DBTable> tables) {
+        assert tables != null;
+        
+        dbTables = new DBTable[tables.size()];
+        List cols = new ArrayList<DBColumn>();
 
-        for (DBTable tbl : tables.toArray(dbTable)) {
-            columns.addAll(tbl.getColumnList());
+        for (DBTable tbl : tables.toArray(dbTables)) {
+            cols.addAll(tbl.getColumnList());
         }
+        columns = Collections.unmodifiableList(cols);
     }
 
     public DBTable geTable(int index) {
-        return dbTable[index];
+        return dbTables[index];
+    }
+    
+    public int geTableCount() {
+        return dbTables.length;
     }
 
     public String getFullyQualifiedName(int index) {
-        return dbTable[index].getFullyQualifiedName();
+        return dbTables[index].getFullyQualifiedName();
     }
 
     public DBColumn getColumn(int index) {
@@ -97,11 +105,11 @@ class DBTableWrapper {
     }
     
     public synchronized  Map getColumns(){
-        Map colMap = new HashMap();
-         for (DBTable tbl : dbTable) {
+        Map<String, DBColumn> colMap = new HashMap<String, DBColumn>();
+         for (DBTable tbl : dbTables) {
             colMap.putAll(tbl.getColumns());
         }
-         return colMap;
+         return Collections.unmodifiableMap(colMap);
     }
 
     public synchronized  String[] getColumnToolTips() {

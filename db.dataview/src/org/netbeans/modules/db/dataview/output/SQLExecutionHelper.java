@@ -42,14 +42,20 @@ package org.netbeans.modules.db.dataview.output;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.swing.table.TableModel;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.dataview.meta.DBConnectionFactory;
 import org.netbeans.modules.db.dataview.meta.DBException;
+import org.netbeans.modules.db.dataview.meta.DBTable;
 import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -58,183 +64,266 @@ import org.netbeans.modules.db.dataview.util.DataViewUtils;
 class SQLExecutionHelper {
 
     private static Logger mLogger = Logger.getLogger(SQLExecutionHelper.class.getName());
-    private DataViewOutputPanel parent; 
-    SQLExecutionHelper(DataViewOutputPanel parent){
+    private final DataView parent;
+    private final DatabaseConnection dbConn;
+    // the RequestProcessor used for executing statements.
+    private final RequestProcessor rp = new RequestProcessor("SQLStatementExecution", 1, true); // NOI18N
+
+
+    SQLExecutionHelper(DataView parent, DatabaseConnection dbConn) {
         this.parent = parent;
-    }
-    
-    boolean executeInsert(String[] insertSQL, Object[] insertedRow, DataViewOutputPanel dvParent) {
-        PreparedStatement pstmt = null;
-        Connection conn = null;
-        boolean error = false;
-        boolean autoCommit = true;
-        String errorMsg = "";
-
-        try {
-            conn = DBConnectionFactory.getInstance().getConnection(dvParent.dbConn);
-            autoCommit = conn.getAutoCommit();
-            conn.setAutoCommit(false);
-            pstmt = conn.prepareStatement(insertSQL[0]);
-            int pos = 1;
-            for (int i = 0; i < insertedRow.length; i++) {
-                if (insertedRow[i] != null) {
-                    DBReadWriteHelper.setAttributeValue(pstmt, pos++, dvParent.getDBTableWrapper().getColumnType(i), insertedRow[i]);
-                }
-            }
-            int rows = pstmt.executeUpdate();
-
-            if (rows != 1) {
-                error = true;
-            }
-        } catch (Exception ex) {
-            error = true;
-            errorMsg = DBException.getMessage(ex);
-        } finally {
-            if (!error) {
-                try {
-                    conn.commit();
-                } catch (SQLException ex) {
-                    errorMsg = "Failure while commiting changes to database.\n";
-                    errorMsg = errorMsg + DBException.getMessage(ex);
-                    dvParent.printerrToOutputTab(errorMsg);
-                }
-
-                if (!error) {
-                    errorMsg = "Record successfully inserted.\n";
-                    dvParent.printinfoToOutputTab(errorMsg);
-                }
-            } else {
-                dvParent.printerrToOutputTab("Insert command failed.\n");
-                dvParent.printerrToOutputTab(errorMsg);
-                dvParent.printinfoToOutputTab("\nUsing SQL:" + insertSQL[1]);
-                rollback(conn);
-            }
-
-            DataViewUtils.closeResources(pstmt);
-            if (dvParent.getResultSetPage().getTotalRows() <= 0) {
-                dvParent.getResultSetPage().setTotalRows(1);
-            }
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(autoCommit);
-                } catch (SQLException ex) {
-                    //ignore
-                }
-            }
-            return !error;
-        }
+        this.dbConn = dbConn;
     }
 
-    int executeDeleteRow(int rowNum) {
-        List<Object> values = new ArrayList<Object>();
-        List<Integer> types = new ArrayList<Integer>();
-        ResultSetUpdatedRowContext tblContext = parent.getResultSetUpdatedRowContext();
+    void executeInsert(final String[] insertSQL, final Object[] insertedRow) {
 
-        SQLStatementGenerator generator = new SQLStatementGenerator(parent.getDBTableWrapper(), parent.getResulSetTable());
-        String[] deleteStmt = generator.generateDeleteStatement(types, values, rowNum);
-        String rawDeleteStmt = deleteStmt[1];
+        SQLStatementExecutor executor = new SQLStatementExecutor(parent, "Executing Insert", "") {
+
+            private PreparedStatement pstmt = null;
+            private Connection conn = null;
+            private boolean error = false;
+            private boolean autoCommit = true;
+            private String errorMsg = "";
+
+            @Override
+            public void finished() {
+                if (!error && ex == null) {
+                    try {
+                        conn.commit();
+                    } catch (SQLException e) {
+                        errorMsg = "Failure while commiting changes to database.\n";
+                        errorMsg = errorMsg + DBException.getMessage(e);
+                        parent.setErrorStatusText(errorMsg);
+                        error = true;
+                    }
+
+                    if (!error) {
+                        errorMsg = "Record successfully inserted.\n";
+                        parent.setInfoStatusText(errorMsg);
+                    }
+                } else {
+                    parent.setErrorStatusText("Insert command failed.\n");
+                    parent.setErrorStatusText(errorMsg);
+                    parent.setInfoStatusText("\nUsing SQL:" + insertSQL[1]);
+                    rollback(conn);
+                }
+
+                DataViewUtils.closeResources(pstmt);
+                if (parent.getDataViewPageContext().getTotalRows() <= 0) {
+                    parent.getDataViewPageContext().setTotalRows(1);
+                }
+                if (conn != null) {
+                    try {
+                        conn.setAutoCommit(autoCommit);
+                    } catch (SQLException e) {
+                        //ignore
+                    }
+                }
+                parent.executeQuery();
+            }
+
+            @Override
+            public void execute() throws SQLException, DBException {
+                conn = DBConnectionFactory.getInstance().getConnection(parent.dbConn);
+                autoCommit = conn.getAutoCommit();
+                conn.setAutoCommit(false);
+                pstmt = conn.prepareStatement(insertSQL[0]);
+                int pos = 1;
+                for (int i = 0; i < insertedRow.length; i++) {
+                    if (insertedRow[i] != null) {
+                        DBReadWriteHelper.setAttributeValue(pstmt, pos++, parent.getDataViewDBTable().getColumnType(i), insertedRow[i]);
+                    }
+                }
+                int rows = pstmt.executeUpdate();
+
+                if (rows != 1) {
+                    error = true;
+                }
+            }
+        };
+        RequestProcessor.Task task = rp.create(executor);
+        executor.setTask(task);
+        task.schedule(0);
+
+    }
+
+    void executeDeleteRow(int rowNum, TableModel tblModel) {
+        final List<Object> values = new ArrayList<Object>();
+        final List<Integer> types = new ArrayList<Integer>();
+
+        SQLStatementGenerator generator = parent.getSQLStatementGenerator();
+        final String[] deleteStmt = generator.generateDeleteStatement(types, values, rowNum, tblModel);
+        final String rawDeleteStmt = deleteStmt[1];
         mLogger.info("Statement: " + rawDeleteStmt);
-        parent.printinfoToOutputTab("Statement: " + rawDeleteStmt);
-        PreparedStatement pstmt = null;
-        Connection conn = null;
-        boolean error = false;
-        String errorMsg = "";
+        parent.setInfoStatusText("Statement: " + rawDeleteStmt);
 
-        try {
-            conn = DBConnectionFactory.getInstance().getConnection(parent.dbConn);
-            conn.setAutoCommit(false);
-            pstmt = conn.prepareStatement(deleteStmt[0]);
-            int pos = 1;
-            for (Object val : values) {
-                DBReadWriteHelper.setAttributeValue(pstmt, pos, types.get(pos - 1), val);
-                pos++;
-            }
-            int rows = pstmt.executeUpdate();
-            if (rows == 0) {
-                error = true;
-                errorMsg = errorMsg + " No rows deleted.\n";
-            } else if (rows > 1) {
-                error = true;
-                errorMsg = errorMsg + "No unique row.\n";
-            }
+        SQLStatementExecutor executor = new SQLStatementExecutor(parent, "Executing Delete", "") {
 
-            return rows;
-        } catch (Exception ex) {
-            error = true;
-            errorMsg = errorMsg + DBException.getMessage(ex);
-        } finally {
-            DataViewUtils.closeResources(pstmt);
-            if (!error) {
-                try {
-                    conn.commit();
-                } catch (SQLException ex) {
-                    parent.printerrToOutputTab("Commit Failed\n");
-                    parent.printerrToOutputTab("Using SQL:" + rawDeleteStmt + "\n");
-                    parent.printerrToOutputTab(DBException.getMessage(ex));
+            private PreparedStatement pstmt = null;
+            private Connection conn = null;
+            private boolean error = false;
+            private String errorMsg = "";
+
+            @Override
+            public void execute() throws SQLException, DBException {
+
+                conn = DBConnectionFactory.getInstance().getConnection(parent.dbConn);
+                conn.setAutoCommit(false);
+                pstmt = conn.prepareStatement(deleteStmt[0]);
+                int pos = 1;
+                for (Object val : values) {
+                    DBReadWriteHelper.setAttributeValue(pstmt, pos, types.get(pos - 1), val);
+                    pos++;
                 }
-            } else {
-                parent.printerrToOutputTab("Delete command failed\n" + errorMsg);
-                parent.printerrToOutputTab("Using SQL:" + rawDeleteStmt + "\n");
-                parent.printerrToOutputTab(errorMsg);
+                int rows = pstmt.executeUpdate();
+                if (rows == 0) {
+                    error = true;
+                    errorMsg = errorMsg + " No rows deleted.\n";
+                } else if (rows > 1) {
+                    error = true;
+                    errorMsg = errorMsg + "No unique row.\n";
+                }
             }
-        }
-        return 0;
+
+            @Override
+            public void finished() {
+                DataViewUtils.closeResources(pstmt);
+                if (!error) {
+                    try {
+                        conn.commit();
+                    } catch (SQLException e) {
+                        parent.setErrorStatusText("Commit Failed\n");
+                        parent.setErrorStatusText("Using SQL:" + rawDeleteStmt + "\n");
+                        parent.setErrorStatusText(DBException.getMessage(e));
+                    }
+                } else {
+                    parent.setErrorStatusText("Delete command failed\n" + errorMsg);
+                    parent.setErrorStatusText("Using SQL:" + rawDeleteStmt + "\n");
+                    parent.setErrorStatusText(errorMsg);
+                }
+            }
+        };
+
+        RequestProcessor.Task task = rp.create(executor);
+        executor.setTask(task);
+        task.schedule(0);
     }
 
-    protected void executeUpdate(String key) throws NumberFormatException, SQLException, DBException {
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        String errorMsg = "";
+    void executeUpdate(String key) throws NumberFormatException, SQLException, DBException {
 
-        ResultSetUpdatedRowContext tblContext = parent.getResultSetUpdatedRowContext();
-        int row = Integer.parseInt(key.substring(0, key.indexOf(";")));
-        int col = Integer.parseInt(key.substring(key.indexOf(";") + 1, key.length()));
-        String updateStmt = tblContext.getUpdateStmt(key);
-        String rawUpdateStmt = tblContext.getRawUpdateStmt((key));
-        List<Object> values = tblContext.getValueList(key);
-        List<Integer> types = tblContext.getTypeList(key);
 
-        int rowCount = 0;
-        try {
-            conn = DBConnectionFactory.getInstance().getConnection(parent.dbConn);
-            conn.setAutoCommit(false);
-            pstmt = conn.prepareStatement(updateStmt);
-            int pos = 1;
-            for (Object val : values) {
-                DBReadWriteHelper.setAttributeValue(pstmt, pos, types.get(pos - 1), val);
-                pos++;
+        UpdatedRowContext tblContext = parent.getResultSetUpdatedRowContext();
+        final int row = Integer.parseInt(key.substring(0, key.indexOf(";")));
+        final int col = Integer.parseInt(key.substring(key.indexOf(";") + 1, key.length()));
+        final String updateStmt = tblContext.getUpdateStmt(key);
+        final String rawUpdateStmt = tblContext.getRawUpdateStmt((key));
+        final List<Object> values = tblContext.getValueList(key);
+        final List<Integer> types = tblContext.getTypeList(key);
+
+
+
+        SQLStatementExecutor executor = new SQLStatementExecutor(parent, "Executing Update", "") {
+
+            private Connection conn;
+            private PreparedStatement pstmt;
+            private String errorMsg = "";
+            private int rowCount = 0;
+
+            @Override
+            public void finished() {
+                if (ex != null) {
+                    errorMsg = "Update failed at Row:" + row + ", Column:" + col;
+                    errorMsg += ex.getMessage();
+                }
+
+                if (rowCount == 0) {
+                    if (DataViewUtils.isNullString(errorMsg)) {
+                        errorMsg = "No rows updated using " + rawUpdateStmt;
+                    }
+                    parent.setErrorStatusText(errorMsg);
+                    rollback(conn);
+                } else if (rowCount > 1) {
+                    errorMsg = "Unable to find unique row using " + rawUpdateStmt;
+                    parent.setErrorStatusText(errorMsg);
+                    rollback(conn);
+                } else {
+                    try {
+                        conn.commit();
+                    } catch (SQLException e) {
+                        errorMsg = "Failed to commit " + e.getMessage();
+                        parent.setErrorStatusText(errorMsg);
+                    }
+                }
+                DataViewUtils.closeResources(pstmt);
             }
 
-            mLogger.info(rawUpdateStmt);
-            parent.printinfoToOutputTab("Statement: " + rawUpdateStmt);
-            rowCount = pstmt.executeUpdate();
-        } catch (SQLException ex) {
-            errorMsg = "Update failed at Row:" + row + ", Column:" + col;
-            errorMsg += "\nErrorCode:" + ex.getErrorCode() + ", " + ex.getMessage();
-        } finally {
-            if (rowCount == 0) {
-                if (DataViewUtils.isNullString(errorMsg)) {
-                    errorMsg = "No rows updated using " + rawUpdateStmt;
+            @Override
+            public void execute() throws SQLException, DBException {
+                conn = DBConnectionFactory.getInstance().getConnection(parent.dbConn);
+                conn.setAutoCommit(false);
+                pstmt = conn.prepareStatement(updateStmt);
+                int pos = 1;
+                for (Object val : values) {
+                    DBReadWriteHelper.setAttributeValue(pstmt, pos, types.get(pos - 1), val);
+                    pos++;
                 }
-                parent.printerrToOutputTab(errorMsg);
-                rollback(conn);
-            } else if (rowCount > 1) {
-                errorMsg = "Unable to find unique row using " + rawUpdateStmt;
-                parent.printerrToOutputTab(errorMsg);
-                rollback(conn);
-            } else {
+
+                mLogger.info(rawUpdateStmt);
+                parent.setInfoStatusText("Statement: " + rawUpdateStmt);
+                rowCount = pstmt.executeUpdate();
+            }
+        };
+    }
+
+    // Truncate is allowed only when there is single table used in the query.
+    void truncateDBTable() throws DBException {
+        Connection conn = null;
+        Statement stmt = null;
+        ResultSet cntRs = null;
+        String truncateSql = "";
+
+        try {
+            conn = DBConnectionFactory.getInstance().getConnection(this.dbConn);
+            conn.setAutoCommit(true);
+            stmt = conn.createStatement();
+
+            DBTable dbTable = parent.getDataViewDBTable().geTable(0);
+            truncateSql = "Truncate table " + dbTable.getFullyQualifiedName();
+            try {
+                mLogger.info("Trncating Table Using: " + truncateSql);
+                stmt.executeUpdate(truncateSql);
+
+            } catch (SQLException sqe) {
+                truncateSql = "Delete from " + dbTable.getFullyQualifiedName();
+                mLogger.info("Trncating Table Using: " + truncateSql);
+                stmt.executeUpdate(truncateSql);
+            }
+
+            if (!conn.getAutoCommit()) {
                 conn.commit();
             }
-            DataViewUtils.closeResources(pstmt);
+
+            //set the total count
+            stmt = conn.createStatement();
+            String countSql = "Select Count(*) from " + dbTable.getFullyQualifiedName();
+            mLogger.info(countSql);
+            cntRs = stmt.executeQuery(countSql);
+            parent.setTotalCount(cntRs);
+        } catch (Exception t) {
+            mLogger.info("Could not truncate data using " + truncateSql);
+            throw new DBException("Could not truncate data using " + truncateSql, t);
+        } finally {
+            DataViewUtils.closeResources(stmt);
+            DataViewUtils.closeResources(cntRs);
         }
     }
-    
+
     private void rollback(Connection conn) {
         try {
             conn.rollback();
         } catch (SQLException ex) {
             String errorMsg = "Fail to rollback.\n";
-            parent.printerrToOutputTab(errorMsg + DBException.getMessage(ex));
+            parent.setErrorStatusText(errorMsg + DBException.getMessage(ex));
         }
     }
 }

@@ -50,8 +50,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBForeignKey;
 import org.netbeans.modules.db.dataview.meta.DBTable;
@@ -67,10 +65,7 @@ public class DataViewUtils {
     private static HashMap<Integer, Integer> dataTypePrecedenceMap = new HashMap<Integer, Integer>();
     private static Map<String, String> JDBC_SQL_MAP = new HashMap<String, String>();
     private static Map<String, String> SQL_JDBC_MAP = new HashMap<String, String>();
-        
-    private static ProgressHandle progressBarDialog = null;
-    private static boolean progressBarStarted = false;
-
+    
 
     static {
         SQL_JDBC_MAP.put("array", String.valueOf(Types.ARRAY));
@@ -344,27 +339,6 @@ public class DataViewUtils {
         }
     }
 
-    private static synchronized void initProgressDialog(String title) {
-        progressBarDialog = ProgressHandleFactory.createHandle(title);
-    }
-
-    public static synchronized void startProgressDialog(String title, String message) {
-        if (!progressBarStarted) {
-            initProgressDialog(title);
-            progressBarStarted = true;
-            progressBarDialog.setDisplayName(title);
-            progressBarDialog.start();
-            progressBarDialog.progress(message);
-        }
-    }
-
-    public static synchronized void stopProgressDialog() {
-        if ((progressBarStarted) && (progressBarDialog != null)) {
-            progressBarStarted = false;
-            progressBarDialog.finish();
-        }
-    }
-
     /**
      * Generates HTML-formatted String containing detailed information on the given
      * SQLDBColumn instance.
@@ -403,8 +377,8 @@ public class DataViewUtils {
             case Types.TIMESTAMP:
             case Types.TINYINT:
             case Types.VARCHAR:
-            case Types.VARBINARY:    
-                
+            case Types.VARBINARY:
+
                 // Do nothing - scale is meaningless for these types.
                 break;
 
@@ -430,7 +404,7 @@ public class DataViewUtils {
 
         if (generated) {
             strBuf.append("<tr> <td>&nbsp; Generated </td> <td> &nbsp; : &nbsp; <b> Yes </b> </td> </tr>");
-        }        
+        }
         strBuf.append("</table> </html>");
         return strBuf.toString();
     }

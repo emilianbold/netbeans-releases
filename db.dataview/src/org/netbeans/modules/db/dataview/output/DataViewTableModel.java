@@ -65,7 +65,6 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
-
 /**
  * DataViewTableModel is a decorator for TableModels; adding sorting
  * functionality to a supplied TableModel. DataViewTableModel does
@@ -113,9 +112,9 @@ import javax.swing.table.TableModel;
  * 
  * @author Ahimanikya Satapathy
  */
- final class DataViewTableModel extends AbstractTableModel {
+final class DataViewTableModel extends AbstractTableModel {
 
-    protected TableModel tableModel;
+    private TableModel tableModel;
     public static final int DESCENDING = -1;
     public static final int NOT_SORTED = 0;
     public static final int ASCENDING = 1;

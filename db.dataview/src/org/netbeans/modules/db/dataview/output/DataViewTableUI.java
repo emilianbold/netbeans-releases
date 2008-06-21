@@ -68,17 +68,16 @@ import org.openide.util.datatransfer.ExClipboard;
  * Renders the current result page 
  *  
  * @author Ahimanikya Satapathy
- * TODO: field validation based on data type.
  */
-class ResulSetTable extends JTable {
+class DataViewTableUI extends JTable {
 
     private String[] columnToolTips;
     private JPopupMenu tablePopupMenu;
     private final int multiplier;
-    final ResultSetTablePanel parent;
+    private final DataViewTablePanel parent;
     private static final String data = "WE WILL EITHER FIND A WAY, OR MAKE ONE.";
 
-    public ResulSetTable(ResultSetTablePanel parent) {
+    public DataViewTableUI(DataViewTablePanel parent) {
         this.parent = parent;
 
         addKeyListener(new KeyListener() {
@@ -93,12 +92,12 @@ class ResulSetTable extends JTable {
                     editCellAt(row, col);
                     TableCellEditor editor = getCellEditor();
                     if (editor != null) {
-                        DBColumn dbcol = ResulSetTable.this.parent.getDBTableWrapper().getColumn(col);
+                        DBColumn dbcol = DataViewTableUI.this.parent.getDataViewDBTable().getColumn(col);
                         if (dbcol.isGenerated() || !dbcol.isNullable()) {
                             Toolkit.getDefaultToolkit().beep();
                             editor.stopCellEditing();
                         } else {
-                            editor.getTableCellEditorComponent(ResulSetTable.this, null, rowSelectionAllowed, row, col);
+                            editor.getTableCellEditorComponent(DataViewTableUI.this, null, rowSelectionAllowed, row, col);
                             setValueAt(null, row, col);
                             editor.stopCellEditing();
                         }
@@ -202,7 +201,7 @@ class ResulSetTable extends JTable {
                     if (!inSelection) {
                         changeSelection(row, column, false, false);
                     }
-                    tablePopupMenu.show(ResulSetTable.this, e.getX(), e.getY());
+                    tablePopupMenu.show(DataViewTableUI.this, e.getX(), e.getY());
                 }
             }
         });
@@ -241,7 +240,7 @@ class ResulSetTable extends JTable {
                 public void keyPressed(KeyEvent e) {
                     if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_0) {
                         int col = getEditingColumn();
-                        DBColumn dbcol = ResulSetTable.this.parent.getDBTableWrapper().getColumn(col);
+                        DBColumn dbcol = DataViewTableUI.this.parent.getDataViewDBTable().getColumn(col);
                         if (dbcol.isGenerated() || !dbcol.isNullable()) {
                             Toolkit.getDefaultToolkit().beep();
                         } else {
@@ -287,7 +286,7 @@ class ResulSetTable extends JTable {
         }
     }
 
-    private ResultSetUpdatedRowContext getResultSetRowContext() {
+    private UpdatedRowContext getResultSetRowContext() {
         return parent.getResultSetRowContext();
     }
 
@@ -344,7 +343,7 @@ class ResulSetTable extends JTable {
 
     @Override
     public TableCellRenderer getCellRenderer(int row, int column) {
-        if (parent.getDBTableWrapper().getColumn(column).isGenerated()) {
+        if (parent.getDataViewDBTable().getColumn(column).isGenerated()) {
             return new GeneratedResultSetCellRenderer();
         } else if (getResultSetRowContext().getValueList((row + 1) + ";" + (column + 1)) != null) {
             return new UpdatedResultSetCellRenderer();
@@ -390,13 +389,7 @@ class ResulSetTable extends JTable {
             if (null == value) {
                 return NULL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             } else {
-                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                if (isSelected) {
-                    c.setForeground(Color.WHITE);
-                } else {
-                    c.setForeground(Color.BLACK);
-                }
-                return c;
+                return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             }
         }
     }

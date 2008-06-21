@@ -51,6 +51,7 @@ import java.awt.event.KeyEvent;
 import java.net.URL;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -59,14 +60,13 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
-import org.netbeans.modules.db.dataview.meta.DBException;
 
 /**
- * DataViewOutputPanelUI hosting display of design-level SQL test output.
+ * DataViewUI hosting display of design-level SQL test output.
  *
  * @author Ahimanikya Satapathy
  */
-class DataViewOutputPanelUI {
+class DataViewUI  {
 
     private JButton commit;
     private JButton refreshButton;
@@ -78,14 +78,14 @@ class DataViewOutputPanelUI {
     private JButton deleteRow;
     private JButton insert;
     private JTextField refreshField;
-    private ResultSetTablePanel dataPanel;
     private JLabel totalRowsLabel;
     private JLabel limitRow;
     private JButton[] editButtons = new JButton[5];
     private String imgPrefix = "/org/netbeans/modules/db/dataview/images/";
-    private DataViewOutputPanel parent;
+    private DataViewTablePanel dataPanel;
+    private final DataView parent;
 
-    DataViewOutputPanelUI(DataViewOutputPanel parent, int toolbarType) {
+    DataViewUI(DataView parent, int toolbarType, String name) {
         this.parent = parent;
 
         //do not show tab view if there is only one tab
@@ -99,10 +99,7 @@ class DataViewOutputPanelUI {
         // Main pannel with toolbars
         JPanel panel = initializeMainPanel(toolbarType);
         parent.add(panel, BorderLayout.NORTH);
-
-        //add resultset data panel
-        dataPanel = new ResultSetTablePanel(parent.getDBTableWrapper(), this);
-        parent.add(dataPanel, BorderLayout.CENTER);
+        parent.setName("Data:" + name);
     }
 
     JButton[] getVerticalToolBar() {
@@ -125,11 +122,11 @@ class DataViewOutputPanelUI {
         return commit.isEnabled();
     }
 
-    ResulSetTable getResulSetTable() {
+    DataViewTableUI getResulSetTable() {
         return dataPanel.getResulSetTable();
     }
 
-    ResultSetUpdatedRowContext getResultSetRowContext() {
+    UpdatedRowContext getResultSetRowContext() {
         return dataPanel.getResultSetRowContext();
     }
 
@@ -137,7 +134,14 @@ class DataViewOutputPanelUI {
         commit.setEnabled(flag);
     }
 
-    void setResultSet(ResultSet rs, int maxRowsToShow, int startFrom) throws DBException {
+    void setResultSet(ResultSet rs, int maxRowsToShow, int startFrom) throws SQLException {
+        //add resultset data panel
+        if (dataPanel == null) {
+            dataPanel = new DataViewTablePanel(parent.getDataViewDBTable(), this);
+            parent.add(dataPanel, BorderLayout.CENTER);
+            dataPanel.revalidate();
+            dataPanel.repaint();
+        }
         dataPanel.setResultSet(rs, maxRowsToShow, startFrom);
     }
 
@@ -169,9 +173,11 @@ class DataViewOutputPanelUI {
         last.setEnabled(false);
         deleteRow.setEnabled(false);
         commit.setEnabled(false);
-        dataPanel.setDirty(false);
-        dataPanel.revalidate();
-        dataPanel.repaint();
+        if (dataPanel != null) {
+            dataPanel.setDirty(false);
+            dataPanel.revalidate();
+            dataPanel.repaint();
+        }
     }
 
     int getPageSize(int totalCount) {
@@ -189,7 +195,7 @@ class DataViewOutputPanelUI {
     void resetToolbar(boolean wasError) {
         refreshButton.setEnabled(true);
         refreshField.setEnabled(true);
-        ResultSetPageContext dataPage = parent.getResultSetPage();
+        DataViewPageContext dataPage = parent.getDataViewPageContext();
         if (!wasError) {
             if (dataPage.hasPrevious()) {
                 first.setEnabled(true);
@@ -235,34 +241,37 @@ class DataViewOutputPanelUI {
         }
 
         refreshField.setText("" + dataPage.getPageSize());
-        dataPanel.revalidate();
-        dataPanel.repaint();
+        if (dataPanel != null) {
+            dataPanel.revalidate();
+            dataPanel.repaint();
+        }
     }
 
     private ActionListener createOutputListener() {
 
+        final DataViewActionHandler actionHandler = new DataViewActionHandler(this, parent);
         ActionListener outputListener = new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
                 Object src = e.getSource();
                 if (src.equals(refreshButton)) {
-                    parent.refreshActionPerformed();
+                    actionHandler.refreshActionPerformed();
                 } else if (src.equals(first)) {
-                    parent.firstActionPerformed();
+                    actionHandler.firstActionPerformed();
                 } else if (src.equals(last)) {
-                    parent.lastActionPerformed();
+                    actionHandler.lastActionPerformed();
                 } else if (src.equals(next)) {
-                    parent.nextActionPerformed();
+                    actionHandler.nextActionPerformed();
                 } else if (src.equals(previous)) {
-                    parent.previousActionPerformed();
+                    actionHandler.previousActionPerformed();
                 } else if (src.equals(refreshField)) {
-                    parent.setMaxActionPerformed();
+                    actionHandler.setMaxActionPerformed();
                 } else if (src.equals(commit)) {
-                    parent.commitActionPerformed();
+                    actionHandler.commitActionPerformed();
                 } else if (src.equals(deleteRow)) {
-                    parent.deleteRecordActionPerformed();
+                    actionHandler.deleteRecordActionPerformed();
                 } else if (src.equals(insert)) {
-                    parent.insertActionPerformed();
+                    actionHandler.insertActionPerformed();
                 }
             }
         };
@@ -273,15 +282,16 @@ class DataViewOutputPanelUI {
     private void initToolbar(JToolBar toolbar, ActionListener outputListener) {
 
         toolbar.addSeparator(new Dimension(10, 10));
-        
-       //add refresh button
+
+        //add refresh button
         URL url = getClass().getResource(imgPrefix + "refresh.png");
         refreshButton = new JButton(new ImageIcon(url));
         String nbBundle2 = "Refresh records";
         refreshButton.setToolTipText(nbBundle2);
         refreshButton.addActionListener(outputListener);
-        toolbar.add(refreshButton);; 
-        
+
+        toolbar.add(refreshButton);
+
         // add navigation buttons
         url = getClass().getResource(imgPrefix + "navigate_beginning.png");
         first = new JButton(new ImageIcon(url));
@@ -290,7 +300,7 @@ class DataViewOutputPanelUI {
         first.addActionListener(outputListener);
         first.setEnabled(false);
         toolbar.add(first);
-        
+
         url = getClass().getResource(imgPrefix + "navigate_left.png");
         previous = new JButton(new ImageIcon(url));
         String nbBundle4 = "Go to the previous page";
@@ -298,7 +308,7 @@ class DataViewOutputPanelUI {
         previous.addActionListener(outputListener);
         previous.setEnabled(false);
         toolbar.add(previous);
-        
+
         url = getClass().getResource(imgPrefix + "navigate_right.png");
         next = new JButton(new ImageIcon(url));
         String nbBundle5 = "Go to the next page";
@@ -306,7 +316,7 @@ class DataViewOutputPanelUI {
         next.addActionListener(outputListener);
         next.setEnabled(false);
         toolbar.add(next);
-        
+
         url = getClass().getResource(imgPrefix + "navigate_end.png");
         last = new JButton(new ImageIcon(url));
         String nbBundle6 = "Go to the last page";
@@ -324,7 +334,7 @@ class DataViewOutputPanelUI {
 
         //add refresh text field
         refreshField = new JTextField();
-        refreshField.setText("" + parent.getResultSetPage().getRecordToRefresh());
+        refreshField.setText("" + parent.getDataViewPageContext().getRecordToRefresh());
         refreshField.setPreferredSize(new Dimension(30, refreshField.getHeight()));
         refreshField.setSize(30, refreshField.getHeight());
         refreshField.addKeyListener(new KeyAdapter() {
@@ -374,7 +384,7 @@ class DataViewOutputPanelUI {
         commit.addActionListener(outputListener);
         commit.setEnabled(false);
         editButtons[2] = commit;
-        
+
         //add truncate button
         String nbBundle14 = "Truncate parent table";
         TruncateTableAction truncAction = new TruncateTableAction(parent);
@@ -398,7 +408,7 @@ class DataViewOutputPanelUI {
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
 
-        if (toolbarType == DataViewOutputPanel.HORIZONTALONLY_TOOLBAR) {
+        if (toolbarType == DataView.HORIZONTALONLY_TOOLBAR) {
             JButton[] btns = getVerticalToolBar();
             for (JButton btn : btns) {
                 if (btn != null) {

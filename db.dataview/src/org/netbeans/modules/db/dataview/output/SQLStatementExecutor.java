@@ -38,69 +38,63 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.db.dataview.output;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.sql.SQLException;
 import org.netbeans.modules.db.dataview.meta.DBException;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.openide.util.Cancellable;
+import org.openide.util.RequestProcessor;
 
 /**
- * Holds the updated row data
- *
  * @author Ahimanikya Satapathy
  */
- class ResultSetUpdatedRowContext {
+abstract class SQLStatementExecutor implements Runnable, Cancellable {
 
-    private Map<String, String> updateStatements = new LinkedHashMap<String, String>();
-    private Map<String, String> rawUpdateSQL = new LinkedHashMap<String, String>();
-    private Map<String, List<Object>> valuesList = new LinkedHashMap<String, List<Object>>();
-    private Map<String, List<Integer>> typesList = new LinkedHashMap<String, List<Integer>>();
-    private SQLStatementGenerator stmtBldr;
-    
-    public ResultSetUpdatedRowContext(SQLStatementGenerator stmtBldr) {
-        this.stmtBldr = stmtBldr;
+    protected volatile Throwable ex;
+    private String title;
+    private String msg;
+    // the task representing the execution of statements
+    private volatile RequestProcessor.Task task;
+    protected final DataView parent;
+
+    public SQLStatementExecutor(DataView parent, String title, String msg) {
+        this.title = title;
+        this.msg = msg;
+        this.parent = parent;
     }
 
-    public void createUpdateStatement(int row, int col, Object value) throws DBException {
-        List<Object> values = new ArrayList<Object>();
-        List<Integer> types = new ArrayList<Integer>();
-        String changeData = (row + 1) + ";" + (col + 1);
-        String[] updateStmt = stmtBldr.generateUpdateStatement(row, col, value, values, types);
-
-        updateStatements.put(changeData, updateStmt[0]);
-        rawUpdateSQL.put(changeData, updateStmt[1]);
-        valuesList.put(changeData, values);
-        typesList.put(changeData, types);
+    public void setTask(RequestProcessor.Task task) {
+        this.task = task;
     }
 
-    public void resetUpdateState() {
-        updateStatements = new LinkedHashMap<String, String>();
-        rawUpdateSQL = new LinkedHashMap<String, String>();
-        valuesList = new LinkedHashMap<String, List<Object>>();
-        typesList = new LinkedHashMap<String, List<Integer>>();
+    public abstract void finished();
+
+    public abstract void execute() throws SQLException, DBException;
+
+    public void run() {
+        assert task != null : "Should have called setTask()";
+        try {
+            ProgressHandle handle = ProgressHandleFactory.createHandle(title, this);
+            handle.setDisplayName(msg);
+            handle.start();
+            try {
+                handle.switchToIndeterminate();
+                parent.setInfoStatusText("");
+                // NOI18N
+                execute();
+            } finally {
+                handle.finish();
+            }
+        } catch (Exception e) {
+            this.ex = e;
+        } finally {
+            finished();
+        }
     }
 
-    public Set<String> getUpdateKeys() {
-        return updateStatements.keySet();
-    }
-
-    public String getUpdateStmt(String key) {
-        return updateStatements.get(key);
-    }
-
-    public String getRawUpdateStmt(String key) {
-        return rawUpdateSQL.get(key);
-    }
-
-    public List<Integer> getTypeList(String key) {
-        return typesList.get(key);
-    }
-
-    public List<Object> getValueList(String key) {
-        return valuesList.get(key);
+    public boolean cancel() {
+        return task.cancel();
     }
 }

@@ -40,126 +40,66 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
-import org.netbeans.modules.db.dataview.util.SwingWorker;
 import java.awt.event.ActionEvent;
-import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
-import org.netbeans.modules.db.dataview.util.DataViewUtils;
-import org.netbeans.modules.db.dataview.meta.DBConnectionFactory;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.modules.db.dataview.meta.DBTable;
-import org.netbeans.modules.db.dataview.meta.DBObject;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author Ahimanikya Satapathy
  */
 class TruncateTableAction extends AbstractAction {
 
-    DataViewOutputPanel dataViewPanel;
-    private Logger mLogger = Logger.getLogger(TruncateTableAction.class.getName());
+    DataView dataView;
+    // the RequestProcessor used for executing statements.
+    private final RequestProcessor rp = new RequestProcessor("SQLStatementExecution", 1, true); // NOI18N
+    private final static String title = "Truncating Table";
+    private final static String msg = "Truncating Table from database, please wait...";
 
-    protected TruncateTableAction(DataViewOutputPanel panel) {
+    protected TruncateTableAction(DataView dataView) {
         super();
-        this.dataViewPanel = panel;
+        this.dataView = dataView;
     }
 
     public void actionPerformed(ActionEvent e) {
-        String nbBundle1 = "Truncate contents of table " + dataViewPanel.getDBTableWrapper().geTable(0).getDisplayName();
-        String confirmMsg = nbBundle1;
+        String confirmMsg = "Truncate contents of table " + dataView.getDataViewDBTable().geTable(0).getDisplayName();
         NotifyDescriptor nd = new NotifyDescriptor.Confirmation(confirmMsg, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.WARNING_MESSAGE);
 
         if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.CANCEL_OPTION) {
             return;
         }
-        String nbBundle2 = "Truncating Table";
-        String title = nbBundle2;
-        String nbBundle3 = "Truncating Table from database, please wait...";
-        String msg = nbBundle3;
-        DataViewUtils.startProgressDialog(title, msg);
 
-        dataViewPanel.disableButtons();
-        TruncateTableWorkerThread tThread = new TruncateTableWorkerThread(dataViewPanel.getDBTableWrapper().geTable(0));
-        tThread.start();
-    }
+        dataView.disableButtons();
+        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, msg) {
 
-    protected class TruncateTableWorkerThread extends SwingWorker {
-
-        private Throwable ex;
-        private DBObject tTable;
-
-        public TruncateTableWorkerThread(DBObject table) {
-            this.tTable = table;
-        }
-
-        public Object construct() {
-            truncateDBTable();
-            return "";
-        }
-
-        @Override
-        public void finished() {
-            DataViewUtils.stopProgressDialog();
-
+            @Override
+            public void finished() {
+            DBTable tTable = parent.getDataViewDBTable().geTable(0);
             if (this.ex != null) {
-                String errorMsg = "Failed to truncate table" + tTable.getDisplayName() + "\n";
+                String errorMsg = "Failed to execute" + tTable.getDisplayName() + "\n";
                 errorMsg += new DBException(ex).getMessage();
+                parent.setErrorStatusText(errorMsg);
                 NotifyDescriptor nd = new NotifyDescriptor.Message(errorMsg);
                 DialogDisplayer.getDefault().notify(nd);
             } else {
-                String informMsg = "Table " + tTable.getDisplayName() + " truncated.";
-                NotifyDescriptor nd = new NotifyDescriptor.Message(informMsg);
-                DialogDisplayer.getDefault().notify(nd);
-
+                String informMsg = "Table " + tTable.getDisplayName() + " Truncated Successfully.";
+                parent.setErrorStatusText(informMsg);
             }
-            dataViewPanel.clearPanel();
-        }
-
-        private void truncateDBTable() {
-            Connection conn = null;
-            Statement stmt = null;
-            ResultSet cntRs = null;
-            String truncateSql = "";
-
-            try {
-                conn = DBConnectionFactory.getInstance().getConnection(dataViewPanel.dbConn);
-                conn.setAutoCommit(true);
-                stmt = conn.createStatement();
-
-                DBTable aTable = (DBTable) tTable;
-                truncateSql = "Truncate table " + aTable.getFullyQualifiedName();
-                try {
-                    mLogger.info("Trncating Table Using: " + truncateSql);
-                    stmt.executeUpdate(truncateSql);
-
-                } catch (SQLException sqe) {
-                    truncateSql = "Delete from " + aTable.getFullyQualifiedName();
-                    mLogger.info("Trncating Table Using: " + truncateSql);
-                    stmt.executeUpdate(truncateSql);
-                }
-
-                if (!conn.getAutoCommit()) {
-                    conn.commit();
-                }
-
-                //set the total count
-                stmt = conn.createStatement();
-                String countSql = "Select Count(*) from " + aTable.getFullyQualifiedName();
-                mLogger.info(countSql);
-                cntRs = stmt.executeQuery(countSql);
-                dataViewPanel.setTotalCount(cntRs);
-            } catch (Exception t) {
-                this.ex = t;
-                mLogger.info("Could not truncate data using " + truncateSql);
-            } finally {
-                DataViewUtils.closeResources(stmt);
-                DataViewUtils.closeResources(cntRs);
+            dataView.clearDataViewPanel();
             }
-        }
+
+            @Override
+            public void execute() throws SQLException, DBException {
+             parent.getSQLExecutionHelper().truncateDBTable();
+            }
+        };
+        
+        RequestProcessor.Task task = rp.create(executor);
+        executor.setTask(task);
+        task.schedule(0);
     }
 }

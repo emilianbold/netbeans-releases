@@ -41,7 +41,6 @@
 package org.netbeans.modules.db.dataview.output;
 
 import java.util.List;
-import javax.swing.JTable;
 import javax.swing.table.TableModel;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
@@ -49,21 +48,21 @@ import org.netbeans.modules.db.dataview.meta.DBPrimaryKey;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 
 /**
- * Generated DML for editable resultset
+ * Generates DML for editable resultset
  *
  * @author Ahimanikya Satapathy
  */
 class SQLStatementGenerator {
 
-    private DBTableWrapper tblMeta;
-    private JTable table;
+    private DataViewDBTable tblMeta;
 
-    public SQLStatementGenerator(DBTableWrapper tblMeta, JTable table) {
+
+    public SQLStatementGenerator(DataViewDBTable tblMeta) {
+        assert tblMeta != null;
         this.tblMeta = tblMeta;
-        this.table = table;
     }
 
-    public String[] generateInsertStatement(Object[] insertedRow, DataViewOutputPanel dvParent) throws DBException {
+    String[] generateInsertStatement(Object[] insertedRow) throws DBException {
         StringBuilder insertSql = new StringBuilder();
         StringBuilder rawInsertSql = new StringBuilder();
         insertSql.append("INSERT INTO ");
@@ -75,7 +74,7 @@ class SQLStatementGenerator {
         String commaStr = ", ";
         boolean comma = false;
         for (int i = 0; i < insertedRow.length; i++) {
-            DBColumn dbcol = dvParent.getDBTableWrapper().getColumn(i);
+            DBColumn dbcol = tblMeta.getColumn(i);
             if (insertedRow[i] != null) {
                 if (comma) {
                     values += commaStr;
@@ -95,14 +94,14 @@ class SQLStatementGenerator {
         }
 
         colNames += ") ";
-        String tableName = dvParent.getDBTableWrapper().getFullyQualifiedName(0);
+        String tableName = tblMeta.getFullyQualifiedName(0);
         insertSql.append(tableName + colNames + " Values(" + values + ")");
         rawInsertSql.append(tableName.trim() + "\n\t" + colNames + "\nVALUES\n\t (" + rawvalues + ") ");
 
         return new String[]{insertSql.toString(), rawInsertSql.toString()};
     }
 
-    public String[] generateUpdateStatement(int row, int col, Object value, List<Object> values, List<Integer> types) throws DBException {
+    String[] generateUpdateStatement(int row, int col, Object value, List<Object> values, List<Integer> types, TableModel tblModel) throws DBException {
         DBColumn dbcol = tblMeta.getColumn(col);
         int type = dbcol.getJdbcType();
 
@@ -121,22 +120,28 @@ class SQLStatementGenerator {
         values.add(value);
         types.add(type);
 
-        generateWhereCondition(updateStmt, rawUpdateStmt, types, values, row);
+        generateWhereCondition(updateStmt, rawUpdateStmt, types, values, row, tblModel);
 
         return new String[]{updateStmt.toString(), rawUpdateStmt.toString()};
     }
 
-    public String[] generateDeleteStatement(List<Integer> types, List<Object> values, int rowNum) {
+    String[] generateDeleteStatement(List<Integer> types, List<Object> values, int rowNum, TableModel tblModel) {
         StringBuilder deleteStmt = new StringBuilder();
         StringBuilder rawDeleteStmt = new StringBuilder();
 
         deleteStmt.append("DELETE FROM ").append(tblMeta.getFullyQualifiedName(0)).append(" WHERE ");
         rawDeleteStmt.append(deleteStmt.toString());
 
-        generateWhereCondition(deleteStmt, rawDeleteStmt, types, values, rowNum);
+        generateWhereCondition(deleteStmt, rawDeleteStmt, types, values, rowNum, tblModel);
         return new String[]{deleteStmt.toString(), rawDeleteStmt.toString()};
     }
-
+    
+    static String getCountSQLQuery(String queryString) {
+        // User may type "FROM" in either lower, upper or mixed case
+        String[] splitByFrom = queryString.toUpperCase().split("FROM");
+        return "SELECT COUNT(*) " + queryString.substring(splitByFrom[0].length());
+    }
+    
     private boolean addSeparator(boolean and, StringBuilder result, StringBuilder raw, String sep) {
         if (and) {
             result.append(sep);
@@ -158,15 +163,14 @@ class SQLStatementGenerator {
         raw.append(columnName).append(" = ").append(getQualifiedValue(type, value));
     }
 
-    private void generateWhereCondition(StringBuilder result, StringBuilder raw, List<Integer> types, List<Object> values, int rowNum) {
-        TableModel model = table.getModel();
+    private void generateWhereCondition(StringBuilder result, StringBuilder raw, List<Integer> types, List<Object> values, int rowNum, TableModel model) {
         DBPrimaryKey key = tblMeta.geTable(0).getPrimaryKey();
         boolean and = false;
 
         if (key != null) {
             for (String keyName : key.getColumnNames()) {
                 addSeparator(and, result, raw, " AND ");
-                for (int i = 0; i < table.getColumnCount(); i++) {
+                for (int i = 0; i < model.getColumnCount(); i++) {
                     String columnName = tblMeta.getColumnName(i);
                     if (columnName.equals(keyName)) {
                         Object val = model.getValueAt(rowNum, i);
@@ -178,7 +182,7 @@ class SQLStatementGenerator {
                 }
             }
         } else {
-            for (int i = 0; i < table.getColumnCount(); i++) {
+            for (int i = 0; i < model.getColumnCount(); i++) {
                 Object val = model.getValueAt(rowNum, i);
                 if (val != null) {
                     addSeparator(and, result, raw, " AND ");

@@ -43,6 +43,7 @@ package org.netbeans.modules.db.dataview.output;
 import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
 import java.awt.BorderLayout;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
@@ -56,40 +57,41 @@ import java.util.logging.Logger;
 import javax.swing.JScrollPane;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
-import org.netbeans.modules.db.dataview.util.DataViewUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
 /**
- * Renders rows and columns of an arbitrary ResultSet via JTable.
+ * Renders rows and columns of a given ResultSet via JTable.
  *
  * @author Ahimanikya Satapathy
  */
-class ResultSetTablePanel extends JPanel {
+class DataViewTablePanel extends JPanel {
 
+    private final DataViewDBTable tblMeta;
+    private final UpdatedRowContext tblContext;
+    private final DataViewUI parent;
+    private final DataViewTableUI table;
+    private final SQLStatementGenerator stmtGenerator;
+    
     private boolean isEditable = true;
     private boolean isDirty = false;
-    private DBTableWrapper tblMeta;
-    private ResultSetUpdatedRowContext tblContext;
-    private DataViewOutputPanelUI parent;
     private int MAX_COLUMN_WIDTH = 50;
     private TableModel model;
-    private ResulSetTable table;
-    private SQLStatementGenerator stmtBlrd;
-    private Logger mLogger = Logger.getLogger(ResultSetTablePanel.class.getName());
 
-    public ResultSetTablePanel(DBTableWrapper tblMeta, DataViewOutputPanelUI parent) {
+    private static Logger mLogger = Logger.getLogger(DataViewTablePanel.class.getName());
+
+    public DataViewTablePanel(DataViewDBTable tblMeta, DataViewUI parent) {
         this.tblMeta = tblMeta;
         this.parent = parent;
 
         this.setLayout(new BorderLayout());
-        table = new ResulSetTable(this);
+        table = new DataViewTableUI(this);
         table.setColumnToolTips(tblMeta.getColumnToolTips());
         JScrollPane sp = new JScrollPane(table);
         this.add(sp, BorderLayout.CENTER);
 
-        stmtBlrd = new SQLStatementGenerator(tblMeta, table);
-        tblContext = new ResultSetUpdatedRowContext(stmtBlrd);
+        stmtGenerator = new SQLStatementGenerator(tblMeta);
+        tblContext = new UpdatedRowContext(stmtGenerator);
     }
 
     public void clearView() {
@@ -131,15 +133,15 @@ class ResultSetTablePanel extends JPanel {
         }
     }
 
-    protected ResulSetTable getResulSetTable() {
+    protected DataViewTableUI getResulSetTable() {
         return table;
     }
 
-    protected ResultSetUpdatedRowContext getResultSetRowContext() {
+    protected UpdatedRowContext getResultSetRowContext() {
         return tblContext;
     }
 
-    protected DBTableWrapper getDBTableWrapper() {
+    protected DataViewDBTable getDataViewDBTable() {
         return tblMeta;
     }
 
@@ -148,12 +150,10 @@ class ResultSetTablePanel extends JPanel {
      *
      * @param rsMap new ResultSet to be displayed.
      */
-    public void setResultSet(ResultSet rs, int maxRowsToShow, int startFrom) throws DBException {
-        if (rs == null) {
-            throw new DBException("Must supply non-null ResultSet reference for rs");
-        }
-        List<Integer> columnWidthList = getColumnWidthList();
+    public void setResultSet(ResultSet rs, int maxRowsToShow, int startFrom) throws SQLException {
+        assert rs != null : "Must supply non-null ResultSet reference for rs";
 
+        List<Integer> columnWidthList = getColumnWidthList();
         tblContext.resetUpdateState();
         model = createModelFrom(rs, maxRowsToShow, startFrom);
         final TableModel tempModel = model;
@@ -176,7 +176,7 @@ class ResultSetTablePanel extends JPanel {
      * @param rs resultset
      * @return TableModel
      */
-    private TableModel createModelFrom(ResultSet rs, int pageSize, int startFrom) throws DBException {
+    private TableModel createModelFrom(ResultSet rs, int pageSize, int startFrom) throws SQLException {
         DataTableModel dtm = new DataTableModel();
         DataViewTableModel sorter = new DataViewTableModel(dtm);
         sorter.setTableHeader(table.getTableHeader());
@@ -211,9 +211,9 @@ class ResultSetTablePanel extends JPanel {
                     lastRowPicked = false;
                 }
             }
-        } catch (Exception e) {
-            mLogger.info(" Failed to set up table model " + e.getMessage());
-            throw new DBException(e);
+        } catch (SQLException e) {
+            mLogger.info(" Failed to set up table model " + DBException.getMessage(e));
+            throw e;
         }
 
         return sorter;
@@ -283,7 +283,7 @@ class ResultSetTablePanel extends JPanel {
 
             try {
                 DBReadWriteHelper.validate(value, tblMeta.getColumn(col));
-                tblContext.createUpdateStatement(row, col, value);
+                tblContext.createUpdateStatement(row, col, value, model);
                 isDirty = true;
                 super.setValueAt(value, row, col);
                 parent.setCommitEnabled(true);

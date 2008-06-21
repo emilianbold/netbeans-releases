@@ -45,7 +45,7 @@ package org.netbeans.modules.db.dataview.output;
  * 
  * @author Ahimanikya Satapathy
  */
- class ResultSetPageContext {
+ class DataViewPageContext {
 
     private int pageSize = 10;
     private int totalRows;
