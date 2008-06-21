@@ -192,7 +192,10 @@ public class PredefinedPanel extends javax.swing.JPanel {
 	public IncludesPanel(Object[] objects) {
 	    super(objects);
 	    getDefaultButton().setVisible(false);
-            setOpaque(false);
+            
+            if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+                getDataPanel().setOpaque(false);
+            }
         }
 
 	public Object addAction() {
@@ -275,6 +278,9 @@ public class PredefinedPanel extends javax.swing.JPanel {
 	public DefinitionsPanel(Object[] objects) {
 	    super(objects);
 	    getDefaultButton().setVisible(false);
+            if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+                getDataPanel().setOpaque(false);
+            }
 	}
 
 	public Object addAction() {

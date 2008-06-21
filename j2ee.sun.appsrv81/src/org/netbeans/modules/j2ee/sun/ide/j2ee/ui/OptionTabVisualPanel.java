@@ -271,7 +271,8 @@ private void enableDriverDeploymentActionPerformed(java.awt.event.ActionEvent ev
             }
         } catch (NumberFormatException nfe) {
             if ("".equals(sval)) {
-                deploymentTimeoutValue.setText("0");   // NOI18N             
+                deploymentTimeoutValue.setText("0");   // NOI18N   
+                dmp.setDeploymentTimeout(0);
             } else {
                 deploymentTimeoutValue.setText(val+""); // NOI18N
             }
@@ -294,7 +295,8 @@ private void enableDriverDeploymentActionPerformed(java.awt.event.ActionEvent ev
             }
         } catch (NumberFormatException nfe) {
             if ("".equals(sval)) {
-                startupTimeoutValue.setText("0");           // NOI18N             
+                startupTimeoutValue.setText("0");           // NOI18N 
+                dmp.setStartupTimeout(0);
             } else {
                 startupTimeoutValue.setText(val+"");        // NOI18N
             }

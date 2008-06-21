@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!--
-    Document   : input.xml
-    Created on : June 18, 2008, 11:53 PM
-    Author     : Samaresh
-    Description:
-        Purpose of the document follows.
--->
+<!-- hello -->
+
 <root>
     <a><b>hello world</b></a>
 </root>

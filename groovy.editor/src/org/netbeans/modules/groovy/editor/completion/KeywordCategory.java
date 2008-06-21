@@ -37,44 +37,26 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.configurations;
-
-import java.util.List;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.openide.util.Lookup;
+package org.netbeans.modules.groovy.editor.completion;
 
 /**
  *
- * @author gordonp
+ * @author schmidtm
  */
-public class ServerConfiguration extends IntConfiguration {
+public enum KeywordCategory {
     
-    private static ServerList serverList = null;
-
-    public ServerConfiguration() {
-        super((IntConfiguration) null, getDefaultServerIndex(), getServerNames(), null);
+    KEYWORD("keyword"),
+    PRIMITIVE("primitive"),
+    MODIFIER("modifier"),
+    ANY("any"),
+    NONE("none");
+    
+    String category;        // keyword, primitive, modifier
+    
+    KeywordCategory(String category){
+        this.category = category;
     }
     
-    private static int getDefaultServerIndex() {
-        if (getServerList() != null) {
-            return serverList.getDefaultServerIndex();
-        }
-        return 0;
-    }
     
-    private static String[] getServerNames() {
-        if (getServerList() != null) {
-            return serverList.getServerNames();
-        }
-        return new String[] { "localhost" }; // NOI18N
-    }
     
-    private static ServerList getServerList() {
-        if (Boolean.getBoolean("cnd.remote.enable")) // DEBUG
-        if (serverList == null) {
-            serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
-        }
-        return serverList;
-    }
 }
