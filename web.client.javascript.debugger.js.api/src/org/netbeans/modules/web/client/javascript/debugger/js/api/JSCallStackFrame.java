@@ -40,6 +40,7 @@
 package org.netbeans.modules.web.client.javascript.debugger.js.api;
 
 import java.net.URI;
+import org.netbeans.modules.web.client.tools.api.JSLocation;
 
 /**
  *
