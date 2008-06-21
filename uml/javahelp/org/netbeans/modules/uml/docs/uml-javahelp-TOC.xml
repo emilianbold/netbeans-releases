@@ -48,9 +48,6 @@
 			<tocitem text="Diagram Types" target="uml_basics_diagram_types">
 				<tocitem text="About Activity Diagrams" target="uml_basics_diagram_types_activity" />
 				<tocitem text="About Class Diagrams" target="uml_basics_diagram_types_class" />
-				<tocitem text="About Collaboration Diagrams" target="uml_basics_diagram_types_collaboration" />
-				<tocitem text="About Component Diagrams" target="uml_basics_diagram_types_component" />
-				<tocitem text="About Deployment Diagrams" target="uml_basics_diagram_types_deployment" />
 				<tocitem text="About Sequence Diagrams" target="uml_basics_diagram_types_sequence" />
 				<tocitem text="About State Diagrams" target="uml_basics_diagram_types_state" />
 				<tocitem text="About Use Case Diagrams" target="uml_basics_diagram_types_use_case" />
@@ -253,13 +250,7 @@
 				<tocitem text="Promoting Patterns to the UML Design Center" target="uml_design_promoting_patterns_to_design_center" />
 				<tocitem text="Sharing Patterns" target="uml_design_sharing_patterns" />
 				<tocitem text="Applying Patterns" target="uml_design_applying_patterns" />
-			</tocitem>
-			<tocitem text="Requirements Support">
-				<tocitem text="About Requirements Support" target="uml_reqs_support_about_reqs_support" />
-				<tocitem text="Using an XML File" target="uml_reqs_support_using_xml_files" />
-				<tocitem text="Integrating Support for the DOORS Tool" target="uml_reqs_support_integrating_doors_tool" />
-				<tocitem text="Associating a DOORS Requirements Project to UML Modeling Elements" target="uml_reqs_support_associating_doors_project" />
-			</tocitem>
+			</tocitem>	
 			<tocitem text="Documenting Project Elements" target="uml_basics_documenting_objects" />
 			<tocitem text="Java-Code Reverse Engineering">
 				<tocitem text="About Java-Code Reverse Engineering" target="uml_reverse_eng_about_java_code_rev_eng" />

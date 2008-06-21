@@ -501,23 +501,23 @@ public class UMLRelationshipDiscovery implements RelationshipDiscovery
      * @param pCreatedPE [out] The created presentation element for the link.  Note that it's not an error
      * for a NULL to be returned - the link may already exist.
      */
-    public IPresentationElement createNestedLink(INamedElement fromElement, 
-                                                 INamespace pNamespace)
+    public IPresentationElement createNestedLink(INamedElement childElement, 
+                                                 INamespace namespace)
     {
-        if (fromElement == null || pNamespace == null)
+        if (childElement == null || namespace == null)
         {
             return null;
         }
         
-        IElement toElement = pNamespace instanceof IElement ? (IElement) pNamespace : null;
-        IElement linkElement = fromElement;
+        IElement fromElement = namespace instanceof IElement ? (IElement) namespace : null;
+        IElement linkElement = namespace;
 
         List<IPresentationElement> pStartPEs;
         List<IPresentationElement> pEndPEs;
 
         // See if they both have presentation elements on this diagram
+        pEndPEs = getNodesOnScene(childElement, scene);
         pStartPEs = getNodesOnScene(fromElement, scene);
-        pEndPEs = getNodesOnScene(toElement, scene);
 
         // Now see how many presentation items we have
         long numStartPEs = pStartPEs != null ? pStartPEs.size() : 0;

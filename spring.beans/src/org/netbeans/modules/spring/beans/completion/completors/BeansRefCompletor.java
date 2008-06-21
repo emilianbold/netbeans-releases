@@ -40,6 +40,7 @@ package org.netbeans.modules.spring.beans.completion.completors;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,7 +85,8 @@ public class BeansRefCompletor extends Completor {
             return;
         }
         
-        final String prefix = context.getTypedPrefix();
+        final String contextPrefix = getContextPrefix(context);
+        final Set<String> forbiddenNames = getForbiddenNames(context);
 
         final List<String> cNames = new ArrayList<String>();
         String tagName = context.getTag().getNodeName();
@@ -110,10 +112,11 @@ public class BeansRefCompletor extends Completor {
                 Map<String, SpringBean> name2Bean = getName2Beans(sb); // if local beans, then add only bean ids;
 
                 for (String beanName : name2Bean.keySet()) {
-                    if (!beanName.startsWith(prefix) || cNames.contains(beanName)) {
+                    if (!beanName.startsWith(contextPrefix) || cNames.contains(beanName) || forbiddenNames.contains(beanName)) {
                         continue;
                     }
                     SpringBean bean = name2Bean.get(beanName);
+                    
                     SpringXMLConfigCompletionItem item =
                             SpringXMLConfigCompletionItem.createBeanRefItem(getAnchorOffset(), beanName, bean, fo);
                     addCacheItem(item);
@@ -160,5 +163,13 @@ public class BeansRefCompletor extends Completor {
     @Override
     protected List<SpringXMLConfigCompletionItem> doFilter(CompletionContext context) {
         return CompletorUtils.filter(getCacheItems(), context.getDocument(), getInvocationOffset(), context.getCaretOffset(), getAnchorOffset());
+    }
+    
+    protected String getContextPrefix(CompletionContext context) {
+        return context.getTypedPrefix();
+    }
+    
+    protected Set<String> getForbiddenNames(CompletionContext context) {
+        return Collections.emptySet();
     }
 }

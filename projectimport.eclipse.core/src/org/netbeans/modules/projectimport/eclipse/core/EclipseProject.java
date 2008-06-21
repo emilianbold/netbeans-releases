@@ -57,6 +57,7 @@ import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -331,6 +332,11 @@ public final class EclipseProject implements Comparable {
             if (sourcePath == null) {
                 continue;
             }
+            String resolvedPath = resolvePath(sourcePath);
+            if (resolvedPath != null) {
+                entry.updateSourcePath(resolvedPath);
+                continue;
+            }
             // test whether sourcePath starts with variable:
             for (Workspace.Variable v : workspace.getVariables()) {
                 if (sourcePath.startsWith(v.getName())) {
@@ -352,20 +358,28 @@ public final class EclipseProject implements Comparable {
             if (javadoc == null) {
                 continue;
             }
+            // strip off jar protocol; because of 'platform' protocol which is 
+            // undefined in NB the FileUtil.getArchiveFile will not be used here
+            if (javadoc.startsWith("jar:")) { // NOI18N
+                javadoc = javadoc.substring(4, javadoc.indexOf("!/"));
+            }
+            if (javadoc.startsWith("platform:/resource")) { // NOI18N
+                String s = resolvePath(javadoc.substring(18));
+                if (s != null) {
+                    entry.updateJavadoc(s);
+                    continue;
+                }
+            }
+            if (javadoc.startsWith("platform")) { // NOI18N
+                importProblems.add("javadoc location contains unsupported URL protocol which will be ignored: '"+javadoc+"'");
+                continue;
+            }
             URL u;
             try {
                 u = new URL(javadoc);
             } catch (MalformedURLException ex) {
                 importProblems.add("javadoc location is not valid URL and will be ignored: '"+javadoc+"'");
                 continue;
-            }
-            URL u2 = FileUtil.getArchiveFile(u);
-            if (u2 != null) {
-                if (javadoc.indexOf("!/") != javadoc.length()-2) { // NOI18N
-                    importProblems.add("this javadoc url cannot be imported and will be ignored: '"+u.toExternalForm()+"'");
-                    continue;
-                }
-                u = u2;
             }
             if (!"file".equals(u.getProtocol())) { // NOI18N
                 // XXX this is just a warning rather then import problem
@@ -455,19 +469,26 @@ public final class EclipseProject implements Comparable {
             // external src or lib
             String absolutePath = entry.getRawPath();
             if (entry.getKind() == DotClassPathEntry.Kind.LIBRARY && workspace != null) {
-                String path = entry.getRawPath();
-                File f = new File(path);
-                // test whether it is file within a project, e.g. "/some-project/lib/file.jar"
-                if (path.startsWith("/") && !f.exists()) {
-                    String s[] = EclipseUtils.splitProject(path);
-                    String projectPath = workspace.getProjectAbsolutePath(s[0]);
-                    if (projectPath != null) {
-                        absolutePath = projectPath + s[1];
-                    }
+                String s = resolvePath(entry.getRawPath());
+                if (s != null) {
+                    absolutePath = s;
                 }
             }
             entry.setAbsolutePath(absolutePath);
         }
+    }
+    
+    private String resolvePath(String path) {
+       File f = new File(path);
+        // test whether it is file within a project, e.g. "/some-project/lib/file.jar"
+        if (path.startsWith("/") && !f.exists()) { // NOI18N
+            String s[] = EclipseUtils.splitProject(path);
+            String projectPath = workspace.getProjectAbsolutePath(s[0]);
+            if (projectPath != null) {
+                return projectPath + s[1];
+            }
+        }
+        return null;
     }
 
     /**

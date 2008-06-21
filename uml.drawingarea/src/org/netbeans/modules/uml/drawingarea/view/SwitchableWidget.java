@@ -56,6 +56,8 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElem
 import org.netbeans.modules.uml.core.metamodel.profiles.IStereotype;
 import org.netbeans.modules.uml.drawingarea.NodeWidgetFactory;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
+import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
+import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -300,7 +302,7 @@ public abstract class SwitchableWidget extends UMLNodeWidget
     public void save(NodeWriter nodeWriter) {
 //        nodeWriter.setViewName(this.viewName);
         HashMap map = nodeWriter.getProperties();
-        map.put("ViewName", this.viewName);
+        map.put(NodeInfo.VIEW_NAME, this.viewName);
         nodeWriter.setProperties(map);
         super.save(nodeWriter);
     }       
@@ -448,5 +450,6 @@ public abstract class SwitchableWidget extends UMLNodeWidget
         switchTo(oldViewName);
         setPreferredBounds(bounds);
         scene.validate();
+        Util.resizeNodeToContents(this);
     }
 }

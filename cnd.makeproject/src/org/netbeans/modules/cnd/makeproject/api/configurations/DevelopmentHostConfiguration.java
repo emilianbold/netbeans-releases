@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,46 +31,48 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.wsitmodelext.addressing.impl;
+package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import org.netbeans.modules.xml.xam.dom.Attribute;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Martin Grebac
+ * @author gordonp
  */
-public enum Addressing10Attribute implements Attribute {
-        PORTNAME("PortName");
+public class DevelopmentHostConfiguration extends IntConfiguration {
     
-    private String name;
-    private Class type;
-    private Class subtype;
-    
-    /**
-     * Creates a new instance of Addressing10Attribute
-     */
-    Addressing10Attribute(String name) {
-        this(name, String.class);
-    }
-    Addressing10Attribute(String name, Class type) {
-        this(name, type, null);
-    }
-    Addressing10Attribute(String name, Class type, Class subtype) {
-        this.name = name;
-        this.type = type;
-        this.subtype = subtype;
+    private static ServerList serverList = null;
+
+    public DevelopmentHostConfiguration() {
+        super((IntConfiguration) null, getDefaultServerIndex(), getServerNames(), null);
     }
     
-    @Override
-    public String toString() { return name; }
-
-    public Class getType() {
-        return type;
+    private static int getDefaultServerIndex() {
+        if (getServerList() != null) {
+            return serverList.getDefaultServerIndex();
+        }
+        return 0;
     }
-
-    public String getName() { return name; }
-
-    public Class getMemberType() { return subtype; }
+    
+    private static String[] getServerNames() {
+        if (getServerList() != null) {
+            return serverList.getServerNames();
+        }
+        return new String[] { "localhost" }; // NOI18N
+    }
+    
+    private static ServerList getServerList() {
+        if (Boolean.getBoolean("cnd.remote.enable")) // DEBUG
+        if (serverList == null) {
+            serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+        }
+        return serverList;
+    }
 }
