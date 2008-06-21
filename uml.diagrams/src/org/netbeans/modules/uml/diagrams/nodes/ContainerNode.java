@@ -303,7 +303,7 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
                 prevIndex = parent.getChildren().indexOf(ContainerNode.this);
                 parent.removeChild(ContainerNode.this);
                 parent.addChild(0, ContainerNode.this);
-
+                children.clear();
                 children.addAll(container.getChildren());
 
                 Widget containerParent = container.getParentWidget();
@@ -313,21 +313,14 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
                     insets = containerParent.getBorder().getInsets();
                 }
                 
-                Point containerLoc = containerParent.convertLocalToScene(container.getLocation());
-                Point nodeLoc = getParentWidget().convertLocalToScene(getLocation());
+               Rectangle contBnd=container.convertLocalToScene(container.getBounds());
+                Rectangle nodeBnd=convertLocalToScene(getBounds());
                 
-                int dx = containerLoc.x - nodeLoc.x;
-                if(insets != null)
-                {
-                    dx += insets.left;
-                }
-                
-                int dy = containerLoc.y - nodeLoc.y;
-                if(insets != null)
-                {
-                    dy += insets.top;
-                }
-                
+                int dx=contBnd.x-nodeBnd.x;
+                int dy=contBnd.y-nodeBnd.y;
+                int dxR=nodeBnd.x+nodeBnd.width-contBnd.x-contBnd.width;
+                int dYB=nodeBnd.y+nodeBnd.height-contBnd.y-contBnd.height;
+                                
                 leftBounds = Double.MAX_VALUE;
                 topBounds = Double.MAX_VALUE;
                 rightBounds = Double.MIN_VALUE;
@@ -344,21 +337,22 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
         
                 for(Widget child : children)
                 {
+                    if(!child.isVisible())continue;
                     Point location = child.getLocation();
                     Point childSceneLocation = child.getParentWidget().convertLocalToScene(location);
+                    Rectangle childRec=child.convertLocalToScene(child.getBounds());
                     
-                    double width = child.getClientArea().width;
-                    double height = child.getClientArea().height;
-                    
-                    leftBounds = Math.min(leftBounds, childSceneLocation.getX() - dx);
-                    topBounds = Math.min(topBounds, childSceneLocation.getY() - dy);
-                    rightBounds = Math.max(rightBounds, childSceneLocation.getX() + dx + width);
-                    bottomBounds = Math.max(bottomBounds, childSceneLocation.getY() + height + 
-                                            (insets != null ? insets.top + insets.bottom : 0));
+                    leftBounds = Math.min(leftBounds, childRec.x - dx);
+                    topBounds = Math.min(topBounds, childRec.y - dy);
+                    rightBounds = Math.max(rightBounds, childRec.x + dxR + childRec.width);
+                    bottomBounds = Math.max(bottomBounds, childRec.y + childRec.height + dYB);
 
                     child.setPreferredLocation(childSceneLocation);
-                    container.removeChild(child);
-                    interactionLayer.addChild(child);
+                    if(child.getParentWidget()!=null && container==child.getParentWidget())//some widgets may be removed by dependencies handlers already
+                    {
+                        container.removeChild(child);
+                        interactionLayer.addChild(child);
+                    }
                 }
             } 
         }
