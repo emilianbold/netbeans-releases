@@ -124,7 +124,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                 jsfFolder = jsfFolder.substring(1);
             }
             String controller = ((controllerPkg == null || controllerPkg.length() == 0) ? "" : controllerPkg + ".") + controllerFileObjects[i].getName();
-            JSFClientGenerator.generateJSFPages(project, entityClass, jsfFolder, firstLower, controller, targetFolder, controllerFileObjects[i], embeddedPkSupport);
+            JSFClientGenerator.generateJSFPages(project, entityClass, jsfFolder, firstLower, controller, targetFolder, controllerFileObjects[i], embeddedPkSupport, entities);
         }
         
         return Collections.singleton(DataFolder.findFolder(targetFolder));
