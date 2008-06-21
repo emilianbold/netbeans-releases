@@ -76,6 +76,11 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createThreadsViewAction"/>
                     <attr name="instanceClass" stringvalue="javax.swing.Action"/>
                 </file>
+                <file name="org-netbeans-modules-debugger-ui-actions-SourcesViewAction.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.debugger.ui.actions.ViewActions"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createSourcesViewAction"/>
+                    <attr name="instanceClass" stringvalue="javax.swing.Action"/>
+                </file>
             </folder>
         </folder>
         <folder name="Debug">
@@ -222,6 +227,10 @@ made subject to such option by the copyright holder.
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-ThreadsViewAction.instance"/>
                     <attr name="position" intvalue="800"/>
                 </file>
+                <file name="org-netbeans-modules-debugger-ui-actions-SourcesViewAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-SourcesViewAction.instance"/>
+                    <attr name="position" intvalue="900"/>
+                </file>
             </folder>
             </folder>
     </folder>
@@ -260,6 +269,9 @@ made subject to such option by the copyright holder.
         </file>
         <file name="SO-5.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.instance"/>
+        </file>
+        <file name="SO-8.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-SourcesViewAction.instance"/>
         </file>
         <file name="DS-F8.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance"/>
@@ -310,11 +322,15 @@ made subject to such option by the copyright holder.
             <file name="threadsView.settings" url="components/threads.settings"/>
             <file name="callstackView.settings" url="components/callstack.settings"/>
             <file name="breakpointsView.settings" url="components/breakpoints.settings"/>
+            <file name="sources.settings" url="components/sources.settings"/>
         </folder>
 
         <folder name="Modes">
             <file name="debugger.wsmode" url="modes/debugger.wsmode"/>
             <folder name="debugger">
+                <file name="sources.wstcref" url="modes/debugger/sources.wstcref">
+                    <attr name="position" intvalue="200"/>
+                </file>
                 <file name="watchesView.wstcref" url="modes/debugger/watches.wstcref">
                     <attr name="position" intvalue="300"/>
                 </file>
@@ -345,6 +361,7 @@ made subject to such option by the copyright holder.
                 <file name="threadsView.wstcgrp" url="groups/debugger/threads.wstcgrp"/>
                 <file name="callstackView.wstcgrp" url="groups/debugger/callstack.wstcgrp"/>
                 <file name="breakpointsView.wstcgrp" url="groups/debugger/breakpoints.wstcgrp"/>
+                <file name="sources.wstcgrp" url="groups/debugger/sources.wstcgrp"/>
             </folder>
         </folder>
 
