@@ -162,19 +162,22 @@ public abstract class FeatureWidget extends CustomizableWidget
     protected void updateUI() 
     {
         removeChildren();
+        String formatedStr = formatElement();
+        if (formatedStr == null)
+        {
+            return;
+        }
 
         label = new EditableCompartmentWidget(getScene(), this, ID);
         label.setAlignment(alignment);
-        label.setLabel(formatElement());
+        label.setLabel(formatedStr);
         addChild(label);
         
         if(alignment == Alignment.CENTER)
         {
             setChildConstraint(label, 100);
         }
-        
         setBorder(BorderFactory.createEmptyBorder(1));
-        
     }
     
     protected void setText(String value)
@@ -329,8 +332,14 @@ public abstract class FeatureWidget extends CustomizableWidget
     
     protected String formatElement()
     {
+        String formatedStr = null;
         DataFormatter formatter = new DataFormatter();
-        return formatter.formatElement(getElement());
+        IElement element = getElement();
+        if (element != null)
+        {
+            formatedStr = formatter.formatElement(getElement());
+        }
+        return formatedStr;
     }
     
     public void switchToEditMode()

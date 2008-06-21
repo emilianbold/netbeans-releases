@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,46 +31,91 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor.parser;
 
-package org.netbeans.modules.websvc.wsitmodelext.addressing.impl;
-
-import org.netbeans.modules.xml.xam.dom.Attribute;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
 
 /**
+ * Formatter just for testing purposses
  *
- * @author Martin Grebac
+ * @author Petr Pisl
  */
-public enum AddressingAttribute implements Attribute {
-        PORTNAME("PortName");
-    
-    private String name;
-    private Class type;
-    private Class subtype;
-    
-    /**
-     * Creates a new instance of AddressingAttribute
-     */
-    AddressingAttribute(String name) {
-        this(name, String.class);
-    }
-    AddressingAttribute(String name, Class type) {
-        this(name, type, null);
-    }
-    AddressingAttribute(String name, Class type, Class subtype) {
-        this.name = name;
-        this.type = type;
-        this.subtype = subtype;
-    }
-    
+public class TestHtmlFormatter extends HtmlFormatter {
+
+    private StringBuilder sb = new StringBuilder();
+
     @Override
-    public String toString() { return name; }
-
-    public Class getType() {
-        return type;
+    public void reset() {
+        sb.setLength(0);
     }
 
-    public String getName() { return name; }
+    @Override
+    public void appendHtml(String html) {
+        sb.append(html);
+    }
 
-    public Class getMemberType() { return subtype; }
+    @Override
+    public void appendText(String text, int fromInclusive, int toExclusive) {
+        sb.append("ESCAPED{");
+        sb.append(text, fromInclusive, toExclusive);
+        sb.append("}");
+    }
+
+    @Override
+    public void name(ElementKind kind, boolean start) {
+        if (start) {
+            sb.append(kind);
+        }
+    }
+
+    @Override
+    public void active(boolean start) {
+        if (start) {
+            sb.append("ACTIVE{");
+        } else {
+            sb.append("}");
+        }
+    }
+
+    @Override
+    public void parameters(boolean start) {
+        if (start) {
+            sb.append("PARAMETERS{");
+        } else {
+            sb.append("}");
+        }
+    }
+
+    @Override
+    public void type(boolean start) {
+        if (start) {
+            sb.append("TYPE{");
+        } else {
+            sb.append("}");
+        }
+    }
+
+    @Override
+    public void deprecated(boolean start) {
+        if (start) {
+            sb.append("DEPRECATED{");
+        } else {
+            sb.append("}");
+        }
+    }
+
+    @Override
+    public String getText() {
+        return sb.toString();
+    }
+
+    @Override
+    public void emphasis(boolean start) {
+    }
 }

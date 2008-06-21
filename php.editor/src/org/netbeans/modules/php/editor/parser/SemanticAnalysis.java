@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.editor.parser;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Map;
@@ -51,6 +52,7 @@ import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
@@ -142,6 +144,18 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             Identifier name = md.getFunction().getFunctionName();
             highlights.put(createOffsetRange(name), ColoringAttributes.METHOD_SET);
         }
+
+        @Override
+        public void visit(InterfaceDeclaration node) {
+            if (isCancelled()) {
+                return;
+            }
+            Identifier name = node.getName();
+            OffsetRange or = new OffsetRange(name.getStartOffset(), name.getEndOffset());
+            highlights.put(or, ColoringAttributes.CLASS_SET);
+            node.getBody().accept(this);
+        }
+
 
     }
 }

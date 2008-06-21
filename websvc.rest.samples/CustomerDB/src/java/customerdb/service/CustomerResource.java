@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -48,6 +48,8 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.WebApplicationException;
 import javax.persistence.NoResultException;
 import customerdb.DiscountCode;
@@ -86,9 +88,11 @@ public class CustomerResource {
      */
     @GET
     @ProduceMime({"application/xml", "application/json"})
-    public CustomerConverter get() {
+    public CustomerConverter get(@QueryParam("expandLevel")
+    @DefaultValue("1")
+    int expandLevel) {
         try {
-            return new CustomerConverter(getEntity(), context.getAbsolutePath());
+            return new CustomerConverter(getEntity(), context.getAbsolutePath(), expandLevel);
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -103,13 +107,13 @@ public class CustomerResource {
     @PUT
     @ConsumeMime({"application/xml", "application/json"})
     public void put(CustomerConverter data) {
-        PersistenceService service = PersistenceService.getInstance();
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
-            service.beginTx();
+            persistenceSvc.beginTx();
             updateEntity(getEntity(), data.getEntity());
-            service.commitTx();
+            persistenceSvc.commitTx();
         } finally {
-            service.close();
+            persistenceSvc.close();
         }
     }
 
@@ -120,14 +124,14 @@ public class CustomerResource {
      */
     @DELETE
     public void delete() {
-        PersistenceService service = PersistenceService.getInstance();
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
-            service.beginTx();
+            persistenceSvc.beginTx();
             Customer entity = getEntity();
-            service.removeEntity(entity);
-            service.commitTx();
+            deleteEntity(entity);
+            persistenceSvc.commitTx();
         } finally {
-            service.close();
+            persistenceSvc.close();
         }
     }
 
@@ -175,8 +179,28 @@ public class CustomerResource {
      * @return the updated entity
      */
     protected Customer updateEntity(Customer entity, Customer newEntity) {
-        newEntity.setCustomerId(entity.getCustomerId());
+        DiscountCode discountCode = entity.getDiscountCode();
+        DiscountCode discountCodeNew = newEntity.getDiscountCode();
         entity = PersistenceService.getInstance().mergeEntity(newEntity);
+        if (discountCode != null && !discountCode.equals(discountCodeNew)) {
+            discountCode.getCustomerCollection().remove(entity);
+        }
+        if (discountCodeNew != null && !discountCodeNew.equals(discountCode)) {
+            discountCodeNew.getCustomerCollection().add(entity);
+        }
         return entity;
+    }
+
+    /**
+     * Deletes the entity.
+     *
+     * @param entity the entity to deletle
+     */
+    protected void deleteEntity(Customer entity) {
+        DiscountCode discountCode = entity.getDiscountCode();
+        if (discountCode != null) {
+            discountCode.getCustomerCollection().remove(entity);
+        }
+        PersistenceService.getInstance().removeEntity(entity);
     }
 }

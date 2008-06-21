@@ -428,7 +428,6 @@
         <aDefinition name="Name" displayName="PSK_NAME" required="false" multiplicity="1" controlType="edit" get="getName" set="setName" validate="DiagramSupport.ProxyDiagramManager"/>
         <aDefinition name="Alias" displayName="PSK_ALIAS" required="false" multiplicity="1" controlType="edit" get="getAlias" set="setAlias"/>
         <aDefinition name="Filename" displayName="PSK_FILENAME" required="false" multiplicity="1" controlType="read-only" get="getFilename"/>
-        <aDefinition name="LayoutStyle" displayName="PSK_LAYOUTSTYLE" required="false" multiplicity="1" controlType="list" get="getLayoutStyle" set="setLayoutStyle" values="PSK_HIERARCHICAL" enumValues="1" validate="ADDiagramEngine.ADCoreEngine"/>
         <aDefinition name="Namespace" displayName="PSK_NAMESPACE" required="false" multiplicity="1" controlType="read-only" get="getNamespace"/>
         <aDefinition name="DiagramKind" displayName="PSK_DIAGRAMKIND" required="false" multiplicity="1" controlType="read-only" get="getDiagramKind2" values="PSK_ACTIVITYDIAGRAM|PSK_CLASSDIAGRAM|PSK_COLLABDIAGRAM|PSK_COMPONENTDIAGRAM|PSK_DEPLOYMENTDIAGRAM|PSK_SEQUENCEDIAGRAM|PSK_STATEDIAGRAM|PSK_USECASEDIAGRAM" enumValues="2|4|8|16|32|64|128|256"/>
         <aDefinition name="Documentation" displayName="PSK_DOCUMENTATION" required="false" multiplicity="1" get="getDocumentation" set="setDocumentation" controlType="custom" progID="org.netbeans.modules.uml.propertysupport.customizers.DocumentationCustomizer" />

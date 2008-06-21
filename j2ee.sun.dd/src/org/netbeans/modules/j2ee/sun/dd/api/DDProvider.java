@@ -800,6 +800,8 @@ public final class DDProvider {
                 parser.setEntityResolver(SunDDResolver.getInstance());
                 Document d = parser.parse(is);
                 initialize(d, errorHandler.getError(), defaultPublicId);
+            } catch(NullPointerException ex) {
+                throw new SAXException(ex.getMessage());
             } catch(ParserConfigurationException ex) {
                 throw new SAXException(ex.getMessage());
             }

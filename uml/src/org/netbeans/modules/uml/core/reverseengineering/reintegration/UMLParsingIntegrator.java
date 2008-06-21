@@ -1163,18 +1163,22 @@ public class UMLParsingIntegrator
                     int count = m_ItemsToSink.size();
                     
                     // Create a broadcast to update the open diagrams
-                    // TODO: meteora
 //                    IElementBroadcastAction elementAction = new ElementBroadcastAction();
 //                    elementAction.setKind(DiagramAreaEnumerations.EBK_DEEP_SYNC);
-//                    
-//                    for (int i = 0; i < count; ++i)
-//                    {
-//                        IElement element = fact.createTypeAndFill(m_ItemsToSink.get(i));
-//                        // Add this model element to our broadcast
+                    
+                    for (int i = 0; i < count; ++i)
+                    {
+                        IElement element = fact.createTypeAndFill(m_ItemsToSink.get(i));
+//                         // Add this model element to our broadcast
 //                        elementAction.add(element);
-//                        reinitializePresentationElement(element);
-//                    }
-//                    
+                        reinitializePresentationElement(element);
+                        
+                        for(IPresentationElement presentation : element.getPresentationElements())
+                        {
+                            proxyMan.refresh(presentation);
+                        }
+                    }
+                    
 //                    proxyMan.broadcastToAllOpenDiagrams(elementAction);
                     m_ItemsToSink.clear();
                 }
