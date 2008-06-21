@@ -46,6 +46,7 @@ import javax.swing.Action;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.graph.layout.GraphLayout;
 import org.netbeans.api.visual.graph.layout.GraphLayoutFactory;
+import org.netbeans.modules.uml.drawingarea.support.ContainerAgnosticLayout;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.util.NbBundle;
 
@@ -57,6 +58,7 @@ public class HierarchicalLayoutAction extends AbstractAction
 {
 
     private GraphScene scene;
+    private final int MAX_NODES_TO_ANIMATE = 50 ;
     
     public HierarchicalLayoutAction(GraphScene scene)
     {
@@ -68,7 +70,9 @@ public class HierarchicalLayoutAction extends AbstractAction
 
     public void actionPerformed(ActionEvent e)
     {
+        boolean animate = scene.getNodes().size() < MAX_NODES_TO_ANIMATE ? true : false ;
         GraphLayout gLayout = GraphLayoutFactory.createHierarchicalGraphLayout(scene, true) ;
+        new ContainerAgnosticLayout(scene, gLayout) ;
         gLayout.layoutGraph(scene) ;
     }
 }

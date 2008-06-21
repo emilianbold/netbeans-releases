@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,46 +31,22 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.wsitmodelext.addressing.impl;
-
-import org.netbeans.modules.xml.xam.dom.Attribute;
+package org.netbeans.modules.uml.drawingarea.keymap;
 
 /**
  *
- * @author Martin Grebac
+ * @author thuy
  */
-public enum AddressingAttribute implements Attribute {
-        PORTNAME("PortName");
-    
-    private String name;
-    private Class type;
-    private Class subtype;
-    
-    /**
-     * Creates a new instance of AddressingAttribute
-     */
-    AddressingAttribute(String name) {
-        this(name, String.class);
-    }
-    AddressingAttribute(String name, Class type) {
-        this(name, type, null);
-    }
-    AddressingAttribute(String name, Class type, Class subtype) {
-        this.name = name;
-        this.type = type;
-        this.subtype = subtype;
-    }
-    
-    @Override
-    public String toString() { return name; }
-
-    public Class getType() {
-        return type;
-    }
-
-    public String getName() { return name; }
-
-    public Class getMemberType() { return subtype; }
+public interface DiagramKeyMapConstants {
+    public static final String CANCEL_ACTION = "CANCEL_ACTION";
+    public static final String MOVE_LEFT = "MOVE_LEFT";
+    public static final String MOVE_RIGHT = "MOVE_RIGHT";
+    public static final String MOVE_UP = "MOVE_UP";
+    public static final String MOVE_DOWN = "MOVE_DOWN";
 }

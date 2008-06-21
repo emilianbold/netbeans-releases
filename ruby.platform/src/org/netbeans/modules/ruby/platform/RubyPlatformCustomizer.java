@@ -63,8 +63,6 @@ import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.platform.gems.GemPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -557,15 +555,25 @@ public class RubyPlatformCustomizer extends JPanel {
         });
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
-            File intepreter = FileUtil.normalizeFile(chooser.getSelectedFile());
+            final File intepreter = FileUtil.normalizeFile(chooser.getSelectedFile());
             Util.getPreferences().put(LAST_PLATFORM_DIRECTORY, intepreter.getParentFile().getAbsolutePath());
-            RubyPlatform platform = getPlafListModel().addPlatform(intepreter);
-            if (platform == null) {
-                Util.notifyLocalized(RubyPlatformCustomizer.class,
-                        "RubyPlatformCustomizer.invalid.platform.added", intepreter.getAbsolutePath()); // NOI18N
-            } else {
-                refreshPlatform();
-            }
+            setAutoDetecting(true);
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    final RubyPlatform platform = getPlafListModel().addPlatform(intepreter);
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            if (platform == null) {
+                                Util.notifyLocalized(RubyPlatformCustomizer.class,
+                                        "RubyPlatformCustomizer.invalid.platform.added", intepreter.getAbsolutePath()); // NOI18N
+                            } else {
+                                refreshPlatform();
+                            }
+                            setAutoDetecting(false);
+                        }
+                    });
+                }
+            });
         }
     }//GEN-LAST:event_addButtonaddPlatform
 
