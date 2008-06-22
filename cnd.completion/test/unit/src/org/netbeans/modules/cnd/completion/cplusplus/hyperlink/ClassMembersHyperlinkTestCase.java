@@ -334,6 +334,28 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("main.cc", 77, 18, "main.cc", 75, 15);
     }
 
+    public void testIZ137798() throws Exception {
+        performTest("IZ137799and137798.h", 2, 15, "IZ137799and137798.h", 2, 1);
+        performTest("IZ137799and137798.h", 19, 15, "IZ137799and137798.h", 2, 1);
+        performTest("IZ137799and137798.h", 3, 15, "IZ137799and137798.h", 3, 1);
+        performTest("IZ137799and137798.h", 16, 25, "IZ137799and137798.h", 3, 1);
+    }
+    
+    public void testIZ137799() throws Exception {
+        performTest("IZ137799and137798.h", 12, 21, "IZ137799and137798.h", 12, 13);
+        performTest("IZ137799and137798.h", 13, 21, "IZ137799and137798.h", 13, 13);
+        performTest("IZ137799and137798.h", 14, 21, "IZ137799and137798.h", 14, 13);
+        performTest("IZ137799and137798.h", 15, 21, "IZ137799and137798.h", 15, 13);
+        performTest("IZ137799and137798.h", 16, 21, "IZ137799and137798.h", 16, 13);
+        performTest("IZ137799and137798.h", 17, 21, "IZ137799and137798.h", 17, 13);
+        performTest("IZ137799and137798.h", 18, 21, "IZ137799and137798.h", 18, 13);
+    }
+
+    public void testNestedStructAndVar() throws Exception {
+        performTest("IZ137799and137798.h", 19, 12, "IZ137799and137798.h", 19, 11);
+        performTest("IZ137799and137798.h", 11, 17, "IZ137799and137798.h", 11, 9);
+    } 
+    
     public static class Failed extends HyperlinkBaseTestCase {
         
         protected Class getTestCaseDataClass() {

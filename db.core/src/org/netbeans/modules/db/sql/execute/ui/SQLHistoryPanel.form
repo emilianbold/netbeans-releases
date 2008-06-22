@@ -168,7 +168,7 @@
             </Property>
           </Properties>
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JTable() {&#xa;        public Component prepareRenderer(TableCellRenderer renderer,&#xa;                                         int rowIndex, int vColIndex) {&#xa;            Component c = super.prepareRenderer(renderer, rowIndex, vColIndex);&#xa;            if (c instanceof JComponent) {&#xa;                JComponent jc = (JComponent)c;&#xa;                jc.setToolTipText((String)getValueAt(rowIndex, vColIndex));&#xa;            }&#xa;            return c;&#xa;        }&#xa;};"/>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JTable() {&#xa;        public Component prepareRenderer(TableCellRenderer renderer,&#xa;                                         int rowIndex, int vColIndex) {&#xa;            Component c = super.prepareRenderer(renderer, rowIndex, vColIndex);&#xa;            if (c instanceof JComponent) {&#xa;                JComponent jc = (JComponent)c;&#xa;                jc.setToolTipText(view.getSQLHistoryTooltipValue(rowIndex, vColIndex));&#xa;            }&#xa;            return c;&#xa;        }&#xa;};"/>
           </AuxValues>
         </Component>
       </SubComponents>

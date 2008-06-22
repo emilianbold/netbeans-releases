@@ -95,8 +95,6 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
     private Object[] comboData;
     private SQLHistoryView view;
     private JEditorPane editorPane;
-    private static String[] sqlToolTipText;
-
 
     /** Creates new form SQLHistoryDlg2 */
     public SQLHistoryPanel(JEditorPane editorPane) {
@@ -124,7 +122,6 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
             // Initialize sql column data          
             List<String> sqlList = view.getSQLList();
             List<String> dateList = view.getDateList();
-            sqlToolTipText = new String[sqlList.size()];
             parsedData = new Object[sqlList.size()][2];
             data = new Object[sqlList.size()][2];
             int row = 0;
@@ -135,7 +132,6 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                 maxLength = length > 50 ? 50 : length;
                 data[row][0] = sql.trim().substring(0, maxLength);
                 parsedData[row][0] = sql;
-                sqlToolTipText[row] = sql.trim();
                 row++;
             }
             // Initialize data
@@ -168,7 +164,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                 Component c = super.prepareRenderer(renderer, rowIndex, vColIndex);
                 if (c instanceof JComponent) {
                     JComponent jc = (JComponent)c;
-                    jc.setToolTipText((String)getValueAt(rowIndex, vColIndex));
+                    jc.setToolTipText(view.getSQLHistoryTooltipValue(rowIndex, vColIndex));
                 }
                 return c;
             }
@@ -358,6 +354,53 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             return sqlHistoryList;
         }
         
+        /**
+         * Get the SQL statement string at the row,col position in the table and convert the string to html
+         * @param row - table row
+         * @param col - table column
+         * @return    - formatted SQL statement for the specified row, col
+         */
+        public String getSQLHistoryTooltipValue(int row, int col) {
+            List<SQLHistory> sqlHistoryListForTooltip = view.getSQLHistoryList();
+            
+            if (col == 0) {
+                String sqlRow = sqlHistoryListForTooltip.get(row).getSql();                
+                while (sqlRow.indexOf("\n") != -1) {        // NOI18N
+                    sqlRow = replace(sqlRow, "\n", "<br>"); // NOI18N
+                }      
+                return "<html>" + sqlRow + "</html>";       // NOI18N
+            } else {                
+                return DateFormat.getInstance().format(sqlHistoryListForTooltip.get(row).getDate());
+            }
+            
+        }
+        
+        /**
+         * Convert sql statement to html for proper rendering in the table's tooltip
+         * @param target - original string
+         * @param from - string to replace
+         * @param to - string to replace with
+         * @return - updated string
+         */
+        public String replace(String target, String from, String to) {
+            int start = target.indexOf(from);
+            if (start == -1) {
+                return target;
+            }
+            int lf = from.length();
+            char[] targetChars = target.toCharArray();
+            StringBuffer buffer = new StringBuffer();
+            int copyFrom = 0;
+            while (start != -1) {
+                buffer.append(targetChars, copyFrom, start - copyFrom);
+                buffer.append(to);
+                copyFrom = start + lf;
+                start = target.indexOf(from, copyFrom);
+            }
+            buffer.append(targetChars, copyFrom, targetChars.length - copyFrom);
+            return buffer.toString();
+        }
+        
         public List<String> getUrlList() {
             List<String> urlList = new ArrayList<String>();
             for (SQLHistory sqlHistory : sqlHistoryList) {
@@ -539,13 +582,11 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                     maxLength = length > 50 ? 50 : length;
                     sqlList.add(sqlHistory.getSql().trim().substring(0, maxLength));
                     dateList.add(DateFormat.getInstance().format(sqlHistory.getDate()));
-                    sqlToolTipText[i++] = sqlHistory.getSql().trim();
                 } else if (url.equals(sqlHistory.getUrl())) {
                     length = sqlHistory.getSql().trim().length();
                     maxLength = length > 50 ? 50 : length;
                     sqlList.add(sqlHistory.getSql().trim().substring(0, maxLength));
                     dateList.add(DateFormat.getInstance().format(sqlHistory.getDate()));
-                    sqlToolTipText[i++] = sqlHistory.getSql().trim();
                 }
             }
 
@@ -557,7 +598,6 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                 length = sql.trim().length();
                 maxLength = length > 50 ? 50 : length;
                 data[row][0] = sql.trim().substring(0, maxLength);
-                sqlToolTipText[row] = sql.trim();
                 row++;
             }
             // Initialize date column data
@@ -587,12 +627,11 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                 int maxLength;
                 Iterator dateIterator = dateList.iterator();
                 for (String sql : sqlList) {
-                    if (sql.trim().indexOf(matchText) != -1) {
+                    if (sql.trim().toLowerCase().indexOf(matchText.toLowerCase()) != -1) {
                         length = sql.trim().length();
                         maxLength = length > 50 ? 50 : length;
                         data[row][0] = sql.trim().substring(0, maxLength);
                         data[row][1] = dateIterator.next();
-                        sqlToolTipText[row] = sql.trim();
                         row++;
                     } 
                 }
@@ -624,7 +663,6 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                         maxLength = length > 50 ? 50 : length;
                         data[row][0] = sql.trim().substring(0, maxLength);
                         data[row][1] = dateIterator.next();
-                        sqlToolTipText[row] = sql.trim();
                         row++;
                     } else {
                         cleanTable();

@@ -3,15 +3,6 @@
 <filesystem>
     
     <folder name="Loaders">
-        <folder name="content">
-            <folder name="unknown">
-                <folder name="Factories">
-                    <file name="org-netbeans-modules-j2ee-sun-ddloaders-SunDescriptorDataLoader.instance">
-                        <attr name="position" intvalue="90037"/>
-                    </file>
-                </folder>
-            </folder>
-        </folder>
         <folder name="text">
             <folder name="x-sun-dd">
                 <folder name="Actions">
