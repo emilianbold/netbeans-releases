@@ -34,6 +34,7 @@ djd43.declare("rdj.data.__CONTAINER_NAME__Store", djd43.data.core.RemoteStore, {
             requestKw.url = requestKw.url+"&timestamp="+timestamp;
         else
             requestKw.url = requestKw.url+"?timestamp="+timestamp;
+        requestKw.url += "&expandLevel=0";
 
         var method = "GET";
         if(method == 'GET') {

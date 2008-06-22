@@ -55,7 +55,7 @@ __FIELDS_INIT__
       var myObj = 
          '"__GENERIC_PATH_NAME__":'+
          '{'+
-         '"@uri":"'+this.uri+'",'+
+         '"@uri":"'+this.uri+'"'+
          __FIELDS_TOSTRING__
          '}';
       return myObj;
