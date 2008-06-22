@@ -70,6 +70,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.netbeans.modules.websvc.rest.wizard.Util;
 
 /**
  * ClientStubModel
@@ -337,80 +338,19 @@ public class ClientStubModel {
                     String mAnonType = mAnon.getAnnotationType().toString();
                     List<? extends ExpressionTree> eAnons = mAnon.getArguments();
                     if (RestConstants.PATH_ANNOTATION.equals(mAnonType) || RestConstants.PATH.equals(mAnonType)) {
-                        m = createNavigationMethod(mName);
-                        m.setTree(tree);
-                        m.setType(MethodType.GETCHILD);
-                        for (ExpressionTree eAnon : eAnons) {
-                            String value = eAnon.toString();
-                            if(value.contains("{")) {
-                                String childRes = tree.getReturnType().toString();
-                                if(childRes.indexOf(".") != -1)
-                                    childRes = childRes.substring(childRes.lastIndexOf(".")+1);
-                                if(childRes.indexOf("Resource") != -1)
-                                    childRes = childRes.substring(0, childRes.indexOf("Resource"));
-                                String rName = r.getName();
-                                if((childRes+"s").equals(rName))
-                                    r.setIsContainer(true);
-                                value = value.substring(value.indexOf("{") + 1, value.lastIndexOf("}"));
-                            } else if(value.contains("\"") && value.contains("/")) {
-                                value = value.substring(value.indexOf("\"") + 1, value.lastIndexOf("/"));
-                            } else {
-                                throw new IOException("Cannot find method with " +
-                                    "@Path(\"subresource/\") or @Path(\"{containerId}/\")");
-                            }
-                            ((NavigationMethod) m).setNavigationUri(value);
-                        }
-                        String returnType = tree.getReturnType().toString();
-                        if(returnType != null) {
-                            int ndx = returnType.lastIndexOf(".");
-                            if(ndx != -1)
-                                returnType = returnType.substring(ndx+1);
-                        }
-                        String linkName = RestUtils.findStubNameFromClass(returnType);
-                        ((NavigationMethod) m).setLinkName(linkName);
-                    } else if (RestConstants.GET_ANNOTATION.equals(mAnonType) || RestConstants.GET.equals(mAnonType)) {
-                        if (m == null) {
-                            m = createMethod(mName, tree);
-                            m.setType(MethodType.GET);
-                        }
-                    } else if (RestConstants.POST_ANNOTATION.equals(mAnonType) || RestConstants.POST.equals(mAnonType)) {
-                        if (m == null) {
-                            m = createMethod(mName, tree);
-                            m.setType(MethodType.POST);
-                        }
-                    } else if (RestConstants.PUT_ANNOTATION.equals(mAnonType) || RestConstants.PUT.equals(mAnonType)) {
-                        if (m == null) {
-                            m = createMethod(mName, tree);
-                            m.setType(MethodType.PUT);
-                        }
-                    } else if (RestConstants.DELETE_ANNOTATION.equals(mAnonType) || RestConstants.DELETE.equals(mAnonType)) {
-                        if (m == null) {
-                            m = createMethod(mName, tree);
-                            m.setType(MethodType.DELETE);
-                        }
-                    } else if (RestConstants.PRODUCE_MIME_ANNOTATION.equals(mAnonType) || RestConstants.PRODUCE_MIME.equals(mAnonType)) {
-                        if (m == null) {
-                            m = createMethod(mName, tree);
-                        }
-                        for (ExpressionTree eAnon : eAnons) {
-                            String value = RestUtils.getValueFromAnnotation(eAnon);
-                            String[] mimeTypes = value.split(",");
-                            for(String mimeType:mimeTypes) {
-                                Representation rep = new Representation(mimeType);
-                                m.getResponse().addRepresentation(rep);
-                            }
-                        }
-                    } else if (RestConstants.CONSUME_MIME_ANNOTATION.equals(mAnonType) || RestConstants.CONSUME_MIME.equals(mAnonType)) {
-                        if (m == null) {
-                            m = createMethod(mName, tree);
-                        }
-                        for (ExpressionTree eAnon : eAnons) {
-                            String value = RestUtils.getValueFromAnnotation(eAnon);
-                            String[] mimeTypes = value.split(",");
-                            for(String mimeType:mimeTypes) {
-                                Representation rep = new Representation(mimeType);
-                                m.getRequest().addRepresentation(rep);
-                            }
+                        processPathAnnotation(r, m, mName, tree, eAnons);
+                    } else if (RestConstants.PRODUCE_MIME_ANNOTATION.equals(mAnonType) || RestConstants.PRODUCE_MIME.equals(mAnonType) ||
+                            RestConstants.CONSUME_MIME_ANNOTATION.equals(mAnonType) || RestConstants.CONSUME_MIME.equals(mAnonType)) {
+                        processMimeAnnotation(m, mName, tree, eAnons);
+                    } else if (m == null) {
+                        if (RestConstants.GET_ANNOTATION.equals(mAnonType) || RestConstants.GET.equals(mAnonType)) {
+                            m = createMethodFromAnnotation(mName, tree, MethodType.GET);
+                        } else if (RestConstants.POST_ANNOTATION.equals(mAnonType) || RestConstants.POST.equals(mAnonType)) {
+                            m = createMethodFromAnnotation(mName, tree, MethodType.POST);
+                        } else if (RestConstants.PUT_ANNOTATION.equals(mAnonType) || RestConstants.PUT.equals(mAnonType)) {
+                            m = createMethodFromAnnotation(mName, tree, MethodType.PUT);
+                        } else if (RestConstants.DELETE_ANNOTATION.equals(mAnonType) || RestConstants.DELETE.equals(mAnonType)) {
+                            m = createMethodFromAnnotation(mName, tree, MethodType.DELETE);
                         }
                     }
                 }
@@ -420,6 +360,66 @@ public class ClientStubModel {
             }
         }
         buildRepresentationDocument(r, src);
+    }
+    
+    private Method createMethodFromAnnotation(String name, MethodTree tree, MethodType type) {
+        Method m = createMethod(name, tree);
+        m.setType(type);
+        return m;
+    }
+    
+    private void processMimeAnnotation(Method m, String name, MethodTree tree,
+            List<? extends ExpressionTree> eAnons) {
+        if (m == null) {
+            m = createMethod(name, tree);
+        }
+        for (ExpressionTree eAnon : eAnons) {
+            String value = RestUtils.getValueFromAnnotation(eAnon);
+            String[] mimeTypes = value.split(",");
+            for (String mimeType : mimeTypes) {
+                Representation rep = new Representation(mimeType);
+                m.getResponse().addRepresentation(rep);
+            }
+        }
+    }
+    
+    private void processPathAnnotation(Resource r, Method m, String name, MethodTree tree,
+            List<? extends ExpressionTree> eAnons) throws IOException {
+        m = createNavigationMethod(name);
+        m.setTree(tree);
+        m.setType(MethodType.GETCHILD);
+        for (ExpressionTree eAnon : eAnons) {
+            String value = eAnon.toString();
+            if (value.contains("{")) {
+                String childRes = tree.getReturnType().toString();
+                if (childRes.indexOf(".") != -1) {
+                    childRes = childRes.substring(childRes.lastIndexOf(".") + 1);
+                }
+                if (childRes.indexOf(Constants.RESOURCE_SUFFIX) != -1) {
+                    childRes = childRes.substring(0, childRes.indexOf(Constants.RESOURCE_SUFFIX));
+                }
+                String rName = r.getName();
+                if (Util.pluralize(childRes).equals(rName)) {
+                    r.setIsContainer(true);
+                }
+                value = value.substring(value.indexOf("{") + 1, value.lastIndexOf("}"));
+            } else if (value.contains("\"") && value.contains("/")) {
+                value = value.substring(value.indexOf("\"") + 1, value.lastIndexOf("/"));
+            } else {
+                throw new IOException("Cannot find method with " +
+                        "@Path(\"subresource/\") or @Path(\"{containerId}/\")");
+            }
+            ((NavigationMethod) m).setNavigationUri(value);
+        }
+        String returnType = tree.getReturnType().toString();
+        if (returnType != null) {
+            int ndx = returnType.lastIndexOf(".");
+            if (ndx != -1) {
+                returnType = returnType.substring(ndx + 1);
+            }
+        }
+        String linkName = RestUtils.findStubNameFromClass(returnType);
+        ((NavigationMethod) m).setLinkName(linkName);
     }
         
     private Method createMethod(String mName, MethodTree tree) {
@@ -501,10 +501,10 @@ public class ClientStubModel {
     
     private RepresentationNode createRootNode(Class converterClass, RepresentationDocument rr) {
         List<Annotation> annotations = TypeUtil.getAnnotations(converterClass, true);
-    for (Annotation annotation : annotations) {
+        for (Annotation annotation : annotations) {
             String cAnonType = annotation.annotationType().getName();
-            if (Constants.XML_ROOT_ELEMENT_ANNOTATION.equals(cAnonType) || 
-                Constants.XML_ROOT_ELEMENT.equals(cAnonType)) {
+            if (Constants.XML_ROOT_ELEMENT_ANNOTATION.equals(cAnonType) ||
+                    Constants.XML_ROOT_ELEMENT.equals(cAnonType)) {
                 String rootName = TypeUtil.getAnnotationValueName(annotation);
                 RepresentationNode rootNode = new RepresentationNode(rootName);
                 rootNode.setIsRoot(true);
@@ -837,7 +837,7 @@ public class ClientStubModel {
         }
         
         public boolean isReference() {
-            return getName() != null && getName().endsWith("Ref");
+            return getAttributes().size() > 0 || getChildren().size() > 0;
         }
         
         public boolean isEntity() {
