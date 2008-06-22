@@ -37,50 +37,49 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.execution;
+package org.netbeans.updater;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Reader;
-import org.netbeans.modules.cnd.api.execution.NativeExecution;
-import org.netbeans.modules.cnd.remote.support.RemoteNativeExecutionSupport;
-
+import org.netbeans.junit.NbTestCase;
+         
 /**
- * This implementation of NativeExecution provides execution on a remote server.
- *
- * @author gordonp
+ * 
+ * @author Jiri Rechtacek
  */
-public class RemoteNativeExecution extends NativeExecution {
-    
-    /**
-     * Execute an executable, a makefile, or a script
-     * @param runDir absolute path to directory from where the command should be executed
-     * @param executable absolute or relative path to executable, makefile, or script
-     * @param arguments space separated list of arguments
-     * @param envp environment variables (name-value pairs of the form ABC=123)
-     * @param out Output
-     * @param io Input
-     * @param parseOutput true if output should be parsed for compiler errors
-     * @return completion code
-     */
-    public int executeCommand(
-            File runDirFile,
-            String executable,
-            String arguments,
-            String[] envp,
-            PrintWriter out,
-            Reader in) throws IOException, InterruptedException {
-        if (host != null && host.length() > 0) {
-            int pos = host.indexOf('@');
-            String user = host.substring(0, pos);
-            String server = host.substring(pos + 1);
-            RemoteNativeExecutionSupport support = new RemoteNativeExecutionSupport(server, user, runDirFile, executable, arguments, envp, out);
-        }
-        return 0;
+public class UpdaterDispatcherTest extends NbTestCase {
+
+    /** Default constructor.
+     * @param testName name of particular test case
+    */
+    public UpdaterDispatcherTest(String testName) {
+        super(testName);
     }
     
-    public void stop() {
+    File cluster = null;
+    
+    /** Called before every test case. */
+    @Override
+    public void setUp() throws IOException {
+        cluster = getWorkDir ();
     }
 
+    @Override
+    protected void tearDown () throws Exception {
+        clearWorkDir ();
+        super.tearDown ();
+    }
+    
+    public void testTouchLastModified () throws InterruptedException {
+        File stamp = new File (cluster, UpdaterDispatcher.LAST_MODIFIED);
+        assertFalse (stamp.toString () + " doesn't exist before first touch.", stamp.exists ());
+        UpdaterDispatcher.touchLastModified (cluster);
+        assertTrue (stamp.toString () + " exists after touch.", stamp.exists ());
+        long firstTouch = stamp.lastModified ();
+        assertTrue ("Was touched", firstTouch < System.currentTimeMillis ());
+        stamp = new File (cluster, UpdaterDispatcher.LAST_MODIFIED);
+        Thread.sleep (5000);
+        UpdaterDispatcher.touchLastModified (cluster);
+        assertTrue ("Was touched again", firstTouch < stamp.lastModified ());
+    }
 }

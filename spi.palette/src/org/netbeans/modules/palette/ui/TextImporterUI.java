@@ -142,23 +142,29 @@ class TextImporterUI extends javax.swing.JPanel {
         lblSmallIcon = new javax.swing.JLabel();
         btnSelectSmallIcon = new javax.swing.JButton();
 
+        jLabel1.setLabelFor(txtName);
         jLabel1.setText(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.jLabel1.text")); // NOI18N
 
         txtName.setText(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.txtName.text")); // NOI18N
 
+        jLabel2.setLabelFor(txtTooltip);
         jLabel2.setText(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.jLabel2.text")); // NOI18N
 
         txtTooltip.setText(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.txtTooltip.text")); // NOI18N
 
+        jLabel3.setLabelFor(lblSmallIcon);
         jLabel3.setText(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.jLabel3.text")); // NOI18N
 
+        jLabel4.setLabelFor(lblLargeIcon);
         jLabel4.setText(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.jLabel4.text")); // NOI18N
 
+        jLabel5.setLabelFor(txtContent);
         jLabel5.setText(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.jLabel5.text")); // NOI18N
 
         txtContent.setColumns(20);
         txtContent.setRows(5);
         jScrollPane1.setViewportView(txtContent);
+        txtContent.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.txtContent.AccessibleContext.accessibleDescription")); // NOI18N
 
         lblLargeIcon.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblLargeIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/palette/resources/unknown32.gif"))); // NOI18N
@@ -247,6 +253,16 @@ class TextImporterUI extends javax.swing.JPanel {
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE)
                 .addContainerGap())
         );
+
+        txtName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.txtName.AccessibleContext.accessibleName")); // NOI18N
+        txtName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.txtName.AccessibleContext.accessibleDescription")); // NOI18N
+        txtTooltip.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.txtTooltip.AccessibleContext.accessibleDescription")); // NOI18N
+        lblLargeIcon.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.lblLargeIcon.AccessibleContext.accessibleName")); // NOI18N
+        lblLargeIcon.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.lblLargeIcon.AccessibleContext.accessibleDescription")); // NOI18N
+        btnSelectLargeIcon.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.btnSelectLargeIcon.AccessibleContext.accessibleDescription")); // NOI18N
+        lblSmallIcon.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.lblSmallIcon.AccessibleContext.accessibleName")); // NOI18N
+        lblSmallIcon.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.lblSmallIcon.AccessibleContext.accessibleDescription")); // NOI18N
+        btnSelectSmallIcon.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.btnSelectSmallIcon.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void btnSelectLargeIconActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSelectLargeIconActionPerformed
