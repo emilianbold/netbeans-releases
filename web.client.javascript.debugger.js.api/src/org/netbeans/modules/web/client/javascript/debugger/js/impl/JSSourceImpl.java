@@ -39,9 +39,9 @@
 
 package org.netbeans.modules.web.client.javascript.debugger.js.impl;
 
-import org.netbeans.modules.web.client.javascript.debugger.js.api.JSLocation;
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSSource;
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSURILocation;
+import org.netbeans.modules.web.client.tools.api.JSLocation;
 /**
  *
  * @author jdeva
