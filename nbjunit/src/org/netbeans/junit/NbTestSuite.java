@@ -55,6 +55,10 @@ public class NbTestSuite extends TestSuite implements NbTest {
 
     private Filter fFilter;
 
+    static boolean ignoreRandomFailures() {
+        return Boolean.getBoolean("ignore.random.failures");
+    }
+
     /**
      * Constructs an empty TestSuite.
      */
@@ -68,7 +72,22 @@ public class NbTestSuite extends TestSuite implements NbTest {
      *
      */
     public NbTestSuite(Class<? extends TestCase> theClass) {       
-        super(theClass);
+        super(testCaseClassOrDummy(theClass));
+    }
+    private static Class testCaseClassOrDummy(Class testClass) {
+        if (ignoreRandomFailures() && ((Class<?>) testClass).isAnnotationPresent(RandomlyFails.class)) {
+            return APIJail.Dummy.class;
+        } else {
+            return testClass;
+        }
+    }
+    private static class APIJail {
+        public static class Dummy extends TestCase {
+            public Dummy(String name) {
+                super(name);
+            }
+            public void testNothing() {}
+        }
     }
 
     /**
@@ -107,6 +126,9 @@ public class NbTestSuite extends TestSuite implements NbTest {
      */
     @Override
     public void addTestSuite(Class<? extends TestCase> testClass) {
+        if (ignoreRandomFailures() && testClass.isAnnotationPresent(RandomlyFails.class)) {
+            return;
+        }
         NbTest t = new NbTestSuite(testClass);
         t.setFilter(fFilter);
         addTest(t);
@@ -153,7 +175,7 @@ public class NbTestSuite extends TestSuite implements NbTest {
      * @param repeat number of times to repeat the test
      */
     public static NbTestSuite speedSuite (Class<? extends TestCase> clazz, int slowness, int repeat) {
-        if (Boolean.getBoolean("ignore.random.failures")) {
+        if (ignoreRandomFailures()) {
             return new NbTestSuite("skipping");
         }
         return new SpeedSuite (clazz, repeat, slowness, SpeedSuite.CONSTANT);
@@ -171,7 +193,7 @@ public class NbTestSuite extends TestSuite implements NbTest {
      * @param repeat number of times to repeat the test
      */
     public static NbTestSuite linearSpeedSuite (Class<? extends TestCase> clazz, int slowness, int repeat) {
-        if (Boolean.getBoolean("ignore.random.failures")) {
+        if (ignoreRandomFailures()) {
             return new NbTestSuite("skipping");
         }
         return new SpeedSuite (clazz, repeat, slowness, SpeedSuite.LINEAR);

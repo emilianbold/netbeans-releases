@@ -867,7 +867,7 @@ public final class RubyPlatform {
             String ver = isJRuby() ? jversion
                     : version + (patchlevel != null ? "-p" + patchlevel : ""); // NOI18N
             return (isDefault ? NbBundle.getMessage(RubyPlatform.class, "RubyPlatformManager.CTL_BundledJRubyLabel") : kind)
-                    + " (" + ver + ')'; // NOI18N
+                    + ' ' + ver;
         }
         
         public String getLongDescription() {

@@ -350,6 +350,8 @@ public class UMLModelRootNode extends UMLModelElementNode
     {
         UMLChildren children = (UMLChildren)getChildren();
         children.recalculateChildren();
+        // a not so perfect approach to notify listeners to recalculate their imported list #130727
+        fireNodeDestroyed();
     }
     
     ///////////////////////////////////////////////////////////////////////////

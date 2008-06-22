@@ -155,6 +155,22 @@ made subject to such option by the copyright holder.
         </description>
         <class package="org.netbeans.junit" name="NbModuleSuite"/>
     </change>
+    <change id="RandomlyFails">
+        <api name="nbjunit"/>
+        <summary>Added <code>@RandomlyFails</code></summary>
+        <version major="1" minor="51"/>
+        <date day="19" month="6" year="2008"/>
+        <author login="jglick"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                New annotation added to easily mark tests
+                which occasionally fail for no particular reason.
+            </p>
+        </description>
+        <class package="org.netbeans.junit" name="RandomlyFails"/>
+        <issue number="137069"/>
+    </change>
     <change id="CollectData">
         <api name="nbjunit"/>
         <summary>Support for Garbage Collecting of Log Message Arguments</summary>

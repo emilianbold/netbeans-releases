@@ -344,6 +344,7 @@ class NbIO implements InputOutput {
             }
         }
         
+        @Override
         public int read() throws IOException {
             if (Controller.LOG) Controller.log (NbIO.this + ": Input read one char");
             checkPristine();
@@ -367,9 +368,13 @@ class NbIO implements InputOutput {
         }
 
         @Override
-        public boolean ready() throws IOException {        
+        public boolean ready() throws IOException {
             synchronized (lock) {
-                return !inputClosed && buffer().length() > 0;
+                if (inputClosed) {
+                    reuse();
+                    return false;
+                }
+                return buffer().length() > 0;
             }
         }
         

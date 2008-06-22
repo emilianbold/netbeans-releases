@@ -44,7 +44,6 @@ import java.io.FileReader;
 import java.util.Date;
 import java_cup.runtime.Symbol;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
 
 /**
  *

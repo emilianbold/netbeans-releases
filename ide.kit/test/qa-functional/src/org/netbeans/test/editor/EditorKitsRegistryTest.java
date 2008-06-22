@@ -41,6 +41,7 @@
 
 package org.netbeans.test.editor;
 
+import java.util.Collection;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
@@ -50,7 +51,9 @@ import javax.swing.text.rtf.RTFEditorKit;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.openide.modules.ModuleInfo;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -78,12 +81,26 @@ public class EditorKitsRegistryTest extends NbTestCase {
         EditorKit kitFromJdk = pane.getEditorKit();
         assertNotNull("Can't find JDK kit for text/html", kitFromJdk);
         assertTrue("Wrong JDK kit for text/html", kitFromJdk instanceof HTMLEditorKit);
-        
-        // Test Netbeans kit
-        EditorKit kitFromNb = CloneableEditorSupport.getEditorKit("text/html");
-        assertNotNull("Can't find Nb kit for text/html", kitFromNb);
-        assertEquals("Wrong Nb kit for text/html", 
-            "org.netbeans.modules.editor.html.HTMLKit", kitFromNb.getClass().getName());
+
+        // Check that org.netbeans.modules.html.editor is available
+        boolean htmlPresent = false;
+        Collection<? extends ModuleInfo> modules = Lookup.getDefault().lookupAll(ModuleInfo.class);
+        for(ModuleInfo info : modules) {
+            if (info.getCodeNameBase().equals("org.netbeans.modules.html.editor")) {
+                htmlPresent = true;
+                break;
+            }
+        }
+
+        if (htmlPresent) {
+            // Test Netbeans kit
+            EditorKit kitFromNb = CloneableEditorSupport.getEditorKit("text/html");
+            assertNotNull("Can't find Nb kit for text/html", kitFromNb);
+            assertEquals("Wrong Nb kit for text/html",
+                "org.netbeans.modules.editor.html.HTMLKit", kitFromNb.getClass().getName());
+        } else {
+            log("Module org.netbeans.modules.html.editor not present, skipping HTMLKit test...");
+        }
     }
 
     public void testPlainEditorKits() {
@@ -92,7 +109,7 @@ public class EditorKitsRegistryTest extends NbTestCase {
         // a defect in JDK, becuase JEP should always honour its EditorKit registry.
         JEditorPane pane = new JEditorPane();
         pane.setEditorKit(new DefaultEditorKit() {
-            public String getContentType() {
+            public @Override String getContentType() {
                 return "text/whatever";
             }
         });

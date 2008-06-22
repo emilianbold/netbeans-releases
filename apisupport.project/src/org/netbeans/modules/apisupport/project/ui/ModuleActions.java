@@ -92,15 +92,13 @@ public final class ModuleActions implements ActionProvider {
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, NbBundle.getMessage(ModuleActions.class, "ACTION_build"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, NbBundle.getMessage(ModuleActions.class, "ACTION_rebuild"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, NbBundle.getMessage(ModuleActions.class, "ACTION_clean"), null));
-        actions.add(null);
         boolean isNetBeansOrg = Util.getModuleType(project) == NbModuleProvider.NETBEANS_ORG;
         if (isNetBeansOrg) {
             String path = project.getPathWithinNetBeansOrg();
             actions.add(createMasterAction(project, new String[] {"init", "all-" + path}, NbBundle.getMessage(ModuleActions.class, "ACTION_build_with_deps")));
-            actions.add(createMasterAction(project, new String[] {"init", "all-" + path, "tryme"}, NbBundle.getMessage(ModuleActions.class, "ACTION_build_with_deps_tryme")));
-        } else {
-            actions.add(createSimpleAction(project, new String[] {"run"}, NbBundle.getMessage(ModuleActions.class, "ACTION_run")));
         }
+        actions.add(null);
+        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, NbBundle.getMessage(ModuleActions.class, "ACTION_run"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, NbBundle.getMessage(ModuleActions.class, "ACTION_debug"), null));
         actions.addAll(Utilities.actionsForPath("Projects/Profiler_Actions_temporary")); //NOI18N
         if (!project.supportedTestTypes().isEmpty()) {
@@ -111,8 +109,8 @@ public final class ModuleActions implements ActionProvider {
             actions.add(createCheckBundleAction(project, NbBundle.getMessage(ModuleActions.class, "ACTION_unused_bundle_keys")));
             actions.add(null);
         }
-        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, NbBundle.getMessage(ModuleActions.class, "ACTION_reload"), null));
-        actions.add(createReloadInIDEAction(project, new String[] {"reload-in-ide"}, NbBundle.getMessage(ModuleActions.class, "ACTION_reload_in_ide")));
+        actions.add(createReloadAction(project, new String[] {"reload"}, NbBundle.getMessage(ModuleActions.class, "ACTION_reload"), false));
+        actions.add(createReloadAction(project, new String[] {"reload-in-ide"}, NbBundle.getMessage(ModuleActions.class, "ACTION_reload_in_ide"), true));
         actions.add(createSimpleAction(project, new String[] {"nbm"}, NbBundle.getMessage(ModuleActions.class, "ACTION_nbm")));
         actions.add(null);
         actions.add(ProjectSensitiveActions.projectCommandAction(JavaProjectConstants.COMMAND_JAVADOC, NbBundle.getMessage(ModuleActions.class, "ACTION_javadoc"), null));
@@ -146,8 +144,8 @@ public final class ModuleActions implements ActionProvider {
         globalCommands.put(ActionProvider.COMMAND_BUILD, new String[] {"netbeans"}); // NOI18N
         globalCommands.put(ActionProvider.COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
         globalCommands.put(ActionProvider.COMMAND_REBUILD, new String[] {"clean", "netbeans"}); // NOI18N
+        globalCommands.put(ActionProvider.COMMAND_RUN, new String[] {"run"}); // NOI18N
         globalCommands.put(ActionProvider.COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
-        globalCommands.put(ActionProvider.COMMAND_RUN, new String[] {"reload"}); // NOI18N
         globalCommands.put("profile", new String[] {"profile"}); // NOI18N
         globalCommands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc-nb"}); // NOI18N
         if (!project.supportedTestTypes().isEmpty()) {
@@ -293,22 +291,22 @@ public final class ModuleActions implements ActionProvider {
     
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
         if (ActionProvider.COMMAND_DELETE.equals(command)) {
-            if (ModuleOperations.canRun(project, true)) {
+            if (ModuleOperations.canRun(project)) {
                 DefaultProjectOperations.performDefaultDeleteOperation(project);
             }
             return;
         } else if (ActionProvider.COMMAND_RENAME.equals(command)) {
-            if (ModuleOperations.canRun(project, true)) {
+            if (ModuleOperations.canRun(project)) {
                 DefaultProjectOperations.performDefaultRenameOperation(project, null);
             }
             return;
         } else if (ActionProvider.COMMAND_MOVE.equals(command)) {
-            if (ModuleOperations.canRun(project, true)) {
+            if (ModuleOperations.canRun(project)) {
                 DefaultProjectOperations.performDefaultMoveOperation(project);
             }
             return;
         } else if (ActionProvider.COMMAND_COPY.equals(command)) {
-            if (ModuleOperations.canRun(project, true)) {
+            if (ModuleOperations.canRun(project)) {
                 DefaultProjectOperations.performDefaultCopyOperation(project);
             }
             return;
@@ -363,6 +361,13 @@ public final class ModuleActions implements ActionProvider {
             promptForPublicPackagesToDocument();
             return;
         } else {
+            if (command.equals(ActionProvider.COMMAND_RUN) || command.equals(ActionProvider.COMMAND_DEBUG)) { // #63652
+                if (project.getTestUserDirLockFile().isFile()) {
+                    notifyCannotReRun();
+                    // XXX would be nice to offer to delete the lock file and continue
+                    return;
+                }
+            }
             targetNames = globalCommands.get(command);
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
@@ -472,11 +477,17 @@ public final class ModuleActions implements ActionProvider {
         };
     }
     
-    private static Action createReloadInIDEAction(final NbModuleProject project, final String[] targetNames, String displayName) {
+    private static Action createReloadAction(final NbModuleProject project, final String[] targetNames, String displayName, final boolean inIDE) {
         return new AbstractAction(displayName) {
             public @Override boolean isEnabled() {
                 if (findBuildXml(project) == null) {
                     return false;
+                }
+                if (Boolean.parseBoolean(project.evaluator().getProperty("is.autoload")) || Boolean.parseBoolean(project.evaluator().getProperty("is.eager"))) { // NOI18N
+                    return false; // #86395
+                }
+                if (!inIDE) {
+                    return project.getTestUserDirLockFile().isFile();
                 }
                 NbModuleProvider.NbModuleType type = Util.getModuleType(project);
                 if (type == NbModuleProvider.NETBEANS_ORG) {
@@ -508,7 +519,7 @@ public final class ModuleActions implements ActionProvider {
                 if (!verifySufficientlyNewHarness(project)) {
                     return;
                 }
-                if (ModuleUISettings.getDefault().getConfirmReloadInIDE()) {
+                if (inIDE && ModuleUISettings.getDefault().getConfirmReloadInIDE()) {
                     NotifyDescriptor d = new NotifyDescriptor.Confirmation(
                             NbBundle.getMessage(ModuleActions.class, "LBL_reload_in_ide_confirm"),
                             NbBundle.getMessage(ModuleActions.class, "LBL_reload_in_ide_confirm_title"),
@@ -560,6 +571,10 @@ public final class ModuleActions implements ActionProvider {
                 }
             }
         };
+    }
+
+    static void notifyCannotReRun() {
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(ModuleActions.class, "LBL_cannot_rerun"), NotifyDescriptor.WARNING_MESSAGE));
     }
     
 }

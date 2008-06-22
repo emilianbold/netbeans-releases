@@ -386,6 +386,10 @@ public final class NbModuleProject implements Project {
         return helper.resolveFile(evaluator().evaluate("${cluster}/${module.jar}")); // NOI18N
     }
     
+    public File getTestUserDirLockFile() {
+        return getHelper().resolveFile(evaluator().evaluate("${test.user.dir}/lock"));
+    }
+
     public String getCodeNameBase() {
         Element config = getPrimaryConfigurationData();
         Element cnb = Util.findElement(config, "code-name-base", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
@@ -627,7 +631,7 @@ public final class NbModuleProject implements Project {
     
     /** Get the Java source level used for this module. Default is 1.4. */
     public String getJavacSource() {
-        String javacSource = evaluator().getProperty("javac.source");
+        String javacSource = evaluator().getProperty(SingleModuleProperties.JAVAC_SOURCE);
         assert javacSource != null;
         return javacSource;
     }

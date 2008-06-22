@@ -255,6 +255,9 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
 
     <target name="nbm" depends="-create-dest-dir-nbm,-create-license.file,projectized-common.nbm"/>
     
+    <target name="run" depends="netbeans">
+        <ant dir="${nb_all}/nbbuild" target="tryme"/>
+    </target>
     <!-- apisupport/project could calls this for the debug action. -->
     <!-- You can also call it directly from the nbbuild/misc pseudoproject. -->
     <target name="debug" depends="netbeans">

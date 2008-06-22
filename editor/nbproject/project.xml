@@ -296,12 +296,7 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.netbeans.modules.editor.plain</code-name-base>
                         <recursive/>
                         <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.html</code-name-base>
-                        <recursive/>
-                        <compile-dependency/>
-                    </test-dependency>
+                    </test-dependency>                    
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.html.editor</code-name-base>
                         <recursive/>
@@ -370,11 +365,8 @@ made subject to such option by the copyright holder.
                     <test-dependency>
                         <code-name-base>org.openide.util</code-name-base>
                         <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
+                    </test-dependency>                    
                         <code-name-base>org.openide.windows</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <public-packages>

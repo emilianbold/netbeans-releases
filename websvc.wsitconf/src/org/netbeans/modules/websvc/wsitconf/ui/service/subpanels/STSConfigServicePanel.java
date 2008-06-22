@@ -378,11 +378,11 @@ public class STSConfigServicePanel extends JPanel {
 }//GEN-LAST:event_lifeTimeTextFieldKeyReleased
 
     private void encryptTokenChBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_encryptTokenChBoxActionPerformed
-        ProprietarySecurityPolicyModelHelper.setSTSEncryptKey(binding, encryptTokenChBox.isSelected());
+        ProprietarySecurityPolicyModelHelper.setSTSEncryptToken(binding, encryptTokenChBox.isSelected());
     }//GEN-LAST:event_encryptTokenChBoxActionPerformed
 
     private void encryptKeyChBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_encryptKeyChBoxActionPerformed
-        ProprietarySecurityPolicyModelHelper.setSTSEncryptToken(binding, encryptKeyChBox.isSelected());
+        ProprietarySecurityPolicyModelHelper.setSTSEncryptKey(binding, encryptKeyChBox.isSelected());
     }//GEN-LAST:event_encryptKeyChBoxActionPerformed
 
     private void contractTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_contractTextFieldKeyReleased

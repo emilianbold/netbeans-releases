@@ -126,6 +126,18 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * @return true if the test can run
      */
     public boolean canRun() {
+        if (NbTestSuite.ignoreRandomFailures()) {
+            if (getClass().isAnnotationPresent(RandomlyFails.class)) {
+                return false;
+            }
+            try {
+                if (getClass().getMethod(getName()).isAnnotationPresent(RandomlyFails.class)) {
+                    return false;
+                }
+            } catch (NoSuchMethodException x) {
+                // Specially named methods; let it pass.
+            }
+        }
         if (null == filter) {
             //System.out.println("NBTestCase.canRun(): filter == null name=" + name ());
             return true; // no filter was aplied

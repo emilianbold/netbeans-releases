@@ -1447,9 +1447,9 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </exec>
   </target>
 
-  <target name="rebuild-cluster" depends="init" description="Builds only one cluster with dependencies - takes '-Drebuild.cluster.name=nb.cluster.visualweb' as parameter">
+  <target name="rebuild-cluster" depends="init" description="Builds only one cluster with dependencies ; takes e.g. '-Drebuild.cluster.name=nb.cluster.visualweb' as parameter">
     <delete file="netbeans/${rebuild.cluster.name}.built" failonerror="false"/>
-    <fail unless="${rebuild.cluster.name}" message="You need to specify 'rebuild.cluster.name' attribute"/>
+    <fail unless="${rebuild.cluster.name}" message="You need to specify e.g.: -Drebuild.cluster.name=nb.cluster.visualweb"/>
     <antcall target="build-one-cluster">
       <param name="one.cluster.name" value="${rebuild.cluster.name}"/>
     </antcall>
