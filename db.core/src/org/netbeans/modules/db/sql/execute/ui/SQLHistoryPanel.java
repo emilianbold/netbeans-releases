@@ -627,7 +627,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                 int maxLength;
                 Iterator dateIterator = dateList.iterator();
                 for (String sql : sqlList) {
-                    if (sql.trim().indexOf(matchText) != -1) {
+                    if (sql.trim().toLowerCase().indexOf(matchText.toLowerCase()) != -1) {
                         length = sql.trim().length();
                         maxLength = length > 50 ? 50 : length;
                         data[row][0] = sql.trim().substring(0, maxLength);
