@@ -95,8 +95,6 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
     private Object[] comboData;
     private SQLHistoryView view;
     private JEditorPane editorPane;
-    private static String[] sqlToolTipText;
-
 
     /** Creates new form SQLHistoryDlg2 */
     public SQLHistoryPanel(JEditorPane editorPane) {
@@ -124,7 +122,6 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
             // Initialize sql column data          
             List<String> sqlList = view.getSQLList();
             List<String> dateList = view.getDateList();
-            sqlToolTipText = new String[sqlList.size()];
             parsedData = new Object[sqlList.size()][2];
             data = new Object[sqlList.size()][2];
             int row = 0;
@@ -135,7 +132,6 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                 maxLength = length > 50 ? 50 : length;
                 data[row][0] = sql.trim().substring(0, maxLength);
                 parsedData[row][0] = sql;
-                sqlToolTipText[row] = sql.trim();
                 row++;
             }
             // Initialize data
@@ -586,13 +582,11 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                     maxLength = length > 50 ? 50 : length;
                     sqlList.add(sqlHistory.getSql().trim().substring(0, maxLength));
                     dateList.add(DateFormat.getInstance().format(sqlHistory.getDate()));
-                    sqlToolTipText[i++] = sqlHistory.getSql().trim();
                 } else if (url.equals(sqlHistory.getUrl())) {
                     length = sqlHistory.getSql().trim().length();
                     maxLength = length > 50 ? 50 : length;
                     sqlList.add(sqlHistory.getSql().trim().substring(0, maxLength));
                     dateList.add(DateFormat.getInstance().format(sqlHistory.getDate()));
-                    sqlToolTipText[i++] = sqlHistory.getSql().trim();
                 }
             }
 
@@ -604,7 +598,6 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                 length = sql.trim().length();
                 maxLength = length > 50 ? 50 : length;
                 data[row][0] = sql.trim().substring(0, maxLength);
-                sqlToolTipText[row] = sql.trim();
                 row++;
             }
             // Initialize date column data
@@ -639,7 +632,6 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                         maxLength = length > 50 ? 50 : length;
                         data[row][0] = sql.trim().substring(0, maxLength);
                         data[row][1] = dateIterator.next();
-                        sqlToolTipText[row] = sql.trim();
                         row++;
                     } 
                 }
@@ -671,7 +663,6 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                         maxLength = length > 50 ? 50 : length;
                         data[row][0] = sql.trim().substring(0, maxLength);
                         data[row][1] = dateIterator.next();
-                        sqlToolTipText[row] = sql.trim();
                         row++;
                     } else {
                         cleanTable();
