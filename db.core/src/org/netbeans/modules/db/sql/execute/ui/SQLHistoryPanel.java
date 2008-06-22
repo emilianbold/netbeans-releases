@@ -168,7 +168,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                 Component c = super.prepareRenderer(renderer, rowIndex, vColIndex);
                 if (c instanceof JComponent) {
                     JComponent jc = (JComponent)c;
-                    jc.setToolTipText((String)getValueAt(rowIndex, vColIndex));
+                    jc.setToolTipText(view.getSQLHistoryTooltipValue(rowIndex, vColIndex));
                 }
                 return c;
             }
@@ -356,6 +356,53 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
 
         public List<SQLHistory> getSQLHistoryList() {
             return sqlHistoryList;
+        }
+        
+        /**
+         * Get the SQL statement string at the row,col position in the table and convert the string to html
+         * @param row - table row
+         * @param col - table column
+         * @return    - formatted SQL statement for the specified row, col
+         */
+        public String getSQLHistoryTooltipValue(int row, int col) {
+            List<SQLHistory> sqlHistoryListForTooltip = view.getSQLHistoryList();
+            
+            if (col == 0) {
+                String sqlRow = sqlHistoryListForTooltip.get(row).getSql();                
+                while (sqlRow.indexOf("\n") != -1) {        // NOI18N
+                    sqlRow = replace(sqlRow, "\n", "<br>"); // NOI18N
+                }      
+                return "<html>" + sqlRow + "</html>";       // NOI18N
+            } else {                
+                return DateFormat.getInstance().format(sqlHistoryListForTooltip.get(row).getDate());
+            }
+            
+        }
+        
+        /**
+         * Convert sql statement to html for proper rendering in the table's tooltip
+         * @param target - original string
+         * @param from - string to replace
+         * @param to - string to replace with
+         * @return - updated string
+         */
+        public String replace(String target, String from, String to) {
+            int start = target.indexOf(from);
+            if (start == -1) {
+                return target;
+            }
+            int lf = from.length();
+            char[] targetChars = target.toCharArray();
+            StringBuffer buffer = new StringBuffer();
+            int copyFrom = 0;
+            while (start != -1) {
+                buffer.append(targetChars, copyFrom, start - copyFrom);
+                buffer.append(to);
+                copyFrom = start + lf;
+                start = target.indexOf(from, copyFrom);
+            }
+            buffer.append(targetChars, copyFrom, targetChars.length - copyFrom);
+            return buffer.toString();
         }
         
         public List<String> getUrlList() {
