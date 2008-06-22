@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,30 +31,91 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor.parser;
 
-package org.netbeans.modules.spring.beans.completion;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
 
 /**
+ * Formatter just for testing purposses
  *
- * @author Rohan Ranade
+ * @author Petr Pisl
  */
-public final class QueryProgress {
+public class TestHtmlFormatter extends HtmlFormatter {
 
-    private volatile boolean state = false;
-    
-    public QueryProgress() {
+    private StringBuilder sb = new StringBuilder();
+
+    @Override
+    public void reset() {
+        sb.setLength(0);
     }
 
-    public boolean isCancelled() {
-        return state;
+    @Override
+    public void appendHtml(String html) {
+        sb.append(html);
     }
-    
-    public void cancel() {
-        state = true;
+
+    @Override
+    public void appendText(String text, int fromInclusive, int toExclusive) {
+        sb.append("ESCAPED{");
+        sb.append(text, fromInclusive, toExclusive);
+        sb.append("}");
+    }
+
+    @Override
+    public void name(ElementKind kind, boolean start) {
+        if (start) {
+            sb.append(kind);
+        }
+    }
+
+    @Override
+    public void active(boolean start) {
+        if (start) {
+            sb.append("ACTIVE{");
+        } else {
+            sb.append("}");
+        }
+    }
+
+    @Override
+    public void parameters(boolean start) {
+        if (start) {
+            sb.append("PARAMETERS{");
+        } else {
+            sb.append("}");
+        }
+    }
+
+    @Override
+    public void type(boolean start) {
+        if (start) {
+            sb.append("TYPE{");
+        } else {
+            sb.append("}");
+        }
+    }
+
+    @Override
+    public void deprecated(boolean start) {
+        if (start) {
+            sb.append("DEPRECATED{");
+        } else {
+            sb.append("}");
+        }
+    }
+
+    @Override
+    public String getText() {
+        return sb.toString();
+    }
+
+    @Override
+    public void emphasis(boolean start) {
     }
 }

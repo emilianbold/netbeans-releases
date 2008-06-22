@@ -49,6 +49,7 @@ import org.netbeans.api.visual.widget.Widget;
 import javax.swing.*;
 import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  * Test for #99048 - Animator listener is needed
@@ -60,10 +61,8 @@ public class AnimatorListenerTest extends VisualTestCase {
         super (name);
     }
 
+    @RandomlyFails
     public void testAnimatorListener () {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return;
-        }
         final Scene scene = new Scene ();
         Widget widget = new Widget (scene);
         scene.addChild (widget);

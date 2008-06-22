@@ -69,7 +69,7 @@ public final class Workspace {
     
     
     /** Represents variable in Eclipse project's classpath. */
-    static class Variable {
+    public static class Variable {
         private String name;
         private String location;
         private boolean fileVar;
@@ -171,7 +171,7 @@ public final class Workspace {
     }
     
     /** Sets up a workspace directory. */
-    private Workspace(File workspaceDir) {
+    Workspace(File workspaceDir) {
         this.workspaceDir = workspaceDir;
         corePrefFile = new File(workspaceDir, CORE_PREFERENCE);
         resourcesPrefFile = new File(workspaceDir, RESOURCES_PREFERENCE);

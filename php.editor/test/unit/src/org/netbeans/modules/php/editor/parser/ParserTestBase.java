@@ -40,12 +40,9 @@
 package org.netbeans.modules.php.editor.parser;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.StringReader;
-import java_cup.runtime.Symbol;
 import org.netbeans.modules.gsf.GsfTestBase;
-import org.netbeans.modules.php.editor.lexer.PHPLexerUtils;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+import org.netbeans.modules.php.editor.PHPLanguage;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -53,7 +50,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Pisl
  */
-public class ParserTestBase extends GsfTestBase {
+public abstract class ParserTestBase extends GsfTestBase {
 
     public ParserTestBase(String testName) {
         super(testName);
@@ -69,10 +66,12 @@ public class ParserTestBase extends GsfTestBase {
     protected void tearDown() throws Exception {
         super.tearDown();
     }
-    
-    protected void performFileParserTest(String filename) throws Exception {
+
+    protected abstract String getTestResult(String filename) throws Exception;
+
+    protected void performTest(String filename) throws Exception {
         // parse the file
-        String result = parseFile(new File(getDataDir(), "testfiles/" + filename + ".php"));
+        String result = getTestResult(filename);
         
         String fullClassName = this.getClass().getName();
         String goldenFileDir = fullClassName.replace('.', '/');
@@ -94,34 +93,19 @@ public class ParserTestBase extends GsfTestBase {
         }
     }
     
-    private static final String parseFile(File testFile) throws Exception {
-        StringBuffer result = new StringBuffer();
-        String content = PHPLexerUtils.getFileContent(testFile);
-        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(content));
-        
-        Symbol symbol;
-        result.append("<testresult testFile='").append(testFile.getName()).append("'>\n");
-        result.append("    <scanner>\n");
-        do {
-            symbol = scanner.next_token();
-            result.append("        <token id='").append(Utils.getASTScannerTokenName(symbol.sym)).append("' start='");
-            result.append(symbol.left).append("' end='").append(symbol.right + "'>\n");
-            result.append("            <text>");
-            result.append(PHPLexerUtils.getXmlStringValue(content.substring(symbol.left, symbol.right)));
-            result.append("</text>\n");
-            result.append("        </token>\n");
-        } while (symbol.sym != ASTPHP5Symbols.EOF);
-        result.append("    </scanner>\n");
-        
-        scanner.reset(new FileReader(testFile));
-        ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
-        Symbol root = parser.parse();
-        if (root != null){
-            Program rootnode = (Program)root.value;
-        
-            result.append((new PrintASTVisitor()).printTree(rootnode, 1));
-        }
-        result.append("</testresult>\n");
-        return result.toString();
+    
+
+    @Override
+    protected String getPreferredMimeType() {
+        return PHPLanguage.PHP_MIME_TYPE;
     }
+
+    @Override
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new PHPLanguage();
+    }
+
+
+
+
 }

@@ -491,19 +491,13 @@ public final class Preview extends Dialog implements Percent.Listener {
 
   private double getWidthScale(int width) {
     final int JAVA_INSET = 5;
-    
-    double scrollWidth = (double) (myScrollPane.getWidth() -
-      myScrollPane.getVerticalScrollBar().getWidth() - JAVA_INSET);
-
+    double scrollWidth = (double) (myScrollPane.getWidth() - myScrollPane.getVerticalScrollBar().getWidth() - JAVA_INSET);
     return scrollWidth / width;
   }
 
   private double getHeightScale(int height) {
     final int JAVA_INSET = 5;
-    
-    double scrollHeight = (double) (myScrollPane.getHeight() -
-      myScrollPane.getHorizontalScrollBar().getHeight() - JAVA_INSET);
-
+    double scrollHeight = (double) (myScrollPane.getHeight() - myScrollPane.getHorizontalScrollBar().getHeight() - JAVA_INSET);
     return scrollHeight / height;
   }
 

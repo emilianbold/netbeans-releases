@@ -51,6 +51,7 @@ import java.lang.reflect.InvocationTargetException;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -59,6 +60,7 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 
 // This test class tests the main functionality of the property sheet
+@RandomlyFails
 public class PropertiesFlushTest extends NbTestCase {
     private PropertySheet ps = null;
     public PropertiesFlushTest(String name) {
@@ -69,7 +71,6 @@ public class PropertiesFlushTest extends NbTestCase {
         return false;
     }
     
-    private static boolean setup = false;
 /*
  * This test creates a Property, Editor and Node. First test checks if initialized
  * editor contains the same value as property. The second checks if the property
@@ -119,10 +120,6 @@ public class PropertiesFlushTest extends NbTestCase {
     
     
     public void testNullChangePerformedAndReflectedInPropertySheet() throws Exception {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return;
-        }
-
         System.err.println(".testNullChangePerformedAndReflectedInPropertySheet");
         int count = ps.table.getRowCount();
         assertTrue("Property sheet should contain three rows ", count==3);
@@ -148,10 +145,6 @@ public class PropertiesFlushTest extends NbTestCase {
     
     private Exception throwMe = null;
     public void testSetSheetChangesPropertySheetContents() throws Exception {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return;
-        }
-
         System.err.println(".testSetSheetChangesPropertySheetContents");
         final TNode2 tnd = new TNode2();
         throwMe = null;
@@ -364,10 +357,6 @@ public class PropertiesFlushTest extends NbTestCase {
     
     private Exception throwMe2 = null;
     public void testSetNodesToNullReleasesOldNode() throws Exception {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return;
-        }
-
         System.err.println(".testSetNodesToNullReleasesOldNode");
         TNode2 tnd = new TNode2();
         Reference oldNode = new WeakReference(tnd);

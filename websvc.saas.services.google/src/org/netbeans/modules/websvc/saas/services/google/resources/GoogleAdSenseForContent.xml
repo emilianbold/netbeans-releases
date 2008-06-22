@@ -18,7 +18,7 @@
         <localizing-bundle>org.netbeans.modules.websvc.components.google.Bundle</localizing-bundle>
         <group name="Google"/>
         <code-gen>
-            <artifacts targets="java,servlet"/>
+            <artifacts targets="java,servlet,resource,jsp"/>
         </code-gen>
     </saas-metadata>
 
