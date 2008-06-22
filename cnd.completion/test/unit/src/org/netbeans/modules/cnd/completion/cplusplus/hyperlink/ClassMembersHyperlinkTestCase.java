@@ -350,6 +350,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ137799and137798.h", 17, 21, "IZ137799and137798.h", 17, 13);
         performTest("IZ137799and137798.h", 18, 21, "IZ137799and137798.h", 18, 13);
     }
+
+    public void testNestedStructAndVar() throws Exception {
+        performTest("IZ137799and137798.h", 19, 12, "IZ137799and137798.h", 19, 11);
+        performTest("IZ137799and137798.h", 11, 17, "IZ137799and137798.h", 11, 9);
+    } 
     
     public static class Failed extends HyperlinkBaseTestCase {
         

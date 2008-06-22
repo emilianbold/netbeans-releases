@@ -16,5 +16,5 @@ class FwyZoneObjects {
             Widget sp[NSPEEDS];
             Widget spzonel;
             Widget spzoneu;
-        } z[NZONES];
+        } zz[NZONES];
 };
