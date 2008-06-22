@@ -1077,7 +1077,9 @@ public class RubyStructureAnalyzer implements StructureScanner {
                         TokenSequence t = ts.embedded();
                         if (t != null) {
                             t.moveStart();
-                            t.moveNext();
+                            if (!t.moveNext()) {
+                                return DEFAULT_LABEL;
+                            }
                             while (t.token().id() == RubyTokenId.WHITESPACE) {
                                 if (!t.moveNext()) {
                                     break;

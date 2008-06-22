@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,46 +39,45 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.editor;
+package org.netbeans.modules.websvc.wsitmodelext.addressing;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.Set;
-import org.openide.modules.ModuleInstall;
+import org.netbeans.modules.xml.xam.dom.Attribute;
 
 /**
- * 
- * @author mkleint
- * @author Martin Adamek
+ *
+ * @author Martin Grebac
  */
-public class GroovyModuleInstall extends ModuleInstall {
-
+public enum AddressingAttribute implements Attribute {
+        PORTNAME("PortName"),
+        ACTION("Action");
+    
+    private String name;
+    private Class type;
+    private Class subtype;
+    
     /**
-     * screw friend dependency.
-     * Hack to enable this module as friend to NB 6.0 modules
+     * Creates a new instance of AddressingAttribute
      */
-    @Override
-    @SuppressWarnings("unchecked")
-    public void validate() throws IllegalStateException {
-        try {
-            java.lang.Class main = java.lang.Class.forName("org.netbeans.core.startup.Main", false, //NOI18N
-                    Thread.currentThread().getContextClassLoader());
-            Method meth = main.getMethod("getModuleSystem", new Class[0]); //NOI18N
-            Object moduleSystem = meth.invoke(null, new Object[0]);
-            meth = moduleSystem.getClass().getMethod("getManager", new Class[0]); //NOI18N
-            Object mm = meth.invoke(moduleSystem, new Object[0]);
-            Method moduleMeth = mm.getClass().getMethod("get", new Class[]{String.class}); //NOI18N
-            Object gsfapi = moduleMeth.invoke(mm, "org.netbeans.modules.gsf.api"); //NOI18N
-            if (gsfapi != null) {
-                Field frField = gsfapi.getClass().getSuperclass().getDeclaredField("friendNames"); //NOI18N
-                frField.setAccessible(true);
-                Set friends = (Set) frField.get(gsfapi);
-                friends.add("org.netbeans.modules.groovy.editor"); //NOI18N
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            new IllegalStateException("Cannot fix dependencies for org.netbeans.modules.groovy.editor."); //NOI18N
-        }
+    AddressingAttribute(String name) {
+        this(name, String.class);
+    }
+    AddressingAttribute(String name, Class type) {
+        this(name, type, null);
+    }
+    AddressingAttribute(String name, Class type, Class subtype) {
+        this.name = name;
+        this.type = type;
+        this.subtype = subtype;
     }
     
+    @Override
+    public String toString() { return name; }
+
+    public Class getType() {
+        return type;
+    }
+
+    public String getName() { return name; }
+
+    public Class getMemberType() { return subtype; }
 }

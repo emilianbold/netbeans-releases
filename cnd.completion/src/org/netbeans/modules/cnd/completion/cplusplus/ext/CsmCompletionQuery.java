@@ -710,7 +710,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                      (!lastDot && i == parmCnt - 1),
                                     kind);
             
-                    if ((i < parmCnt || lastDot || findType) && lastType != null && lastType.getArrayDepth() == 0 && kind == ExprKind.ARROW) {
+                    if ((i < parmCnt-1 || lastDot || findType) && lastType != null && lastType.getArrayDepth() == 0 && kind == ExprKind.ARROW) {
                         CsmClassifier cls = getClassifier(lastType, CsmFunction.OperatorKind.ARROW);
                         if (cls != null) {
                             lastType = CsmCompletion.getType(cls, 0);
