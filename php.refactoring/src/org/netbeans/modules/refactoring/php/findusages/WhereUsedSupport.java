@@ -43,8 +43,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -57,16 +57,19 @@ import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.php.editor.index.IndexedElement;
+import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.refactoring.php.findusages.AttributedNodes.AttributedElement;
+import org.netbeans.modules.refactoring.php.findusages.AttributedNodes.ClassElement;
 import org.netbeans.modules.refactoring.php.findusages.AttributedNodes.ClassMemberElement;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.Phase;
@@ -91,6 +94,7 @@ public final class WhereUsedSupport {
     private AttributedNodes semiAttribs;
     private Results results;
     private Set<Modifier> modifier;
+    private PHPIndex idx;
 
     public static enum Kind {
 
@@ -98,31 +102,19 @@ public final class WhereUsedSupport {
         CONSTANT, FUNCTION, CLASS_CONSTANT
     }
 
-    private WhereUsedSupport(AttributedElement aElement, ASTNode node, FileObject fo) {
-        this(aElement, node.getStartOffset(), fo, null);
+    private WhereUsedSupport(PHPIndex idx,AttributedElement aElement, ASTNode node, FileObject fo) {
+        this(idx, aElement, node.getStartOffset(), fo, null);
         this.node = node;
     }
 
-    private WhereUsedSupport(AttributedElement aElement, int offset, FileObject fo,
+    private WhereUsedSupport(PHPIndex idx, AttributedElement aElement, int offset, FileObject fo,
             AttributedNodes semiAttribs) {
         this.fo = fo;
         this.offset = offset;
         this.semiAttribs = semiAttribs;
         this.aElement = aElement;
-        switch (aElement.getKind()) {
-            case CLASS:
-                kind = Kind.CLASS;
-                break;
-            case CONST:
-                kind = (aElement.isClassMember()) ? Kind.CLASS_CONSTANT : Kind.CONSTANT;
-                break;
-            case FUNC:
-                kind = (aElement.isClassMember()) ? Kind.METHOD : Kind.FUNCTION;
-                break;
-            case VARIABLE:
-                kind = (aElement.isClassMember()) ? Kind.FIELD : Kind.VARIABLE;
-                break;
-        }
+        this.idx =idx;
+        kind = getWhereUsedKind(aElement);
         this.results = new Results();
     }
 
@@ -205,7 +197,8 @@ public final class WhereUsedSupport {
                 break;
             }
         }
-        return (el != null) ? new WhereUsedSupport(el, offset, info.getFileObject(), attribs) : null;
+        return (el != null) ? new WhereUsedSupport(PHPIndex.get(info.getIndex(PhpSourcePath.MIME_TYPE)),
+                el, offset, info.getFileObject(), attribs) : null;
     }
 
     public void collectUsages(final FileObject fileObject) {    
@@ -289,17 +282,7 @@ public final class WhereUsedSupport {
     private Set<? extends FileObject> getAllFiles() {
         Set<FileObject> retval = new LinkedHashSet<FileObject>();
         retval.add(fo);
-        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-        FileObject[] roots = cp.getRoots();
-        for (FileObject root : roots) {
-            Enumeration<? extends FileObject> data = root.getData(true);
-            while (data.hasMoreElements()) {
-                FileObject fileObject = data.nextElement();
-                if (fileObject.getMIMEType().equals(PhpSourcePath.MIME_TYPE)) {
-                    retval.add(fileObject);
-                }
-            }
-        }
+        retval.addAll(idx.filesWithIdentifiers(this.getName())); 
         return retval;
     }
 
@@ -330,6 +313,58 @@ public final class WhereUsedSupport {
            modifier = retval;
         }
         return modifier;
+    }
+    
+    public static boolean isAlreadyInResults(ASTNode node, Set<ASTNode> results) {
+        OffsetRange newOne = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+        for (Iterator<ASTNode> it = results.iterator(); it.hasNext();) {
+            ASTNode aSTNode = it.next();
+            OffsetRange oldOne = new OffsetRange(aSTNode.getStartOffset(), aSTNode.getEndOffset());
+            if (newOne.containsInclusive(oldOne.getStart()) || oldOne.containsInclusive(newOne.getStart())) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public static boolean matchDirectSubclass(AttributedElement elemToBeFound, ASTNode node, AttributedElement elem) {
+        boolean retval = false;
+        if (elem != null && elem instanceof ClassElement && node instanceof ClassDeclaration) {
+            ClassElement superClass = ((ClassElement) elem).getSuperClass();
+            if (superClass != null && superClass.equals(elemToBeFound)) {
+                retval = true;
+            }
+        }
+        return retval;
+    }
+
+    public static boolean match(AttributedElement elemToBeFound, AttributedElement elem) {
+        boolean retval = elemToBeFound != null && elem != null && elemToBeFound.getName().equals(elem.getName());
+        if (retval) {
+            WhereUsedSupport.Kind valueKind = WhereUsedSupport.getWhereUsedKind(elem);
+            WhereUsedSupport.Kind elKind = WhereUsedSupport.getWhereUsedKind(elemToBeFound);
+            retval = (valueKind == elKind) && elemToBeFound.getScopeName().equals(elem.getScopeName());
+        }
+        return retval;
+    }
+    
+    public static WhereUsedSupport.Kind getWhereUsedKind(AttributedElement aElement) {
+        Kind retval = null;
+        switch (aElement.getKind()) {
+            case CLASS:
+                retval = Kind.CLASS;
+                break;
+            case CONST:
+                retval = (aElement.isClassMember()) ? Kind.CLASS_CONSTANT : Kind.CONSTANT;
+                break;
+            case FUNC:
+                retval = (aElement.isClassMember()) ? Kind.METHOD : Kind.FUNCTION;
+                break;
+            case VARIABLE:
+                retval = (aElement.isClassMember()) ? Kind.FIELD : Kind.VARIABLE;
+                break;
+        }
+        return retval;
     }
 
     public class Results {
