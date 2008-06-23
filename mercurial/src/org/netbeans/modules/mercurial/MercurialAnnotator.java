@@ -207,7 +207,7 @@ public class MercurialAnnotator extends VCSAnnotator {
         FileInformation mostImportantInfo = null;
         File mostImportantFile = null;
         boolean folderAnnotation = false;
-        
+                
         for (final File file : context.getRootFiles()) {
             FileInformation info = cache.getCachedStatus(file, true);
             if (info == null) {
@@ -235,10 +235,10 @@ public class MercurialAnnotator extends VCSAnnotator {
         
         if (mostImportantInfo == null) return null;
         return folderAnnotation ?
-            annotateFolderNameHtml(name, mostImportantInfo, mostImportantFile) :
+            annotateFolderNameHtml(name, context, mostImportantInfo, mostImportantFile) :
             annotateNameHtml(name, mostImportantInfo, mostImportantFile);
-    }
-    
+        }
+                
     public Image annotateIcon(Image icon, VCSContext context) {
         boolean folderAnnotation = false;
         for (File file : context.getRootFiles()) {
@@ -526,7 +526,7 @@ public class MercurialAnnotator extends VCSAnnotator {
         return lessThan.matcher(name).replaceAll("&lt;"); // NOI18N
     }
     
-    private String annotateFolderNameHtml(String name, FileInformation mostImportantInfo, File mostImportantFile) {
+    private String annotateFolderNameHtml(String name, VCSContext context, FileInformation mostImportantInfo, File mostImportantFile) {
         String nameHtml = htmlEncode(name);
         if (mostImportantInfo.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED){
             return excludedFormat.format(new Object [] { nameHtml, ""}); // NOI18N
@@ -535,20 +535,43 @@ public class MercurialAnnotator extends VCSAnnotator {
         if (fileName.equals(name)){
             return uptodateFormat.format(new Object [] { nameHtml, "" }); // NOI18N
         }
+
+        if(context.getRootFiles().size() == 1) {
+            return uptodateFormat.format(new Object [] { nameHtml, "" }); // NOI18N
+        }
         
         // Label top level repository nodes with a repository name label when:
-        // Display Name (name) is different from its repo name (repo.getName())
-        fileName = null;
-        File repo = Mercurial.getInstance().getTopmostManagedParent(mostImportantFile);
-        if(repo != null && repo.equals(mostImportantFile)){
-            if (!repo.getName().equals(name)){
-                fileName = repo.getName();
-            }          
+        // Display Name (name) is different from its repo name (repo.getName())        
+        File parentFile = null;
+        final Set<File> rootFiles = context.getRootFiles();
+        for (File file : rootFiles) {            
+            if(parentFile == null) {
+                parentFile = file.getParentFile();
+            } else {
+                File p = file.getParentFile();
+                if(p == null || !parentFile.getAbsolutePath().equals(p.getAbsolutePath())) {
+                    // not comming from the same parent => do not annnotate with folder name
+                    return uptodateFormat.format(new Object [] { nameHtml, ""});
+                }
+            }
         }
-        if (fileName != null)
-            return uptodateFormat.format(new Object [] { nameHtml, " [" + fileName + "]" }); // NOI18N
-        else
-            return uptodateFormat.format(new Object [] { nameHtml, "" }); // NOI18N
+        
+        String folderAnotation = null;
+        File repo = null;
+                
+        for (File file : rootFiles) {            
+            repo = Mercurial.getInstance().getTopmostManagedParent(file);
+            if (!repo.getAbsolutePath().equals(parentFile.getAbsolutePath())) {
+                // not from repo root => do not annnotate with folder name 
+                return uptodateFormat.format(new Object [] { nameHtml, ""});
+            } 
+            break;
+        }
+        if (!repo.getName().equals(name)){
+            folderAnotation = repo.getName();
+        }                
+
+        return uptodateFormat.format(new Object [] { nameHtml, folderAnotation != null ? " [" + folderAnotation + "]" : ""}); // NOI18N
     }
     
     private boolean isMoreImportant(FileInformation a, FileInformation b) {
