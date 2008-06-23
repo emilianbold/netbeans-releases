@@ -194,4 +194,16 @@ public interface ExecutionDescriptor {
         boolean isRerunPossible();
 
     }
+
+    interface InputProcessorFactory {
+
+        InputProcessor newInputProcessor();
+
+    }
+
+    interface LineConvertorFactory {
+
+        LineConvertor newLineConvertor();
+
+    }
 }
