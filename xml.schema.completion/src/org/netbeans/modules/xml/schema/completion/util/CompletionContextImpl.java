@@ -203,6 +203,10 @@ public class CompletionContextImpl extends CompletionContext {
                 //user enters < character
                 case XMLDefaultTokenContext.TEXT_ID:
                     String chars = token.getImage().trim();
+                    if(chars != null && chars.startsWith("&")) {
+                        completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
+                        break;
+                    }                    
                     if(chars != null && chars.equals("") &&
                        token.getPrevious().getImage().trim().equals("/>")) {
                         completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
