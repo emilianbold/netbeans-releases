@@ -79,10 +79,11 @@ public class GraphNodeReaderFactory {
             {
                 retVal = new CombinedFragmentReader(nodeInfo);
             }
-            else if (elt instanceof IPackage)
-            {
-                retVal = new PackageReader(nodeInfo);
-            }
+            // we don't need special handling for packages
+//            else if (elt instanceof IPackage)
+//            {
+//                retVal = new PackageReader(nodeInfo);
+//            }
             else if (elt instanceof IState || elt instanceof IRegion)
             {
                 retVal = new CompositeStateReader(nodeInfo);
