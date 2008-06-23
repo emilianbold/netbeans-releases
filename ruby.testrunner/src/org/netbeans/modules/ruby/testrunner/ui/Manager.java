@@ -299,15 +299,14 @@ public final class Manager {
                                  final ResultDisplayHandler displayHandler,
                                  final boolean sessionEnd) {
         final boolean firstDisplay = (testSessions.add(session) == true);
-        final boolean promote = true;
-//                lateWindowPromotion
-//                        ? sessionEnd
-//                        : firstDisplay && (sessionType == TaskType.TEST_TASK);
-//        
+        
+        final boolean promote = session.getSessionType() == TestSession.SessionType.TEST 
+                ? firstDisplay || sessionEnd
+                : sessionEnd;
+                
         int displayIndex = getDisplayIndex(session);
         if (displayIndex == -1) {
             addDisplay(session);
-            
             Mutex.EVENT.writeAccess(new Displayer(displayHandler, promote));
         } else if (promote) {
             Mutex.EVENT.writeAccess(new Displayer(null, promote));

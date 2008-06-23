@@ -72,6 +72,7 @@ import org.netbeans.editor.TokenID;
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtSettingsDefaults;
 import org.netbeans.editor.ext.ExtSettingsNames;
+import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
@@ -1768,6 +1769,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         public CsmResultItem.ClassResultItem createClassResultItem(CsmClass cls, int classDisplayOffset, boolean displayFQN);
         public CsmResultItem.EnumResultItem createEnumResultItem(CsmEnum enm, int enumDisplayOffset, boolean displayFQN);
         public CsmResultItem.TypedefResultItem createTypedefResultItem(CsmTypedef def, int classDisplayOffset, boolean displayFQN);
+        public CsmResultItem.ForwardClassResultItem createForwardClassResultItem(CsmClassForwardDeclaration cls, int classDisplayOffset, boolean displayFQN);
 
         public CsmResultItem.FileLocalVariableResultItem createFileLocalVariableResultItem(CsmVariable var);
         public CsmResultItem.EnumeratorResultItem createFileLocalEnumeratorResultItem(CsmEnumerator enmtr, int enumtrDisplayOffset, boolean displayFQN);
@@ -1802,7 +1804,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
     }
     
     private static final int FAKE_PRIORITY = 1000;
-    public static class DefaultCsmItemFactory implements CsmItemFactory{
+    public static class DefaultCsmItemFactory implements CsmItemFactory {
         public DefaultCsmItemFactory(){
         }
 
@@ -1836,6 +1838,9 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         
         public CsmResultItem.ClassResultItem createClassResultItem(CsmClass cls, int classDisplayOffset, boolean displayFQN){
             return new CsmResultItem.ClassResultItem(cls, classDisplayOffset, displayFQN, FAKE_PRIORITY);
+        }
+        public CsmResultItem.ForwardClassResultItem createForwardClassResultItem(CsmClassForwardDeclaration cls, int classDisplayOffset, boolean displayFQN){
+            return new CsmResultItem.ForwardClassResultItem(cls, classDisplayOffset, displayFQN, FAKE_PRIORITY);
         }
         public CsmResultItem.EnumResultItem createEnumResultItem(CsmEnum enm, int enumDisplayOffset, boolean displayFQN) {
             return new CsmResultItem.EnumResultItem(enm, enumDisplayOffset, displayFQN, FAKE_PRIORITY);  
@@ -1962,6 +1967,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 return getCsmItemFactory().createGlobalEnumeratorResultItem((CsmEnumerator)csmObj, classDisplayOffset, false);
             } else if (CsmKindUtilities.isClass(csmObj)) {
                 return getCsmItemFactory().createClassResultItem((CsmClass)csmObj, classDisplayOffset, false);
+            } else if (CsmKindUtilities.isClassForwardDeclaration(csmObj)) {
+                return getCsmItemFactory().createForwardClassResultItem((CsmClassForwardDeclaration)csmObj, classDisplayOffset, false);
             } else if (CsmKindUtilities.isField(csmObj)) { 
                 return getCsmItemFactory().createFieldResultItem((CsmField)csmObj);
             } else if (CsmKindUtilities.isConstructor(csmObj)) { // must be checked before isMethod, because constructor is method too
@@ -2040,6 +2047,14 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         for (CsmClassifier elem : res.getProjectClassesifiersEnums()) {
             if (CsmKindUtilities.isClass(elem)) {
                 item = factory.createClassResultItem((CsmClass)elem, classDisplayOffset, false);
+            } else if (CsmKindUtilities.isClassForwardDeclaration(elem)) {
+                CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) elem;
+                if (fd.getCsmClass() != null) {
+                    item = factory.createClassResultItem(fd.getCsmClass(), classDisplayOffset, false);
+                } else {
+                    // TODO fix me!
+                    continue;
+                }
             } else if (CsmKindUtilities.isTypedef(elem)) {
                 item = factory.createTypedefResultItem((CsmTypedef)elem, classDisplayOffset, false);
             } else {
