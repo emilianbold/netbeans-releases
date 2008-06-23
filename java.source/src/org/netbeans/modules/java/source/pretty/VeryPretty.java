@@ -1197,7 +1197,10 @@ public final class VeryPretty extends JCTree.Visitor {
 
     @Override
     public void visitLiteral(JCLiteral tree) {
-        if (origUnit != null) {
+        if (   origUnit != null
+            && cInfo != null
+            && cInfo.getTrees().getSourcePositions().getStartPosition(origUnit, tree) >= 0 //#137564
+            && cInfo.getTrees().getSourcePositions().getEndPosition(origUnit, tree) >= 0) {
             TokenSequence<JavaTokenId> ts = cInfo.getTreeUtilities().tokensFor(tree);
             boolean printed = false;
             while (ts.moveNext()) {

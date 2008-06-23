@@ -20,6 +20,7 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
     private static transient final Logger mLogger = Logger.getLogger(NewFFDBAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     public String nbBundle1 = mLoc.t("BUND265: Create Mashup Database");
+    private static String fs = File.separator;
 
     class NameFieldKeyAdapter extends KeyAdapter {
 
@@ -84,8 +85,8 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
         }
         String defaultDir = prop.getProperty(AxionDBConfiguration.PROP_DB_LOC);
         defaultDir = defaultDir.replace('/', '\\');
-        if (!defaultDir.endsWith("\\")) {
-            defaultDir = defaultDir + "\\";
+        if (!defaultDir.endsWith(fs)) {
+            defaultDir = defaultDir + fs;
         }
         return defaultDir;
     }
@@ -152,14 +153,14 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
         String name = dbName.getText().trim();
         String location = null;
         if (MashupTableWizardIterator.IS_PROJECT_CALL) {
-            location = ETLEditorSupport.PRJ_PATH + "\\nbproject\\private\\databases";
-            dbLoc.setText("${project.home}" + "\\nbproject\\private\\databases");
+            location = ETLEditorSupport.PRJ_PATH + fs+"nbproject"+fs+"private"+fs+"databases";
+            dbLoc.setText("${project.home}" + fs+"nbproject"+fs+"private"+fs+"databases");
         } else {
             location = getDefaultWorkingFolder();
             dbLoc.setText(location);
         }
 
-        File f = new File(location + "\\" + name);
+        File f = new File(location + fs + name);
         char[] ch = name.toCharArray();
         if (ch.length != 0) {
             if (f.exists()) {

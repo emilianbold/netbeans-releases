@@ -710,7 +710,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                      (!lastDot && i == parmCnt - 1),
                                     kind);
             
-                    if ((i < parmCnt || lastDot || findType) && lastType != null && lastType.getArrayDepth() == 0 && kind == ExprKind.ARROW) {
+                    if ((i < parmCnt-1 || lastDot || findType) && lastType != null && lastType.getArrayDepth() == 0 && kind == ExprKind.ARROW) {
                         CsmClassifier cls = getClassifier(lastType, CsmFunction.OperatorKind.ARROW);
                         if (cls != null) {
                             lastType = CsmCompletion.getType(cls, 0);
@@ -1189,7 +1189,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                    sup.isStaticBlock(item.getTokenOffset(0)), true));
 //                } else {
                     compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
-                    if (compResolver.refresh() && compResolver.resolve(item.getTokenOffset(0), "", openingSource)) {
+                    if (compResolver.refresh() && compResolver.resolve(item.getTokenOffset(0), "", false)) {
                         res = compResolver.getResult();
                     }                     
 //                }
@@ -1336,7 +1336,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                                      | CompletionResolver.RESOLVE_TEMPLATE_PARAMETERS
                                                      | CompletionResolver.RESOLVE_GLOB_NAMESPACES
                                                      );
-                        if (compResolver.refresh() && compResolver.resolve(varPos, varName, false)) {
+                        if (compResolver.refresh() && compResolver.resolve(varPos, varName, openingSource)) {
                             res = compResolver.getResult();
                             if (findType) {
                                 CsmClassifier cls = null;
@@ -1465,7 +1465,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                             // resolve all functions in context
                             int varPos = mtdNameExp.getTokenOffset(0);
                             compResolver.setResolveTypes(CompletionResolver.RESOLVE_FUNCTIONS);
-                            if (compResolver.refresh() && compResolver.resolve(varPos, mtdName, true)) {
+                            if (compResolver.refresh() && compResolver.resolve(varPos, mtdName, openingSource)) {
                                 compResolver.getResult().addResulItemsToCol(mtdList);
                             }
                         } else {

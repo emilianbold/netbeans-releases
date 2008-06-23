@@ -286,6 +286,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("template_destructor.cc"); // NOI18N
     }
     
+    public void testConversionOperator() throws Exception {
+        // IZ 137468 : grammar does not support conversion operator invocation
+        performTest("conversion_operator.cc"); // NOI18N
+    }
+
     public void testStringizeMacro() throws Exception {
         // IZ 137465 : wrong macro expansion for #x
         performPreprocessorTest("stringize_macro.cc"); // NOI18N

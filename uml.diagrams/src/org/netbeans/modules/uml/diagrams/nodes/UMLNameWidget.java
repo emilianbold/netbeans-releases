@@ -317,8 +317,8 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener
 //            }
         } else if (propName.equals(ModelElementChangedKind.ELEMENTMODIFIED.toString()))
         {
-            INamedElement nameElement = (INamedElement) element;
-            className.setLabel(nameElement.getNameWithAlias());
+//            INamedElement nameElement = (INamedElement) element;
+//            className.setLabel(nameElement.getNameWithAlias());
             // There is a specific tagged value event.  Therefore we have to 
             // check everytime the element is modified.
             String taggedValues = element.getTaggedValuesAsString();

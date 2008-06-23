@@ -134,7 +134,6 @@ public class MidpDocumentSerializationController extends DocumentSerializationCo
         MidpDocumentSupport.getCategoryComponent(loadingDocument, DisplayablesCategoryCD.TYPEID);
         MidpDocumentSupport.getCategoryComponent(loadingDocument, PointsCategoryCD.TYPEID);
         MidpDocumentSupport.getCategoryComponent(loadingDocument, ResourcesCategoryCD.TYPEID);
-        MidpDocumentSupport.getCategoryComponent(loadingDocument, DatabindingCategoryCD.TYPEID);
         //checkInstanceNames(rootComponent.getComponents(), errorHandler);
     }
     

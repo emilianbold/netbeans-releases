@@ -57,6 +57,8 @@ public final class DotClassPathEntry {
     public static final String ATTRIBUTE_EXPORTED = "exported";
     public static final String ATTRIBUTE_SOURCEPATH = "sourcepath";
     public static final String ATTRIBUTE_JAVADOC = "javadoc_location";
+    public static final String ATTRIBUTE_SOURCE_EXCLUDES = "excluding";
+    public static final String ATTRIBUTE_SOURCE_INCLUDES = "including";
 
     public static enum Kind {
         CONTAINER,

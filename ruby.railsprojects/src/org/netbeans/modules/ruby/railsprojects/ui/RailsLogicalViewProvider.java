@@ -229,7 +229,7 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
         RailsProjectProperties.JAVAC_TEST_CLASSPATH,
     };
     
-//    private static Image brokenProjectBadge = Utilities.loadImage("org/netbeans/modules/ruby/railsprojects/ui/resources/brokenProjectBadge.gif", true);
+//    private static Image brokenProjectBadge = ImageUtilities.loadImage("org/netbeans/modules/ruby/railsprojects/ui/resources/brokenProjectBadge.gif", true);
     
     /** Filter node containin additional features for the Ruby physical
      */
@@ -369,7 +369,7 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
         
         private Image getMyIcon(int type) {
             Image original = super.getIcon(type);
-//            return broken || illegalState ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
+//            return broken || illegalState ? ImageUtilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
             return original;
         }
         
@@ -390,7 +390,7 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
         
         private Image getMyOpenedIcon(int type) {
             Image original = super.getOpenedIcon(type);
-            //return broken || illegalState ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
+            //return broken || illegalState ? ImageUtilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
             return original;
         }
         

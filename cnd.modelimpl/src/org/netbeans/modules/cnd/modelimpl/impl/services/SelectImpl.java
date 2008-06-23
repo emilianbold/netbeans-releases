@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -126,6 +127,12 @@ public class SelectImpl extends CsmSelect {
                     }
                     return false;
                 }
+
+                @Override
+                public String toString() {
+                    return Arrays.asList(kinds).toString();
+                }
+                                
             };
         }
 
@@ -142,6 +149,12 @@ public class SelectImpl extends CsmSelect {
                     }
                     return false;
                 }
+
+                @Override
+                public String toString() {
+                    return "pref=" + strPrefix + "; match=" + match + "; cs=" + caseSensitive + "; allowEmpty=" + allowEmptyName; // NOI18N
+                }
+                                
             };
         }
 
@@ -150,6 +163,12 @@ public class SelectImpl extends CsmSelect {
                 public boolean accept(CsmUID uid) {
                     return ((UIDFilter)first).accept(uid) && ((UIDFilter)second).accept(uid);
                 }
+
+                @Override
+                public String toString() {
+                    return "filter [" + first + "][" + second + "]"; // NOI18N
+                }
+                                
             };
         }
 

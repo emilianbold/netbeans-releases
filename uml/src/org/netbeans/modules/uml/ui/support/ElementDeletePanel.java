@@ -38,8 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package org.netbeans.modules.uml.ui.support;
 
 import org.openide.util.NbBundle;
@@ -48,10 +46,11 @@ import org.openide.util.NbBundle;
  *
  * @author  Sheryl Su
  */
-public class ElementDeletePanel extends javax.swing.JPanel {
-    
-    /** Creates new form NewJPanel */
-    public ElementDeletePanel(boolean displayRemove) {
+public class ElementDeletePanel extends javax.swing.JPanel
+{
+
+    public ElementDeletePanel(boolean displayRemove)
+    {
         initComponents();
         jCheckBox2.setVisible(displayRemove);
 //        if (objects.size() > 1) {
@@ -74,12 +73,12 @@ public class ElementDeletePanel extends javax.swing.JPanel {
     {
         return jCheckBox1.isSelected();
     }
-    
+
     public boolean getRemoveFromImport()
     {
         return jCheckBox2.isSelected();
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -133,18 +132,14 @@ public class ElementDeletePanel extends javax.swing.JPanel {
         {
             jCheckBox2.setEnabled(false);
             jCheckBox2.setSelected(true);
-        }
-        else
+        } else
         {
             jCheckBox2.setEnabled(true);
         }
     }//GEN-LAST:event_jCheckBox1ActionPerformed
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JCheckBox jCheckBox2;
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
-    
 }
