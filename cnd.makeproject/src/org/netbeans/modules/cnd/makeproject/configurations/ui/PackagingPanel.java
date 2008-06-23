@@ -10,6 +10,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import java.util.ResourceBundle;
+import javax.swing.JPanel;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
@@ -32,6 +33,17 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         
         env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
         env.addPropertyChangeListener(this);
+        
+        // Combobox
+        String[] displayNames = packagingConfiguration.getDisplayNames();
+        for (int i = 0; i < displayNames.length; i++ ) {
+            packagingTypeComboBox.addItem(displayNames[i]);
+        }
+        packagingTypeComboBox.setSelectedIndex(packagingConfiguration.getType().getValue());
+        
+        // Add tabs
+        tabbedPane.addTab("Info", new PackagingInfoPanel());
+        tabbedPane.addTab("Files", new PackagingFilesPanel());
     }
 
         
@@ -57,21 +69,48 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 400, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 300, Short.MAX_VALUE)
-        );
+        innerPanel = new javax.swing.JPanel();
+        packagingTypeLabel = new javax.swing.JLabel();
+        packagingTypeComboBox = new javax.swing.JComboBox();
+        tabbedPane = new javax.swing.JTabbedPane();
+
+        setPreferredSize(new java.awt.Dimension(800, 600));
+        setLayout(new java.awt.GridBagLayout());
+
+        innerPanel.setLayout(new java.awt.GridBagLayout());
+
+        packagingTypeLabel.setText(org.openide.util.NbBundle.getMessage(PackagingPanel.class, "PackagingPanel.packagingTypeLabel.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        innerPanel.add(packagingTypeLabel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        innerPanel.add(packagingTypeComboBox, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        innerPanel.add(tabbedPane, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
+        add(innerPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel innerPanel;
+    private javax.swing.JComboBox packagingTypeComboBox;
+    private javax.swing.JLabel packagingTypeLabel;
+    private javax.swing.JTabbedPane tabbedPane;
     // End of variables declaration//GEN-END:variables
 
     /** Look up i18n strings here */

@@ -135,6 +135,10 @@ public class PackagingConfiguration {
         return sheet;
     }
     
+    public String[] getDisplayNames() {
+        return TYPE_NAMES;
+    }
+    
     public String getDisplayName() {
         return TYPE_NAMES[getType().getValue()];
     }
