@@ -64,6 +64,8 @@ public class NodeMemberEvent extends NodeEvent {
 
     /** list of nodes indexes, can be null if it should be computed lazily */
     private int[] indices;
+    
+    org.openide.nodes.Children.Entry sourceEntry;
 
     /** Package private constructor to allow construction only
     * @param n node that should fire change
@@ -85,11 +87,30 @@ public class NodeMemberEvent extends NodeEvent {
     public final boolean isAddEvent() {
         return add;
     }
+    
+    /** Fires when non-constructed nodes has been removed.
+     * @param add is add or remove
+     * @param indices the indicies that changed
+     */
+    NodeMemberEvent(Node n, boolean add, int[] indices) {
+        super(n);
+        this.add = add;
+        this.indices = indices;
+    }    
 
     /** Get a list of children that changed.
     * @return array of nodes that changed
     */
     public final Node[] getDelta() {
+        if (delta == null) {
+            assert indices != null : "Well, indices cannot be null now"; // NOI18N
+
+            Node[] arr = new Node[indices.length];
+            for (int i = 0; i < arr.length; i++) {
+                arr[i] = getNode().getChildren().getNodeAt(indices[i]);
+            }
+            delta = arr;
+        }
         return delta;
     }
 
