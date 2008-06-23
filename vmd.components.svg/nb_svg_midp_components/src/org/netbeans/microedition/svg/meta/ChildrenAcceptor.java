@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -38,87 +38,46 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.microedition.svg.meta;
 
-package customerdb.converter;
-
-import customerdb.Customer;
-import java.net.URI;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.XmlAttribute;
+import org.w3c.dom.Element;
+import org.w3c.dom.svg.SVGElement;
 
 
 /**
+ * @author ads
  *
- * @author __USER__
  */
-
-@XmlRootElement(name = "customerRef")
-public class CustomerRefConverter {
-    private Customer entity;
-    private boolean isUriExtendable;
-    private URI uri;
+public class ChildrenAcceptor {
     
-    /** Creates a new instance of CustomerRefConverter */
-    public CustomerRefConverter() {
+    public ChildrenAcceptor( Visitor visitor ){
+        myVisitor = visitor;
     }
-
-    /**
-     * Creates a new instance of CustomerRefConverter.
-     *
-     * @param entity associated entity
-     * @param uri associated uri
-     * @param isUriExtendable indicates whether the uri can be extended
-     */
-    public CustomerRefConverter(Customer entity, URI uri, boolean isUriExtendable) {
-        this.entity = entity;
-        this.uri = uri;
-        this.isUriExtendable = isUriExtendable;
-    }
-
-    /**
-     * Getter for customerId.
-     *
-     * @return value for customerId
-     */
-    @XmlElement
-    public Integer getCustomerId() {
-        return entity.getCustomerId();
-    }
-
-    /**
-     * Returns the URI associated with this reference converter.
-     *
-     * @return the converted uri
-     */
-    @XmlAttribute(name = "uri")
-    public URI getResourceUri() {
-        if (isUriExtendable) {
-            return uri.resolve(entity.getCustomerId() + "/");
+    
+    public void accept( SVGElement parent ){
+        Element child = parent.getFirstElementChild();
+        while ( child != null){
+            Element next = ((SVGElement)child).getNextElementSibling();
+            if ( !getVisitor().visit( child ) ){
+                return;
+            }
+            if ( child instanceof SVGElement ){
+                child = next;
+            }
+            else {
+                return;
+            }
         }
-        return uri;
+    }
+    
+    private Visitor getVisitor(){
+        return myVisitor;
     }
 
-    /**
-     * Sets the URI for this reference converter.
-     *
-     */
-    public void setResourceUri(URI uri) {
-        this.uri = uri;
+    public interface Visitor {
+        boolean visit( Element element );
+        
     }
-
-    /**
-     * Returns the Customer entity.
-     *
-     * @return Customer entity
-     */
-    @XmlTransient
-    public Customer getEntity() {
-        CustomerConverter result = UriResolver.getInstance().resolve(CustomerConverter.class, uri);
-        if (result != null) {
-            return result.getEntity();
-        }
-        return null;
-    }
+    
+    private Visitor myVisitor;
 }

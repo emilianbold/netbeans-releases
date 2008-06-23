@@ -50,6 +50,7 @@ import java.util.TreeSet;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
 import org.netbeans.modules.ant.freeform.FreeformProjectType;
 import org.netbeans.modules.ant.freeform.TestBase;
@@ -234,6 +235,7 @@ public class ViewTest extends TestBase {
         ProjectManager.getDefault().saveProject(p);
         assertEquals(appearanceFloating, expand(r));
     }
+    @RandomlyFails
     public void testIncludesExcludes() throws Exception {
         doTestIncludesExcludes(this, "tree",
                 "prj{s{ignored{file} relevant{excluded{file} included{file}}}}",

@@ -880,7 +880,13 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 	// to say "typedef template..."
 	 	// Class definition
                 // we need "static" here for the case "static struct XX {...} myVar; - see issue #106652
-		((LITERAL_typedef | LITERAL_static)? class_head)=>
+
+//		((LITERAL_typedef | LITERAL_static)? class_head)=>
+                ((  storage_class_specifier
+		|   cv_qualifier 
+		|   LITERAL_typedef
+		)* class_head) =>
+
 		{if (statementTrace>=1) 
 			printf("external_declaration_1a[%d]: Class definition\n",
 				LT(1).getLine());
@@ -1164,7 +1170,13 @@ member_declaration
 		// would look for "class A { ... } f() {...}" which is
 		// an unacceptable level of backtracking.
                 // we need "static" here for the case "static struct XX {...} myVar; - see issue #135149
-		( (LITERAL_typedef | LITERAL_static)? class_head) => 
+
+//		((LITERAL_typedef | LITERAL_static)? class_head)=>
+                ((  storage_class_specifier
+		|   cv_qualifier 
+		|   LITERAL_typedef
+		)* class_head) =>
+
 		{if (statementTrace>=1) 
 			printf("member_declaration_1[%d]: Class definition\n",
 				LT(1).getLine());
@@ -2512,7 +2524,7 @@ statement
                 asm_block
 //	|	preprocDirective
 //        |       member_declaration
-	)
+)
 	;
 
 labeled_statement
@@ -3078,6 +3090,10 @@ unary_expression
                         //{!(LA(1)==TILDE && LA(2)==ID) || 
 			//	    qualifiedItemIsOneOf(qiVar | qiFun | qiDtor | qiCtor)}?
                         postfix_expression
+
+                |
+                        // IZ 137118 : GTK_WIDGET_SET_FLAGS macros problem
+                        LITERAL___extension__ LPAREN statement RPAREN
 		)
 	;
 
@@ -3191,6 +3207,8 @@ post_postfix_expression
                     LSQUARE expression RSQUARE
                     |	LPAREN (expression_list)? RPAREN 
                     |	DOT id_expression
+                    // IZ 137531 : IDE highlights db.template cursor<T> line as error
+                    |	DOT LITERAL_template id_expression
                     |	POINTERTO id_expression
                     |	PLUSPLUS 
                     |	MINUSMINUS

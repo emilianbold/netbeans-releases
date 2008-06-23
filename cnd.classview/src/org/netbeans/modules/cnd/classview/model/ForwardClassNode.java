@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,86 +39,68 @@
  * made subject to such option by the copyright holder.
  */
 
-package customerdb.converter;
+package org.netbeans.modules.cnd.classview.model;
 
-import customerdb.DiscountCode;
-import java.net.URI;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.XmlAttribute;
 
+import javax.swing.event.ChangeEvent;
+import org.netbeans.modules.cnd.api.model.*;
+import org.openide.nodes.Children;
 
 /**
- *
- * @author __USER__
+ * @author Vladimir Kvasihn
  */
+public class ForwardClassNode extends ObjectNode {
 
-@XmlRootElement(name = "discountCodeRef")
-public class DiscountCodeRefConverter {
-    private DiscountCode entity;
-    private boolean isUriExtendable;
-    private URI uri;
+    private CharSequence name;
+    private CharSequence qname;
+
+    public ForwardClassNode(CsmClassForwardDeclaration cls, Children.Array key) {
+        super(cls, key);
+        init(cls);
+    }
     
-    /** Creates a new instance of DiscountCodeRefConverter */
-    public DiscountCodeRefConverter() {
-    }
-
-    /**
-     * Creates a new instance of DiscountCodeRefConverter.
-     *
-     * @param entity associated entity
-     * @param uri associated uri
-     * @param isUriExtendable indicates whether the uri can be extended
-     */
-    public DiscountCodeRefConverter(DiscountCode entity, URI uri, boolean isUriExtendable) {
-        this.entity = entity;
-        this.uri = uri;
-        this.isUriExtendable = isUriExtendable;
-    }
-
-    /**
-     * Getter for discountCode.
-     *
-     * @return value for discountCode
-     */
-    @XmlElement
-    public String getDiscountCode() {
-        return entity.getDiscountCode();
-    }
-
-    /**
-     * Returns the URI associated with this reference converter.
-     *
-     * @return the converted uri
-     */
-    @XmlAttribute(name = "uri")
-    public URI getResourceUri() {
-        if (isUriExtendable) {
-            return uri.resolve(entity.getDiscountCode() + "/");
+    private void init(CsmClassForwardDeclaration cls){
+        CharSequence old = name;
+        name = cls.getName();
+        if ((old == null) || !old.equals(name)) {
+            fireNameChange(old == null ? null : old.toString(),
+                    name == null ? null : name.toString());
+            fireDisplayNameChange(old == null ? null : old.toString(),
+                    name == null ? null : name.toString());
         }
-        return uri;
-    }
-
-    /**
-     * Sets the URI for this reference converter.
-     *
-     */
-    public void setResourceUri(URI uri) {
-        this.uri = uri;
-    }
-
-    /**
-     * Returns the DiscountCode entity.
-     *
-     * @return DiscountCode entity
-     */
-    @XmlTransient
-    public DiscountCode getEntity() {
-        DiscountCodeConverter result = UriResolver.getInstance().resolve(DiscountCodeConverter.class, uri);
-        if (result != null) {
-            return result.getEntity();
+        old = qname;
+        qname = cls.getQualifiedName();
+        if ((old == null) || !old.equals(qname)) {
+            fireShortDescriptionChange(old == null ? null : old.toString(),
+                    qname == null ? null : qname.toString());
         }
-        return null;
+    }
+
+    @Override
+    public String getName() {
+        return name.toString();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return name.toString();
+    }
+
+    @Override
+    public String getShortDescription() {
+        return qname.toString();
+    }
+
+    public void stateChanged(ChangeEvent e) {
+        Object o = e.getSource();
+        if (o instanceof CsmClassForwardDeclaration){
+            CsmClassForwardDeclaration cls = (CsmClassForwardDeclaration)o;
+            setObject(cls);
+            init(cls);
+            fireIconChange();
+            fireOpenedIconChange();
+        } else if (o != null) {
+            System.err.println("Expected CsmClass. Actually event contains "+o.toString());
+        }
     }
 }
