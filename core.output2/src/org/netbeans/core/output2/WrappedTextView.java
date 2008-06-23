@@ -479,7 +479,7 @@ public class WrappedTextView extends View {
         result.setBounds (0, 0, charWidth, charHeight);
         OutputDocument od = odoc();
         if (od != null) {
-            int line = od.getElementIndex(pos);
+            int line = Math.max(0, od.getElementIndex(pos));
             int start = od.getLineStart(line);
 
             int column = pos - start;
@@ -514,20 +514,20 @@ public class WrappedTextView extends View {
                 return 0;
             }
             if (logicalLine >= totalLines) {
-                return od.getLength() - 1;
+                return od.getLength();
             }
 
             int lineStart = od.getLineStart(logicalLine);
-            int lineLength = od.getLineEnd(logicalLine);
+            int lineEnd = od.getLineEnd(logicalLine);
 
             int column = ix / charWidth;
-            if (column > lineLength-1) {
-                column = lineLength-1;
+            if (column > lineEnd) {
+                column = lineEnd;
             }
 
             int result = wraps > 0 ?
-                Math.min(od.getLineEnd(logicalLine) - 1, lineStart + (ln[1] * charsPerLine) + column)
-                : Math.min(lineStart + column, lineLength - 1);
+                Math.min(lineEnd, lineStart + (ln[1] * charsPerLine) + column)
+                : Math.min(lineStart + column, lineEnd);
             result = Math.min (od.getLength(), result);
             return result;
 /*            System.err.println ("ViewToModel " + ix + "," + iy + " = " + result + " physical ln " + physicalLine +
