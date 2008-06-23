@@ -19,6 +19,7 @@
 package org.netbeans.microedition.svg;
 
 import org.netbeans.microedition.svg.input.InputHandler;
+import org.w3c.dom.svg.SVGElement;
 import org.w3c.dom.svg.SVGLocatableElement;
 import org.w3c.dom.svg.SVGRect;
 
@@ -27,8 +28,8 @@ import org.w3c.dom.svg.SVGRect;
  * @author Pavel Benes
  */
 public class SVGTextField extends SVGComponent {
-    private static final String TEXTELEM_SUFFIX   = "_text";
-    private static final String CARETELEM_SUFFIX  = "_caret";
+    private static final String TEXTELEM          = "text";
+    private static final String CARETELEM         = "caret";
     private static final String TITLEELEM_SUFFIX  = "_title";
     private static final String TRAIT_TEXT        = "#text";
     private static final String TRAIT_FONT_SIZE   = "font-size";
@@ -44,19 +45,17 @@ public class SVGTextField extends SVGComponent {
     private       int                 caretPos = -1;
     private       float               caretWidth = 0;
 
-    public SVGTextField( SVGForm form, String elemId) {
-        super(form, elemId);
-        textElement  = (SVGLocatableElement) getElementById( wrapperElement, elemId + TEXTELEM_SUFFIX);
-        caretElement = (SVGLocatableElement) getElementById( wrapperElement, elemId + CARETELEM_SUFFIX);
-        SVGLocatableElement telem = (SVGLocatableElement) form.getSVGElementById("textfield_name_title");
+    public SVGTextField( SVGForm form, SVGLocatableElement element ) {
+        super(form, element );
+        textElement  = (SVGLocatableElement) getElementByMeta(getElement(), 
+                TYPE , TEXTELEM );
+        caretElement = (SVGLocatableElement) getElementByMeta(getElement(), 
+                TYPE , CARETELEM );
 
         SVGRect outlineBox = wrapperElement.getBBox();
         SVGRect textBox    = textElement.getBBox();
-        System.out.println("outline: " + outlineBox);
-        System.out.println("text: " + textBox);
 
         if (textBox != null) {
-            String t = textElement.getTrait(TRAIT_TEXT);
             System.out.println("Text width: " + textBox.getWidth());
             elemWidth = (int) (outlineBox.getWidth() + 0.5f - (textBox.getX() - outlineBox.getX()) * 2);
         } else {
@@ -68,7 +67,7 @@ public class SVGTextField extends SVGComponent {
         hiddenTextElement.setFloatTrait( TRAIT_Y, textElement.getFloatTrait(TRAIT_Y));
         hiddenTextElement.setFloatTrait( TRAIT_FONT_SIZE, textElement.getFloatTrait(TRAIT_FONT_SIZE));
         hiddenTextElement.setTrait( "font-family", "SunSansSemiBold");
-        hiddenTextElement.setTrait( TRAIT_VISIBILITY, "visible");
+        hiddenTextElement.setTrait( TRAIT_VISIBILITY, "hidden");
         wrapperElement.appendChild(hiddenTextElement);
         
         if (caretElement != null) {
@@ -81,9 +80,14 @@ public class SVGTextField extends SVGComponent {
         showCaret( false);
         setText( getTextTrait());
     }
+    public SVGTextField( SVGForm form, String elemId ) {
+        this( form , (SVGLocatableElement) 
+                form.getDocument().getElementById(elemId));
+    }
     
     public String getTitle() {
-        SVGLocatableElement titleElement = form.getSVGLocatableElementById(elemId + TITLEELEM_SUFFIX);
+        SVGLocatableElement titleElement = form.getSVGLocatableElementById(
+                getElement().getId()+ TITLEELEM_SUFFIX);
         return titleElement != null ? titleElement.getTrait( TRAIT_TEXT) : null;
     }
     
@@ -160,6 +164,10 @@ public class SVGTextField extends SVGComponent {
         }
     }   
 
+    /*
+     * TODO : this is very non-efficient way to compute text width.
+     * Need somehow to improve it. 
+     */
     private float getTextWidth(String text) {
         if ( text.endsWith(" ")) {
             return getTextWidthImpl( text + "i") - getTextWidthImpl("i");

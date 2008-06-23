@@ -43,22 +43,61 @@ package org.netbeans.microedition.svg;
 import java.util.Vector;
 
 import org.netbeans.microedition.svg.input.InputHandler;
-import org.netbeans.microedition.svg.input.NumPadInputHandler;
+import org.netbeans.microedition.svg.meta.MetaData;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.svg.SVGElement;
+import org.w3c.dom.svg.SVGLocatableElement;
+import org.w3c.dom.svg.SVGRect;
 
 
 /**
+ * Suggested svg snippet:
+ * <pre>
+ *  &lt;g id="list" transform=".." ...>
+ *   &lt;rect id="list_selection" x="5" y="0" stroke="black" stroke-width="1" 
+ *       fill="rgb(200,200,255)" visibility="inherit" width="80" height="0"/>
+ *       &lt;text id="list_hidden_text" visibility="hidden" x="10" y="13" 
+ *           stroke="black" font-size="15" font-family="SunSansSemiBold">
+ *          HIDDEN TEXT
+ *       &lt;/text>
+ *       &lt;g id="list_content"/>
+ *       &lt;rect x="0" y="-5" rx="5" ry="5" width="90" height="70" fill="none" stroke="rgb(255,165,0)" stroke-width="2" visibility="hidden">
+ *           &lt;set attributeName="visibility" attributeType="XML" begin="list.focusin" fill="freeze" to="visible"/>
+ *           &lt;set attributeName="visibility" attributeType="XML" begin="list.focusout" fill="freeze" to="hidden"/>
+ *       &lt;/rect>
+ *       &lt;rect id="list_bound" x="5.0" y="0.0" width="80" height="60" fill="none" stroke="black" stroke-width="2"/>
+ *   &lt;/g>
+ * </pre>
  * @author ads
  *
  */
 public class SVGList extends SVGComponent {
+    
+    static final String CONTENT= "content";     // NOI18N
 
 
-    public SVGList( SVGForm form, String elemId ) {
-        super(form, elemId);
+    public SVGList( SVGForm form, SVGLocatableElement element) {
+        super(form, element);
+        
+        SVGLocatableElement hiddenText = (SVGLocatableElement)getElementByMeta( 
+                getElement(), TYPE , SVGDefaultListCellRenderer.HIDDEN_TEXT );
+        SVGRect rect = hiddenText.getBBox();
+        float height = rect.getHeight();
+        
+        rect = ((SVGLocatableElement)SVGComponent.getElementByMeta( getElement(), 
+                TYPE, SVGDefaultListCellRenderer.BOUNDS)).getBBox();
+        
+        myCount = (int)(rect.getHeight()/height);
         
         myRenderer = new SVGDefaultListCellRenderer();
         mySelectionModel = new DefaultSelectionModel();
         myHandler = new ListHandler();
+    }
+    
+    public SVGList( SVGForm form, String elemId ){
+        this( form , (SVGLocatableElement)
+                form.getDocument().getElementById( elemId ));
     }
 
 
@@ -88,15 +127,42 @@ public class SVGList extends SVGComponent {
     }
     
     private void renderList() {
+        
+        removeContent();
+        
+        if ( myCurrentIndex >= myTopIndex + myCount ){
+            myTopIndex++;
+        }
+        else if ( myCurrentIndex < myTopIndex ){
+            myTopIndex--;
+        }
+        
         ListModel model = getModel();
         int size = model.getSize();
         SVGListCellRenderer renderer = getRenderer();
-        for( int i =0 ; i<size ; i++ ){
-            renderer.getCellRendererComponent( this , model.getElementAt(i), i, 
-                    getSelectionModel().isSelectedIndx(i));
+        for( int i = myTopIndex ; i<Math.min( myTopIndex + myCount,size) ; i++ ){
+            renderer.getCellRendererComponent( this , model.getElementAt(i), 
+                    i-myTopIndex, getSelectionModel().isSelectedIndex(i));
         }
     }
     
+    
+    private void removeContent() {
+        SVGLocatableElement content = (SVGLocatableElement)
+        SVGComponent.getElementByMeta(getElement(), TYPE, SVGList.CONTENT );    
+        Node node = content.getFirstElementChild();
+        while ( node != null ){
+            Element next = null;
+            if ( node instanceof SVGElement ){
+                next = ((SVGElement)node).getNextElementSibling();
+            }
+            if ( !MetaData.METADATA.equals(node.getLocalName())){
+                content.removeChild( node );
+            }
+            node = next;
+        }
+    }
+
     public interface ListModel {
         Object getElementAt( int index );
         int getSize();
@@ -104,7 +170,7 @@ public class SVGList extends SVGComponent {
     
     public interface SelectionModel {
         void clearSelection();
-        boolean isSelectedIndx( int index );
+        boolean isSelectedIndex( int index );
         void addSelectionInterval( int from , int to);
     }
     
@@ -130,7 +196,7 @@ public class SVGList extends SVGComponent {
     
     private class DefaultSelectionModel implements SelectionModel {
 
-        public boolean isSelectedIndx( int index ) {
+        public boolean isSelectedIndex( int index ) {
             return index == mySelectedIndex;
         }
         
@@ -162,16 +228,18 @@ public class SVGList extends SVGComponent {
             boolean ret = false;
             if ( comp instanceof SVGList ){
                 if ( keyCode == LEFT ){
-                    myIndex = Math.max( 0 , myIndex -1 );
+                    myCurrentIndex = Math.max( 0 , myCurrentIndex -1 );
                     getSelectionModel().clearSelection();
-                    getSelectionModel().addSelectionInterval( myIndex, myIndex);
+                    getSelectionModel().addSelectionInterval( myCurrentIndex, 
+                            myCurrentIndex);
                     renderList();
                     ret = true;
                 }
                 else if ( keyCode == RIGHT ){
-                    myIndex = Math.min( myIndex +1 , getModel().getSize() -1  );
+                    myCurrentIndex = Math.min( myCurrentIndex +1 , getModel().getSize() -1  );
                     getSelectionModel().clearSelection();
-                    getSelectionModel().addSelectionInterval( myIndex, myIndex);
+                    getSelectionModel().addSelectionInterval( myCurrentIndex, 
+                            myCurrentIndex);
                     renderList();
                     ret = true;
                 }
@@ -189,6 +257,9 @@ public class SVGList extends SVGComponent {
     private SelectionModel mySelectionModel;
     private InputHandler myHandler;
     
-    private int myIndex;
+    private int myTopIndex ;
+    private int myCurrentIndex;
+    
+    private int myCount;
 
 }

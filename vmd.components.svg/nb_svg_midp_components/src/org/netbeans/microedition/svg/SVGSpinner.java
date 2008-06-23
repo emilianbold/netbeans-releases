@@ -45,41 +45,76 @@ import org.netbeans.microedition.svg.input.InputHandler;
 import org.netbeans.microedition.svg.input.NumPadInputHandler;
 import org.w3c.dom.svg.SVGAnimationElement;
 import org.w3c.dom.svg.SVGElement;
+import org.w3c.dom.svg.SVGLocatableElement;
 
 
 /**
+ * Suggested svg snippet:
+ * <pre>
+ * &lt;g id="age_spinner"  transform="..." ...>
+ *       &lt;rect x="0" y="-5" rx="5" ry="5" width="44" height="30" fill="none" 
+ *       stroke="rgb(255,165,0)" stroke-width="2" visibility="hidden">
+ *           &lt;set attributeName="visibility" attributeType="XML" begin="age_spinner.focusin" fill="freeze" to="visible"/>
+ *           &lt;set attributeName="visibility" attributeType="XML" begin="age_spinner.focusout" fill="freeze" to="hidden"/>
+ *       &lt;/rect>
+ *       &lt;rect  x="5.0" y="0.0" width="33" height="20" fill="none" stroke="black" stroke-width="2"/>
+ *   &lt;g id="age_spinner_editor">
+ *       &lt;!-- this editor is SVGTextField component -->
+ *
+ *       &lt;!-- metadata definition-->
+ *       &lt;text display="none">readOnly="false" enabled="true"</text>
+ *       &lt;text id="age_spinner_editor_text" x="10" y="15" stroke="black" font-size="15" font-family="SunSansSemiBold">0</text>
+ *       &lt;rect id="age_spinner_editor_caret" visibility="visible" x="17" y="3" width="2" height="15" fill="black" stroke="black"/>
+ *       &lt;!-- The rectangle below is difference between rectangle that bounds spinner and spinner buttons ( the latter 
+ *       has id = age_spinner_up and age_spinner_down ). It needed for counting bounds of input text area .
+ *       It should be created programatically or SVGTextField should have API for dealing with "width"
+ *       of editor not based only on width of text field component.-->
+ *       &lt;rect visibility="hidden" x="5.0" y="0" width="33" height="20" />
+ *   &lt;/g>
+ *   &lt;rect id="age_spinner_up" x="21.0" y="0.0" width="16" height="10" fill="rgb(220,220,220)" stroke="black" stroke-width="1.5">
+ *           &lt;animate id="age_spinner_up_pressed" attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(170,170,170)"/>
+ *           &lt;animate id="age_spinner_up_released" attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(220,220,220)"/>
+ *   &lt;/rect>
+ *       &lt;rect id="age_spinner_down" x="21.0" y="10.0" width="16" height="10" fill="rgb(220,220,220)" stroke="black" stroke-width="1.5">
+ *           &lt;animate id="age_spinner_down_pressed" attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(170,170,170)"/>
+ *           &lt;animate id="age_spinner_down_released" attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(220,220,220)"/>
+ *   <&lt;rect>
+ *   &lt;polygon transform="translate(28,6)"  points="0,0 2,0 1,-2" fill="blue" stroke="black" stroke-width="2"/>
+ *   &lt;polygon transform="translate(28,14)"  points="0,0 2,0 1,2" fill="blue" stroke="black" stroke-width="2"/>
+ *   </g>
+ * </pre>
  * @author ads
  *
  */
 public class SVGSpinner extends SVGComponent {
     
-    private final String UP_SUFFIX = "_up";
-    private final String DOWN_SUFFIX = "_down";
+    private static final String UP              = "up_button";      // NOI18N
+    private static final String DOWN            = "down_button";    // NOI18N
+    private static final String PRESSED         = "pressed";        // NOI18N
+    private static final String RELEASED        = "released";       // NOI18N
+    private static final String EDITOR          = "editor";         // NOI18N
     
-    private final String PRESSED_ELEM_SUFFIX = "_pressed";
-    private final String RELEASED_ELEM_SUFFIX = "_released"; 
-    
-    private final String EDITOR_SUFFIX = "_editor";
-
     public SVGSpinner( SVGForm form, String elemId ) {
         super(form, elemId);
-        myUpButton = (SVGElement) getElementById( wrapperElement, elemId + UP_SUFFIX);
-        myDownButton = (SVGElement) getElementById( wrapperElement, elemId + DOWN_SUFFIX);
+        myUpButton = getElementByMeta( getElement(), TYPE, UP);
+        myDownButton = getElementByMeta( getElement(), TYPE , DOWN);
         
-        myUpPressedAnimation = (SVGAnimationElement) getElementById(myUpButton, 
-                myUpButton.getId() + PRESSED_ELEM_SUFFIX);
-        myUpReleasedAnimation = (SVGAnimationElement) getElementById(myUpButton, 
-                myUpButton.getId() + RELEASED_ELEM_SUFFIX);
+        myUpPressedAnimation = (SVGAnimationElement) getElementByMeta(myUpButton, 
+                TYPE , PRESSED );
+        myUpReleasedAnimation = (SVGAnimationElement) getElementByMeta(myUpButton, 
+                TYPE, RELEASED);
         
-        myDownPressedAnimation = (SVGAnimationElement) getElementById(myDownButton, 
-                myDownButton.getId() + PRESSED_ELEM_SUFFIX);
-        myDownReleasedAnimation = (SVGAnimationElement) getElementById(myDownButton, 
-                myDownButton.getId() + RELEASED_ELEM_SUFFIX);
+        myDownPressedAnimation = (SVGAnimationElement) getElementByMeta(myDownButton, 
+                TYPE , PRESSED);
+        myDownReleasedAnimation = (SVGAnimationElement) getElementByMeta(myDownButton, 
+                TYPE, RELEASED );
         
         myInputHandler = new SpinnerInputHandler();
 
         setModel( new DefaultModel() );
-        setEditor( new DefaultSpinnerEditor( form , elemId + EDITOR_SUFFIX ) ); 
+        setEditor( new DefaultSpinnerEditor( form , 
+                (SVGLocatableElement)getElementByMeta( getElement(), TYPE, 
+                        EDITOR) ) ); 
     }
     
     public void focusGained() {
@@ -204,8 +239,8 @@ public class SVGSpinner extends SVGComponent {
     
     private class DefaultSpinnerEditor extends SVGTextField {
 
-        public DefaultSpinnerEditor( SVGForm form , String id ) {
-            super(form , id );
+        public DefaultSpinnerEditor( SVGForm form , SVGLocatableElement element  ) {
+            super(form , element );
             SVGSpinner.this.addActionListener( new SVGActionListener (){
 
                 public void actionPerformed( SVGComponent comp ) {
