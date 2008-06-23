@@ -107,38 +107,38 @@ public interface ExecutionDescriptor {
     boolean showSuspended();
 
     /**
-     * Returns the additional processor to use for standard output.
+     * Returns the factory for additional processor to use for standard output.
      * {@link ExecutionService} automatically uses the printing one.
      *
-     * @return the additional processor to use for standard output
+     * @return the factory for additional processor to use for standard output
      */
-    InputProcessor getOutProcessor();
+    InputProcessorFactory getOutProcessorFactory();
 
     /**
-     * Returns the additional processor to use for standard error output.
+     * Returns the factory for additional processor to use for standard error output.
      * {@link ExecutionService} automatically uses the printing one.
      *
-     * @return the additional processor to use for standard error output
+     * @return the factory for additional processor to use for standard error output
      */
-    InputProcessor getErrProcessor();
+    InputProcessorFactory getErrProcessorFactory();
 
     /**
-     * Returns the convertor to use with processor printing the standard
+     * Returns the factory for convertor to use with processor printing the standard
      * output (that used by {@link ExecutionService} automatically.
      *
-     * @return the convertor to use with processor printing the standard
-     *             output
+     * @return the factory for convertor to use with processor printing
+     *             the standard output
      */
-    LineConvertor getOutConvertor();
+    LineConvertorFactory getOutConvertorFactory();
 
     /**
-     * Returns the convertor to use with processor printing the standard
+     * Returns the factory for convertor to use with processor printing the standard
      * error output (that used by {@link ExecutionService} automatically.
      *
-     * @return the convertor to use with processor printing the standard
-     *             error output
+     * @return the factory for convertor to use with processor printing
+     *             the standard error output
      */
-    LineConvertor getErrConvertor();
+    LineConvertorFactory getErrConvertorFactory();
 
     /**
      * Returns the runnable to execute <i>before</i> the external execution itself;
@@ -195,14 +195,30 @@ public interface ExecutionDescriptor {
 
     }
 
+    /**
+     * Factory creating the input processor.
+     */
     interface InputProcessorFactory {
 
+        /**
+         * Creates and returns new input processor.
+         *
+         * @return new input processor
+         */
         InputProcessor newInputProcessor();
 
     }
 
+    /**
+     * Factory creating the line covertor.
+     */
     interface LineConvertorFactory {
 
+        /**
+         * Creates and returns new line convertor.
+         *
+         * @return new line convertor
+         */
         LineConvertor newLineConvertor();
 
     }

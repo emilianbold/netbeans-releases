@@ -69,6 +69,8 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor.InputProcessorFactory;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.modules.extexecution.api.input.InputProcessor;
 import org.netbeans.modules.extexecution.api.input.InputProcessors;
 import org.netbeans.modules.extexecution.api.input.InputReaderTask;
@@ -185,8 +187,6 @@ public final class ExecutionService {
 
         InputOutputManager.InputOutputData ioData = getInputOutput(required);
 
-        resetProcessors();
-
         final ProgressHandle handle = createProgressHandle(ioData.getInputOutput());
         final InputOutput io = ioData.getInputOutput();
 
@@ -302,6 +302,12 @@ public final class ExecutionService {
         return current;
     }
 
+    /**
+     * Retrives or creates the output window usable for the current run.
+     *
+     * @param required output window required by rerun or <code>null</code>
+     * @return the output window usable for the current run
+     */
     private InputOutputManager.InputOutputData getInputOutput(InputOutput required) {
         InputOutput io = null;
         StopAction stopAction = null;
@@ -360,6 +366,11 @@ public final class ExecutionService {
         return new InputOutputManager.InputOutputData(io, displayName, stopAction, rerunAction);
     }
 
+    /**
+     * Configures the output window before usage.
+     *
+     * @param inputOutput output window to configure
+     */
     private void configureInputOutput(InputOutput inputOutput) {
         try {
             inputOutput.getOut().reset();
@@ -376,27 +387,6 @@ public final class ExecutionService {
         }
 
         inputOutput.setInputVisible(descriptor.isInputVisible());
-    }
-
-    private void resetProcessors() {
-        InputProcessor outProcessor = descriptor.getOutProcessor();
-        try {
-            if (outProcessor != null) {
-                outProcessor.reset();
-            }
-
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-        }
-
-        InputProcessor errProcessor = descriptor.getErrProcessor();
-        try {
-            if (errProcessor != null) {
-                errProcessor.reset();
-            }
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-        }
     }
 
     private ProgressHandle createProgressHandle(InputOutput inputOutput) {
@@ -424,24 +414,28 @@ public final class ExecutionService {
     }
 
     private InputProcessor createOutProcessor(OutputWriter writer) {
+        LineConvertorFactory convertorFactory = descriptor.getOutConvertorFactory();
         InputProcessor outProcessor = InputProcessors.ansiStripping(
-                InputProcessors.printing(writer, descriptor.getOutConvertor(), true));
+                InputProcessors.printing(writer,
+                    convertorFactory != null ? convertorFactory.newLineConvertor() : null, true));
 
-        InputProcessor descriptorOut = descriptor.getOutProcessor();
-        if (descriptorOut != null) {
-            outProcessor = InputProcessors.proxy(outProcessor, descriptorOut);
+        InputProcessorFactory descriptorOutFactory = descriptor.getOutProcessorFactory();
+        if (descriptorOutFactory != null) {
+            outProcessor = InputProcessors.proxy(outProcessor, descriptorOutFactory.newInputProcessor());
         }
 
         return outProcessor;
     }
 
     private InputProcessor createErrProcessor(OutputWriter writer) {
+        LineConvertorFactory convertorFactory = descriptor.getErrConvertorFactory();
         InputProcessor errProcessor = InputProcessors.ansiStripping(
-                InputProcessors.printing(writer, descriptor.getErrConvertor(), false));
+                InputProcessors.printing(writer,
+                    convertorFactory != null ? convertorFactory.newLineConvertor() : null, false));
 
-        InputProcessor descriptorErr = descriptor.getErrProcessor();
-        if (descriptorErr != null) {
-            errProcessor = InputProcessors.proxy(errProcessor, descriptorErr);
+        InputProcessorFactory descriptorErrFactory = descriptor.getErrProcessorFactory();
+        if (descriptorErrFactory != null) {
+            errProcessor = InputProcessors.proxy(errProcessor, descriptorErrFactory.newInputProcessor());
         }
 
         return errProcessor;

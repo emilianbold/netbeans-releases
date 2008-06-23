@@ -45,8 +45,10 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptorBuilder;
 import org.netbeans.modules.extexecution.api.ExecutionService;
+import org.netbeans.modules.extexecution.api.input.InputProcessor;
 import org.netbeans.modules.extexecution.api.input.InputProcessors;
 import org.netbeans.modules.extexecution.api.input.LineProcessor;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
@@ -151,7 +153,11 @@ public class GrailsActionProvider implements ActionProvider {
 
         ExecutionDescriptorBuilder builder = new ExecutionDescriptorBuilder();
         builder.controllable(true).frontWindow(true).inputVisible(true).showProgress(true).showSuspended(true);
-        builder.outProcessor(InputProcessors.bridge(new ServerURLProcessor(project)));
+        builder.outProcessorFactory(new InputProcessorFactory() {
+            public InputProcessor newInputProcessor() {
+                return InputProcessors.bridge(new ServerURLProcessor(project));
+            }
+        });
         builder.postExecution(runnable);
 
         ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);

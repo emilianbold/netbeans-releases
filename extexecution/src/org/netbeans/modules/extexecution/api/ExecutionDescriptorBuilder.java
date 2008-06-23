@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.extexecution.api;
 
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor.InputProcessorFactory;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.modules.extexecution.api.input.InputProcessor;
 import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.openide.windows.InputOutput;
@@ -148,58 +150,62 @@ public final class ExecutionDescriptorBuilder {
     }
 
     /**
-     * Sets this builder's standard output processor. ExecutionDescriptor
+     * Sets this builder's factory for standard output processor. ExecutionDescriptor
      * subsequently created by {@link #create()} method will return this
-     * processor on {@link ExecutionDescriptor#getOutProcessor()}.
+     * factory on {@link ExecutionDescriptor#getOutProcessorFactory()}.
      *
-     * @param outProcessor processor for standard output, <code>null</code> allowed
+     * @param outProcessorFactory factory for standard output processor,
+     *             <code>null</code> allowed
      * @return this descriptor builder
-     * @see ExecutionDescriptor#getOutProcessor()
+     * @see ExecutionDescriptor#getOutProcessorFactory()
      */
-    public ExecutionDescriptorBuilder outProcessor(InputProcessor outProcessor) {
-        descriptorData.outProcessor = outProcessor;
+    public ExecutionDescriptorBuilder outProcessorFactory(InputProcessorFactory outProcessorFactory) {
+        descriptorData.outProcessorFactory = outProcessorFactory;
         return this;
     }
 
     /**
-     * Sets this builder's standard error output processor. ExecutionDescriptor
+     * Sets this builder's factory for standard error output processor. ExecutionDescriptor
      * subsequently created by {@link #create()} method will return this
-     * processor on {@link ExecutionDescriptor#getErrProcessor()}.
+     * factory on {@link ExecutionDescriptor#getErrProcessorFactory()}.
      *
-     * @param errProcessor processor for standard error output, <code>null</code> allowed
+     * @param errProcessorFactory factory for standard error output processor,
+     *             <code>null</code> allowed
      * @return this descriptor builder
-     * @see ExecutionDescriptor#getErrProcessor()
+     * @see ExecutionDescriptor#getErrProcessorFactory()
      */
-    public ExecutionDescriptorBuilder errProcessor(InputProcessor errProcessor) {
-        descriptorData.errProcessor = errProcessor;
+    public ExecutionDescriptorBuilder errProcessorFactory(InputProcessorFactory errProcessorFactory) {
+        descriptorData.errProcessorFactory = errProcessorFactory;
         return this;
     }
 
     /**
-     * Sets this builder's convertor for standard output. ExecutionDescriptor
+     * Sets this builder's factory for convertor for standard output. ExecutionDescriptor
      * subsequently created by {@link #create()} method will return this
-     * convertor on {@link ExecutionDescriptor#getOutConvertor()}.
+     * convertor on {@link ExecutionDescriptor#getOutConvertorFactory()}.
      *
-     * @param convertor convertor for standard output, <code>null</code> allowed
+     * @param convertorFactory factory for convertor for standard output,
+     *             <code>null</code> allowed
      * @return this descriptor builder
-     * @see ExecutionDescriptor#getOutConvertor()
+     * @see ExecutionDescriptor#getOutConvertorFactory()
      */
-    public ExecutionDescriptorBuilder outConvertor(LineConvertor convertor) {
-        descriptorData.outConvertor = convertor;
+    public ExecutionDescriptorBuilder outConvertorFactory(LineConvertorFactory convertorFactory) {
+        descriptorData.outConvertorFactory = convertorFactory;
         return this;
     }
 
     /**
-     * Sets this builder's convertor for standard error output. ExecutionDescriptor
-     * subsequently created by {@link #create()} method will return this
-     * convertor on {@link ExecutionDescriptor#getErrConvertor()}.
+     * Sets this builder's factory for convertor for standard error output.
+     * ExecutionDescriptor subsequently created by {@link #create()} method
+     * will return this convertor on {@link ExecutionDescriptor#getErrConvertorFactory()}.
      *
-     * @param convertor convertor for standard error output, <code>null</code> allowed
+     * @param convertorFactory factory for convertor for standard error output,
+     *             <code>null</code> allowed
      * @return this descriptor builder
-     * @see ExecutionDescriptor#getErrConvertor()
+     * @see ExecutionDescriptor#getErrConvertorFactory()
      */
-    public ExecutionDescriptorBuilder errConvertor(LineConvertor convertor) {
-        descriptorData.errConvertor = convertor;
+    public ExecutionDescriptorBuilder errConvertorFactory(LineConvertorFactory convertorFactory) {
+        descriptorData.errConvertorFactory = convertorFactory;
         return this;
     }
 
@@ -288,20 +294,20 @@ public final class ExecutionDescriptorBuilder {
             return descriptorData.suspend;
         }
 
-        public LineConvertor getErrConvertor() {
-            return descriptorData.errConvertor;
+        public LineConvertorFactory getErrConvertorFactory() {
+            return descriptorData.errConvertorFactory;
         }
 
-        public InputProcessor getErrProcessor() {
-            return descriptorData.errProcessor;
+        public InputProcessorFactory getErrProcessorFactory() {
+            return descriptorData.errProcessorFactory;
         }
 
-        public LineConvertor getOutConvertor() {
-            return descriptorData.outConvertor;
+        public LineConvertorFactory getOutConvertorFactory() {
+            return descriptorData.outConvertorFactory;
         }
 
-        public InputProcessor getOutProcessor() {
-            return descriptorData.outProcessor;
+        public InputProcessorFactory getOutProcessorFactory() {
+            return descriptorData.outProcessorFactory;
         }
 
         public Runnable getPreExecution() {
@@ -334,13 +340,13 @@ public final class ExecutionDescriptorBuilder {
 
         private boolean controllable;
 
-        private LineConvertor outConvertor;
+        private LineConvertorFactory outConvertorFactory;
 
-        private LineConvertor errConvertor;
+        private LineConvertorFactory errConvertorFactory;
 
-        private InputProcessor outProcessor;
+        private InputProcessorFactory outProcessorFactory;
 
-        private InputProcessor errProcessor;
+        private InputProcessorFactory errProcessorFactory;
 
         private InputOutput inputOutput;
 
@@ -358,10 +364,10 @@ public final class ExecutionDescriptorBuilder {
             this.front = data.front;
             this.input = data.input;
             this.controllable = data.controllable;
-            this.outConvertor = data.outConvertor;
-            this.errConvertor = data.errConvertor;
-            this.outProcessor = data.outProcessor;
-            this.errProcessor = data.errProcessor;
+            this.outConvertorFactory = data.outConvertorFactory;
+            this.errConvertorFactory = data.errConvertorFactory;
+            this.outProcessorFactory = data.outProcessorFactory;
+            this.errProcessorFactory = data.errProcessorFactory;
             this.inputOutput = data.inputOutput;
             this.rerunCondition = data.rerunCondition;
         }
