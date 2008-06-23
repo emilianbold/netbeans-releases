@@ -45,7 +45,7 @@ import org.openide.util.NbBundle;
 
 public enum ConfigVersion {
     CONFIG_1_0, 
-    CONFIG_1_2;
+    CONFIG_1_3;
     
     @Override
     public String toString() {
@@ -53,7 +53,7 @@ public enum ConfigVersion {
     }
     
     public final static ConfigVersion getDefault() {
-        return CONFIG_1_2;
+        return CONFIG_1_3;
     }
     
 }

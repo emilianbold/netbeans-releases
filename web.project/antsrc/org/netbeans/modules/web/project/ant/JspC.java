@@ -71,10 +71,12 @@ public class JspC extends org.apache.jasper.JspC {
                    String oldArg = arg[i];
                    if (oldArg.contains(TARGET_VM)) {
                        String version = oldArg.substring(TARGET_VM.length()).trim();
+                       version = adjustVersion(version);
                        jspc.setCompilerTargetVM(version);
                    }
                    else if (oldArg.contains(SOURCE_VM)) {
                        String version = oldArg.substring(SOURCE_VM.length()).trim();
+                       version = adjustVersion(version);
                        jspc.setCompilerSourceVM(version);
                    }
                    else {
@@ -94,6 +96,14 @@ public class JspC extends org.apache.jasper.JspC {
         }
     }
     
+    // #135568
+    private static String adjustVersion(String version) {
+       if ("1.6".equals(version)) { // NOI18N
+           return "1.5"; // NOI18N
+       }
+       return version;
+    }
+
     public boolean isSmapSuppressed(){
         return false;
     }

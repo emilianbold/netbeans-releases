@@ -83,6 +83,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
@@ -137,6 +138,10 @@ public class GoToSupport {
             }
             
             final String[] result = new String[1];
+            final int[] offsetToOpen = new int[] {-1};
+            final ElementHandle[] elementToOpen = new ElementHandle[1];
+            final String[] displayNameForError = new String[1];
+            final boolean[] tryToOpen = new boolean[1];
             
             js.runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController controller) throws Exception {
@@ -312,28 +317,36 @@ public class GoToSupport {
                                     CALLER.beep(goToSource, javadoc);
                                 } else {
                                     //#71272: it is necessary to translate the offset:
-                                    int targetOffset = controller.getPositionConverter().getOriginalPosition((int) startPos);
-                                    
-                                    if (targetOffset >= 0) {
-                                        if (!CALLER.open(fo, targetOffset)) {
-                                            CALLER.warnCannotOpen(el);
-                                        }
-                                    } else {
-                                        CALLER.warnCannotOpen(el);
-                                    }
+                                    offsetToOpen[0] = controller.getPositionConverter().getOriginalPosition((int) startPos);
+                                    displayNameForError[0] = Utilities.getElementName(el, false).toString();
+                                    tryToOpen[0] = true;
                                 }
                             } else {
                                 CALLER.beep(goToSource, javadoc);
                             }
                         } else {
-                            if (!CALLER.open(controller.getClasspathInfo(), el)) {
-                                CALLER.warnCannotOpen(el);
-                            }
+                            elementToOpen[0] = ElementHandle.create(el);
+                            displayNameForError[0] = Utilities.getElementName(el, false).toString();
+                            tryToOpen[0] = true;
                         }
                     }
                 }
             },true);
             
+            if (tryToOpen[0]) {
+                boolean openSucceeded = false;
+                
+                if (offsetToOpen[0] >= 0) {
+                    openSucceeded = CALLER.open(fo, offsetToOpen[0]);
+                } else {
+                    if (elementToOpen[0] != null) {
+                        openSucceeded = CALLER.open(js.getClasspathInfo(), elementToOpen[0]);
+                    }
+                }
+                if (!openSucceeded) {
+                    CALLER.warnCannotOpen(displayNameForError[0]);
+                }
+            }
             return result[0];
         } catch (IOException ioe) {
             throw new IllegalStateException(ioe);
@@ -780,12 +793,11 @@ public class GoToSupport {
             int value = goToSource ? 1 : goToJavadoc ? 2 : 0;
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GoToSupport.class, "WARN_CannotGoToGeneric", value));
         }
-        public boolean open(ClasspathInfo info, Element el) {
+        public boolean open(ClasspathInfo info, ElementHandle<?> el) {
             return ElementOpen.open(info, el);
         }
-        public void warnCannotOpen(Element el) {
+        public void warnCannotOpen(String displayName) {
             Toolkit.getDefaultToolkit().beep();
-            String displayName = Utilities.getElementName(el, false).toString();
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GoToSupport.class, "WARN_CannotGoTo", displayName));
         }
     };
@@ -793,7 +805,7 @@ public class GoToSupport {
     interface UiUtilsCaller {
         public boolean open(FileObject fo, int pos);
         public void beep(boolean goToSource, boolean goToJavadoc);
-        public boolean open(ClasspathInfo info, Element el);
-        public void warnCannotOpen(Element el);
+        public boolean open(ClasspathInfo info, ElementHandle<?> el);
+        public void warnCannotOpen(String displayName);
     }
 }

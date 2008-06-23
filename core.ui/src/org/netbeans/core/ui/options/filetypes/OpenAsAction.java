@@ -93,10 +93,14 @@ public final class OpenAsAction extends NodeAction {
                 dob.addPropertyChangeListener(new PropertyChangeListener() {
 
                     public void propertyChange(PropertyChangeEvent evt) {
-                        if (evt.getPropertyName().equals(DataObject.PROP_VALID)) {
+                        if (evt.getPropertyName().equals(DataObject.PROP_VALID) && !(Boolean)evt.getNewValue()) {
+                            LOGGER.fine("PROP_VALID " + evt.getNewValue() + " - " + evt);
                             try {
                                 // find a new DataObject and try to open it
-                                DataObject.find(dob.getPrimaryFile()).getCookie(OpenCookie.class).open();
+                                OpenCookie openCookie = DataObject.find(dob.getPrimaryFile()).getCookie(OpenCookie.class);
+                                if(openCookie != null) {
+                                    openCookie.open();
+                                }
                             } catch (DataObjectNotFoundException ex) {
                                 LOGGER.log(Level.INFO, null, ex);
                             } finally {
@@ -109,6 +113,11 @@ public final class OpenAsAction extends NodeAction {
                 });
                 model.setMimeType(extension, mimeType);
                 model.store();
+                // open always - if was choosen MIME type with default loader and propertyChange PROP_VALID is never fired
+                OpenCookie openCookie = dob.getCookie(OpenCookie.class);
+                if(openCookie != null) {
+                    openCookie.open();
+                }
             }
         }
     }

@@ -112,7 +112,9 @@ public class SaveAnimationAsImageAction extends CookieAction {
                 dlg.setVisible(true);
 
                 panel.stopProcessing();
-                if (dd.getValue() == DialogDescriptor.OK_OPTION){
+                if (dd.getValue() == DialogDescriptor.OK_OPTION
+                        && panel.isExportConfirmed())
+                {
                     AnimationRasterizer.export(doj, panel);
                 }
             } catch( javax.imageio.IIOException e) {

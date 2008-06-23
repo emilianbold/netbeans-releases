@@ -128,7 +128,7 @@ public class MigrateActionTest extends RailsProjectTestBase {
     public void testMigrations109892() throws Exception {
         RailsProject p = constructRailsProject("testfiles/migrations1.txt");
         assertNotNull(p);
-        
+
         checkMenu(this, "testfiles/migrations1.txt", p);
     }
 
@@ -136,15 +136,15 @@ public class MigrateActionTest extends RailsProjectTestBase {
         String name = "testfiles/mephisto.txt";
         RailsProject p = constructRailsProject(name);
         assertNotNull(p);
-        
+
         checkMenu(this, name, p);
     }
-    
+
     public void testEmpty1() throws Exception {
         String name = "testfiles/empty.txt";
         RailsProject p = constructRailsProject(name);
         assertNotNull(p);
-        
+
         checkMenu(this, name, p);
     }
 
@@ -152,7 +152,7 @@ public class MigrateActionTest extends RailsProjectTestBase {
         String name = "testfiles/empty2.txt";
         RailsProject p = constructRailsProject(name);
         assertNotNull(p);
-        
+
         checkMenu(this, name, p);
     }
 
@@ -160,7 +160,7 @@ public class MigrateActionTest extends RailsProjectTestBase {
         String name = "testfiles/lotsofitems.txt";
         RailsProject p = constructRailsProject(name);
         assertNotNull(p);
-        
+
         checkMenu(this, name, p);
     }
 
@@ -168,7 +168,7 @@ public class MigrateActionTest extends RailsProjectTestBase {
         String name = "testfiles/short.txt";
         RailsProject p = constructRailsProject(name);
         assertNotNull(p);
-        
+
         checkMenu(this, name, p);
     }
 
@@ -176,7 +176,7 @@ public class MigrateActionTest extends RailsProjectTestBase {
         String name = "testfiles/migrate-utc.txt";
         RailsProject p = constructRailsProject(name);
         assertNotNull(p);
-        
+
         checkMenu(this, name, p);
     }
 
@@ -184,9 +184,10 @@ public class MigrateActionTest extends RailsProjectTestBase {
         String name = "testfiles/migrate-utc-mixed.txt";
         RailsProject p = constructRailsProject(name);
         assertNotNull(p);
-        
+
         checkMenu(this, name, p);
     }
+
     public void testMigrateUTCMany() throws Exception {
         String name = "testfiles/migrate-utc-many.txt";
         RailsProject p = constructRailsProject(name);

@@ -259,7 +259,7 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-java-tools-OverrideAction.instance"/>
             </file>-->
             <file name="SO-8.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-SourcesViewAction.instance"/>
             </file>
             <file name="SO-2.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-WatchesViewAction.instance"/>
@@ -645,7 +645,7 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-java-tools-OverrideAction.instance"/>
             </file>-->
             <file name="SO-8.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-SourcesViewAction.instance"/>
             </file>
             <file name="SO-2.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-WatchesViewAction.instance"/>
@@ -918,7 +918,7 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
             </file>
             <file name="SO-8.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-SourcesViewAction.instance"/>
             </file>
             <file name="SO-2.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-WatchesViewAction.instance"/>

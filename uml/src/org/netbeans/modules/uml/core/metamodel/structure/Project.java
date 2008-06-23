@@ -2495,9 +2495,14 @@ public class Project extends Model implements IProject, IElementModifiedEventsSi
         if (elem instanceof IPackage || elem instanceof IPackageImport)
         {
             ETList<IPackageImport> imports = getPackageImports();
-            for (IPackageImport im: imports)
+            // avoid concurrent modification to the imported list
+            ArrayList<IPackageImport> list = new ArrayList<IPackageImport>();
+            list.addAll(imports);
+            for (IPackageImport im: list)
             {
                 IPackage element = im.getImportedPackage();
+                if (element == null)
+                    return;
                 if ( im == elem || elem.getXMIID().equals(element.getXMIID()))
                 {      
                     // im.delete() basically fires delete event, it's important to 
@@ -2512,10 +2517,13 @@ public class Project extends Model implements IProject, IElementModifiedEventsSi
         else
         {
             ETList<IElementImport> imports = getElementImports();
-            for (IElementImport im: imports)
+            ArrayList<IElementImport> list = new ArrayList<IElementImport>();
+            list.addAll(imports);
+            for (IElementImport im: list)
             {
                 IElement element = im.getImportedElement();
-
+                if (element == null)
+                    return;
                 if (im == elem || elem.getXMIID().equals(element.getXMIID()))
                 {
                     setDirty(true);

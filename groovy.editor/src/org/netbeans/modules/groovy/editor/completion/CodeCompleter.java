@@ -125,6 +125,8 @@ public class CodeCompleter implements CodeCompletionHandler {
     private String jdkJavaDocBase = null;
     private String groovyJavaDocBase = null;
     private String gapiDocBase = null;
+    
+    Set<GroovyKeyword> keywords;
 
     public CodeCompleter() {
         LOG.setLevel(Level.OFF);
@@ -215,26 +217,150 @@ public class CodeCompleter implements CodeCompletionHandler {
     }
 
     /**
+     * Holder class for the context of a given completion.
+     * This means the two surrounding Lexer-tokens before and after
+     * the completion point.
+     */
+    class CompletionContext {
+        // b2    b1      |       a1        a2
+        // class MyClass extends BaseClass {
+        Token<? extends GroovyTokenId> beforeLiteral;
+        Token<? extends GroovyTokenId> before2;
+        Token<? extends GroovyTokenId> before1;
+        Token<? extends GroovyTokenId> after1;
+        Token<? extends GroovyTokenId> after2;
+        Token<? extends GroovyTokenId> afterLiteral;
+
+        public CompletionContext(
+                Token<? extends GroovyTokenId> beforeLiteral,
+                Token<? extends GroovyTokenId> before2,
+                Token<? extends GroovyTokenId> before1,
+                Token<? extends GroovyTokenId> after1,
+                Token<? extends GroovyTokenId> after2,
+                Token<? extends GroovyTokenId> afterLiteral) {
+
+            this.beforeLiteral = beforeLiteral;
+            this.before2 = before2;
+            this.before1 = before1;
+            this.after1 = after1;
+            this.after2 = after2;
+            this.afterLiteral = afterLiteral;
+        }
+    }
+    
+    
+    
+    /**
      * Returns the next upstream Literal token (GroovyTokenId.LITERAL_*) or null
      * 
      * @param request
      * @return
      */
     
-    Token<? extends GroovyTokenId> getNextUpstreamLiteral(final CompletionRequest request) {
+    CompletionContext getCompletionContext(final CompletionRequest request) {
         int position = request.lexOffset;
+        
+        Token<? extends GroovyTokenId> beforeLiteral = null;
+        Token<? extends GroovyTokenId> before2 = null;
+        Token<? extends GroovyTokenId> before1 = null;
+        Token<? extends GroovyTokenId> after1  = null;
+        Token<? extends GroovyTokenId> after2  = null;
+        Token<? extends GroovyTokenId> afterLiteral  = null;
 
         TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, position);
         ts.move(position);
 
+        // Travel to the beginning to get before2 and before1
+        
+        int stopAt = 0;
+        
         while (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
             Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
-            if (t.id().primaryCategory().equals("keyword")) {
-                return t;
+            if (t.id() == GroovyTokenId.NLS) {
+                break;
+            } else if (t.id() != GroovyTokenId.WHITESPACE){
+                if(stopAt == 0){
+                    before1 = t;
+                } else if (stopAt == 1){
+                    before2 = t;
+                } else if (stopAt == 2){
+                    break;
+                }
+                
+                stopAt++;
             }
         }
         
-        return null;
+        // Move to the beginning (again) to get the next left-hand-sight literal
+        
+        ts.move(position);
+        
+        while (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
+            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+            if (t.id() == GroovyTokenId.NLS ||
+                t.id() == GroovyTokenId.LBRACE ) {
+                break;
+            } else if (t.id().primaryCategory().equals("keyword")){
+                beforeLiteral = t;
+            }
+        }
+        
+        // now looking for the next right-hand-sight literal in the opposite direction
+        
+        ts.move(position);
+        
+        while (ts.isValid() && ts.moveNext() && ts.offset() < request.doc.getLength()) {
+            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+            if (t.id() == GroovyTokenId.NLS ||
+                t.id() == GroovyTokenId.RBRACE ) {
+                break;
+            } else if (t.id().primaryCategory().equals("keyword")){
+                afterLiteral = t;
+            }
+        }       
+        
+        
+        // Now we're heading to the end of that stream
+        
+        ts.move(position);
+        stopAt = 0;
+        
+        while (ts.isValid() && ts.moveNext() && ts.offset() < request.doc.getLength()) {
+            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+            
+            if (t.id() == GroovyTokenId.NLS) {
+                break;
+            } else if (t.id() != GroovyTokenId.WHITESPACE){
+                if(stopAt == 0){
+                    after1 = t;
+                } else if (stopAt == 1){
+                    after2 = t;
+                } else if (stopAt == 2){
+                    break;
+                }
+                
+                stopAt++;
+            }
+        }       
+        
+        
+        return new CompletionContext(beforeLiteral, before2, before1, after1, after2, afterLiteral);
+    }
+    
+    
+    boolean checkForPackageStatement(final CompletionRequest request) {
+        TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, 1);
+        ts.move(1);
+        
+        while (ts.isValid() && ts.moveNext() && ts.offset() < request.doc.getLength()) {
+            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+            
+            if (t.id() == GroovyTokenId.LITERAL_package ) {
+                return true;
+            } 
+        }
+        
+        return false;
     }
     
     
@@ -473,64 +599,83 @@ public class CodeCompleter implements CodeCompletionHandler {
             return false;
         }
         
-        Token<? extends GroovyTokenId> previousLiteral = getNextUpstreamLiteral(request);
+        // Is there already a "package"-statement in the sourcecode?
+        boolean havePackage = checkForPackageStatement(request);
+        
+        CompletionContext completionContext = getCompletionContext(request);
+        
+        LOG.log(Level.FINEST, "CompletionContext ------------------------------------------"); // NOI18N
+        LOG.log(Level.FINEST, "CompletionContext before 2: {0}", completionContext.before2); // NOI18N
+        LOG.log(Level.FINEST, "CompletionContext before 1: {0}", completionContext.before1); // NOI18N
+        LOG.log(Level.FINEST, "CompletionContext after  1: {0}", completionContext.after1); // NOI18N
+        LOG.log(Level.FINEST, "CompletionContext after  2: {0}", completionContext.after2); // NOI18N
 
-        Set<GroovyKeyword> keywords = EnumSet.allOf(GroovyKeyword.class);
+        keywords  = EnumSet.allOf(GroovyKeyword.class);
 
+        // filter-out keywords in a step-by-step approach
+        
+        filterPackageStatement(havePackage);
+        filterPrefix(prefix);
+        filterLocation(request.location);
+        filterClassInterfaceOrdering(completionContext);
+        
+        // add the remaining keywords to the result
+        
         for (GroovyKeyword groovyKeyword : keywords) {
-            if (groovyKeyword.name.startsWith(prefix)) {
-                if (checkKeywordAllowance(groovyKeyword, request.location)) {
-                    if (checkKeywordOrder(groovyKeyword, previousLiteral)) {
-                        KeywordItem item = new KeywordItem(groovyKeyword.name, null, anchor, request, groovyKeyword.isGroovy);
-                        item.setSymbol(true);
-                        proposals.add(item);
-                    }
-                } 
-            }
+            LOG.log(Level.FINEST, "Adding keyword proposal : {0}", groovyKeyword.name); // NOI18N
+            proposals.add(new KeywordItem(groovyKeyword.name, null, anchor, request, groovyKeyword.isGroovy));
         }
         
         return true;
     }
     
-    boolean checkKeywordOrder(GroovyKeyword groovyKeyword, Token<? extends GroovyTokenId> previousLiteral) {
-        // defaulte behaviour is to pass through everything.
-        if(previousLiteral == null) {
-            return true;
-        } 
-        
-        if (    previousLiteral.id() == GroovyTokenId.LITERAL_class ||
-                previousLiteral.id() == GroovyTokenId.LITERAL_interface || 
-                previousLiteral.id() == GroovyTokenId.LITERAL_import) {
-            
-            switch (groovyKeyword){
-                case KEYWORD_extends:
-                    if(previousLiteral.id() == GroovyTokenId.LITERAL_class || 
-                       previousLiteral.id() == GroovyTokenId.LITERAL_interface){
-                        return true;
-                    }
-                    break;
-                case KEYWORD_as:
-                    if(previousLiteral.id() == GroovyTokenId.LITERAL_import){
-                        return true;
-                    } 
-                    break;
-                case KEYWORD_implements:
-                    if(previousLiteral.id() == GroovyTokenId.LITERAL_class){
-                        return true;
-                    }
-                    break;
-                default:
-                    return false;
-
+    // filter-out package-statemen, if there's already one
+    void filterPackageStatement(boolean havePackage) {
+        for (GroovyKeyword groovyKeyword : keywords) {
+            if(groovyKeyword.name.equals("package") && havePackage) {
+                LOG.log(Level.FINEST, "filterPackageStatement - removing : {0}", groovyKeyword.name);
+                keywords.remove(groovyKeyword);
             }
-            
-            return false;
-        } else {
-            return true;
         }
-        
     }
-    
+
+    // Filter prefix 
+    void filterPrefix(String prefix) {
+        for (GroovyKeyword groovyKeyword : keywords) {
+            if (!groovyKeyword.name.startsWith(prefix)) {
+                LOG.log(Level.FINEST, "filterPrefix - removing : {0}", groovyKeyword.name);
+                keywords.remove(groovyKeyword);
+            }
+        }
+    }
+
+    // Filter Location 
+    void filterLocation(CaretLocation location) {
+        for (GroovyKeyword groovyKeyword : keywords) {
+            if (!checkKeywordAllowance(groovyKeyword, location)) {
+                LOG.log(Level.FINEST, "filterLocation - removing : {0}", groovyKeyword.name);
+                keywords.remove(groovyKeyword);
+            }
+        }
+    }
+
+    // Filter right Keyword ordering
+    void filterClassInterfaceOrdering(CompletionContext ctx) {
+
+        if (ctx == null || ctx.beforeLiteral == null) {
+            return;
+        }
+
+        if (ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_interface) {
+            keywords.clear();
+            keywords.add(GroovyKeyword.KEYWORD_extends);
+        } else if (ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_class) {
+            keywords.clear();
+            keywords.add(GroovyKeyword.KEYWORD_extends);
+            keywords.add(GroovyKeyword.KEYWORD_implements);
+        }
+
+    }
     
     boolean checkKeywordAllowance(GroovyKeyword groovyKeyword, CaretLocation location){
         

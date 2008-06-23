@@ -30,7 +30,7 @@
 		<aDefinition name="Artifact" displayName="PSK_ARTIFACT" image="org/netbeans/modules/uml/resources/images/artifact.png"/>
 		<aDefinition name="Class" displayName="PSK_CLASS" image="org/netbeans/modules/uml/resources/images/class.png"/>
 		<aDefinition name="DataType" displayName="PSK_DATATYPE" image="org/netbeans/modules/uml/resources/images/datatype.png"/>
-		<aDefinition name="Emumeration" displayName="PSK_ENUMERATION" image="org/netbeans/modules/uml/resources/images/enumeration.png"/>
+		<aDefinition name="Enumeration" displayName="PSK_ENUMERATION" image="org/netbeans/modules/uml/resources/images/enumeration.png"/>
 		<aDefinition name="Interface" displayName="PSK_INTERFACE" image="org/netbeans/modules/uml/resources/images/interface.png"/>
 		<aDefinition name="Node" displayName="PSK_NODE" image="org/netbeans/modules/uml/resources/images/node.png"/>
 	</aDefinition>

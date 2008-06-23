@@ -70,6 +70,7 @@ public class UpdateUnitProviderImplTest extends NbTestCase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         MockServices.setServices(TestUpdateProvider.class);
@@ -85,6 +86,7 @@ public class UpdateUnitProviderImplTest extends NbTestCase {
         }        
     }
     
+    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
         clearWorkDir();
@@ -140,8 +142,6 @@ public class UpdateUnitProviderImplTest extends NbTestCase {
         
         assertEquals("Original and loaded are identical " + codeName1, result2.getName(), load2.getName());
         assertEquals("Display name equals.", result2.getDisplayName(), load2.getDisplayName());
-        
-        clearWorkDir();
     }
     
     public void testGetUpdatesProviders() throws Exception {

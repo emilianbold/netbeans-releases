@@ -92,7 +92,8 @@ public class UIDUtilities {
     public static <T extends CsmOffsetableDeclaration> CsmUID<T> createDeclarationUID(T declaration) {
         assert (! (declaration instanceof CsmBuiltIn)) : "built-in have own UIDs";
         CsmUID<T> uid;
-        if (!ProjectBase.canRegisterDeclaration(declaration)) {
+        //if (!ProjectBase.canRegisterDeclaration(declaration)) {
+        if (!namedDeclaration(declaration)) {
             uid = handleUnnamedDeclaration((CsmOffsetableDeclaration)declaration);
         } else {
             if (declaration instanceof CsmTypedef) {
@@ -104,6 +105,12 @@ public class UIDUtilities {
             }
         }
         return UIDManager.instance().getSharedUID(uid);
+    }
+    
+    private static <T extends CsmOffsetableDeclaration> boolean namedDeclaration(T declaration){
+        assert declaration != null;
+        assert declaration.getName() != null;
+        return declaration.getName().length() > 0;
     }
     
     public static CsmUID<CsmMacro> createMacroUID(CsmMacro macro) {

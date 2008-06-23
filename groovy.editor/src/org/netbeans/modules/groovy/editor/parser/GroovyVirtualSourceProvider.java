@@ -133,7 +133,7 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
     }
 
     @SuppressWarnings("unchecked")
-    private static List<ClassNode> getClassNodes(File file) {
+    static List<ClassNode> getClassNodes(File file) {
         List<ClassNode> resultList = new ArrayList<ClassNode>();
         
         final FileObject fo = FileUtil.toFileObject(file);
@@ -193,7 +193,7 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
     }
 
     @SuppressWarnings("unchecked")
-    private class JavaStubGenerator {
+    static final class JavaStubGenerator {
 
         private boolean java5 = false;
         private boolean requireSuperResolved = false;
@@ -310,6 +310,24 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
                     genMethod(classNode, methodNode, out);
                 }
             }
+            // <netbeans>
+            List properties = classNode.getProperties();
+            for (Object object : properties) {
+                PropertyNode propertyNode = (PropertyNode) object;
+                if (!propertyNode.isSynthetic()) {
+                    String name = propertyNode.getName();
+                    name = Character.toUpperCase(name.charAt(0)) + name.substring(1);
+                    MethodNode getter = classNode.getGetterMethod("get" + name); // NOI18N
+                    if (getter != null) {
+                        genMethod(classNode, getter, out, false);
+                    }
+                    MethodNode setter = classNode.getSetterMethod("set" + name); // NOI18N
+                    if (setter != null) {
+                        genMethod(classNode, setter, out, false);
+                    }
+                }
+            }
+            // </netbeans>
         }
 
         private void getConstructors(ClassNode classNode, PrintWriter out) {
@@ -424,6 +442,11 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
         }
 
         private void genField(FieldNode fieldNode, PrintWriter out) {
+            // <netbeans>
+            if (fieldNode.isSynthetic() || "metaClass".equals(fieldNode.getName())) { // NOI18N
+                return;
+            }
+            // </netbeans>
             if ((fieldNode.getModifiers() & Opcodes.ACC_PRIVATE) != 0) {
                 return;
             }
@@ -459,6 +482,11 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
         }
 
         private void genConstructor(ClassNode clazz, ConstructorNode constructorNode, PrintWriter out) {
+            // <netbeans>
+            if (constructorNode.isSynthetic()) {
+                return;
+            }
+            // </netbeans>
             // printModifiers(out, constructorNode.getModifiers());
 
             out.print("public "); // temporary hack
@@ -560,6 +588,16 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
         }
 
         private void genMethod(ClassNode clazz, MethodNode methodNode, PrintWriter out) {
+        // <netbeans>
+            genMethod(clazz, methodNode, out, true);
+        }
+
+        private void genMethod(ClassNode clazz, MethodNode methodNode, PrintWriter out, boolean ignoreSynthetic) {
+            String name = methodNode.getName();
+            if ((ignoreSynthetic && methodNode.isSynthetic()) || name.startsWith("super$")) { // NOI18N
+                return;
+            }
+        // </netbeans>
             if (methodNode.getName().equals("<clinit>")) {
                 return;
             }

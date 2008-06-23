@@ -102,7 +102,7 @@ final class SelectionWizardPanel extends ImporterWizardPanel implements
     }
     
     /** Returns workspace directory choosed by user. */
-    public String getWorkspaceDir() {
+    public File getWorkspaceDir() {
         return panel.getWorkspaceDir();
     }
     

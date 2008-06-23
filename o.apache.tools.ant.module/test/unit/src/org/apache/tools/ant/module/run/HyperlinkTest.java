@@ -45,6 +45,7 @@ import java.awt.EventQueue;
 import java.io.PrintStream;
 import javax.swing.JEditorPane;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -57,6 +58,7 @@ import org.openide.windows.TopComponent;
  * Check that hyperlinks go to the right place.
  * @author Jesse Glick
  */
+@RandomlyFails
 public class HyperlinkTest extends NbTestCase {
 
     public HyperlinkTest(String n) {
@@ -93,16 +95,10 @@ public class HyperlinkTest extends NbTestCase {
     }
 
     public void testMovingHyperlinkWithoutSave() throws Exception {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return;
-        }
         doTestMovingHyperlink(false);
     }
 
     public void testMovingHyperlinkWithSave() throws Exception { // #62623
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return;
-        }
         doTestMovingHyperlink(true);
     }
 

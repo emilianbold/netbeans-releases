@@ -68,6 +68,7 @@ import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.InstallSupport.Installer;
 import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.autoupdate.InstallSupport.Validator;
+import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.WizardDescriptor;
@@ -198,9 +199,10 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     
     private Validator handleDownload () {
         validator = null;
+        OperationContainer installContainer = model.getBaseContainer ();
         final InstallSupport support = model.getInstallSupport ();
         assert support != null : "OperationSupport cannot be null because OperationContainer " +
-                "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
+                "contains elements: " + installContainer.listAll () + " and invalid elements " + installContainer.listInvalid ();
         
         boolean finish = false;
         while (! finish) {

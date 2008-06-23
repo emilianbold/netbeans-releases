@@ -42,6 +42,7 @@ package org.netbeans.modules.uml.drawingarea.view;
 
 import java.awt.Rectangle;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.action.AlignWithWidgetCollector;
@@ -75,11 +76,32 @@ public final class GraphSceneNodeAlignCollector implements AlignWithWidgetCollec
         {
             Widget widget = scene.findWidget(presentation);
 
-            if ((widget != null) && (widget != movingWidget))
+            if ((widget != null) && (widget != movingWidget) && (isOwnerMoving(widget, movingWidget) == false))
             {
                 regions.add(widget.convertLocalToScene(widget.getBounds()));
             }
         }
         return regions;
+    }
+    
+    private boolean isOwnerMoving(Widget testWidget, 
+                                  Widget movingWidget)
+    {
+        boolean retVal = false;
+        
+        if((testWidget != null) && (movingWidget != null))
+        {
+            Widget parent = testWidget.getParentWidget();
+            if(parent != movingWidget)
+            {
+                retVal = isOwnerMoving(parent, movingWidget);
+            }
+            else
+            {
+                retVal = true;
+            }
+        }
+        
+        return retVal;
     }
 }

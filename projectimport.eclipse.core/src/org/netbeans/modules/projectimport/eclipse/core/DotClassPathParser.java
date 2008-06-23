@@ -145,7 +145,7 @@ final class DotClassPathParser {
         return new DotClassPath(classpath, sources, output, jre);
     }
 
-    private static DotClassPath empty() {
+    static DotClassPath empty() {
         return new DotClassPath(new ArrayList<DotClassPathEntry>(), new ArrayList<DotClassPathEntry>(), null, null);
     }
     

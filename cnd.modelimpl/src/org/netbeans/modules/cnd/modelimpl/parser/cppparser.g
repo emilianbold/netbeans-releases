@@ -3221,11 +3221,22 @@ primary_expression
 	;
 
 id_expression 
-	{String s;}
+	{String s;
+         TypeQualifier tq;
+	 /*TypeSpecifier*/int ts;}
 	:
 		s = scope_override
 		(	ID 
-		|	LITERAL_OPERATOR optor
+		|	LITERAL_OPERATOR
+                        (       optor
+                        |       // Fix for IZ 137468: grammar does not support
+                                // conversion operator invocation.
+                                // Code adopted from cast_expression_type_specifier.
+                                (tq = cv_qualifier)? 
+                                (LITERAL_struct|LITERAL_union|LITERAL_class|LITERAL_enum)? 
+                                ts = simple_type_specifier 
+                                (options{greedy=true;} : ptr_operator)*
+                        )
 		|	TILDE (STAR)? ID	// DW 29/07/03 STAR included to allow 
 						// for *_S = ~*_S; seen in vector
 		)

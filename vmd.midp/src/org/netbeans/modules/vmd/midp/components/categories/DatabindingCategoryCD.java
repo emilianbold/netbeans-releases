@@ -51,7 +51,6 @@ import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.midp.components.databinding.DataSetAbstractCD;
-import org.netbeans.modules.vmd.midp.components.databinding.DataSetCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.CategoryPC;
 import org.openide.util.NbBundle;
 /**
@@ -61,7 +60,6 @@ import org.openide.util.NbBundle;
 public final class DatabindingCategoryCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "#DatabindingCategory"); // NOI18N
-    public static final String ICON_PATH_CATEGORY_DATABINDING = "org/netbeans/modules/vmd/midp/resources/components/category_resources_16.gif";// NOI18N
 
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor (CategoryCD.TYPEID, TYPEID, true, true);
@@ -78,7 +76,7 @@ public final class DatabindingCategoryCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList (
             // general
-            InfoPresenter.createStatic (NbBundle.getMessage(DatabindingCategoryCD.class, "DISP_Databinding"), null, ICON_PATH_CATEGORY_DATABINDING), // NOI18N
+            InfoPresenter.createStatic (NbBundle.getMessage(DatabindingCategoryCD.class, "DISP_Databinding"), null, CategorySupport.ICON_PATH_CATEGORY_DATABINDING), // NOI18N
             // accept
             new AcceptTypePresenter (DataSetAbstractCD.TYPEID),
             // inspector

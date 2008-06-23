@@ -845,6 +845,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         if (includeArchiveDescription)
             descriptions.add(createArchiverDescription());
         
+        descriptions.add(createPackagingDescription());
         
         return new BuildCustomizerNode(
                 "Build", // NOI18N
@@ -1038,6 +1039,25 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx("ProjectPropsArchiverGeneral"); // NOI18N
+        }
+    }
+    
+    // Packaging
+    private CustomizerNode createPackagingDescription() {
+        CustomizerNode node = new PackagingCustomizerNode("Packaging", getString("LBL_PACKAGING_NODE"), null); // NOI18N
+        return node;
+    }
+    class PackagingCustomizerNode extends CustomizerNode {
+        public PackagingCustomizerNode(String name, String displayName, CustomizerNode[] children) {
+            super(name, displayName, children);
+        }
+        @Override
+        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
+            return ((MakeConfiguration)configuration).getPackagingConfiguration().getGeneralSheet();
+        }
+        @Override
+        public HelpCtx getHelpCtx() {
+            return null; //return new HelpCtx("ProjectPropsArchiverGeneral"); // NOI18N // FIXUP
         }
     }
     
