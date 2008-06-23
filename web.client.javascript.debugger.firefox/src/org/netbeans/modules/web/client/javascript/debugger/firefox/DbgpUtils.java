@@ -63,7 +63,6 @@ import org.netbeans.modules.web.client.javascript.debugger.js.api.JSBreakpoint;
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSCallStackFrame;
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSDebugger;
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSDebuggerState;
-import org.netbeans.modules.web.client.javascript.debugger.js.api.JSLocation;
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSProperty;
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSSource;
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSValue;
@@ -73,6 +72,7 @@ import org.netbeans.modules.web.client.javascript.debugger.js.impl.JSCallStackFr
 import org.netbeans.modules.web.client.javascript.debugger.js.impl.JSFactory;
 import org.netbeans.modules.web.client.javascript.debugger.js.impl.JSObjectImpl;
 import org.netbeans.modules.web.client.javascript.debugger.js.impl.JSWindowImpl;
+import org.netbeans.modules.web.client.tools.api.JSLocation;
 
 /**
  *

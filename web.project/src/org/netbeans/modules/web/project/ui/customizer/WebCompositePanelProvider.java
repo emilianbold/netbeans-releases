@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.netbeans.modules.web.client.tools.projectsupport.CustomizerDebug;
 import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
@@ -171,7 +172,11 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
         } else if (RUN.equals(nm)) {
             return new CustomizerRun(uiProps);
         } else if (DEBUG.equals(nm)) {
-            return new CustomizerDebug(category, uiProps);
+            ResourceBundle bundle = NbBundle.getBundle( CustomizerProviderImpl.class );
+            String serverMsg = bundle.getString("LBL_CustomizeDebug_ServerDebug_JCheckBox"); // NOI18N
+            String clientMsg = bundle.getString("LBL_CustomizeDebug_ClientDebug_JCheckBox"); // NOI18N
+            
+            return new CustomizerDebug(category, uiProps.DEBUG_SERVER_MODEL, serverMsg, uiProps.DEBUG_CLIENT_MODEL, clientMsg);
         } else if (WEBSERVICES.equals(nm) || WEBSERVICECLIENTS.equals(nm)) {
             ProjectWebModule wm = (ProjectWebModule) uiProps.getProject().getLookup().lookup(ProjectWebModule.class);
             FileObject docBase = wm.getDocumentBase();

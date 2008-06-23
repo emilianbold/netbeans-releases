@@ -43,6 +43,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
+import org.netbeans.modules.web.client.tools.api.JSLocation;
 
 /**
  *
