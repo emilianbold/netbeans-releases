@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,72 +31,63 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.mysql.actions;
 
-import org.netbeans.modules.db.mysql.DatabaseServer;
-import org.netbeans.modules.db.mysql.util.Utils;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.actions.CookieAction;
+package org.netbeans.modules.db.sql.lexer;
+
+import javax.swing.text.Document;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.PartType;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.lib.lexer.test.ModificationTextDocument;
 
 /**
- * Disconnects a connected server
- * 
- * @author David Van Couvering
+ *
+ * @author Andrei Badea
  */
-public class DisconnectServerAction extends CookieAction {
-    private static final Class[] COOKIE_CLASSES = 
-            new Class[] { DatabaseServer.class };
-    
-    public DisconnectServerAction() {
-        putValue("noIconInMenu", Boolean.TRUE);
+public class SQLLexerTest extends NbTestCase {
+
+    public SQLLexerTest(String testName) {
+        super(testName);
     }
 
-    @Override
-    protected boolean asynchronous() {
-        return false;
+    public void testSimple() throws Exception {
+        Document doc = new ModificationTextDocument();
+        doc.putProperty(Language.class, SQLTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        TokenSequence seq = hi.tokenSequence();
+        assertFalse(seq.moveNext());
+        doc.insertString(0, "select -/ from 'a' + 1, dto", null);
+        seq = hi.tokenSequence();
+        System.out.println(dumpTokens(seq));
     }
 
-    public String getName() {
-        return Utils.getBundle().getString("LBL_DisconnectServerAction");
-    }
-
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(DisconnectServerAction.class);
-    }
-
-    @Override
-    public boolean enable(Node[] activatedNodes) {
-        if ( activatedNodes == null || activatedNodes.length == 0 ) {
-            return false;
+    private CharSequence dumpTokens(TokenSequence<?> seq) {
+        StringBuilder builder = new StringBuilder();
+        Token token = null;
+        while (seq.moveNext()) {
+            if (token != null) {
+                builder.append('\n');
+            }
+            token = seq.token();
+            builder.append(token.id());
+            PartType part = token.partType();
+            if (part != PartType.COMPLETE) {
+                builder.append(' ');
+                builder.append(token.partType());
+            }
+            builder.append(' ');
+            builder.append('\'');
+            builder.append(token.text());
+            builder.append('\'');
         }
-        
-        DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
-        
-        return server != null && server.isConnected();
-    }
-
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
-
-        // Run this on a separate thread so that we don't hang up the AWT 
-        // thread if the database server is not responding
-        server.disconnect();
-    }
-    
-    @Override
-    protected int mode() {
-        return MODE_EXACTLY_ONE;
-    }
-
-    @Override
-    protected Class<?>[] cookieClasses() {
-        return COOKIE_CLASSES;
+        return builder;
     }
 }
