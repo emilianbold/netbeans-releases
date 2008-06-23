@@ -388,7 +388,7 @@ private void verifySQLLimit() {
             List<SQLHistory> sqlHistoryListForTooltip = view.getSQLHistoryList();
             
             if (col == 0) {
-                String sqlRow = sqlHistoryListForTooltip.get(row).getSql();                
+                String sqlRow = sqlHistoryListForTooltip.get(row).getSql().trim();                
                 while (sqlRow.indexOf("\n") != -1) {        // NOI18N
                     sqlRow = replace(sqlRow, "\n", "<br>"); // NOI18N
                 }      
