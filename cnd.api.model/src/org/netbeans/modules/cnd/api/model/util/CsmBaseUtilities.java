@@ -163,6 +163,28 @@ public class CsmBaseUtilities {
         } else if (CsmKindUtilities.isFunctionDeclaration(target)) {
             decl = target;
             def = ((CsmFunction)target).getDefinition();
+        } else if (CsmKindUtilities.isClassForwardDeclaration(target)) {
+            CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) target;
+            if (fd.getCsmClass() != null){
+                decl = target;
+                def = fd.getCsmClass();
+            } else {
+                decl = target;
+                def = null;
+            }
+        } else if (CsmKindUtilities.isClass(target)) {
+            CsmClass cls = (CsmClass)target;
+            CsmClassifier c = cls.getContainingFile().getProject().findClassifier(cls.getQualifiedName());
+            if (cls.equals(c)) {
+                decl = target;
+                def = null;
+            } else if (c != null){
+                decl = c;
+                def = cls;
+            } else {
+                decl = target;
+                def = null;
+            }
         } else {
             decl = target;
             def = null;
