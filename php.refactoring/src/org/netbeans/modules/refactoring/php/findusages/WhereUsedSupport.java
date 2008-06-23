@@ -44,7 +44,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -61,8 +60,7 @@ import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassConstantDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
@@ -198,6 +196,9 @@ public final class WhereUsedSupport {
                 Identifier className = fieldAccess.getClassName();
                 Variable field = fieldAccess.getField();
                 leaf = (field.getStartOffset() < offset) ? leaf : className;
+            } else if (leaf instanceof ArrayAccess) {
+                ArrayAccess arrayAccess = (ArrayAccess) leaf;
+                leaf = arrayAccess.getIndex();
             }
             el = attribs.getElement(leaf);
             if (el != null) {

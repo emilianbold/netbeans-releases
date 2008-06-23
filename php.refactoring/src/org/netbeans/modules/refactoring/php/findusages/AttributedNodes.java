@@ -600,7 +600,7 @@ public class AttributedNodes extends DefaultVisitor {
                 }
             }
         }
-        //super.visit(node);
+        super.visit(node);
     }
 
     private AttributedElement enterGlobalVariable(String name) {
