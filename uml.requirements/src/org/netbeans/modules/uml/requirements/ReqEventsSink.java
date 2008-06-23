@@ -347,8 +347,7 @@ public class ReqEventsSink implements IProjectTreeEventsSink,
 	                         IProjectTreeDragVerify pVerify, 
 	                         IResultCell cell)
    {
-      if( (null == pParentControl) ||
-          (pItem == null) ||
+      if( (pItem == null) ||
           (pVerify == null) )
       {
          throw new IllegalArgumentException();

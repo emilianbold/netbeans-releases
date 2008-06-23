@@ -193,21 +193,11 @@ made subject to such option by the copyright holder.
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                 <attr name="position" intvalue="1500"/>
             </file>
-            <!-- note, actions defined in editor moduel are here between -->
             <file name="org-openide-actions-FindAction.instance">
                 <attr name="position" intvalue="2000"/>
             </file>
             <file name="org-openide-actions-ReplaceAction.instance">
                 <attr name="position" intvalue="2100"/>
-            </file>
-            <file name="Separator3.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-            </file>
-            <file name="org-netbeans-core-actions-JumpNextAction.shadow">
-                <attr name="originalFile" stringvalue="/Actions/System/org-netbeans-core-actions-JumpNextAction.instance"/>
-            </file>
-            <file name="org-netbeans-core-actions-JumpPrevAction.shadow">
-                <attr name="originalFile" stringvalue="/Actions/System/org-netbeans-core-actions-JumpPrevAction.instance"/>
             </file>
         </folder>
         

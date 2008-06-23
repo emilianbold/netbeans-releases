@@ -235,7 +235,9 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
 
                 if(getContainer() != null)
                 {
-                    getContainer().calculateChildren(true);
+                    // Since the container can not be resized smaller than its 
+                    // children, do not calculate the existing children.
+                    getContainer().calculateChildren(false);
                 }
 
                 // Now put the node back to its original index.  See resizeStarted
@@ -330,6 +332,15 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
                 topBounds = Double.MAX_VALUE;
                 rightBounds = Double.MIN_VALUE;
                 bottomBounds = Double.MIN_VALUE;
+                
+                // The parent is a reasonable default, but what we want is the
+                // true interaction layer.
+                Widget interactionLayer = parent;
+                if (getScene() instanceof DesignerScene)
+                {
+                    DesignerScene scene = (DesignerScene) getScene();
+                    interactionLayer = scene.getInterractionLayer();
+                }
         
                 for(Widget child : children)
                 {
@@ -347,7 +358,7 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
 
                     child.setPreferredLocation(childSceneLocation);
                     container.removeChild(child);
-                    parent.addChild(child);
+                    interactionLayer.addChild(child);
                 }
             } 
         }

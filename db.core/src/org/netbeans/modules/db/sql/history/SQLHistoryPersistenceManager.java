@@ -355,7 +355,7 @@ public class SQLHistoryPersistenceManager {
                     nameNode.appendChild(document.createTextNode(sqlHistory.getSql()));
                     nameNode.setAttribute("url", sqlHistory.getUrl());  // NOI18N
                     nameNode.setAttribute("date", DateFormat.getInstance().format(sqlHistory.getDate()));  // NOI18N
-                    newNode.appendChild(nameNode);
+                    newNode.insertBefore(nameNode, newNode.getFirstChild());
                 }
             }
             return newNode;
@@ -378,7 +378,7 @@ public class SQLHistoryPersistenceManager {
                 // Remove elements from the DOM
                 for (int i = 0; i < elemsToRemove; i++) {
                     if (nodes.item(0) != null) {
-                        history.removeChild(nodes.item(0));
+                        history.removeChild(nodes.item(nodes.getLength()-1));
                     }
                 }
             }

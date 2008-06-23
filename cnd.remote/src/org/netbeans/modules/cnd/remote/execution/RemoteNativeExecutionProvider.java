@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.remote.execution;
 
 import org.netbeans.modules.cnd.api.execution.NativeExecution;
 import org.netbeans.modules.cnd.api.execution.NativeExecutionProvider;
-import org.netbeans.modules.cnd.execution.LocalNativeExecution;
 
 /**
  *
@@ -49,12 +48,16 @@ import org.netbeans.modules.cnd.execution.LocalNativeExecution;
  */
 public class RemoteNativeExecutionProvider implements NativeExecutionProvider {
     
+    protected String host = null;
+    
     public NativeExecution getNativeExecution() {
-        if (isRemote()) {
-            return new RemoteNativeExecution();
-        } else {
-            return new LocalNativeExecution();
-        }
+        NativeExecution ne = new RemoteNativeExecution();
+        ne.setHost(host);
+        return ne;
+    }
+    
+    public void setHost(String host) {
+        this.host = host;
     }
 
     /**
@@ -67,7 +70,7 @@ public class RemoteNativeExecutionProvider implements NativeExecutionProvider {
      * if it isn't...
      */
     private static boolean isRemote() {
-        boolean remote = Boolean.getBoolean("cnd.remote.enabled");
+        boolean remote = Boolean.getBoolean("cnd.remote.enable");
         return remote;
     }
 }

@@ -203,6 +203,7 @@ final class Importer {
                         eclProject.getDirectory().getAbsolutePath(), 
                         eclProject.getWorkspace() != null ? eclProject.getWorkspace().getDirectory().getAbsolutePath() : null, 0, key);
                 EclipseProjectReference.write(p, ref);
+                ProjectManager.getDefault().saveProject(p);
             }
         }
         if (projectImportProblems.size() > 0) {

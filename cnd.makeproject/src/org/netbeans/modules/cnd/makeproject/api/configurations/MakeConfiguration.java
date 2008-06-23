@@ -94,6 +94,7 @@ public class MakeConfiguration extends Configuration {
     private FortranCompilerConfiguration fortranCompilerConfiguration;
     private LinkerConfiguration linkerConfiguration;
     private ArchiverConfiguration archiverConfiguration;
+    private PackagingConfiguration packagingConfiguration;
     private RequiredProjectsConfiguration requiredProjectsConfiguration;
     private boolean languagesDirty = true;
 
@@ -118,6 +119,7 @@ public class MakeConfiguration extends Configuration {
         fortranCompilerConfiguration = new FortranCompilerConfiguration(baseDir, null);
         linkerConfiguration = new LinkerConfiguration(this);
         archiverConfiguration = new ArchiverConfiguration(this);
+        packagingConfiguration = new PackagingConfiguration(this);
         requiredProjectsConfiguration = new RequiredProjectsConfiguration();
     }
 
@@ -260,6 +262,14 @@ public class MakeConfiguration extends Configuration {
     public ArchiverConfiguration getArchiverConfiguration() {
         return archiverConfiguration;
     }
+    
+    public void setPackagingConfiguration(PackagingConfiguration packagingConfiguration) {
+        this.packagingConfiguration = packagingConfiguration;
+    }
+
+    public PackagingConfiguration getPackagingConfiguration() {
+        return packagingConfiguration;
+    }
 
     // LibrariesConfiguration
     public RequiredProjectsConfiguration getRequiredProjectsConfiguration() {
@@ -289,6 +299,7 @@ public class MakeConfiguration extends Configuration {
         getFortranCompilerConfiguration().assign(makeConf.getFortranCompilerConfiguration());
         getLinkerConfiguration().assign(makeConf.getLinkerConfiguration());
         getArchiverConfiguration().assign(makeConf.getArchiverConfiguration());
+        getPackagingConfiguration().assign(makeConf.getPackagingConfiguration());
         getRequiredProjectsConfiguration().assign(makeConf.getRequiredProjectsConfiguration());
 
         // do assign on all aux objects
@@ -348,6 +359,7 @@ public class MakeConfiguration extends Configuration {
         clone.setFortranCompilerConfiguration((FortranCompilerConfiguration) getFortranCompilerConfiguration().clone());
         clone.setLinkerConfiguration((LinkerConfiguration) getLinkerConfiguration().clone());
         clone.setArchiverConfiguration((ArchiverConfiguration) getArchiverConfiguration().clone());
+        clone.setPackagingConfiguration((PackagingConfiguration) getPackagingConfiguration().clone());
         clone.setRequiredProjectsConfiguration((RequiredProjectsConfiguration) getRequiredProjectsConfiguration().clone());
 
         // Clone all the aux objects
