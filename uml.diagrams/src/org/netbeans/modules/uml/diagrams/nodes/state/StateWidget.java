@@ -40,6 +40,7 @@ package org.netbeans.modules.uml.diagrams.nodes.state;
 
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
@@ -275,9 +276,10 @@ public class StateWidget extends UMLNodeWidget
 
         if (propName.equals(ModelElementChangedKind.NAME_MODIFIED.toString()))
         {
-            if (nameWidget != null)
+            if (getNameWidget() instanceof PropertyChangeListener)
             {
-                nameWidget.propertyChange(event);
+                PropertyChangeListener listener = (PropertyChangeListener) getNameWidget();
+                listener.propertyChange(event);
             }
         } else if (propName.equals(ModelElementChangedKind.ELEMENTMODIFIED.toString()))
         {
