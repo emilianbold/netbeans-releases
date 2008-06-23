@@ -70,7 +70,7 @@ __CONTAINER_NAME__.prototype = {
    },
 
    flush : function(__CONTAINER_ITEM_PATH_NAME__) {
-      var remote = new __CONTAINER_NAME__Remote(this.uri);
+      var remote = new __CONTAINER_NAME__Remote(this.uri+'?expandLevel=0');
       return remote.postJson('{'+__CONTAINER_ITEM_PATH_NAME__.toString()+'}');
    },
 
