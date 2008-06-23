@@ -544,6 +544,15 @@ private void focusOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
                 }
                 return super.getHtmlDisplayName();
             }
+            @Override
+            public Action getPreferredAction() {
+                return null;
+            }
+    
+            @Override
+            public Action[] getActions(boolean context) {
+                return new Action[0];
+            }
         }
     }
  }
