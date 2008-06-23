@@ -124,6 +124,10 @@ public class BeanClassFinder {
 
     private String findImplementationClass(SpringBean logicalBean) {
         String implClass = null;
+        if (logicalBean == null) {
+            return null;
+        }
+
         boolean staticFlag = false;
         
         if (StringUtils.hasText(logicalBean.getFactoryBean())) {

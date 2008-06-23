@@ -359,6 +359,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      */
     private void onCommitAction() {
         //TODO: Status Commit Action
+        if(context == null || context.getRootFiles().size() == 0) {
+            return;
+        }
         LifecycleManager.getDefault().saveAll();            
         CommitAction.commit(parentTopComponent.getContentTitle(), context);
     }
@@ -367,6 +370,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      * Performs the "cvs update" command on all diplayed roots. // NOI18N
      */
     private void onUpdateAction() {
+        if(context == null || context.getRootFiles().size() == 0) {
+            return;
+        }
         UpdateAction.update(context);
         parentTopComponent.contentRefreshed();
     }
@@ -420,6 +426,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      * In Local mode, the diff shows CURRENT <-> BASE differences. In Remote mode, it shows BASE<->HEAD differences.
      */
     private void onDiffAction() {
+        if(context == null || context.getRootFiles().size() == 0) {
+            return;
+        }
         String title = parentTopComponent.getContentTitle();
         if (displayStatuses == FileInformation.STATUS_LOCAL_CHANGE) {
             LifecycleManager.getDefault().saveAll();
