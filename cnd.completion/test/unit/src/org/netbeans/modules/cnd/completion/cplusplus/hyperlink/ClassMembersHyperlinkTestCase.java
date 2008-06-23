@@ -355,7 +355,13 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ137799and137798.h", 19, 12, "IZ137799and137798.h", 19, 11);
         performTest("IZ137799and137798.h", 11, 17, "IZ137799and137798.h", 11, 9);
     } 
-    
+
+    public void testMethodPrefix() throws Exception {
+        // IZ#125760: Hyperlink works wrongly if user created
+        // method without declaration in class
+        performNullTargetTest("IZ125760.cpp", 6, 10);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
         
         protected Class getTestCaseDataClass() {

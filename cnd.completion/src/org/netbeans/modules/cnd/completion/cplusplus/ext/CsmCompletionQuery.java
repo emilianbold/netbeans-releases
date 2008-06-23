@@ -1097,7 +1097,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                         lastType = null;
                                         cont = false;
                                     } else {
-                                        List res = findFieldsAndMethods(finder, contextElement, cls, var, false, staticOnly, false, true,this.scopeAccessedClassifier,sort);
+                                        List res = findFieldsAndMethods(finder, contextElement, cls, var, openingSource, staticOnly, false, true,this.scopeAccessedClassifier,sort);
                                         List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, var, false, true, sort);
                                         res.addAll(nestedClassifiers);
                                         result = new CsmCompletionResult(
