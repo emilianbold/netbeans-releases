@@ -112,6 +112,8 @@ public class XMLGeneration extends GeneralXMLTest {
       OutputTabOperator oto = new OutputTabOperator("XML check");
       oto.waitText( asIdeals[ asIdeals.length - 1 ] );
       int iCount = oto.getLineCount( );
+      if( oto.getLine( iCount - 1 ).equals( "" ) )
+        iCount--;
       if( asIdeals.length != iCount )
         fail( "Wrong number of output lines: " + iCount );
       for( int i = 0; i < asIdeals.length; i++ )

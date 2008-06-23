@@ -168,7 +168,7 @@ public class GeneralXMLTest extends JellyTestCase {
       opNewProjectWizard.next( );
 
       NewProjectNameLocationStepOperator opNewProjectNameLocationStep = new NewProjectNameLocationStepOperator( );
-      opNewProjectNameLocationStep.txtProjectLocation( ).setText( System.getProperty( "xtest.workdir" ) );
+      opNewProjectNameLocationStep.txtProjectLocation( ).setText( GetWorkDir( ) );
       opNewProjectNameLocationStep.txtProjectName( ).setText( sName );
       opNewProjectWizard.finish( );
     }
@@ -554,5 +554,11 @@ public class GeneralXMLTest extends JellyTestCase {
     {
       System.err.println( "Interrupted: " + ex.getMessage( ) );
     }
+  }
+
+  protected String GetWorkDir( )
+  {
+    return System.getProperty( "xtest.workdir" ); // XTest
+    // return System.getProperty( "nbjunit.workdir" ); // SimpleTest
   }
 }
