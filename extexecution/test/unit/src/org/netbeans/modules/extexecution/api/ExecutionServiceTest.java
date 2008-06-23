@@ -45,6 +45,7 @@ import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
@@ -110,6 +111,41 @@ public class ExecutionServiceTest extends NbTestCase {
 
     }
 
+    public void testHooks() throws InvocationTargetException, InterruptedException {
+        SwingUtilities.invokeAndWait(new Runnable() {
+
+            public void run() {
+                try {
+                    TestProcess process = new TestProcess(0);
+                    TestCallable callable = new TestCallable(process);
+                    TestRunnable preRunnable = new TestRunnable();
+                    TestRunnable postRunnable = new TestRunnable();
+
+                    ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
+                    builder.preExecution(preRunnable);
+                    builder.postExecution(postRunnable);
+
+                    ExecutionService service = ExecutionService.newService(
+                            callable, builder.create(), "Test");
+
+                    Future<Integer> task = service.run();
+                    assertNotNull(task);
+
+                    process.waitStarted();
+                    assertTrue(preRunnable.isExecuted());
+
+                    process.destroy();
+                    assertEquals(0, task.get().intValue());
+                    assertTrue(postRunnable.isExecuted());
+                } catch (InterruptedException ex) {
+                    throw new RuntimeException(ex);
+                } catch (ExecutionException ex) {
+                    fail("Execution failed");
+                }
+            }
+        });
+    }
+
 //    public void testMultipleRun() throws InvocationTargetException, InterruptedException {
 //        SwingUtilities.invokeAndWait(new Runnable() {
 //
@@ -148,6 +184,20 @@ public class ExecutionServiceTest extends NbTestCase {
         } catch (IllegalStateException ex) {
             // expected
         }
+    }
+
+    private static class TestRunnable implements Runnable {
+
+        private volatile boolean executed;
+
+        public void run() {
+            executed = true;
+        }
+
+        public boolean isExecuted() {
+            return executed;
+        }
+
     }
 
     private static class TestCallable implements Callable<Process> {
