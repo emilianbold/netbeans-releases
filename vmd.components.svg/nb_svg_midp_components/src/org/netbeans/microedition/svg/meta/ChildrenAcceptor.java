@@ -38,25 +38,46 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.microedition.svg;
+package org.netbeans.microedition.svg.meta;
+
+import org.w3c.dom.Element;
+import org.w3c.dom.svg.SVGElement;
 
 
 /**
- * Suggested SVG snippet :
- * <pre>
- *  &lt;g id="label" transform="translate(130,200)">
- *   &lt;metadata> &lt;text>type=label&lt;/text> &lt;/metadata>
- *   &lt;text x="5" y="5" stroke="black" font-size="15"  font-family="SunSansSemiBold">
- *       Label
- *   &lt;/text>
- *   &lt;/g>
- * </pre>
  * @author ads
  *
  */
-public class SVGLabel extends SVGComponent {
-
-    public SVGLabel( SVGForm form, String elemId ) {
-        super(form, elemId);
+public class ChildrenAcceptor {
+    
+    public ChildrenAcceptor( Visitor visitor ){
+        myVisitor = visitor;
     }
+    
+    public void accept( SVGElement parent ){
+        Element child = parent.getFirstElementChild();
+        while ( child != null){
+            Element next = ((SVGElement)child).getNextElementSibling();
+            if ( !getVisitor().visit( child ) ){
+                return;
+            }
+            if ( child instanceof SVGElement ){
+                child = next;
+            }
+            else {
+                return;
+            }
+        }
+    }
+    
+    private Visitor getVisitor(){
+        return myVisitor;
+    }
+
+    public interface Visitor {
+        boolean visit( Element element );
+        
+    }
+    
+    private Visitor myVisitor;
 }
