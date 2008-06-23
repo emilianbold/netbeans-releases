@@ -121,6 +121,9 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
             sqlLimitTextField.setText(SAVE_STATEMENTS_MAX_LIMIT_ENTERED); // NOI18N
         }
         
+        // Check SQL statements limit
+        verifySQLLimit();
+        
         // Adjust table column width
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -302,6 +305,10 @@ private void insertSQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
 }//GEN-LAST:event_insertSQLButtonActionPerformed
 
 private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sqlLimitButtonActionPerformed
+    verifySQLLimit();
+}//GEN-LAST:event_sqlLimitButtonActionPerformed
+
+private void verifySQLLimit() {
     String limit = sqlLimitTextField.getText();
     int iLimit = 0;
     inputWarningLabel.setVisible(false);
@@ -315,19 +322,19 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     } else {
         try {
             iLimit = Integer.parseInt(limit);
+            String savedLimit = NbPreferences.forModule(SQLHistoryPanel.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", SAVE_STATEMENTS_CLEARED); // NOI18N
             if (iLimit < 0 || iLimit > SAVE_STATEMENTS_MAX_LIMIT) {
                 sqlLimitButton.setEnabled(true);
                 inputWarningLabel.setVisible(true);
                 inputWarningLabel.setText(NbBundle.getMessage(SQLHistoryPanel.class, "SQLHistoryPanel.numberInputWarningLabel.text"));
                 // reset user's input
-                String savedLimit = NbPreferences.forModule(SQLHistoryPanel.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", SAVE_STATEMENTS_CLEARED); // NOI18N
                 if (savedLimit != null) {
                     sqlLimitTextField.setText(savedLimit);
                 } else {
                     sqlLimitTextField.setText(SAVE_STATEMENTS_CLEARED); // NOI18N
                     sqlLimitTextField.setText(SAVE_STATEMENTS_MAX_LIMIT_ENTERED); // NOI18N
                 }
-            } else {
+            } else if (!limit.equals(savedLimit)) {
                 SQLHistoryPersistenceManager.getInstance().updateSQLSaved(iLimit, Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER));
                 ((HistoryTableModel) sqlHistoryTable.getModel()).refreshTable(null);
                 NbPreferences.forModule(SQLHistoryPanel.class).put("SQL_STATEMENTS_SAVED_FOR_HISTORY", Integer.toString(iLimit));  // NOI18N               
@@ -344,8 +351,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             }
         }
     }
-}//GEN-LAST:event_sqlLimitButtonActionPerformed
-
+}
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox connectionComboBox;
     private javax.swing.JLabel inputWarningLabel;
