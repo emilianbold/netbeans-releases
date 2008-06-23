@@ -145,7 +145,7 @@ public final class SampleXMLGeneratorWizardIterator implements WizardDescriptor.
         
         final FileObject targetFolder = schemaFileObject.getParent();
         String uniqueTargetName = targetName;
-        int i = 2;        
+        int i = 1;        
         while (targetFolder.getFileObject(uniqueTargetName, extension) != null) {
             uniqueTargetName = targetName + i;
             i++;
