@@ -57,6 +57,7 @@ import org.netbeans.modules.ruby.testrunner.ui.Manager;
 import org.netbeans.modules.ruby.testrunner.ui.RspecHandlerFactory;
 import org.netbeans.modules.ruby.testrunner.ui.TestRecognizer;
 import org.netbeans.modules.ruby.testrunner.ui.TestSession;
+import org.netbeans.modules.ruby.testrunner.ui.TestSession.SessionType;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -147,7 +148,8 @@ public class RspecRunner implements TestRunner {
         final ExecutionService execution = new RubyExecution(desc, charsetName);
         TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
                 locator,
-                RspecHandlerFactory.getHandlers());
+                RspecHandlerFactory.getHandlers(),
+                debug ? SessionType.DEBUG : SessionType.TEST);
         desc.addOutputRecognizer(recognizer);
         TestExecutionManager.getInstance().start(execution);
     }
