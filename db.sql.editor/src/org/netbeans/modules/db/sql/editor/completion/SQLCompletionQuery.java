@@ -115,7 +115,6 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         TokenHierarchy<String> hi = TokenHierarchy.create(select, SQLTokenId.language());
         seq = hi.tokenSequence(SQLTokenId.language());
         analyzer = new StatementAnalyzer(seq);
-        int diff = seq.move(caretOffset); // XXX what to do with diff?
         insideSelectValue();
     }
 
@@ -254,16 +253,31 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     private List<String> findIdentifier() {
         final List<String> parts = new ArrayList<String>();
-        boolean incomplete = false;
-        boolean wasDot = false;
-        boolean hadIdentifier = false;
+        int offset = seq.move(caretOffset);
+        if (offset > 0) {
+            if (seq.moveNext()) {
+                switch (seq.token().id()) {
+                    case WHITESPACE:
+                    case LINE_COMMENT:
+                    case BLOCK_COMMENT:
+                        return parts;
+                    case IDENTIFIER:
+                        parts.add(seq.token().text().subSequence(0, offset).toString());
+                        break;
+                }
+            } else {
+                return parts;
+            }
+        }
+        boolean incomplete = false; // Whether incomplete, like "a.b."
+        boolean wasDot = false; // Whether previous token was a dot.
         main: for (;;) {
             if (!seq.movePrevious()) {
                 return parts;
             }
             switch (seq.token().id()) {
                 case DOT:
-                    if (!hadIdentifier) {
+                    if (parts.isEmpty()) {
                         anchorOffset = caretOffset; // Not the dot offset,
                         // since the user may have typed whitespace after the dot.
                         incomplete = true;
@@ -271,23 +285,18 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                     wasDot = true;
                     break;
                 case IDENTIFIER:
-                    if (wasDot || !hadIdentifier) {
-                        if (!hadIdentifier && anchorOffset == -1) {
+                case KEYWORD:
+                    if (wasDot || parts.isEmpty()) {
+                        if (parts.isEmpty() && anchorOffset == -1) {
                             anchorOffset = seq.offset();
                         }
-                        hadIdentifier = true;
                         wasDot = false;
                         parts.add(seq.token().text().toString());
                     } else {
                         break main;
                     }
                     break;
-                case WHITESPACE:
-                case LINE_COMMENT:
-                case BLOCK_COMMENT:
-                    break;
                 default:
-                    // XXX handle keyword, like in "SELECT c|", where "c" is a SQL keyword.
                     break main;
             }
         }
