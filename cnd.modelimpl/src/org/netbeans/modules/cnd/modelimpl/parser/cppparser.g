@@ -3207,6 +3207,8 @@ post_postfix_expression
                     LSQUARE expression RSQUARE
                     |	LPAREN (expression_list)? RPAREN 
                     |	DOT id_expression
+                    // IZ 137531 : IDE highlights db.template cursor<T> line as error
+                    |	DOT LITERAL_template id_expression
                     |	POINTERTO id_expression
                     |	PLUSPLUS 
                     |	MINUSMINUS
