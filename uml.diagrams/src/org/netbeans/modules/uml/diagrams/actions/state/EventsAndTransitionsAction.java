@@ -135,9 +135,13 @@ public class EventsAndTransitionsAction extends NodeAction implements ContextAwa
     @Override
     public JMenuItem getPopupPresenter()
     {
+        StateWidget widget = getStateWidget(scene, pe);
+        
+        boolean enable = state.getIsSubmachineState() && widget != null && widget.isDetailVisible() ;
+        
         popupMenu = new JMenu(loc("ACT_EventsAndTransitions")); // NOI18N
 
-        popupMenu.setEnabled(isEnabled());
+        popupMenu.setEnabled(enable);
 
         entry = new JMenuItem(state.getEntry() == null ? loc("CTL_SetEntry") : loc("CTL_DeleteEntry")); // NOI18N
 
