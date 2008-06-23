@@ -93,6 +93,12 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
         return box;
     }
     
+    public SVGList addList( String elemId ){
+        SVGList list = new SVGList( this , elemId );
+        components.addElement( list );
+        return list;
+    }
+    
     public SVGComponent getFocusedField() {
         return focusedComponent;
     }    

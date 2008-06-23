@@ -759,7 +759,7 @@ public class CsmUtilities {
         if (element != null) {
             if (CsmKindUtilities.isNamedElement(element)) {
                 text = ((CsmNamedElement) element).getName().toString();
-            } else if (CsmKindUtilities.isStatement((CsmObject)element)) {
+            } else if (CsmKindUtilities.isStatement(element)) {
                 text = ((CsmStatement)element).getText().toString();
             } else if (CsmKindUtilities.isOffsetable(element) ) {
                 text = ((CsmOffsetable)element).getText().toString();
@@ -907,5 +907,12 @@ public class CsmUtilities {
         public int getColumn() {
             return -1;
         }
-    };    
+    };
+
+    private CsmUtilities() {
+    }
+    
+    /* package */ static boolean isUnitTestsMode() {
+        return Boolean.getBoolean("cnd.mode.unittest");
+    }
 }

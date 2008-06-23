@@ -54,8 +54,8 @@ import org.netbeans.modules.groovy.editor.actions.FixImportsHelper;
 import org.netbeans.modules.groovy.editor.actions.FixImportsHelper.ImportCandidate;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyErrorRule;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyRuleContext;
+import org.netbeans.modules.groovy.editor.parser.GroovyError;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.groovy.editor.parser.GroovyParser.GroovyError;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.HintFix;
@@ -133,7 +133,7 @@ public class ClassNotFoundRule extends GroovyErrorRule {
 
         try {
             // get line number
-            Integer lineno = new Integer(Utilities.getLineOffset(context.doc, error.getStartPosition()));
+            Integer lineno = Integer.valueOf(Utilities.getLineOffset(context.doc, error.getStartPosition()));
 
             if (hasBeenMarkedBefore(missingClassName, lineno)) {
                 return;

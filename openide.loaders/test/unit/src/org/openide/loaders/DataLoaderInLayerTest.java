@@ -236,6 +236,9 @@ public class DataLoaderInLayerTest extends NbTestCase {
     }
 
     public void testSimpleLoader() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return; // NB-Core-Build #767
+        }
         DataLoader l = DataLoader.getLoader(SimpleUniFileLoader.class);
         addRemoveLoader(l, true);
         try {
@@ -334,6 +337,9 @@ public class DataLoaderInLayerTest extends NbTestCase {
     }
     
     public void testManifestRegistrationsTakePreceedence() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         DataLoader l1 = DataLoader.getLoader(SimpleUniFileLoader.class);
         DataLoader l2 = DataLoader.getLoader(AntUniFileLoader.class);
         DataLoader l3 = DataLoader.getLoader(XMLUniFileLoader.class);

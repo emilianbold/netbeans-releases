@@ -46,7 +46,7 @@ import java.util.Vector;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
-import org.netbeans.spi.glassfish.GlassfishModule.ServerState;
+import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Mutex;

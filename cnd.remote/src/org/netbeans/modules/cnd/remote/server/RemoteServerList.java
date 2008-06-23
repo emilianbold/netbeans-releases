@@ -39,17 +39,120 @@
 
 package org.netbeans.modules.cnd.remote.server;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.openide.util.ChangeSupport;
 
 /**
  *
  * @author gordonp
  */
-public class RemoteServerList extends ArrayList<ServerRecord> implements ServerList {
+public class RemoteServerList extends ArrayList<RemoteServerRecord> implements ServerList {
+    
+    public static final String PROP_SET_AS_ACTIVE = "setAsActive"; // NOI18N
+    public static final String PROP_DELETE_SERVER = "deleteServer"; // NOI18N
+    
+    private static RemoteServerList instance = null;
+    
+    private PropertyChangeSupport pcs;
+    private ChangeSupport cs;
+    
+    public static RemoteServerList getInstance() {
+        if (instance == null) {
+            instance = new RemoteServerList();
+        }
+        return instance;
+    }
+    
+    public RemoteServerList() {
+        pcs = new PropertyChangeSupport(this);
+        cs = new ChangeSupport(this);
+        
+        // creates the "localhost" record and make it active
+        add("localhost", true); // NOI18N
+        refresh();
+    }
+    
+    public void add(String name, boolean active) {
+        RemoteServerRecord record = new RemoteServerRecord(name, active);
+        add(record);
+        addPropertyChangeListener(record);
+        refresh();
+    }
+    
+    public void add(String user, String server, boolean active) {
+        RemoteServerRecord record = new RemoteServerRecord(user, server, active);
+        add(record);
+        addPropertyChangeListener(record);
+        if (active) {
+            pcs.firePropertyChange(PROP_SET_AS_ACTIVE, null, record);
+        }
+        refresh();
+    }
+    
+    public void add(String user, String server) {
+        add(user, server, false);
+    }
+
+    public void deleteServer(RemoteServerRecord record) {
+        if (remove(record)) {
+            System.err.println("RSL.deleteServer: Deleted " + record.getName());
+            pcs.firePropertyChange(PROP_DELETE_SERVER, null, record);
+            removePropertyChangeListener(record);
+            if (record.isActive()) {
+                getLocalhostRecord().setActive(true);
+            }
+            refresh();
+        }
+    }
+    
+    protected void refresh() {
+        cs.fireChange();
+    }
+    
+    public boolean contains(String key) {
+        for (RemoteServerRecord record : this) {
+            if (key.equals(record.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public ServerRecord getActive() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        for (RemoteServerRecord record : this) {
+            if (record.isActive()) {
+                return record;
+            }
+        }
+        return null;
+    }
+
+    public RemoteServerRecord getLocalhostRecord() {
+        return get(0);
+    }
+    
+    public void addChangeListener(ChangeListener listener) {
+        cs.addChangeListener(listener);
+    }
+    
+    public void removeChangeListener(ChangeListener listener) {
+        cs.removeChangeListener(listener);
+    }
+    
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(listener);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(listener);
+    }
+    
+    public void firePropertyChange(String property, Object n) {
+        pcs.firePropertyChange(property, null, n);
     }
 }

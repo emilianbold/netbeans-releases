@@ -139,7 +139,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     
     private boolean checkValidity(final NewLibraryDescriptor.DataModel _data) {
         if (!_data.isValidLibraryName()) {
-            setError(NbBundle.getMessage(NameAndLocationPanel.class,"ERR_EmptyName")); // NOI18N
+            setError(NbBundle.getMessage(NameAndLocationPanel.class,"ERR_InvalidName")); // NOI18N
             return false;
         } else if (!_data.isValidLibraryDisplayName()) {
             setError(NbBundle.getMessage(NameAndLocationPanel.class,"ERR_EmptyDescName")); // NOI18N

@@ -221,7 +221,7 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
     private Collection<SchemaModelReference> getMegaIncludedModelsRefs() {
         Collection<SchemaModelReference> modelRefs = new ArrayList<SchemaModelReference>();
         for(SchemaModel m: SchemaModelFactory.getDefault().getModels()) {
-            if(m == this)
+            if(m == null || m.getSchema() == null || m == this)
                 continue;
             //if this is one of the included schemas in some model then we must
             //try to resolve in all the includes found.

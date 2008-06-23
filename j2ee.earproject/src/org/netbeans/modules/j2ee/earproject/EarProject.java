@@ -223,6 +223,7 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
             new Info(),
             aux,
             spp,
+            helper.createAuxiliaryProperties(),
             new ProjectEarProvider(),
             appModule, //implements J2eeModuleProvider
             new EarActionProvider(this, updateHelper),

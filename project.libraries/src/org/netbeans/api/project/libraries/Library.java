@@ -43,22 +43,17 @@ package org.netbeans.api.project.libraries;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.logging.Logger;
 import org.netbeans.modules.project.libraries.LibraryAccessor;
 import org.netbeans.modules.project.libraries.ui.LibrariesModel;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation2;
-import org.netbeans.spi.project.libraries.support.LibrariesSupport;
-import org.openide.ErrorManager;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -254,14 +249,13 @@ public final class Library {
         try {
             bundle = NbBundle.getBundle(bundleName);
         } catch (MissingResourceException mre) {
-            // Bogus bundle.
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mre);
+            Logger.getLogger(Library.class.getName()).warning("No such bundle " + bundleName + " for " + getName());
             return key;
         }
         try {
             return bundle.getString(key);
         } catch (MissingResourceException mre) {
-            // OK, not required to be there.
+            Logger.getLogger(Library.class.getName()).warning("No such key " + key + " in " + bundleName + " for " + getName());
             return key;
         }
     }

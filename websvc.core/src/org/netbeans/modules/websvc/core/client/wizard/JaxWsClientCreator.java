@@ -169,7 +169,7 @@ public class JaxWsClientCreator implements ClientCreator {
         int ind = wsdlUrl.lastIndexOf("/"); //NOI18N
         String wsdlName = ind>=0?wsdlUrl.substring(ind+1):wsdlUrl;
         if (wsdlName.toUpperCase().endsWith("?WSDL")) wsdlName = wsdlName.substring(0,wsdlName.length()-5); //NOI18N
-        ind = wsdlName.lastIndexOf(".wsdl"); //NOI18N
+        ind = wsdlName.lastIndexOf("."); //NOI18N
         if (ind>0) wsdlName = wsdlName.substring(0,ind);
         // replace special characters with '_'
         return convertAllSpecialChars(wsdlName);

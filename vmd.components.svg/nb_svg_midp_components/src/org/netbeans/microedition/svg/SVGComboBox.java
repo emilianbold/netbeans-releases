@@ -44,6 +44,8 @@ package org.netbeans.microedition.svg;
 
 import java.util.Vector;
 
+import org.netbeans.microedition.svg.SVGList.DefaultListMoldel;
+import org.netbeans.microedition.svg.SVGList.ListModel;
 import org.netbeans.microedition.svg.input.InputHandler;
 import org.netbeans.microedition.svg.input.NumPadInputHandler;
 import org.w3c.dom.svg.SVGAnimationElement;
@@ -74,12 +76,17 @@ public class SVGComboBox extends SVGComponent {
                 myButton.getId() + PRESSED_ELEM_SUFFIX);
         myReleasedAnimation = (SVGAnimationElement) getElementById(myButton, 
                 myButton.getId() + RELEASED_ELEM_SUFFIX);
-        myList = (SVGElement ) getElementById( wrapperElement, elemId + LIST_SUFFIX);
+        myList = (SVGLocatableElement ) getElementById( wrapperElement, 
+                elemId + LIST_SUFFIX);
+        
+        myListTopY = myList.getBBox().getY();
+        myListBottomY = myListTopY+myList.getBBox().getHeight();
         myCurrentRect = (SVGLocatableElement) getElementById( myList, 
                 myList.getId() + CURRENT_SUFFIX);
         
         myInputHandler = new ComboBoxInputHandler();
         myEditor = new DefaultComboBoxEditor( form , elemId + EDITOR_SUFFIX);
+        myRenderer = new SVGDefaultListCellRenderer();
     }
     
     public void focusGained() {
@@ -109,30 +116,37 @@ public class SVGComboBox extends SVGComponent {
         return myEditor;
     }
     
-    public interface ComboBoxModel {
+    public void setEditor( SVGComponent editor ){
+        myEditor = editor;
+    }
+    
+    public SVGListCellRenderer getRenderer(){
+        return myRenderer;
+    }
+    
+    public void setRenderer( SVGListCellRenderer renderer ){
+        myRenderer = renderer;
+    }
+    
+    public interface ComboBoxModel extends ListModel{
         int getSelectedIndex();
         void setSelectedItem( int index );
-        Object getElementAt( int indx );
-        int getSize();
     }
     
     private void updateList( byte direction ){
         SVGRect rect = myCurrentRect.getBBox();
         float y = rect.getY();
-        if ( myOriginalY == null ){
-            myOriginalY = new Float(y);
-        }
         float height = rect.getHeight();
         y += direction * height;
-        myCurrentRect.setTrait("y", ""+y);
+        if ( y>=myListTopY && y+rect.getHeight()<= myListBottomY){
+            myCurrentRect.setTrait("y", ""+y);
+        }
     }
     
     private void showList(){
-        if ( myOriginalY != null ){
-            myCurrentRect.setTrait("y", ""+myOriginalY);
-        }
         isListShown = true;
         myList.setTrait("visibility", "visible");
+        myIndex = getModel().getSelectedIndex();
     }
     
     private void hideList(){
@@ -140,25 +154,16 @@ public class SVGComboBox extends SVGComponent {
         myList.setTrait("visibility", "hidden");
     }
     
-    public static class DefaultModel implements ComboBoxModel {
+    public static class DefaultModel extends DefaultListMoldel 
+        implements ComboBoxModel 
+    {
         
         public DefaultModel( Vector data ){
-            myData = new Vector();
-            for ( int i=0; i<data.size() ; i++ ){
-                myData.addElement( data.elementAt( i ));
-            }
-        }
-
-        public Object getElementAt( int indx ) {
-            return myData.elementAt(indx);
+            super( data );
         }
 
         public int getSelectedIndex() {
             return myCurrentSelectionIndx;
-        }
-
-        public int getSize() {
-            return myData.size();
         }
 
         public void setSelectedItem( int index ) {
@@ -166,7 +171,6 @@ public class SVGComboBox extends SVGComponent {
         }
         
         private int myCurrentSelectionIndx;
-        private Vector myData;
     }
     
     private class ComboBoxInputHandler extends NumPadInputHandler {
@@ -203,16 +207,14 @@ public class SVGComboBox extends SVGComponent {
             if ( comp instanceof SVGComboBox ){
                 if ( keyCode == LEFT ){
                     if (isListShown) {
-                        int index = getModel().getSelectedIndex();
-                        myIndex = Math.max(0, index - 1);
+                        myIndex = Math.max(0, myIndex - 1);
                         updateList( (byte)-1 );
                     }
                     ret = true;
                 }
                 else if ( keyCode == RIGHT ){
                     if (isListShown) {
-                        int index = getModel().getSelectedIndex();
-                        myIndex = Math.min(getModel().getSize() - 1, index + 1);
+                        myIndex = Math.min(getModel().getSize() - 1, myIndex + 1);
                         updateList( (byte)1 );
                     }
                     else {
@@ -246,6 +248,7 @@ public class SVGComboBox extends SVGComponent {
                         int index = getModel().getSelectedIndex();
                         Object selected = index <getModel().getSize() ? 
                                 getModel().getElementAt(index) : null ;
+                                System.out.println("$$$$$$$$$$ " +selected);
                         if ( selected != null ){
                             setText( selected.toString() );
                         }
@@ -258,16 +261,20 @@ public class SVGComboBox extends SVGComponent {
     
     private ComboBoxModel myModel;
     private SVGComponent myEditor;
+    private SVGListCellRenderer myRenderer;
+    
     private InputHandler myInputHandler;
     private final SVGElement myButton;
-    private final SVGElement myList;
+    private final SVGLocatableElement myList;
     private final SVGLocatableElement myCurrentRect;
     private final SVGAnimationElement myPressedAnimation;
     private final SVGAnimationElement myReleasedAnimation;
     
     private boolean isListShown;
-    private int myIndex;
     
-    private Float myOriginalY ;
+    private float myListTopY;
+    private float myListBottomY;
+    
+    private int myIndex;
 
 }

@@ -71,6 +71,7 @@ import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.MessagesWidget;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.PartnerScene;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.WidgetConstants;
 import org.netbeans.modules.xml.xam.Component;
+//import org.netbeans.modules.print.api.PrintManager;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -193,7 +194,7 @@ public class GraphView extends JPanel {
         });
 
         // vlv: print
-        getContent().putClientProperty(java.awt.print.Printable.class, "");
+        getContent().putClientProperty("print.printable", Boolean.TRUE); // NOI18N
     }
 
     /**
@@ -230,12 +231,9 @@ public class GraphView extends JPanel {
         toolbar.add(showHideMessageToggle);
 
         // vlv: print
-        Action action = Lookup.getDefault().lookup(Action.class);
-
-        if (action != null) {
-          toolbar.addSeparator();
-          toolbar.add(action);
-        }
+// todo add after # 136903
+//        toolbar.addSeparator();
+//        toolbar.add(PrintManager.printPreviewAction());
     }
 
     /**

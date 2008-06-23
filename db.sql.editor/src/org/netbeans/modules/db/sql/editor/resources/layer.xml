@@ -53,6 +53,7 @@ made subject to such option by the copyright holder.
         <folder name="System">
             <file name="org-netbeans-modules-db-sql-editor-ui-actions-RunSQLAction.instance"/>
             <file name="org-netbeans-modules-db-sql-editor-ui-actions-RunSQLSelectionAction.instance"/>
+            <file name="org-netbeans-modules-db-sql-editor-ui-actions-SQLHistoryAction.instance"/>
         </folder>
     </folder>
 
@@ -60,13 +61,15 @@ made subject to such option by the copyright holder.
         <file name="DS-E.shadow">
             <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-db-sql-editor-ui-actions-RunSQLAction.instance"/>
         </file>
+        <file name="DAS-H.shadow">
+            <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-db-sql-editor-ui-actions-SQLHistoryAction.instance"/>
+        </file>
     </folder>
 
     <folder name="Editors">
         <folder name="text">
             <folder name="x-sql">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.db.sql.editor.resources.Bundle"/>
-                <file name="Settings.settings" url="SQLOptions.settings"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.db.sql.editor.SQLEditorKit"/>
                     <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.db.sql.editor.SQLEditorKit"/>

@@ -39,6 +39,7 @@
 package org.netbeans.modules.php.editor;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -54,20 +55,24 @@ import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomasz.Slota@Sun.COM
  */
-class PHPCompletionItem implements CompletionProposal {
-
+abstract class PHPCompletionItem implements CompletionProposal {
+    private static final String PHP_KEYWORD_ICON = "org/netbeans/modules/php/editor/resources/php16Key.png"; //NOI18N
+    protected static ImageIcon keywordIcon = null;
     protected final CompletionRequest request;
     private final ElementHandle element;
 
     PHPCompletionItem(ElementHandle element, CompletionRequest request) {
         this.request = request;
         this.element = element;
+        keywordIcon = new ImageIcon(org.openide.util.Utilities.loadImage(PHP_KEYWORD_ICON));
     }
 
     public int getAnchorOffset() {
@@ -105,16 +110,12 @@ class PHPCompletionItem implements CompletionProposal {
         return formatter.getText();
     }
 
-    public ElementKind getKind() {
-        return null;
-    }
-
     public ImageIcon getIcon() {
         return null;
     }
 
     public Set<Modifier> getModifiers() {
-        return null;
+        return Collections.emptySet();
     }
 
     public boolean isSmart() {
@@ -168,8 +169,6 @@ class PHPCompletionItem implements CompletionProposal {
     static class KeywordItem extends PHPCompletionItem {
         private String description = null;
         private String keyword = null;
-        private static final String PHP_KEYWORD_ICON = "org/netbeans/modules/php/editor/resources/php16Key.png"; //NOI18N
-        private static ImageIcon keywordIcon = null;
         
         
         KeywordItem(String keyword, CompletionRequest request) {
@@ -192,7 +191,6 @@ class PHPCompletionItem implements CompletionProposal {
             return formatter.getText();
         }
 
-        @Override
         public ElementKind getKind() {
             return ElementKind.KEYWORD;
         }
@@ -212,10 +210,59 @@ class PHPCompletionItem implements CompletionProposal {
         
         @Override
         public ImageIcon getIcon() {
-            if (keywordIcon == null) {
-                keywordIcon = new ImageIcon(org.openide.util.Utilities.loadImage(PHP_KEYWORD_ICON));
-            }
+            return keywordIcon;
+        }
+    }
+    
+    static class SuperGlobalItem extends PHPCompletionItem{
+        private String name;
+        
+        public SuperGlobalItem(CompletionRequest request, String name) {
+            super(new PredefinedSymbolElement(name), request);
+            this.name = name;
+        }
+        
+        @Override public String getLhsHtml() {
+            HtmlFormatter formatter = request.formatter;
+            formatter.reset();
+            formatter.name(getKind(), true);
+            formatter.emphasis(true);
+            formatter.appendText(getName());
+            formatter.emphasis(false);
+            formatter.name(getKind(), false);
 
+            return formatter.getText();
+        }
+
+        @Override
+        public String getName() {
+            return "$" + name; //NOI18N
+        }
+        
+        @Override
+        public String getCustomInsertTemplate() {
+            //todo insert array brackets for array vars
+            return super.getCustomInsertTemplate();
+        }
+
+        public ElementKind getKind() {
+            return ElementKind.VARIABLE;
+        }
+        
+        @Override
+        public String getRhsHtml() {
+            HtmlFormatter formatter = request.formatter;
+            formatter.reset();
+            formatter.appendText(NbBundle.getMessage(PHPCompletionItem.class, "PHPPlatform"));
+            return formatter.getText();
+        }
+        
+        public String getDocumentation(){
+            return null;
+        }
+        
+        @Override
+        public ImageIcon getIcon() {
             return keywordIcon;
         }
     }
@@ -246,8 +293,7 @@ class PHPCompletionItem implements CompletionProposal {
             
             return formatter.getText();
         }
-
-        @Override
+        
         public ElementKind getKind() {
             return ElementKind.GLOBAL;
         }
@@ -258,7 +304,6 @@ class PHPCompletionItem implements CompletionProposal {
             super(clazz, request);
         }
 
-        @Override
         public ElementKind getKind() {
             return ElementKind.CLASS;
         }
@@ -291,7 +336,6 @@ class PHPCompletionItem implements CompletionProposal {
             return formatter.getText();
         }
 
-        @Override
         public ElementKind getKind() {
             return ElementKind.VARIABLE;
         }
@@ -322,7 +366,6 @@ class PHPCompletionItem implements CompletionProposal {
             return (IndexedFunction)getElement();
         }
 
-        @Override
         public ElementKind getKind() {
             return ElementKind.METHOD;
         }

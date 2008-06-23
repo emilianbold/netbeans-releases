@@ -1,4 +1,6 @@
-Results for @param with queryType=COMPLETION and nameKind=PREFIX
+Code completion result for source line:
+* |@param foo This is my first param
+(QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
 KEYWORD    @augments                                  null
 KEYWORD    @class                                     null

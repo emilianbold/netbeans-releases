@@ -43,6 +43,8 @@ package org.netbeans.modules.editor.mimelookup.impl;
 
 import java.net.URL;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
 import org.openide.filesystems.FileObject;
@@ -68,6 +70,7 @@ public class FolderPathLookupTest extends NbTestCase {
             getClass().getClassLoader(), 
             null
         );
+        Logger.getLogger("org.openide.filesystems.Ordering").setLevel(Level.OFF);
     }
     
     protected void tearDown() {

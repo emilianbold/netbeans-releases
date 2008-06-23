@@ -44,6 +44,7 @@ import org.netbeans.modules.xml.schema.model.Element;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xam.Named;
+import org.netbeans.modules.xml.xpath.ext.schema.SchemaModelsStack;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
 
 /**
@@ -62,6 +63,7 @@ public interface SchemaCompHolder<T> {
     T getHeldComponent();
     ComponentType getComponentType();
     String getName();
+    String getNamespace(SchemaModelsStack sms);
     SchemaComponent getSchemaComponent();
     boolean isPseudoComp();
     
@@ -129,6 +131,14 @@ public interface SchemaCompHolder<T> {
             return mGType.getName();
         }
         
+        public String getNamespace(SchemaModelsStack sms) {
+            if (sms == null) {
+                return mGType.getModel().getEffectiveNamespace(mGType);
+            } else {
+                return SchemaModelsStack.getEffectiveNamespace(mGType, sms);
+            }
+        }
+        
         public SchemaComponent getSchemaComponent() {
             return mGType;
         }
@@ -169,6 +179,14 @@ public interface SchemaCompHolder<T> {
 
         public String getName() {
             return ((Named)mElement).getName();
+        }
+        
+        public String getNamespace(SchemaModelsStack sms) {
+            if (sms == null) {
+                return mElement.getModel().getEffectiveNamespace(mElement);
+            } else {
+                return SchemaModelsStack.getEffectiveNamespace(mElement, sms);
+            }
         }
         
         public SchemaComponent getSchemaComponent() {
@@ -213,6 +231,14 @@ public interface SchemaCompHolder<T> {
             return ((Named)mAttribute).getName();
         }
 
+        public String getNamespace(SchemaModelsStack sms) {
+            if (sms == null) {
+                return mAttribute.getModel().getEffectiveNamespace(mAttribute);
+            } else {
+                return SchemaModelsStack.getEffectiveNamespace(mAttribute, sms);
+            }
+        }
+        
         public SchemaComponent getSchemaComponent() {
             return mAttribute;
         }
@@ -254,6 +280,10 @@ public interface SchemaCompHolder<T> {
             return mPseudoComp.getName();
         }
 
+        public String getNamespace(SchemaModelsStack sms) {
+            return mPseudoComp.getNamespace();
+        }
+        
         public SchemaComponent getSchemaComponent() {
             return mPseudoComp.getType();
         }
@@ -295,6 +325,10 @@ public interface SchemaCompHolder<T> {
             return mPseudoComp.getName();
         }
 
+        public String getNamespace(SchemaModelsStack sms) {
+            return mPseudoComp.getNamespace();
+        }
+        
         public SchemaComponent getSchemaComponent() {
             return mPseudoComp.getType();
         }

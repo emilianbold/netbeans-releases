@@ -681,6 +681,8 @@ public final class LibrariesNode extends AbstractNode {
             } else {
                 chooser = new org.netbeans.api.project.ant.FileChooser(FileUtil.toFile(helper.getProjectDirectory()), null);
             }
+            chooser.enableVariableBasedSelection(true);
+            chooser.setFileHidingEnabled(false);
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
             chooser.setMultiSelectionEnabled( true );
@@ -701,13 +703,13 @@ public final class LibrariesNode extends AbstractNode {
                     Exceptions.printStackTrace(ex);
                     return;
                 }
-                addJarFiles( filePaths, fileFilter, FileUtil.toFile(helper.getProjectDirectory()));
+                addJarFiles( filePaths, chooser.getSelectedPathVariables(), fileFilter, FileUtil.toFile(helper.getProjectDirectory()));
                 curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
                 UserProjectSettings.getDefault().setLastUsedClassPathFolder(curDir);
             }
         }
 
-        private void addJarFiles (String[] filePaths, FileFilter fileFilter, File base) {
+        private void addJarFiles (String[] filePaths, final String[] pathBasedVariables, FileFilter fileFilter, File base) {
             for (int i=0; i<filePaths.length;i++) {
                 try {
                     //Check if the file is acceted by the FileFilter,
@@ -716,8 +718,25 @@ public final class LibrariesNode extends AbstractNode {
                     FileObject fo = FileUtil.toFileObject(fl);
                     assert fo != null : fl;
                     if (fo != null && fileFilter.accept(fl)) {
-                        URI u = LibrariesSupport.convertFilePathToURI(filePaths[i]);
-                        if (FileUtil.isArchiveFile(fo)) {
+                        URI u;
+                        boolean isArchiveFile = FileUtil.isArchiveFile(fo);
+                        if (pathBasedVariables == null) {
+                            u = LibrariesSupport.convertFilePathToURI(filePaths[i]);
+                        } else {
+                            try {
+                                String path = pathBasedVariables[i];
+                                // append slash before creating relative URI:
+                                if (!isArchiveFile && !path.endsWith("/")) { // NOI18N
+                                    path += "/"; // NOI18N
+                                }
+                                // create relative URI
+                                u = new URI(null, null, path, null);
+                            } catch (URISyntaxException ex) {
+                                Exceptions.printStackTrace(ex);
+                                u = LibrariesSupport.convertFilePathToURI(filePaths[i]);
+                            }
+                        }
+                        if (isArchiveFile) {
                             u = LibrariesSupport.getArchiveRoot(u);
                         } else if (!u.toString().endsWith("/")) { // NOI18N
                             try {
@@ -728,15 +747,8 @@ public final class LibrariesNode extends AbstractNode {
                         }
                         Project prj = FileOwnerQuery.getOwner(helper.getProjectDirectory());
                         ClassPathModifier modifierImpl = prj.getLookup().lookup(ClassPathModifier.class);
-                        if (modifierImpl != null) {
-                            //sort of hack, in this case we don't want the classpath modifier to perform
-                            // the heuristics it normally does, as the user explitly defined how the jar/folder
-                            //shall be referenced.
-                            modifierImpl.addRoots(new URI[]{u}, findSourceGroup(projectSourcesArtifact, modifierImpl), ClassPath.COMPILE, ClassPathModifier.ADD_NO_HEURISTICS);
-                        } else {
-                            //fallback to call that will perform heuristics and eventually override user preferences..
-                            ProjectClassPathModifier.addRoots(new URI[]{u}, projectSourcesArtifact, ClassPath.COMPILE);
-                        }
+                        assert modifierImpl != null : prj.getProjectDirectory();
+                        modifierImpl.addRoots(new URI[]{u}, findSourceGroup(projectSourcesArtifact, modifierImpl), ClassPath.COMPILE, ClassPathModifier.ADD_NO_HEURISTICS);
                     }
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);

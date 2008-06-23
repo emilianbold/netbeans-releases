@@ -1,4 +1,4 @@
-          elsif match = /^find_or_(initialize|create)_by_([_a-zA-Z]\w*)$/.match(method_id.to_s)
-                -------------------------------------------------------------------------------
+          elsif match = matches_dynamic_finder_with_initialize_or_create?(method_id)
+                --------------------------------------------------------------------
 HINT:Accidental Assignment? (if x = y instead of x == y)
 FIX:Convert assignment to comparison (change = to ==)

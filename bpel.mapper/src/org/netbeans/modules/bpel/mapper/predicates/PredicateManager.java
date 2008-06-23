@@ -30,6 +30,8 @@ import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathUtils;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
 
 /**
  * The class collects all predicate expressions which are in the edited 
@@ -70,6 +72,20 @@ public class PredicateManager {
         
         for (CachedPredicate cPred : mPredicates) {
             if (cPred.hasSameBase(sComp) && cPred.hasSameLocation(parentPathItrb)) {
+                result.add(cPred.getPredicate());
+            }
+        }
+        //
+        return result;
+    }
+    
+    public List<AbstractPredicate> getPredicates(
+            Iterable<Object> parentPathItrb, XPathPseudoComp pseudo) {
+        //    
+        ArrayList<AbstractPredicate> result = new ArrayList<AbstractPredicate>();
+        
+        for (CachedPredicate cPred : mPredicates) {
+            if (cPred.hasSameBase(pseudo) && cPred.hasSameLocation(parentPathItrb)) {
                 result.add(cPred.getPredicate());
             }
         }
@@ -167,8 +183,8 @@ public class PredicateManager {
             isPersistent = newValue;
         }
         
-        public SchemaComponent getBaseType() {
-            return mPred.getSComponent();
+        public SchemaCompHolder getBaseType() {
+            return mPred.getSCompHolder();
         }
         
         public AbstractPredicate getPredicate() {
@@ -185,17 +201,35 @@ public class PredicateManager {
         }
         
         public boolean hasSameBase(SchemaComponent baseSchemaComp) {
-            return getPredicate().getSComponent().equals(baseSchemaComp);
+            SchemaCompHolder sCompHolder = getPredicate().getSCompHolder();
+            if (sCompHolder.isPseudoComp()) {
+                return false;
+            } else {
+                return sCompHolder.getSchemaComponent().equals(baseSchemaComp);
+            }
+        }
+        
+        public boolean hasSameBase(XPathPseudoComp pseudo) {
+            SchemaCompHolder sCompHolder = getPredicate().getSCompHolder();
+            if (sCompHolder.isPseudoComp()) {
+                return sCompHolder.getHeldComponent().equals(pseudo);
+            } else {
+                return false;
+            }
+        }
+        
+        public boolean hasSameBase(SchemaCompHolder baseSchemaCompHolder) {
+            return getPredicate().getSCompHolder().equals(baseSchemaCompHolder);
         }
         
         /**
          * Check if the cached predicate has the same schema component 
          * and the same predicates.
          */
-        public boolean hasSameParams(SchemaComponent schemaComp,
+        public boolean hasSameParams(SchemaCompHolder schemaCompHolder,
                 XPathPredicateExpression[] predArr) {
             AbstractPredicate pComp = getPredicate();
-            return pComp.getSComponent().equals(schemaComp) &&
+            return pComp.getSCompHolder().equals(schemaCompHolder) &&
                     XPathUtils.samePredicatesArr(pComp.getPredicates(), predArr);
         }
         

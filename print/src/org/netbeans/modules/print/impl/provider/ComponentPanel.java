@@ -50,6 +50,7 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
+import org.netbeans.modules.print.api.PrintManager;
 import static org.netbeans.modules.print.impl.ui.UI.*;
 
 /**
@@ -67,7 +68,7 @@ final class ComponentPanel extends JPanel {
     for (int i=0; i < myComponents.size(); i++) {
       JComponent component = myComponents.get(i);
 //out();
-//out("see: " + component.getClass().getName() + " " + component.getClientProperty(Integer.class));
+//out("see: " + component.getClass().getName() + " " + component.getClientProperty(PrintManager.PRINT_WEIGHT));
       int width = getWidth(component);
       int height = getHeight(component);
 //out("   width: " + width);
@@ -102,7 +103,7 @@ final class ComponentPanel extends JPanel {
   }
 
   private int getWidth(JComponent component) {
-    Dimension dimension = getDimension(component);
+    Dimension dimension = getSize(component);
 
     if (dimension == null) {
       return component.getWidth();
@@ -111,7 +112,7 @@ final class ComponentPanel extends JPanel {
   }
 
   private int getHeight(JComponent component) {
-    Dimension dimension = getDimension(component);
+    Dimension dimension = getSize(component);
 
     if (dimension == null) {
       return component.getHeight();
@@ -119,8 +120,8 @@ final class ComponentPanel extends JPanel {
     return dimension.height;
   }
 
-  private Dimension getDimension(JComponent component) {
-    Object object = component.getClientProperty(Dimension.class);
+  private Dimension getSize(JComponent component) {
+    Object object = component.getClientProperty(PrintManager.PRINT_SIZE);
       
     if (object instanceof Dimension) {
       return (Dimension) object;
@@ -144,7 +145,7 @@ final class ComponentPanel extends JPanel {
       }
 
       private Integer getInteger(JComponent component) {
-        Object object = component.getClientProperty(java.lang.Integer.class);
+        Object object = component.getClientProperty(PrintManager.PRINT_WEIGHT);
 
         if (object instanceof Integer) {
           return (Integer) object;

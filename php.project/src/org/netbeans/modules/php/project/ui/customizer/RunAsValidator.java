@@ -76,6 +76,24 @@ public final class RunAsValidator {
     }
 
     /**
+     * Validate given parameters and return an error message or <code>null</code> if everything is OK.
+     * @param phpInterpreter PHP interpreter path to validate.
+     * @param indexFile file name to validate, can be <code>null</code>.
+     * @param arguments arguments to validate, can be <code>null</code>.
+     * @return an error message or <code>null</code> if everything is OK.
+     */
+    public static String validateScriptFields(String phpInterpreter, String indexFile, String arguments) {
+        String err = null;
+        if (phpInterpreter.length() == 0) {
+            err = NbBundle.getMessage(RunAsValidator.class, "MSG_NoPhpInterpreter");
+        } else if (indexFile != null && !Utils.isValidFileName(indexFile)) {
+            err = NbBundle.getMessage(RunAsValidator.class, "MSG_IllegalIndexName");
+        }
+        //XXX validation for arguments?
+        return err;
+    }
+
+    /**
      * Create and return valid URL, throws InvalidUrlException if a valid URL cannot be created.
      * @param baseURL base URL.
      * @param indexFile index file.

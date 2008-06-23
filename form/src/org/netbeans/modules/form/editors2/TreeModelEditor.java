@@ -41,6 +41,9 @@
 package org.netbeans.modules.form.editors2;
 
 import java.awt.Component;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.beans.PropertyEditorSupport;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -172,6 +175,23 @@ public class TreeModelEditor extends PropertyEditorSupport
     @Override
     public Component getCustomEditor() {
         return new TreeModelCustomizer(this);
+    }
+
+    @Override
+    public String getAsText() {
+        return null;
+    }
+
+    @Override
+    public boolean isPaintable() {
+        return true;
+    }
+
+    @Override
+    public void paintValue(Graphics g, Rectangle rectangle) {
+        String msg = NbBundle.getMessage(TreeModelEditor.class, "MSG_TreeModel"); // NOI18N
+        FontMetrics fm = g.getFontMetrics();
+        g.drawString(msg, rectangle.x, rectangle.y + (rectangle.height - fm.getHeight())/2 + fm.getAscent());
     }
 
     /**

@@ -48,7 +48,10 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
 import javax.swing.text.Element;
+import javax.swing.text.PlainDocument;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.Segment;
 import javax.swing.text.StyledDocument;
 import javax.swing.undo.CannotRedoException;
@@ -314,11 +317,7 @@ public final class DocumentUtilities {
      *  document's readlock (or writelock).
      */
     public static CharSequence getText(Document doc, int offset, int length) throws BadLocationException {
-        CharSequence text = (CharSequence)doc.getProperty(CharSequence.class);
-        if (text == null) {
-            text = new DocumentCharSequence(doc);
-            doc.putProperty(CharSequence.class, text);
-        }
+        CharSequence text = getText(doc);
         try {
             return text.subSequence(offset, offset + length);
         } catch (IndexOutOfBoundsException e) {
@@ -551,6 +550,40 @@ public final class DocumentUtilities {
     }
 
     /**
+     * Get string representation of an offset for debugging purposes
+     * in form "offset[line:column]". Both lines and columns start counting from 1
+     * like in the editor's status bar. Tabs are expanded when counting the column.
+     *
+     * @param doc non-null document in which the offset is located.
+     * @param offset offset of the document.
+     * @return string representation of the offset.
+     * @since 
+     */
+    public static String debugOffset(Document doc, int offset) {
+        Element paragraphRoot = getParagraphRootElement(doc);
+        int lineIndex = paragraphRoot.getElementIndex(offset);
+        Element lineElem = paragraphRoot.getElement(lineIndex);
+        return String.valueOf(offset) + '[' + (lineIndex+1) + ':' +
+                (debugColumn(doc, lineElem.getStartOffset(), offset)+1) + ']';
+    }
+    
+    private static int debugColumn(Document doc, int lineStartOffset, int offset) {
+        Integer tabSizeInteger = (Integer) doc.getProperty(PlainDocument.tabSizeAttribute);
+        int tabSize = (tabSizeInteger != null) ? tabSizeInteger : 8;
+        CharSequence docText = getText(doc);
+        int column = 0;
+        for (int i = lineStartOffset; i < offset; i++) {
+            char c = docText.charAt(i);
+            if (c == '\t') {
+                column = (column + tabSize) / tabSize * tabSize;
+            } else {
+                column++;
+            }
+        }
+        return column;
+    }
+
+    /**
      * Implementation of the character sequence for a generic document
      * that does not provide its own implementation of character sequence.
      */
@@ -717,4 +750,43 @@ public final class DocumentUtilities {
 
     }
     
+    /**
+     * Gets the mime type of a document. If the mime type can't be determined
+     * this method will return <code>null</code>. This method should work reliably
+     * for Netbeans documents that have their mime type stored in a special
+     * property. For any other documents it will probably just return <code>null</code>.
+     * 
+     * @param doc The document to get the mime type for.
+     * 
+     * @return The mime type of the document or <code>null</code>.
+     * @see org.netbeans.modules.editor.NbEditorDocument#MIME_TYPE_PROP
+     * @since 1.23
+     */
+    public static String getMimeType(Document doc) {
+        return (String)doc.getProperty("mimeType"); //NOI18N
+    }
+
+    /**
+     * Gets the mime type of a document in <code>JTextComponent</code>. If
+     * the mime type can't be determined this method will return <code>null</code>.
+     * It tries to determine the document's mime type first and if that does not
+     * work it uses mime type from the <code>EditorKit</code> attached to the
+     * component.
+     * 
+     * @param component The component to get the mime type for.
+     * 
+     * @return The mime type of a document opened in the component or <code>null</code>.
+     * @since 1.23
+     */
+    public static String getMimeType(JTextComponent component) {
+        Document doc = component.getDocument();
+        String mimeType = getMimeType(doc);
+        if (mimeType == null) {
+            EditorKit kit = component.getUI().getEditorKit(component);
+            if (kit != null) {
+                mimeType = kit.getContentType();
+            }
+        }
+        return mimeType;
+    }
 }
