@@ -1,0 +1,14 @@
+# Everything starting with "cus" should show up,
+# except for the "customization" table (not in the default schema).
+# No columns other than those in the default schema should show up.
+
+select cus|
+
+--
+customers*
+  customer
+    customer_id
+customizations
+  customization
+    invoice_id
+    customer_id

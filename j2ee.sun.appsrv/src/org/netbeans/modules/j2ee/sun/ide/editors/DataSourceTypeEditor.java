@@ -42,7 +42,7 @@ package org.netbeans.modules.j2ee.sun.ide.editors;
 
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 
-public class DataSourceTypeEditor extends BooleanEditor {
+public class DataSourceTypeEditor extends ChoiceEditor {
 
     public String[] tags = {
         WizardConstants.__Type_Datasource,    
