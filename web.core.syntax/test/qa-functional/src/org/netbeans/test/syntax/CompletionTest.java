@@ -47,6 +47,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -121,13 +122,19 @@ import org.openide.util.actions.SystemAction;
  */
 public class CompletionTest extends J2eeTestCase {
 
-    private static boolean GENERATE_GOLDEN_FILES = false;//generate golden files, or test
-    protected FileObject testFileObj;
-    protected boolean debug = false;
+    private static final boolean GENERATE_GOLDEN_FILES = false;//generate golden files, or test
+    private static boolean projectsOpened = false;//open test projects
     protected final static List XML_EXTS = Arrays.asList(new String[]{"html", "tld", "jspx", "tagx", "xhtml"});
     protected final static List JSP_EXTS = Arrays.asList(new String[]{"jsp", "tag", "jspf", "tagf"});
     protected final static List JS_EXTS = Arrays.asList(new String[]{"js"/*,"java"*/});
 
+    protected FileObject testFileObj;
+    protected boolean debug = false;
+    
+    public CompletionTest() {
+        super("CompletionTest");
+    }
+    
     /** Need to be defined because of JUnit */
     public CompletionTest(String name, FileObject testFileObj) {
         super(name);
@@ -135,12 +142,20 @@ public class CompletionTest extends J2eeTestCase {
     }
 
     @Override
-    public void setUp() {
+    public void setUp() throws IOException {
+        if (!projectsOpened){
+            for (File file : getProjectsDir().listFiles()) {
+                openProjects(file.getAbsolutePath());
+                RecurrentSuiteFactory.resolveServer(file.getName());
+            }
+            projectsOpened = true;
+        }
         System.out.println("########  " + getName() + "  #######");
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(CompletionTest.class);
+        addServerTests(conf, new String[0]);//register server
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf.addTest(SuiteCreator.class));
     }
@@ -149,8 +164,6 @@ public class CompletionTest extends J2eeTestCase {
 
         public SuiteCreator() {
             super();
-            File datadir = new CompletionTest(null, null).getDataDir();
-            File projectsDir = new File(datadir, "CompletionTestProjects");
             FileObjectFilter filter = new FileObjectFilter() {
 
                 public boolean accept(FileObject fo) {
@@ -161,12 +174,21 @@ public class CompletionTest extends J2eeTestCase {
                 }
             };
             addTest(RecurrentSuiteFactory.createSuite(CompletionTest.class,
-                projectsDir, filter));
+                getProjectsDir(), filter));
         }
     }
     
+    private static File getProjectsDir(){
+        File datadir = new CompletionTest().getDataDir();
+        return new File(datadir, "CompletionTestProjects");
+    }
+    
+    
     @Override
     public void runTest() throws Exception {
+        if (testFileObj == null){
+            return;
+        }
         String ext = testFileObj.getExt();
         if (JSP_EXTS.contains(ext)) {
             test(testFileObj, "<%--CC", "--%>");
@@ -623,25 +645,12 @@ public class CompletionTest extends J2eeTestCase {
     static void generateGoldenFiles(JellyTestCase test) throws Exception {
             test.getRef().flush();
             File ref = new File(test.getWorkDir(), test.getName() + ".ref");
-            File f = test.getDataDir();
-            ArrayList<String> names = new ArrayList<String>();
-            names.add("goldenfiles");
-            names.add("data");
-            names.add("qa-functional");
-            while (!f.getName().equals("test")) {
-                f = f.getParentFile();
-            }
-            //            f= new File("/home/jindra/TRUNK/web/jspsyntax/test/"); //internal execution
-            for (int i = names.size() - 1; i > -1; i--) {
-                f = new File(f, names.get(i));
-            }
-            f = new File(f, test.getClass().getName().replace('.', File.separatorChar));
-            f = new File(f, test.getName() + ".pass");
-            if (!f.getParentFile().exists()) {
-                f.getParentFile().mkdirs();
-            }
-            ref.renameTo(f);
-            assertTrue("Generating golden files to " + f.getAbsolutePath(), false);
+            String fullClassName = test.getClass().getName();
+            String goldenFilePath = fullClassName.replace('.', '/')+"/" + test.getName();
+            File goldenFile = new File(test.getDataDir()+"/goldenfiles/" + goldenFilePath);
+            goldenFile = new File(goldenFile.getAbsolutePath().replace("build/", "")+".pass");
+            ref.renameTo(goldenFile);
+            assertTrue("Generating golden files to " + goldenFile.getAbsolutePath(), false);
     }
     
     protected void ending() throws Exception {
