@@ -223,32 +223,38 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
 
     @Override
     public void reformat(Context context, int startOffset, int endOffset)
-            throws BadLocationException {        
+            throws BadLocationException {
         int offset = -1;
         int line = -1;
         int col = -1;
         BaseDocument doc = (BaseDocument) context.document();        
         JTextComponent editor = Utilities.getFocusedComponent();
-        if(editor != null) {            
-            offset = editor.getCaretPosition();
-            line = Utilities.getLineOffset(doc, offset);
-            col = Utilities.getVisualColumn(doc, offset);
+        if(editor != null) {
+            try {
+                offset = editor.getCaretPosition();
+                line = Utilities.getLineOffset(doc, offset);
+                col = Utilities.getVisualColumn(doc, offset);
+            } catch (Exception ex) {
+                //invalid line/col found
+            }
         }
         BaseDocument formattedDoc = doReformat(doc, startOffset, endOffset);
         doc.atomicLock();
         try {
             doc.replace(0, doc.getLength(),
-            formattedDoc.getText(0, formattedDoc.getLength()), null);            
-            //find new offset based on last line+col information            
-            offset = Utilities.getRowStartFromLineOffset(doc, line) + col;
-            if(editor != null && offset >= 0 )
-                editor.setCaretPosition(offset);
+            formattedDoc.getText(0, formattedDoc.getLength()), null);
+            if(line != -1 && col != -1) {
+                //find new offset based on last valid line+col information
+                offset = Utilities.getRowStartFromLineOffset(doc, line) + col;
+                if(editor != null && offset >= 0 )
+                    editor.setCaretPosition(offset);
+            }
         } catch(Exception ex) {
+            //cant find new position 
             editor.setCaretPosition(0);
         } finally {
             doc.atomicUnlock();
         }
-
     }
     
     BaseDocument doReformat(BaseDocument doc, int startOffset, int endOffset) {
