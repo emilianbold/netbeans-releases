@@ -73,6 +73,7 @@ import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
@@ -197,6 +198,13 @@ public class TargetServer {
         } finally {
             ui.setProgressObject(null);
         }
+    }
+    
+    private AppChangeDescriptor distributeChangesOnSave(TargetModule targetModule, Iterable<File> artifacts) throws IOException {
+        ServerFileDistributor sfd = new ServerFileDistributor(instance, dtarget);
+        ModuleChangeReporter mcr = dtarget.getModuleChangeReporter();
+        AppChangeDescriptor acd = sfd.distributeOnSave(targetModule, mcr, artifacts);
+        return acd;
     }
     
     private File initialDistribute(Target target, ProgressUI ui) {
@@ -632,115 +640,139 @@ public class TargetServer {
             // this should never occur
             Exceptions.printStackTrace(ex);
         }
-     
-        // FIXME more precise check
-        if (incremental == null) { 
-            return false;
-        }        
-              
+
         TargetModule[] modules = getDeploymentDirectoryModules();
-        
-        /*
-         * The following code is written to match (in general) behaviour of
-         * the InitialFileDistributor. This is needed because the plugin is
-         * saying to us where is the right directory for classes. 
-         */
+
+        J2eeModule deployable = null;
         ModuleConfigurationProvider deployment = dtarget.getModuleConfigurationProvider();
+        if (deployment != null) {
+            deployable = deployment.getJ2eeModule(null);
+        }
+        try {
+            boolean hasDirectory = (dtarget.getModule().getContentDirectory() != null);
+            IncrementalDeployment lincremental = isModuleImplComplete(deployable);
+            if (lincremental == null || !hasDirectory || !canFileDeploy(modules, deployable)) {
+                return false;
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
         // FIXME target
         TargetModule targetModule = dtarget.getTargetModules()[0];
         if (!targetModule.hasDelegate()) {
             return false;
         }
         
-        File dir = incremental.getDirectoryForNewApplication(dtarget.getDeploymentName(),
-                targetModule.getTarget(), deployment.getModuleConfiguration());            
-        LOGGER.log(Level.INFO, dir == null ? "In place deployment" : dir.getAbsolutePath());
-
-        if (dir != null) {
-            Map<FileObject, File> contentDirs = new HashMap<FileObject, File>();
-            try {
-                FileObject contentDir = dtarget.getModule().getContentDirectory();
-                if (contentDir != null) {
-                    contentDirs.put(contentDir, dir);
-                }
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, null, ex);
+        try {
+            AppChangeDescriptor changes = distributeChangesOnSave(targetModule, artifacts);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, changes.toString());
             }
-            
-            if (dtarget.getModule() instanceof J2eeApplication) {
-                for (J2eeModule module : ((J2eeApplication) dtarget.getModule()).getModules()) {
-                    // TODO what is this url stuff
-                    try {
-                        if (module.getContentDirectory() != null) {
-                            String uri = module.getUrl();
-                            J2eeModule childModule = deployment.getJ2eeModule(uri);
-                            File subdir = incremental.getDirectoryForNewModule(dir,
-                                    uri, childModule, deployment.getModuleConfiguration());                    
-                            contentDirs.put(module.getContentDirectory(), subdir);
-                        }
-                    } catch (IOException ex) {
-                        LOGGER.log(Level.INFO, null, ex);
-                    }
-                }
-            }
-            
-            List<File> files = new ArrayList<File>();
-            for (File file : artifacts) {
-                for (Map.Entry<FileObject, File> content : contentDirs.entrySet()) {
-                    FileObject artifact = FileUtil.toFileObject(FileUtil.normalizeFile(file));
-                    if (artifact != null) {
-                        String relative = FileUtil.getRelativePath(content.getKey(), artifact);
-                        if (relative != null) {
-                            //copy
-                            try {
-                                FileObject updated = updateDeploymentDirectory(content.getValue(), relative, file);
-                                File updatedFile = FileUtil.toFile(updated);
-                                if (updatedFile != null) {
-                                    files.add(updatedFile);
-                                }
-                            } catch (IOException ex) {
-                                LOGGER.log(Level.INFO, null, ex);
-                            }
-                            break;
-                        }
-                    }
-                }
-            }         
-            reloadArtifacts(modules, files);
-        } else {
             reloadArtifacts(modules, artifacts);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
+        
+//        File dir = incremental.getDirectoryForNewApplication(dtarget.getDeploymentName(),
+//                targetModule.getTarget(), deployment.getModuleConfiguration());            
+//        LOGGER.log(Level.INFO, dir == null ? "In place deployment" : dir.getAbsolutePath());
+//
+//        if (dir != null) {
+//            Map<FileObject, File> contentDirs = new HashMap<FileObject, File>();
+//            try {
+//                FileObject contentDir = dtarget.getModule().getContentDirectory();
+//                if (contentDir != null) {
+//                    contentDirs.put(contentDir, dir);
+//                }
+//            } catch (IOException ex) {
+//                LOGGER.log(Level.INFO, null, ex);
+//            }
+//            
+//            if (dtarget.getModule() instanceof J2eeApplication) {
+//                for (J2eeModule module : ((J2eeApplication) dtarget.getModule()).getModules()) {
+//                    // TODO what is this url stuff
+//                    try {
+//                        if (module.getContentDirectory() != null) {
+//                            String uri = module.getUrl();
+//                            J2eeModule childModule = deployment.getJ2eeModule(uri);
+//                            File subdir = incremental.getDirectoryForNewModule(dir,
+//                                    uri, childModule, deployment.getModuleConfiguration());                    
+//                            contentDirs.put(module.getContentDirectory(), subdir);
+//                        }
+//                    } catch (IOException ex) {
+//                        LOGGER.log(Level.INFO, null, ex);
+//                    }
+//                }
+//            }
+//            
+//            List<File> files = new ArrayList<File>();
+//            for (File file : artifacts) {
+//                for (Map.Entry<FileObject, File> content : contentDirs.entrySet()) {
+//                    FileObject artifact = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+//                    if (artifact != null) {
+//                        String relative = FileUtil.getRelativePath(content.getKey(), artifact);
+//                        if (relative != null) {
+//                            //copy
+//                            try {
+//                                FileObject updated = updateDeploymentDirectory(content.getValue(), relative, file);
+//                                File updatedFile = FileUtil.toFile(updated);
+//                                if (updatedFile != null) {
+//                                    files.add(updatedFile);
+//                                }
+//                            } catch (IOException ex) {
+//                                LOGGER.log(Level.INFO, null, ex);
+//                            }
+//                            break;
+//                        }
+//                    }
+//                }
+//            }         
+//            reloadArtifacts(modules, files);
+//        } else {
+//            reloadArtifacts(modules, artifacts);
+//        }
         
         return true;
     }
     
     private void reloadArtifacts(TargetModule[] modules, Iterable<File> files) {
         for (TargetModule module : modules) {
-            incremental.reloadArtifacts(module.delegate(), files);
-        }                
-    }
-    
-    private FileObject updateDeploymentDirectory(File targetDir, String relativePath, File artifact) throws IOException {
-        FileObject destRoot = FileUtil.createFolder(targetDir);
-        FileObject destObject = FileUtil.createData(destRoot, relativePath);
-        FileObject artifactObject = FileUtil.toFileObject(FileUtil.normalizeFile(artifact));
-        
-        if (artifactObject != null && artifactObject.isData()) {
-            InputStream is = artifactObject.getInputStream();
+            ProgressObject obj = incremental.reloadArtifacts(module.delegate(), files);
+            ProgressUI ui = new ProgressUI("Deploying", false);
+            ui.start();
             try {
-                OutputStream os = destObject.getOutputStream();
-                try {
-                    FileUtil.copy(is, os);
-                } finally {
-                    os.close();
-                }
+                // this also save last deploy timestamp
+                trackDeployProgressObject(ui, obj, true);
+            } catch (ServerException ex) {
+                Exceptions.printStackTrace(ex);
             } finally {
-                is.close();
+                ui.finish();
             }
         }
-        
-        return destObject;
     }
+    
+//    private FileObject updateDeploymentDirectory(File targetDir, String relativePath, File artifact) throws IOException {
+//        FileObject destRoot = FileUtil.createFolder(targetDir);
+//        FileObject destObject = FileUtil.createData(destRoot, relativePath);
+//        FileObject artifactObject = FileUtil.toFileObject(FileUtil.normalizeFile(artifact));
+//        
+//        if (artifactObject != null && artifactObject.isData()) {
+//            InputStream is = artifactObject.getInputStream();
+//            try {
+//                OutputStream os = destObject.getOutputStream();
+//                try {
+//                    FileUtil.copy(is, os);
+//                } finally {
+//                    os.close();
+//                }
+//            } finally {
+//                is.close();
+//            }
+//        }
+//        
+//        return destObject;
+//    }
     
     private TargetModule[] getDeploymentDirectoryModules() {
         TargetModule[] modules = dtarget.getTargetModules();
