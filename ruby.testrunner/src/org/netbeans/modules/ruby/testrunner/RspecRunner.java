@@ -51,6 +51,7 @@ import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.ExecutionService;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
+import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
 import org.netbeans.modules.ruby.testrunner.ui.RspecHandlerFactory;
@@ -136,6 +137,7 @@ public class RspecRunner implements TestRunner {
                 FileUtil.toFile(project.getProjectDirectory()), 
                 getSpec(project).getAbsolutePath());
         desc.additionalArgs(arguments.toArray(new String[arguments.size()]));
+        desc.initialArgs(RubyProjectUtil.getLoadPath(project)); //NOI18N
 
         desc.debug(debug);
         desc.allowInput();
