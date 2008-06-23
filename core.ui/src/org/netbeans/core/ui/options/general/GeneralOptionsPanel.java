@@ -253,12 +253,19 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
     }// </editor-fold>//GEN-END:initComponents
 
 private void editBrowserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editBrowserButtonActionPerformed
-    WebBrowsersOptionsModel wbModel = new WebBrowsersOptionsModel();
+    final WebBrowsersOptionsModel wbModel = new WebBrowsersOptionsModel();
     WebBrowsersOptionsPanel wbPanel = new WebBrowsersOptionsPanel(wbModel);
-    DialogDescriptor dialogDesc = new DialogDescriptor (wbPanel, loc("LBL_WebBrowsersPanel_Title"));
+    DialogDescriptor dialogDesc = new DialogDescriptor (wbPanel, loc("LBL_WebBrowsersPanel_Title"), true, new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if( "OK".equals(e.getActionCommand()) ) {
+                    wbModel.applyChanges();
+                } else {
+                    wbModel.discardChanges();
+                }
+            }
+        });
     DialogDisplayer.getDefault().createDialog(dialogDesc).setVisible(true);
     if (dialogDesc.getValue().equals(DialogDescriptor.OK_OPTION)) {
-        wbModel.applyChanges();
         updateWebBrowsers();
         for (int i = 0, items = cbWebBrowser.getItemCount(); i < items; i++) {
             Object item = cbWebBrowser.getItemAt(i);
@@ -267,8 +274,6 @@ private void editBrowserButtonActionPerformed(java.awt.event.ActionEvent evt) {/
                 break;
             }
         }
-    } else {
-        wbModel.discardChanges();
     }
 }//GEN-LAST:event_editBrowserButtonActionPerformed
 

@@ -43,15 +43,15 @@ public class Installer extends ModuleInstall implements Runnable {
 
     @Override
     public boolean closing() {
-        if( WelcomeOptions.getDefault().isShowOnStartup() ) {
-            WelcomeComponent topComp = null;
-            Set<TopComponent> tcs = TopComponent.getRegistry().getOpened();
-            for (TopComponent tc: tcs) {
-                if (tc instanceof WelcomeComponent) {                
-                    topComp = (WelcomeComponent) tc;               
-                    break;
-                }
+        WelcomeComponent topComp = null;
+        Set<TopComponent> tcs = TopComponent.getRegistry().getOpened();
+        for (TopComponent tc: tcs) {
+            if (tc instanceof WelcomeComponent) {                
+                topComp = (WelcomeComponent) tc;               
+                break;
             }
+        }
+        if( WelcomeOptions.getDefault().isShowOnStartup() ) {
             if(topComp == null){            
                 topComp = WelcomeComponent.findComp();
             }
@@ -59,6 +59,8 @@ public class Installer extends ModuleInstall implements Runnable {
             //before the welcome screen is activated again at startup
             topComp.open();
             topComp.requestActive();
+        } else if( topComp != null ) {
+            topComp.close();
         }
         return super.closing();
     }

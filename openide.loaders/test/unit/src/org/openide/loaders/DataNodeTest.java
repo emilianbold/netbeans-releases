@@ -92,6 +92,7 @@ public class DataNodeTest extends NbTestCase {
      * See jglick's message on nbdev as of 22 Jun 2001:
      * assertTrue(dataObject.getNodeDelegate().getCookie(DataObject.class)==dataObject)
      */
+    /* XXX this does not make sense here; could be in a functional test using NbModuleSuite:
     public void testDataNodeHasObjectAsCookie() throws Exception {
         // First make sure some core is installed. This could be run inside or
         // outside a running IDE.
@@ -111,7 +112,7 @@ public class DataNodeTest extends NbTestCase {
             assertEquals("Correct cookie from node delegate", o, o2);
         }
     }
-
+    */
     
     public void testDataNodeGetHtmlNameDoesNotInitializeAllFiles () throws Exception {
         org.openide.filesystems.FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir (), new String[] {

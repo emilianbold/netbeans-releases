@@ -58,7 +58,7 @@ import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeUpdater;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 import org.w3c.dom.Element;
 
 /**
@@ -67,7 +67,7 @@ import org.w3c.dom.Element;
 public class J2SEProjectFactory implements ProjectTypeUpdater {
 
     private static final String JAVA_NATURE = "org.eclipse.jdt.core.javanature"; // NOI18N
-    private static final Icon J2SE_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png")); // NOI18N
+    private static final Icon J2SE_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png")); // NOI18N
 
     public J2SEProjectFactory() {
     }
@@ -78,7 +78,7 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
 
     public Project createProject(final ProjectImportModel model, final List<String> importProblems) throws IOException {
         // calculate nb project location
-        File nbProjectDir = FileUtil.normalizeFile(new File(model.getNetBeansProjectLocation())); // NOI18N
+        File nbProjectDir = model.getNetBeansProjectLocation(); // NOI18N
         
         // create basic NB project
         final AntProjectHelper helper = J2SEProjectGenerator.createProject(

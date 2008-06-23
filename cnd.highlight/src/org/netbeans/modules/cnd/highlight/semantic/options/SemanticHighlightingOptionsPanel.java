@@ -77,7 +77,6 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
     void applyChanges() {
         SemanticHighlightingOptions.instance().setEnableMarkOccurrences(cbMarkOccurrences.isSelected());
         SemanticHighlightingOptions.instance().setKeepMarks(cbKeepMarks.isSelected());
-        SemanticHighlightingOptions.instance().setDifferSystemMacros(cbSysMacro.isSelected());
 
         for (Entity e : entities) {
             SemanticHighlightingOptions.instance().setEnabled(e.se.getName(), e.cb.isSelected());
@@ -89,7 +88,6 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
     void update() {
         cbMarkOccurrences.setSelected(SemanticHighlightingOptions.instance().getEnableMarkOccurrences());
         cbKeepMarks.setSelected(SemanticHighlightingOptions.instance().getKeepMarks());
-        cbSysMacro.setSelected(SemanticHighlightingOptions.instance().getDifferSystemMacros());
 
         for (Entity e : entities) {
             e.cb.setSelected(SemanticHighlightingOptions.instance().isEnabled(e.se.getName()));
@@ -112,17 +110,14 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
 
     private void updateValidation() {
         cbKeepMarks.setEnabled(cbMarkOccurrences.isSelected());
-        cbSysMacro.setEnabled(cbMacros.isSelected());
     }
 
     private void initMnemonics() {
         cbMarkOccurrences.setMnemonic(getString("EnableMarkOccurrences_Mnemonic").charAt(0));
         cbKeepMarks.setMnemonic(getString("KeepMarks_Mnemonic").charAt(0));
-        cbSysMacro.setMnemonic(getString("DifferSystemMacros_Mnemonic").charAt(0));
 
         cbMarkOccurrences.getAccessibleContext().setAccessibleDescription(getString("EnableMarkOccurrences_AD"));
         cbKeepMarks.getAccessibleContext().setAccessibleDescription(getString("KeepMarks_AD"));
-        cbSysMacro.getAccessibleContext().setAccessibleDescription(getString("DifferSystemMacros_AD"));
     }
 
     private static class Entity {
@@ -146,14 +141,6 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
             cb.setText(getString("Show-" + se.getName())); //NOI18N
             cb.setOpaque(false);
             entities.add(new Entity(se, cb));
-            if (SemanticEntitiesProvider.MACROS.equals(se.getName())) {
-                cbMacros = cb;
-                cbMacros.addActionListener(new java.awt.event.ActionListener() {
-                    public void actionPerformed(java.awt.event.ActionEvent evt) {
-                        updateValidation();
-                    }
-                });
-            }
         }
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(jPanel1);
@@ -183,7 +170,6 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
 
         cbKeepMarks = new javax.swing.JCheckBox();
         cbMarkOccurrences = new javax.swing.JCheckBox();
-        cbSysMacro = new javax.swing.JCheckBox();
         jPanel1 = new javax.swing.JPanel();
 
         cbKeepMarks.setText(getString("KeepMarks"));
@@ -197,9 +183,6 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
             }
         });
 
-        cbSysMacro.setText(getString("DifferSystemMacros"));
-        cbSysMacro.setOpaque(false);
-
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -208,7 +191,7 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 172, Short.MAX_VALUE)
+            .add(0, 214, Short.MAX_VALUE)
         );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -223,9 +206,6 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(cbMarkOccurrences))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(cbSysMacro))
                     .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -236,9 +216,7 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
                 .add(cbMarkOccurrences)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbKeepMarks)
-                .add(24, 24, 24)
-                .add(cbSysMacro)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -251,7 +229,6 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cbKeepMarks;
     private javax.swing.JCheckBox cbMarkOccurrences;
-    private javax.swing.JCheckBox cbSysMacro;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
 

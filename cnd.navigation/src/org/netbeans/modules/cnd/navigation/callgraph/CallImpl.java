@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.navigation.callgraph;
 
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.callgraph.api.Call;
 import org.netbeans.modules.cnd.callgraph.api.Function;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -97,5 +98,9 @@ public class CallImpl implements Call {
         } else {
             return getCaller().getName()+"->"+getCallee().getName();
         }
+    }
+
+    public String getHtmlDisplayName() {
+        return CsmReferenceSupport.getContextLineHtml(reference, true).toString();
     }
 }

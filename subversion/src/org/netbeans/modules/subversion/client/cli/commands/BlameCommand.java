@@ -88,7 +88,7 @@ public class BlameCommand extends SvnCommand {
     private SVNRevision revStart;
     private SVNRevision revEnd;
 
-    private StringBuffer output = new StringBuffer();
+    private byte[] output;
 
     public BlameCommand(SVNUrl url, SVNRevision revStart, SVNRevision revEnd) {        
         this.url = url;                
@@ -107,6 +107,11 @@ public class BlameCommand extends SvnCommand {
     }
     
     @Override
+    protected boolean hasBinaryOutput() {
+        return true;
+    }
+
+    @Override
     protected boolean notifyOutput() {
         return false;
     }    
@@ -117,8 +122,8 @@ public class BlameCommand extends SvnCommand {
     }
     
     @Override
-    public void outputText(String lineString) {
-        output.append(lineString);
+    public void output(byte[] bytes) {
+        output = bytes;
     }
     
     @Override
@@ -144,13 +149,14 @@ public class BlameCommand extends SvnCommand {
     }  
     
     public Annotation[] getAnnotation() throws SVNClientException {
+        if (output == null || output.length == 0) return new Annotation[0];
         try {
             XMLReader saxReader = XMLUtil.createXMLReader();
 
             XmlEntriesHandler xmlEntriesHandler = new XmlEntriesHandler();
             saxReader.setContentHandler(xmlEntriesHandler);
             saxReader.setErrorHandler(xmlEntriesHandler);
-            InputSource source = new InputSource(new ByteArrayInputStream(output.toString().getBytes()));
+            InputSource source = new InputSource(new ByteArrayInputStream(output));
 
             saxReader.parse(source);
             return xmlEntriesHandler.getAnnotations();
@@ -215,11 +221,12 @@ public class BlameCommand extends SvnCommand {
 
         @Override
         public void characters(char[] ch, int start, int length) throws SAXException {
-            if(values == null) {
+            if(values == null || tag == null) {
                 return;
             }
             String s = toString(length, ch, start);
             values.put(tag, s);
+            tag = null;                    
         }                
         
         @Override
@@ -254,9 +261,9 @@ public class BlameCommand extends SvnCommand {
                         annotations.add(new Annotation(rev.getNumber(), author, date, null));
                     } else {
                         annotations.add(null);
-                    }                                         
+                    }                             
                 }
-            } else if( TARGET_ELEMENT_NAME.equals(name)) {                                                
+            } else if(TARGET_ELEMENT_NAME.equals(name)) {                                                
                 values = null;
             }
         }

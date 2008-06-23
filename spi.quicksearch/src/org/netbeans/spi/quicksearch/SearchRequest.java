@@ -39,6 +39,7 @@
 
 package org.netbeans.spi.quicksearch;
 
+import java.util.List;
 import javax.swing.KeyStroke;
 import org.netbeans.modules.quicksearch.Accessor;
 
@@ -62,9 +63,9 @@ public final class SearchRequest {
     private String text;
     
     /** Shortcut to search for */
-    private KeyStroke stroke;
+    private List <? extends KeyStroke> stroke;
 
-    SearchRequest (String text, KeyStroke stroke) {
+    SearchRequest (String text, List<? extends KeyStroke> stroke) {
         this.text = text;
         this.stroke = stroke;
     }
@@ -85,7 +86,7 @@ public final class SearchRequest {
      * 
      * @return Shortcut entered by user into Quick Search UI or null.
      */
-    public KeyStroke getShortcut () {
+    public List<? extends KeyStroke> getShortcut () {
         return stroke;
     }
 

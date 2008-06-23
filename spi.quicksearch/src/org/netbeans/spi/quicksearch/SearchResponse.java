@@ -39,6 +39,7 @@
 
 package org.netbeans.spi.quicksearch;
 
+import java.util.List;
 import javax.swing.KeyStroke;
 import org.netbeans.modules.quicksearch.CategoryResult;
 import org.netbeans.modules.quicksearch.ResultsModel;
@@ -91,7 +92,7 @@ public final class SearchResponse {
      * SearchProvider.evaluate(...) immediatelly if false is returned.
      */
     public boolean addResult (Runnable action, String displayName,
-                            String displayHint, KeyStroke shortcut) {
+                            String displayHint, List <? extends KeyStroke> shortcut) {
         return catResult.addItem(
                 new ResultsModel.ItemResult(catResult, action,
                 displayName, shortcut, displayHint));
