@@ -155,13 +155,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             DataFolder folder = DataFolder.findFolder(fo);
             if ( o == NODE_NOT_CREATED ) {
                 n = new PackageNode(root, folder, false);
-            }
-            else if ( o ==  NODE_NOT_CREATED_EMPTY ) {
-                 // Possible cause of IDEValidation.testJUnit failure? Known to be thrown randomly in testCopyPaste:
-                assert isEmpty(folder) : "Package was not really empty: " + FileUtil.getFileDisplayName(fo);
-                n = new PackageNode(root, folder, true);
-            }
-            else {
+            } else { // NODE_NOT_CREATED_EMPTY, PackageNode
                 n = new PackageNode(root, folder);
             }            
             names2nodes.put(path, n);

@@ -45,7 +45,7 @@
 
 function TestSupport() {
     this.wadlDoc = null;
-    this.wadlURL = baseURL+"/application.wadl";
+    this.wadlURL = '';
     this.wadlErr = 'Cannot access WADL: Please restart your RESTful application, and refresh this page.';
     this.currentValidUrl = '';
     this.breadCrumbs = [];
@@ -91,6 +91,22 @@ TestSupport.prototype = {
 
     init : function () {
         this.debug('Initializing scripts...');
+        var patterns = baseURL.split('||');
+        baseURL = patterns[0];
+        if(patterns.length == 3) {
+          var servletNames = patterns[1].split(',');
+          var servletUrl = patterns[2].split(',');
+          for(var i in servletNames) {
+              var name = servletNames[i];
+              if('ServletAdaptor' == name)
+                  baseURL = this.concatPath(baseURL, servletUrl[i].replace('*', ''));
+          }
+        }
+        this.wadlURL = this.concatPath(baseURL, "application.wadl");
+        this.initFromWadl();
+    },
+
+    initFromWadl : function () {
         var wadlData = this.xhr.get(this.wadlURL);
         if(wadlData != "-1") {
             this.wdr.updateMenu(wadlData);
@@ -98,6 +114,14 @@ TestSupport.prototype = {
             this.setvisibility('main', 'inherit');
             this.updatepage('content', '<span class=bld>Help Page</span><br/><br/><p>Cannot access WADL: Please restart your REST application, and refresh this page.</p><p>If you still see this error and if you are accessing this page using Firefox with Firebug plugin, then<br/>you need to disable firebug for local files. That is from Firefox menubar, check <br/>Tools > Firebug > Disable Firebug for Local Files</p>');
         }            
+    },
+
+    concatPath : function(url, pathElem) {
+        if(url.substring(url.length-1) == '/')
+            url = url.substring(0, url.length-1);
+        if(pathElem.substring(0,1) == '/')
+            pathElem = pathElem.substring(1);
+        return url + '/' + pathElem;
     },
     
     setvisibility : function (id, state) {
@@ -403,20 +427,28 @@ TestSupport.prototype = {
         this.updatepage('resultheaders', '');
     },
     
+    trimEndingPathDelim : function(path) {
+        var req = path;
+        if(req.substring(req.length-1) == '/')
+            req = req.substring(0, req.length-1);
+        return req;
+    },
+    
     showBreadCrumbs : function (uri) {
         var disp = this.getDisplayUri(uri);
         this.breadCrumbs[1] = disp;
         var str = "<a class=Hyp_sun4 href=javascript:ts.clearAll() >"+ts.projectName+"</a>";
         var req = this.getDisplayUri(uri);
         var currPath = baseURL;
-        if(req.substring(req.length-1) == '/')
-            req = req.substring(0, req.length-1);
+        if(currPath.substring(currPath.length-1) != '/')
+            currPath = currPath + '/';
+        req = this.trimEndingPathDelim(req);
         var paths = req.split('/');
         for(var i=0;i<paths.length-1;i++) {
             var pname = paths[i];
             if(pname == '')
                 continue;
-            currPath += '/'+pname+'/';
+            currPath += pname+'/';
             var ndx = 0;
             var jsmethod = "ts.doShowContent('"+currPath+"')";
             for(var j=0;j<ts.allcat.length;j++) {
@@ -1140,8 +1172,8 @@ WADLParser.prototype = {
             var newUrl = prompt(ts.wadlErr, baseURL);
             if(newUrl != null && baseURL != newUrl) {
                 baseURL = newUrl;
-                ts.wadlURL = baseURL+"/application.wadl";
-                ts.init();
+                ts.wadlURL = ts.concatPath(baseURL, "application.wadl");
+                ts.initFromWadl();
             }
             return;
         }

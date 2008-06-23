@@ -108,6 +108,7 @@ import org.netbeans.modules.uml.drawingarea.dataobject.PaletteItem;
 import org.netbeans.modules.uml.drawingarea.dataobject.UMLDiagramDataNode;
 import org.netbeans.modules.uml.drawingarea.dataobject.UMLDiagramDataObject;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
+import org.netbeans.modules.uml.drawingarea.keymap.DiagramInputkeyMapper;
 import org.netbeans.modules.uml.drawingarea.palette.PaletteSupport;
 import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
@@ -263,18 +264,14 @@ public class UMLDiagramTopComponent extends TopComponent
             uiDiagram.setDataObject(diagramDO);
         }
         initUI();
-        initLookup();
         setName();
         setIcon();
 
         editorToolbar = new Toolbar("Diagram Toolbar", false);
         add(editorToolbar, BorderLayout.NORTH);
-
-        zoomManager = new ZoomManager(scene);
-        lookupContent.add(zoomManager);
         
+        zoomManager = new ZoomManager(scene);
         zoomManager.addZoomListener(new ZoomManager.ZoomListener() {
-
             public void zoomChanged(ZoomEvent event)
             {
                 ContextPaletteManager manager = scene.getContextPaletteManager();
@@ -288,8 +285,9 @@ public class UMLDiagramTopComponent extends TopComponent
             }
         });
         
+        initRootNode();   
+        initLookup();
         initializeToolBar();
-        initRootNode();      
     }
 
     public UMLDiagramTopComponent(INamespace owner, String name, int kind)
@@ -299,7 +297,6 @@ public class UMLDiagramTopComponent extends TopComponent
         IDiagram diagram = initNewDiagram(owner, name, kind);
 
         initUI();
-        initLookup();
         setName();
         setIcon();      
         
@@ -307,9 +304,7 @@ public class UMLDiagramTopComponent extends TopComponent
         add(editorToolbar, BorderLayout.NORTH);
         
         zoomManager = new ZoomManager(scene);
-        lookupContent.add(zoomManager);
         zoomManager.addZoomListener(new ZoomManager.ZoomListener() {
-
             public void zoomChanged(ZoomEvent event)
             {
                 ContextPaletteManager manager = scene.getContextPaletteManager();
@@ -323,8 +318,9 @@ public class UMLDiagramTopComponent extends TopComponent
             }
         });
         
-        initializeToolBar();
         initRootNode();
+        initLookup();
+        initializeToolBar();
     }
 
     protected boolean isEdgesGrouped()
@@ -457,6 +453,10 @@ public class UMLDiagramTopComponent extends TopComponent
             pProd.removeDiagram(getAssociatedDiagram());
         }
         unregisterListeners();
+        // remove key-action mapping
+        DiagramInputkeyMapper keyActionMapper = DiagramInputkeyMapper.getInstance();
+        keyActionMapper.setComponent(this);
+        keyActionMapper.unRegisterKeyMap();
     }
 
     @Override
@@ -477,6 +477,10 @@ public class UMLDiagramTopComponent extends TopComponent
             getDrawingAreaDispatcher().fireDrawingAreaPostCreated(getDiagramDO(), payload);
         }
         registerListeners();
+        //set key-action mapping
+        DiagramInputkeyMapper keyActionMapper = DiagramInputkeyMapper.getInstance();
+        keyActionMapper.setComponent(this);
+        keyActionMapper.registerKeyMap();
         
         if(getDiagram()!=null && getDiagram().getView()!=null)getDiagram().getView().requestFocusInWindow();
     }
@@ -861,10 +865,11 @@ public class UMLDiagramTopComponent extends TopComponent
     {
         paletteController = getAssociatedPalette();
         lookupContent.add(paletteController);
-
         lookupContent.add(scene);
         lookupContent.add(getDiagramDO());
         lookupContent.add(getNavigatorCookie());
+        lookupContent.add(editorToolbar);
+        lookupContent.add(zoomManager);
     }
 
     private UMLDiagramDataObject getDiagramDO(String name, INamespace space)
@@ -1313,6 +1318,9 @@ public class UMLDiagramTopComponent extends TopComponent
             // A secondary element is a child element of the chagned element.
             // For example, an attribute would be a secondary element.
             List<IPresentationElement> presentations = getPresentationElements(elementToNotify);
+            
+            if((changeType != ModelElementChangedKind.DELETE) &&
+                       (changeType != ModelElementChangedKind.PRE_DELETE))//update parent only if it's update event, not a delete one
             for(IElement el=elementToNotify.getOwner();el!=null && !(el instanceof IProject) && (presentations==null || presentations.size()==0);el=el.getOwner())
             {
                 presentations=getPresentationElements(el);//sometimes child elements are presented on a diagram but do not have presentations, update parent to get child updated
@@ -1668,13 +1676,14 @@ public class UMLDiagramTopComponent extends TopComponent
             {
                 ResourceBundle bundle = NbBundle.getBundle(SceneDeleteAction.class);
                 String title = bundle.getString("DELETE_QUESTIONDIALOGTITLE"); // NO18N
-                String question = bundle.getString("DELETE_GRAPH_OBJECTS_MESSAGE"); // NO18N
+//                String question = bundle.getString("DELETE_GRAPH_OBJECTS_MESSAGE"); // NO18N
+                String question = getMessage(bundle);
                 String checkQuestion = bundle.getString("DELETE_ELEMENTS_QUESTION"); // NO18N
                 IQuestionDialog questionDialog = UIFactory.createQuestionDialog();
                 QuestionResponse result = questionDialog.displaySimpleQuestionDialogWithCheckbox(MessageDialogKindEnum.SQDK_YESNO, MessageIconKindEnum.EDIK_ICONWARNING, question, checkQuestion, title, MessageResultKindEnum.SQDRK_RESULT_NO, false);
 
                 if (result.getResult() != MessageResultKindEnum.SQDRK_RESULT_NO && result.getResult() != MessageResultKindEnum.SQDRK_RESULT_CANCEL)
-                {
+                {   ((DiagramModelElementNode)nodesToDestroy[0]).getElementType();
                     List<Node> a = Arrays.asList(nodesToDestroy);
                     for (Node node : a)
                     {
@@ -1735,6 +1744,32 @@ public class UMLDiagramTopComponent extends TopComponent
                 }
                 nodesToDestroy = null;
             }
+        }
+        
+        private String getMessage(ResourceBundle bundle)
+        {
+            String messageStr = bundle.getString("DELETE_GRAPH_OBJECTS_MESSAGE"); // NO18N
+            if (nodesToDestroy != null && nodesToDestroy.length > 0)
+            {
+                if (nodesToDestroy.length == 1 && nodesToDestroy[0] instanceof DiagramModelElementNode)
+                {
+                    DiagramModelElementNode modelNode = (DiagramModelElementNode) nodesToDestroy[0];
+                    IElement elem = modelNode.getElement();
+                    if (elem != null)
+                    {
+                        String elemType = elem.getElementType();
+                        if ("Attribute".equals(elemType))
+                        {
+                            messageStr = bundle.getString("DELETE_ATTRIBUTE_MESSAGE"); // NO18N
+                        }
+                        else if ("Operation".equals(elemType))
+                        {
+                            messageStr = bundle.getString("DELETE_OPERATION_MESSAGE"); // NO18N
+                        }
+                    }
+                }
+            }
+            return messageStr;
         }
     }
     
@@ -1804,6 +1839,8 @@ public class UMLDiagramTopComponent extends TopComponent
         }
     }
     
+
+     
     private class EngineDrawingAreaSink extends DrawingAreaEventsAdapter
     {
 

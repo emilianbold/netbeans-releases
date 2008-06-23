@@ -104,6 +104,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.openide.filesystems.FileObject;
@@ -563,7 +564,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             if (statement.getStartOffset() > position){
                 break; // no need to analyze statements after caret offset
             }
-            
+           
             if (statement instanceof ExpressionStatement){
                 Expression expr = ((ExpressionStatement)statement).getExpression();
                 getLocalVariables_indexVariableInAssignment(expr, localVars, namePrefix, localFileURL);
@@ -574,7 +575,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 for (Variable var : globalStatement.getVariables()){
                     getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, null);
                 }
-            } else if (!offsetWithinStatement(position, statement)){
+            } else if (statement instanceof StaticStatement) {
+                StaticStatement staticStatement = (StaticStatement) statement;
+                
+                for (Variable var : staticStatement.getVariables()){
+                    getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, null);
+                }
+            }
+            else if (!offsetWithinStatement(position, statement)){
                 continue;
             }
                 
