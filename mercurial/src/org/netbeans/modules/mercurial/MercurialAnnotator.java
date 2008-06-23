@@ -519,37 +519,46 @@ public class MercurialAnnotator extends VCSAnnotator {
             return uptodateFormat.format(new Object [] { nameHtml, "" }); // NOI18N
         }
 
-        if(context.getRootFiles().size() == 1) {
-            return uptodateFormat.format(new Object [] { nameHtml, "" }); // NOI18N
-        }
-        
-        // Label top level repository nodes with a repository name label when:
-        // Display Name (name) is different from its repo name (repo.getName())        
-        File parentFile = null;
         final Set<File> rootFiles = context.getRootFiles();
-        for (File file : rootFiles) {            
-            if(parentFile == null) {
-                parentFile = file.getParentFile();
-            } else {
-                File p = file.getParentFile();
-                if(p == null || !parentFile.getAbsolutePath().equals(p.getAbsolutePath())) {
-                    // not comming from the same parent => do not annnotate with folder name
-                    return uptodateFormat.format(new Object [] { nameHtml, ""});
+        File repo = null;        
+        String folderAnotation = null;
+        if(rootFiles.size() == 1) {
+            File root = null; 
+            for (File file : rootFiles) {
+                root = file;
+                repo = Mercurial.getInstance().getTopmostManagedParent(root);
+                break;
+            }
+            if (!repo.getAbsolutePath().equals(root.getAbsolutePath())) {
+                // not from repo root => do not annnotate with folder name 
+                return uptodateFormat.format(new Object [] { nameHtml, ""});
+            }             
+        } else {
+        
+            // Label top level repository nodes with a repository name label when:
+            // Display Name (name) is different from its repo name (repo.getName())        
+            File parentFile = null;
+            for (File file : rootFiles) {            
+                if(parentFile == null) {
+                    parentFile = file.getParentFile();
+                } else {
+                    File p = file.getParentFile();
+                    if(p == null || !parentFile.getAbsolutePath().equals(p.getAbsolutePath())) {
+                        // not comming from the same parent => do not annnotate with folder name
+                        return uptodateFormat.format(new Object [] { nameHtml, ""});
+                    }
                 }
+            }
+            for (File file : rootFiles) {            
+                repo = Mercurial.getInstance().getTopmostManagedParent(file);
+                if (!repo.getAbsolutePath().equals(parentFile.getAbsolutePath())) {
+                    // not from repo root => do not annnotate with folder name 
+                    return uptodateFormat.format(new Object [] { nameHtml, ""});
+                } 
+                break;
             }
         }
         
-        String folderAnotation = null;
-        File repo = null;
-                
-        for (File file : rootFiles) {            
-            repo = Mercurial.getInstance().getTopmostManagedParent(file);
-            if (!repo.getAbsolutePath().equals(parentFile.getAbsolutePath())) {
-                // not from repo root => do not annnotate with folder name 
-                return uptodateFormat.format(new Object [] { nameHtml, ""});
-            } 
-            break;
-        }
         if (!repo.getName().equals(name)){
             folderAnotation = repo.getName();
         }                
