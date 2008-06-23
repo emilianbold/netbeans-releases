@@ -453,6 +453,16 @@ public class PHPIndex {
         return constants;
     }
     
+    public Set<FileObject> filesWithIdentifiers(String identifierName) {
+        final Set<FileObject> result = new HashSet<FileObject>();
+        final Set<SearchResult> idSearchResult = new HashSet<SearchResult>();
+        search(PHPIndexer.FIELD_IDENTIFIER, identifierName.toLowerCase(), NameKind.PREFIX, idSearchResult, ALL_SCOPE, TERMS_BASE);
+        for (SearchResult searchResult : idSearchResult) {
+            result.add(FileUtil.toFileObject(new File(URI.create(searchResult.getPersistentUrl()))));
+        }
+        return result;
+    }
+    
     public Collection<IndexedClass> getClasses(PHPParseResult context, String name, NameKind kind) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
         Collection<IndexedClass> classes = new ArrayList<IndexedClass>();
