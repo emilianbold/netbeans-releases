@@ -979,5 +979,5 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "-Dorg.glassfish.v3.installRoot"; // NOI18N
     
     public static final String PRODUCT_ID =
-            "GLASSFISHV3"; // NOI18N
+            "GFMOD"; // NOI18N
 }

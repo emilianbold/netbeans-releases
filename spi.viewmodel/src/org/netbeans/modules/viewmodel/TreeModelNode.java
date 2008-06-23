@@ -269,6 +269,9 @@ public class TreeModelNode extends AbstractNode {
             Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
         }
+        if (model.getRoot() == object) {
+            treeModelRoot.destroy();
+        }
     }
 
     

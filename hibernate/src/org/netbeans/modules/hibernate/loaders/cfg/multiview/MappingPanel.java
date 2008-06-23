@@ -1,7 +1,40 @@
 /*
- * MappingPanel.java
- *
- * Created on January 23, 2008, 4:18 PM
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * 
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * 
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.hibernate.loaders.cfg.multiview;
@@ -132,19 +165,25 @@ public class MappingPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        resourceLabel.setText(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.resourceLabel.text")); // NOI18N
+        resourceLabel.setLabelFor(resourceComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(resourceLabel, org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.resourceLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(resourceLabel, gridBagConstraints);
+        resourceLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.resourceLabel.text")); // NOI18N
+        resourceLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.resourceLabel.text")); // NOI18N
 
-        fileLabel.setText(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.fileLabel.text")); // NOI18N
+        fileLabel.setLabelFor(fileTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(fileLabel, org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.fileLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(fileLabel, gridBagConstraints);
+        fileLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.fileLabel.text")); // NOI18N
+        fileLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.fileLabel.text")); // NOI18N
 
         fileTextField.setText(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.fileTextField.text")); // NOI18N
         fileTextField.setPreferredSize(new java.awt.Dimension(200, 19));
@@ -156,13 +195,16 @@ public class MappingPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(fileTextField, gridBagConstraints);
 
-        jarLabel.setText(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.jarLabel.text")); // NOI18N
+        jarLabel.setLabelFor(jarTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jarLabel, org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.jarLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(jarLabel, gridBagConstraints);
+        jarLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.jarLabel.text")); // NOI18N
+        jarLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.jarLabel.text")); // NOI18N
 
         jarTextField.setText(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.jarTextField.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -173,13 +215,16 @@ public class MappingPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(jarTextField, gridBagConstraints);
 
-        packageLabel.setText(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.packageLabel.text")); // NOI18N
+        packageLabel.setLabelFor(pacakgeTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(packageLabel, org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.packageLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(packageLabel, gridBagConstraints);
+        packageLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.packageLabel.text")); // NOI18N
+        packageLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.packageLabel.text")); // NOI18N
 
         pacakgeTextField.setText(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.pacakgeTextField.text")); // NOI18N
         pacakgeTextField.addActionListener(new java.awt.event.ActionListener() {
@@ -195,13 +240,16 @@ public class MappingPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(pacakgeTextField, gridBagConstraints);
 
-        classLabel.setText(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.classLabel.text")); // NOI18N
+        classLabel.setLabelFor(classTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(classLabel, org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.classLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(classLabel, gridBagConstraints);
+        classLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.classLabel.text")); // NOI18N
+        classLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.classLabel.text")); // NOI18N
 
         classTextField.setText(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.classTextField.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -212,7 +260,7 @@ public class MappingPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(classTextField, gridBagConstraints);
 
-        jarButton.setText(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.jarButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jarButton, org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.jarButton.text")); // NOI18N
         jarButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jarButtonActionPerformed(evt);
@@ -224,30 +272,34 @@ public class MappingPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(jarButton, gridBagConstraints);
+        jarButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.jarButton.text")); // NOI18N
 
-        fileButton.setText(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.fileButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(fileButton, org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.fileButton.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(fileButton, gridBagConstraints);
+        fileButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.fileButton.text")); // NOI18N
 
-        packageButton.setText(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.packageButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(packageButton, org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.packageButton.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(packageButton, gridBagConstraints);
+        packageButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.packageButton.text")); // NOI18N
 
-        classButton.setText(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.classButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(classButton, org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.classButton.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(classButton, gridBagConstraints);
+        classButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.classButton.text")); // NOI18N
 
         resourceComboBox.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();

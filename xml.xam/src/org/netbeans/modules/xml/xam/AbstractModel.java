@@ -53,7 +53,6 @@ import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
@@ -64,6 +63,7 @@ import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
 import org.netbeans.modules.xml.xam.Model.State;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author Chris Webster
@@ -646,7 +646,7 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
     
     void runAutoSync() {
         prepareSync();
-        SwingUtilities.invokeLater(new Runnable() {
+        RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
                     sync();

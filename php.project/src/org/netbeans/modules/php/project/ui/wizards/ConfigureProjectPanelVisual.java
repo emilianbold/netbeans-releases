@@ -81,7 +81,6 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
         projectFolderTextField.getDocument().addDocumentListener(this);
         projectNameTextField.getDocument().addDocumentListener(this);
         localServerComponent.addChangeListener(this);
-        createIndexCheckBox.addActionListener(this);
         indexNameTextField.getDocument().addDocumentListener(this);
 
         encodingComboBox.setModel(new EncodingModel());
@@ -121,7 +120,6 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
         localServerButton = new javax.swing.JButton();
         indexFileLabel = new javax.swing.JLabel();
         indexNameTextField = new javax.swing.JTextField();
-        createIndexCheckBox = new javax.swing.JCheckBox();
         encodingLabel = new javax.swing.JLabel();
         encodingComboBox = new javax.swing.JComboBox();
         setAsMainCheckBox = new javax.swing.JCheckBox();
@@ -155,10 +153,6 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
 
         indexNameTextField.setText("index.php"); // NOI18N
 
-        createIndexCheckBox.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(createIndexCheckBox, org.openide.util.NbBundle.getBundle(ConfigureProjectPanelVisual.class).getString("LBL_CreateIndexFile")); // NOI18N
-        createIndexCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
         encodingLabel.setLabelFor(encodingComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(encodingLabel, org.openide.util.NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_Encoding")); // NOI18N
 
@@ -189,19 +183,16 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
                                 .add(localServerComboBox, 0, 228, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(localServerButton))
-                            .add(layout.createSequentialGroup()
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                        .add(indexNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(createIndexCheckBox))
-                                    .add(encodingComboBox, 0, 323, Short.MAX_VALUE)))
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                                 .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(browseButton))
-                            .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)))))
+                            .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(indexNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)
+                                    .add(encodingComboBox, 0, 323, Short.MAX_VALUE)))))))
         );
 
         layout.linkSize(new java.awt.Component[] {browseButton, localServerButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -228,8 +219,7 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(indexFileLabel)
-                    .add(indexNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(createIndexCheckBox))
+                    .add(indexNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(encodingLabel)
@@ -250,7 +240,6 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
-    private javax.swing.JCheckBox createIndexCheckBox;
     private javax.swing.JComboBox encodingComboBox;
     private javax.swing.JLabel encodingLabel;
     private javax.swing.JLabel indexFileLabel;
@@ -297,14 +286,6 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
 
     public void selectSourcesLocation(LocalServer localServer) {
         localServerComponent.selectLocalServer(localServer);
-    }
-
-    boolean isCreateIndex() {
-        return createIndexCheckBox.isSelected();
-    }
-
-    void setCreateIndex(boolean createIndex) {
-        createIndexCheckBox.setSelected(createIndex);
     }
 
     String getIndexName() {

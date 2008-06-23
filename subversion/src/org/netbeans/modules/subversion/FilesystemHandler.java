@@ -268,7 +268,7 @@ class FilesystemHandler extends VCSInterceptor {
     // private methods ---------------------------
     
     private boolean hasMetadata(File file) {
-        return new File(file, ".svn/entries").canRead() || new File(file, "_svn/entries").canRead();
+        return new File(file, SvnUtils.SVN_ENTRIES_DIR).canRead();
     }
     
     private boolean isVersioned(File file) {

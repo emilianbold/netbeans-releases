@@ -201,7 +201,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return cp;
     }
     
-    private synchronized ClassPath getRunTimeClasspath(FileObject file) {
+    private ClassPath getRunTimeClasspath(FileObject file) {
         int type = getType(file);
         if (type < 0 || type > 4) {
             // Unregistered file, or in a JAR.
@@ -212,6 +212,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         } else if (type > 1) {
             type-=2;            //Compiled source transform into source
         }
+        return getRunTimeClasspath(type);
+    }
+    
+    private synchronized ClassPath getRunTimeClasspath(final int type) {
         ClassPath cp = cache[4+type];
         if ( cp == null) {
             if (type == 0) {
@@ -321,7 +325,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         if (ClassPath.SOURCE.equals(type)) {
             return getSourcepath(0);
         }
-        assert false;
+        if (ClassPath.EXECUTE.equals(type)) {
+            return getRunTimeClasspath(0);
+        }
+        assert false : "Unknown classpath type: " + type;   //NOI18N
         return null;
     }
 

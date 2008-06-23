@@ -106,7 +106,19 @@ public class Clearcase {
     private ClearcaseAnnotator   clearcaseAnnotator;
     private ClearcaseInterceptor clearcaseInterceptor;
     private FileStatusCache     fileStatusCache;
+    
+    /**
+     * used for the majority of invoked cc commands but for those used:
+     * - by status evaluation 
+     * - getTopmostanagedParent
+     * - when opening an external cc tool
+     */
     private ClearcaseClient     client;
+
+    /**
+     * mind blocking other comands when evaluating if topmost
+     */
+    private ClearcaseClient     topmostManagedParentClient;
     private InputOutput         log;
     private RequestProcessor    rp;
 
@@ -117,7 +129,8 @@ public class Clearcase {
         fileStatusCache = new FileStatusCache();
         clearcaseAnnotator = new ClearcaseAnnotator();
         clearcaseInterceptor = new ClearcaseInterceptor();
-        client = new ClearcaseClient();        
+        client = new ClearcaseClient(true);        
+        topmostManagedParentClient = new ClearcaseClient();        
     }
 
     public void printlnOut(String msg) {
@@ -186,8 +199,7 @@ public class Clearcase {
         return fileName.equals(".ccrc"); // NOI18N
     }
     
-    // XXX - this is more a short term solution. 
-    private Set<File> managedRoots = new HashSet<File>(10);
+    private Set<File> managedRoots = Collections.synchronizedSet(new HashSet<File>(10));
     
     //  - lsvob returns the topmost folder for dynamic views on *nix
     //  - lsview -properties -full returns some usefull info about views (snapshot dynamic etc.)
@@ -196,15 +208,13 @@ public class Clearcase {
         
         Clearcase.LOG.finer("getTopmostManagedParent " + file);
         
+        if(!ClearcaseClient.isAvailable()) return null;
+        
         if(file == null) {            
             return null;
         }
         
-        File[] roots;
-        synchronized(managedRoots) {
-            roots = managedRoots.toArray(new File[managedRoots.size()]);
-        }
-        
+        File[] roots = managedRoots.toArray(new File[managedRoots.size()]);
         for (File root : roots) {
             if(Utils.isAncestorOrEqual(root, file)) {
                 Clearcase.LOG.finest("getTopmostManagedParent cached root " + root +  " for " + file);
@@ -217,10 +227,10 @@ public class Clearcase {
         // compared to the following logic, so run it first
         File ancestor = getTopmostSnapshotViewAncestor(file);        
         if(ancestor != null) {
-            // we found the view.dat metadata, but to get sure wes still
+            // we found the view.dat metadata, but to get sure we still
             // should check via cleartool ls
             IsVersionedCommand cmd = new IsVersionedCommand(file);
-            client.exec(cmd, false);            
+            topmostManagedParentClient.exec(cmd, false);            
             if(cmd.hasFailed()) {
                 Exception ex = cmd.getThrownException();
                 if(ex instanceof ClearcaseUnavailableException) {
@@ -232,14 +242,12 @@ public class Clearcase {
                 return null;
             }
             if(cmd.isVersioned()) {
-                synchronized(managedRoots) {
-                    managedRoots.add(ancestor);
-                }
+                managedRoots.add(ancestor);
                 Clearcase.LOG.finest("getTopmostManagedParent found snapshot root " + ancestor +  " for " + file);
                 return ancestor;
             }
             Clearcase.LOG.finest("getTopmostManagedParent snapshot ancestor " + ancestor + " for " + file + " not versioned");
-            return null;
+            // even if under a view.dat folder - yet still unversioned. Lets see if it could be from a dynamic view
         }
         
         // doesn't seem to be a snapshot, try it the hard way
@@ -254,7 +262,7 @@ public class Clearcase {
                 continue;
             }
             IsVersionedCommand cmd = new IsVersionedCommand(parent);
-            client.exec(cmd, false);       
+            topmostManagedParentClient.exec(cmd, false);       
             if(cmd.hasFailed()) {
                 Exception ex = cmd.getThrownException();
                 if(ex instanceof ClearcaseUnavailableException) {
@@ -273,12 +281,10 @@ public class Clearcase {
                 Clearcase.LOG.finest("getTopmostManagedParent no root for " + file);
                 return null;    
             } else {
-                synchronized(managedRoots) {
-                    managedRoots.add(file);
-                }
+                managedRoots.add(file);
                 Clearcase.LOG.finest("getTopmostManagedParent found root " + file);
                 return file;
-            }               
+            }    
         }            
         Clearcase.LOG.finest("getTopmostManagedParent no root for " + file);
         return null;       

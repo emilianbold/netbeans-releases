@@ -51,7 +51,6 @@ import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -75,34 +74,34 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
     private DatabaseConnection connection;
     private ProgressHandle progressHandle;
     private Window window;
-    
+
     private boolean updatingUrl = false;
     private boolean updatingFields = false;
-    
-    private final LinkedHashMap<String, UrlField> urlFields = 
+
+    private final LinkedHashMap<String, UrlField> urlFields =
             new LinkedHashMap<String, UrlField>();
-    
+
     private static final String BUNDLE = "org.netbeans.modules.db.resources.Bundle"; //NOI18N
-    
+
     private static final Logger LOGGER = Logger.getLogger(NewConnectionPanel.class.getName());
-    
+
     private static ResourceBundle bundle() {
         return NbBundle.getBundle(BUNDLE);
     }
-    
+
     private static String getMessage(String key, Object ... args) {
         return MessageFormat.format(bundle().getString(key), args);
     }
-    
+
     private void initFieldMap() {
-        // These should be in the order of display on the form, so that we correctly 
+        // These should be in the order of display on the form, so that we correctly
         // put focus on the first visible field.
         urlFields.put(JdbcUrl.TOKEN_HOST, new UrlField(hostField, hostLabel));
         urlFields.put(JdbcUrl.TOKEN_PORT, new UrlField(portField, portLabel));
         urlFields.put(JdbcUrl.TOKEN_DB, new UrlField(databaseField, databaseLabel));
         urlFields.put(JdbcUrl.TOKEN_SID, new UrlField(sidField, sidLabel));
         urlFields.put(JdbcUrl.TOKEN_SERVICENAME, new UrlField(serviceField, serviceLabel));
-        urlFields.put(JdbcUrl.TOKEN_TNSNAME, new UrlField(tnsField, tnsLabel));                
+        urlFields.put(JdbcUrl.TOKEN_TNSNAME, new UrlField(tnsField, tnsLabel));
         urlFields.put(JdbcUrl.TOKEN_DSN, new UrlField(dsnField, dsnLabel));
         urlFields.put(JdbcUrl.TOKEN_SERVERNAME, new UrlField(serverNameField, serverNameLabel));
         urlFields.put(JdbcUrl.TOKEN_INSTANCE, new UrlField(instanceField, instanceLabel));
@@ -115,14 +114,14 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
         initComponents();
         initAccessibility();
         initFieldMap();
-        
+
         DatabaseExplorerInternalUIs.connect(templateComboBox, JDBCDriverManager.getDefault(), driverClass);
-        
+
         ConnectionProgressListener progressListener = new ConnectionProgressListener() {
             public void connectionStarted() {
                 startProgress();
             }
-            
+
             public void connectionStep(String step) {
                 setProgressMessage(step);
             }
@@ -136,7 +135,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
             }
         };
         mediator.addConnectionProgressListener(progressListener);
-        
+
         userField.setText(connection.getUser());
         passwordField.setText(connection.getPassword());
 
@@ -153,9 +152,9 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
                         break;
                     }
                 }
-            }        
+            }
         }
-        
+
         for (Entry<String,UrlField> entry : urlFields.entrySet()) {
             entry.getValue().getField().getDocument().addDocumentListener(this);
         }
@@ -169,15 +168,15 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
             public void focusLost(FocusEvent e) {
                 updateFieldsFromUrl();
             }
-            
+
         });
-        
+
         // Set up initial defaults; user may change but that's ok
         urlField.setVisible(false);
         urlLabel.setVisible(false);
         showUrlCheckBox.setSelected(false);
-        
-        
+
+
         setUrlField();
         updateFieldsFromUrl();
         setUpFields();
@@ -298,7 +297,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
         org.openide.awt.Mnemonics.setLocalizedText(portLabel, bundle.getString("NewConnectionPort")); // NOI18N
 
         hostLabel.setLabelFor(hostField);
-        org.openide.awt.Mnemonics.setLocalizedText(hostLabel, "&Host:");
+        org.openide.awt.Mnemonics.setLocalizedText(hostLabel, bundle.getString("NewConnectionHost")); // NOI18N
 
         passwordLabel.setLabelFor(passwordField);
         org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionPassword")); // NOI18N
@@ -372,12 +371,12 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
                             .add(additionalPropsLabel)
                             .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(passwordLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 72, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(passwordLabel)
                                     .add(userLabel)
                                     .add(hostLabel)
                                     .add(databaseLabel)
                                     .add(portLabel)
-                                    .add(templateLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(templateLabel)
                                     .add(sidLabel)
                                     .add(serviceLabel)
                                     .add(tnsLabel)
@@ -557,13 +556,17 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
 private void hostFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hostFieldActionPerformed
 }//GEN-LAST:event_hostFieldActionPerformed
 
-private void showUrlCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showUrlCheckBoxActionPerformed
-    urlLabel.setVisible(showUrlCheckBox.isSelected());//GEN-LAST:event_showUrlCheckBoxActionPerformed
+private void showUrlCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {
+    showUrl();
+}
+
+private void showUrl() {
+    urlLabel.setVisible(showUrlCheckBox.isSelected());
     if (showUrlCheckBox.isSelected()) {
         updateUrlFromFields();
     }
     urlField.setVisible(showUrlCheckBox.isSelected());
-    
+
     resize();
 }
 
@@ -644,14 +647,14 @@ private void urlFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event
         connection.setPassword(getPassword());
         connection.setRememberPassword(passwordCheckBox.isSelected());
     }
-    
+
     private void resize() {
         revalidate();
         if (window != null) {
             window.pack();
         }
     }
-    
+
     /**
      * Set up which fields are enabled based on the URL template for the
      * selected driver
@@ -665,33 +668,32 @@ private void urlFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event
             // get invoked.
             return;
         }
-        
+
         JdbcUrl jdbcurl = (JdbcUrl)item;
-        
+
         if (jdbcurl == null) {
             for (Entry<String, UrlField> entry : urlFields.entrySet()) {
                 entry.getValue().getField().setVisible(false);
                 entry.getValue().getLabel().setVisible(false);
             }
-            
+
             showUrlCheckBox.setVisible(false);
             urlField.setVisible(false);
             urlLabel.setVisible(false);
-            
+
             checkValid();
             resize();
             return;
         }
-        
-        
+
         userField.setVisible(true);
         userLabel.setVisible(true);
-        
+
         passwordField.setVisible(true);
         passwordLabel.setVisible(true);
 
         passwordCheckBox.setVisible(true);
-        
+
         // This assumes that all labels have the same font. Seems reasonable.
         // We use the bold font for required fields.
         Font regularFont = templateLabel.getFont();
@@ -706,20 +708,18 @@ private void urlFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event
         if (! jdbcurl.urlIsParsed()) {
             showUrlCheckBox.setVisible(false);
             urlField.setVisible(true);
-            urlLabel.setVisible(true);         
+            urlLabel.setVisible(true);
         } else {
-            showUrlCheckBox.setVisible(true);
-            
-            urlField.setVisible(showUrlCheckBox.isVisible());
-            urlLabel.setVisible(showUrlCheckBox.isVisible());
+            showUrl();
         }
+
 
         setFocus();
         setUrlField();
         checkValid();
         resize();
     }
-    
+
     private void setFocus() {
         if (templateComboBox.getItemCount() <= 1) { // the first item is "Add Driver...""
             templateComboBox.requestFocusInWindow();
@@ -732,35 +732,35 @@ private void urlFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event
                 return;
             }
         }
-        
+
         userField.requestFocusInWindow();
     }
-    
+
     private JdbcUrl getSelectedJdbcUrl() {
         Object item = templateComboBox.getSelectedItem();
         if (! (item instanceof JdbcUrl)) {
             return null;
         }
-        
-        return (JdbcUrl)item;        
+
+        return (JdbcUrl)item;
     }
-    
+
     private void setUrlField() {
         if (!connection.getDatabase().equals("")) {
             urlField.setText(connection.getDatabase());
             return;
         }
-        
+
         JdbcUrl jdbcurl = getSelectedJdbcUrl();
         if (jdbcurl == null) {
             urlField.setText("");
             return;
         }
-        
+
         if (jdbcurl.urlIsParsed()) {
             updateUrlFromFields();
         } else {
-            urlField.setText(jdbcurl.getUrlTemplate());            
+            urlField.setText(jdbcurl.getUrlTemplate());
         }
 
     }
@@ -788,7 +788,7 @@ private void urlFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event
             }
         });
     }
-    
+
     private void setProgressMessage(final String message) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -808,13 +808,13 @@ private void urlFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event
             }
         });
     }
-    
+
     private void resetProgress() {
         if (progressHandle != null) {
             progressHandle.setDisplayName(""); // NOI18N
         }
     }
-    
+
     public void changedUpdate(javax.swing.event.DocumentEvent e) {
         updateUrlFromFields();
         fireChange();
@@ -847,45 +847,45 @@ private void urlFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event
         firePropertyChange("argumentChanged", null, null);
         resetProgress();
     }
-    
+
     private void updateUrlFromFields() {
         JdbcUrl url = getSelectedJdbcUrl();
         if (url == null || !url.urlIsParsed()) {
             return;
         }
-        
+
         // If the fields are being modified because the user is manually
         // changing the URL, don't circle back and update the URL again.
         if (! updatingUrl) {
             updatingFields = true;
-            
+
             for (Entry<String,UrlField> entry : urlFields.entrySet()) {
                 url.put(entry.getKey(), entry.getValue().getField().getText());
             }
 
             urlField.setText(url.getUrl());
-            
+
             updatingFields = false;
         }
-        
-        checkValid();        
+
+        checkValid();
     }
-    
+
     private void checkValid() {
         JdbcUrl url = getSelectedJdbcUrl();
-        
+
         boolean requiredFieldMissing = false;
-        if (url == null) {                        
-            displayError(getMessage("NewConnection.MSG_SelectADriver")); 
+        if (url == null) {
+            displayError(getMessage("NewConnection.MSG_SelectADriver"));
         } else if (url != null && url.urlIsParsed()) {
             for (Entry<String,UrlField> entry : urlFields.entrySet()) {
                 if (url.requiresToken(entry.getKey()) && isEmpty(entry.getValue().getField().getText())) {
                     requiredFieldMissing = true;
-                    displayError(getMessage("NewConnection.ERR_FieldRequired", 
-                            entry.getValue().getLabel().getText()));                    
+                    displayError(getMessage("NewConnection.ERR_FieldRequired",
+                            entry.getValue().getLabel().getText()));
                 }
             }
-            
+
             if (! requiredFieldMissing) {
                 clearError();
             }
@@ -895,11 +895,11 @@ private void urlFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event
             clearError();
         }
     }
-    
+
     private boolean isEmpty(String str) {
         return str == null || str.equals("");
     }
-    
+
     private void updateFieldsFromUrl() {
         JdbcUrl url = getSelectedJdbcUrl();
         if (url == null) {
@@ -912,7 +912,7 @@ private void urlFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event
         if (updatingFields) {
             return;
         }
-        
+
         try {
             url.setUrl(urlField.getText());
             clearError();
@@ -926,29 +926,29 @@ private void urlFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event
             // Setting this flag prevents the docment listener for the fields
             // from trying to update the URL, thus causing a circular even loop.
             updatingUrl = true;
-            
+
             for (Entry<String,UrlField> entry : urlFields.entrySet()) {
                 entry.getValue().getField().setText(url.get(entry.getKey()));
             }
-        
+
             updatingUrl = false;
         }
     }
-    
+
     private void clearError() {
         errorLabel.setText("");
         errorLabel.setVisible(false);
         mediator.setValid(true);
         resize();
     }
-    
+
     private void displayError(String message) {
-        errorLabel.setText(message);        
+        errorLabel.setText(message);
         errorLabel.setVisible(true);
         mediator.setValid(false);
         resize();
     }
-    
+
     private class UrlField {
         private final JTextField field;
         private final JLabel label;
@@ -965,6 +965,6 @@ private void urlFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event
         public JLabel getLabel() {
             return label;
         }
-        
+
     }
 }

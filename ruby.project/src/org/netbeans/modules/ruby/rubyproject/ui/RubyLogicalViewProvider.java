@@ -74,6 +74,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -228,7 +229,7 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
         return false;
     }
     
-    private static Image brokenProjectBadge = Utilities.loadImage("org/netbeans/modules/ruby/rubyproject/ui/resources/brokenProjectBadge.gif", true);
+    private static Image brokenProjectBadge = ImageUtilities.loadImage("org/netbeans/modules/ruby/rubyproject/ui/resources/brokenProjectBadge.gif", true);
     
     /** Filter node containin additional features for the Ruby physical
      */
@@ -277,12 +278,12 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
         
         public @Override Image getIcon(int type) {
             Image original = super.getIcon(type);
-            return broken || illegalState ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
+            return broken || illegalState ? ImageUtilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
         }
         
         public @Override Image getOpenedIcon(int type) {
             Image original = super.getOpenedIcon(type);
-            return broken || illegalState ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
+            return broken || illegalState ? ImageUtilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
         }
         
         public @Override Action[] getActions( boolean context ) {

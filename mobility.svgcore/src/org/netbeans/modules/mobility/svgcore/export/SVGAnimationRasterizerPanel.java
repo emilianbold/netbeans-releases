@@ -863,6 +863,10 @@ private void formatComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GE
         }
     }
     
+    protected String getPreviewFileName(){
+        return previewFileText.getText();
+    }
+    
     protected void updateImage(JComponent source, boolean isOutputChanged) {
         if ( !m_updateInProgress && !m_processingStopped) {
             m_updateInProgress = true;

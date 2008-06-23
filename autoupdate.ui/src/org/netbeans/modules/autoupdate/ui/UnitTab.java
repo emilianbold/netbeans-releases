@@ -95,6 +95,7 @@ import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.awt.Mnemonics;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -461,7 +462,7 @@ public class UnitTab extends javax.swing.JPanel {
             }
         }
         if (model.needsRestart ()) {
-            Icon warningIcon = new ImageIcon (org.openide.util.Utilities.loadImage (
+            Icon warningIcon = new ImageIcon (ImageUtilities.loadImage (
                     "org/netbeans/modules/autoupdate/ui/resources/warning.gif")); // NOI18N
             lWarning.setIcon (warningIcon);
             lWarning.setText (NbBundle.getMessage (UnitTab.class, "UnitTab_lWarning_Text", NbBundle.getMessage (UnitTab.class, operationNameKey))); // NOI18N

@@ -73,4 +73,4 @@ echo Configuring GlassFish V3 in `pwd`
 #sed -i '' "s/never/TUE/" $2/updatecenter/config/config.xml
 
 #add Product ID
-"$script_dir"/addproduct_id.sh "GLASSFISHV3"
+"$script_dir"/addproduct_id.sh "GFMOD"

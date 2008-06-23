@@ -72,10 +72,8 @@ implements CloneableEditorSupport.Env {
     /** the content of lookup of support */
     private InstanceContent ic;
 
+    @RandomlyFails
     public void testDocCanBeGCdWhenNotModifiedButOpened() throws Exception {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return;
-        }
         content = "Ahoj\nMyDoc";
         javax.swing.text.Document doc = support.openDocument ();
         assertNotNull (doc);

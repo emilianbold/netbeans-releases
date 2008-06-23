@@ -54,13 +54,21 @@ public class RubyProjectTest extends RubyProjectTestBase {
 
     public void testRakeFileListener() throws Exception {
         registerLayer();
-        RubyProject project = createTestProject();
-        project.open();
+        RubyProject project = createTestProject(true);
         FileObject rakeFile = project.getRakeFile();
         assertNotNull("has rake file", rakeFile);
-        int origSize = RakeSupport.getRakeTaskTree(project).size();
+        int origSize;
+
+        // wait for asynchronously updated tasks from within ProjectOpenedHook.
+        // See RubyBaseProject#open.
+        while ((origSize = RakeSupport.getRakeTaskTree(project).size()) == 0) {
+            Thread.sleep(250);
+        }
+
         appendToFile(rakeFile, "", "desc 'Says hey'", "task :hey");
-        // no clearer way to check now (?)
+
+        // wait until Rakefile listener notifies the event and consecutive
+        // asynchronous Rake tasks refresh
         while(RakeSupport.getRakeTaskTree(project).size() != (origSize + 1)) {
             Thread.sleep(250);
         }

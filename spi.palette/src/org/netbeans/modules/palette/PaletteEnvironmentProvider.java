@@ -137,6 +137,16 @@ public class PaletteEnvironmentProvider implements Environment.Provider {
         }
         
         // ----------------   helper methods  ----------------------------    
+        private WeakReference<XMLReader> cachedReader;
+        private XMLReader getXMLReader() throws SAXException {
+            XMLReader res = null == cachedReader ? null : cachedReader.get();
+            if( null == res ) {
+                res = XMLUtil.createXMLReader(true);
+                res.setEntityResolver(EntityCatalog.getDefault());
+                cachedReader = new WeakReference<XMLReader>(res);
+            }
+            return res;
+        }
         
         public synchronized PaletteItemNode getInstance() {
 
@@ -150,13 +160,12 @@ public class PaletteEnvironmentProvider implements Environment.Provider {
 
             PaletteItemHandler handler = new PaletteItemHandler();
             try {
-                XMLReader reader = XMLUtil.createXMLReader(true);
-                reader.setContentHandler(handler);
-                reader.setEntityResolver(EntityCatalog.getDefault());
+                XMLReader reader = getXMLReader();
                 FileObject fo = xmlDataObject.getPrimaryFile();
                 String urlString = fo.getURL().toExternalForm();
                 InputSource is = new InputSource(fo.getInputStream());
                 is.setSystemId(urlString);
+                reader.setContentHandler(handler);
                 reader.parse(is);
             }
             catch (SAXException saxe) {

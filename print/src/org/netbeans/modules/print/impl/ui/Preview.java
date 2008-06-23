@@ -491,19 +491,13 @@ public final class Preview extends Dialog implements Percent.Listener {
 
   private double getWidthScale(int width) {
     final int JAVA_INSET = 5;
-    
-    double scrollWidth = (double) (myScrollPane.getWidth() -
-      myScrollPane.getVerticalScrollBar().getWidth() - JAVA_INSET);
-
+    double scrollWidth = (double) (myScrollPane.getWidth() - myScrollPane.getVerticalScrollBar().getWidth() - JAVA_INSET);
     return scrollWidth / width;
   }
 
   private double getHeightScale(int height) {
     final int JAVA_INSET = 5;
-    
-    double scrollHeight = (double) (myScrollPane.getHeight() -
-      myScrollPane.getHorizontalScrollBar().getHeight() - JAVA_INSET);
-
+    double scrollHeight = (double) (myScrollPane.getHeight() - myScrollPane.getHorizontalScrollBar().getHeight() - JAVA_INSET);
     return scrollHeight / height;
   }
 
@@ -591,10 +585,10 @@ public final class Preview extends Dialog implements Percent.Listener {
       if (name == null) {
         name = ""; // NOI18N
       }
-      Date modified = provider.getLastModifiedDate();
+      Date lastModified = provider.lastModified();
 
-      if (modified == null) {
-        modified = new Date(System.currentTimeMillis());
+      if (lastModified == null) {
+        lastModified = new Date(System.currentTimeMillis());
       }
       PrintPage [][] pages = provider.getPages(width, height, zoom);
 //out("Create papers: " + pages.length);
@@ -606,7 +600,7 @@ public final class Preview extends Dialog implements Percent.Listener {
           if (page == null) {
             continue;
           }
-          Paper paper = new Paper(page, name, modified);
+          Paper paper = new Paper(page, name, lastModified);
           paper.setCoordinate(number + 1, i + delta, j, scale);
           myPapers.add(paper);
           number++;

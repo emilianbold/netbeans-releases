@@ -52,7 +52,6 @@ import java.util.Set;
 import javax.lang.model.element.Modifier;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -64,12 +63,12 @@ import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo.ParamFilter;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SessionKeyAuthentication;
 import org.netbeans.modules.websvc.saas.codegen.model.RestClientSaasBean;
+import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 
 /**
  * Code generator for REST services wrapping WSDL-based web service.
@@ -84,9 +83,17 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
     private SaasClientPhpAuthenticationGenerator authGen;
 
     public RestClientPhpCodeGenerator() {
-        super();
+        setDropFileType(Constants.DropFileType.PHP);
     }
-
+    
+    public boolean canAccept(SaasMethod method, Document doc) {
+        if (SaasBean.canAccept(method, WadlSaasMethod.class, getDropFileType()) &&
+                Util.isPhp(doc)) {
+            return true;
+        }
+        return false;
+    }
+    
     @Override
     public void init(SaasMethod m, Document doc) throws IOException {
         super.init(m, doc);
@@ -140,13 +147,6 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
             rootFolder = groups[0].getRootFolder();
         }
         return rootFolder;
-    }
-    
-    public boolean canAccept(SaasMethod method, Document doc) {
-        if (method instanceof WadlSaasMethod && Util.isPhp(doc)) {
-            return true;
-        }
-        return false;
     }
 
     @Override

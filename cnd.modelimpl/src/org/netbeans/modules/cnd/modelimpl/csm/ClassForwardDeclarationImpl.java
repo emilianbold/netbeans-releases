@@ -61,7 +61,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
     private final CharSequence name;
     private final CharSequence[] nameParts;
     
-    public ClassForwardDeclarationImpl(AST ast, FileImpl file) {
+    public ClassForwardDeclarationImpl(AST ast, CsmFile file) {
         super(ast, file);
         AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
         name = (qid == null) ? CharSequenceKey.empty() : QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
@@ -73,7 +73,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
     }
 
     public CharSequence getName() {
-        return getQualifiedName();
+        return name;
     }
 
     public CharSequence getQualifiedName() {

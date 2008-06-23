@@ -39,18 +39,27 @@
 
 package org.netbeans.modules.glassfish.javaee;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.javaee.db.Hk2DatasourceManager;
 import org.netbeans.modules.glassfish.javaee.ide.FastDeploy;
+import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
+import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.InstantiatingIterator;
+import org.openide.WizardDescriptor.Panel;
+import org.openide.util.Lookup;
 
 
 /**
@@ -74,10 +83,15 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
                 "JavaEE_V3_OptionalFactory.getFindJSPServlet");
         return null;
     }
+
+    @Override
+    public boolean isCommonUIRequired() {
+        return false;
+    }
     
     @Override
     public InstantiatingIterator getAddInstanceIterator() {
-        return null;
+        return new J2eeInstantiatingIterator(ServerUtilities.getAddInstanceIterator());
     }
     
     @Override
@@ -91,4 +105,68 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
         return null;
     }
     
+    private static class J2eeInstantiatingIterator implements InstantiatingIterator {
+        
+        private final InstantiatingIterator delegate;
+
+        public J2eeInstantiatingIterator(InstantiatingIterator delegate) {
+            this.delegate = delegate;
+        }
+
+        public void removeChangeListener(ChangeListener l) {
+            delegate.removeChangeListener(l);
+        }
+
+        public void previousPanel() {
+            delegate.previousPanel();
+        }
+
+        public void nextPanel() {
+            delegate.nextPanel();
+        }
+
+        public String name() {
+            return delegate.name();
+        }
+
+        public boolean hasPrevious() {
+            return delegate.hasPrevious();
+        }
+
+        public boolean hasNext() {
+            return delegate.hasNext();
+        }
+
+        public Panel current() {
+            return delegate.current();
+        }
+
+        public void addChangeListener(ChangeListener l) {
+            delegate.addChangeListener(l);
+        }
+
+        public void uninitialize(WizardDescriptor wizard) {
+            delegate.uninitialize(wizard);
+        }
+
+        public Set instantiate() throws IOException {
+            Set set = delegate.instantiate();
+            if (!set.isEmpty()) {
+                Object inst = set.iterator().next();
+                if (inst instanceof ServerInstance) {
+                    Lookup lookup = ServerUtilities.getLookupFor((ServerInstance) inst);
+                    if (lookup != null) {
+                        JavaEEServerModule module = lookup.lookup(JavaEEServerModule.class);
+                        return Collections.singleton(module.getInstanceProperties());
+                    }
+                }
+            }
+            return Collections.EMPTY_SET;
+        }
+
+        public void initialize(WizardDescriptor wizard) {
+            delegate.initialize(wizard);
+        }
+        
+    }
 }

@@ -122,8 +122,8 @@ public class ExecutionService {
         this.descriptor = descriptor;
     }
 
-    public void setupProcessEnvironment(Map<String,String> env) {
-        String path = descriptor.getCmd().getParent();
+    public static void setupProcessEnvironment(Map<String, String> env, final String pwd, boolean appendJdkToPath) {
+        String path = pwd;
         if (!Utilities.isWindows()) {
             path = path.replace(" ", "\\ "); // NOI18N
         }
@@ -152,7 +152,7 @@ public class ExecutionService {
 
         currentPath = path + File.pathSeparator + currentPath;
         
-        if (descriptor.getAppendJdkToPath()) {
+        if (appendJdkToPath) {
             // jruby.java.home always points to jdk(?)
             String jdkHome = System.getProperty("jruby.java.home"); // NOI18N
 
@@ -169,6 +169,10 @@ public class ExecutionService {
         }
 
         env.put(pathName, currentPath); // NOI18N
+    }
+    
+    public void setupProcessEnvironment(Map<String,String> env) {
+        setupProcessEnvironment(env, descriptor.getCmd().getParent(), descriptor.getAppendJdkToPath());
     }
     
     public void kill() {
