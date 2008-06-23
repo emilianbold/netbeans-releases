@@ -49,7 +49,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptor.InputProcessorFactory;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptorBuilder;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
 import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.netbeans.modules.extexecution.api.input.InputProcessors;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
@@ -129,7 +129,7 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
                 Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
                         serverCommand, GrailsProjectConfig.forProject(project), pls.getDomainClassName());
 
-                ExecutionDescriptorBuilder builder = new ExecutionDescriptorBuilder();
+                ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
                 builder.frontWindow(true).inputVisible(true);
                 builder.outProcessorFactory(new InputProcessorFactory() {
                     public InputProcessor newInputProcessor() {

@@ -69,7 +69,7 @@ public class ExecutionServiceTest extends NbTestCase {
                     TestProcess process = new TestProcess(0);
                     TestCallable callable = new TestCallable(process);
 
-                    ExecutionDescriptorBuilder builder = new ExecutionDescriptorBuilder();
+                    ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
                     ExecutionService service = ExecutionService.newService(
                             callable, builder.create(), "Test");
 
@@ -139,7 +139,7 @@ public class ExecutionServiceTest extends NbTestCase {
             TestProcess process = new TestProcess(0);
             TestCallable callable = new TestCallable(process);
 
-            ExecutionDescriptorBuilder builder = new ExecutionDescriptorBuilder();
+            ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
             ExecutionService service = ExecutionService.newService(callable, builder.create(), "Test");
 
             Future<Integer> task = service.run();

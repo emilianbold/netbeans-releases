@@ -49,7 +49,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptor.InputProcessorFactory;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptorBuilder;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
 import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.netbeans.modules.extexecution.api.input.InputProcessors;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
@@ -102,7 +102,7 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
             Callable<Process> callable = ExecutionSupport.getInstance().createCreateApp(
                     (File) wiz.getProperty("projectFolder")); // NOI18N
             
-            ExecutionDescriptorBuilder builder = new ExecutionDescriptorBuilder();
+            ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
             builder.frontWindow(true).inputVisible(true);
             builder.outProcessorFactory(new InputProcessorFactory() {
                 public InputProcessor newInputProcessor() {

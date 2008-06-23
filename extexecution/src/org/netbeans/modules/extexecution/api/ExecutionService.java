@@ -199,7 +199,7 @@ public final class ExecutionService {
         final RerunAction workingRerunAction = ioData.getRerunAction();
 
         // FIXME custom io - cleanup task
-        final InputOutput inputOutput = descriptor.getInputOutput() != null ? null : ioData.getInputOutput();
+        final InputOutput inputOutput = ioData.getInputOutput();
 
         Callable<Integer> callable = new Callable<Integer>() {
             public Integer call() throws Exception {
@@ -265,7 +265,8 @@ public final class ExecutionService {
                         throw ex;
                     } finally {
                         SwingUtilities.invokeLater(new CleanupTask(
-                                displayName, executor, workingRerunAction, workingStopAction, handle, inputOutput));
+                                displayName, executor, workingRerunAction, workingStopAction,
+                                handle, inputOutput, descriptor.getInputOutput()));
 
                         final Runnable post = descriptor.getPostExecution();
                         if (post != null) {
@@ -508,10 +509,12 @@ public final class ExecutionService {
         private final ProgressHandle handle;
 
         private final InputOutput inputOutput;
+        
+        private final InputOutput custom;
 
         public CleanupTask(String displayName, ExecutorService executor,
                 RerunAction rerunAction, StopAction stopAction,
-                ProgressHandle handle, InputOutput inputOutput) {
+                ProgressHandle handle, InputOutput inputOutput, InputOutput custom) {
 
             this.displayName = displayName;
             this.executor = executor;
@@ -519,6 +522,7 @@ public final class ExecutionService {
             this.stopAction = stopAction;
             this.handle = handle;
             this.inputOutput = inputOutput;
+            this.custom = custom;
         }
 
         public void run() {
@@ -546,7 +550,7 @@ public final class ExecutionService {
             }
 
             synchronized (ACTIVE_DISPLAY_NAMES) {
-                if (inputOutput != null) {
+                if (inputOutput != null && inputOutput != custom) {
                     InputOutputManager.addInputOutput(inputOutput, displayName,
                             stopAction, rerunAction);
                 }

@@ -39,7 +39,7 @@ import java.util.Locale;
 import java.util.concurrent.Callable;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptor.InputProcessorFactory;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptorBuilder;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
 import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.netbeans.modules.extexecution.api.input.InputProcessor;
 import org.netbeans.modules.extexecution.api.input.InputProcessors;
@@ -87,7 +87,7 @@ public class CreateWarFileAction extends AbstractAction implements LineProcessor
         Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
                 command, GrailsProjectConfig.forProject(prj)); // NOI18N
 
-        ExecutionDescriptorBuilder builder = new ExecutionDescriptorBuilder();
+        ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
         builder.controllable(true).inputVisible(true).showProgress(true).frontWindow(true);
         if (autodeploy) {
             builder.outProcessorFactory(new InputProcessorFactory() {
