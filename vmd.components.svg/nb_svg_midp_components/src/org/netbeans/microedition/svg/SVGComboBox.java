@@ -48,7 +48,6 @@ import org.netbeans.microedition.svg.SVGList.DefaultListMoldel;
 import org.netbeans.microedition.svg.SVGList.ListModel;
 import org.netbeans.microedition.svg.input.InputHandler;
 import org.netbeans.microedition.svg.input.NumPadInputHandler;
-import org.netbeans.microedition.svg.meta.ChildrenAcceptor;
 import org.w3c.dom.Element;
 import org.w3c.dom.svg.SVGAnimationElement;
 import org.w3c.dom.svg.SVGElement;
@@ -92,19 +91,28 @@ import org.w3c.dom.svg.SVGLocatableElement;
  * ( this is because it should be on very top of any figure ).
  * 
  * <pre>
- * &lt;g id="country_combobox_list"  visibility="hidden" transform="...." ...>
+ * &lt;g visibility="hidden" transform="translate(20,200)">
+ *       &lt;metadata> 
+ *           &lt;text>ref=country_combobox&lt;/text>
+ *           &lt;text>type=list&lt;/text>
+ *           &lt;/metadata>
  *       &lt;!-- This is not standalone component ! It reelates to combobox component. This is list that is shown
  *       for user when he press to button. It should be outside of ComboBox component figure ( and should
  *       be at the very end of XML file between other such figures ) because in this case it will be 
  *       on top of any other figure. Otherwise it will be hidden by following sibling component. -->
- *       &lt;text id="country_combobox_list_hidden_text" visibility="hidden" x="10" y="13" stroke="black" font-size="15" font-family="SunSansSemiBold">
+ *       &lt;text id="_53" visibility="hidden" x="10" y="13" stroke="black" font-size="15" font-family="SunSansSemiBold">
+ *           &lt;metadata> &lt;text>type=hidden_text&lt;/text> &lt;/metadata>
  *           HIDDEN TEXT
  *       &lt;/text>
- *       &lt;rect id="country_combobox_list_bound" x="5.0" y="0.0" width="80" height="60" fill="white" stroke="black" stroke-width="2"
- *           visibility="inherit"/>
- *       &lt;rect id="country_combobox_list_selection" x="5" y="0" stroke="black" stroke-width="1" fill="rgb(200,200,255)" visibility="inherit"
- *           width="80" height="0"/>
- *       &lt;g id="country_combobox_list_content" visibility="inherit"/>
+ *       &lt;rect  x="5.0" y="0.0" width="80" height="60" fill="white" stroke="black" stroke-width="2" visibility="inherit">
+ *           &lt;metadata> &lt;text>type=bound&lt;/text> &lt;/metadata>
+ *       &lt;/rect>
+ *       &lt;rect  x="5" y="0" stroke="black" stroke-width="1" fill="rgb(200,200,255)" visibility="inherit" width="80" height="0">
+ *           &lt;metadata> &lt;text>type=selection&lt;/text> &lt;/metadata>
+ *       &lt;/rect>
+ *       &lt;g  visibility="inherit">
+ *           &lt;metadata> &lt;text>type=content&lt;/text> &lt;/metadata>
+ *       &lt;/g>
  *   &lt;/g>
  * </pre>  
  * 

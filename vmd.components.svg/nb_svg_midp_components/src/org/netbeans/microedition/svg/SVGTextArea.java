@@ -52,6 +52,20 @@ import org.w3c.dom.svg.SVGRect;
 
 
 /**
+ * Suggested SVG snippet :
+ * <pre>
+ * &lt;g id="text_area" transform="translate(130,220)">
+ *       &lt;rect x="0" y="-5" rx="5" ry="5" width="100" height="90" fill="none" stroke="rgb(255,165,0)" stroke-width="2" visibility="hidden">
+ *           &lt;set attributeName="visibility" attributeType="XML" begin="text_area.focusin" fill="freeze" to="visible"/>
+ *           &lt;set attributeName="visibility" attributeType="XML" begin="text_area.focusout" fill="freeze" to="hidden"/>
+ *       &lt;/rect>
+ *       &lt;rect  x="5.0" y="0.0" width="90" height="80" fill="none" stroke="black" stroke-width="2"/>
+ *   &lt;text id="text_area_hidden_text" visibility="hidden" x="10" y="15" stroke="black" font-size="15" font-family="SunSansSemiBold">
+ *       HIDDEN TEXT
+ *   &lt;/text>
+ *       &lt;rect id="text_area_caret" visibility="visible" x="10" y="2" width="2" height="15" fill="black" stroke="black"/>
+ *   &lt;/g>
+ * </pre>
  * @author ads
  *
  */

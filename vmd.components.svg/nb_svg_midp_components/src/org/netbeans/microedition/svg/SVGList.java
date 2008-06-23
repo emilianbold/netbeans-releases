@@ -54,19 +54,24 @@ import org.w3c.dom.svg.SVGRect;
 /**
  * Suggested svg snippet:
  * <pre>
- *  &lt;g id="list" transform=".." ...>
- *   &lt;rect id="list_selection" x="5" y="0" stroke="black" stroke-width="1" 
- *       fill="rgb(200,200,255)" visibility="inherit" width="80" height="0"/>
- *       &lt;text id="list_hidden_text" visibility="hidden" x="10" y="13" 
- *           stroke="black" font-size="15" font-family="SunSansSemiBold">
- *          HIDDEN TEXT
- *       &lt;/text>
- *       &lt;g id="list_content"/>
+ *  &lt;g id="list" transform="translate(20,220)" >
+ *   &lt;rect  x="5" y="0" stroke="black" stroke-width="1" fill="rgb(200,200,255)" visibility="inherit" width="80" height="0">
+ *       &lt;metadata> &lt;text>type=selection&lt;/text> &lt;/metadata>
+ *   &lt;/rect>
+ *   &lt;text id="_51" visibility="hidden" x="10" y="13" stroke="black" font-size="15" font-family="SunSansSemiBold">
+ *       &lt;metadata> &lt;text>type=hidden_text&lt;/text> &lt;/metadata>
+ *       HIDDEN TEXT
+ *   &lt;/text>
+ *   &lt;g>
+ *       &lt;metadata> &lt;text>type=content&lt;/text> &lt;/metadata>
+ *   &lt;/g>
  *       &lt;rect x="0" y="-5" rx="5" ry="5" width="90" height="70" fill="none" stroke="rgb(255,165,0)" stroke-width="2" visibility="hidden">
  *           &lt;set attributeName="visibility" attributeType="XML" begin="list.focusin" fill="freeze" to="visible"/>
  *           &lt;set attributeName="visibility" attributeType="XML" begin="list.focusout" fill="freeze" to="hidden"/>
  *       &lt;/rect>
- *       &lt;rect id="list_bound" x="5.0" y="0.0" width="80" height="60" fill="none" stroke="black" stroke-width="2"/>
+ *       &lt;rect  x="5.0" y="0.0" width="80" height="60" fill="none" stroke="black" stroke-width="2">
+ *       &lt;metadata> &lt;text>type=bound&lt;/text> &lt;/metadata>
+ *   &lt;/rect>
  *   &lt;/g>
  * </pre>
  * @author ads
