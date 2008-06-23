@@ -120,6 +120,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     private void insideSelectValue() {
         List<String> typedIdent = findIdentifier();
+        assert anchorOffset >= 0;
         String typedPrefix = null;
         if (typedIdent.isEmpty()) {
             // Nothing typed, just complete everything.
@@ -260,12 +261,14 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                     case WHITESPACE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
+                        anchorOffset = caretOffset;
                         return parts;
                     case IDENTIFIER:
                         parts.add(seq.token().text().subSequence(0, offset).toString());
                         break;
                 }
             } else {
+                anchorOffset = caretOffset;
                 return parts;
             }
         }
@@ -273,7 +276,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         boolean wasDot = false; // Whether previous token was a dot.
         main: for (;;) {
             if (!seq.movePrevious()) {
-                return parts;
+                break;
             }
             switch (seq.token().id()) {
                 case DOT:
