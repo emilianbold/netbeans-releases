@@ -9,20 +9,18 @@
 # org.netbeans.modules.gsf.GsfDataLoader$1
 # org.netbeans.modules.languages.dataobject.LanguagesDataLoader
 
-# org.netbeans.modules.j2me.cdc.project.mbm.MBMDataLoader
-# org.netbeans.modules.mobility.end2end.E2EDataLoader
-# org.netbeans.modules.mobility.end2end.E2EDataLoader
-# org.netbeans.modules.mobility.editor.pub.J2MEDataLoader
-# org.netbeans.modules.vmd.io.javame.MEDesignDataLoader
+org.netbeans.modules.j2me.cdc.project.mbm.MBMDataLoader
+org.netbeans.modules.mobility.end2end.E2EDataLoader
+org.netbeans.modules.mobility.end2end.E2EDataLoader
+org.netbeans.modules.mobility.editor.pub.J2MEDataLoader
+org.netbeans.modules.vmd.io.javame.MEDesignDataLoader
+org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataLoader
+org.netbeans.modules.profiler.SnapshotDataLoader
+org.netbeans.modules.uml.project.UMLProjectDataObject$Loader
 
 # org.netbeans.modules.visualweb.palette.PaletteItemDataObject$PaletteItemDataLoader
 # org.netbeans.modules.visualweb.complib.ComplibPaletteItemDataObject$PaletteItemDataLoader
 
-# org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataLoader
-
-# org.netbeans.modules.profiler.SnapshotDataLoader
-
-# org.netbeans.modules.uml.project.UMLProjectDataObject$Loader
 
 # org.netbeans.modules.java.jarloader.JarDataLoader
 
@@ -51,7 +49,6 @@
 
 # Loaders no longer needed during startup
 
-#org.netbeans.core.startup.ManifestSection$LoaderSection
 org.apache.tools.ant.module.loader.AntProjectDataLoader
 org.netbeans.modules.java.JavaDataLoader
 org.netbeans.modules.java.ClassDataLoader
