@@ -694,14 +694,23 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             case CsmCompletionExpression.DOT: // Dot expression
             case CsmCompletionExpression.ARROW: // Arrow expression
                 int parmCnt = exp.getParameterCount(); // Number of items in the dot exp
-                ExprKind kind = (exp.getExpID() == CsmCompletionExpression.ARROW || exp.getExpID() == CsmCompletionExpression.ARROW_OPEN) ?
-                                ExprKind.ARROW : ExprKind.DOT;
                 for (int i = 0; i < parmCnt && ok; i++) { // resolve all items in a dot exp
+                    ExprKind kind;
+                    if (i < exp.getTokenCount()) {
+                        kind = exp.getTokenID(i) == CCTokenContext.ARROW ? ExprKind.ARROW : ExprKind.DOT;
+                    } else {
+                        if (exp.getExpID() == CsmCompletionExpression.ARROW || 
+                                exp.getExpID() == CsmCompletionExpression.ARROW_OPEN) {
+                            kind = ExprKind.ARROW;
+                        } else {
+                            kind = ExprKind.DOT;
+                        }
+                    }
                     ok = resolveItem(exp.getParameter(i), (i == 0),
                                      (!lastDot && i == parmCnt - 1),
                                     kind);
             
-                    if ((i == 0) && lastType != null && lastType.getArrayDepth() == 0 && kind == ExprKind.ARROW) {
+                    if ((i < parmCnt-1 || lastDot || findType) && lastType != null && lastType.getArrayDepth() == 0 && kind == ExprKind.ARROW) {
                         CsmClassifier cls = getClassifier(lastType, CsmFunction.OperatorKind.ARROW);
                         if (cls != null) {
                             lastType = CsmCompletion.getType(cls, 0);
@@ -840,7 +849,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                             }
 
                             if (text != null && -1 == text.indexOf("namespace")) { //NOI18N
-                                res.addAll(finder.findNamespaceElements(lastNamespace, "", false, false)); // namespace elements //NOI18N
+                                res.addAll(finder.findNamespaceElements(lastNamespace, "", false, false, false)); // namespace elements //NOI18N
                             }
                         }
                         result = new CsmCompletionResult(component, getBaseDocument(), res, searchPkg + '*',  //NOI18N
@@ -1084,17 +1093,22 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                     } else { // Array of some depth
                                         cls = CsmCompletion.OBJECT_CLASS_ARRAY; // Use Object in this case
                                     }
-                                    List res = findFieldsAndMethods(finder, contextElement, cls, var, false, staticOnly, false, true,this.scopeAccessedClassifier,sort);
-                                    List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, var, false, true, sort);
-                                    res.addAll(nestedClassifiers);
-                                    result = new CsmCompletionResult(
-                                                 component, getBaseDocument(), 
-//                                                 findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls), cls, var, false, staticOnly, false),
-                                                 res,
-                                                 formatType(lastType, true, true, false) + var + '*',
-                                                 item,
-                                                 0/*cls.getName().length() + 1*/,
-                                                 isProjectBeeingParsed());
+                                    if (cls == null) {
+                                        lastType = null;
+                                        cont = false;
+                                    } else {
+                                        List res = findFieldsAndMethods(finder, contextElement, cls, var, false, staticOnly, false, true,this.scopeAccessedClassifier,sort);
+                                        List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, var, false, true, sort);
+                                        res.addAll(nestedClassifiers);
+                                        result = new CsmCompletionResult(
+                                                     component, getBaseDocument(), 
+    //                                                 findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls), cls, var, false, staticOnly, false),
+                                                     res,
+                                                     formatType(lastType, true, true, false) + var + '*',
+                                                     item,
+                                                     0/*cls.getName().length() + 1*/,
+                                                     isProjectBeeingParsed());
+                                    }
                                 }
                             } else { // currently package
                                 String searchPkg = (lastNamespace.isGlobal() ? "" : (lastNamespace.getQualifiedName() + CsmCompletion.SCOPE)) + var;
@@ -1105,7 +1119,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                         lastNamespace = curNs;
                                         lastType = null;
                                     } else { // package doesn't exist
-                                        res = finder.findNamespaceElements(lastNamespace, var, true, false);
+                                        res = finder.findNamespaceElements(lastNamespace, var, true, false, true);
                                         CsmObject obj = res.isEmpty() ? null : (CsmObject)res.iterator().next();
                                         lastType = CsmCompletion.getObjectType(obj);
                                         cont = (lastType != null);
@@ -1114,7 +1128,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                 } else { // last and searching for completion output
                                     if (last) { // get all matching fields/methods/packages
                                         List res = finder.findNestedNamespaces(lastNamespace, var, openingSource, false); // find matching nested namespaces
-                                        res.addAll(finder.findNamespaceElements(lastNamespace, var, openingSource, false)); // matching classes
+                                        res.addAll(finder.findNamespaceElements(lastNamespace, var, openingSource, false, false)); // matching classes
                                         result = new CsmCompletionResult(component, getBaseDocument(), res, searchPkg + '*', item, 0, isProjectBeeingParsed());
                                     }
                                 }
@@ -1175,7 +1189,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                    sup.isStaticBlock(item.getTokenOffset(0)), true));
 //                } else {
                     compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
-                    if (compResolver.refresh() && compResolver.resolve(item.getTokenOffset(0), "", openingSource)) {
+                    if (compResolver.refresh() && compResolver.resolve(item.getTokenOffset(0), "", false)) {
                         res = compResolver.getResult();
                     }                     
 //                }
@@ -1322,7 +1336,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                                      | CompletionResolver.RESOLVE_TEMPLATE_PARAMETERS
                                                      | CompletionResolver.RESOLVE_GLOB_NAMESPACES
                                                      );
-                        if (compResolver.refresh() && compResolver.resolve(varPos, varName, false)) {
+                        if (compResolver.refresh() && compResolver.resolve(varPos, varName, openingSource)) {
                             res = compResolver.getResult();
                             if (findType) {
                                 CsmClassifier cls = null;
@@ -1451,7 +1465,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                             // resolve all functions in context
                             int varPos = mtdNameExp.getTokenOffset(0);
                             compResolver.setResolveTypes(CompletionResolver.RESOLVE_FUNCTIONS);
-                            if (compResolver.refresh() && compResolver.resolve(varPos, mtdName, true)) {
+                            if (compResolver.refresh() && compResolver.resolve(varPos, mtdName, openingSource)) {
                                 compResolver.getResult().addResulItemsToCol(mtdList);
                             }
                         } else {

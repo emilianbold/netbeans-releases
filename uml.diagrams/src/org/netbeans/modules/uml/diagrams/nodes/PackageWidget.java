@@ -45,11 +45,14 @@ import java.awt.Dimension;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Paint; 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.List;
 import org.netbeans.api.visual.border.BorderFactory;
+import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -72,9 +75,13 @@ public class PackageWidget extends ContainerNode
     private final static double TAB_HEIGHT = .2;
     private final static double TAB_WIDTH = .3;
     
-    private final static PolygonConstraints TAB_NAME_CONSTRAINTS = 
+    private final static PolygonConstraints TAB_NAME_CONSTRAINTS =
                             new PolygonConstraints(0, 1, 2, 3,
                                                    PolygonConstraints.VertexWeight.PREFERRED,
+                                                   PolygonConstraints.VertexWeight.PREFERRED);
+    private final static PolygonConstraints EMPTY_TAB_NAME_CONSTRAINTS =
+                            new PolygonConstraints(0, 1, 2, 3,
+                                                   PolygonConstraints.VertexWeight.NONE,
                                                    PolygonConstraints.VertexWeight.PREFERRED);
     
     private final static PolygonConstraints BODY_NAME_CONTRAINTS = 
@@ -87,6 +94,8 @@ public class PackageWidget extends ContainerNode
     private ContainerWidget container = null;
     private IPresentationElement pe;
     public static String BodyNameContainerID = "PackageBody";
+    private Widget namePlaceholder = null;
+    private NameSizeDependency nameDependency = new NameSizeDependency();
     
     public PackageWidget(Scene scene)
     {
@@ -174,11 +183,10 @@ public class PackageWidget extends ContainerNode
         centerHack.setBackground((Paint) null);
         centerHack.setForeground((Color) null);
 
-        centerHack.setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 0));
+        centerHack.setLayout(new CenterLayout());
+        centerHack.setCheckClipping(true);
         centerHack.addChild(nameWidget);
-        centerHack.setChildConstraint(nameWidget, 100);
         bodyNameContainer.addChild(centerHack);
-//        bodyNameContainer.addChild(nameWidget);
         
         final Widget body = new Widget(scene);
         body.setForeground((Color)null);
@@ -192,6 +200,10 @@ public class PackageWidget extends ContainerNode
         
         polygon.addChild(body, BODY_NAME_CONTRAINTS);
         
+        namePlaceholder = new Widget(scene);
+        nameWidget.addDependency(nameDependency);
+        polygon.addChild(namePlaceholder, EMPTY_TAB_NAME_CONSTRAINTS);
+        
         setMinimumSize(new Dimension(150, 100));//resizing/selection works better if minim initial size is set
         //setPreferredSize(new Dimension(150, 100));
         
@@ -203,7 +215,10 @@ public class PackageWidget extends ContainerNode
                 if(prop.equals(ContainerWidget.CHILDREN_CHANGED) == true)
                 {
                     if(container.getChildren().size() > 0)
-                    {
+                    {   
+                        namePlaceholder.removeFromParent();
+                        nameWidget.removeDependency(nameDependency);
+                        
                         nameWidget.getParentWidget().removeChild(nameWidget);
                         polygon.addChild(nameWidget, TAB_NAME_CONSTRAINTS);
                     }
@@ -212,6 +227,11 @@ public class PackageWidget extends ContainerNode
                         nameWidget.getParentWidget().removeChild(nameWidget);
                         centerHack.addChild(nameWidget);
                         centerHack.setChildConstraint(nameWidget, 100);
+                        
+                        namePlaceholder.removeFromParent();
+                        
+                        polygon.addChild(namePlaceholder, EMPTY_TAB_NAME_CONSTRAINTS);
+                        nameWidget.addDependency(nameDependency);
                     }
                 }
             }
@@ -233,5 +253,78 @@ public class PackageWidget extends ContainerNode
         DefaultContextPaletteModel paletteModel = new DefaultContextPaletteModel(this);
         paletteModel.initialize("UML/context-palette/Package");
         return paletteModel;
+    }
+    
+    private class NameSizeDependency implements Widget.Dependency
+    {
+
+        public void revalidateDependency()
+        {
+            try
+            {
+                namePlaceholder.setPreferredSize(nameWidget.getPreferredBounds().getSize());
+            }
+            catch(NullPointerException e)
+            {
+                // Ignore because the visual library will throw this exception
+                // before somethings are setup.  By time it displays on the
+                // screen everything will be set up correctly.
+            }
+        }
+        
+    }
+    
+    /**
+     * The center layout is used to layout out the contents.  I was not able to 
+     * use the FlowLayhout and specify the constraint of 100 because it would 
+     * not resize correctly when the packag node when from being bigger then 
+     * back down to being smaller.
+     */
+    private class CenterLayout implements Layout
+    {
+
+        public void layout(Widget widget)
+        {
+            List < Widget > children = widget.getChildren();
+            
+            int y = 0;
+            for(Widget child : children)
+            {
+                Rectangle childBounds = child.getPreferredBounds();
+                child.resolveBounds(new Point(-childBounds.x, y), childBounds);
+                y += childBounds.height;
+            }
+        }
+
+        public boolean requiresJustification(Widget widget)
+        {
+            return true;
+        }
+
+        public void justify(Widget widget)
+        {
+            List < Widget > children = widget.getChildren();
+            
+            int totalHeight = 0;
+            for(Widget child : children)
+            {
+                Rectangle childBounds = child.getPreferredBounds();
+                totalHeight = childBounds.height;
+            }
+            
+            Rectangle bounds = widget.getClientArea();
+            
+            int y = (bounds.height / 2) - (totalHeight / 2);
+            for(Widget child : children)
+            {
+                Rectangle childBounds = child.getPreferredBounds();
+                Rectangle newBounds = new Rectangle(childBounds);
+                newBounds.width = bounds.width;
+                
+                child.resolveBounds(new Point(-childBounds.x, y), newBounds);
+                y += childBounds.height;
+            }
+        }
+        
     }
 }

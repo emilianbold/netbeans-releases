@@ -70,6 +70,8 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
+import org.netbeans.modules.uml.drawingarea.ConnectionWidgetFactory;
+import org.netbeans.modules.uml.drawingarea.NodeWidgetFactory;
 import org.netbeans.modules.uml.drawingarea.RelationshipDiscovery;
 import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.ZoomManager;
@@ -81,7 +83,7 @@ import org.netbeans.modules.uml.drawingarea.actions.DiscoverRelationshipAction;
 import org.netbeans.modules.uml.drawingarea.actions.ExportImageAction;
 import org.netbeans.modules.uml.drawingarea.actions.HierarchicalLayoutAction;
 import org.netbeans.modules.uml.drawingarea.actions.InteractiveZoomAction;
-import org.netbeans.modules.uml.drawingarea.actions.OrthogonalLayoutAction;
+//import org.netbeans.modules.uml.drawingarea.actions.OrthogonalLayoutAction;
 import org.netbeans.modules.uml.drawingarea.actions.PanAction;
 import org.netbeans.modules.uml.drawingarea.actions.SceneAcceptProvider;
 import org.netbeans.modules.uml.drawingarea.actions.SyncDiagramAction;
@@ -129,7 +131,6 @@ abstract public class DiagramEngine {
         sceneSelectAction = scene.createSelectAction();
     }
     
-
     public DesignerScene getScene()
     {
         return scene;
@@ -148,10 +149,11 @@ abstract public class DiagramEngine {
     public void setActions(DesignerScene scene)
     {
         WidgetAction.Chain selectTool = scene.createActions(DesignerTools.SELECT);
+        selectTool.addAction(sceneSelectAction);
         selectTool.addAction(scene.createRectangularSelectAction());
         selectTool.addAction(ActionFactory.createZoomAction());
         selectTool.addAction(scene.createWidgetHoverAction());
-        selectTool.addAction(new DiagramSceneAcceptAction(new SceneAcceptProvider(scene.getDiagram().getNamespaceForCreatedElements())));
+        selectTool.addAction(new DiagramSceneAcceptAction(new SceneAcceptProvider(scene.getDiagram().getNamespaceForCreatedElements(), false)));
         selectTool.addAction(ActionFactory.createCycleObjectSceneFocusAction());
         selectTool.addAction(ActionFactory.createPopupMenuAction(menuProvider));
 
@@ -277,6 +279,7 @@ abstract public class DiagramEngine {
                     ImageUtil.instance().getIcon("selection-arrow.png"),
                     NbBundle.getMessage(DiagramSelectToolAction.class, "LBL_SelectToolAction"),
                     Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)));
+        selectToolButton.setName(DesignerTools.SELECT);  // need a name to later identify the button
         
         JToggleButton handToolButton = new JToggleButton(
                 new DiagramSelectToolAction(getScene(),
@@ -321,8 +324,9 @@ abstract public class DiagramEngine {
         JButton relButtion = new JButton (new DiscoverRelationshipAction(getScene()));
         JButton syncButton = new JButton (new SyncDiagramAction(getScene()));
         JButton exportImageButton = new JButton (new ExportImageAction(getScene()));
-        JButton orthogonalLayoutButton = new JButton (new OrthogonalLayoutAction(getScene()));
         JButton hierarchicalLayoutButton = new JButton (new HierarchicalLayoutAction(getScene()));
+        //Kris - out until layout is better
+        //JButton orthogonalLayoutButton = new JButton (new OrthogonalLayoutAction(getScene()));
         
         bar.add(new JToolBar.Separator());
         bar.add(selectToolButton);
@@ -337,11 +341,6 @@ abstract public class DiagramEngine {
         
         bar.add(new JToolBar.Separator());
         
-        bar.add(orthogonalLayoutButton) ;
-        bar.add(hierarchicalLayoutButton) ;
-        
-        bar.add(new JToolBar.Separator());
-        
         bar.add(exportImageButton);
         bar.add(new JToolBar.Separator());
         manager.addToolbarActions(bar);
@@ -352,6 +351,9 @@ abstract public class DiagramEngine {
         bar.add(moveToFront);
         bar.add(moveToBack);
         bar.add(new JToolBar.Separator());
+        
+        bar.add(hierarchicalLayoutButton) ;
+        //bar.add(orthogonalLayoutButton) ;
     }
     
     /**
@@ -479,21 +481,42 @@ abstract public class DiagramEngine {
                     {
                         try
                         {
-                            Class cl = ic.instanceClass();
-                            if(cl != null)
+                            Object obj = ic.instanceCreate();
+                            if (obj instanceof NodeWidgetFactory)
                             {
-                                Constructor constructor = cl.getConstructor(Scene.class);
-                                if(constructor != null)
-                                {
-                                    retVal = constructor.newInstance(scene);
-                                }
+                                NodeWidgetFactory factory = (NodeWidgetFactory) obj;
+                                retVal = factory.createNode(scene);
+                                break;
+                            }
+                            else if (obj instanceof ConnectionWidgetFactory)
+                            {
+                                ConnectionWidgetFactory factory = (ConnectionWidgetFactory) obj;
+                                retVal = factory.createConnection(scene);
+                                break;
                             }
                         }
-                        catch (Exception e)
+                        catch(Exception ex)
                         {
-                            Exceptions.printStackTrace(e);
-                            continue;
+                            Exceptions.printStackTrace(ex);
                         }
+                        
+//                        try
+//                        {
+//                            Class cl = ic.instanceClass();
+//                            if(cl != null)
+//                            {
+//                                Constructor constructor = cl.getConstructor(Scene.class);
+//                                if(constructor != null)
+//                                {
+//                                    retVal = constructor.newInstance(scene);
+//                                }
+//                            }
+//                        }
+//                        catch (Exception e)
+//                        {
+//                            Exceptions.printStackTrace(e);
+//                            continue;
+//                        }
                     }
                     else
                     {

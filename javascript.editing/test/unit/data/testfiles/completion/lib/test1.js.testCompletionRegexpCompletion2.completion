@@ -1,4 +1,6 @@
-Results for /b\ar/ with queryType=COMPLETION and nameKind=PREFIX
+Code completion result for source line:
+w = /b\|ar/
+(QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
 KEYWORD    \0                                         The NUL character (\u0000)
 KEYWORD    \B                                         Non-word boundary

@@ -526,7 +526,8 @@ public class AppClientProjectProperties {
 
         storeAdditionalProperties(projectProperties);
         List<ClassPathSupport.Item> cpItems = ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel());
-        ProjectProperties.storeLibrariesLocations(project.getAntProjectHelper(), cpItems.iterator(), projectProperties);
+        ProjectProperties.storeLibrariesLocations(project.getAntProjectHelper(), cpItems.iterator(), 
+                project.getAntProjectHelper().isSharableProject() ? projectProperties : privateProperties);
         
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
@@ -592,15 +593,7 @@ public class AppClientProjectProperties {
                     item.getType() == ClassPathSupport.Item.TYPE_JAR ) {
                 refHelper.destroyReference(item.getReference());
                 if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
-                    //oh well, how do I do this otherwise??
-                    EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    if (item.getJavadocProperty() != null) {
-                        ep.remove(item.getJavadocProperty());
-                    }
-                    if (item.getSourceProperty() != null) {
-                        ep.remove(item.getSourceProperty());
-                    }
-                    updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                    item.removeSourceAndJavadoc(updateHelper);
                 }
             }
         }

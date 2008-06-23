@@ -41,11 +41,6 @@
 
 package org.netbeans.modules.php.editor;
 
-import javax.swing.JTextArea;
-import javax.swing.text.Caret;
-import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
-import org.netbeans.editor.BaseDocument;
-
 /**
  *
  * @author tomslot
@@ -55,25 +50,32 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public PHPCodeCompletionTest(String testName) {
         super(testName);
     }
-    
-    private void assertAutoQuery(QueryType queryType, String source, String typedText) {
-        PHPCodeCompletion completer = new PHPCodeCompletion();
-        int caretPos = source.indexOf('^');
-        source = source.substring(0, caretPos) + source.substring(caretPos+1);
-        
-        BaseDocument doc = getDocument(source);
-        JTextArea ta = new JTextArea(doc);
-        Caret caret =    ta.getCaret();
-        caret.setDot(caretPos);
-        
-        QueryType qt = completer.getAutoQuery(ta, typedText);
-        assertEquals(queryType, qt);
-    }
 
-
-    public void xxx_testLocalCompletion1() throws Exception {
+    public void testPhpContextWithPrefix() throws Exception {
         checkCompletion("testfiles/completion/lib/tst.php", "^GL", false);
     }
 
-
+    public void testPhpContext2() throws Exception {
+        checkCompletion("testfiles/completion/lib/tst.php", "^$GL", false);
+    }
+    
+    public void testHTML() throws Exception {
+        checkCompletion("testfiles/completion/lib/nowdoc02.php", "<title>^</title>", false);
+    }
+    
+    public void test136744_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue136744.php", "print $test1^", false);
+    }
+    
+    public void test136744_2() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue136744.php", "print $test2^", false);
+    }
+    
+    public void test136744_3() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue136744.php", "print $test3^", false);
+    }
+    
+    public void test136744_4() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue136744.php", "print $test4^", false);
+    }
 }

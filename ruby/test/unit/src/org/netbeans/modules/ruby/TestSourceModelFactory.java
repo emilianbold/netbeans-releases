@@ -6,6 +6,7 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 import org.openide.filesystems.FileObject;
 
 public class TestSourceModelFactory extends SourceModelFactory {
@@ -32,7 +33,7 @@ public class TestSourceModelFactory extends SourceModelFactory {
                 if (currentTest == null) {
                     throw new RuntimeException("You must set TestSourceModelFactory.currentTest before running this test!");
                 }
-                TestCompilationInfo testInfo = new TestCompilationInfo(currentTest, fo, doc, text);
+                GsfTestCompilationInfo testInfo = new GsfTestCompilationInfo(currentTest, fo, doc, text);
 
                 task.run(testInfo);
             } catch (Exception ex) {

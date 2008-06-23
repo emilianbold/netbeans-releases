@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/date.rb
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   class : Date
   class-ig : date
   constant : ABBR_DAYNAMES
@@ -108,37 +103,37 @@ Indexed:
   method : year|DOCUMENTED|
   method : zone|PRIVATE|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |DOCUMENTED|;1362
   includes : Comparable
   requires : date/format,rational
 
 
-Document 2
-Indexed:
+Document 1
+Searchable Keys:
   class : Date
   class-ig : date
   fqn : Date
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   requires : date/format,rational
 
 
-Document 3
-Indexed:
+Document 2
+Searchable Keys:
   class : DateTime
   class-ig : datetime
   extends : Date
   fqn : DateTime
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   requires : date/format,rational
 
 
-Document 4
-Indexed:
+Document 3
+Searchable Keys:
   class : DateTime
   class-ig : datetime
   extends : Date
@@ -153,6 +148,6 @@ Indexed:
   method : strptime(str,fmt,sg)|DOCUMENTED|STATIC|
   method : valid_time?(h,min,s)|DOCUMENTED|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |DOCUMENTED|;1138
   requires : date/format,rational

@@ -61,6 +61,7 @@ import org.netbeans.modules.uml.core.eventframework.IEventPayload;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramDetails;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IBroadcastAction;
@@ -1036,6 +1037,51 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
     }
     
     /**
+     * Notifies the diagram to refresh the node graphical object that 
+     * is associated with the presentation element.
+     * 
+     * @param presentation The presentation element that needs to be refreshed.
+     */
+    public void refresh(IPresentationElement presentation)
+    {
+        if (presentation != null)
+        {
+            IProductDiagramManager pProductDiagramManager = ProductHelper.getProductDiagramManager();
+            ETList<IProxyDiagram> pProxyDiagrams = null;
+            if (pProductDiagramManager != null)
+            {
+                // Find all the open diagrams.
+                pProxyDiagrams = pProductDiagramManager.getOpenDiagrams();
+            }
+            else
+            {
+                // Do it the hard way without the product implementing this interface
+                pProxyDiagrams = getDiagramsInWorkspace();
+            }
+            
+            if (pProxyDiagrams != null)
+            {
+                int numDiagrams = pProxyDiagrams.size();
+                for (int i = 0 ; i < numDiagrams ; i++)
+                {
+                    IProxyDiagram pProxyDiagram = pProxyDiagrams.get(i);
+                    if (pProxyDiagram != null)
+                    {
+                        IDiagram pDiagram = pProxyDiagram.getDiagram();
+                        if (pDiagram != null)
+                        {
+                            if(pDiagram.refresh(presentation) == true)
+                            {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
      * Returns VARIANT_TRUE if any of the open diagrams for this project are dirty.  If sProjectName is
      * empty then all diagrams are looked at.
      *
@@ -1264,14 +1310,11 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
                 // TS diagrams (old .etld/.etlp diagram files)
                 retVal.addAll(getTSDiagramsInDirectory(baseDirectory));
             }
-            
-            catch (NullPointerException e)
+            catch (Exception e)
             {
-                // Just bail.
+                e.printStackTrace();
             }
-            
         }
-        
         else
         {
             // No id was added so include all open projects

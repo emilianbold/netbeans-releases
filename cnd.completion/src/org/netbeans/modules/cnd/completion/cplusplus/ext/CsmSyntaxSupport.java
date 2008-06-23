@@ -449,6 +449,14 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         CsmClassifier fromCls = from.getClassifier();
         CsmClassifier toCls = to.getClassifier();
         
+        if (fromCls == null) {
+            return false;
+        }
+
+        if (toCls == null) {
+            return false;
+        }
+
         // XXX review!
         if (fromCls.equals(CsmCompletion.NULL_CLASS)) {
             return to.getArrayDepth() > 0 || !CsmCompletion.isPrimitiveClass(toCls);

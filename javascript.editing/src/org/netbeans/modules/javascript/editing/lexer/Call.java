@@ -48,7 +48,6 @@ import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -202,8 +201,8 @@ public class Call {
             // match a keyword, such as "next"
             // However, if we're at the end of the document, x. will lex . as an
             // identifier of text ".", so handle this case specially
-            if ((id == JsTokenId.IDENTIFIER) || (id == JsTokenId.CONSTANT) ||
-                    id.primaryCategory().equals("keyword")) {
+            if ((id == JsTokenId.IDENTIFIER) ||
+                    id.primaryCategory().equals(JsLexer.KEYWORD_CAT)) {
                 String tokenText = token.text().toString();
 
                 if (".".equals(tokenText)) {
@@ -287,13 +286,12 @@ public class Call {
                     //    return new Call("Array", null, false, methodExpected);
                     case STRING_LITERAL:
                     case STRING_END:
-                        return new Call("String", null, false, methodExpected);
+                        return new Call("String", null, false, methodExpected); // NOI18N
                     case REGEXP_LITERAL:
                     case REGEXP_END:
-                        return new Call("RegExp", null, false, methodExpected);
-                    case INT_LITERAL:
+                        return new Call("RegExp", null, false, methodExpected); // NOI18N
                     case FLOAT_LITERAL:
-                        return new Call("Number", null, false, methodExpected); // Or Bignum?
+                        return new Call("Number", null, false, methodExpected); // NOI18N
                     case LPAREN:
                     case LBRACE:
                     case LBRACKET:
@@ -326,10 +324,8 @@ public class Call {
 
                         return call;
                     }
-                    case GLOBAL_VAR:
                     case IDENTIFIER:
                     case DOT:
-                    case CONSTANT:
                     case THIS:
                         // We're building up a potential expression such as "Test::Unit" so continue looking
                         beginOffset = ts.offset();
@@ -344,7 +340,7 @@ public class Call {
                         // fallthrough
                     }
                     default: {
-                        if (id.primaryCategory().equals("keyword")) { // NOI18N
+                        if (id.primaryCategory().equals(JsLexer.KEYWORD_CAT)) { // NOI18N
                             // We're building up a potential expression such as "Test::Unit" so continue looking
                             beginOffset = ts.offset();
 

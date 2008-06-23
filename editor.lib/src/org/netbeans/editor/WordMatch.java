@@ -45,9 +45,16 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.text.Position;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
+import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
+import org.openide.util.WeakListeners;
 
 /** Word matching support enables to fill in the rest of the word
 * when knowing the begining of the word. It is capable to search either
@@ -57,8 +64,7 @@ import javax.swing.text.JTextComponent;
 * @version 1.00
 */
 
-public class WordMatch extends FinderFactory.AbstractFinder
-    implements SettingsChangeListener, PropertyChangeListener {
+public class WordMatch extends FinderFactory.AbstractFinder implements PropertyChangeListener {
 
     private static final Object NULL_DOC = new Object();
 
@@ -129,44 +135,33 @@ public class WordMatch extends FinderFactory.AbstractFinder
     /** Document where to start from */
     BaseDocument startDoc;
 
+    private Preferences prefs = null;
+    private final PreferenceChangeListener prefsListener = new PreferenceChangeListener() {
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            if (evt != null) { // real change event
+                staticWordsDocs.clear();
+            }
+            maxSearchLen = prefs.getInt(EditorPreferencesKeys.WORD_MATCH_SEARCH_LEN, EditorPreferencesDefaults.defaultWordMatchSearchLen);
+            wrapSearch = prefs.getBoolean(EditorPreferencesKeys.WORD_MATCH_WRAP_SEARCH, EditorPreferencesDefaults.defaultWordMatchWrapSearch);
+            matchOneChar = prefs.getBoolean(EditorPreferencesKeys.WORD_MATCH_MATCH_ONE_CHAR, EditorPreferencesDefaults.defaultWordMatchMatchOneChar);
+            matchCase = prefs.getBoolean(EditorPreferencesKeys.WORD_MATCH_MATCH_CASE, EditorPreferencesDefaults.defaultWordMatchMatchCase);
+            smartCase = prefs.getBoolean(EditorPreferencesKeys.WORD_MATCH_SMART_CASE, EditorPreferencesDefaults.defaultWordMatchSmartCase);
+        }
+    };
+    private PreferenceChangeListener weakListener = null;
+    
     /** Construct new word match over given view manager */
     public WordMatch(EditorUI editorUI) {
         this.editorUI = editorUI;
-
-        Settings.addSettingsChangeListener(this);
 
         synchronized (editorUI.getComponentLock()) {
             // if component already installed in EditorUI simulate installation
             JTextComponent component = editorUI.getComponent();
             if (component != null) {
-                propertyChange(new PropertyChangeEvent(editorUI,
-                                                       EditorUI.COMPONENT_PROPERTY, null, component));
+                propertyChange(new PropertyChangeEvent(editorUI, EditorUI.COMPONENT_PROPERTY, null, component));
             }
 
             editorUI.addPropertyChangeListener(this);
-        }
-    }
-
-    /** Called when settings were changed. The method is called
-    * by editorUI when settings were changed and from constructor.
-    */
-    public void settingsChange(SettingsChangeEvent evt) {
-        if (evt != null) { // real change event
-            staticWordsDocs.clear();
-        }
-
-        Class kitClass = Utilities.getKitClass(editorUI.getComponent());
-        if (kitClass != null) {
-            maxSearchLen = SettingsUtil.getInteger(kitClass, SettingsNames.WORD_MATCH_SEARCH_LEN,
-                                                   Integer.MAX_VALUE);
-            wrapSearch = SettingsUtil.getBoolean(kitClass, SettingsNames.WORD_MATCH_WRAP_SEARCH,
-                                                 true);
-            matchOneChar = SettingsUtil.getBoolean(kitClass, SettingsNames.WORD_MATCH_MATCH_ONE_CHAR,
-                                                   true);
-            matchCase = SettingsUtil.getBoolean(kitClass, SettingsNames.WORD_MATCH_MATCH_CASE,
-                                                false);
-            smartCase = SettingsUtil.getBoolean(kitClass, SettingsNames.WORD_MATCH_SMART_CASE,
-                                                false);
         }
     }
 
@@ -174,16 +169,20 @@ public class WordMatch extends FinderFactory.AbstractFinder
         String propName = evt.getPropertyName();
 
         if (EditorUI.COMPONENT_PROPERTY.equals(propName)) {
-            JTextComponent component = (JTextComponent)evt.getNewValue();
-            if (component != null) { // just installed
-
-                settingsChange(null);
-
+            if (prefs != null && weakListener != null) {
+                prefs.removePreferenceChangeListener(weakListener);
+            }
+                
+            JTextComponent newC = (JTextComponent)evt.getNewValue();
+            if (newC != null) { // just installed
+                String mimeType = org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(newC);
+                prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+                weakListener = WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs);
+                prefs.addPreferenceChangeListener(weakListener);
+                prefsListener.preferenceChange(null);
             } else { // just deinstalled
-                //        component = (JTextComponent)evt.getOldValue();
 
             }
-
         }
     }
 
@@ -200,7 +199,7 @@ public class WordMatch extends FinderFactory.AbstractFinder
     }
 
     /** Reset this finder before each search */
-    public void reset() {
+    public @Override void reset() {
         super.reset();
         wordLen = 0;
     }
@@ -465,9 +464,8 @@ public class WordMatch extends FinderFactory.AbstractFinder
             return null;
         }
         BaseDocument doc = (BaseDocument)val;
-        if (doc == null) {
-            String staticWords = (String)Settings.getValue(kitClass,
-                                 SettingsNames.WORD_MATCH_STATIC_WORDS);
+        if (doc == null && prefs != null) {
+            String staticWords = prefs.get(EditorPreferencesKeys.WORD_MATCH_STATIC_WORDS, null);
             if (staticWords != null) {
                 doc = new BaseDocument(BaseKit.class, false); // don't add to registry
                 try {
@@ -506,7 +504,7 @@ public class WordMatch extends FinderFactory.AbstractFinder
         /** Document where the word resides */
         BaseDocument doc;
 
-        public boolean equals(Object o) {
+        public @Override boolean equals(Object o) {
             if (this == o) {
                 return true;
             }
@@ -523,18 +521,18 @@ public class WordMatch extends FinderFactory.AbstractFinder
             return false;
         }
 
-        public int hashCode() {
+        public @Override int hashCode() {
             return word.hashCode();
         }
 
-        public String toString() {
+        public @Override String toString() {
             return "{word='" + word + "', pos=" + pos.getOffset() // NOI18N
                    + ", doc=" + Registry.getID(doc) + "}"; // NOI18N
         }
 
-    }
+    } // End of WordInfo class
 
-    public String toString() {
+    public @Override String toString() {
         return "baseWord=" + ((baseWord != null) ? ("'" + baseWord.toString() + "'") // NOI18N
                               : "null") + ", wrapSearch=" + wrapSearch // NOI18N
                + ", matchCase=" + matchCase + ", smartCase=" + smartCase // NOI18N

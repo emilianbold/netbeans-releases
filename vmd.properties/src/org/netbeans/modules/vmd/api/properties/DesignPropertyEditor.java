@@ -329,4 +329,8 @@ import org.openide.nodes.PropertySupport;
     public String getPropertyDisplayName() {
         return propertyDisplayName;
     }
+    
+    public List<String> getPropertyNames() {
+        return propertyNames;
+    }
 }

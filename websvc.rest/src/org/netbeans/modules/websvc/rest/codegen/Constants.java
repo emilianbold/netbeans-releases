@@ -50,6 +50,10 @@ import org.netbeans.modules.websvc.rest.model.api.RestConstants;
  */
 public class Constants {
     
+    public static final String RESOURCE_SUFFIX = "Resource";
+        
+    public static final String CONVERTER_SUFFIX = "Converter";      //NOI18N
+    
     public static final String XML_TRANSIENT_ANNOTATION = "XmlTransient"; //NOI18N
    
     public static final String XML_ROOT_ELEMENT_ANNOTATION = "XmlRootElement";  //NOI18N
@@ -99,6 +103,8 @@ public class Constants {
     public static final String XML_TRANSIENT = "javax.xml.bind.annotation.XmlTransient";                 //NOI18N
     
     public static final String VOID = "void";           //NOI18N
+    
+    public static final String COLLECTION = "Collection"; //NOI18N
     
     public static final String COLLECTION_TYPE = "java.util.Collection"; //NOI18N
     

@@ -91,13 +91,13 @@ final class ProjectWizardPanel extends ImporterWizardPanel implements
         return panel.getDestination();
     }
     
-    void loadProjects(String workspaceDir) {
+    void loadProjects(File workspaceDir) {
         panel.loadProjects(workspaceDir);
     }
     
     public void validate() throws WizardValidationException {
         String dest = panel.getDestination();
-        if (!new File(dest).isAbsolute() || !EclipseUtils.isWritable(dest)) {
+        if (dest != null && (!new File(dest).isAbsolute() || !EclipseUtils.isWritable(dest))) {
             String message = ProjectImporterWizard.getMessage(
                     "MSG_CannotCreateProjectInFolder", dest); // NOI18N
             setErrorMessage(message);

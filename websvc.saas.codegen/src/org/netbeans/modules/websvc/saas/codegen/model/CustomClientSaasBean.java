@@ -72,13 +72,17 @@ public class CustomClientSaasBean extends SaasBean {
     private String serviceMethodName;
     
     public CustomClientSaasBean(CustomSaasMethod m)  throws IOException {
+        this(m, false);
+    }
+    
+    public CustomClientSaasBean(CustomSaasMethod m, boolean isDropTargetWeb)  throws IOException {
         super(m.getSaas(), deriveResourceName(m), null, 
                 deriveUriTemplate(m), new MimeType[]{MimeType.XML}, 
                 new String[]{"java.lang.String"},       //NOI18N
                 new HttpMethodType[]{HttpMethodType.GET});
     
         this.m = m;
-
+        setIsDropTargetWeb(isDropTargetWeb);
         init();
     }
     

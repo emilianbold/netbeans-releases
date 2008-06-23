@@ -335,6 +335,9 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         }
         FileChooser chooser = new FileChooser(baseFolder, libFolder);
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+        // for now variable based paths are disabled in library definition
+        // can be revisit if it is needed
+        chooser.setFileHidingEnabled(false);
         chooser.setAcceptAllFileFilterUsed(false);
         if (this.volumeType.equals(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH)) {
             chooser.setMultiSelectionEnabled (true);

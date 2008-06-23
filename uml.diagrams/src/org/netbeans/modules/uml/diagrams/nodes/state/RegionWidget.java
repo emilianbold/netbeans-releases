@@ -39,7 +39,6 @@
 package org.netbeans.modules.uml.diagrams.nodes.state;
 
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -48,6 +47,7 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
+import java.util.List;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ResizeControlPointResolver;
 import org.netbeans.api.visual.action.ResizeProvider;
@@ -63,12 +63,17 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IRegion;
+import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.ITransition;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.diagrams.UMLRelationshipDiscovery;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramPopupMenuProvider;
+import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
+import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
+import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeReader;
+import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
+import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
@@ -78,7 +83,7 @@ import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
  *
  * @author Sheryl Su
  */
-public class RegionWidget extends Widget implements PropertyChangeListener
+public class RegionWidget extends Widget implements PropertyChangeListener, DiagramNodeWriter, DiagramNodeReader
 {
 
     private Scene scene;
@@ -145,8 +150,10 @@ public class RegionWidget extends Widget implements PropertyChangeListener
         addChild(layer, 1);
         addChild(separatorWidget, 0);
 
-        
-        initContainedElements();
+        if (!PersistenceUtil.isDiagramLoading())
+        {
+            initContainedElements();
+        }
 
         RESIZE_STRATEGY = new ResizeStrategy()
         {
@@ -214,6 +221,10 @@ public class RegionWidget extends Widget implements PropertyChangeListener
         {
             nameWidget.propertyChange(evt);
         } 
+        else if(evt.getPropertyName().equals(ModelElementChangedKind.NAME_MODIFIED.toString()))
+        {
+            nameWidget.propertyChange(evt);
+        }
         else if (evt.getPropertyName().equals(ModelElementChangedKind.DELETE.toString()) ||
                  evt.getPropertyName().equals(ModelElementChangedKind.PRE_DELETE.toString()))
         {
@@ -321,6 +332,8 @@ public class RegionWidget extends Widget implements PropertyChangeListener
         Point point = new Point(10,10);
         for (IElement element : region.getElements())
         {
+            if (element instanceof ITransition)
+                continue;
             IPresentationElement presentation = Util.createNodePresentationElement();
             presentation.addSubject(element);
 
@@ -333,9 +346,6 @@ public class RegionWidget extends Widget implements PropertyChangeListener
                 point = new Point(point.x + 50, point.y + 50);
             }
         }
-
-        UMLRelationshipDiscovery relationshipD = new UMLRelationshipDiscovery((GraphScene) scene);
-        relationshipD.discoverCommonRelations(region.getElements());
     }
     
     
@@ -457,4 +467,51 @@ public class RegionWidget extends Widget implements PropertyChangeListener
                 objectScene.userSelectionSuggested (Collections.emptySet (), invertSelection);
         }
     }
+
+    public void save(NodeWriter nodeWriter) {
+        setNodeWriterValues(nodeWriter, this);
+        nodeWriter.beginGraphNodeWithModelBridge();
+        nodeWriter.beginContained();
+        //write contained
+        saveChildren(this, nodeWriter);
+        nodeWriter.endContained();     
+        nodeWriter.endGraphNode();
+    }
+
+    public void saveChildren(Widget widget, NodeWriter nodeWriter) {
+        if (widget == null || nodeWriter == null)
+            return;
+        
+        List<Widget> widList = widget.getChildren();
+        for (Widget child : widList) {
+            if ((child instanceof DiagramNodeWriter) && !(child instanceof Widget.Dependency)) { // we write dependencies in another section
+                ((DiagramNodeWriter) child).save(nodeWriter);
+            } else {
+                saveChildren(child, nodeWriter);
+            }
+        }
+    }
+    
+    protected void setNodeWriterValues(NodeWriter nodeWriter, Widget widget) {
+        nodeWriter = PersistenceUtil.populateNodeWriter(nodeWriter, widget);
+        nodeWriter.setHasPositionSize(true);
+        PersistenceUtil.populateProperties(nodeWriter, widget);
+    }
+
+    public void addContainedChild(Widget widget)
+    {
+        widget.removeFromParent();
+        stateContainerWidget.addChild(widget);
+    }
+
+    public void load(NodeInfo nodeReader)
+    {
+        //we don't have anything to do here..
+    }
+
+    public void loadDependencies(NodeInfo nodeReader)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
 }

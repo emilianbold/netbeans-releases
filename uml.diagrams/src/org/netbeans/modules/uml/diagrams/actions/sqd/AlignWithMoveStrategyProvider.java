@@ -53,6 +53,7 @@ import java.util.ArrayList;
 public class AlignWithMoveStrategyProvider extends org.netbeans.modules.uml.drawingarea.view.AlignWithMoveStrategyProvider {
     
     private Boolean horizontalOnly=null;//flag used to check if there is any lifeline and all elements should be moved horizontally only
+    private Widget originalParent;
 
     public AlignWithMoveStrategyProvider (AlignWithWidgetCollector collector, 
                                           LayerWidget interractionLayer, 
@@ -65,6 +66,7 @@ public class AlignWithMoveStrategyProvider extends org.netbeans.modules.uml.draw
     
     @Override
     public void movementStarted(Widget widget) {
+        originalParent=widget.getParentWidget();
         super.movementStarted(widget);
     }
 
@@ -95,8 +97,16 @@ public class AlignWithMoveStrategyProvider extends org.netbeans.modules.uml.draw
                 }
             }
         }
-        if(horizontalOnly)ret.y=originalLocation.y;
-        else if((ret.y+widget.getBounds().y)<0)ret.y-=(ret.y+widget.getBounds().y);
+        if(horizontalOnly==Boolean.TRUE)ret.y=originalLocation.y;
+        else
+        {
+            Point sceneRet=originalParent.convertLocalToScene(ret);
+            if((sceneRet.y+widget.getBounds().y)<0)
+            {
+                sceneRet.y-=(sceneRet.y+widget.getBounds().y);
+                ret=originalParent.convertSceneToLocal(sceneRet);
+            }
+        }
         //
         //
         return ret;

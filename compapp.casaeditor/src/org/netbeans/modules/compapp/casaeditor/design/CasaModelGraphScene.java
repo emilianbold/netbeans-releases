@@ -832,7 +832,7 @@ implements PropertyChangeListener, CasaValidationListener {
                 }
             });
             // vlv: print
-            getView().putClientProperty(java.awt.print.Printable.class, mDataObject.getName());
+            getView().putClientProperty("print.printable", Boolean.TRUE); // NOI18N
         }
         return getView();
     }

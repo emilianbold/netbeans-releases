@@ -53,6 +53,7 @@ include Editors/.*
 exclude Editors/.*/Popup.*
 exclude Editors/.*/.*\.instance
 exclude Editors/.*/Settings\.settings
+exclude Editors/.*/macros.xml
 include Services/IndentEngine/.*
 #does not import C/C++ indent settings
 exclude Services/IndentEngine/org-netbeans-modules-cnd-editor-cplusplus-CCIndentEngine\.settings
@@ -76,3 +77,4 @@ include JSPPalette/.*
 include HTMLPalette/.*
 include J2EE/.*
 include org-netbeans-api-project-libraries/Libraries/.*\.xml
+exclude Services/org-netbeans-modules-beans-beans.settings

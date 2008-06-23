@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Set;
 import org.netbeans.api.visual.action.*;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.widget.LayerWidget;
@@ -82,6 +83,7 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
     private LayerWidget mainLayer = null;
     private ArrayList < MovingWidgetDetails > movingWidgets = null;
     private Point original;
+    private boolean moveWidgetInitialized;
     
     public AlignWithMoveStrategyProvider (AlignWithWidgetCollector collector, 
                                           LayerWidget interractionLayer, 
@@ -92,6 +94,7 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
         this.outerBounds = outerBounds;
         this.interactionLayer = interractionLayer;
         this.mainLayer = widgetLayer;
+        moveWidgetInitialized=false;
     }
 
     public Point locationSuggested (Widget widget, Point originalLocation, Point suggestedLocation) {
@@ -139,7 +142,7 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
         {
             manager.cancelPalette();
         }
-        
+        moveWidgetInitialized=false;
 //        initializeMovingWidgets(scene, widget);
     }
 
@@ -360,9 +363,10 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
             Object object = gscene.findObject(widget);
             if (gscene.isNode(object))
             {
-                for (Object o : gscene.getSelectedObjects())
+                Set < ? > selected = gscene.getSelectedObjects();
+                for (Object o : selected)
                 {
-                    if (gscene.isNode(o))
+                    if ((gscene.isNode(o)) && (isOwnerSelected(o, selected, gscene) == false))
                     {
                         Widget w = gscene.findWidget(o);
                         if (w != null)
@@ -401,6 +405,40 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
                 movingWidgets.add(details);
             }
         }
+        moveWidgetInitialized=true;
+    }
+    
+    public boolean isMovementInitialized()
+    {
+        return moveWidgetInitialized;
+    }
+
+    private boolean isOwnerSelected(Object o, 
+                                    Set<?> selected,
+                                    GraphScene gscene)
+    {
+        boolean retVal = false;
+        
+        Widget widget = gscene.findWidget(o);
+        if(widget != null)
+        {
+            Widget parent = widget.getParentWidget();
+            Object parentObj = gscene.findObject(parent);
+            
+            if(parentObj != null)
+            {
+                if(selected.contains(parentObj) == true)
+                {
+                    retVal = true;
+                }
+                else
+                {
+                    retVal = isOwnerSelected(parentObj, selected, gscene);
+                }
+            }
+        }
+        
+        return retVal;
     }
     
     private boolean processLocationOperator(Widget widget,
@@ -493,44 +531,6 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
         }
         
         return retVal;
-    }
-    
-    private class MoveDropTargetDropEvent extends DropTargetDropEvent
-    {
-        private MoveWidgetTransferable widgetTransferable = null;
-        
-        public MoveDropTargetDropEvent(Widget dropWidget, Point pt)
-        {
-            super((new DropTarget()).getDropTargetContext(), pt, 0, 0);
-            widgetTransferable = new MoveWidgetTransferable(dropWidget);
-        }
-
-        @Override
-        public Transferable getTransferable()
-        {
-            return new Transferable() {
-
-                public DataFlavor[] getTransferDataFlavors()
-                {
-                    return new DataFlavor[] { MoveWidgetTransferable.FLAVOR };
-                }
-
-                public boolean isDataFlavorSupported(DataFlavor flavor)
-                {
-                    return MoveWidgetTransferable.FLAVOR.equals(flavor);
-                }
-
-                public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException
-                {
-                    if(isDataFlavorSupported(flavor) == true)
-                    {
-                        return widgetTransferable;
-                    }
-                    
-                    throw new UnsupportedFlavorException(flavor);
-                }
-            };
-        }
     }
     
     protected class MovingWidgetDetails

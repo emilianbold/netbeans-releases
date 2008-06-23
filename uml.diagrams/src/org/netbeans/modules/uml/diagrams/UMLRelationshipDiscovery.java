@@ -501,23 +501,23 @@ public class UMLRelationshipDiscovery implements RelationshipDiscovery
      * @param pCreatedPE [out] The created presentation element for the link.  Note that it's not an error
      * for a NULL to be returned - the link may already exist.
      */
-    public IPresentationElement createNestedLink(INamedElement fromElement, 
-                                                 INamespace pNamespace)
+    public IPresentationElement createNestedLink(INamedElement childElement, 
+                                                 INamespace namespace)
     {
-        if (fromElement == null || pNamespace == null)
+        if (childElement == null || namespace == null)
         {
             return null;
         }
         
-        IElement toElement = pNamespace instanceof IElement ? (IElement) pNamespace : null;
-        IElement linkElement = fromElement;
+        IElement fromElement = namespace instanceof IElement ? (IElement) namespace : null;
+        IElement linkElement = namespace;
 
         List<IPresentationElement> pStartPEs;
         List<IPresentationElement> pEndPEs;
 
         // See if they both have presentation elements on this diagram
+        pEndPEs = getNodesOnScene(childElement, scene);
         pStartPEs = getNodesOnScene(fromElement, scene);
-        pEndPEs = getNodesOnScene(toElement, scene);
 
         // Now see how many presentation items we have
         long numStartPEs = pStartPEs != null ? pStartPEs.size() : 0;
@@ -538,7 +538,7 @@ public class UMLRelationshipDiscovery implements RelationshipDiscovery
                 // containment is being represented by graphical containment - no need for the link.
 
                 Widget nodeWidget = scene.findWidget(pFromPresentationElement);
-                if(!(nodeWidget.getParentWidget() instanceof ConnectionWidget))
+                if(!(nodeWidget.getParentWidget() instanceof ContainerWidget))
                 {            
                     retVal = createConnection(pFromPresentationElement, 
                                               pFromPresentationElement, 
@@ -708,18 +708,10 @@ public class UMLRelationshipDiscovery implements RelationshipDiscovery
             if (linkAlreadyExists(connection, pFromPresentationElement, pToPresentationElement) == false && 
                 linkIsValid(proxyType, pFromPresentationElement, pToPresentationElement) == true)
             {
-                // In the case of nested links we do one more check not done for other links.  If the 
-                // from element is sitting on the to element then don't do the link.  The namespace
-                // containment is being represented by graphical containment - no need for the link.
-
-                Widget nodeWidget = scene.findWidget(pFromPresentationElement);
-                if(!(nodeWidget.getParentWidget() instanceof ContainerWidget))
-                {            
-                    retVal = createConnection(connection, 
-                                              pFromPresentationElement, 
-                                              pToPresentationElement,
-                                              proxyType);
-                }
+                retVal = createConnection(connection, 
+                                          pFromPresentationElement, 
+                                          pToPresentationElement,
+                                          proxyType);
             }
         }
         

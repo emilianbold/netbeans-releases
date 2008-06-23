@@ -1,3 +1,4 @@
+// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
@@ -36,6 +37,7 @@
  * 
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
+// </editor-fold>
 
 package org.netbeans.modules.glassfish.common;
 
@@ -62,12 +64,12 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.common.nodes.Hk2InstanceNode;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.ui.InstanceCustomizer;
-import org.netbeans.spi.glassfish.CustomizerCookie;
-import org.netbeans.spi.glassfish.GlassfishModule;
-import org.netbeans.spi.glassfish.GlassfishModuleFactory;
-import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
-import org.netbeans.spi.glassfish.GlassfishModule.ServerState;
-import org.netbeans.spi.glassfish.RemoveCookie;
+import org.netbeans.modules.glassfish.spi.CustomizerCookie;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.GlassfishModuleFactory;
+import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
+import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
+import org.netbeans.modules.glassfish.spi.RemoveCookie;
 import org.netbeans.spi.server.ServerInstanceFactory;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
@@ -95,6 +97,7 @@ public class GlassfishInstance implements ServerInstanceImplementation {
     public static final int DEFAULT_HTTP_PORT = 8080;
     public static final int DEFAULT_HTTPS_PORT = 8181;
     public static final int DEFAULT_ADMIN_PORT = 4848;
+    public static final String DEFAULT_DOMAIN_NAME = "domain1"; // NOI18N
 
     
     // Server properties

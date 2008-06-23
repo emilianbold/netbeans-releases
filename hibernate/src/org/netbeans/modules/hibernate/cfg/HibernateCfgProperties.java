@@ -42,6 +42,7 @@ package org.netbeans.modules.hibernate.cfg;
 import java.util.HashMap;
 import java.util.Map;
 import org.hibernate.cfg.Environment;
+import org.openide.util.NbBundle;
 
 /**
  * This class contains all the properties in the Hibernate configuration file
@@ -51,46 +52,46 @@ import org.hibernate.cfg.Environment;
 public class HibernateCfgProperties {
     
     public static final String[] dialects = new String[]{
-        "org.hibernate.dialect.DB2Dialect",
-        "org.hibernate.dialect.DB2390Dialect",
-        "org.hibernate.dialect.DB2400Dialect",
-        "org.hibernate.dialect.DerbyDialect",
-        "org.hibernate.dialect.FirebirdDialect",
-        "org.hibernate.dialect.FrontbaseDialect",
-        "org.hibernate.dialect.HSQLDialect",
-        "org.hibernate.dialect.InformixDialect",
-        "org.hibernate.dialect.IngresDialect",
-        "org.hibernate.dialect.InterbaseDialect",
-        "org.hibernate.dialect.MckoiDialect",
-        "org.hibernate.dialect.MySQLDialect",
-        "org.hibernate.dialect.MySQLInnoDBDialect",
-        "org.hibernate.dialect.MySQLMyISAMDialect",
-        "org.hibernate.dialect.OracleDialect",
-        "org.hibernate.dialect.Oracle9Dialect",
-        "org.hibernate.dialect.PointbaseDialect",
-        "org.hibernate.dialect.PostgreSQLDialect",
-        "org.hibernate.dialect.ProgressDialect",
-        "org.hibernate.dialect.SAPDBDialect",
-        "org.hibernate.dialect.SQLServerDialect",
-        "org.hibernate.dialect.SybaseDialect",
-        "org.hibernate.dialect.SybaseAnywhereDialect"
+        "org.hibernate.dialect.DB2Dialect", //NOI18N
+        "org.hibernate.dialect.DB2390Dialect", //NOI18N
+        "org.hibernate.dialect.DB2400Dialect", //NOI18N
+        "org.hibernate.dialect.DerbyDialect", //NOI18N
+        "org.hibernate.dialect.FirebirdDialect", //NOI18N
+        "org.hibernate.dialect.FrontbaseDialect", //NOI18N
+        "org.hibernate.dialect.HSQLDialect", //NOI18N
+        "org.hibernate.dialect.InformixDialect", //NOI18N
+        "org.hibernate.dialect.IngresDialect", //NOI18N
+        "org.hibernate.dialect.InterbaseDialect", //NOI18N
+        "org.hibernate.dialect.MckoiDialect", //NOI18N
+        "org.hibernate.dialect.MySQLDialect", //NOI18N
+        "org.hibernate.dialect.MySQLInnoDBDialect", //NOI18N
+        "org.hibernate.dialect.MySQLMyISAMDialect", //NOI18N
+        "org.hibernate.dialect.OracleDialect", //NOI18N
+        "org.hibernate.dialect.Oracle9Dialect", //NOI18N
+        "org.hibernate.dialect.PointbaseDialect", //NOI18N
+        "org.hibernate.dialect.PostgreSQLDialect", //NOI18N
+        "org.hibernate.dialect.ProgressDialect", //NOI18N
+        "org.hibernate.dialect.SAPDBDialect", //NOI18N
+        "org.hibernate.dialect.SQLServerDialect", //NOI18N
+        "org.hibernate.dialect.SybaseDialect", //NOI18N
+        "org.hibernate.dialect.SybaseAnywhereDialect" //NOI18N
     };
     
     public static String[] driverClassess = new String[]{
-        "com.ibm.db2.jdbc.app.DB2Driver",
-        "com.informix.jdbc.IfxDriver",
-        "com.mckoi.JDBCDriver",
-        "com.mysql.jdbc.Driver",
-        "com.pointbase.jdbc.jdbcUniversalDriver",
-        "com.sun.sql.jdbc.sqlserver.SQLServerDriver",
-        "com.sun.sql.jdbc.sybase.SybaseDriver",
-        "interbase.interclient.Driver",
-        "oracle.jdbc.driver.OracleDriver",
-        "oracle.jdbc.OracleDriver",
-        "org.apache.derby.jdbc.ClientDriver",
-        "org.firebirdsql.jdbc.FBDriver",
-        "org.hsqldb.jdbcDriver",
-        "org.postgresql:Driver"
+        "com.ibm.db2.jdbc.app.DB2Driver", //NOI18N
+        "com.informix.jdbc.IfxDriver", //NOI18N
+        "com.mckoi.JDBCDriver", //NOI18N
+        "com.mysql.jdbc.Driver", //NOI18N
+        "com.pointbase.jdbc.jdbcUniversalDriver", //NOI18N
+        "com.sun.sql.jdbc.sqlserver.SQLServerDriver", //NOI18N
+        "com.sun.sql.jdbc.sybase.SybaseDriver", //NOI18N
+        "interbase.interclient.Driver", //NOI18N
+        "oracle.jdbc.driver.OracleDriver", //NOI18N
+        "oracle.jdbc.OracleDriver", //NOI18N
+        "org.apache.derby.jdbc.ClientDriver", //NOI18N
+        "org.firebirdsql.jdbc.FBDriver", //NOI18N
+        "org.hsqldb.jdbcDriver", //NOI18N
+        "org.postgresql:Driver" //NOI18N
     };
 
     public final static String[] jdbcProps = new String[] {
@@ -170,7 +171,7 @@ public class HibernateCfgProperties {
     // String[] for selecting one of the values
     private final static String[] TRUE_FALSE = new String[] {"true", "false" }; // NOI18N
     private final static String[] RELEASE_MODES = new String[] {"auto", "on_close", "after_transaction", "after_statement"}; // NOI18N
-    private final static String[] SESSION_CONTEXT = new String[] {"jta", "thread", "managed", "--Enter custom class--"}; // NOI18N
+    private final static String[] SESSION_CONTEXT = new String[] {"jta", "thread", "managed", NbBundle.getMessage(HibernateCfgProperties.class, "LBL_CustomClass")}; // NOI18N
     private final static String[] QUERY_FACTORY_CLASS = new String[] {"org.hibernate.hql.ast.ASTQueryTranslatorFactory",
     "org.hibernate.hql.classic.ClassicQueryTransactionFactory"}; // NOI18N
     private final static String[] HBM2DDL_AUTO = new String[] {"validate", "update", "create", "create-drop" }; // NOI18N

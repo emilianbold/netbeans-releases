@@ -228,4 +228,41 @@ public class RubyProjectUtil {
         }
         return url;
     }
+    
+    /**
+     * Gets the load path including the source and test source roots of the 
+     * given <code>project</code>.
+     * @param project
+     * @return String represententing the load path, complete with the <code>-I</code>
+     * switch (i.e. can be passed as initial args to an <code>ExecutionDescriptor</code> 
+     * as it is).
+     */
+    public static String getLoadPath(Project project) {
+        RubyBaseProject baseProject = project.getLookup().lookup(RubyBaseProject.class);
+        assert baseProject != null : "No RubyBaseProject found in the project lookup. Project: " + project; //NOI18N
+        
+        // Set the load path from the source and test folders.
+        // Load paths are additive so users can add their own in the
+        // options field as well.
+        FileObject[] srcPath = baseProject.getSourceRootFiles();
+        FileObject[] testPath = baseProject.getTestSourceRootFiles();
+        StringBuilder result = new StringBuilder();
+        for (FileObject root : srcPath) {
+            if (result.length() > 0) {
+                result.append(' ');
+            }
+            result.append("-I\""); // NOI18N
+            result.append(FileUtil.toFile(root).getAbsoluteFile());
+            result.append("\""); // NOI18N
+        }
+        for (FileObject root : testPath) {
+            if (result.length() > 0) {
+                result.append(' ');
+            }
+            result.append("-I\""); // NOI18N
+            result.append(FileUtil.toFile(root).getAbsoluteFile());
+            result.append("\""); // NOI18N
+        }
+        return result.toString();
+    }
 }

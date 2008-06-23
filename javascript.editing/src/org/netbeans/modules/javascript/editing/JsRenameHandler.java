@@ -255,7 +255,7 @@ public class JsRenameHandler implements InstantRenamer {
                 while (cts.moveNext()) {
                     org.netbeans.api.lexer.Token<? extends JsCommentTokenId> token = cts.token();
                     TokenId cid = token.id();
-                    if (cid == JsCommentTokenId.TAG) {
+                    if (cid == JsCommentTokenId.COMMENT_TAG) {
                         CharSequence text = token.text();
                          if (TokenUtilities.textEquals("@param", text)) { // NOI18N
                             int index = cts.index();
@@ -296,7 +296,7 @@ public class JsRenameHandler implements InstantRenamer {
         while (cts.moveNext()) {
             org.netbeans.api.lexer.Token<? extends JsCommentTokenId> token = cts.token();
             TokenId cid = token.id();
-            if (cid == JsCommentTokenId.TAG) {
+            if (cid == JsCommentTokenId.COMMENT_TAG) {
                 CharSequence text = token.text();
                  if (TokenUtilities.textEquals("@param", text)) { // NOI18N
                     int index = cts.index()+1;

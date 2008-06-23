@@ -1612,9 +1612,12 @@ org.netbeans.editor.BaseCaret$4
 org.netbeans.editor.BaseCaret$ListenerImpl
 org.netbeans.editor.BaseDocument
 org.netbeans.editor.BaseDocument$1
+org.netbeans.editor.BaseDocument$2
 org.netbeans.editor.BaseDocument$LazyPropertyMap
 org.netbeans.editor.BaseDocument$MarksStorageUndo
+org.netbeans.editor.BaseDocument$MimeTypePropertyEvaluator
 org.netbeans.editor.BaseDocument$NotifyModifyStatus
+org.netbeans.editor.BaseDocument$PlainEditorKit
 org.netbeans.editor.BaseDocument$PropertyEvaluator
 org.netbeans.editor.BaseDocumentEvent
 org.netbeans.editor.BaseDocumentEvent$DrawLayerChange
@@ -1639,6 +1642,7 @@ org.netbeans.editor.BaseKit$ForwardAction
 org.netbeans.editor.BaseKit$InsertBreakAction
 org.netbeans.editor.BaseKit$InsertContentAction
 org.netbeans.editor.BaseKit$InsertTabAction
+org.netbeans.editor.BaseKit$KeybindingsAndPreferencesTracker
 org.netbeans.editor.BaseKit$KitCompoundAction
 org.netbeans.editor.BaseKit$NextWordAction
 org.netbeans.editor.BaseKit$PageDownAction
@@ -1656,6 +1660,7 @@ org.netbeans.editor.BaseKit$WritableAction
 org.netbeans.editor.BasePosition
 org.netbeans.editor.BaseSettingsInitializer
 org.netbeans.editor.BaseTextUI
+org.netbeans.editor.BaseTextUI$1
 org.netbeans.editor.BaseTextUI$GetFocusedComponentAction
 org.netbeans.editor.BaseTextUI$UIWatcher
 org.netbeans.editor.BaseTokenCategory
@@ -1664,6 +1669,8 @@ org.netbeans.editor.CharSeq
 org.netbeans.editor.CodeFoldingSideBar
 org.netbeans.editor.CodeFoldingSideBar$1
 org.netbeans.editor.CodeFoldingSideBar$2
+org.netbeans.editor.CodeFoldingSideBar$3
+org.netbeans.editor.CodeFoldingSideBar$4
 org.netbeans.editor.CodeFoldingSideBar$FoldingMouseListener
 org.netbeans.editor.CodeFoldingSideBar$Mark
 org.netbeans.editor.CodeFoldingSideBar$SideBarFoldHierarchyListener
@@ -1698,6 +1705,8 @@ org.netbeans.editor.EditorUI$1
 org.netbeans.editor.EditorUI$2
 org.netbeans.editor.EditorUI$3
 org.netbeans.editor.EditorUI$ComponentLock
+org.netbeans.editor.EditorUI$Listener
+org.netbeans.editor.EditorUI$Listener$1
 org.netbeans.editor.FindSupport
 org.netbeans.editor.FindSupport$WeakPropL
 org.netbeans.editor.Finder
@@ -1718,9 +1727,11 @@ org.netbeans.editor.Formatter
 org.netbeans.editor.GapObjectArray
 org.netbeans.editor.GapStart
 org.netbeans.editor.GlyphGutter
+org.netbeans.editor.GlyphGutter$1
 org.netbeans.editor.GlyphGutter$2
 org.netbeans.editor.GlyphGutter$3
 org.netbeans.editor.GlyphGutter$4
+org.netbeans.editor.GlyphGutter$5
 org.netbeans.editor.GlyphGutter$EditorUIListener
 org.netbeans.editor.GlyphGutter$GlyphGutterFoldHierarchyListener
 org.netbeans.editor.GlyphGutter$GutterMouseListener
@@ -1782,6 +1793,7 @@ org.netbeans.editor.SettingsUtil$PrintColoringEvaluator
 org.netbeans.editor.SideBarFactory
 org.netbeans.editor.StatusBar
 org.netbeans.editor.StatusBar$1
+org.netbeans.editor.StatusBar$1$1
 org.netbeans.editor.StatusBar$4
 org.netbeans.editor.StatusBar$CaretListener
 org.netbeans.editor.StatusBar$Cell
@@ -1831,6 +1843,7 @@ org.netbeans.editor.ext.ExtSettingsDefaults
 org.netbeans.editor.ext.ExtSettingsInitializer
 org.netbeans.editor.ext.ExtSettingsNames
 org.netbeans.editor.ext.ExtSyntaxSupport
+org.netbeans.editor.ext.FindDialogSupport
 org.netbeans.editor.ext.FormatLayer
 org.netbeans.editor.ext.ToolTipSupport
 org.netbeans.editor.ext.ToolTipSupport$1
@@ -2245,6 +2258,7 @@ org.netbeans.lib.editor.codetemplates.CodeTemplateComparator
 org.netbeans.lib.editor.codetemplates.CodeTemplateFilterClass2LayerFolder
 org.netbeans.lib.editor.codetemplates.CodeTemplateManagerOperation
 org.netbeans.lib.editor.codetemplates.CodeTemplatesModule
+org.netbeans.lib.editor.codetemplates.CodeTemplatesModule$1
 org.netbeans.lib.editor.codetemplates.CodeTemplatesModule$AbbrevSettingsInitializer
 org.netbeans.lib.editor.codetemplates.SurroundWithFix
 org.netbeans.lib.editor.codetemplates.api.CodeTemplate
@@ -2908,6 +2922,7 @@ org.netbeans.modules.editor.EditorModule$5
 org.netbeans.modules.editor.EditorModule$HackMap
 org.netbeans.modules.editor.EditorWarmUpTask
 org.netbeans.modules.editor.ExportHtmlAction
+org.netbeans.modules.editor.FormatterIndentEngine
 org.netbeans.modules.editor.GlobalContextAction
 org.netbeans.modules.editor.IndentEngineFormatter
 org.netbeans.modules.editor.MainMenuAction
@@ -2963,6 +2978,7 @@ org.netbeans.modules.editor.bookmarks.DocumentUnmodifiedListener
 org.netbeans.modules.editor.bookmarks.EditorBookmarksModule
 org.netbeans.modules.editor.bookmarks.EditorBookmarksModule$1
 org.netbeans.modules.editor.bookmarks.EditorBookmarksModule$2
+org.netbeans.modules.editor.bookmarks.EditorBookmarksModule$3
 org.netbeans.modules.editor.bookmarks.EditorBookmarksModule$BookmarksSettingsInitializer
 org.netbeans.modules.editor.bookmarks.NbBookmarkManager
 org.netbeans.modules.editor.bookmarks.NbBookmarkManager$1
@@ -2994,6 +3010,7 @@ org.netbeans.modules.editor.completion.CompletionImpl$1
 org.netbeans.modules.editor.completion.CompletionImpl$2
 org.netbeans.modules.editor.completion.CompletionImpl$3
 org.netbeans.modules.editor.completion.CompletionImpl$4
+org.netbeans.modules.editor.completion.CompletionImpl$5
 org.netbeans.modules.editor.completion.CompletionImpl$9
 org.netbeans.modules.editor.completion.CompletionImpl$CompletionShowAction
 org.netbeans.modules.editor.completion.CompletionImpl$DocShowAction
@@ -3063,6 +3080,7 @@ org.netbeans.modules.editor.html.HTMLKit
 org.netbeans.modules.editor.html.NbHTMLSettingsInitializer
 org.netbeans.modules.editor.impl.ActionsList
 org.netbeans.modules.editor.impl.ActionsList$Pair
+org.netbeans.modules.editor.impl.ComplexValueSettingsFactory
 org.netbeans.modules.editor.impl.CustomizableSideBar
 org.netbeans.modules.editor.impl.CustomizableSideBar$MyLookupListener
 org.netbeans.modules.editor.impl.CustomizableSideBar$SideBarPosition
@@ -3111,7 +3129,9 @@ org.netbeans.modules.editor.impl.highlighting.ComposedTextHighlighting
 org.netbeans.modules.editor.impl.highlighting.GuardedBlocksHighlighting
 org.netbeans.modules.editor.impl.highlighting.GuardedBlocksHighlighting$HSImpl
 org.netbeans.modules.editor.impl.highlighting.HLFactory
+org.netbeans.modules.editor.indent.CodeStylePreferences
 org.netbeans.modules.editor.indent.api.Indent
+org.netbeans.modules.editor.indent.api.IndentUtils
 org.netbeans.modules.editor.indent.spi.IndentTask$Factory
 org.netbeans.modules.editor.indent.spi.ReformatTask$Factory
 org.netbeans.modules.editor.java.AbstractCamelCasePosition
@@ -3119,6 +3139,7 @@ org.netbeans.modules.editor.java.DeleteToNextCamelCasePosition
 org.netbeans.modules.editor.java.DeleteToPreviousCamelCasePosition
 org.netbeans.modules.editor.java.JavaBracesMatcher
 org.netbeans.modules.editor.java.JavaDocument
+org.netbeans.modules.editor.java.JavaIndentEngine
 org.netbeans.modules.editor.java.JavaKit
 org.netbeans.modules.editor.java.JavaKit$1
 org.netbeans.modules.editor.java.JavaKit$AbbrevDebugLineAction
@@ -3146,11 +3167,13 @@ org.netbeans.modules.editor.java.SelectPreviousCamelCasePosition
 org.netbeans.modules.editor.lib.ColoringMap
 org.netbeans.modules.editor.lib.ColoringMap$1
 org.netbeans.modules.editor.lib.ColoringMap$2
+org.netbeans.modules.editor.lib.EditorPreferencesDefaults
 org.netbeans.modules.editor.lib.KitsTracker
 org.netbeans.modules.editor.lib.KitsTracker$1
 org.netbeans.modules.editor.lib.NavigationHistory
 org.netbeans.modules.editor.lib.NavigationHistory$RingBuffer
 org.netbeans.modules.editor.lib.NavigationHistory$Waypoint
+org.netbeans.modules.editor.lib.SettingsConversions
 org.netbeans.modules.editor.lib2.DocUtils
 org.netbeans.modules.editor.lib2.EditorApiPackageAccessor
 org.netbeans.modules.editor.lib2.codegen.ContextProviderClass2LayerFolder
@@ -3191,8 +3214,10 @@ org.netbeans.modules.editor.lib2.search.DocumentFinder$FalseBlocksFinder
 org.netbeans.modules.editor.lib2.search.EditorFindSupport
 org.netbeans.modules.editor.macros.Installer
 org.netbeans.modules.editor.macros.Installer$MacrosSettingsInitializer
+org.netbeans.modules.editor.macros.MacroDialogSupport$RunMacroAction
 org.netbeans.modules.editor.macros.MacroDialogSupport$StartMacroRecordingAction
 org.netbeans.modules.editor.macros.MacroDialogSupport$StopMacroRecordingAction
+org.netbeans.modules.editor.macros.MacroShortcutsInjector
 org.netbeans.modules.editor.macros.storage.MacroDescription
 org.netbeans.modules.editor.macros.storage.MacrosStorage
 org.netbeans.modules.editor.macros.storage.MacrosStorage$LegacyReader
@@ -3236,8 +3261,10 @@ org.netbeans.modules.editor.plain.PlainEditorModule
 org.netbeans.modules.editor.plain.options.PlainOptions
 org.netbeans.modules.editor.settings.storage.EditorSettingsImpl
 org.netbeans.modules.editor.settings.storage.MimeTypesTracker
+org.netbeans.modules.editor.settings.storage.MimeTypesTracker$1
 org.netbeans.modules.editor.settings.storage.MimeTypesTracker$Listener
 org.netbeans.modules.editor.settings.storage.ProfilesTracker
+org.netbeans.modules.editor.settings.storage.ProfilesTracker$1
 org.netbeans.modules.editor.settings.storage.ProfilesTracker$Listener
 org.netbeans.modules.editor.settings.storage.ProfilesTracker$ProfileDescription
 org.netbeans.modules.editor.settings.storage.SettingsProvider
@@ -3251,11 +3278,14 @@ org.netbeans.modules.editor.settings.storage.SettingsType$Locator
 org.netbeans.modules.editor.settings.storage.SpiPackageAccessor
 org.netbeans.modules.editor.settings.storage.StorageImpl
 org.netbeans.modules.editor.settings.storage.StorageImpl$CacheKey
+org.netbeans.modules.editor.settings.storage.StorageImpl$Filters
+org.netbeans.modules.editor.settings.storage.StorageImpl$Filters$1
 org.netbeans.modules.editor.settings.storage.StorageImpl$Operations
 org.netbeans.modules.editor.settings.storage.Utils
 org.netbeans.modules.editor.settings.storage.Utils$1
 org.netbeans.modules.editor.settings.storage.api.EditorSettings
 org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage
+org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage$1
 org.netbeans.modules.editor.settings.storage.api.FontColorSettingsFactory
 org.netbeans.modules.editor.settings.storage.api.KeyBindingSettingsFactory
 org.netbeans.modules.editor.settings.storage.fontscolors.ColoringStorage
@@ -3270,6 +3300,7 @@ org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage$KeyMapsR
 org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage$KeyMapsWriter
 org.netbeans.modules.editor.settings.storage.preferences.PreferencesImpl
 org.netbeans.modules.editor.settings.storage.preferences.PreferencesImpl$1
+org.netbeans.modules.editor.settings.storage.preferences.PreferencesImpl$2
 org.netbeans.modules.editor.settings.storage.preferences.PreferencesImpl$TypedValue
 org.netbeans.modules.editor.settings.storage.preferences.PreferencesStorage
 org.netbeans.modules.editor.settings.storage.preferences.PreferencesStorage$LegacyReader
@@ -3277,9 +3308,11 @@ org.netbeans.modules.editor.settings.storage.preferences.PreferencesStorage$Pref
 org.netbeans.modules.editor.settings.storage.preferences.PreferencesStorage$Reader
 org.netbeans.modules.editor.settings.storage.preferences.PreferencesStorage$Writer
 org.netbeans.modules.editor.settings.storage.spi.StorageDescription
+org.netbeans.modules.editor.settings.storage.spi.StorageFilter
 org.netbeans.modules.editor.settings.storage.spi.StorageReader
 org.netbeans.modules.editor.settings.storage.spi.StorageReader$SpiPackageAccessorImpl
 org.netbeans.modules.editor.settings.storage.spi.StorageWriter
+org.netbeans.modules.editor.settings.storage.spi.TypedValue
 org.netbeans.modules.editor.settings.storage.spi.support.StorageSupport
 org.netbeans.modules.editor.structure.DocumentModelProviderClass2Layer
 org.netbeans.modules.editor.structure.spi.DocumentModelProvider
@@ -4146,6 +4179,9 @@ org.netbeans.modules.project.uiapi.Utilities
 org.netbeans.modules.projectapi.ProjectSharabilityQuery
 org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation
 org.netbeans.modules.projectapi.TimedWeakReference
+org.netbeans.modules.projectimport.eclipse.core.ImportProjectAction
+org.netbeans.modules.projectimport.eclipse.core.Installer
+org.netbeans.modules.projectimport.eclipse.core.Installer$1
 org.netbeans.modules.properties.PresentableFileEntry
 org.netbeans.modules.properties.PropertiesDataLoader
 org.netbeans.modules.properties.PropertiesDataObject
@@ -4153,6 +4189,15 @@ org.netbeans.modules.properties.PropertiesFileEntry
 org.netbeans.modules.properties.syntax.RestoreColoring
 org.netbeans.modules.properties.syntax.RestoreColoring$1
 org.netbeans.modules.queries.UnknownEncoding
+org.netbeans.modules.quicksearch.QuickSearchAction
+org.netbeans.modules.quicksearch.QuickSearchComboBar
+org.netbeans.modules.quicksearch.QuickSearchComboBar$1
+org.netbeans.modules.quicksearch.QuickSearchComboBar$2
+org.netbeans.modules.quicksearch.QuickSearchComboBar$3
+org.netbeans.modules.quicksearch.QuickSearchComboBar$4
+org.netbeans.modules.quicksearch.QuickSearchPopup
+org.netbeans.modules.quicksearch.ResultsModel
+org.netbeans.modules.quicksearch.SearchResultRender
 org.netbeans.modules.refactoring.api.impl.ActionsImplementationFactory
 org.netbeans.modules.refactoring.api.ui.ExplorerContext
 org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory
@@ -5762,14 +5807,11 @@ org.openide.nodes.ChildFactory
 org.openide.nodes.ChildFactory$Observer
 org.openide.nodes.ChildFactory$WaitFilterNode
 org.openide.nodes.Children
-org.openide.nodes.Children$1
-org.openide.nodes.Children$1SetAndNotify
 org.openide.nodes.Children$Array
 org.openide.nodes.Children$Array$AE
 org.openide.nodes.Children$Dupl
 org.openide.nodes.Children$Empty
 org.openide.nodes.Children$Entry
-org.openide.nodes.Children$Info
 org.openide.nodes.Children$Keys
 org.openide.nodes.Children$Keys$2
 org.openide.nodes.Children$Keys$KE
@@ -5784,6 +5826,11 @@ org.openide.nodes.CookieSet$R
 org.openide.nodes.CookieSetLkp
 org.openide.nodes.CookieSetLkp$ConvertingItem
 org.openide.nodes.CookieSetLkp$SimpleItem
+org.openide.nodes.EntrySupport
+org.openide.nodes.EntrySupport$Default
+org.openide.nodes.EntrySupport$Default$1
+org.openide.nodes.EntrySupport$Default$1SetAndNotify
+org.openide.nodes.EntrySupport$Default$Infoorg.openide.nodes.AbstractNode
 org.openide.nodes.FilterNode
 org.openide.nodes.FilterNode$Children
 org.openide.nodes.FilterNode$ChildrenAdapter

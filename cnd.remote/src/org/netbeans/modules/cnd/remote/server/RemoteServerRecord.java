@@ -39,20 +39,77 @@
 
 package org.netbeans.modules.cnd.remote.server;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 
 /**
- *
+ * The definition of a remote server and login. 
+ * 
  * @author gordonp
  */
-public class RemoteServerRecord implements ServerRecord {
+public class RemoteServerRecord implements ServerRecord, PropertyChangeListener  {
+    
+    private String user;
+    private String server;
+    private String name;
+    private boolean editable;
+    private boolean active;
+    
+    protected RemoteServerRecord(String user, String server, boolean active) {
+        this.user = user;
+        this.server = server;
+        name = user + '@' + server;
+        editable = true;
+        if (active) {
+            RemoteServerList list = RemoteServerList.getInstance();
+            if (list != null) {
+                setActive(true);
+            }
+        }
+    }
+    
+    protected RemoteServerRecord(String name, boolean active) {
+        this.name = name;
+        this.active = active;
+        editable = false;
+    }
+    
+    public boolean isEditable() {
+        return editable;
+    }
 
     public boolean isRemote() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return !name.equals("localhost"); // NOI18N
     }
 
     public boolean isActive() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return active;
+    }
+    
+    public void setActive(boolean active) {
+        if (this.active != active) {
+            RemoteServerList.getInstance().firePropertyChange(RemoteServerList.PROP_SET_AS_ACTIVE, this);
+            RemoteServerList.getInstance().refresh();
+        }
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public String getServerName() {
+        return server;
+    }
+
+    public String getUserName() {
+        return user;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(RemoteServerList.PROP_SET_AS_ACTIVE)) {
+            Object n = evt.getNewValue();
+            active = n == this;
+        }
+    }
 }

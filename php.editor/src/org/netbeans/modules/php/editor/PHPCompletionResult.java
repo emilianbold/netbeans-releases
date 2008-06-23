@@ -40,13 +40,17 @@
 package org.netbeans.modules.php.editor;
 
 import java.util.List;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
 import org.netbeans.modules.php.editor.index.IndexedElement;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -69,36 +73,47 @@ public class PHPCompletionResult extends DefaultCompletionResult{
             PHPCompletionItem phpItem = (PHPCompletionItem) item;
             
             if (phpItem.getElement() instanceof IndexedElement) {
-                IndexedElement elem = (IndexedElement) phpItem.getElement();
+                final IndexedElement elem = (IndexedElement) phpItem.getElement();
                 
                 if (!elem.isResolved()){
-                    BaseDocument doc = (BaseDocument) completionContext.getInfo().getDocument();
+                    final BaseDocument doc = (BaseDocument) completionContext.getInfo().getDocument();
                     if (doc == null) {
                         return;
                     }
+                    
+                    FileObject currentFolder = completionContext.getInfo().getFileObject().getParent();
+                    String includePath = FileUtil.getRelativePath(currentFolder, elem.getFileObject());
 
-                    doc.atomicLock();
+                    final StringBuilder builder = new StringBuilder();
+                    builder.append("\nrequire \""); //NOI18N
+                    builder.append(includePath);
+                    builder.append("\";\n"); //NOI18N
 
-                    try {
-                        FileObject currentFolder = completionContext.getInfo().getFileObject().getParent();
-                        String includePath = FileUtil.getRelativePath(currentFolder, elem.getFileObject());
-
-                        StringBuilder builder = new StringBuilder();
-                        builder.append("\nrequire \""); //NOI18N
-                        builder.append(includePath);
-                        builder.append("\";\n"); //NOI18N
-
-                        // TODO use the index of previous AST instead
-                        int prevLineNumber = Utilities.getLineOffset(doc, completionContext.getCaretOffset());
-                        int prevLineEnd = Utilities.getRowStartFromLineOffset(doc, prevLineNumber);
-
-                        doc.insertString(prevLineEnd, builder.toString(), null);
-                        Utilities.reformatLine(doc, Utilities.getRowStart(doc, prevLineEnd + 1));
-                    } catch (BadLocationException e){
-                        Exceptions.printStackTrace(e);
-                    } finally {
-                        doc.atomicUnlock();
-                    }
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            doc.atomicLock();
+                            
+                            TokenHierarchy th = TokenHierarchy.get(doc);
+                            TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence();
+                            tokenSequence.moveStart();
+                            
+                            while(tokenSequence.moveNext()){
+                                if (tokenSequence.token().id() == PHPTokenId.PHP_OPENTAG){
+                                    int position = tokenSequence.index() + tokenSequence.token().length();
+                                    try {
+                                        int prevLineNumber = Utilities.getLineOffset(doc, position);
+                                        int prevLineEnd = Utilities.getRowStartFromLineOffset(doc, prevLineNumber);
+                                        doc.insertString(position, builder.toString(), null);
+                                        Utilities.reformatLine(doc, Utilities.getRowStart(doc, prevLineEnd + 1));
+                                    } catch (BadLocationException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    }
+                                    
+                                    break;
+                                }
+                            }
+                        }
+                    });
                 }
             }
         }

@@ -134,14 +134,15 @@ final class Tree extends JTree {
   void finished(String target, String text, int count) {
     myText = i18n(Tree.class, "LBL_Search_Tab", target, text); // NOI18N
     String title = i18n(Tree.class, "LBL_Root", target, text, "" + count); // NOI18N
-    String print = i18n(Tree.class, "TXT_Root", target, text, "" + count); // NOI18N
+    String name = i18n(Tree.class, "TXT_Root", target, text, "" + count); // NOI18N
     String tooltip = getHtml(title);
 
     myRoot.setUserObject(new SearchElement.Adapter(
       title, tooltip, icon(Tree.class, "find"), null)); // NOI18N
 
     // vlv: print
-    putClientProperty(java.awt.print.Printable.class, print);
+    putClientProperty("print.printable", Boolean.TRUE); // NOI18N
+    putClientProperty("print.name", name); // NOI18N
 
     createOccurences();
     updateRoot();
@@ -308,7 +309,7 @@ final class Tree extends JTree {
     item.setIcon(getPrintIcon());
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
-        PrintManager.getDefault().getPrintPreviewAction().actionPerformed(event);
+        PrintManager.printPreviewAction().actionPerformed(event);
       }
     });
     item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P,
@@ -369,8 +370,7 @@ final class Tree extends JTree {
   }
 
   private Icon getPrintIcon() {
-    Object object = PrintManager.getDefault().
-      getPrintPreviewAction().getValue(Action.SMALL_ICON);
+    Object object = PrintManager.printPreviewAction().getValue(Action.SMALL_ICON);
 
     if (object instanceof Icon) {
       return (Icon) object;

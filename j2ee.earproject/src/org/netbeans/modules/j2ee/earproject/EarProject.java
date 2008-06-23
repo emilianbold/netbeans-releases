@@ -223,6 +223,7 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
             new Info(),
             aux,
             spp,
+            helper.createAuxiliaryProperties(),
             new ProjectEarProvider(),
             appModule, //implements J2eeModuleProvider
             new EarActionProvider(this, updateHelper),
@@ -514,7 +515,9 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
             ProjectProperties.storeLibrariesLocations(helper, l.iterator(), helper.isSharableProject() ? props : ep);
             
             // #129316
-            ProjectProperties.removeObsoleteLibraryLocations(ep);
+            if (helper.isSharableProject()) {
+                ProjectProperties.removeObsoleteLibraryLocations(ep);
+            }
             ProjectProperties.refreshLibraryTotals(props, cs, EarProjectProperties.JAR_CONTENT_ADDITIONAL,  EarProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
             

@@ -55,9 +55,9 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.glassfish.jruby.ui.JRubyServerCustomizer;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
-import org.netbeans.spi.glassfish.CustomizerCookie;
-import org.netbeans.spi.glassfish.GlassfishModule;
-import org.netbeans.spi.glassfish.OperationStateListener;
+import org.netbeans.modules.glassfish.spi.CustomizerCookie;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.OperationStateListener;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 

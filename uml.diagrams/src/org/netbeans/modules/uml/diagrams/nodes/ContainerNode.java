@@ -96,7 +96,7 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
 
             AlignWithMoveStrategyProvider moveProvider = 
                     new AlignWithMoveStrategyProvider(new GraphSceneNodeAlignCollector (designerScene),
-                                                      designerScene.getConnectionLayer(),
+                                                      designerScene.getInterractionLayer(),
                                                       designerScene.getMainLayer(),
                                                       decorator,
                                                       false)
@@ -225,7 +225,8 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
             {
                 for(Widget child : children)
                 {
-                    Point location = container.convertSceneToLocal(child.getBounds().getLocation());
+//                    Point location = container.convertSceneToLocal(child.getBounds().getLocation());
+                    Point location = container.convertSceneToLocal(child.getLocation());
                     child.setPreferredLocation(location);
 
                     child.removeFromParent();
@@ -234,7 +235,9 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
 
                 if(getContainer() != null)
                 {
-                    getContainer().calculateChildren(true);
+                    // Since the container can not be resized smaller than its 
+                    // children, do not calculate the existing children.
+                    getContainer().calculateChildren(false);
                 }
 
                 // Now put the node back to its original index.  See resizeStarted
@@ -329,6 +332,15 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
                 topBounds = Double.MAX_VALUE;
                 rightBounds = Double.MIN_VALUE;
                 bottomBounds = Double.MIN_VALUE;
+                
+                // The parent is a reasonable default, but what we want is the
+                // true interaction layer.
+                Widget interactionLayer = parent;
+                if (getScene() instanceof DesignerScene)
+                {
+                    DesignerScene scene = (DesignerScene) getScene();
+                    interactionLayer = scene.getInterractionLayer();
+                }
         
                 for(Widget child : children)
                 {
@@ -346,7 +358,7 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
 
                     child.setPreferredLocation(childSceneLocation);
                     container.removeChild(child);
-                    parent.addChild(child);
+                    interactionLayer.addChild(child);
                 }
             } 
         }
@@ -365,7 +377,6 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
                 width = (int) (testBounds.x + testBounds.width) - x;
             }
 
-            System.out.println(testBounds.y + " > " + topBounds + "== " + (testBounds.y > topBounds));
             if (testBounds.y > topBounds)
             {
                 y = (int) topBounds;

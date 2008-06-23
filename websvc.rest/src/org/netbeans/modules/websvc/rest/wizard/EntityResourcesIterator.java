@@ -81,14 +81,9 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
         String converterPackage = (String) wizard.getProperty(WizardProperties.CONVERTER_PACKAGE);
         EntityResourceBeanModel model = (EntityResourceBeanModel) wizard.getProperty(WizardProperties.ENTITY_RESOURCE_MODEL);
         final String puName = (String) wizard.getProperty(WizardProperties.PERSISTENCE_UNIT_NAME);
-        
-        // Add the entity classes to persistence.xml,
-        // Note: this is a work-around for TopLink PM implementation not compliant to persistence.xml schema.
-        //PersistenceHelper.addEntityClasses(project, model.getBuilder().getAllEntityNames());
-        PersistenceHelper.unsetExcludeEnlistedClasses(project);
-        
+    
         final EntityResourcesGenerator generator = new EntityResourcesGenerator(
-                model, targetFolder, targetPackage, resourcePackage, converterPackage, puName);
+                model, project, targetFolder, targetPackage, resourcePackage, converterPackage, puName);
         final ProgressDialog progressDialog = new ProgressDialog(NbBundle.getMessage(
                 EntityResourcesIterator.class,
                 "LBL_RestSevicicesFromEntitiesProgress"));
@@ -98,9 +93,6 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
                 try {
                     RestUtils.disableRestServicesChangeListner(project);
                     generator.generate(progressDialog.getProgressHandle());
-                            
-                    // Add <persistence-unit-ref> to web.xml
-                    WebXmlHelper.addPersistenceUnitRef(project, puName);
                 } catch(Exception iox) {
                     Exceptions.printStackTrace(iox);
                 } finally {

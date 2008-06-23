@@ -83,6 +83,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/resources/XMLWizard.html"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.xml.wizard.XMLWizardIterator.singleton"/>
                 <attr name="templateCategory" stringvalue="XML"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
             
             <file name="emptyDTD.dtd" url="templates/emptyDTD.dtd.template">
@@ -93,6 +94,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/resources/emptyDTD.html"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.xml.wizard.DTDWizardIterator"/>
                 <attr name="templateCategory" stringvalue="XML"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
                         
             <file name="xml_entity.ent" url="templates/xml_entity.ent.template">
@@ -102,6 +104,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/resources/entObject.gif"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/resources/xml_entity.html"/>
                 <attr name="templateCategory" stringvalue="oasis-XML-catalogs"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
 
         </folder> <!-- XML -->

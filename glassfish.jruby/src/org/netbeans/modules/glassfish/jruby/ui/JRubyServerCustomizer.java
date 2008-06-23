@@ -48,7 +48,7 @@ import javax.swing.event.ListDataListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.glassfish.jruby.JRubyServerModule;
-import org.netbeans.spi.glassfish.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
 
 /**
  *

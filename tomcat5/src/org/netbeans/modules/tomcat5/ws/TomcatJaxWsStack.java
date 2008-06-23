@@ -39,9 +39,15 @@
 
 package org.netbeans.modules.tomcat5.ws;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import org.netbeans.modules.websvc.serverapi.api.WSStackFeature;
 import org.netbeans.modules.websvc.serverapi.api.WSStack;
 import org.netbeans.modules.websvc.serverapi.api.WSUriDescriptor;
@@ -63,10 +69,21 @@ public class TomcatJaxWsStack implements WSStackSPI {
     private static final String KEYSTORE_CLIENT_LOCATION = "certs/client-keystore.jks";  //NOI18N
     private static final String TRUSTSTORE_CLIENT_LOCATION = "certs/client-truststore.jks";  //NOI18N
     
-    File catalinaHome;
+    private File catalinaHome;
+    private String version;
     
     public TomcatJaxWsStack(File catalinaHome) {
         this.catalinaHome = catalinaHome;
+        try {
+            version = resolveImplementationVersion();
+            if (version == null) {
+                // Default Version
+                version = "2.1.4"; // NOI18N
+            }
+        } catch (IOException ex) {
+            // Default Version
+            version = "2.1.4"; // NOI18N
+        };
     }
     
     public String getName() {
@@ -74,7 +91,7 @@ public class TomcatJaxWsStack implements WSStackSPI {
     }
     
     public String getVersion() {
-        return "1.2";
+        return version;
     }
 
     public Set<String> getSupportedTools() {
@@ -165,6 +182,29 @@ public class TomcatJaxWsStack implements WSStackSPI {
     private boolean isTruststoreClient() {
         if (new File(catalinaHome, TRUSTSTORE_CLIENT_LOCATION).exists()) return true;
         else return false;
+    }
+    
+    private String resolveImplementationVersion() throws IOException {
+        File wsToolsJar = new File(catalinaHome, "shared/lib/webservices-tools.jar"); //NOI18N
+        if (wsToolsJar.exists()) {
+            JarFile jarFile = new JarFile(wsToolsJar);
+            JarEntry entry = jarFile.getJarEntry("com/sun/tools/ws/version.properties"); //NOI18N
+            if (entry != null) {
+                InputStream is = jarFile.getInputStream(entry);
+                BufferedReader r = new BufferedReader(new InputStreamReader(is));
+                String ln = null;
+                String ver = null;
+                while ((ln=r.readLine()) != null) {
+                    String line = ln.trim();
+                    if (line.startsWith("major-version=")) { //NOI18N
+                        ver = line.substring(14);
+                    }
+                }
+                r.close();
+                return ver;
+            }           
+        }
+        return null;
     }
     
 }

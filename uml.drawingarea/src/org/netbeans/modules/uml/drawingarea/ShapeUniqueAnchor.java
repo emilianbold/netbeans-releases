@@ -170,7 +170,15 @@ public final class ShapeUniqueAnchor extends Anchor
 
             //Anchor.Direction direction;
 
-            if (ddx >= ddy)
+            // self link case, always route from right edge to bottom
+            if (ddx == 0 && ddy == 0)
+            {
+                if (entry.isAttachedToConnectionSource())
+                    rightmap.put(entry, 0f);
+                else
+                    bottommap.put(entry, 0f);
+            }
+            else if (ddx >= ddy)
             {
                 //direction = dx >= 0.0f ? Direction.RIGHT : Direction.LEFT;
                 if(dx > 0.0f)

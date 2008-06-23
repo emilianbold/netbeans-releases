@@ -75,11 +75,11 @@ final class DotClassPathParser {
         }
         Element classpathEl = dotClasspathXml.getDocumentElement();
         if (!"classpath".equals(classpathEl.getLocalName())) { // NOI18N
-            return null;
+            return empty();
         }
         List<Element> classpathEntryEls = Util.findSubElements(classpathEl);
         if (classpathEntryEls == null) {
-            return null;
+            return empty();
         }
         
         // accessrules are ignored as they are not supported in NB anyway, eg:
@@ -113,14 +113,22 @@ final class DotClassPathParser {
                 }
                 props.put(key, value);
             }
-            // TODO: parse also <attributes> and add them to props map:
-            /*
-            <classpathentry kind="lib" path="/home/dev/hibernate-annotations-3.3.1.GA/lib/hibernate-commons-annotations.jar" sourcepath="/home/dev/hibernate-annotations-3.3.1.GA/src">
-                <attributes>
-                    <attribute name="javadoc_location" value="file:/home/dev/hibernate-annotations-3.3.1.GA/doc/api/"/>
-                </attributes>
-            </classpathentry>
-             */
+            Element entryAttrs = Util.findElement(classpathEntry, "attributes", null);
+            if (entryAttrs != null) {
+                /*
+                <classpathentry kind="lib" path="/home/dev/hibernate-annotations-3.3.1.GA/lib/hibernate-commons-annotations.jar" sourcepath="/home/dev/hibernate-annotations-3.3.1.GA/src">
+                    <attributes>
+                        <attribute name="javadoc_location" value="file:/home/dev/hibernate-annotations-3.3.1.GA/doc/api/"/>
+                    </attributes>
+                </classpathentry>
+                 */
+                List<Element> attrsList = Util.findSubElements(entryAttrs);
+                if (attrsList != null) {
+                    for (Element e : attrsList) {
+                        props.put(e.getAttribute("name"), e.getAttribute("value"));
+                    }
+                }
+            }
             DotClassPathEntry entry = new DotClassPathEntry(props, linkName);
             if (entry.getKind() == DotClassPathEntry.Kind.SOURCE) {
                 sources.add(entry);
@@ -137,6 +145,10 @@ final class DotClassPathParser {
         return new DotClassPath(classpath, sources, output, jre);
     }
 
+    static DotClassPath empty() {
+        return new DotClassPath(new ArrayList<DotClassPathEntry>(), new ArrayList<DotClassPathEntry>(), null, null);
+    }
+    
     private static String resolveLink(String value, List<Link> links) {
         for (Link l : links) {
             if (l.getName().equals(value)) {

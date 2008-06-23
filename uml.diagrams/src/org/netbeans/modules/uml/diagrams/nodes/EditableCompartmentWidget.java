@@ -42,6 +42,8 @@ package org.netbeans.modules.uml.diagrams.nodes;
 
 import java.awt.Font;
 import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.util.EnumSet;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -163,8 +165,22 @@ public class EditableCompartmentWidget extends UMLLabelWidget {
     
     public void switchToEditMode()
     {
-    //    edcAction.openEditor(this);
+        getScene().validate();
+        if(edcAction.openEditor(this))WidgetAction.State.createLocked (this,(WidgetAction) edcAction);
+        //((WidgetAction) edcAction).keyPressed(this, new WidgetAction.WidgetKeyEvent(0, new KeyEvent(getScene().getView(), 0, 0, 0, KeyEvent.VK_ENTER,(char)KeyEvent.VK_ENTER)));
     }
+    
+//    public void closeEditorNoChanges()
+//    {
+//        getScene().validate();
+//        edcAction.closeEditor(false);
+//    }
+    public void closeEditorCommitChanges()
+    {
+        getScene().validate();
+        edcAction.closeEditor(true);
+    }
+
     
     @Override
     public Lookup getLookup()
@@ -186,7 +202,7 @@ public class EditableCompartmentWidget extends UMLLabelWidget {
         
         
         /**
-         * @param toFit border of toFit widget will be considered as bounds for edit control 
+         * @param toFit border of toFit widget will be considered as bounds for edit control jm=[]
          * @param presentationWidget will be used to get presentation element
          */
         public EditControlEditorProvider(Widget toFit,Widget presentationWidget)
@@ -272,14 +288,14 @@ public class EditableCompartmentWidget extends UMLLabelWidget {
             // I first need to verify that the widget (or at least the one
             // associated to the model element) is focused.  If it does 
             // not have focus, it should not be editable.
-//            Object data = scene.findObject(widget);
-//            Widget assocWidget = scene.findWidget(data);
-//            
-//            if((assocWidget == null) || (assocWidget.getState().isFocused() == false))
-//            {
-//                return null;
-//            }
-//            
+            Object data = scene.findObject(widget);
+            Widget assocWidget = scene.findWidget(data);
+            
+            if((assocWidget == null) || (assocWidget.getState().isFocused() == false))
+            {
+                return null;
+            }
+            
             Widget toFit = widget;
             if (baseFitWidget != null)
                 toFit = baseFitWidget;

@@ -45,6 +45,7 @@ import java.awt.Rectangle;
 import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -52,6 +53,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 
 /**
@@ -78,37 +80,28 @@ public class ResizeToContentAction extends NodeAction
         }
         Set selectedObjs = scene.getSelectedObjects();
 
+        ContextPaletteManager manager = scene.getContextPaletteManager();
+        if(manager != null)
+        {
+            manager.cancelPalette();
+        }
+        
         for(Object selected: selectedObjs) 
         {
-            if (selected instanceof IPresentationElement) 
+            if (selected instanceof IPresentationElement)
             {
                 IPresentationElement selectedPE = (IPresentationElement) selected;
-                Widget w=scene.findWidget(selectedPE);
-                if(w instanceof UMLNodeWidget)
-                {
-                    UMLNodeWidget nW=(UMLNodeWidget) w;
-                    //check mode first
-                    nW.setResizeMode(UMLNodeWidget.RESIZEMODE.MINIMUMSIZE);
-                    //
-                    nW.setPreferredBounds(null);
-                    nW.setPreferredSize(null);
-                    nW.setMinimumSize(null);
-                    switch(nW.getResizeMode())//get mode, it may be different from one we attempt to set
-                    {
-                        case MINIMUMSIZE:
-                            nW.setMinimumSize(nW.getDefaultMinimumSize());
-                            break;
-                        case PREFERREDBOUNDS:
-                            nW.setPreferredBounds(new Rectangle(new Point(),nW.getDefaultMinimumSize()));
-                            break;
-                        case PREFERREDSIZE:
-                            nW.setPreferredSize(nW.getPreferredSize());
-                            break;
-                    }
-                }
+                Widget w = scene.findWidget(selectedPE);
+                Util.resizeNodeToContents(w);
             }
         }
         scene.validate();
+        
+        if(manager != null)
+        {
+            manager.selectionChanged(null);
+        }
+        
     }
 
     protected boolean enable(Node[] activatedNodes)
@@ -131,5 +124,7 @@ public class ResizeToContentAction extends NodeAction
     {
         return null;
     }
+
+    
 
 }

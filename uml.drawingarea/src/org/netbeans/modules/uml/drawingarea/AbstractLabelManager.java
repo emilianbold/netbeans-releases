@@ -46,6 +46,7 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
+import java.util.HashSet;
 import javax.swing.UIManager;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.WidgetAction;
@@ -62,6 +63,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElem
 import org.netbeans.modules.uml.core.preferenceframework.PreferenceAccessor;
 import org.netbeans.modules.uml.drawingarea.persistence.EdgeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeWriter;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
 
@@ -192,6 +194,33 @@ public abstract class AbstractLabelManager implements LabelManager
         else
         {
             label.setVisible(true);
+        }
+    }
+    
+    public void selectLabel(String name)
+    {
+        selectLabel(name, LabelType.EDGE);
+    }
+    /**
+     * select and focus on labvel if it's shown
+     * @param name
+     * @param type
+     */
+    public void selectLabel(final String name, final LabelType type)
+    {
+        String completeName = name + "_" + type.toString();
+        Widget lW=labelMap.get(completeName);
+        if(lW!=null && lW.isVisible())
+        {
+            DesignerScene scene=(DesignerScene) lW.getScene();
+            Object lPres=scene.findObject(lW);
+            if(lPres!=null)
+            {
+                HashSet sel=new HashSet();
+                sel.add(lPres);
+                scene.setFocusedObject(lPres);
+                scene.setSelectedObjects(sel);
+            }
         }
     }
     

@@ -235,6 +235,7 @@ public class DataLoaderInLayerTest extends NbTestCase {
         }
     }
 
+    @RandomlyFails // NB-Core-Build #767
     public void testSimpleLoader() throws Exception {
         DataLoader l = DataLoader.getLoader(SimpleUniFileLoader.class);
         addRemoveLoader(l, true);
@@ -332,7 +333,8 @@ public class DataLoaderInLayerTest extends NbTestCase {
         addRemoveLoader("content/unknown", l3, false);
         }
     }
-    
+
+    @RandomlyFails
     public void testManifestRegistrationsTakePreceedence() throws Exception {
         DataLoader l1 = DataLoader.getLoader(SimpleUniFileLoader.class);
         DataLoader l2 = DataLoader.getLoader(AntUniFileLoader.class);

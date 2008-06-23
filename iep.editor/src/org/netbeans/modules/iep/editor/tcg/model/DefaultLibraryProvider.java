@@ -16,7 +16,7 @@ public class DefaultLibraryProvider implements LibraryProvider {
     }
     
     public ImageIcon resolveIcon(String iconName) {
-        URL imgURL = DefaultLibraryProvider.class.getResource("/images/icons32x32/" + iconName);
+        URL imgURL = DefaultLibraryProvider.class.getResource("/images/new/icons32x32/" + iconName);
         if (imgURL != null) {
             return new ImageIcon(imgURL);
         } else {

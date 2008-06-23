@@ -63,6 +63,14 @@ import java.util.List;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.JComponent;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.api.EncodingUtil;
 
@@ -82,6 +90,9 @@ import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
 
 
 /**
@@ -208,6 +219,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
         final FileObject[] fileObject = new FileObject[1];
         FileSystem.AtomicAction fsAction = new FileSystem.AtomicAction() {
             public void run() throws IOException {
+                // XXX use Freemarker instead of this hardcoded template!
                 //use the project's encoding if there is one
                 String encoding = EncodingUtil.getProjectEncoding(folder.getPrimaryFile());
                 if(!EncodingUtil.isValidEncoding(encoding))
@@ -260,13 +272,13 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
                                 writer.write("<" +prefix +":" + root + "  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'\n"); 
                             }
                         
-                            //if (namespace == null || "".equals(namespace)) {
-                              //  writer.write("  xsi:noNamespaceSchemaLocation='" + model.getSystemID() + "'>\n");
-                            //}
                             
+                            Map<String, String> nsToPre = new HashMap<String, String>();
                             if(nodes != null){
                                 for(int i=0;i < nodes.size(); i++ ){
                                     SchemaObject erdn = (SchemaObject)nodes.get(i);
+                                    nsToPre.put(erdn.getNamespace(), erdn.getPrefix());
+                                    
                                     if(erdn.getPrefix() == null || "".equals(erdn.getPrefix()) ){
                                         writer.write("   xmlns='" + erdn.getNamespace() + "'\n");
                                     }else {
@@ -292,7 +304,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
                                 }
                                
                             }
-                            
+                        model.getXMLContentAttributes().setNamespaceToPrefixMap(nsToPre);
                         generateXMLBody(model, root, writer);
                         
                     } else {
@@ -325,13 +337,14 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
                 
         filesystem.runAtomicAction(fsAction);
 
+        modifyRootElementAttrs(fileObject[0]);
         // perform default action and return
         
         Set set = new HashSet(1);                
         DataObject createdObject = DataObject.find(fileObject[0]);        
         Util.performDefaultAction(createdObject);
-        set.add(createdObject);      
-       
+        set.add(createdObject);    
+        
         return set;
     }
     
@@ -633,6 +646,38 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
             //e.printStackTrace();
             return null;
         }
+    }
+    
+     private void modifyRootElementAttrs(FileObject fobj) {
+        try {
+            File file = new File(fobj.getPath());
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            Document doc = db.parse(file);
+            doc.getDocumentElement().normalize();
+            
+            NamedNodeMap rootAttributes = doc.getDocumentElement().getAttributes();
+            Map<String, String> nsAttrs = model.getXMLContentAttributes().getNamespaceToPrefixMap();
+            
+            if(nsAttrs == null || nsAttrs.size() == 0)
+                return;
+            for(String ns:nsAttrs.keySet()) {
+                Attr attr = doc.createAttribute("xmlns:" + nsAttrs.get(ns));
+                attr.setValue(ns);
+                rootAttributes.setNamedItem(attr);
+            }
+
+            //write to oputput file
+            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+
+            DOMSource source = new DOMSource(doc);
+            Result result = new StreamResult(file);
+            transformer.transform(source, result);
+ 
+       } catch(Exception e) {
+          
+       }
     }
     
 
