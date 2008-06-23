@@ -2524,7 +2524,7 @@ statement
                 asm_block
 //	|	preprocDirective
 //        |       member_declaration
-	)
+)
 	;
 
 labeled_statement
@@ -3090,6 +3090,10 @@ unary_expression
                         //{!(LA(1)==TILDE && LA(2)==ID) || 
 			//	    qualifiedItemIsOneOf(qiVar | qiFun | qiDtor | qiCtor)}?
                         postfix_expression
+
+                |
+                        // IZ 137118 : GTK_WIDGET_SET_FLAGS macros problem
+                        LITERAL___extension__ LPAREN statement RPAREN
 		)
 	;
 
