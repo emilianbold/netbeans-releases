@@ -51,7 +51,6 @@ import java.util.List;
 import org.netbeans.modules.gsf.api.Indexer;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -73,6 +72,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
@@ -126,7 +126,8 @@ public class PHPIndexer implements Indexer {
     static final String FIELD_FIELD = "field"; //NOI18N
     static final String FIELD_METHOD = "method"; //NOI18N
     static final String FIELD_INCLUDE = "include"; //NOI18N
-    
+    static final String FIELD_IDENTIFIER = "identifier"; //NOI18N
+
     public boolean isIndexable(ParserFile file) {
         // Cannot call file.getFileObject().getMIMEType() here for several reasons:
         // (1) when cleaning up the index for deleted files, file.getFileObject().getMIMEType()
@@ -172,7 +173,7 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "0.4.2"; // NOI18N
+        return "0.4.3"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -266,6 +267,20 @@ public class PHPIndexer implements Indexer {
             }
             
             document.addPair(FIELD_INCLUDE, includes.toString(), false);
+            final IndexDocument idDocument = factory.createDocument(10);
+            documents.add(idDocument);            
+            DefaultVisitor visitor = new DefaultVisitor() {
+                @Override
+                public void visit(Identifier identifier) {
+                    StringBuilder idSignature = new StringBuilder();
+                    idSignature.append(identifier.getName().toLowerCase() + ";"); //NOI18N
+                    idSignature.append(identifier.getName() + ";"); //NOI18N
+                    idSignature.append(identifier.getStartOffset() + ";"); //NOI18N
+                    idDocument.addPair(FIELD_IDENTIFIER, idSignature.toString(), true);                    
+                    super.visit(identifier);                    
+                }                
+            };
+            visitor.scan(program);
         }
 
         private void indexClass(ClassDeclaration classDeclaration, IndexDocument document) {
