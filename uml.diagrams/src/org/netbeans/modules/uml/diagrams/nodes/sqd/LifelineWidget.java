@@ -141,8 +141,15 @@ public class LifelineWidget extends UMLNodeWidget implements PropertyChangeListe
         actorWidget.setMaximumSize(new Dimension(50,SQDDiagramEngineExtension.DEFAULT_LIFELINE_Y-SQDDiagramEngineExtension.DEFAULT_ACTORLIFELINE_Y));
         actorWidget.setPreferredSize(new Dimension(40,SQDDiagramEngineExtension.DEFAULT_LIFELINE_Y-SQDDiagramEngineExtension.DEFAULT_ACTORLIFELINE_Y));
         boxWidget=new LifelineBoxWidget(getScene(),"","");
+        boxWidget.setForeground(null);
+        boxWidget.setBackground(null);
         lineWidget=new LifelineLineWidget(getScene());
+        setBackground(null);
+        setForeground(null);
         all=new Widget(getScene());
+        all.setBackground(null);
+        all.setForeground(null);
+        all.setFont(null);
         all.addChild(actorWidget);
         all.addChild(boxWidget);
         all.addChild(lineWidget,new Integer(1));
