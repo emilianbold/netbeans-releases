@@ -38,68 +38,46 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.microedition.svg.meta;
 
-
-package org.netbeans.modules.debugger.jpda.ui.actions;
-
-
-import java.awt.event.ActionEvent;
-import java.util.Iterator;
-import javax.swing.Action;
-import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
-
-import org.netbeans.modules.debugger.jpda.ui.views.SourcesView;
-
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-import org.openide.windows.Mode;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
+import org.w3c.dom.Element;
+import org.w3c.dom.svg.SVGElement;
 
 
 /**
- * Opens Sources TopComponent.
+ * @author ads
  *
- * @author Jan Jancura
  */
-public class SourcesViewAction extends AbstractAction {
-
-    public SourcesViewAction () {
-        putValue (
-            Action.NAME, 
-            NbBundle.getMessage (
-                SourcesViewAction.class, 
-                "CTL_SourcesViewAction"
-            )
-        );
-        putValue (
-            Action.SMALL_ICON, 
-            new ImageIcon (Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/root.png")) // NOI18N
-        );
+public class ChildrenAcceptor {
+    
+    public ChildrenAcceptor( Visitor visitor ){
+        myVisitor = visitor;
     }
-
-    public void actionPerformed (ActionEvent evt) {
-        if (activateComponent (SourcesView.class)) return;
-        SourcesView v = new SourcesView ();
-        v.open ();
-        v.requestActive ();
-    }
-    // TODO Rewrite this code - it creates all TopComponents !!!
-    static boolean activateComponent (Class componentClass) {
-        Iterator it = WindowManager.getDefault ().getModes ().iterator ();
-        while (it.hasNext ()) {
-            Mode m = (Mode) it.next ();
-            TopComponent[] tcs = m.getTopComponents ();
-            int i, k = tcs.length;
-            for (i = 0; i < k; i++)
-                if (tcs [i].getClass ().equals (componentClass)) {
-                    tcs [i].open ();
-                    tcs [i].requestActive ();
-                    return true;
-                }
+    
+    public void accept( SVGElement parent ){
+        Element child = parent.getFirstElementChild();
+        while ( child != null){
+            Element next = ((SVGElement)child).getNextElementSibling();
+            if ( !getVisitor().visit( child ) ){
+                return;
+            }
+            if ( child instanceof SVGElement ){
+                child = next;
+            }
+            else {
+                return;
+            }
         }
-        return false;
     }
-}
+    
+    private Visitor getVisitor(){
+        return myVisitor;
+    }
 
+    public interface Visitor {
+        boolean visit( Element element );
+        
+    }
+    
+    private Visitor myVisitor;
+}

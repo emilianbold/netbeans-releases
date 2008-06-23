@@ -89,6 +89,25 @@ public class RakeTaskReaderTest extends RubyProjectTestBase {
         assertEquals("has multiline description", "Multiline\ndummy", multi.getDescription());
     }
 
+    public void testTaskWithNamespace() throws Exception {
+        registerLayer();
+        RubyProject project = createTestProject();
+        String rakeContent =
+                "namespace 'test' do\n" +
+                "  desc 'test coverage'\n" +
+                "  task :coverage\n" +
+                "end";
+        dumpRakefile(rakeContent, project);
+        RakeSupport.refreshTasks(project);
+        RakeTaskReader rakeTaskReader = new RakeTaskReader(project);
+        SortedSet<RakeTask> tasks = (SortedSet<RakeTask>) rakeTaskReader.getRakeTaskTree();
+        assertEquals("one tasks", 1, tasks.size());
+        RakeTask multi = RakeSupport.getRakeTask(project, "test:coverage");
+        assertNotNull(multi);
+        assertEquals("semicoloned task", "test:coverage", multi.getTask());
+        assertEquals("semicoloned task", "coverage", multi.getDisplayName());
+    }
+
     private void dumpRakefile(final String rakefileContent, final RubyProject project) throws IOException {
         FileObject script = FileUtil.createData(project.getProjectDirectory(), "Rakefile");
         PrintWriter pw = new PrintWriter(script.getOutputStream());

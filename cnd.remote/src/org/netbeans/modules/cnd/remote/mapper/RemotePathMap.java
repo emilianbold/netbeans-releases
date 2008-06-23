@@ -93,7 +93,7 @@ public class RemotePathMap extends HashMap<String, String> {
     private String initializePath(String lpath) {
         String rpath = null;
         
-        if (Boolean.getBoolean("cnd.remote.enabled")) { // Debug
+        if (Boolean.getBoolean("cnd.remote.enable")) { // Debug
             if (user.equals("gordonp")) { // Debug
                 if (lpath.toLowerCase().startsWith("z:")) { // Debug
                     rpath = "/net/pucci/export/pucci1/" + lpath.substring(2); // Debug

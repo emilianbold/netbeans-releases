@@ -315,6 +315,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                 String args = pae.getProfile().getArgsFlat();
                 String[] env = pae.getProfile().getEnvironment().getenv();
                 boolean showInput = pae.getID() == ProjectActionEvent.RUN;
+                String host = ((MakeConfiguration) pae.getConfiguration()).getDevelopmentHost().getName();
                 
                 if (pae.getID() == ProjectActionEvent.RUN) {
                     int conType = pae.getProfile().getConsoleType().getValue();
@@ -395,7 +396,6 @@ public class DefaultProjectActionHandler implements ActionListener {
                 } else { // Build or Clean
                     String[] env1 = new String[env.length + 1];
                     String csname = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getOption();
-                    String csdname = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getName();
                     String csdirs = CompilerSetManager.getDefault().getCompilerSet(csname).getDirectory();
                     if (((MakeConfiguration)pae.getConfiguration()).getCompilerSet().getFlavor().equals(CompilerFlavor.MinGW.toString())) {
                         // Also add msys to path. Thet's where sh, mkdir, ... are.
@@ -421,6 +421,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                     env = env1;
                 }
                 projectExecutor =  new NativeExecutor(
+                        host,
                         pae.getProfile().getRunDirectory(),
                         exe, args, env,
                         pae.getTabName(),

@@ -40,6 +40,8 @@
 package org.netbeans.modules.uml.drawingarea.persistence.readers;
 
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityPartition;
+import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IRegion;
+import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IState;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ICombinedFragment;
@@ -80,6 +82,10 @@ public class GraphNodeReaderFactory {
             else if (elt instanceof IPackage)
             {
                 retVal = new PackageReader(nodeInfo);
+            }
+            else if (elt instanceof IState || elt instanceof IRegion)
+            {
+                retVal = new CompositeStateReader(nodeInfo);
             }
             else
             {

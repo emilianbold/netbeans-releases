@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ruby.rubyproject.rake;
@@ -41,18 +41,24 @@ package org.netbeans.modules.ruby.rubyproject.rake;
 import java.util.Set;
 import java.util.TreeSet;
 
+/**
+ * Represent <em>task</em> or <em>namespace</em> element from Rakefile.
+ * <p>
+ * <strong>TODO</strong>: divide into <tt>RakeTask</tt> and <tt>Namespace</tt>
+ * classes.
+ */
 public final class RakeTask implements Comparable<RakeTask> {
 
     private final String task;
     private final String description;
     private final String displayName;
-    
+
     private Set<RakeTask> children;
 
     public static RakeTask newNameSpace(final String displayName) {
         return new RakeTask(null, displayName, null);
     }
-    
+
     public RakeTask(String task, String name, String description) {
         this.task = task;
         this.displayName = name;
@@ -62,7 +68,14 @@ public final class RakeTask implements Comparable<RakeTask> {
     boolean isNameSpace() {
         return task == null;
     }
-    
+
+    /**
+     * Useful only for <em>task</em>, return <tt>null</tt> for
+     * <em>namespace</em>.
+     *
+     * @return full name containing possible namespace(s), used for invoking a
+     *         task, e.g. <tt>test:coverage</tt>, <tt>db:migrate</tt>
+     */
     public String getTask() {
         return task;
     }
@@ -71,10 +84,19 @@ public final class RakeTask implements Comparable<RakeTask> {
         return children;
     }
 
+    /**
+     * @return description represented by <tt>:desc</tt> in the Rakefile.
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * Useful only for <em>task</em>, return <tt>null</tt> for
+     * <em>namespace</em>.
+     *
+     * @return task name without namespace
+     */
     public String getDisplayName() {
         return displayName;
     }
