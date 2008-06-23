@@ -1391,7 +1391,7 @@ public abstract class CsmResultItem
             this.cls = cls;
             CsmClass c = cls.getCsmClass();
             if (c != null) {
-                this.kind = cls.getKind();
+                this.kind = c.getKind();
             } else {
                 this.kind = CsmDeclaration.Kind.STRUCT;
             }
