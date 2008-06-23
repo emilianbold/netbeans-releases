@@ -91,7 +91,6 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
     public static final String SQL_HISTORY_FILE_NAME = "sql_history";  // NOI18N
     public static final Logger LOGGER = Logger.getLogger(SQLHistoryPanel.class.getName());
     private static Object[][] data;
-    private static Object[][] parsedData;
     private Object[] comboData;
     private SQLHistoryView view;
     private JEditorPane editorPane;
@@ -122,7 +121,6 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
             // Initialize sql column data          
             List<String> sqlList = view.getSQLList();
             List<String> dateList = view.getDateList();
-            parsedData = new Object[sqlList.size()][2];
             data = new Object[sqlList.size()][2];
             int row = 0;
             int maxLength; 
@@ -131,14 +129,12 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                 length = sql.trim().length();
                 maxLength = length > 50 ? 50 : length;
                 data[row][0] = sql.trim().substring(0, maxLength);
-                parsedData[row][0] = sql;
                 row++;
             }
             // Initialize data
             row = 0;
             for (String date : dateList) {
                 data[row][1] = date;
-                parsedData[row][1] = date;
                 row++;
             }
     }
@@ -776,7 +772,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                 int p1 = Math.max(caret.getDot(), caret.getMark());
                 doc.remove(p0, p1 - p0);
                 start = caret.getDot();
-                doc.insertString(start, s, null);
+                doc.insertString(start, s + ";", null); // NOI18N
             } catch (BadLocationException ble) {
                 LOGGER.log(Level.WARNING, org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_InsertAtLocationError") + ble);
             }
