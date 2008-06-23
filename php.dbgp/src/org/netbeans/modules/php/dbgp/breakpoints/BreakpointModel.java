@@ -183,7 +183,7 @@ public class BreakpointModel extends ViewModelSupport
             if (columnID.equals(Constants.BREAKPOINT_ENABLED_COLUMN_ID)) {
                 return ((AbstractBreakpoint)node).isEnabled();
             } else {
-                return null;//NOI18N 
+                return null;
             }
         }
 
