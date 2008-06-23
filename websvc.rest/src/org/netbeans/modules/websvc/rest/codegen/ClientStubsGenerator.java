@@ -1061,8 +1061,6 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 String containerRepName = root.getName();
                 //TODO
                 String containerItemRepName = root.getChildren().get(0).getName();
-                if(containerItemRepName.indexOf("Ref") != -1)
-                    containerItemRepName = containerItemRepName.substring(0, containerItemRepName.indexOf("Ref"));
                 String containerItemName = containerItemRepName.substring(0, 1).toUpperCase() + containerItemRepName.substring(1);
                 for(String token: containerStubTokens) {
                     if("__CONTAINER_NAME__".equals(token))
@@ -1270,15 +1268,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         }
         
         private String findResourceName(String repName) {
-            if(repName.contains("Ref"))
-                repName = repName.substring(0, repName.indexOf("Ref"));
             return repName.substring(0,1).toUpperCase()+repName.substring(1);
-        }
-        
-        private String findRepresentationName(String repName) {
-            if(repName.contains("Ref"))
-                return repName.substring(0, repName.indexOf("Ref"));
-            return repName;
         }
 
         private String createGetterMethod(RepresentationNode n) {
@@ -1391,8 +1381,6 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 String containerRepName = root.getName();
                 //TODO
                 String containerItemRepName = root.getChildren().get(0).getName();
-                if(containerItemRepName.indexOf("Ref") != -1)
-                    containerItemRepName = containerItemRepName.substring(0, containerItemRepName.indexOf("Ref"));
                 String containerItemName = containerItemRepName.substring(0, 1).toUpperCase() + containerItemRepName.substring(1);
                 for(String token: containerStubTokens) {
                     if("__CONTAINER_NAME__".equals(token))
@@ -1485,8 +1473,6 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 String containerRepName = root.getName();
                 //TODO
                 String containerItemRepName = root.getChildren().get(0).getName();
-                if(containerItemRepName.indexOf("Ref") != -1)
-                    containerItemRepName = containerItemRepName.substring(0, containerItemRepName.indexOf("Ref"));
                 String containerItemName = containerItemRepName.substring(0, 1).toUpperCase() + containerItemRepName.substring(1);
                 for(String token: containerStubTokens) {
                     if("__CONTAINER_NAME__".equals(token))
