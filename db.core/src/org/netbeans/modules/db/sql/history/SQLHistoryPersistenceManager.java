@@ -530,7 +530,7 @@ public class SQLHistoryPersistenceManager {
                 setXmlSqlHistoryList(xmlSqlHistoryList);
             } else {
                 // remove a statement from the beginning of the list
-                xmlSqlHistoryList.remove(0);
+                xmlSqlHistoryList.remove(xmlSqlHistoryList.size()-1);
             }
         }
  

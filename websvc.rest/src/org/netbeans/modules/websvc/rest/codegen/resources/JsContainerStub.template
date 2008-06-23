@@ -33,7 +33,7 @@ __CONTAINER_NAME__.prototype = {
 
    init : function() {
       var remote = new __CONTAINER_NAME__Remote(this.uri);
-      var c = remote.getJson();
+      var c = remote.getJson_();
       if(c != -1) {
          var myObj = eval('('+c+')');
          var __CONTAINER_PATH_NAME__ = myObj.__CONTAINER_PATH_NAME__;
@@ -66,12 +66,12 @@ __CONTAINER_NAME__.prototype = {
 
    flush : function() {
       var remote = new __CONTAINER_NAME__Remote(this.uri);
-      remote.postJson('{'+this.toString()+'}');
+      remote.postJson_('{'+this.toString()+'}');
    },
 
    flush : function(__CONTAINER_ITEM_PATH_NAME__) {
       var remote = new __CONTAINER_NAME__Remote(this.uri+'?expandLevel=0');
-      return remote.postJson('{'+__CONTAINER_ITEM_PATH_NAME__.toString()+'}');
+      return remote.postJson_('{'+__CONTAINER_ITEM_PATH_NAME__.toString()+'}');
    },
 
    toString : function() {
@@ -108,5 +108,13 @@ function __CONTAINER_NAME__Remote(uri_) {
 
 __CONTAINER_NAME__Remote.prototype = {
 
+/* Default getJson_() method used by init() method. Do not remove. */
+   getJson_ : function() {
+      return rjsSupport.get(this.uri, 'application/json');
+   },
+/* Default postJson_() method used by flush() methods. Do not remove. */
+   postJson_ : function(content) {
+      return rjsSupport.post(this.uri, 'application/json', content);
+   }
 __STUB_METHODS__
 }

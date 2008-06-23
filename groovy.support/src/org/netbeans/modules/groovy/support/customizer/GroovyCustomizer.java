@@ -97,7 +97,10 @@ public final class GroovyCustomizer implements ProjectCustomizer.CompositeCatego
             if (project != null) {
                 GroovyProjectExtender extender = project.getLookup().lookup(GroovyProjectExtender.class);
                 if (extender != null) {
-                    extender.enableGroovy();
+                    GroovyCustomizerPanel panel = extender.getPanel();
+                    if (panel != null && panel.isEnablingCheckboxSelected()) {
+                        extender.enableGroovy();
+                    }
                 }
             }
         }
