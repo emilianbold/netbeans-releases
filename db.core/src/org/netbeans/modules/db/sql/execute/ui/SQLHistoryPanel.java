@@ -89,6 +89,9 @@ import org.openide.util.NbPreferences;
 public class SQLHistoryPanel extends javax.swing.JPanel {
     public static final String SQL_HISTORY_FOLDER = "Databases/SQLHISTORY"; // NOI18N
     public static final String SQL_HISTORY_FILE_NAME = "sql_history";  // NOI18N
+    public static final String SAVE_STATEMENTS_MAX_LIMIT_ENTERED = "10000"; // NOI18N
+    public static final String SAVE_STATEMENTS_CLEARED = ""; // NOI18N  
+    public static final int SAVE_STATEMENTS_MAX_LIMIT = 10000; 
     public static final Logger LOGGER = Logger.getLogger(SQLHistoryPanel.class.getName());
     private static Object[][] data;
     private Object[] comboData;
@@ -113,7 +116,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         if (savedLimit != null) {
             sqlLimitTextField.setText(savedLimit);
         } else {
-            sqlLimitTextField.setText("10000"); // NOI18N
+            sqlLimitTextField.setText(SAVE_STATEMENTS_MAX_LIMIT_ENTERED); // NOI18N
         }
     }
 
@@ -292,34 +295,42 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     int iLimit = 0;
     inputWarningLabel.setVisible(false);
 
-    try {
-        iLimit = Integer.parseInt(limit);
-        if (iLimit < 0 || iLimit > 10000) {
-            sqlLimitButton.setEnabled(true);
+    if (limit.equals(SAVE_STATEMENTS_CLEARED)) { // NOI18N
+        iLimit = SAVE_STATEMENTS_MAX_LIMIT;
+        SQLHistoryPersistenceManager.getInstance().updateSQLSaved(iLimit, Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER));
+        ((HistoryTableModel) sqlHistoryTable.getModel()).refreshTable(null);
+        NbPreferences.forModule(SQLHistoryPanel.class).put("SQL_STATEMENTS_SAVED_FOR_HISTORY", Integer.toString(iLimit));  // NOI18N               
+        sqlLimitTextField.setText(SAVE_STATEMENTS_MAX_LIMIT_ENTERED);
+    } else {
+        try {
+            iLimit = Integer.parseInt(limit);
+            if (iLimit < 0 || iLimit > SAVE_STATEMENTS_MAX_LIMIT) {
+                sqlLimitButton.setEnabled(true);
+                inputWarningLabel.setVisible(true);
+                inputWarningLabel.setText(NbBundle.getMessage(SQLHistoryPanel.class, "SQLHistoryPanel.numberInputWarningLabel.text"));
+                // reset user's input
+                String savedLimit = NbPreferences.forModule(SQLHistoryPanel.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", SAVE_STATEMENTS_CLEARED); // NOI18N
+                if (savedLimit != null) {
+                    sqlLimitTextField.setText(savedLimit);
+                } else {
+                    sqlLimitTextField.setText(SAVE_STATEMENTS_CLEARED); // NOI18N
+                    sqlLimitTextField.setText(SAVE_STATEMENTS_MAX_LIMIT_ENTERED); // NOI18N
+                }
+            } else {
+                SQLHistoryPersistenceManager.getInstance().updateSQLSaved(iLimit, Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER));
+                ((HistoryTableModel) sqlHistoryTable.getModel()).refreshTable(null);
+                NbPreferences.forModule(SQLHistoryPanel.class).put("SQL_STATEMENTS_SAVED_FOR_HISTORY", Integer.toString(iLimit));  // NOI18N               
+            }
+        } catch (NumberFormatException ne) {
             inputWarningLabel.setVisible(true);
-            inputWarningLabel.setText(NbBundle.getMessage(SQLHistoryPanel.class, "SQLHistoryPanel.numberInputWarningLabel.text"));
+            inputWarningLabel.setText(NbBundle.getMessage(SQLHistoryPanel.class, "SQLHistoryPanel.inputWarningLabel.text"));
             // reset user's input
             String savedLimit = NbPreferences.forModule(SQLHistoryPanel.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", ""); // NOI18N
             if (savedLimit != null) {
                 sqlLimitTextField.setText(savedLimit);
             } else {
-                sqlLimitTextField.setText(""); // NOI18N
-                sqlLimitTextField.setText("10000"); // NOI18N
+                sqlLimitTextField.setText(SAVE_STATEMENTS_MAX_LIMIT_ENTERED); // NOI18N
             }
-        } else {
-            SQLHistoryPersistenceManager.getInstance().updateSQLSaved(iLimit, Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER));
-            ((HistoryTableModel)sqlHistoryTable.getModel()).refreshTable(null);
-            NbPreferences.forModule(SQLHistoryPanel.class).put("SQL_STATEMENTS_SAVED_FOR_HISTORY", Integer.toString(iLimit));  // NOI18N               
-        }
-    } catch (NumberFormatException ne) {
-        inputWarningLabel.setVisible(true);
-        inputWarningLabel.setText(NbBundle.getMessage(SQLHistoryPanel.class, "SQLHistoryPanel.inputWarningLabel.text"));
-        // reset user's input
-        String savedLimit = NbPreferences.forModule(SQLHistoryPanel.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", ""); // NOI18N
-        if (savedLimit != null) {
-            sqlLimitTextField.setText(savedLimit);
-        } else {
-            sqlLimitTextField.setText("10000"); // NOI18N
         }
     }
 }//GEN-LAST:event_sqlLimitButtonActionPerformed

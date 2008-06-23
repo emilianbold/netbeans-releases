@@ -63,7 +63,7 @@ public class SQLHistoryAction extends SQLExecutionBaseAction {
     @Override
     protected boolean enable(SQLExecution sqlExecution) {
         FileObject databaseDir = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER);
-        if (databaseDir == null) {  // NOI18N  
+        if (databaseDir == null) {    
             return false;
         } else {
             return true;
