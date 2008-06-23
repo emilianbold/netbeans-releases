@@ -369,12 +369,12 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         defaults.put("src.dir", "src"); // NOI18N
         defaults.put("build.classes.dir", "build/classes"); // NOI18N
         defaults.put(SingleModuleProperties.JAVAC_SOURCE, "1.4"); // NOI18N
-        if (type == NbModuleProvider.NETBEANS_ORG) {
-            defaults.put("test.user.dir", "${nb_all}/nbbuild/testuserdir"); // NOI18N
-        } else if (type == NbModuleProvider.STANDALONE) {
-            defaults.put("test.user.dir", "build/testuserdir"); // NOI18N
-        } else {
-            defaults.put("test.user.dir", "${suite.dir}/build/testuserdir"); // NOI18N
+        defaults.put("test.user.dir", new File(dir, "build/testuserdir").getAbsolutePath()); // NOI18N
+        Set<String> testTypes = new HashSet<String>(Arrays.asList(NbModuleProject.COMMON_TEST_TYPES));
+        // XXX would be good to add in any other types defined in project.xml
+        for (String testType : testTypes) {
+            defaults.put("test." + testType + ".src.dir", "test/" + testType + "/src"); // NOI18N
+            defaults.put("test." + testType + ".data.dir", "test/" + testType + "/data"); // NOI18N
             defaults.put("build.test." + testType + ".classes.dir", "build/test/" + testType + "/classes"); // NOI18N
         }
         providers.add(PropertyUtils.fixedPropertyProvider(defaults));
