@@ -111,6 +111,22 @@ public class J2eeTestCaseTest extends JellyTestCase {
         assertEquals("both tests", 2, t.countTestCases());
     }
 
+    public void testAlreadyRegistered(){
+        System.setProperty("org.netbeans.modules.tomcat.autoregister.catalinaHome", getDataDir().getPath());
+        Configuration conf = NbModuleSuite.createConfiguration(TD.class);
+        conf = J2eeTestCase.addServerTests(TOMCAT, conf, "testA", "testB").gui(false);
+        Test t = NbModuleSuite.create(conf);
+        t.run(new TestResult());
+        assertEquals("test A, test B", 2, t.countTestCases());
+
+        conf = NbModuleSuite.createConfiguration(TD.class);
+        conf = J2eeTestCase.addServerTests(GLASSFISH, conf, "testA").gui(false);
+        t = NbModuleSuite.create(conf);
+        t.run(new TestResult());
+        assertEquals("empty test", 1, t.countTestCases());
+        
+    }
+    
     public void testIsRegistered() {
         testServer(GLASSFISH, "com.sun.aas.installRoot");
         testServer(TOMCAT, "org.netbeans.modules.tomcat.autoregister.catalinaHome");
