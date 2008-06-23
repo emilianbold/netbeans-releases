@@ -144,6 +144,7 @@ public abstract class Children extends Object {
      */
     EntrySupport createEntrySource() {
         return new EntrySupport.Default(this);
+        //return new EntrySupport.Lazy(this);
     }
 
     /**
@@ -504,7 +505,7 @@ public abstract class Children extends Object {
      * @param current state of nodes
      * @return array of nodes that were deleted
      */
-    Node[] notifyRemove(Collection<Node> nodes, Node[] current) {
+    Node[] notifyRemove(Collection<Node> nodes, Node[] current, Entry sourceEntry) {
         //System.err.println("notifyRemove from: " + getNode ());
         //System.err.println("notifyRemove: " + nodes);
         //System.err.println("Current     : " + Arrays.asList (current));
@@ -521,7 +522,7 @@ public abstract class Children extends Object {
 
         // fire change of nodes
         parent.fireSubNodesChange(false, // remove
-                arr, current);
+                arr, current, sourceEntry);
 
         // fire change of parent
         Iterator it = nodes.iterator();
@@ -542,7 +543,7 @@ public abstract class Children extends Object {
      *
      * @param nodes list of removed nodes
      */
-    void notifyAdd(Collection<Node> nodes) {
+    void notifyAdd(Collection<Node> nodes, Entry sourceEntry) {
         // notify about parent change
         for (Node n : nodes) {
             n.assignTo(this, -1);
@@ -554,7 +555,7 @@ public abstract class Children extends Object {
         Node n = parent;
 
         if (n != null) {
-            n.fireSubNodesChange(true, arr, null);
+            n.fireSubNodesChange(true, arr, null, sourceEntry);
         }
     }
 
@@ -1237,7 +1238,7 @@ public abstract class Children extends Object {
         private static java.util.Map<Keys<?>,Runnable> lastRuns = new HashMap<Keys<?>,Runnable>(11);
 
         /** add array children before or after keys ones */
-        private boolean before;
+        boolean before;
 
         public Keys() {
             super();
@@ -1255,6 +1256,7 @@ public abstract class Children extends Object {
          * @deprecated Do not use! Just call {@link #setKeys(Collection)} with a larger set.
          */
         @Deprecated
+        @Override
         public boolean add(Node[] arr) {
             return super.add(arr);
         }
@@ -1263,6 +1265,7 @@ public abstract class Children extends Object {
          * @deprecated Do not use! Just call {@link #setKeys(Collection)} with a smaller set.
          */
         @Deprecated
+        @Override
         public boolean remove(final Node[] arr) {
             try {
                 PR.enterWriteAccess();
@@ -1417,7 +1420,7 @@ public abstract class Children extends Object {
                 PR.exitWriteAccess();
             }
         }
-
+        
         /** Create nodes for a given key.
         * @param key the key
         * @return child nodes for this key or null if there should be no
@@ -1441,8 +1444,8 @@ public abstract class Children extends Object {
 
         /** Notifies the children class that nodes has been released.
         */
-        Node[] notifyRemove(Collection<Node> nodes, Node[] current) {
-            Node[] arr = super.notifyRemove(nodes, current);
+        Node[] notifyRemove(Collection<Node> nodes, Node[] current, Entry sourceEntry) {
+            Node[] arr = super.notifyRemove(nodes, current, sourceEntry);
             destroyNodes(arr);
 
             return arr;
@@ -1478,7 +1481,7 @@ public abstract class Children extends Object {
 
         /** Entry for a key
         */
-        private final class KE extends Dupl<T> {
+        class KE extends Dupl<T> {
             /** Has default constructor that allows to create a factory
             * of KE objects for use with updateList
             */
@@ -1590,7 +1593,7 @@ public abstract class Children extends Object {
         * @return the key
         */
         @SuppressWarnings("unchecked") // data structure really weird
-        public final T getKey() {
+        public T getKey() {
             if (key instanceof Dupl) {
                 return (T) ((Dupl) key).getKey();
             } else {
@@ -1601,7 +1604,7 @@ public abstract class Children extends Object {
         /** Counts the index of this key.
         * @return integer
         */
-        public final int getCnt() {
+        public int getCnt() {
             int cnt = 0;
             Dupl d = this;
 
