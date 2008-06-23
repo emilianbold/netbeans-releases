@@ -122,11 +122,16 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
     public CombinedFragmentWidget(Scene scene, String kind) {
         super(scene,true);
         body = new Widget(getScene());
+        body.setForeground(null);
         operator = new InteractionOperatorWidget(getScene(), "");
+        operator.setForeground(null);
+        operator.setBackground(null);
         body.setBorder(BorderFactory.createLineBorder(1, getForeground()));
         operator.setPreferredLocation(new Point(0, 0));
         body.addChild(operator);
         operandsContainer = new Widget(getScene());
+        operandsContainer.setForeground(null);
+        operandsContainer.setBackground(null);
         operandsContainer.setPreferredLocation(new Point(0, 0));
         body.addChild(operandsContainer);
         //
