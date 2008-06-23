@@ -85,77 +85,79 @@ public class NumPadInputHandler extends InputHandler implements CommandListener 
         caretBlinkThread.start();
     }
     
-    public boolean handleKeyPress(SVGComponent comp, int nKeyCode) {
-        if ( comp instanceof SVGTextField) {
-            SVGTextField field = (SVGTextField) comp;
-            StringBuffer aText  = new StringBuffer(field.getText());
-            int	         nCaret = field.getCaretPosition();
-            long	 nTime  = System.currentTimeMillis();
-            long	 nDiff  = nTime - nPrevPressTime;
-            char	 cChar  = 0;
+    public boolean handleKeyPress( SVGComponent comp, int nKeyCode ) {
+        StringBuffer aText = new StringBuffer(getText(comp));
+        int nCaret = getCaretPosition(comp);
 
-            if (nKeyCode >= Canvas.KEY_NUM0 && nKeyCode <= Canvas.KEY_NUM9) {
-                String sKeyChars = NUMKEY_MAPPING[nKeyCode - Canvas.KEY_NUM0];
+        if (nCaret == -1) {
+            return false;
+        }
+        long nTime = System.currentTimeMillis();
+        long nDiff = nTime - nPrevPressTime;
+        char cChar = 0;
 
-                if (nKeyCode == nPreviousKey && nDiff < MAX_REPEAT_TIME) {
-                    nCharIndex++;
+        if (nKeyCode >= Canvas.KEY_NUM0 && nKeyCode <= Canvas.KEY_NUM9) {
+            String sKeyChars = NUMKEY_MAPPING[nKeyCode - Canvas.KEY_NUM0];
 
-                    if (nCharIndex >= sKeyChars.length()) {
-                        nCharIndex = 0;
-                    }
-                    cChar = sKeyChars.charAt(nCharIndex);
-                    aText.setCharAt(nCaret - 1, cChar);
-                } else {
-                    resetKeyState();
-                    cChar = sKeyChars.charAt(0);
-                    aText.insert(nCaret, cChar);
-                    nCaret++;
+            if (nKeyCode == nPreviousKey && nDiff < MAX_REPEAT_TIME) {
+                nCharIndex++;
+
+                if (nCharIndex >= sKeyChars.length()) {
+                    nCharIndex = 0;
                 }
+                cChar = sKeyChars.charAt(nCharIndex);
+                aText.setCharAt(nCaret - 1, cChar);
             }
             else {
-                switch (nKeyCode) {
-                    case LEFT:
-                        if (nCaret > 0) {
-                            field.setCaretPosition(nCaret-1);
-                            return true;
-                        }
-                        break;
-                    case RIGHT:
-                        if (nCaret < aText.length()) {
-                            field.setCaretPosition(nCaret+1);
-                            return true;
-                        }
-                        break;
-                    case FIRE:
-                        showTextBox(field);
-                        break;
-                    case BACKSPACE:
-                        if (nCaret > 0) {
-                            aText.deleteCharAt(--nCaret);
-                            cChar = 1;
-                        }
-                        break;
-                    // TODO: special functions
-                    case Canvas.KEY_POUND:
-                        break;
-
-                    case Canvas.KEY_STAR:
-                        break;
-
-                    default:
-                        break;
-                }
+                resetKeyState();
+                cChar = sKeyChars.charAt(0);
+                aText.insert(nCaret, cChar);
+                nCaret++;
             }
+        }
+        else {
+            switch (nKeyCode) {
+                case LEFT:
+                    if (nCaret > 0) {
+                        setCaretPosition( comp, nCaret - 1);
+                        return true;
+                    }
+                    break;
+                case RIGHT:
+                    if (nCaret < aText.length()) {
+                        setCaretPosition( comp,nCaret + 1);
+                        return true;
+                    }
+                    break;
+                case FIRE:
+                    showTextBox(comp);
+                    break;
+                case BACKSPACE:
+                    if (nCaret > 0) {
+                        aText.deleteCharAt(--nCaret);
+                        cChar = 1;
+                    }
+                    break;
+                // TODO: special functions
+                case Canvas.KEY_POUND:
+                    break;
 
-            nPreviousKey   = nKeyCode;
-            nPrevPressTime = nTime;
+                case Canvas.KEY_STAR:
+                    break;
 
-            if (cChar != 0) {
-                field.setText(aText.toString());
-                field.setCaretPosition(nCaret);
-                caretBlinkThread.interrupt();
-                return true;
-            } 
+                default:
+                    break;
+            }
+        }
+
+        nPreviousKey = nKeyCode;
+        nPrevPressTime = nTime;
+
+        if (cChar != 0) {
+            setText(comp, aText.toString());
+            setCaretPosition(comp, nCaret);
+            caretBlinkThread.interrupt();
+            return true;
         }
         return false;
     }
@@ -164,13 +166,41 @@ public class NumPadInputHandler extends InputHandler implements CommandListener 
             return false;
     }
     
-    private void resetKeyState() {
-        nPreviousKey   = 0;
-        nCharIndex     = 0;
-        nPrevPressTime = 0;
+    protected void setCaretPosition( SVGComponent comp , int position){
+        if ( comp instanceof SVGTextField  ) {
+            SVGTextField field = (SVGTextField) comp;
+            field.setCaretPosition(position);
+        }
     }
-
-    private void showTextBox(SVGTextField svgField) {
+    
+    protected void setText( SVGComponent comp , String text){
+        if ( comp instanceof SVGTextField  ) {
+            SVGTextField field = (SVGTextField) comp;
+            field.setText(text);
+        }
+    }
+    
+    protected int getCaretPosition(SVGComponent comp ){
+        if ( comp instanceof SVGTextField  ) {
+            SVGTextField field = (SVGTextField) comp;
+            return field.getCaretPosition();
+        }
+        return -1;
+    }
+    
+    protected String getText( SVGComponent comp ){
+        if ( comp instanceof SVGTextField  ) {
+            SVGTextField field = (SVGTextField) comp;
+            return field.getText();
+        }
+        return null;
+    }
+    
+    protected void showTextBox( SVGComponent comp ) {
+        if ( !(comp instanceof SVGTextField )){
+            return;
+        }
+        SVGTextField svgField = (SVGTextField) comp;
         currentTextField = svgField;
         TextBox lcduiText = new TextBox( svgField.getTitle(), svgField.getText(), 100, TextField.ANY);
         lcduiText.addCommand(new Command( "OK", Command.OK, 0));
@@ -179,6 +209,14 @@ public class NumPadInputHandler extends InputHandler implements CommandListener 
         previousDisp = display.getCurrent();
         display.setCurrent(lcduiText);
     }
+    
+    private void resetKeyState() {
+        nPreviousKey   = 0;
+        nCharIndex     = 0;
+        nPrevPressTime = 0;
+    }
+
+    
 
     public void commandAction(Command cmd, Displayable disp) {
         TextBox lcduiText = (TextBox) disp;

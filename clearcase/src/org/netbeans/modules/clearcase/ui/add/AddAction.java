@@ -46,12 +46,17 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.Dialog;
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import javax.swing.*;
 
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.clearcase.FileStatusCache;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.VersioningOutputManager;
@@ -63,9 +68,12 @@ import org.netbeans.modules.clearcase.Clearcase;
 import org.netbeans.modules.clearcase.FileInformation;
 import org.netbeans.modules.clearcase.ui.checkin.CheckinOptions;
 import org.netbeans.modules.clearcase.client.*;
+import org.netbeans.modules.clearcase.ui.checkout.CheckoutAction;
 import org.netbeans.modules.clearcase.util.ClearcaseUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
@@ -77,8 +85,8 @@ import org.openide.util.RequestProcessor;
  */
 public class AddAction extends AbstractAction {
     
-    static final String RECENT_ADD_MESSAGES = "add.messages";    
-    
+    static final String RECENT_ADD_MESSAGES = "add.messages";
+
     private final VCSContext context;
     protected final VersioningOutputManager voutput;
 
@@ -274,6 +282,8 @@ public class AddAction extends AbstractAction {
                     new AfterCommandRefreshListener(checkinParents));
             client.exec(checkinParentsCmd, true, ps);            
         }                
+        
+        closedProjectWorkaround(files);
     }
        
     private static void addAncestors(Set<File> addFiles) {
@@ -326,4 +336,31 @@ public class AddAction extends AbstractAction {
         ps.start();        
     }
     
+    private static void closedProjectWorkaround(File[] files) { // see issue #131725	
+        for (File file : files) {
+            if(!file.isDirectory()) continue;
+            FileObject projectFolder = FileUtil.toFileObject(file);
+            if (projectFolder != null) {
+                try {
+                    Project p = ProjectManager.getDefault().findProject(projectFolder);
+                    if (p != null) {
+                        Project[] projects = OpenProjects.getDefault().getOpenProjects();
+                        boolean isOpen = false;
+                        for (Project project : projects) {
+                            if(projectFolder.equals(project.getProjectDirectory())) {
+                                isOpen = true;
+                                break;
+                            }
+                        }
+                        if(!isOpen) {
+                            OpenProjects.getDefault().open(new Project[] { p }, false);
+                        }
+                    }
+                    
+                } catch (IOException e) {                            
+                    Clearcase.LOG.log(Level.INFO, null, e);  
+                }
+            }
+        }
+    }
 }

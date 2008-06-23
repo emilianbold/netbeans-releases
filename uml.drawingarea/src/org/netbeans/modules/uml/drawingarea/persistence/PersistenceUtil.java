@@ -62,6 +62,7 @@ public class PersistenceUtil {
 
     //Hashmap to maintain a list of anchors(aka GraphConnectors) and its XMI-IDs
     private static HashMap<Anchor, String> anchors = new HashMap();
+    private static boolean diagramLoading = false;
 
     public PersistenceUtil() {
     }
@@ -212,5 +213,16 @@ public class PersistenceUtil {
             nodeWriter.endDependencies();
         }        
     }
+
+    public static boolean isDiagramLoading()
+    {
+        return diagramLoading;
+    }
+
+    public static void setDiagramLoading(boolean diagramLoading)
+    {
+        PersistenceUtil.diagramLoading = diagramLoading;
+    }
+    
     
 }

@@ -43,6 +43,7 @@ package org.netbeans.core.ui.options.filetypes;
 import java.util.ArrayList;
 import java.util.Collections;
 import javax.swing.UIManager;
+import org.netbeans.core.ui.options.filetypes.FileAssociationsModel.MimeItem;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -205,7 +206,7 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
             cbExtension.setForeground(UIManager.getDefaults().getColor("ComboBox.foreground"));  //NOI18N
             cbType.setEnabled(true);
         }
-        cbType.setSelectedItem(model.getMimeType(newExtension));
+        cbType.setSelectedItem(model.getMimeItem(newExtension));
         btnRemove.setEnabled(model.canBeRemoved(newExtension));
     }//GEN-LAST:event_cbExtensionActionPerformed
 
@@ -214,7 +215,7 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
             return;
         }
         String extension = cbExtension.getSelectedItem().toString();
-        String newMimeType = cbType.getSelectedItem().toString();
+        String newMimeType = ((MimeItem)cbType.getSelectedItem()).getMimeType();
         if(model.setMimeType(extension, newMimeType)) {
             controller.changed();
         }
@@ -226,7 +227,7 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
         String extension = cbExtension.getSelectedItem().toString();
         model.setDefault(extension);
         btnDefault.setEnabled(false);
-        cbType.setSelectedItem(model.getMimeType(extension));
+        cbType.setSelectedItem(model.getMimeItem(extension));
         controller.changed();
     }//GEN-LAST:event_btnDefaultActionPerformed
 
@@ -279,8 +280,8 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             cbExtension.addItem(extension);
         }
         // pupulate MIME type combo box
-        for (String mimeType : model.getMimeTypes()) {
-            cbType.addItem(mimeType);
+        for (MimeItem mimePair : model.getMimeItems()) {
+            cbType.addItem(mimePair);
         }
     }
     

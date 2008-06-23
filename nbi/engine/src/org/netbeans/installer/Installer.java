@@ -113,57 +113,24 @@ public class Installer implements FinishHandler {
      * @param arguments Command-line parameters.
      */
     private Installer(String[] arguments) {
-        LogManager.logEntry(
-                "initializing the installer engine"); // NOI18N
+        LogManager.logEntry("initializing the installer engine"); // NOI18N
         
-        // initialize the error manager
-        ErrorManager.setFinishHandler(this);
-        ErrorManager.setExceptionHandler(new ErrorManager.ExceptionHandler());
-        
-        // attach a handler for uncaught exceptions in the main thread
-        Thread.currentThread().setUncaughtExceptionHandler(
-                ErrorManager.getExceptionHandler());
-        
-        // check whether we can safely execute on the current platform, exit in
-        // panic otherwise
-        if (SystemUtils.getCurrentPlatform() == null) {
-            ErrorManager.notifyCritical(ResourceUtils.getString(
-                    Installer.class,
-                    ERROR_UNSUPPORTED_PLATFORM_KEY));
-        }
+        initializeErrorHandler();        
+        initializePlatform();
         
         instance = this;
         
-        // output all the possible target system information -- this may help to
-        // devise the configuration differences in case of errors
-        dumpSystemInfo();
-        
+        dumpSystemInfo();        
         parseArguments(arguments);
         loadEngineProperties();
         initializeLocalDirectory();
         
         // once we have set the local directory (and therefore devised the log
         // file path) we can start logging safely
-        LogManager.setLogFile(new File(getLocalDirectory(), LOG_FILE_NAME));
-        LogManager.start();
-        
-        // initialize the download manager module
-        final DownloadManager downloadManager = DownloadManager.getInstance();
-        downloadManager.setLocalDirectory(getLocalDirectory());
-        downloadManager.setFinishHandler(this);
-        downloadManager.init();
-        
-        // initialize the product registry module
-        final Registry registry = Registry.getInstance();
-        registry.setLocalDirectory(getLocalDirectory());
-        registry.setFinishHandler(this);
-        
-        // initialize the wizard module
-        final Wizard wizard = Wizard.getInstance();
-        wizard.setFinishHandler(this);
-        wizard.getContext().put(registry);
-        
-        // create the lock file
+        initializeLogManager();
+        initializeDownloadManager();
+        initializeRegistry();
+        initializeWizard();
         createLockFile();
         
         // perform some additional intiialization for Mac OS
@@ -240,6 +207,49 @@ public class Installer implements FinishHandler {
         return localDirectory;
     }
     
+    private void initializeErrorHandler() {
+        // initialize the error manager
+        ErrorManager.setFinishHandler(this);
+        ErrorManager.setExceptionHandler(new ErrorManager.ExceptionHandler());
+        
+        // attach a handler for uncaught exceptions in the main thread
+        Thread.currentThread().setUncaughtExceptionHandler(
+                ErrorManager.getExceptionHandler());
+    }
+    
+    private void initializePlatform() {
+        // check whether we can safely execute on the current platform, exit in panic otherwise
+        if (SystemUtils.getCurrentPlatform() == null) {
+            ErrorManager.notifyCritical(ResourceUtils.getString(
+                    Installer.class,
+                    ERROR_UNSUPPORTED_PLATFORM_KEY));
+        }
+    }
+    
+    private void initializeLogManager() {
+        LogManager.setLogFile(new File(getLocalDirectory(), LOG_FILE_NAME));
+        LogManager.start();
+    }
+    
+    private void initializeDownloadManager() {
+        final DownloadManager downloadManager = DownloadManager.getInstance();
+        downloadManager.setLocalDirectory(getLocalDirectory());
+        downloadManager.setFinishHandler(this);
+        downloadManager.init();
+    }
+    
+    private void initializeRegistry() {
+        final Registry registry = Registry.getInstance();
+        registry.setLocalDirectory(getLocalDirectory());
+        registry.setFinishHandler(this);
+    }
+    
+    private void initializeWizard() {
+        final Wizard wizard = Wizard.getInstance();
+        wizard.setFinishHandler(this);
+        wizard.getContext().put(Registry.getInstance());
+    }
+    
     // private //////////////////////////////////////////////////////////////////////
     private void exitNormally(int errorCode) {
         Wizard.getInstance().close();
@@ -261,6 +271,8 @@ public class Installer implements FinishHandler {
     }
     
     private void dumpSystemInfo() {
+        // output all the possible target system information -- this may help to
+        // devise the configuration differences in case of errors        
         LogManager.logEntry("dumping target system information"); // NOI18N
         
         LogManager.logIndent("system properties:"); // NOI18N

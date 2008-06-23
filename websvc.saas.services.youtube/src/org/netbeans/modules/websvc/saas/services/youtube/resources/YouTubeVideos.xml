@@ -58,9 +58,10 @@
     <!-- xi:include href="YouTubeVideosMetaData.xml"/ -->
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.youtube.Bundle</localizing-bundle>
-        <group name="YouTube">
-        </group>
-
+        <group name="YouTube"/>
+        <code-gen>
+            <artifacts targets="java,servlet,resource,jsp"/>
+        </code-gen>
         <authentication profile="SaaSServices/YouTube/profile.properties">
             <api-key id="dev_id"/>
         </authentication>
