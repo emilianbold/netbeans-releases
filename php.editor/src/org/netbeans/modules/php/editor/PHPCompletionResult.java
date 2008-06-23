@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor;
 
 import java.util.List;
@@ -59,7 +58,8 @@ import org.openide.util.Exceptions;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class PHPCompletionResult extends DefaultCompletionResult{
+public class PHPCompletionResult extends DefaultCompletionResult {
+
     private CodeCompletionContext completionContext;
 
     public PHPCompletionResult(CodeCompletionContext completionContext, List<CompletionProposal> list) {
@@ -71,16 +71,16 @@ public class PHPCompletionResult extends DefaultCompletionResult{
     public void afterInsert(CompletionProposal item) {
         if (item instanceof PHPCompletionItem) {
             PHPCompletionItem phpItem = (PHPCompletionItem) item;
-            
+
             if (phpItem.getElement() instanceof IndexedElement) {
                 final IndexedElement elem = (IndexedElement) phpItem.getElement();
-                
-                if (!elem.isResolved()){
+
+                if (!elem.isResolved()) {
                     final BaseDocument doc = (BaseDocument) completionContext.getInfo().getDocument();
                     if (doc == null) {
                         return;
                     }
-                    
+
                     FileObject currentFolder = completionContext.getInfo().getFileObject().getParent();
                     String includePath = FileUtil.getRelativePath(currentFolder, elem.getFileObject());
 
@@ -89,34 +89,27 @@ public class PHPCompletionResult extends DefaultCompletionResult{
                     builder.append(includePath);
                     builder.append("\";\n"); //NOI18N
 
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            doc.atomicLock();
-                            
-                            TokenHierarchy th = TokenHierarchy.get(doc);
-                            TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence();
-                            tokenSequence.moveStart();
-                            
-                            while(tokenSequence.moveNext()){
-                                if (tokenSequence.token().id() == PHPTokenId.PHP_OPENTAG){
-                                    int position = tokenSequence.offset() + tokenSequence.token().length();
-                                    try {
-                                        int prevLineNumber = Utilities.getLineOffset(doc, position);
-                                        int prevLineEnd = Utilities.getRowStartFromLineOffset(doc, prevLineNumber);
-                                        doc.insertString(position, builder.toString(), null);
-                                        Utilities.reformatLine(doc, Utilities.getRowStart(doc, prevLineEnd + builder.length()));
-                                    } catch (BadLocationException ex) {
-                                        Exceptions.printStackTrace(ex);
-                                    }
-                                    
-                                    break;
-                                }
+                    TokenHierarchy th = TokenHierarchy.get(doc);
+                    TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence();
+                    tokenSequence.moveStart();
+
+                    while (tokenSequence.moveNext()) {
+                        if (tokenSequence.token().id() == PHPTokenId.PHP_OPENTAG) {
+                            int position = tokenSequence.offset() + tokenSequence.token().length();
+                            try {
+                                int prevLineNumber = Utilities.getLineOffset(doc, position);
+                                int prevLineEnd = Utilities.getRowStartFromLineOffset(doc, prevLineNumber);
+                                doc.insertString(position, builder.toString(), null);
+                                Utilities.reformatLine(doc, Utilities.getRowStart(doc, prevLineEnd + builder.length()));
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
                             }
+
+                            break;
                         }
-                    });
+                    }
                 }
             }
         }
-        
     }
 }
