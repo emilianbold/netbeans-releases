@@ -91,14 +91,16 @@ TestSupport.prototype = {
 
     init : function () {
         this.debug('Initializing scripts...');
-        var patterns = baseURL.split('>');
+        var patterns = baseURL.split('||');
         baseURL = patterns[0];
-        var servletNames = patterns[1].split(',');
-        var servletUrl = patterns[2].split(',');
-        for(var i in servletNames) {
-            var name = servletNames[i];
-            if('ServletAdaptor' == name)
-                baseURL = this.concatPath(baseURL, servletUrl[i].replace('*', ''));
+        if(patterns.length == 3) {
+          var servletNames = patterns[1].split(',');
+          var servletUrl = patterns[2].split(',');
+          for(var i in servletNames) {
+              var name = servletNames[i];
+              if('ServletAdaptor' == name)
+                  baseURL = this.concatPath(baseURL, servletUrl[i].replace('*', ''));
+          }
         }
         this.wadlURL = this.concatPath(baseURL, "application.wadl");
         this.initFromWadl();
@@ -425,20 +427,28 @@ TestSupport.prototype = {
         this.updatepage('resultheaders', '');
     },
     
+    trimEndingPathDelim : function(path) {
+        var req = path;
+        if(req.substring(req.length-1) == '/')
+            req = req.substring(0, req.length-1);
+        return req;
+    },
+    
     showBreadCrumbs : function (uri) {
         var disp = this.getDisplayUri(uri);
         this.breadCrumbs[1] = disp;
         var str = "<a class=Hyp_sun4 href=javascript:ts.clearAll() >"+ts.projectName+"</a>";
         var req = this.getDisplayUri(uri);
         var currPath = baseURL;
-        if(req.substring(req.length-1) == '/')
-            req = req.substring(0, req.length-1);
+        if(currPath.substring(currPath.length-1) != '/')
+            currPath = currPath + '/';
+        req = this.trimEndingPathDelim(req);
         var paths = req.split('/');
         for(var i=0;i<paths.length-1;i++) {
             var pname = paths[i];
             if(pname == '')
                 continue;
-            currPath += '/'+pname+'/';
+            currPath += pname+'/';
             var ndx = 0;
             var jsmethod = "ts.doShowContent('"+currPath+"')";
             for(var j=0;j<ts.allcat.length;j++) {

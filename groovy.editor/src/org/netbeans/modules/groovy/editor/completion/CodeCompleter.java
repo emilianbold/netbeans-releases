@@ -618,6 +618,8 @@ public class CodeCompleter implements CodeCompletionHandler {
         filterPrefix(prefix);
         filterLocation(request.location);
         filterClassInterfaceOrdering(completionContext);
+        filterMethodDefinitions(completionContext);
+        filterKeywordsNextToEachOther(completionContext);
         
         // add the remaining keywords to the result
         
@@ -676,7 +678,61 @@ public class CodeCompleter implements CodeCompletionHandler {
         }
 
     }
+
+    // Filter-out modifier/datatype ordering in method definitions
+    void filterMethodDefinitions(CompletionContext ctx) {
+
+        if (ctx == null || ctx.afterLiteral == null) {
+            return;
+        }
+
+
+        if (ctx.afterLiteral.id() == GroovyTokenId.LITERAL_void ||
+                ctx.afterLiteral.id() == GroovyTokenId.IDENTIFIER ||
+                ctx.afterLiteral.id().primaryCategory().equals("number")) {
+
+            // we have to filter-out the primitive types
+
+            for (GroovyKeyword groovyKeyword : keywords) {
+                if (groovyKeyword.category == KeywordCategory.PRIMITIVE) {
+                    LOG.log(Level.FINEST, "filterMethodDefinitions - removing : {0}", groovyKeyword.name);
+                    keywords.remove(groovyKeyword);
+                }
+            }
+        }
+    }
+
     
+    // Filter-out keywords, if we are surrounded by others.
+    // This can only be an approximation.
+    
+    void filterKeywordsNextToEachOther(CompletionContext ctx) {
+
+        if (ctx == null) {
+            return;
+        }
+        
+        boolean filter = false;
+
+        if(ctx.after1 != null && ctx.after1.id().primaryCategory().equals("keyword")){
+            filter = true;
+        }
+        
+        if(ctx.before1 != null && ctx.before1.id().primaryCategory().equals("keyword")){
+            filter = true;
+        }
+ 
+        if (filter) {
+            for (GroovyKeyword groovyKeyword : keywords) {
+                if (groovyKeyword.category == KeywordCategory.KEYWORD) {
+                    LOG.log(Level.FINEST, "filterMethodDefinitions - removing : {0}", groovyKeyword.name);
+                    keywords.remove(groovyKeyword);
+                }
+            }
+        }
+      
+    }
+
     boolean checkKeywordAllowance(GroovyKeyword groovyKeyword, CaretLocation location){
         
         if(location == null){
