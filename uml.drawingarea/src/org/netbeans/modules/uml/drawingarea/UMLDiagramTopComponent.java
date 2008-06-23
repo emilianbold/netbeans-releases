@@ -95,6 +95,7 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.IConnectableElemen
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IStructuredClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IFeature;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IUMLBinding;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlsupport.FileExtensions;
 import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;
@@ -1321,10 +1322,15 @@ public class UMLDiagramTopComponent extends TopComponent
             
             if((changeType != ModelElementChangedKind.DELETE) &&
                        (changeType != ModelElementChangedKind.PRE_DELETE))//update parent only if it's update event, not a delete one
-            for(IElement el=elementToNotify.getOwner();el!=null && !(el instanceof IProject) && (presentations==null || presentations.size()==0);el=el.getOwner())
             {
-                presentations=getPresentationElements(el);//sometimes child elements are presented on a diagram but do not have presentations, update parent to get child updated
-                //for example binding elements are childs on template binding, and updated this way
+                if(changedElement instanceof IUMLBinding)//common approach was cause of number of regressions, so better to specify objects which require to update parents in current realization
+                {
+                    for(IElement el=elementToNotify.getOwner();el!=null && !(el instanceof IProject) && (presentations==null || presentations.size()==0);el=el.getOwner())
+                    {
+                        presentations=getPresentationElements(el);//sometimes child elements are presented on a diagram but do not have presentations, update parent to get child updated
+                        //for example binding elements are childs on template binding, and updated this way
+                    }
+                }
             }
             
             Object oldValue = null;
