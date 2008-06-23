@@ -145,12 +145,15 @@ public final class Utils {
     }
 
     /**
-     * Check whether the provided String is valid file name.
+     * Check whether the provided String is valid file name. An empty String is considered to be invalid.
      * @param fileName file name.
      * @return <code>true</true> if the provided String is valid file name.
      */
     public static boolean isValidFileName(String fileName) {
         assert fileName != null;
+        if (fileName.trim().length() == 0) {
+            return false;
+        }
         for (char ch : INVALID_FILENAME_CHARS) {
             if (fileName.indexOf(ch) != -1) {
                 return false;
