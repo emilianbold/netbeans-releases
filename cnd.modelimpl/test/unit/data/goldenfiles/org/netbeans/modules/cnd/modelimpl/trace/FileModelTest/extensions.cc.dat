@@ -1,0 +1,40 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 0):
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE extensions.cc
+Includes:
+    <no includes>
+Macros:
+    <no macros>
+FUNCTION DEFINITION foo  [2:1/1-8:2/111] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE foo()
+    UNIQUE NAME f:foo()
+    DECLARATION: foo  [2:1/1-8:2/111]
+    PARAMETERS:
+    RETURNS int TEXT=int  [2:1/1-2:4/4]
+    STATEMENT COMPOUND  [2:11/11-8:2/111] SCOPE: foo 
+        STATEMENT DECLARATION  [3:5/17-3:15/27] SCOPE: Stmt  [2:11/11-8:2/111]
+            VARIABLE i [3:5/17-3:15/27]  TYPE: int TEXT=int  [3:5/17-3:8/20]  INIT: text='0'  SCOPE: Stmt  [2:11/11-8:2/111]
+        STATEMENT EXPRESSION  [4:5/32-4:27/54] SCOPE: Stmt  [2:11/11-8:2/111] text: '__extension__ ({i++;})'
+        STATEMENT EXPRESSION  [5:5/60-5:34/89] SCOPE: Stmt  [2:11/11-8:2/111] text: '(void) __extension__ ({i--;})'
+        STATEMENT RETURN  [7:5/100-7:14/109] SCOPE: Stmt  [2:11/11-8:2/111] text: 'return i;'
+
+========== Dumping model of PROJECT DummyProject
+FUNCTION DEFINITION foo  [2:1/1-8:2/111] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE foo()
+    UNIQUE NAME f:foo()
+    DECLARATION: foo  [2:1/1-8:2/111]
+    PARAMETERS:
+    RETURNS int TEXT=int  [2:1/1-2:4/4]
+    STATEMENT COMPOUND  [2:11/11-8:2/111] SCOPE: foo 
+        STATEMENT DECLARATION  [3:5/17-3:15/27] SCOPE: Stmt  [2:11/11-8:2/111]
+            VARIABLE i [3:5/17-3:15/27]  TYPE: int TEXT=int  [3:5/17-3:8/20]  INIT: text='0'  SCOPE: Stmt  [2:11/11-8:2/111]
+        STATEMENT EXPRESSION  [4:5/32-4:27/54] SCOPE: Stmt  [2:11/11-8:2/111] text: '__extension__ ({i++;})'
+        STATEMENT EXPRESSION  [5:5/60-5:34/89] SCOPE: Stmt  [2:11/11-8:2/111] text: '(void) __extension__ ({i--;})'
+        STATEMENT RETURN  [7:5/100-7:14/109] SCOPE: Stmt  [2:11/11-8:2/111] text: 'return i;'
+

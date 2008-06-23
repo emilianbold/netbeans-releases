@@ -580,6 +580,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
         CsmDeclaration.Kind kinds[] =	{
             CsmDeclaration.Kind.CLASS,
+            CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION,
             CsmDeclaration.Kind.STRUCT,
             CsmDeclaration.Kind.UNION,
             CsmDeclaration.Kind.ENUM,

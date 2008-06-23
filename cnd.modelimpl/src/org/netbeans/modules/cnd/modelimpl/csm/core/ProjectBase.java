@@ -1229,7 +1229,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         //    res.add(lib);
         //}
         if (!isArtificial()) {
-            for(LibProjectImpl library : LibraryManager.getInstance().getLiraries((ProjectImpl)this)){
+            for(LibProjectImpl library : LibraryManager.getInstance().getLibraries((ProjectImpl)this)){
                 res.add(library);
             }
         }
