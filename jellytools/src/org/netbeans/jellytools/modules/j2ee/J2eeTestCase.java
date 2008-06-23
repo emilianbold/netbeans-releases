@@ -63,7 +63,6 @@ public class J2eeTestCase extends JellyTestCase {
     }
 
     private static Configuration addGlassfishTests(Configuration conf, Class<? extends TestCase> clazz, String... testNames) {
-        Configuration result = conf;
         String glassfishPath = System.getProperty("glassfish.home");
         if (glassfishPath == null){
             glassfishPath = System.getProperty("j2ee.appserver.path");
@@ -71,38 +70,33 @@ public class J2eeTestCase extends JellyTestCase {
         if (isValidPath(glassfishPath) && isValidPath(glassfishPath + "/domains/domain1")) {
             LOG.info("Setting server path " + glassfishPath);
             System.setProperty(GLASSFISH_PATH, glassfishPath);
-            result = addTest(conf, clazz, testNames);
+            return addTest(conf, clazz, testNames);
         }else{
-            conf.addTest("testEmpty");
+            return conf.addTest("testEmpty");
         }
-        return result;
     }
 
     private static Configuration addTomcatTests(Configuration conf, Class<? extends TestCase> clazz, String... testNames) {
-        Configuration result = conf;
         String tomcatPath = System.getProperty("tomcat.home");
         if (isValidPath(tomcatPath)) {
             LOG.info("Setting server path " + tomcatPath);
             System.setProperty(TOMCAT_PATH, tomcatPath);
             System.setProperty("org.netbeans.modules.tomcat.autoregister.token", "1");
-            result = addTest(conf, clazz, testNames);
+            return addTest(conf, clazz, testNames);
         }else{
-            conf.addTest("testEmpty");
+            return conf.addTest("testEmpty");
         }
-        return result;
     }
 
     private static Configuration addJBossTests(Configuration conf, Class<? extends TestCase> clazz, String... testNames) {
-        Configuration result = conf;
         String jbossPath = System.getProperty("jboss.home");
         if (isValidPath(jbossPath)) {
             LOG.info("Setting server path " + jbossPath);
             System.setProperty(JBOSS_PATH, jbossPath);
-            result = addTest(conf, clazz, testNames);
+            return addTest(conf, clazz, testNames);
         }else{
-            conf.addTest("testEmpty");
+            return conf.addTest("testEmpty");
         }
-        return result;
     }
 
     private static boolean isValidPath(String path) {

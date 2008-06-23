@@ -97,11 +97,6 @@ public class AutoCompletionTest extends CompletionTest {
     }
 
     @Override
-    public void setUp() {
-        super.setUp();
-    }
-        
-    @Override
     protected void exec(JEditorPane editor, TestStep step) throws Exception {
         try {
             final BaseDocument doc = (BaseDocument) editor.getDocument();
