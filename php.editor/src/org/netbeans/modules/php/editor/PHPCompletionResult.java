@@ -99,12 +99,12 @@ public class PHPCompletionResult extends DefaultCompletionResult{
                             
                             while(tokenSequence.moveNext()){
                                 if (tokenSequence.token().id() == PHPTokenId.PHP_OPENTAG){
-                                    int position = tokenSequence.index() + tokenSequence.token().length();
+                                    int position = tokenSequence.offset() + tokenSequence.token().length();
                                     try {
                                         int prevLineNumber = Utilities.getLineOffset(doc, position);
                                         int prevLineEnd = Utilities.getRowStartFromLineOffset(doc, prevLineNumber);
                                         doc.insertString(position, builder.toString(), null);
-                                        Utilities.reformatLine(doc, Utilities.getRowStart(doc, prevLineEnd + 1));
+                                        Utilities.reformatLine(doc, Utilities.getRowStart(doc, prevLineEnd + builder.length()));
                                     } catch (BadLocationException ex) {
                                         Exceptions.printStackTrace(ex);
                                     }
