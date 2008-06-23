@@ -301,6 +301,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("extensions.cc"); // NOI18N
     }
 
+    public void testClassTemplateMethodCall() throws Exception {
+        // IZ 137531 : IDE highlights db.template cursor<T> line as error
+        performTest("class_template_method_call.cc"); // NOI18N
+    }
+    
     public void testStringizeMacro() throws Exception {
         // IZ 137465 : wrong macro expansion for #x
         performPreprocessorTest("stringize_macro.cc"); // NOI18N
