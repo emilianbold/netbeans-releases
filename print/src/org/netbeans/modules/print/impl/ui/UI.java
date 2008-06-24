@@ -278,9 +278,7 @@ public final class UI {
   }
 
   public static boolean printConfirmation(String message) {
-    return NotifyDescriptor.YES_OPTION.equals(
-      DialogDisplayer.getDefault().notify(
-        new NotifyDescriptor.Confirmation(message, NotifyDescriptor.YES_NO_OPTION)));
+    return NotifyDescriptor.YES_OPTION.equals(DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(message, NotifyDescriptor.YES_NO_OPTION)));
   }
 
   public static void printInformation(String message) {

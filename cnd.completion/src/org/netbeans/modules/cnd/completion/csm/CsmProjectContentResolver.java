@@ -758,6 +758,7 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.UNION,
             CsmDeclaration.Kind.STRUCT,
             CsmDeclaration.Kind.CLASS,
+            CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION,
             CsmDeclaration.Kind.ENUM
         };
         List res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, false, match, inspectParentClasses, true, false);

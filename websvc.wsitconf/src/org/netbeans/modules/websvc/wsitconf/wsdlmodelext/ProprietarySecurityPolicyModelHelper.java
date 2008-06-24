@@ -74,6 +74,7 @@ import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.SCClientCon
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.TrustStore;
 import org.netbeans.modules.xml.wsdl.model.*;
 import java.util.List;
+import javax.xml.namespace.QName;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.AddressingAttribute;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.KerberosConfig;
@@ -81,6 +82,7 @@ import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.Dis
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.ServiceProvider;
 import org.netbeans.modules.websvc.wsitmodelext.trust.TrustQName;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPOperation;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 
 /**
  *
@@ -646,8 +648,19 @@ public class ProprietarySecurityPolicyModelHelper {
                         sOps.get(0).setAttribute("soapAction", TrustQName.getNamespaceUri(configVersion) + "/RST/Issue");
                         Operation pOp = bO.getOperation().get();
                         if (pOp != null) {
-                            pOp.getInput().setAttribute("unknown", AddressingAttribute.ACTION, TrustQName.getNamespaceUri(configVersion) + "/RST/Issue");
-                            pOp.getOutput().setAttribute("unknown", AddressingAttribute.ACTION, TrustQName.getNamespaceUri(configVersion) + "/RSTR/Issue");
+                            QName qname10 = new QName(TrustQName.getNamespaceUri(ConfigVersion.CONFIG_1_0), AddressingAttribute.ACTION.getName(), "wsam");
+                            QName qname13 = new QName(TrustQName.getNamespaceUri(ConfigVersion.CONFIG_1_3), AddressingAttribute.ACTION.getName(), "wsam");
+
+                            ((AbstractDocumentComponent) pOp.getInput()).setAnyAttribute(qname10, null);
+                            ((AbstractDocumentComponent) pOp.getOutput()).setAnyAttribute(qname10, null);
+                            ((AbstractDocumentComponent) pOp.getInput()).setAnyAttribute(qname13, null);
+                            ((AbstractDocumentComponent) pOp.getOutput()).setAnyAttribute(qname13, null);
+
+                            QName qname = new QName(TrustQName.getNamespaceUri(configVersion), AddressingAttribute.ACTION.getName(), "wsam");
+                            ((AbstractDocumentComponent) pOp.getInput()).setAnyAttribute(qname,
+                                    TrustQName.getNamespaceUri(configVersion) + "/RST/Issue");
+                            ((AbstractDocumentComponent) pOp.getOutput()).setAnyAttribute(qname,
+                                    TrustQName.getNamespaceUri(configVersion) + "/RSTR/Issue");
                         }
                     }
                 }

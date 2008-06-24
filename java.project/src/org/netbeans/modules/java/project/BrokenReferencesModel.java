@@ -277,8 +277,8 @@ public class BrokenReferencesModel extends AbstractListModel {
             }
             else if (key.startsWith("file.reference")) {    //NOI18N
                 File f = getFile(helper, evaluator, value);
-                boolean alreadyChecked = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).
-                        getProperty(key).startsWith("${var."); // NOI18N
+                String unevaluatedValue = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(key);
+                boolean alreadyChecked = unevaluatedValue != null ? unevaluatedValue.startsWith("${var.") : false; // NOI18N
                 if (f.exists() || all.indexOf(value) == -1 || alreadyChecked) { // NOI18N
                     continue;
                 }

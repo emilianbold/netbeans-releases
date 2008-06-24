@@ -556,8 +556,9 @@ public class VisualReplicator {
         }
         // Mnemonics support - end -
 
+        boolean buttonGroup = ("buttonGroup".equals(property.getName()) && (targetComp instanceof AbstractButton)); // NOI18N
         Method writeMethod = FormUtils.getPropertyWriteMethod(property, targetComp.getClass());
-        if (writeMethod == null)
+        if ((writeMethod == null) && !buttonGroup)
             return;
 
         try {
@@ -598,7 +599,25 @@ public class VisualReplicator {
                 }
             }
 
-            writeMethod.invoke(targetComp, new Object[] { clonedValue });
+            if (buttonGroup) {
+                // special case - add button to button group
+                AbstractButton button = (AbstractButton)targetComp;
+                // remove from the old group
+                ButtonModel model = button.getModel();
+                if (model instanceof DefaultButtonModel) {
+                    DefaultButtonModel buttonModel = (DefaultButtonModel)model;
+                    ButtonGroup group = buttonModel.getGroup();
+                    if (group != null) {
+                        group.remove(button);
+                    }
+                }
+                // add to the new group
+                if (clonedValue instanceof ButtonGroup) {
+                    ((ButtonGroup)clonedValue).add(button);
+                }
+            } else {
+                writeMethod.invoke(targetComp, new Object[] { clonedValue });
+            }
 
             if (targetComp instanceof Component) {
                 ((Component)targetComp).invalidate();
