@@ -107,6 +107,20 @@ public class EdgeWriter extends Writer {
         XMIWriter.writeEndElement(bw, XMIConstants.UML_GRAPHEDGE);
     }
 
+    @Override
+    public void beginGraphNode()
+    {
+        XMIWriter.writeElement(bw, XMIConstants.UML_GRAPHNODE, getNodeAttrs());
+        writePositionSize();
+        //do we have any properties?
+        if (!getProperties().isEmpty())
+        {
+            XMIWriter.writeProperties(bw, getNodeProperties());
+        }
+        //write graph elemnet symantic model
+        XMIWriter.writeSimpleSymanticModel(bw, getSimpleSymanticModelEltAttrs());
+    }
+
     public void writeEdgeAnchors() {
         //begin anchor tag
         XMIWriter.writeBeginElement(bw, XMIConstants.UML_GRAPHEDGE_ANCHORS);

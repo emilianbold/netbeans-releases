@@ -1008,6 +1008,7 @@ class DiagramLoader
         try
         {           
             NodeInfo nodeInfo = new NodeInfo();
+            Hashtable<String, String> props = new Hashtable();
             nodeInfo.setPEID(reader.getAttributeValue(null, "xmi.id"));
             while (reader.hasNext())
             {
@@ -1026,17 +1027,19 @@ class DiagramLoader
                     }
                     else if (reader.getName().getLocalPart().equalsIgnoreCase("DiagramElement.property"))
                     {
+                        props = processProperties();
+                        nodeInfo.setProperties(props);
                     }
                     else if (reader.getName().getLocalPart().equalsIgnoreCase("SimpleSemanticModelElement"))
                     {
                         String typeInfo = reader.getAttributeValue(null, "typeinfo");
                         if (typeInfo.length() > 0)
                         {
-
                             EdgeInfo.EdgeLabel eLabel = edgeReader.new EdgeLabel();
                             eLabel.setLabel(typeInfo);
                             eLabel.setPosition(nodeInfo.getPosition());
                             eLabel.setSize(nodeInfo.getSize());
+                            eLabel.setLabelProperties(nodeInfo.getProperties());
                             if (mostRecentEnd == null)
                             {
                                 edgeReader.getLabels().add(eLabel);
