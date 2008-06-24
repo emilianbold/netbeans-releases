@@ -225,15 +225,15 @@ public class GraphView extends JPanel {
         // not want that to appear in the button label.
         showHideMessageToggle.setText(null);
         showHideMessageToggle.setRolloverEnabled(true);
+
         if (border != null) {
             showHideMessageToggle.setBorder(border);
         }
         toolbar.add(showHideMessageToggle);
 
         // vlv: print
-// todo add after # 136903
-//        toolbar.addSeparator();
-//        toolbar.add(PrintManager.printPreviewAction());
+        toolbar.addSeparator();
+        toolbar.add(PrintManager.printPreviewAction());
     }
 
     /**
