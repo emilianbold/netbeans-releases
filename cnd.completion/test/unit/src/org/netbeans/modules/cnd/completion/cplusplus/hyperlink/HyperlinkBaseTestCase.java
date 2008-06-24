@@ -73,6 +73,10 @@ public abstract class HyperlinkBaseTestCase extends ProjectBasedTestCase {
         super(testName);
     }
 
+    public HyperlinkBaseTestCase(String testName, boolean performInWorkDir) {
+        super(testName, performInWorkDir);
+    }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();    

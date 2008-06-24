@@ -982,7 +982,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                 if (isConstructor) {
                                     compResolver.setResolveTypes(CompletionResolver.RESOLVE_CLASSES |  
                                                             CompletionResolver.RESOLVE_TEMPLATE_PARAMETERS | 
-                                                            CompletionResolver.RESOLVE_GLOB_NAMESPACES);
+                                                            CompletionResolver.RESOLVE_GLOB_NAMESPACES | 
+                                                            CompletionResolver.RESOLVE_LIB_CLASSES);
                                 } else {
                                     compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
                                 }
@@ -1449,8 +1450,11 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                            }
 //                        }
                     } 
+                    if(cls == null) {
+                        cls = findExactClass(mtdName, mtdNameExp.getTokenOffset(0));
+                    }                   
                     if (cls != null) {
-                     lastType = CsmCompletion.getType(cls, 0);
+                        lastType = CsmCompletion.getType(cls, 0);
 //                        
 //                        List ctrList = (finder instanceof JCBaseFinder) ? 
 //                            JCUtilities.getConstructors(cls, ((JCBaseFinder)finder).showDeprecated()) :

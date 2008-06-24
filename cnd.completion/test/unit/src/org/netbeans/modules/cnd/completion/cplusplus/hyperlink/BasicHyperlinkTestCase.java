@@ -210,7 +210,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         }
 
         public Failed(String testName) {
-            super(testName);
+            super(testName, true);
         }
 
         public void testKRFuncParamDecl() throws Exception {
