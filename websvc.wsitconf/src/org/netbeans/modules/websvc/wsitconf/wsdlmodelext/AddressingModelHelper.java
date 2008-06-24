@@ -109,8 +109,18 @@ public class AddressingModelHelper {
             PolicyModelHelper pmh = PolicyModelHelper.getInstance(configVersion);
             All a = pmh.createPolicy(b, false);
             Addressing13WsdlAddressing addressing = pmh.createElement(a, Addressing13WsdlQName.ADDRESSING.getQName(configVersion), Addressing13WsdlAddressing.class, false);
-            Policy p = pmh.createElement(addressing, PolicyQName.POLICY.getQName(configVersion), Policy.class, false);
-            pmh.createElement(p, Addressing13WsdlQName.ANONYMOUSRESPONSES.getQName(configVersion), Addressing13WsdlAnonymousResponses.class, false);
+            pmh.createElement(addressing, Addressing13WsdlQName.ANONYMOUSRESPONSES.getQName(configVersion), Addressing13WsdlAnonymousResponses.class, true);
+        }
+    }
+
+    void enableAddressing(All a) {
+        if (configVersion == ConfigVersion.CONFIG_1_0) {
+            PolicyModelHelper pmh = PolicyModelHelper.getInstance(configVersion);
+            pmh.createElement(a, Addressing10WsdlQName.USINGADDRESSING.getQName(), Addressing10WsdlUsingAddressing.class, false);
+        } else {
+            PolicyModelHelper pmh = PolicyModelHelper.getInstance(configVersion);
+            Addressing13WsdlAddressing addressing = pmh.createElement(a, Addressing13WsdlQName.ADDRESSING.getQName(configVersion), Addressing13WsdlAddressing.class, false);
+            pmh.createElement(addressing, Addressing13WsdlQName.ANONYMOUSRESPONSES.getQName(configVersion), Addressing13WsdlAnonymousResponses.class, true);
         }
     }
 
