@@ -43,24 +43,30 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
-import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.openide.nodes.Node;
 
-public class IntNodeProp extends Node.Property {
-    private IntConfiguration intConfiguration;
+public class DevelopmentHostNodeProp extends Node.Property {
+    private DevelopmentHostConfiguration configuration;
     private boolean canWrite;
     private String txt1;
     private String txt2;
     private String txt3;
+//    private String oldname;
 
-    public IntNodeProp(IntConfiguration intConfiguration, boolean canWrite, String txt1, String txt2, String txt3) {
+    public DevelopmentHostNodeProp(DevelopmentHostConfiguration configuration, boolean canWrite, String txt1, String txt2, String txt3) {
         super(Integer.class);
-        this.intConfiguration = intConfiguration;
+        this.configuration = configuration;
 	this.canWrite = canWrite;
 	this.txt1 = txt1;
 	this.txt2 = txt2;
 	this.txt3 = txt3;
+//        oldname = configuration.getOption();
     }
+    
+//    public String getOldname() {
+//        return oldname;
+//    }
 
     @Override
     public String getName() {
@@ -74,23 +80,23 @@ public class IntNodeProp extends Node.Property {
     
     @Override
     public String getHtmlDisplayName() {
-        if (intConfiguration.getModified())
+        if (configuration.getDevelopmentHostName().getModified())
             return "<b>" + getDisplayName(); // NOI18N
         else
             return null;
     }
     
     public Object getValue() {
-        return new Integer(intConfiguration.getValue());
+        return configuration.getDevelopmentHostName().getValue();
     }
     
     public void setValue(Object v) {
-        intConfiguration.setValue((String)v);
-    }
+        configuration.setValue((String)v);
+}
     
     @Override
     public void restoreDefaultValue() {
-        intConfiguration.reset();
+        configuration.getDevelopmentHostName().reset();
     }
     
     @Override
@@ -100,7 +106,7 @@ public class IntNodeProp extends Node.Property {
     
     @Override
     public boolean isDefaultValue() {
-        return !intConfiguration.getModified();
+        return !configuration.getDevelopmentHostName().getModified();
     }
 
     public boolean canWrite() {
@@ -124,7 +130,8 @@ public class IntNodeProp extends Node.Property {
         
         @Override
         public String getAsText() {
-            return intConfiguration.getName();
+            String displayName = configuration.getDisplayName();
+            return displayName;
         }
         
         @Override
@@ -134,7 +141,7 @@ public class IntNodeProp extends Node.Property {
         
         @Override
         public String[] getTags() {
-            return intConfiguration.getNames();
+            return configuration.getServerNames();
         }
     }
 }
