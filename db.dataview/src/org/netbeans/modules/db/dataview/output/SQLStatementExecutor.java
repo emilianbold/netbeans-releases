@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,62 +38,63 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.db.dataview.output;
 
-package org.netbeans.modules.db.sql.execute.ui;
-
-import java.io.IOException;
 import java.sql.SQLException;
-import org.netbeans.modules.db.sql.execute.SQLExecutionResult;
-import org.netbeans.modules.db.sql.execute.SQLExecutionResults;
+import org.netbeans.modules.db.dataview.meta.DBException;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.openide.util.Cancellable;
+import org.openide.util.RequestProcessor;
 
 /**
- *
- * @author Andrei Badea
+ * @author Ahimanikya Satapathy
  */
-public class SQLResultPanelModel {
-    
-    private final ResultSetTableModel resultSetModel;
-    private final String affectedRows;
-    
-    public static SQLResultPanelModel create(SQLExecutionResults executionResults) throws IOException, SQLException {
-        ResultSetTableModel resultSetModel = null;
-        String affectedRows = null;
-        
-        if (executionResults != null && executionResults.size() > 0) {
-            SQLExecutionResult result = (SQLExecutionResult)executionResults.getResults().iterator().next();
-            
-            if (result.getResultSet() != null) {
-                resultSetModel = ResultSetTableModel.create(
-                        result.getDatabaseMetaData(), result.getResultSet());
-                if (resultSetModel == null) { // thread interrupted
-                    return null;
-                }
-            } else {
-                return new SQLResultPanelModel();
-            }
-        }
-        
-        return new SQLResultPanelModel(resultSetModel, affectedRows);
+abstract class SQLStatementExecutor implements Runnable, Cancellable {
+
+    protected volatile Throwable ex;
+    private String title;
+    private String msg;
+    // the task representing the execution of statements
+    private volatile RequestProcessor.Task task;
+    protected final DataView parent;
+
+    public SQLStatementExecutor(DataView parent, String title, String msg) {
+        this.title = title;
+        this.msg = msg;
+        this.parent = parent;
     }
 
-    private SQLResultPanelModel() {
-        this(null, null);
+    public void setTask(RequestProcessor.Task task) {
+        this.task = task;
     }
-    
-    private SQLResultPanelModel(ResultSetTableModel resultSetModel, String affectedRows) {
-        this.resultSetModel = resultSetModel;
-        this.affectedRows = affectedRows;
+
+    public abstract void finished();
+
+    public abstract void execute() throws SQLException, DBException;
+
+    public void run() {
+        assert task != null : "Should have called setTask()";
+        try {
+            ProgressHandle handle = ProgressHandleFactory.createHandle(title, this);
+            handle.setDisplayName(msg);
+            handle.start();
+            try {
+                handle.switchToIndeterminate();
+                parent.setInfoStatusText("");
+                // NOI18N
+                execute();
+            } finally {
+                handle.finish();
+            }
+        } catch (Exception e) {
+            this.ex = e;
+        } finally {
+            finished();
+        }
     }
-    
-    public ResultSetTableModel getResultSetModel() {
-        return resultSetModel;
-    }
-    
-    public String getAffectedRows() {
-        return affectedRows;
-    }
-    
-    public boolean isEmpty() {
-        return resultSetModel == null && affectedRows == null;
+
+    public boolean cancel() {
+        return task.cancel();
     }
 }

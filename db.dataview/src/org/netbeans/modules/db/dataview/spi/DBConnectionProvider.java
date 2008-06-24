@@ -38,40 +38,20 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.db.dataview.spi;
 
-package org.netbeans.modules.db.sql.execute;
-
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.db.dataview.output.DataView;
+import java.sql.Connection;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 
 /**
- * Encapsulates the result of the execution of a list of SQL statements.
- *
- * @author Andrei Badea
+ * An SPI for which different provider are available
+ * registered via standard META-INF/services
+ * 
+ * @author Ahimanikya Satapathy
  */
-public class SQLExecutionResults {
-    
-    private final List<DataView> results;
-    
-    public SQLExecutionResults(List<DataView> results) {
-        this.results = Collections.unmodifiableList(results);
-    }
-    
-    public List<DataView> getResults() {
-        return results;
-    }
-    
-    public int size() {
-        return results.size();
-    }
-    
-    public boolean hasExceptions() {
-        for (DataView result: results) {
-            if (result.hasException()) {
-                return true;
-            }
-        }
-        return false;
-    }
+public interface DBConnectionProvider {
+
+    public Connection getConnection(DatabaseConnection dbConn);
+
+    public void closeConnection(Connection con);
 }
