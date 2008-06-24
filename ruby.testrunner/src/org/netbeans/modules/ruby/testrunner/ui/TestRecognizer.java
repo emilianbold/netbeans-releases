@@ -39,6 +39,8 @@
 package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.testrunner.ui.TestSession.SessionType;
@@ -49,8 +51,10 @@ import org.netbeans.modules.ruby.testrunner.ui.TestSession.SessionType;
  */
 public final class TestRecognizer extends OutputRecognizer {
 
+    private static final Logger LOGGER = Logger.getLogger(TestRecognizer.class.getName());
+    
     private final Manager manager;
-    private TestSession session;
+    private final TestSession session;
     private final FileLocator fileLocator;
     private final SessionType sessionType;
             
@@ -65,22 +69,33 @@ public final class TestRecognizer extends OutputRecognizer {
         this.fileLocator = fileLocator;
         this.handlers = handlers;
         this.sessionType = sessionType;
+        this.session = new TestSession(fileLocator, sessionType);
     }
 
     @Override
     public void start() {
-        this.session = new TestSession(fileLocator, sessionType);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Session starting: " + session);
+        }
         manager.testStarted(session);
     }
 
     @Override
     public RecognizedOutput processLine(String line) {
-
+        
         for (TestRecognizerHandler handler : handlers) {
             if (handler.matches(line)) {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "Handler [" + handler + "] matched line: " + line);
+                }
+
                 handler.updateUI(manager, session);
                 return handler.getRecognizedOutput();
             }
+        }
+
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "No handler for line: " + line);
         }
 
         manager.displayOutput(session, line, false);
@@ -89,6 +104,9 @@ public final class TestRecognizer extends OutputRecognizer {
 
     @Override
     public void finish() {
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Session finished: " + session);
+        }
         manager.sessionFinished(session);
     }
 }

@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.ruby.testrunner;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.ruby.platform.execution.ExecutionService;
 import org.openide.util.ChangeSupport;
@@ -52,6 +54,8 @@ import org.openide.util.TaskListener;
  */
 public final class TestExecutionManager {
 
+    private final static Logger LOGGER = Logger.getLogger(TestExecutionManager.class.getName());
+    
     /**
      * The current execution.
      */
@@ -78,6 +82,9 @@ public final class TestExecutionManager {
      */
     synchronized void start(ExecutionService executionService) {
         execution = executionService;
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Starting: " + execution);
+        }
         setFinished(false);
         handleTask(execution.run());
     }
@@ -112,6 +119,9 @@ public final class TestExecutionManager {
      * Re-runs the last run test execution.
      */
     public synchronized void rerun() {
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Re-running: " + execution);
+        }
         setFinished(false);
         handleTask(execution.rerun());
     }
