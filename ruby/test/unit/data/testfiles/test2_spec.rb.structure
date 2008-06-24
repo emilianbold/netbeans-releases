@@ -1,0 +1,6 @@
+UserSpecHelper:MODULE:[]:ESCAPED{UserSpecHelper}:
+  valid_user_attributes:METHOD:[PUBLIC]:ESCAPED{valid_user_attributes}:
+context: A user (in general):TEST:[]:ESCAPED{context: A user (in general)}:
+  specify: should be invalid without a...:TEST:[]:ESCAPED{specify: should be invalid without a...}:
+  specify: should be invalid without a...:TEST:[]:ESCAPED{specify: should be invalid without a...}:
+  specify: should be invalid without a...:TEST:[]:ESCAPED{specify: should be invalid without a...}:

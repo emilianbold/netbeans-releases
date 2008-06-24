@@ -65,6 +65,12 @@ public class RubyPositionManager implements PositionManager {
 
             return new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
         } else {
+            if (objectHandle instanceof AstElement) {
+                AstElement el = (AstElement)objectHandle;
+                if (el.getNode() != null) {
+                    return AstUtilities.getRange(el.getNode());
+                }
+            }
             throw new IllegalArgumentException("Foreign element: " + object + " of type " +
                     (object != null ? object.getClass().getName() : "null"));
         }

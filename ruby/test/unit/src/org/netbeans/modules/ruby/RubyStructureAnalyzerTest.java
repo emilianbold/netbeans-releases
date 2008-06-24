@@ -193,4 +193,39 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
         assertEquals("same hashCode", first.hashCode(), second.hashCode());
     }
 
+    public void testTestStructure0() throws Exception {
+        checkStructure("testfiles/new_test.rb");
+    }
+
+    public void testTestStructure1() throws Exception {
+        checkStructure("testfiles/test1_spec.rb");
+    }
+
+    public void testTestStructure2() throws Exception {
+        checkStructure("testfiles/test2_spec.rb");
+    }
+
+    public void testTestStructure3() throws Exception {
+        checkStructure("testfiles/test3_spec.rb");
+    }
+
+    public void testTestStructure4() throws Exception {
+        checkStructure("testfiles/test4_spec.rb");
+    }
+
+    public void testTestStructure4b() throws Exception {
+        checkFolds("testfiles/test4_spec.rb");
+    }
+
+    public void testTestStructure5() throws Exception {
+        checkStructure("testfiles/test5_spec.rb");
+    }
+
+    public void testTestStructure6() throws Exception {
+        checkStructure("testfiles/test6_spec.rb");
+    }
+
+    public void testTestStructure7() throws Exception {
+        checkStructure("testfiles/test7_spec.rb");
+    }
 }
