@@ -155,8 +155,9 @@ public class StackGetResponse extends DbgpResponse {
         session.getBridge().hideAnnotations();
         for (Stack stack : stacks) {
             int level = stack.getLevel();
-            Line line = Utils.getLine( stack.getLine() , stack.getFileName() ,
-                    session.getSessionId() );
+            final int lineno = stack.getLine();
+            Line line = Utils.getLine(lineno > 0 ? lineno : 1,stack.getFileName() , 
+                    session.getSessionId()  );
             if ( level == 0 ) {
                 session.getBridge().showCurrentDebuggerLine(line);
             }
