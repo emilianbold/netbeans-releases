@@ -123,6 +123,11 @@ public abstract class Children extends Object {
     /** Constructor.
     */
     public Children() {
+        this(false);
+    }
+
+    public Children(boolean lazy) {
+        lazySupport = lazy;
     }
 
     /**
@@ -137,14 +142,14 @@ public abstract class Children extends Object {
             return entrySupport;
         }
     }
-
+    
+    private final boolean lazySupport;
     /**
      * Creates appropriate entry support for this children.
      * Overriden in Children.Keys to sometimes make lazy support.
      */
     EntrySupport createEntrySource() {
-        return new EntrySupport.Default(this);
-        //return new EntrySupport.Lazy(this);
+        return lazySupport ? new EntrySupport.Lazy(this) : new EntrySupport.Default(this);
     }
 
     /**
@@ -311,6 +316,7 @@ public abstract class Children extends Object {
     *   a parent node
     * *exception CloneNotSupportedException if <code>Cloneable</code> interface is not implemented
     */
+    @Override
     protected Object clone() throws CloneNotSupportedException {
         Children ch = (Children) super.clone();
         ch.parent = null;
@@ -623,6 +629,11 @@ public abstract class Children extends Object {
         * first time, children will be used.
         */
         public Array() {
+            this(false);
+        }
+
+        Array(boolean lazy) {
+            super(lazy);
             nodesEntry = createNodesEntry();
             entrySupport().setEntries(Collections.singleton(getNodesEntry()));
         }
@@ -742,12 +753,8 @@ public abstract class Children extends Object {
                     // no change to the collection
                     return false;
                 }
-
-                ;
             }
-
             refresh();
-
             return true;
         }
 
@@ -1021,12 +1028,14 @@ public abstract class Children extends Object {
 
             /** Hash code.
             */
+            @Override
             public int hashCode() {
                 return key.hashCode();
             }
 
             /** Equals.
             */
+            @Override
             public boolean equals(Object o) {
                 if (o instanceof ME) {
                     ME me = (ME) o;
@@ -1037,6 +1046,7 @@ public abstract class Children extends Object {
                 return false;
             }
 
+            @Override
             public String toString() {
                 return "Key (" + key + ")"; // NOI18N
             }
@@ -1091,6 +1101,7 @@ public abstract class Children extends Object {
         /** This method allows subclasses (only in this package) to
         * provide own version of entry. Useful for SortedArray.
         */
+        @Override
         Entry createNodesEntry() {
             return new SAE();
         }
@@ -1165,6 +1176,7 @@ public abstract class Children extends Object {
         * @param map the map (Object, Node)
         * @return collection of (Entry)
         */
+        @Override
         Collection<? extends Entry> createEntries(java.util.Map<T,Node> map) {
             // SME objects use natural ordering
             Set<ME> l = new TreeSet<ME>(new SMComparator());
@@ -1239,13 +1251,18 @@ public abstract class Children extends Object {
 
         /** add array children before or after keys ones */
         boolean before;
-
+        
         public Keys() {
-            super();
+            this(false);
         }
-
+        
+        public Keys(boolean lazy) {
+            super(lazy);
+        }
+        
         /** Special handling for clonning.
         */
+        @Override
         public Object clone() {
             Keys<?> k = (Keys<?>) super.clone();
 
@@ -1444,6 +1461,7 @@ public abstract class Children extends Object {
 
         /** Notifies the children class that nodes has been released.
         */
+        @Override
         Node[] notifyRemove(Collection<Node> nodes, Node[] current, Entry sourceEntry) {
             Node[] arr = super.notifyRemove(nodes, current, sourceEntry);
             destroyNodes(arr);

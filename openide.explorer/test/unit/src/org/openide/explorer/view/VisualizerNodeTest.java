@@ -126,6 +126,7 @@ public class VisualizerNodeTest extends NbTestCase {
     
     static class LazyChildren extends Children.Keys<String> {
         public LazyChildren() {
+            super(true);
             setKeys(new String[] {"a", "b", "c"});
         }
         int cnt;
