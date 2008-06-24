@@ -67,35 +67,51 @@ public final class SearchResponse {
      * Adds new result of quick search operation.
      *  
      * @param action Action to invoke when this result item is chosen by user
-     * @param displayName Localized display name of this result item
+     * 
+     * @param htmlDisplayName Localized display name of this result item. Note
+     * that <b>&lt;b&gt;</b> and <b>&lt;/b&gt;</b> html tags should be used to emphasize part of the result.
+     * Common provider implementations will use bold marking for found substring, so
+     * resulting string should look like <b>"Item containing &lt;b&gt;searched&lt;/b&gt; text"</b>, where 
+     * "searched" is text returned from {@link SearchRequest#getText()}.<br></br>
+     * It's possible but not recommended to use other basic html tags, as readability
+     * of results may suffer.
      * 
      * @return true when result was accepted and more results are needed if available.
      * False when no further results are needed.
-     * {@link SearchProvider} implementore should stop computing and leave
+     * {@link SearchProvider} implementors should stop computing and leave
      * SearchProvider.evaluate(...) immediatelly if false is returned.
      */
-    public boolean addResult (Runnable action, String displayName) {
-        return addResult(action, displayName, null, null);
+    public boolean addResult (Runnable action, String htmlDisplayName) {
+        return addResult(action, htmlDisplayName, null, null);
     }
     
     /**
      * Adds new result of quick search operation.
      *  
      * @param action Action to invoke when this result item is chosen by user
-     * @param displayName Localized display name of this result item
+     * 
+     * @param htmlDisplayName Localized display name of this result item. Note
+     * that <b>&lt;b&gt;</b> and <b>&lt;/b&gt;</b> html tags should be used to emphasize part of the result.
+     * Common provider implementations will use bold marking for found substring, so
+     * resulting string should look like <b>"Item containing &lt;b&gt;searched&lt;/b&gt; text"</b>, where 
+     * "searched" is text returned from {@link SearchRequest#getText()}.<br></br>
+     * It's possible but not recommended to use other basic html tags, as readability
+     * of results may suffer.
+     * 
      * @param displayHint Localized display hint of this result item or null if not available
+     * 
      * @param shortcut Shortcut of this result item or null if shorcut isn't available
      * 
      * @return true when result was accepted and more results are needed if available.
      * False when no further results are needed.
-     * {@link SearchProvider} implementore should stop computing and leave
+     * {@link SearchProvider} implementors should stop computing and leave
      * SearchProvider.evaluate(...) immediatelly if false is returned.
      */
-    public boolean addResult (Runnable action, String displayName,
+    public boolean addResult (Runnable action, String htmlDisplayName,
                             String displayHint, List <? extends KeyStroke> shortcut) {
         return catResult.addItem(
                 new ResultsModel.ItemResult(catResult, action,
-                displayName, shortcut, displayHint));
+                htmlDisplayName, shortcut, displayHint));
     }
 
 }
