@@ -65,6 +65,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -535,6 +536,32 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         } else {
             return actions;
         }
+    }
+    
+    /** Creates an action that opens and activates given <code>TopComponent</code>,
+     * when invoked. This method can also be used from 
+     * <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">XML Layer</a> 
+     * directly by following XML definition:
+     * <pre>
+     * &lt;file name="your-pkg-action-id.instance"&gt;
+     *   &lt;attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/&gt;
+     *   &lt;attr name="component" methodvalue="your.pkg.YourComponent.factoryMethod"/&gt;
+     *   &lt;attr name="SystemFileSystem.icon" stringvalue="your/pkg/YourComponent.png"/&gt;
+     *   &lt;attr name="SystemFileSystem.localizingBundle" stringvalue="your/pkg/Bundle"/&gt;
+     * &lt;/file&gt;
+     * </pre>
+     * 
+     * @param component the component to open
+     * @param displayName the display name of the action
+     * @param image the image to associated with the action
+     * 
+     * @since 6.23
+     */
+    public static Action openAction(TopComponent component, String displayName, Image image) {
+        return new OpenComponentAction(component, displayName, image);
+    }
+    static Action openAction(Map map) {
+        return new OpenComponentAction(map);
     }
 
     /** Set the close mode for the component.

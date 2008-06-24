@@ -185,6 +185,28 @@ implements FileSystem.Status {
     public FileSystem.Status getStatus () {
         return this;
     }
+    
+    static final String annotateName(FileObject fo) {
+
+        String bundleName = (String) fo.getAttribute(ATTR_BUNDLE); // NOI18N
+        if (bundleName != null) {
+            try {
+                bundleName = org.openide.util.Utilities.translate(bundleName);
+                ResourceBundle b = NbBundle.getBundle(bundleName);
+                try {
+                    return b.getString(fo.getPath());
+                } catch (MissingResourceException ex) {
+                    // ignore--normal
+                    }
+            } catch (MissingResourceException ex) {
+                ModuleLayeredFileSystem.err.log(
+                        Level.WARNING,
+                        "Computing display name for " + fo, ex); // NOI18N
+            // ignore
+            }
+        }
+        return null;
+    }
 
     /** Annotate name
     */
@@ -197,35 +219,18 @@ implements FileSystem.Status {
         while (it.hasNext ()) {
             // annotate a name
             FileObject fo = (FileObject) it.next ();
-
-            String bundleName = (String)fo.getAttribute (ATTR_BUNDLE); // NOI18N
-            if (bundleName != null) {
-                try {
-                    bundleName = org.openide.util.Utilities.translate(bundleName);
-                    ResourceBundle b = NbBundle.getBundle(bundleName);
-                    try {
-                        return b.getString (fo.getPath());
-                    } catch (MissingResourceException ex) {
-                        // ignore--normal
-                    }
-                } catch (MissingResourceException ex) {
-                    ModuleLayeredFileSystem.err.log(
-                        Level.WARNING,
-                        "Computing display name for " + fo, ex); // NOI18N
-                    // ignore
-                }
+            String displayName = annotateName(fo);
+            if (displayName != null) {
+                return displayName;
             }
-            
             String fixedName = FixedFileSystem.deflt.annotateName(fo.getPath());
             if (fixedName != null) return fixedName;
         }
 
         return s;
     }
-
-    /** Annotate icon
-    */
-    public Image annotateIcon (Image im, int type, Set s) {
+    
+    static Image annotateIcon(FileObject fo, int type) {
         String attr;
         if (type == BeanInfo.ICON_COLOR_16x16) {
             attr = ATTR_ICON_16;
@@ -233,21 +238,31 @@ implements FileSystem.Status {
             attr = ATTR_ICON_32;
         } else {
             // mono icons not supported
-            return im;
+            return null;
         }
+        Object value = fo.getAttribute(attr);
+        if (value != null) {
+            if (value instanceof URL) {
+                return Toolkit.getDefaultToolkit().getImage((URL) value);
+            } else if (value instanceof Image) {
+                // #18832
+                return (Image) value;
+            } else {
+                ModuleLayeredFileSystem.err.warning("Attribute " + attr + " on " + fo + " expected to be a URL or Image; was: " + value);
+            }
+        }
+        return null;
+    }
+
+    /** Annotate icon
+    */
+    public Image annotateIcon (Image im, int type, Set s) {
         Iterator it = s.iterator ();
         while (it.hasNext ()) {
             FileObject fo = (FileObject) it.next ();
-            Object value = fo.getAttribute (attr);
-            if (value != null) {
-                if (value instanceof URL) {
-                    return Toolkit.getDefaultToolkit ().getImage ((URL) value);
-                } else if (value instanceof Image) {
-                    // #18832
-                    return (Image)value;
-                } else {
-                    ModuleLayeredFileSystem.err.warning("Attribute " + attr + " on " + fo + " expected to be a URL or Image; was: " + value);
-                }
+            Image img = annotateIcon(fo, type);
+            if (img != null) {
+                return img;
             }
             Image anntIm = FixedFileSystem.deflt.annotateIcon(fo.getPath());
             if (anntIm != null) {
