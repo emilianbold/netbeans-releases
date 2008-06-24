@@ -103,6 +103,8 @@ public class UMLClassWidget  extends SwitchableWidget
     
     private HashMap <String, ElementListWidget > attributeRedefinedMap = 
             new HashMap <String, ElementListWidget >();
+    private IAttribute attributeToSelect;
+    private IOperation operationToSelect;
     
     public UMLClassWidget(Scene scene)
     {
@@ -151,6 +153,14 @@ public class UMLClassWidget  extends SwitchableWidget
         parameterWidget = null;
 
         getScene().validate();
+    }
+
+    public void selectAttributeAfterCreation(IAttribute attr) {
+        this.attributeToSelect=attr;
+    }
+
+    public void selectOperationAfterCreation(IOperation op) {
+        this.operationToSelect=op;
     }
 
     protected Widget initializeContents(IClassifier clazz)
@@ -553,13 +563,23 @@ public class UMLClassWidget  extends SwitchableWidget
             {
                 if(event.getNewValue() instanceof IOperation)
                 {
-                    OperationWidget operW=addOperation((IOperation)event.getNewValue());
-                    if(operW!=null)operW.select();
+                    IOperation op=(IOperation)event.getNewValue();
+                    OperationWidget operW=addOperation(op);
+                    if(operW!=null && op==operationToSelect)
+                    {
+                        operW.select();
+                        operationToSelect=null;
+                    }
                 }
                 else if(event.getNewValue() instanceof IAttribute)
                 {
-                    AttributeWidget attrW=addAttribute((IAttribute)event.getNewValue());
-                    if(attrW!=null)attrW.select();
+                    IAttribute attr=(IAttribute)event.getNewValue();
+                    AttributeWidget attrW=addAttribute(attr);
+                    if(attrW!=null && attr==attributeToSelect)
+                    {
+                        attrW.select();
+                        attributeToSelect=null;
+                    }
                 }
             }
             else if(propName.equals(ModelElementChangedKind.FEATUREMOVED.toString()) ||
