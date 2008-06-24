@@ -60,7 +60,7 @@ import javax.swing.MenuElement;
  * @author Lukas Hasik
  */
 public class Utilities {
-    private static boolean debug = true;
+    private static boolean debug = false;
 
     /**
      * @param args the command line arguments
@@ -96,7 +96,7 @@ public class Utilities {
      * @param filename
      * @return parsed menu structure
      */
-    public static NbMenuItem readMenuStructureFromFile(String filename) {
+    public static NbMenuItem readMenuStructureFromFile(String filename) throws IllegalStateException {
         NbMenuItem parsedMenu = new NbMenuItem();
         try {
             //first use a Scanner to get each line
@@ -110,16 +110,16 @@ public class Utilities {
                 parsedMenu.setName(menuName.substring(from + "| ".length(), menuName.lastIndexOf(" |")));
                 parsedMenu.setMnemo(menuName.substring(menuName.lastIndexOf(" |") + "| ".length()).trim().charAt(0));
             } else {
-                System.out.println("Wrong file: missing header - menu name as | menuName |");
-                return null;
+                System.out.println("Wrong file: missing header - menu name as | menuName |");                
+                throw new IllegalStateException("Wrong file: missing header - menu name as | menuName |");
             }
             //skip ====== bellow menu name
             menuName = scanner.nextLine();
             if(debug)
                 System.out.println("2: "+menuName);
-            if (!(menuName.matches("^={5,}+"))) {
+            if (!(menuName.matches("^={5,}+\\s*+"))) {
                 System.err.println("Wrong file: missing ===== - bellow  menu name");
-                return null;
+                throw new IllegalStateException("Wrong file: missing ===== - bellow  menu name");
             }
             //parse the menu items structure
             ArrayList<NbMenuItem> submenu = new ArrayList<NbMenuItem>();
@@ -129,7 +129,8 @@ public class Utilities {
             parsedMenu.setSubmenu(submenu);
             scanner.close();
         } catch (IOException ex) {
-            //log(ex.getMessage());
+            Logger.getLogger(Utilities.class.getName()).log(Level.SEVERE, null, ex);
+            throw new IllegalStateException(ex);
         }
 
         return parsedMenu;
@@ -151,7 +152,7 @@ public class Utilities {
      * @param filename
      * @return parsed submenu structure
      */
-    public static NbMenuItem readSubmenuStructureFromFile(String filename) {
+    public static NbMenuItem readSubmenuStructureFromFile(String filename) throws IllegalStateException {
         NbMenuItem parsedMenu = new NbMenuItem();
         try {
             //first use a Scanner to get each line
@@ -160,10 +161,9 @@ public class Utilities {
             String submenuName = scanner.nextLine();
             int to;
             if ((to = submenuName.indexOf("> ")) != -1) {
-                parsedMenu.setName(submenuName.substring(0, submenuName.lastIndexOf("   > ")));
+                parsedMenu.setName(submenuName.substring(0, submenuName.lastIndexOf("   > ")).trim());
             } else {
-                System.out.println("Wrong file: missing header - submenu name                 > [x] submenu item                  B");
-                return null;
+                 throw new IllegalStateException("Wrong file: missing header - submenu name                 > [x] submenu item                  B");
             }
 
             ArrayList<NbMenuItem> submenu = new ArrayList<NbMenuItem>();
@@ -174,7 +174,8 @@ public class Utilities {
             parsedMenu.setSubmenu(submenu);
             scanner.close();
         } catch (IOException ex) {
-            //log(ex.getMessage());
+            Logger.getLogger(Utilities.class.getName()).log(Level.SEVERE, null, ex);
+            throw new IllegalStateException(ex);
         }
 
         return parsedMenu;
@@ -200,7 +201,7 @@ public class Utilities {
         if(debug)
                 System.out.println("Parsing line: "+line);
         //is it separator? "======="
-        if (line.hasNext("^={5,}+")) { //at least 5x =
+        if (line.hasNext("^={5,}+\\s*+)")) { //at least 5x =
 
             menuitem.setSeparator(true);
         } else {
@@ -394,12 +395,12 @@ public class Utilities {
                             returnText += compareNbMenuItems(originItem, compareItem, submenuLevel - 1);
                         } else { //compareItem doesn't exist
                             originItem = itOrigin.next();
-                            returnText += originItem.getName() + " shoul NOT be in the menu. [" + originItem.toString() + "]";
+                            returnText += originItem.getName() + " should NOT be in the menu. [" + originItem.toString() + "] \n";
                         }                        
                     } else {
                         if (itCompare.hasNext()) {//originItem doesn't exist
                             compareItem = itCompare.next();
-                            returnText += compareItem.getName() + " is missing in the menu. [" + compareItem.toString() + "]";
+                            returnText += compareItem.getName() + " is missing in the menu. [" + compareItem.toString() + "] \n";
                         } else {
                             returnText += "BOTH ITEMS ARE NULL. THIS STATE SHOULDN'T HAPPEN";
                         }
@@ -426,5 +427,22 @@ public class Utilities {
             }
         }
         return newArray;
+    }
+    
+    public static NbMenuItem getMenuByName(String menuName, NbMenuItem aMenu) {
+        //browse throught the menu
+        if(menuName.equals(aMenu.getName())) {
+            return aMenu;
+        }
+        if(aMenu.getSubmenu() != null) { //recursively for submenu
+            
+            Iterator<NbMenuItem> aMenuIt = aMenu.getSubmenu().iterator();
+            while(aMenuIt.hasNext()) {
+                NbMenuItem ret = getMenuByName(menuName, aMenuIt.next());
+                if(ret != null)
+                    return ret;
+            }
+        }
+        return  null;
     }
 }
