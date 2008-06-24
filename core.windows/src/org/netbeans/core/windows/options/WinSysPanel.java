@@ -42,6 +42,7 @@
 package org.netbeans.core.windows.options;
 
 import java.util.prefs.Preferences;
+import org.netbeans.core.windows.FloatingWindowTransparencyManager;
 import org.netbeans.core.windows.nativeaccess.NativeWindowSystem;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -190,6 +191,7 @@ private void isAlphaFloatingStateChanged(javax.swing.event.ChangeEvent evt) {//G
         prefs.putBoolean(WinSysPrefs.TRANSPARENCY_DRAGIMAGE, isDragImageAlpha.isSelected());
         
         prefs.putBoolean(WinSysPrefs.TRANSPARENCY_FLOATING, isAlphaFloating.isSelected());
+        FloatingWindowTransparencyManager.getDefault().update();
         
         prefs.putBoolean(WinSysPrefs.SNAPPING, isSnapping.isSelected());
         prefs.putBoolean(WinSysPrefs.SNAPPING_SCREENEDGES, isSnapScreenEdges.isSelected());
