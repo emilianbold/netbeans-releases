@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,56 +31,59 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.test.syntax;
 
+import java.io.IOException;
 import junit.framework.Test;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.test.lib.BasicTokensTest;
+import org.netbeans.junit.NbTestSuite;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Jindrich Sedek
  */
-public class TokensTest extends BasicTokensTest {
+public class StableSuiteTest extends J2eeTestCase {
 
-    public TokensTest(String name) {
-        super(name);
+    public StableSuiteTest() {
+        super("StableSuiteTest");
     }
 
-    protected boolean generateGoldenFiles() {
-        return false;
+    public static Test suite() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(StableSuiteTest.class);
+        addServerTests(conf, new String[0]);//register server
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf.addTest(SuiteCreator.class));
+    }
+
+    public static final class SuiteCreator extends NbTestSuite {
+        FileObject dataDir = FileUtil.createData(new StableSuiteTest().getDataDir());
+        FileObject completionTestWebDir = dataDir.getFileObject("CompletionTestProjects/Jsp/web/");
+
+        public SuiteCreator() throws IOException {
+            super();
+            addCompletionTest("stableDirectivesBasic.jsp");
+            addCompletionTest("stableExpression.jsp");
+            addCompletionTest("stableHTML.jsp");
+            addCompletionTest("stableHTMLCompletion.html");
+            addCompletionTest("stableJSPElements.jsp");
+            addCompletionTest("stableScriptletsJavaBasic.jsp");
+            addCompletionTest("stableTaglibCompletion.jsp");
+            addCompletionTest("stableXHTML.xhtml");
+        }
+        
+        private void addCompletionTest(String fileName) throws IOException{
+            String name = fileName.replace('.', '_');
+            addTest(new CompletionTest(name, completionTestWebDir.getFileObject(fileName)));
+        }
+                
     }
     
-    public static Test suite(){
-        return NbModuleSuite.allModules(TokensTest.class);
-    }    
-    
-    public void testHTML() {
-        testRun("tokensHTML.html");
-    }
-
-    public void testJSP() {
-        testRun("tokensTest.jsp");
-    }
-
-    public void testTag() {
-        testRun("tokensTag.tag");
-    }
-
-    public void testTagX() {
-        testRun("tokensTagX.tagx");
-    }
-
-    public void testJSPX() {
-        testRun("tokensJSPX.jspx");
-    }
-
-    public void testJSPF() {
-        testRun("tokensJSPF.jspf");
-    }
-
-    public void testCSS() {
-        testRun("tokensCSS.css");
-    }
 }

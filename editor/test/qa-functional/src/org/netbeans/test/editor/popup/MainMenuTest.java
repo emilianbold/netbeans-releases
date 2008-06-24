@@ -42,8 +42,12 @@
 package org.netbeans.test.editor.popup;
 
 import java.awt.event.KeyEvent;
+import java.util.prefs.Preferences;
 import javax.swing.text.JTextComponent;
 import junit.framework.Test;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.editor.DocumentUtilities;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
@@ -73,7 +77,7 @@ public class MainMenuTest extends MenuTestCase {
             EditorOperator editor = getDefaultSampleEditorOperator();
             JTextComponentOperator text = new JTextComponentOperator(editor);
             final JTextComponent target = (JTextComponent)text.getSource();
-            final Preferences prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(target)).lookup(Preferences.class);
+            final Preferences prefs = MimeLookup.getLookup("text/xml").lookup(Preferences.class);
             
             boolean lineNumberVisibleSetting = prefs.getBoolean(
                     SimpleValueNames.LINE_NUMBER_VISIBLE,
