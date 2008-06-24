@@ -517,7 +517,6 @@ public class CommitAction extends ContextAction {
             List<File> removeCandidates = new ArrayList<File>();
             Set<File> commitCandidates = new LinkedHashSet<File>();
             Set<File> binnaryCandidates = new HashSet<File>();
-            List<String> excludedCandidates = new ArrayList<String>();
                         
             Iterator<SvnFileNode> it = commitFiles.keySet().iterator();
             // XXX refactor the olowing loop. there seem to be redundant blocks
@@ -568,13 +567,8 @@ public class CommitAction extends ContextAction {
                     commitCandidates.add(node.getFile());
                 } else if (CommitOptions.COMMIT == option) {
                     commitCandidates.add(node.getFile());
-                } else if (CommitOptions.EXCLUDE == option) {
-                    excludedCandidates.add(node.getFile().getAbsolutePath());
-                }
-            }            
-            
-            // persist excluded files 
-            SvnModuleConfig.getDefault().addExclusionPaths(excludedCandidates);
+                } 
+            }                       
             
             // perform adds
             performAdds(client, support, addCandidates);
