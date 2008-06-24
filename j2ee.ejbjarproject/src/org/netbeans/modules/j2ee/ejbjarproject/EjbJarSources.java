@@ -129,7 +129,7 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
                 else {
                     //If the name is not given, it should be either a relative path in the project dir
                     //or absolute path when the root is not under the project dir
-                    File sourceRoot = helper.resolveFile(evaluator.evaluate(prop));
+                    File sourceRoot = evaluator.evaluate(prop) != null ? helper.resolveFile(evaluator.evaluate(prop)) : null;
                     if (sourceRoot != null) {
                         String srPath = sourceRoot.getAbsolutePath();
                         String pdPath = projectDir.getAbsolutePath() + File.separatorChar;
@@ -161,7 +161,7 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
                 else {
                     //If the name is not given, it should be either a relative path in the project dir
                     //or absolute path when the root is not under the project dir
-                    File sourceRoot = helper.resolveFile(evaluator.evaluate(prop));
+                    File sourceRoot = evaluator.evaluate(prop) != null ? helper.resolveFile(evaluator.evaluate(prop)) : null;
                     if (sourceRoot != null) {
                         String srPath = sourceRoot.getAbsolutePath();
                         String pdPath = projectDir.getAbsolutePath() + File.separatorChar;
