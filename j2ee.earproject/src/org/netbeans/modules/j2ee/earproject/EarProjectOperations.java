@@ -104,6 +104,17 @@ public class EarProjectOperations implements DeleteOperationImplementation, Copy
     }
     
     public List<FileObject> getDataFiles() {
+        // add libraries folder if it is within project:
+        AntProjectHelper helper = project.getAntProjectHelper();
+        if (helper.getLibrariesLocation() != null) {
+            File f = helper.resolveFile(helper.getLibrariesLocation());
+            if (f != null && f.exists()) {
+                FileObject libFolder = FileUtil.toFileObject(f).getParent();
+                if (FileUtil.isParentOf(project.getProjectDirectory(), libFolder)) {
+                    return Collections.<FileObject>singletonList(libFolder);
+                }
+            }
+        }
         return Collections.emptyList();
     }
     

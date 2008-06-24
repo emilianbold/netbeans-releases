@@ -1800,7 +1800,12 @@ cv_qualifier_seq
 
 declarator
 	:
-		//{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
+                // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
+                // This rule adds support for declarations like
+                // void (__attribute__((noreturn)) ****f) (void);
+                (attribute_specification)=> attribute_specification!
+                declarator
+	|       //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
                 // VV: 23/05/06 added support for __restrict after pointers
                 //i.e. void foo (char **__restrict a)
 		(ptr_operator)=> ptr_operator // AMPERSAND or STAR
@@ -1811,7 +1816,12 @@ declarator
 
 restrict_declarator
         :
-		//{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
+                // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
+                // This rule adds support for declarations like
+                // char *__attribute__((aligned(8))) *f;
+                (attribute_specification)=> attribute_specification!
+                restrict_declarator
+        |       //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
 		(ptr_operator)=> ptr_operator // AMPERSAND or STAR
 		restrict_declarator
 	|	
