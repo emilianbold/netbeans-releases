@@ -165,7 +165,7 @@ public class CreateGetterSetterTest extends GenerateCodeTestCase {
     }
     
     public void testBooleanType() {
-        openSourceFile("org.netbeans.test.java.editor.codegeneration.CreateGetterSetter", "CreateGetterSetter");
+        openSourceFile("org.netbeans.test.java.editor.codegeneration", "CreateGetterSetter");
         editor = new EditorOperator("CreateGetterSetter");
         txtOper = editor.txtEditorPane();
         try {
@@ -191,7 +191,7 @@ public class CreateGetterSetterTest extends GenerateCodeTestCase {
     }
     
     public void testStaticType() {
-        openSourceFile("org.netbeans.test.java.editor.codegeneration.CreateGetterSetter", "CreateGetterSetter");
+        openSourceFile("org.netbeans.test.java.editor.codegeneration", "CreateGetterSetter");
         editor = new EditorOperator("CreateGetterSetter");
         txtOper = editor.txtEditorPane();
         try {
@@ -217,7 +217,7 @@ public class CreateGetterSetterTest extends GenerateCodeTestCase {
     }
     
     public void testMultipleSetter() {
-        openSourceFile("org.netbeans.test.java.editor.codegeneration.CreateGetterSetter", "CreateGetterSetter");
+        openSourceFile("org.netbeans.test.java.editor.codegeneration", "CreateGetterSetter");
         editor = new EditorOperator("CreateGetterSetter");
         txtOper = editor.txtEditorPane();
         try {
@@ -249,7 +249,7 @@ public class CreateGetterSetterTest extends GenerateCodeTestCase {
     }
     
     public void testMultipleGetter() {
-        openSourceFile("org.netbeans.test.java.editor.codegeneration.CreateGetterSetter", "CreateGetterSetter");
+        openSourceFile("org.netbeans.test.java.editor.codegeneration", "CreateGetterSetter");
         editor = new EditorOperator("CreateGetterSetter");
         txtOper = editor.txtEditorPane();
         try {
@@ -281,7 +281,7 @@ public class CreateGetterSetterTest extends GenerateCodeTestCase {
     }
     
     public void testArray() {
-        openSourceFile("org.netbeans.test.java.editor.codegeneration.CreateGetterSetter", "CreateGetterSetter");
+        openSourceFile("org.netbeans.test.java.editor.codegeneration", "CreateGetterSetter");
         editor = new EditorOperator("CreateGetterSetter");
         txtOper = editor.txtEditorPane();
         try {

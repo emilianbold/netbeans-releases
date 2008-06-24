@@ -344,7 +344,7 @@ public class EditorTestCase extends JellyTestCase {
      * @param dir directory path with "|" separator.
      * @param srcName source name without suffix.
      */
-    protected void openSourceFile(String dir, String srcName) {
+    protected void openSourceFile(String dir, String srcName) {    
         openFile("Source packages|" + dir, srcName);
     }
     
