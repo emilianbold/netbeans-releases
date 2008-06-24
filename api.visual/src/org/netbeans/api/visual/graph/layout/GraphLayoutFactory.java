@@ -72,9 +72,12 @@ public class GraphLayoutFactory {
 
     /**
      * 
-     * @param graphScene
-     * @param animate
-     * @return
+     * @param <N> the node class for the nodes in the graph.
+     * @param <E> the edge class for the edges in the graph.
+     * @param graphScene the GraphScene on which the layout is to be invoked.
+     * @param animate if true, the layout will animate the nodes into their new
+     * positions.
+     * @return a GraphLayout to be invoked from the calling class.
      */
     public static <N, E> GraphLayout<N, E> createOrthogonalGraphLayout(GraphScene<N, E> graphScene, boolean animate) {
         return new OrthogonalLayout(graphScene, animate);
@@ -82,9 +85,12 @@ public class GraphLayoutFactory {
 
     /**
      * 
-     * @param graphScene
-     * @param animate
-     * @return
+     * @param <N> the node class for the nodes in the graph.
+     * @param <E> the edge class for the edges in the graph.
+     * @param graphScene the GraphScene on which the layout is to be invoked.
+     * @param animate if true, the layout will animate the nodes into their new
+     * positions.
+     * @return a GraphLayout to be invoked from the calling class.
      */
     public static <N, E> GraphLayout<N, E> createHierarchicalGraphLayout(GraphScene<N, E> graphScene, boolean animate) {
         return new HierarchicalLayout(graphScene, animate);
@@ -92,9 +98,14 @@ public class GraphLayoutFactory {
 
     /**
      * 
-     * @param graphScene
-     * @param animate
-     * @return
+     * @param <N> the node class for the nodes in the graph.
+     * @param <E> the edge class for the edges in the graph.
+     * @param graphScene the GraphScene on which the layout is to be invoked.
+     * @param animate if true, the layout will animate the nodes into their new
+     * positions.
+     * @param inverted if true, the target nodes of an edge will be poisitioned
+     * in a layer higher than its source node.
+     * @return a GraphLayout to be invoked from the calling class.
      */
     public static <N, E> GraphLayout<N, E> createHierarchicalGraphLayout(GraphScene<N, E> graphScene, boolean animate, boolean inverted) {
         return new HierarchicalLayout(graphScene, animate, inverted);
@@ -102,14 +113,16 @@ public class GraphLayoutFactory {
     
     /**
      * 
-     * @param <N> the nodes
-     * @param <E>
-     * @param graphScene
-     * @param animate
-     * @param inverted
-     * @param xOffset
-     * @param layerOffset
-     * @return
+     * @param <N> the node class for the nodes in the graph.
+     * @param <E> the edge class for the edges in the graph.
+     * @param graphScene the GraphScene on which the layout is to be invoked.
+     * @param animate if true, the layout will animate the nodes into their new
+     * positions.
+     * @param inverted if true, the target nodes of an edge will be poisitioned
+     * in a layer higher than its source node.
+     * @param xOffset the horizontal distance or gutter between the nodes.
+     * @param layerOffset the vertical distance between the layers of nodes.
+     * @return a GraphLayout to be invoked from the calling class.
      */
     public static <N, E> GraphLayout<N, E> createHierarchicalGraphLayout(GraphScene<N, E> graphScene, boolean animate, boolean inverted,
             int xOffset, int layerOffset) {
