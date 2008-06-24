@@ -41,12 +41,9 @@
 
 package org.netbeans.modules.db.sql.execute;
 
-import java.sql.SQLException;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.netbeans.modules.db.dataview.output.DataView;
 
 /**
  * Encapsulates the result of the execution of a list of SQL statements.
@@ -55,24 +52,14 @@ import java.util.logging.Logger;
  */
 public class SQLExecutionResults {
     
-    private final List<SQLExecutionResult> results;
+    private final List<DataView> results;
     
-    public SQLExecutionResults(List<SQLExecutionResult> results) {
+    public SQLExecutionResults(List<DataView> results) {
         this.results = Collections.unmodifiableList(results);
     }
     
-    public List<SQLExecutionResult> getResults() {
+    public List<DataView> getResults() {
         return results;
-    }
-    
-    public void close() {
-        for (Iterator<SQLExecutionResult> i = results.iterator(); i.hasNext();) {
-            try {
-                i.next().close();
-            } catch (SQLException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
-            }
-        }
     }
     
     public int size() {
@@ -80,8 +67,8 @@ public class SQLExecutionResults {
     }
     
     public boolean hasExceptions() {
-        for (SQLExecutionResult result: results) {
-            if (result.getException() != null) {
+        for (DataView result: results) {
+            if (result.hasException()) {
                 return true;
             }
         }
