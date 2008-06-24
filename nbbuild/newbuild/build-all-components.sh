@@ -139,18 +139,18 @@ fi
 #    TEST_CODE=1;
 #fi
 # UML UI validation tests
-for i in 1 2 3; do
-    ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-uml -Dxtest.instance.name="UML tests" -Dxtest.no.cleanresults=true -Dnetbeans.dest.dir=$NB_ALL/nbbuild/test-netbeans runtests
-    ERROR_CODE=$?
-    if [ $ERROR_CODE = 0 ]; then
-        break;
-    fi
-done
-
-if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - UML UI validation failed"
-    TEST_CODE=1;
-fi
+#for i in 1 2 3; do
+#    ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-uml -Dxtest.instance.name="UML tests" -Dxtest.no.cleanresults=true -Dnetbeans.dest.dir=$NB_ALL/nbbuild/test-netbeans runtests
+#    ERROR_CODE=$?
+#    if [ $ERROR_CODE = 0 ]; then
+#        break;
+#    fi
+#done
+#
+#if [ $ERROR_CODE != 0 ]; then
+#    echo "ERROR: $ERROR_CODE - UML UI validation failed"
+#    TEST_CODE=1;
+#fi
 # Ruby UI validation tests
 for i in 1 2 3; do
     ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-ruby -Dxtest.instance.name="Ruby tests" -Dxtest.no.cleanresults=true -Dnetbeans.dest.dir=$NB_ALL/nbbuild/test-netbeans runtests
@@ -314,7 +314,7 @@ if [ $ML_BUILD == 1 ]; then
 
 #    cd nbbuild
     #Build catalog for stable UC NBMs
-#    ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uml/c2 -Dcatalog.file=${DIST}/ml/uc2/catalog.xml -Dcatalog.base.url="."
+#    ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/ml/uc2 -Dcatalog.file=${DIST}/ml/uc2/catalog.xml -Dcatalog.base.url="."
 #    ERROR_CODE=$?
 
 #    if [ $ERROR_CODE != 0 ]; then
