@@ -66,7 +66,11 @@ public final class SearchResponse {
     /**
      * Adds new result of quick search operation.
      *  
-     * @param action Action to invoke when this result item is chosen by user
+     * @param action Runnable to invoke when this result item is chosen by user.
+     * Providers are expected to signal unsuccessful invocation of <code>Runnable.run</code>
+     * by writing into status line and producing beep. Invocation failures may happen,
+     * as <code>Runnable.run</code> may be called later, when conditions or context
+     * changed in a way that action can't be performed.<p></p>
      * 
      * @param htmlDisplayName Localized display name of this result item. Note
      * that <b>&lt;b&gt;</b> and <b>&lt;/b&gt;</b> html tags should be used to emphasize part of the result.
@@ -74,7 +78,7 @@ public final class SearchResponse {
      * resulting string should look like <b>"Item containing &lt;b&gt;searched&lt;/b&gt; text"</b>, where 
      * "searched" is text returned from {@link SearchRequest#getText()}.<br></br>
      * It's possible but not recommended to use other basic html tags, as readability
-     * of results may suffer.
+     * of results may suffer.<p></p>
      * 
      * @return true when result was accepted and more results are needed if available.
      * False when no further results are needed.
@@ -88,7 +92,11 @@ public final class SearchResponse {
     /**
      * Adds new result of quick search operation.
      *  
-     * @param action Action to invoke when this result item is chosen by user
+     * @param action Runnable to invoke when this result item is chosen by user.
+     * Providers are expected to signal unsuccessful invocation of <code>Runnable.run</code>
+     * by writing into status line and producing beep. Invocation failures may happen,
+     * as <code>Runnable.run</code> may be called later, when conditions or context
+     * changed in a way that action can't be performed.<p></p>
      * 
      * @param htmlDisplayName Localized display name of this result item. Note
      * that <b>&lt;b&gt;</b> and <b>&lt;/b&gt;</b> html tags should be used to emphasize part of the result.
@@ -96,11 +104,11 @@ public final class SearchResponse {
      * resulting string should look like <b>"Item containing &lt;b&gt;searched&lt;/b&gt; text"</b>, where 
      * "searched" is text returned from {@link SearchRequest#getText()}.<br></br>
      * It's possible but not recommended to use other basic html tags, as readability
-     * of results may suffer.
+     * of results may suffer.<p></p>
      * 
-     * @param displayHint Localized display hint of this result item or null if not available
+     * @param displayHint Localized display hint of this result item or null if not available<p></p>
      * 
-     * @param shortcut Shortcut of this result item or null if shorcut isn't available
+     * @param shortcut Shortcut of this result item or null if shorcut isn't available<p></p>
      * 
      * @return true when result was accepted and more results are needed if available.
      * False when no further results are needed.
