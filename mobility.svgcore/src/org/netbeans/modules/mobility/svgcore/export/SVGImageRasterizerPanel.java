@@ -634,6 +634,10 @@ private void formatComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GE
         return true;
     }
         
+    protected String getPreviewFileName(){
+        return previewFileText.getText();
+    }
+    
     protected void updateImage(JComponent source, boolean isOutputChanged) {
         final JLabel label = new JLabel( "Updating image...");
         label.setHorizontalAlignment(SwingConstants.CENTER);

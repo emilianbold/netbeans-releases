@@ -352,7 +352,8 @@ final class NbEvents extends Events {
             pane.setPreferredSize(new Dimension(pane.getPreferredSize().width + 50, area.getFont().getSize() * 15));
             
             if (options == null) {
-                JOptionPane.showMessageDialog(null, pane, msg, type);
+                // #136354: Don't show two warnings while running insufficient JRE
+                // JOptionPane.showMessageDialog(null, pane, msg, type);
             } else {
                 int ret = JOptionPane.showOptionDialog(c, pane, msg, 0, type, null, options, options[1]);
                 if (ret == 1 || ret == -1) { // exit or close

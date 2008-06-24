@@ -52,6 +52,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -191,13 +192,13 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
 	if( def == null ) {
 	    CsmObject owner = findOwner();
 	    if( owner instanceof CsmClass ) {
-		def = findByName(((CsmClass) owner).getMembers(), getName());
-	    }
-	    else if( owner instanceof CsmNamespace ) {
+                CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(getName().toString(), true, true, false);
+		def = findByName(CsmSelect.getDefault().getClassMembers((CsmClass)owner, filter), getName());
+	    }  else if( owner instanceof CsmNamespace ) {
                 CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createCompoundFilter(
                          CsmSelect.getDefault().getFilterBuilder().createKindFilter(
                          new CsmDeclaration.Kind[]{CsmDeclaration.Kind.VARIABLE}),
-                         CsmSelect.getDefault().getFilterBuilder().createNameFilter(getName().toString(), true, false, false));
+                         CsmSelect.getDefault().getFilterBuilder().createNameFilter(getName().toString(), true, true, false));
                 Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(((CsmNamespace)owner), filter);
                 while (it.hasNext()) {
                     def = it.next();
@@ -207,9 +208,9 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
         return (CsmVariable) def;
     }
 
-    private CsmVariable findByName(Collection/*CsmDeclaration*/ declarations, CharSequence name) {
-	for (Iterator it = declarations.iterator(); it.hasNext();) {
-	    CsmDeclaration decl = (CsmDeclaration) it.next();
+    private CsmVariable findByName(Iterator<CsmMember> it, CharSequence name) {
+	while(it.hasNext()) {
+	    CsmMember decl = it.next();
 	    if( decl.getName().equals(name) ) {
 		if( decl instanceof  CsmVariable ) { // paranoja
 		    return (CsmVariable) decl;

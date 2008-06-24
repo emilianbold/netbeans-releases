@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.addressing.impl;
 
+import org.netbeans.modules.websvc.wsitmodelext.addressing.AddressingAttribute;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.AddressingServiceName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.w3c.dom.Element;

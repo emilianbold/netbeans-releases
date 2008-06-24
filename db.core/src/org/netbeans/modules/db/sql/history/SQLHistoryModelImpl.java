@@ -79,7 +79,7 @@ public class SQLHistoryModelImpl implements SQLHistoryModel {
         try {
             FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER);
             String historyFilePath = FileUtil.getFileDisplayName(root) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N
-             retrievedSQL = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, FileUtil.toFileObject(new File(historyFilePath)));
+            retrievedSQL = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, root);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (ClassNotFoundException ex) {

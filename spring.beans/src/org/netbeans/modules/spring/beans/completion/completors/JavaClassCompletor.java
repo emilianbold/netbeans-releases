@@ -61,7 +61,6 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.spring.beans.completion.CompletionContext;
 import org.netbeans.modules.spring.beans.completion.Completor;
 import org.netbeans.modules.spring.beans.completion.LazyTypeCompletionItem;
-import org.netbeans.modules.spring.beans.completion.QueryProgress;
 import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
 import org.netbeans.modules.spring.java.JavaUtils;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -76,11 +75,26 @@ public class JavaClassCompletor extends Completor {
     private static final Set<SearchScope> ALL = EnumSet.allOf(SearchScope.class);
     private static final Set<SearchScope> LOCAL = EnumSet.of(SearchScope.SOURCE);
     
-    public JavaClassCompletor() {
+    private static final String ADDITIONAL_ITEMS_TEXT = NbBundle.getMessage(JavaClassCompletor.class, "MESG_AdditionalItems");
+    
+    public JavaClassCompletor(int invocationOffset) {
+        super(invocationOffset);
     }
 
     @Override
-    protected void computeCompletionItems(CompletionContext context, QueryProgress progress) throws IOException {
+    protected int initAnchorOffset(CompletionContext context) {
+        int idx = context.getCurrentToken().getOffset() + 1;
+        String typedChars = context.getTypedPrefix();
+        if(typedChars.contains(".") || typedChars.equals("")) { 
+            int dotIndex = typedChars.lastIndexOf(".");
+            idx += dotIndex + 1;
+        } 
+        
+        return idx;
+    }
+
+    @Override
+    protected void compute(CompletionContext context) throws IOException {
         final String typedChars = context.getTypedPrefix();
 
         JavaSource js = JavaUtils.getJavaSource(context.getFileObject());
@@ -89,18 +103,17 @@ public class JavaClassCompletor extends Completor {
         }
 
         if (typedChars.contains(".") || typedChars.equals("")) { // Switch to normal completion
-            doNormalJavaCompletion(js, progress, typedChars, context.getCurrentToken().getOffset() + 1);
+            doNormalJavaCompletion(js, typedChars, context.getCurrentToken().getOffset() + 1);
         } else { // Switch to smart class path completion
-            doSmartJavaCompletion(js, progress, typedChars, context.getCurrentToken().getOffset() + 1, context.getQueryType());
+            doSmartJavaCompletion(js, typedChars, context.getCurrentToken().getOffset() + 1, context.getQueryType());
         }
     }
     
-    private void doNormalJavaCompletion(JavaSource js, final QueryProgress progress,
-            final String typedPrefix, final int substitutionOffset) throws IOException {
+    private void doNormalJavaCompletion(JavaSource js, final String typedPrefix, final int substitutionOffset) throws IOException {
         js.runUserActionTask(new Task<CompilationController>() {
 
             public void run(CompilationController cc) throws Exception {
-                if(progress.isCancelled()) {
+                if(isCancelled()) {
                     return;
                 }
                 
@@ -115,9 +128,9 @@ public class JavaClassCompletor extends Completor {
 
                     packName = typedPrefix.substring(0, dotIndex);
                 }
-                addPackages(ci, progress, typedPrefix, index, CompletionProvider.COMPLETION_ALL_QUERY_TYPE);
+                addPackages(ci,  typedPrefix, index, CompletionProvider.COMPLETION_ALL_QUERY_TYPE);
 
-                if(progress.isCancelled()) {
+                if(isCancelled()) {
                     return;
                 }
                 
@@ -129,28 +142,25 @@ public class JavaClassCompletor extends Completor {
                 // get this as well as non-static inner classes
                 List<TypeElement> tes = new TypeScanner().scan(pkgElem);
                 for (TypeElement te : tes) {
-                    if(progress.isCancelled()) {
+                    if(isCancelled()) {
                         return;
                     }
                     
                     if (ElementUtilities.getBinaryName(te).startsWith(typedPrefix)) {
                         SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
                                 te, ElementHandle.create(te), cc.getElements().isDeprecated(te), false);
-                        addItem(item);
+                        addCacheItem(item);
                     }
                 }
-
-                setAnchorOffset(index);
             }
         }, true);
     }
 
-    private void doSmartJavaCompletion(final JavaSource js, final QueryProgress progress,
-            final String typedPrefix, final int substitutionOffset, final int queryType) throws IOException {
+    private void doSmartJavaCompletion(final JavaSource js, final String typedPrefix, final int substitutionOffset, final int queryType) throws IOException {
         js.runUserActionTask(new Task<CompilationController>() {
 
             public void run(CompilationController cc) throws Exception {
-                if(progress.isCancelled()) {
+                if(isCancelled()) {
                     return;
                 }
                 
@@ -158,8 +168,8 @@ public class JavaClassCompletor extends Completor {
                 
                 ClassIndex ci = cc.getJavaSource().getClasspathInfo().getClassIndex();
                 // add packages
-                addPackages(ci, progress, typedPrefix, substitutionOffset, queryType);
-                if(progress.isCancelled()) {
+                addPackages(ci, typedPrefix, substitutionOffset, queryType);
+                if(isCancelled()) {
                     return;
                 }
                 
@@ -170,22 +180,24 @@ public class JavaClassCompletor extends Completor {
                 } else {
                     matchingTypes = ci.getDeclaredTypes(typedPrefix, NameKind.CASE_INSENSITIVE_PREFIX, LOCAL);
                     setAdditionalItems(true);
-                    setAdditionalItemsText(NbBundle.getMessage(JavaClassCompletor.class, "MESG_AdditionalItems"));
                 }
                 
                 for (ElementHandle<TypeElement> eh : matchingTypes) {
-                    if(progress.isCancelled()) {
+                    if(isCancelled()) {
                         return;
                     }
                     if (eh.getKind() == ElementKind.CLASS) {
                         LazyTypeCompletionItem item = LazyTypeCompletionItem.create(substitutionOffset, eh, js);
-                        addItem(item);
+                        addCacheItem(item);
                     }
                 }
             }
         }, true);
+    }
 
-        setAnchorOffset(substitutionOffset);
+    @Override
+    protected String getAdditionalItemsText() {
+        return ADDITIONAL_ITEMS_TEXT;
     }
 
     private static boolean isAccessibleClass(TypeElement te) {
@@ -193,13 +205,13 @@ public class JavaClassCompletor extends Completor {
         return (nestingKind == NestingKind.TOP_LEVEL) || (nestingKind == NestingKind.MEMBER && te.getModifiers().contains(Modifier.STATIC));
     }
 
-    private void addPackages(ClassIndex ci, QueryProgress progress, String typedPrefix, int substitutionOffset, int queryType) {
+    private void addPackages(ClassIndex ci, String typedPrefix, int substitutionOffset, int queryType) {
         Set<SearchScope> scope = (queryType == CompletionProvider.COMPLETION_ALL_QUERY_TYPE) ? ALL : LOCAL;
         Set<String> packages = ci.getPackageNames(typedPrefix, true, scope);
         for (String pkg : packages) {
             if (pkg.length() > 0) {
                 SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createPackageItem(substitutionOffset, pkg, false);
-                addItem(item);
+                addCacheItem(item);
             }
         }
     }
@@ -218,6 +230,4 @@ public class JavaClassCompletor extends Completor {
             return super.visitType(typeElement, arg);
         }
     }
-
-
 }

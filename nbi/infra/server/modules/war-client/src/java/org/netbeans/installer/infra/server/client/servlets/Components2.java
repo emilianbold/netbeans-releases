@@ -70,6 +70,7 @@ public class Components2 extends HttpServlet {
                 "nb-base",
                 "nb-javase",
                 "nb-javaee",                
+                "nb-groovy",
                 "glassfish",
                 "tomcat",
                 "sjsas");
@@ -101,6 +102,7 @@ public class Components2 extends HttpServlet {
                 "nb-soa",
                 "nb-uml",
                 "nb-ruby",
+                "nb-groovy",
                 "nb-php",
                 "glassfish",
                 "openesb",

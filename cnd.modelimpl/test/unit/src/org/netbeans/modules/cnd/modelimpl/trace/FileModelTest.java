@@ -285,6 +285,31 @@ public class FileModelTest extends TraceModelTestBase {
         // IZ 131407 : parser doesn't handle specialized destructor
         performTest("template_destructor.cc"); // NOI18N
     }
+    
+    public void testConversionOperator() throws Exception {
+        // IZ 137468 : grammar does not support conversion operator invocation
+        performTest("conversion_operator.cc"); // NOI18N
+    }
+
+    public void testClassQualifiers() throws Exception {
+        // IZ 136821 : Keyword volatile breakes classifier content
+        performTest("class_qualifiers.cc"); // NOI18N
+    }
+
+    public void testExtensions() throws Exception {
+        // IZ 137118 : IDE highlights GTK_WIDGET_SET_FLAGS and GTK_CAN_DEFAULT macros
+        performTest("extensions.cc"); // NOI18N
+    }
+
+    public void testClassTemplateMethodCall() throws Exception {
+        // IZ 137531 : IDE highlights db.template cursor<T> line as error
+        performTest("class_template_method_call.cc"); // NOI18N
+    }
+    
+    public void testStringizeMacro() throws Exception {
+        // IZ 137465 : wrong macro expansion for #x
+        performPreprocessorTest("stringize_macro.cc"); // NOI18N
+    }
 
     /////////////////////////////////////////////////////////////////////
     // FAILS

@@ -61,6 +61,6 @@ public class ArrayInitializationTest extends
 	}
 
 	public void testArrayInitialization() {
-		execute(getClass().getSimpleName());
+//		execute(getClass().getSimpleName());
 	}
 }

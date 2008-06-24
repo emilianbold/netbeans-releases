@@ -40,12 +40,15 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
+import java.io.IOException;
 import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
 import org.netbeans.modules.websvc.saas.codegen.Constants.SaasAuthenticationType;
+import org.netbeans.modules.websvc.saas.codegen.model.CustomClientSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
@@ -63,13 +66,18 @@ public class CustomClientServletCodeGenerator extends CustomClientPojoCodeGenera
     
     @Override
     public boolean canAccept(SaasMethod method, Document doc) {
-        if (method instanceof CustomSaasMethod && 
+        if (SaasBean.canAccept(method, CustomSaasMethod.class, getDropFileType()) &&
                 Util.isServlet(NbEditorUtilities.getDataObject(doc))) {
             return true;
         }
         return false;
     }
-    
+        
+    @Override
+    public void init(SaasMethod m, Document doc) throws IOException {
+        super.init(m, new CustomClientSaasBean((CustomSaasMethod) m, true), doc);
+    }
+
     @Override
     protected List<ParameterInfo> getServiceMethodParameters() {
         if(getBean().getAuthenticationType() == SaasAuthenticationType.SESSION_KEY ||

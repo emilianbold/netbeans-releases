@@ -49,6 +49,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -120,7 +121,9 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 	if( def == null ) {
 	    CsmObject owner = findOwner(parent);
 	    if( owner instanceof CsmClass ) {
-		def = findByName(((CsmClass) owner).getMembers().iterator(), getName());
+		Iterator it = CsmSelect.getDefault().getClassMembers((CsmClass)owner, 
+                        CsmSelect.getDefault().getFilterBuilder().createNameFilter(getName().toString(), true, true, false));
+		def = findByName(it,getName());
 	    }
 	    else if( owner instanceof CsmNamespace ) {
                 Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(((CsmNamespace) owner),
@@ -133,12 +136,13 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     
     private static CsmFunction findByName(Iterator declarations, CharSequence name) {
 	for (Iterator it = declarations; it.hasNext();) {
-	    CsmDeclaration decl = (CsmDeclaration) it.next();
-	    if( decl.getName().equals(name) ) {
-		if( decl instanceof  CsmFunction ) { // paranoja
-		    return (CsmFunction) decl;
+            Object o = it.next();
+            if (CsmKindUtilities.isCsmObject(o) && CsmKindUtilities.isFunction((CsmObject) o)){
+                CsmFunction decl = (CsmFunction) o;
+                if( decl.getName().equals(name) ) {
+		    return decl;
 		}
-	    }	
+            }
 	}
 	return null;
     }

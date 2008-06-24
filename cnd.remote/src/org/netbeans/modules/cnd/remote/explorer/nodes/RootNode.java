@@ -61,6 +61,7 @@ public class RootNode extends AbstractNode {
     
     private static RootNode rootNode = null;
     private static final String SERVERS_ICON = "org/netbeans/modules/cnd/remote/resources/servers.png"; // NOI18N
+    private Action[] actions = null;
     
     public static RootNode getInstance() {
         if (rootNode == null) {
@@ -77,8 +78,16 @@ public class RootNode extends AbstractNode {
     
     @Override
     public Action[] getActions(boolean context) {
-        Action[] actions = { new AddNewServerAction() };
-        return actions;
+        if (Boolean.getBoolean("cnd.remote.enable")) { // DEBUG
+            if (actions == null) {
+                actions = new Action[1];
+                actions[0] = new AddNewServerAction();
+            }
+
+            return actions;
+        } else {
+            return super.getActions(context);
+        }
     }
     
     private static class RemoteServicesChildFactory extends ChildFactory<RemoteServerRecord> 
@@ -111,9 +120,6 @@ public class RootNode extends AbstractNode {
         }
 
         public synchronized void stateChanged(ChangeEvent e) {
-            if (e.getSource() instanceof RemoteServerList) {
-                System.err.println("RootNode.stateChanged:");
-            }
             refresh(false);
         }
     }

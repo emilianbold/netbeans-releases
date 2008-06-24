@@ -75,11 +75,11 @@ final class DotClassPathParser {
         }
         Element classpathEl = dotClasspathXml.getDocumentElement();
         if (!"classpath".equals(classpathEl.getLocalName())) { // NOI18N
-            return null;
+            return empty();
         }
         List<Element> classpathEntryEls = Util.findSubElements(classpathEl);
         if (classpathEntryEls == null) {
-            return null;
+            return empty();
         }
         
         // accessrules are ignored as they are not supported in NB anyway, eg:
@@ -145,6 +145,10 @@ final class DotClassPathParser {
         return new DotClassPath(classpath, sources, output, jre);
     }
 
+    static DotClassPath empty() {
+        return new DotClassPath(new ArrayList<DotClassPathEntry>(), new ArrayList<DotClassPathEntry>(), null, null);
+    }
+    
     private static String resolveLink(String value, List<Link> links) {
         for (Link l : links) {
             if (l.getName().equals(value)) {

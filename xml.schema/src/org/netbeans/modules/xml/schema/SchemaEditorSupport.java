@@ -96,6 +96,7 @@ import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openide.util.UserCancelException;
@@ -603,16 +604,21 @@ public class SchemaEditorSupport extends DataEditorSupport
      * Have the schema model sync with the document.
      */
     public void syncModel() {
-        try {
-            SchemaModel model = getModel();
-            if (model != null) {
-                model.sync();
-            }
-        } catch (IOException ioe) {
-            // The document cannot be parsed, ignore this error.
-        }
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        SchemaModel model = getModel();
+                        if (model != null) {
+                            model.sync();
+                        }
+                    } catch (IOException ioe) {
+                        // The document cannot be parsed, ignore this error.
+                    }
+                }
+            });            
     }
     
+    @Override
     public Task prepareDocument() {
         Task task = super.prepareDocument();
         // Avoid listening to the same task more than once.

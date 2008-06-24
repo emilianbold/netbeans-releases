@@ -57,8 +57,8 @@ import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 /**
@@ -69,7 +69,7 @@ public class IrbAction extends AbstractAction {
     
     public IrbAction() {
         super(NbBundle.getMessage(IrbAction.class, "CTL_IrbAction"));
-        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(IrbTopComponent.ICON_PATH, true)));
+        putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(IrbTopComponent.ICON_PATH, true)));
     }
     
     private boolean runIrbConsole(Project project) {

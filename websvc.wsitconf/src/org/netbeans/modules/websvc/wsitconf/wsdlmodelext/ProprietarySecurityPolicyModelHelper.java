@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
+import java.util.Collection;
+import java.util.HashMap;
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.websvc.wsitconf.ui.security.listmodels.ServiceProviderElement;
 import org.netbeans.modules.websvc.wsitmodelext.policy.All;
@@ -73,9 +75,12 @@ import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.TrustStore;
 import org.netbeans.modules.xml.wsdl.model.*;
 import java.util.List;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
+import org.netbeans.modules.websvc.wsitmodelext.addressing.AddressingAttribute;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.KerberosConfig;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.DisableStreamingSecurity;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.ServiceProvider;
+import org.netbeans.modules.websvc.wsitmodelext.trust.TrustQName;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPOperation;
 
 /**
  *
@@ -89,26 +94,26 @@ public class ProprietarySecurityPolicyModelHelper {
     public static final String DEFAULT_MAXCLOCKSKEW = "300000";                     //NOI18N
     public static final String DEFAULT_TIMESTAMPFRESHNESS = "300000";                     //NOI18N
     
-//    private static HashMap<ConfigVersion, ProprietarySecurityPolicyModelHelper> instances = 
-//            new HashMap<ConfigVersion, ProprietarySecurityPolicyModelHelper>();
-//
-//    private ConfigVersion configVersion = ConfigVersion.getDefault();
-//    
-//    /**
-//     * Creates a new instance of ProprietarySecurityPolicyModelHelper
-//     */
-//    private ProprietarySecurityPolicyModelHelper(ConfigVersion configVersion) {
-//        this.configVersion = configVersion;
-//    }
-//
-//    public static final synchronized ProprietarySecurityPolicyModelHelper getInstance(ConfigVersion configVersion) {
-//        ProprietarySecurityPolicyModelHelper instance = instances.get(ConfigVersion.CONFIG_1_0);
-//        if (instance == null) {
-//            instance = new ProprietarySecurityPolicyModelHelper(ConfigVersion.CONFIG_1_0);
-//            instances.put(configVersion, instance);
-//        }
-//        return instance;
-//    }
+    private static HashMap<ConfigVersion, ProprietarySecurityPolicyModelHelper> instances = 
+            new HashMap<ConfigVersion, ProprietarySecurityPolicyModelHelper>();
+
+    private ConfigVersion configVersion = ConfigVersion.getDefault();
+
+    /**
+     * Creates a new instance of ProprietarySecurityPolicyModelHelper
+     */
+    private ProprietarySecurityPolicyModelHelper(ConfigVersion configVersion) {
+        this.configVersion = configVersion;
+    }
+
+    public static final synchronized ProprietarySecurityPolicyModelHelper getInstance(ConfigVersion configVersion) {
+        ProprietarySecurityPolicyModelHelper instance = instances.get(configVersion);
+        if (instance == null) {
+            instance = new ProprietarySecurityPolicyModelHelper(configVersion);
+            instances.put(configVersion, instance);
+        }
+        return instance;
+    }
 
     private ProprietarySecurityPolicyModelHelper() { }
     
@@ -208,10 +213,10 @@ public class ProprietarySecurityPolicyModelHelper {
             if ((elems != null) && !(elems.isEmpty())) {
                 String kType = elems.get(0).getKeyType();
                 if (kType != null) {
-                    if (ComboConstants.ISSUED_KEYTYPE_PUBLIC_POLICYSTR.equals(kType)) {
+                    if (kType.endsWith(ComboConstants.ISSUED_KEYTYPE_PUBLIC_POLICYSTR)) {
                         return ComboConstants.ISSUED_KEYTYPE_PUBLIC;
                     }
-                    if (ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR.equals(kType)) {
+                    if (kType.endsWith(ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR)) {
                         return ComboConstants.ISSUED_KEYTYPE_SYMMETRIC;
                     }
                 }
@@ -624,10 +629,33 @@ public class ProprietarySecurityPolicyModelHelper {
         return (ts == null) ? null : ts.getCertSelector();
     }
     
-    public static void enableSTS(Binding b, boolean enable) {
+    public void enableSTS(Binding b, boolean enable) {
         if (enable) {
             setSTSContractClass(b, DEFAULT_CONTRACT_CLASS);
             setSTSLifeTime(b, DEFAULT_LIFETIME);
+            Collection<BindingOperation> bOperations = b.getBindingOperations();
+            WSDLModel model = b.getModel();
+            boolean isTransaction = model.isIntransaction();
+            if (!isTransaction) {
+                model.startTransaction();
+            }
+            try {
+                for (BindingOperation bO : bOperations) {
+                    List<SOAPOperation> sOps = bO.getChildren(SOAPOperation.class);
+                    if (bO.getName().toLowerCase().startsWith("issue")) { //NOI18N
+                        sOps.get(0).setAttribute("soapAction", TrustQName.getNamespaceUri(configVersion) + "/RST/Issue");
+                        Operation pOp = bO.getOperation().get();
+                        if (pOp != null) {
+                            pOp.getInput().setAttribute("unknown", AddressingAttribute.ACTION, TrustQName.getNamespaceUri(configVersion) + "/RST/Issue");
+                            pOp.getOutput().setAttribute("unknown", AddressingAttribute.ACTION, TrustQName.getNamespaceUri(configVersion) + "/RSTR/Issue");
+                        }
+                    }
+                }
+            } finally {
+                if (!isTransaction) {
+                    model.endTransaction();
+                }
+            }
         } else {
             STSConfiguration stsConfig = getSTSConfiguration(b);
             if (stsConfig != null) {
@@ -995,7 +1023,7 @@ public class ProprietarySecurityPolicyModelHelper {
         }
     }
     
-    public static void addSTSServiceProvider(STSConfiguration stsConfig, ServiceProviderElement spe) {
+    public static void addSTSServiceProvider(STSConfiguration stsConfig, ServiceProviderElement spe, ConfigVersion cfgVersion) {
         if ((stsConfig == null) || (spe == null)) return;
         WSDLModel model = stsConfig.getModel();
         boolean isTransaction = model.isIntransaction();
@@ -1037,11 +1065,12 @@ public class ProprietarySecurityPolicyModelHelper {
             KeyType ktype = (KeyType)wcf.create(sp, ProprietaryTrustServiceQName.KEYTYPE.getQName());
             sp.addExtensibilityElement(ktype);
 
-            String kTypePolicyStr = ComboConstants.ISSUED_KEYTYPE_PUBLIC_POLICYSTR;
+            String nsStart = TrustQName.getNamespaceUri(cfgVersion);
+            String kTypePolicyStr = nsStart + ComboConstants.ISSUED_KEYTYPE_PUBLIC_POLICYSTR;
             
             String kTypeShort = spe.getKeyType();
             if (ComboConstants.ISSUED_KEYTYPE_SYMMETRIC.equals(kTypeShort)) {
-                kTypePolicyStr = ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR;
+                kTypePolicyStr = nsStart + ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR;
             }
             ktype.setKeyType(kTypePolicyStr);
             

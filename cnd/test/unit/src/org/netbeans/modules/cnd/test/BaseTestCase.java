@@ -43,6 +43,8 @@ package org.netbeans.modules.cnd.test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.Manager;
@@ -95,6 +97,8 @@ public abstract class BaseTestCase extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         
+        Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
+        System.setProperty("cnd.mode.unittest", "true");
         MockServices.setServices(MockMimeLookup.class);
         MimePath mimePath = MimePath.parse("text/x-c++"); // NOI18N
         MockMimeLookup.setInstances(mimePath, new CCKit());

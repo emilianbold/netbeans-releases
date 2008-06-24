@@ -47,11 +47,14 @@ import java.awt.GridBagConstraints;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
@@ -60,6 +63,7 @@ import java.util.Set;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import javax.swing.ComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -79,6 +83,7 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
 import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.DeadlockDetector.Deadlock;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -91,8 +96,10 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.windows.Mode;
@@ -123,6 +130,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private transient ViewModelListener viewModelListener;
     private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
     private PreferenceChangeListener prefListener;
+    private SessionsComboBoxListener sessionsComboListener;
 
     private transient ImageIcon resumeIcon;
     private transient ImageIcon focusedResumeIcon;
@@ -141,7 +149,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private JPanel leftPanel;
     private JPanel rightPanel;
     
-    private ThreadsListener threadsListener;
+    private final ThreadsListener threadsListener;
     private transient Reference<TopComponent> lastSelectedTCRef;
     private transient Reference<TopComponent> componentToActivateAfterClose;
     
@@ -211,6 +219,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         
         prefListener = new DebuggingPreferenceChangeListener();
         preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefListener, preferences));
+        sessionsComboListener = new SessionsComboBoxListener();
         
         scrollBarPanel.setVisible(false);
         treeScrollBar.addAdjustmentListener(this);
@@ -239,7 +248,6 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
 
         setLayout(new java.awt.GridBagLayout());
 
-        sessionComboBox.setMaximumRowCount(1);
         sessionComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Java Project" }));
         sessionComboBox.setMaximumSize(new java.awt.Dimension(32767, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -296,8 +304,18 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     // End of variables declaration//GEN-END:variables
 
     public void setRootContext(Models.CompoundModel model, DebuggerEngine engine) {
+        {   // Destroy the old node
+            Node root = manager.getRootContext();
+            if (root != null) {
+                try {
+                    root.destroy();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
         if (engine != null) {
-            JPDADebugger deb = engine.lookupFirst(null, JPDADebugger.class);
+            final JPDADebugger deb = engine.lookupFirst(null, JPDADebugger.class);
             synchronized (this) {
                 if (previousDebugger != null) {
                     previousDebugger.removePropertyChangeListener(this);
@@ -311,7 +329,11 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                     this.session = null;
                 }
             }
-            threadsListener.changeDebugger(deb);
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    threadsListener.changeDebugger(deb);
+                }
+            });
         } else {
             synchronized (this) {
                 if (previousDebugger != null) {
@@ -488,6 +510,31 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         }
     }
 
+    private static boolean isJPDASession(Session s) {
+        DebuggerEngine engine = s.getCurrentEngine ();
+        if (engine == null) return false;
+        return engine.lookupFirst(null, JPDADebugger.class) != null;
+    }
+    
+    private void updateSessionsComboBox() {
+        //Object selection = sessionComboBox.getSelectedItem();
+        sessionComboBox.removeActionListener(sessionsComboListener);
+        ComboBoxModel model = sessionComboBox.getModel();
+        sessionComboBox.removeAllItems();
+        DebuggerManager dm = DebuggerManager.getDebuggerManager();
+        Session[] sessions = dm.getSessions();
+        for (int x = 0; x < sessions.length; x++) {
+            if (isJPDASession(sessions[x])) {
+                sessionComboBox.addItem(new SessionItem(sessions[x]));
+            }
+        }
+        if (model.getSize() == 0) {
+            sessionComboBox.addItem(new SessionItem(null));
+        }
+        sessionComboBox.setSelectedItem(new SessionItem(dm.getCurrentSession()));
+        sessionComboBox.addActionListener(sessionsComboListener);
+    }
+    
     // **************************************************************************
     // implementation of TreeExpansion and TreeModel listener
     // **************************************************************************
@@ -659,19 +706,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             mainScrollPane.revalidate();
             mainPanel.revalidate();
 
-            sessionComboBox.removeAllItems();
-            Node root = manager.getRootContext();
-            if (root != null) {
-                String comboItemText = root.getDisplayName();
-                synchronized (DebuggingView.this) {
-                    if ((comboItemText == null || comboItemText.length() == 0) && session != null) {
-                        comboItemText = session.getName();
-                    }
-                }
-                sessionComboBox.addItem(comboItemText != null && comboItemText.length() > 0 ?
-                    comboItemText : 
-                    NbBundle.getMessage(DebuggingView.class, "LBL_Java_Project")); // [TODO]
-            }
+            updateSessionsComboBox();
         }
     }
     
@@ -736,6 +771,62 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             g.setColor(originalColor);
         }
         
+    }
+    
+    private class SessionsComboBoxListener implements ActionListener {
+
+        public void actionPerformed(ActionEvent e) {
+            SessionItem si = (SessionItem)sessionComboBox.getSelectedItem();
+            if (si != null) {
+                Session ses = si.getSession();
+                DebuggerManager dm = DebuggerManager.getDebuggerManager();
+                if (ses != null && ses != dm.getCurrentSession()) {
+                    dm.setCurrentSession(ses);
+                }
+            }
+        }
+        
+    }
+    
+    private class SessionItem {
+        
+        private Session session;
+
+        SessionItem(Session session) {
+            this.session = session;
+        }
+        
+        public Session getSession() {
+            return session;
+        }
+
+        @Override
+        public String toString() {
+            if (session != null) {
+                return session.getName();
+            } else {
+                return '<' + NbBundle.getMessage(DebuggingView.class, "LBL_No_Session_Running") + '>';
+            }
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof SessionItem)) {
+                return false;
+            }
+            Session s = ((SessionItem)obj).getSession();
+            if (session == null) {
+                return s == null;
+            } else {
+                return session.equals(s);
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return 29 * 3 + (this.session != null ? this.session.hashCode() : 0);
+        }
+
     }
 
 }

@@ -74,6 +74,13 @@ import org.w3c.dom.NodeList;
  */
 public class RestUtils {
    
+    public static void upgrade(Project project) {
+         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+        if (restSupport != null) {
+            restSupport.upgrade();
+        }
+    }
+    
     /**
      *  Makes sure project is ready for REST development.
      *  @param source source file or directory as part of REST application project.
@@ -216,11 +223,11 @@ public class RestUtils {
 
     public static String findStubNameFromClass(String className) {
         String name = className;
-        int index = name.lastIndexOf("Resource");
+        int index = name.lastIndexOf(Constants.RESOURCE_SUFFIX);
         if (index != -1) {
             name = name.substring(0, index);
         } else {
-            index = name.lastIndexOf("Converter");
+            index = name.lastIndexOf(Constants.CONVERTER_SUFFIX);
             if (index != -1)
                 name = name.substring(0, index);
         }

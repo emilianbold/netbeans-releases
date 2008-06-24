@@ -106,27 +106,31 @@ public class AnimatedTileList extends JList {
 			}
 		});
 		this.addFocusListener(new FocusAdapter() {
-            public void focusGained(FocusEvent e) {
-               AnimatedTileList.this.updatePaintTile();
-            }
+                    public void focusGained(FocusEvent e) {
+                        AnimatedTileList.this.updatePaintTile();
+                    }
 		});
 		this.addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					handlePopup(e);
-				}
-			}
-			public void mouseReleased(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					handlePopup(e);
-				}
-			}
-            public void mouseClicked(MouseEvent e) {
-				if (e.getClickCount() >= 2 && SwingUtilities.isLeftMouseButton(e)) {
-					AnimatedTile tile = (AnimatedTile) AnimatedTileList.this.getSelectedValue();
-					tile.getImageResource().getGameDesign().getMainView().requestEditing(tile);
-				}
-            }
+                    public void mousePressed(MouseEvent e) {
+                        if (e.isPopupTrigger()) {
+                            handlePopup(e);
+                        }
+                    }
+
+                    public void mouseReleased(MouseEvent e) {
+                        if (e.isPopupTrigger()) {
+                            handlePopup(e);
+                        }
+                    }
+
+                    public void mouseClicked(MouseEvent e) {
+                        if (e.getClickCount() >= 2 && SwingUtilities.isLeftMouseButton(e)) {
+                            AnimatedTile tile = (AnimatedTile) AnimatedTileList.this.getSelectedValue();
+                            if (tile != null){
+                                tile.getImageResource().getGameDesign().getMainView().requestEditing(tile);
+                            }
+                        }
+                    }
 		});
 		//DnD
 		DragSource dragSource = new DragSource();
@@ -134,16 +138,20 @@ public class AnimatedTileList extends JList {
 
 	}
 	
-	private void handlePopup(MouseEvent e) {
-		JPopupMenu menu = new JPopupMenu();
-        int row = AnimatedTileList.this.locationToIndex(e.getPoint());
-        AnimatedTile at = (AnimatedTile) AnimatedTileList.this.getModel().getElementAt(row);
-		List<Action> actions = at.getActions();
-		for (Action action : actions) {
-            menu.add(action);
-		}
-		menu.show(this, e.getX(), e.getY());
-	}
+        private void handlePopup(MouseEvent e) {
+            JPopupMenu menu = new JPopupMenu();
+            int row = AnimatedTileList.this.locationToIndex(e.getPoint());
+            if (row == -1) { //  clicked on empty area
+                return;
+            }
+            setSelectedIndex(row);
+            AnimatedTile at = (AnimatedTile) AnimatedTileList.this.getModel().getElementAt(row);
+            List<Action> actions = at.getActions();
+            for (Action action : actions) {
+                menu.add(action);
+            }
+            menu.show(this, e.getX(), e.getY());
+        }
 	
 	private void updatePaintTile() {
 		Tile tile = (Tile) this.getSelectedValue();
@@ -173,6 +181,9 @@ public class AnimatedTileList extends JList {
 		public void dragGestureRecognized(DragGestureEvent dge) {
 			Point dragOrigin = dge.getDragOrigin();
 			int row = AnimatedTileList.this.locationToIndex(dragOrigin);
+                        if (row == -1) {//  clicked on empty area
+                            return;
+                        }
 			Tile tile = (Tile) AnimatedTileList.this.getModel().getElementAt(row);
 			TileTransferable payload = new TileTransferable();
 			payload.getTiles().add(tile);

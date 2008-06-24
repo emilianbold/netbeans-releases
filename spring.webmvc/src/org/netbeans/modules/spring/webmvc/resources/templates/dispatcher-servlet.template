@@ -18,7 +18,7 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
     <bean id="urlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
         <property name="mappings">
             <props>
-                <prop key="/index.htm">indexController</prop>
+                <prop key="/${indexUrlKey}">indexController</prop>
             </props>
         </property>
     </bean>

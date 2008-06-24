@@ -361,6 +361,7 @@
     <mapID target="org.netbeans.modules.j2ee.persistence.wizard.entity.EntityWizardDescriptor" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/persist_new_entityclass.html" />
     <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.DatabaseTablesPanel" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/persist_new_entityclass_db1.html" />
     <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/persist_new_entityclass_db2.html" />
+    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.MappingOptionsPanel" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/persist_new_entityclass_db3.html" />
     <mapID target="org.netbeans.modules.j2ee.persistence.unit.AddEntityPanel" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/db_persist_addentityclass.html" />
     <mapID target="org.netbeans.modules.j2ee.common.DatasourceCustomizer" url="persistence/csh/db_new_datasource.html" />
 

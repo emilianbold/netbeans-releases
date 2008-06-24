@@ -475,7 +475,7 @@ public class CsmContextUtilities {
             CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.next();
             if (CsmKindUtilities.isClass(elem.getScope())) {
                 clazz = (CsmClass)elem.getScope();
-                break;
+                // remember found class, but continue to possibly nested class
             }
         }        
         if (clazz == null && checkFunDefition) {

@@ -233,7 +233,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         if ( preselectedProject == null ) {
             // No project context => use main project
             preselectedProject = OpenProjectList.getDefault().getMainProject();
-            if ( preselectedProject == null ) {
+            if (preselectedProject == null && OpenProjectList.getDefault().getOpenProjects().length > 0) {
                 // No main project => use the first one
                 preselectedProject = OpenProjectList.getDefault().getOpenProjects()[0];
             }

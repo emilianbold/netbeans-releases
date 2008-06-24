@@ -56,9 +56,9 @@ public class AllCoreApplicationTests
 	{
 	   TestSuite suite = new TestSuite("CoreApplication Tests");
       
-	   //$JUnit-BEGIN$
-	   suite.addTest(new TestSuite(CoreProductManagerTestCase.class));
-	   suite.addTest(new TestSuite(CoreProductTestCase.class));	   
+//	   //$JUnit-BEGIN$
+//	   suite.addTest(new TestSuite(CoreProductManagerTestCase.class));
+//	   suite.addTest(new TestSuite(CoreProductTestCase.class));	   
 	   //$JUnit-END$
 	   return suite;
 	}

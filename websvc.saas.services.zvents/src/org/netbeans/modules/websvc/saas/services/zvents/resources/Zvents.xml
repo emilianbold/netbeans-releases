@@ -58,9 +58,13 @@
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.zvents.Bundle</localizing-bundle>
 
-        <group name="Zvents">
-        </group>
-
+        <group name="Zvents"/>
+        
+        <code-gen>
+            <artifacts targets="java,servlet,resource,jsp"/>
+            <artifacts targets="php"/>
+        </code-gen>
+        
         <authentication profile="Templates/SaaSServices/apikey.properties">
             <api-key id="key"/>
         </authentication>

@@ -51,7 +51,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
-import org.netbeans.modules.subversion.client.cli.SvnCommand.Arguments;
 import org.openide.xml.XMLUtil;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessageChangePath;
@@ -79,7 +78,7 @@ public class LogCommand extends SvnCommand {
         dateFormat.setTimeZone(java.util.TimeZone.getTimeZone("GMT"));       
     }
     
-    private StringBuffer output = new StringBuffer();
+    private byte[] output;
 
     private enum LogType {
         file,
@@ -125,6 +124,11 @@ public class LogCommand extends SvnCommand {
         
         file = null;
     }
+
+    @Override
+    protected boolean hasBinaryOutput() {
+        return true;
+    }    
     
     @Override
     protected boolean notifyOutput() {
@@ -137,9 +141,9 @@ public class LogCommand extends SvnCommand {
     }
     
     @Override
-    public void outputText(String lineString) {
-        output.append(lineString);
-        super.outputText(lineString);        
+    public void output(byte[] bytes) {
+        super.output(bytes);
+        output = bytes;
     }
     
     @Override
@@ -175,13 +179,14 @@ public class LogCommand extends SvnCommand {
     }
 
     public ISVNLogMessage[] getLogMessages() throws SVNClientException {
+        if (output == null || output.length == 0) return new ISVNLogMessage[0];
         try {
             XMLReader saxReader = XMLUtil.createXMLReader();
 
             XmlEntriesHandler xmlEntriesHandler = new XmlEntriesHandler();
             saxReader.setContentHandler(xmlEntriesHandler);
             saxReader.setErrorHandler(xmlEntriesHandler);
-            InputSource source = new InputSource(new ByteArrayInputStream(output.toString().getBytes()));
+            InputSource source = new InputSource(new ByteArrayInputStream(output));
 
             saxReader.parse(source);
             return xmlEntriesHandler.getLog();
@@ -249,15 +254,17 @@ public class LogCommand extends SvnCommand {
 
         @Override
         public void characters(char[] ch, int start, int length) throws SAXException {
-            if(values == null) {
+            if(values == null || tag == null) {
                 return;
             }
             String s = toString(length, ch, start);            
             if(tag.equals(PATH_ELEMENT_NAME)) {
                 List<Path> paths = getPathList();
                 paths.get(paths.size() - 1).path = s;
+                tag = null;                    
             } else {
                 values.put(tag, s);   
+                tag = null;                
             }            
         }                
         

@@ -54,7 +54,8 @@ public interface GlassfishModuleFactory {
      * 
      * @param glassfishHome
      * @param asenvProps
-     * @return
+     * @return true or false depending on whether the referenced glassfish 
+     *   install supports this container type.
      */
     public boolean isModuleSupported(String glassfishHome, Properties asenvProps);
     
