@@ -218,4 +218,8 @@ public interface IProductArchiveDefinitions
    
    // Used by the trackbar
    public final static String ELEMENT_TRACKBAR = "Embarcadero.AxTrackBar";
+   
+   //Used for the new .diagram file
+   public static final String UML_DIAGRAM_STRING = "UML:Diagram";
+   
 }
