@@ -41,11 +41,16 @@
 
 package org.netbeans.modules.extexecution;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
+import javax.swing.Action;
+import org.openide.util.NbBundle;
+import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
 public final class InputOutputManager {
@@ -59,6 +64,8 @@ public final class InputOutputManager {
     private static final Map<InputOutput, InputOutputData> AVAILABLE =
             new WeakHashMap<InputOutput, InputOutputData>();
 
+    private static final Set<String> ACTIVE_DISPLAY_NAMES = new HashSet<String>();
+
     private InputOutputManager() {
         super();
     }
@@ -67,8 +74,9 @@ public final class InputOutputManager {
     public static void addInputOutput(InputOutput io, String displayName,
             StopAction stopAction, RerunAction rerunAction) {
 
-        synchronized (AVAILABLE) {
+        synchronized (InputOutputManager.class) {
             AVAILABLE.put(io, new InputOutputData(io, displayName, stopAction, rerunAction));
+            ACTIVE_DISPLAY_NAMES.remove(displayName);
         }
     }
 
@@ -83,7 +91,7 @@ public final class InputOutputManager {
 
         TreeSet<InputOutputData> candidates = new TreeSet<InputOutputData>();
 
-        synchronized (AVAILABLE) {
+        synchronized (InputOutputManager.class) {
             for (Iterator<Entry<InputOutput, InputOutputData>> it = AVAILABLE.entrySet().iterator(); it.hasNext();) {
                 Entry<InputOutput, InputOutputData> entry = it.next();
 
@@ -108,6 +116,7 @@ public final class InputOutputManager {
         if (!candidates.isEmpty()) {
             result = candidates.first();
             AVAILABLE.remove(result.inputOutput);
+            ACTIVE_DISPLAY_NAMES.add(result.displayName);
         }
         return result;
     }
@@ -115,7 +124,7 @@ public final class InputOutputManager {
     public static InputOutputData getInputOutput(InputOutput inputOutput) {
         InputOutputData result = null;
 
-        synchronized (AVAILABLE) {
+        synchronized (InputOutputManager.class) {
             for (Iterator<Entry<InputOutput, InputOutputData>> it = AVAILABLE.entrySet().iterator(); it.hasNext();) {
                 Entry<InputOutput, InputOutputData> entry = it.next();
 
@@ -129,6 +138,7 @@ public final class InputOutputManager {
 
                 if (free.equals(inputOutput)) {
                     result = data;
+                    ACTIVE_DISPLAY_NAMES.add(result.displayName);
                     it.remove();
                 }
             }
@@ -136,11 +146,59 @@ public final class InputOutputManager {
         return result;
     }
 
+    public static InputOutputData createInputOutput(String originalDisplayName, boolean actions) {
+        synchronized (InputOutputManager.class) {
+            String displayName = getNonActiveDisplayName(originalDisplayName);
+
+            InputOutput io = null;
+            StopAction stopAction = null;
+            RerunAction rerunAction = null;
+
+            if (actions) {
+                stopAction = new StopAction();
+                rerunAction = new RerunAction();
+
+                io = IOProvider.getDefault().getIO(displayName,
+                        new Action[] {rerunAction, stopAction});
+                rerunAction.setParent(io);
+            } else {
+                io = IOProvider.getDefault().getIO(displayName, true);
+            }
+            ACTIVE_DISPLAY_NAMES.add(displayName);
+            return new InputOutputData(io, displayName, stopAction, rerunAction);
+        }
+    }
+
+    // unit test only
+    public static void clear() {
+        synchronized (InputOutputManager.class) {
+            AVAILABLE.clear();
+            ACTIVE_DISPLAY_NAMES.clear();
+        }
+    }
+
     private static boolean isAppropriateName(String base, String toMatch) {
         if (!toMatch.startsWith(base)) {
             return false;
         }
         return toMatch.substring(base.length()).matches("^(\\ #[0-9]+)?$"); // NOI18N
+    }
+
+    private static String getNonActiveDisplayName(String displayNameBase) {
+        String nonActiveDN = displayNameBase;
+        if (ACTIVE_DISPLAY_NAMES.contains(nonActiveDN)) {
+            // Uniquify: "prj (targ) #2", "prj (targ) #3", etc.
+            int i = 2;
+            String testdn;
+
+            do {
+                testdn = NbBundle.getMessage(InputOutputManager.class, "Uniquified", nonActiveDN, i++);
+            } while (ACTIVE_DISPLAY_NAMES.contains(testdn));
+
+            nonActiveDN = testdn;
+        }
+        assert !ACTIVE_DISPLAY_NAMES.contains(nonActiveDN);
+        return nonActiveDN;
     }
 
     public static class InputOutputData implements Comparable<InputOutputData> {

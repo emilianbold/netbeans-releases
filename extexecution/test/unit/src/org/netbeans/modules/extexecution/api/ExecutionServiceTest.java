@@ -62,6 +62,12 @@ public class ExecutionServiceTest extends NbTestCase {
         super(name);
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        InputOutputManager.clear();
+        super.tearDown();
+    }
+
 
     public void testSimpleRun() throws InvocationTargetException, InterruptedException {
         SwingUtilities.invokeAndWait(new Runnable() {
@@ -208,6 +214,59 @@ public class ExecutionServiceTest extends NbTestCase {
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
                 assertNotNull(getInputOutput("Test", false));
+            }
+        });
+    }
+
+    public void testIOHandlingMulti() throws InterruptedException, InvocationTargetException,
+            ExecutionException {
+
+        TestProcess process1 = new TestProcess(0);
+        TestProcess process2 = new TestProcess(0);
+        TestCallable callable = new TestCallable(process1);
+
+        ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
+
+        final ExecutionService service = ExecutionService.newService(
+                callable, builder.create(), "Test");
+
+        class TaskHolder {
+            public Future<Integer> task;
+        }
+
+        final TaskHolder holder1 = new TaskHolder();
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+                holder1.task = service.run();
+            }
+        });
+
+        assertNull(getInputOutput("Test", false));
+        assertNull(getInputOutput("Test #1", false));
+
+        process1.waitStarted();
+        callable.setProcess(process2);
+
+        final TaskHolder holder2 = new TaskHolder();
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+                holder2.task = service.run();
+            }
+        });
+
+        assertNull(getInputOutput("Test", false));
+        assertNull(getInputOutput("Test #1", false));
+
+        process1.destroy();
+        process2.destroy();
+
+        holder1.task.get();
+        holder2.task.get();
+
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+                assertNotNull(getInputOutput("Test", false));
+                assertNotNull(getInputOutput("Test #2", false));
             }
         });
     }

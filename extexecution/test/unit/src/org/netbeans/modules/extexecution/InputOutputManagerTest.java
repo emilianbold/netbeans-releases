@@ -54,24 +54,30 @@ public class InputOutputManagerTest extends NbTestCase {
         super(name);
     }
 
-    public void testGet() {
-        InputOutput io = IOProvider.getDefault().getIO("test1", true);
-        InputOutputManager.addInputOutput(io, "test1", null, null);
+    @Override
+    protected void tearDown() throws Exception {
+        InputOutputManager.clear();
+        super.tearDown();
+    }
 
-        InputOutputManager.InputOutputData data = InputOutputManager.getInputOutput("test1", false);
-        assertEquals("test1", data.getDisplayName());
+    public void testGet() {
+        InputOutput io = IOProvider.getDefault().getIO("test", true);
+        InputOutputManager.addInputOutput(io, "test", null, null);
+
+        InputOutputManager.InputOutputData data = InputOutputManager.getInputOutput("test", false);
+        assertEquals("test", data.getDisplayName());
         assertEquals(io, data.getInputOutput());
         assertNull(data.getRerunAction());
         assertNull(data.getStopAction());
 
-        data = InputOutputManager.getInputOutput("test1", true);
+        data = InputOutputManager.getInputOutput("test", true);
         assertNull(data);
 
-        data = InputOutputManager.getInputOutput("test1", false);
+        data = InputOutputManager.getInputOutput("test", false);
         assertNull(data);
 
-        InputOutputManager.addInputOutput(io, "test1", null, null);
-        data = InputOutputManager.getInputOutput("test1", false);
+        InputOutputManager.addInputOutput(io, "test", null, null);
+        data = InputOutputManager.getInputOutput("test", false);
         assertNotNull(data);
     }
 
@@ -79,32 +85,32 @@ public class InputOutputManagerTest extends NbTestCase {
         StopAction stopAction = new StopAction();
         RerunAction rerunAction = new RerunAction();
 
-        InputOutput io = IOProvider.getDefault().getIO("test2", new Action[] {rerunAction, stopAction});
-        InputOutputManager.addInputOutput(io, "test2", stopAction, rerunAction);
+        InputOutput io = IOProvider.getDefault().getIO("test", new Action[] {rerunAction, stopAction});
+        InputOutputManager.addInputOutput(io, "test", stopAction, rerunAction);
 
-        InputOutputManager.InputOutputData data = InputOutputManager.getInputOutput("test2", false);
+        InputOutputManager.InputOutputData data = InputOutputManager.getInputOutput("test", false);
         assertNull(data);
 
-        data = InputOutputManager.getInputOutput("test2", true);
-        assertEquals("test2", data.getDisplayName());
+        data = InputOutputManager.getInputOutput("test", true);
+        assertEquals("test", data.getDisplayName());
         assertEquals(io, data.getInputOutput());
         assertEquals(rerunAction, data.getRerunAction());
         assertEquals(stopAction, data.getStopAction());
 
-        data = InputOutputManager.getInputOutput("test2", true);
+        data = InputOutputManager.getInputOutput("test", true);
         assertNull(data);
 
-        InputOutputManager.addInputOutput(io, "test2", stopAction, rerunAction);
-        data = InputOutputManager.getInputOutput("test2", true);
+        InputOutputManager.addInputOutput(io, "test", stopAction, rerunAction);
+        data = InputOutputManager.getInputOutput("test", true);
         assertNotNull(data);
     }
 
     public void testGetRequired() {
-        InputOutput io = IOProvider.getDefault().getIO("test3", true);
-        InputOutputManager.addInputOutput(io, "test3", null, null);
+        InputOutput io = IOProvider.getDefault().getIO("test", true);
+        InputOutputManager.addInputOutput(io, "test", null, null);
 
         InputOutputManager.InputOutputData data = InputOutputManager.getInputOutput(io);
-        assertEquals("test3", data.getDisplayName());
+        assertEquals("test", data.getDisplayName());
         assertEquals(io, data.getInputOutput());
         assertNull(data.getRerunAction());
         assertNull(data.getStopAction());
@@ -112,26 +118,26 @@ public class InputOutputManagerTest extends NbTestCase {
         data = InputOutputManager.getInputOutput(io);
         assertNull(data);
 
-        InputOutputManager.addInputOutput(io, "test3", null, null);
+        InputOutputManager.addInputOutput(io, "test", null, null);
         data = InputOutputManager.getInputOutput(io);
         assertNotNull(data);
     }
 
     public void testOrder() {
-        InputOutput firstIO = IOProvider.getDefault().getIO("test4", true);
-        InputOutputManager.addInputOutput(firstIO, "test4", null, null);
-        InputOutput secondIO = IOProvider.getDefault().getIO("test4 #1", true);
-        InputOutputManager.addInputOutput(secondIO, "test4 #1", null, null);
+        InputOutput firstIO = IOProvider.getDefault().getIO("test", true);
+        InputOutputManager.addInputOutput(firstIO, "test", null, null);
+        InputOutput secondIO = IOProvider.getDefault().getIO("test #1", true);
+        InputOutputManager.addInputOutput(secondIO, "test #1", null, null);
 
-        InputOutputManager.InputOutputData data = InputOutputManager.getInputOutput("test4", false);
-        assertEquals("test4", data.getDisplayName());
+        InputOutputManager.InputOutputData data = InputOutputManager.getInputOutput("test", false);
+        assertEquals("test", data.getDisplayName());
         assertEquals(firstIO, data.getInputOutput());
 
-        data = InputOutputManager.getInputOutput("test4", false);
-        assertEquals("test4 #1", data.getDisplayName());
+        data = InputOutputManager.getInputOutput("test", false);
+        assertEquals("test #1", data.getDisplayName());
         assertEquals(secondIO, data.getInputOutput());
 
-        data = InputOutputManager.getInputOutput("test4", false);
+        data = InputOutputManager.getInputOutput("test", false);
         assertNull(data);
     }
 }
