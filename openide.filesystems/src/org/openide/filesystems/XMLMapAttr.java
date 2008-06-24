@@ -40,6 +40,7 @@
  */
 package org.openide.filesystems;
 
+import java.awt.Toolkit;
 import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
 import org.openide.util.io.NbMarshalledObject;
@@ -53,6 +54,7 @@ import java.net.URL;
 
 import java.util.*;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -338,6 +340,7 @@ final class XMLMapAttr implements Map {
         return map.containsValue(p1);
     }
 
+    @Override
     public synchronized int hashCode() {
         return map.hashCode();
     }
@@ -367,6 +370,7 @@ final class XMLMapAttr implements Map {
         return map.isEmpty();
     }
 
+    @Override
     public synchronized boolean equals(Object p1) {
         return map.equals(p1);
     }
@@ -982,6 +986,7 @@ final class XMLMapAttr implements Map {
             return index;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (obj instanceof Attr) {
                 Attr other = (Attr)obj;
@@ -995,6 +1000,7 @@ final class XMLMapAttr implements Map {
             return false;
         }
 
+        @Override
         public int hashCode() {
             return 743 + keyIndex << 8 + value.hashCode();
         }
@@ -1140,10 +1146,12 @@ final class XMLMapAttr implements Map {
             return fo.getAttribute(key);
         }
 
+        @Override
         public Object remove(Object key) {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public Object put(String key, Object value) {
             throw new UnsupportedOperationException();
         }
@@ -1158,13 +1166,17 @@ final class XMLMapAttr implements Map {
         
         public Iterator<Map.Entry<String, Object>> iterator() {
             class Iter implements Iterator<Map.Entry<String, Object>> {
+                int fixed;
                 Enumeration<String> attrs = fo.getAttributes();
-                
+
                 public boolean hasNext() {
-                    return attrs.hasMoreElements();
+                    return fixed < 2 || attrs.hasMoreElements();
                 }
-                
+
                 public Map.Entry<String, Object> next() {
+                    if (fixed < 2) {
+                        return new LocEntry(fo, fixed++);
+                    }
                     String s = attrs.nextElement();
                     return new FOEntry(fo, s);
                 }
@@ -1186,6 +1198,7 @@ final class XMLMapAttr implements Map {
             return cnt;
         }
 
+        @Override
         public boolean remove(Object o) {
             throw new UnsupportedOperationException();
         }
@@ -1212,4 +1225,37 @@ final class XMLMapAttr implements Map {
             throw new UnsupportedOperationException();
         }
     } // end of FOEntry
+    private static final class LocEntry implements Map.Entry<String, Object> {
+        private FileObject fo;
+        private int type;
+
+        private LocEntry(FileObject fo, int cnt) {
+            this.fo = fo;
+            this.type = cnt;
+        }
+
+        public String getKey() {
+            return type == 0 ? "displayName" : "image"; // NOI18N
+        }
+
+        public Object getValue() {
+            if (type == 0) {
+                String rb = (String) fo.getAttribute("SystemFileSystem.localizingBundle"); // NOI18N
+                if (rb == null) {
+                    return fo.getNameExt();
+                }
+                return NbBundle.getBundle(rb).getString(fo.getPath());
+            } else if (type == 1) {
+                URL u = (URL) fo.getAttribute("SystemFileSystem.icon"); // NOI18N
+                return Toolkit.getDefaultToolkit().getImage(u);
+            } else {
+                return null;
+            }
+        }
+        
+
+        public Object setValue(Object value) {
+            throw new UnsupportedOperationException();
+        }
+    } // end of LocEntry
 }
