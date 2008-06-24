@@ -46,6 +46,8 @@ import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JSplitPane;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
@@ -81,6 +83,7 @@ public final class Manager {
      */
     private final boolean lateWindowPromotion;
 
+    private static final Logger LOGGER = Logger.getLogger(Manager.class.getName());
     
     /**
      * Returns a singleton instance of this class.
@@ -125,13 +128,7 @@ public final class Manager {
                 ? JSplitPane.HORIZONTAL_SPLIT 
                 : JSplitPane.VERTICAL_SPLIT;
         
-        if (displayHandlers != null) {
-            for (ResultDisplayHandler handler : displayHandlers.values()) {
-                JSplitPane pane = handler.getDisplayComponent();
-                pane.setOrientation(orientation);
-                ResultWindow.getInstance().addDisplayComponent(pane);
-            }
-        }
+        ResultWindow.getInstance().setOrientation(orientation);
     }
     
     private Manager() {
@@ -142,7 +139,7 @@ public final class Manager {
      * Called when an Ant task running JUnit tests is started.
      * Displays a message in the JUnit results window.
      */
-    void testStarted(final TestSession session) {
+    synchronized void testStarted(final TestSession session) {
         displayMessage(
                 session,
                 NbBundle.getMessage(getClass(), "LBL_RunningTests"));   //NOI18N
@@ -150,13 +147,21 @@ public final class Manager {
     
     /**
      */
-    void sessionFinished(final TestSession session) {
+    synchronized void sessionFinished(final TestSession session) {
         if (!testSessions.contains(session)) {
             /* This session did not run the "junit" task. */
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Finishing an unknown session: " + session);
+            }
             return;
         }
         
         displayMessage(session, null, true);  //updates the display
+
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Finishing session: " + session);
+        }
+        
         testSessions.remove(session);   //must be after displayMessage(...)
                                          //otherwise the window would get
                                          //activated
@@ -164,7 +169,7 @@ public final class Manager {
     
     /**
      */
-    void displayOutput(final TestSession session,
+    synchronized void displayOutput(final TestSession session,
                        final String text,
                        final boolean error) {
 
@@ -178,7 +183,7 @@ public final class Manager {
      * @param  suiteName  name of the running suite; or {@code null} in the case
      *                    of anonymous suite
      */
-    void displaySuiteRunning(final TestSession session,
+    synchronized void displaySuiteRunning(final TestSession session,
                              final String suiteName) {
 
         final ResultDisplayHandler displayHandler = getDisplayHandler(session);
@@ -188,7 +193,7 @@ public final class Manager {
     
     /**
      */
-    void displayReport(final TestSession session,
+    synchronized void displayReport(final TestSession session,
                        final Report report) {
 
         /* Called from the AntLogger's thread */
@@ -340,7 +345,7 @@ public final class Manager {
     
     /**
      */
-    private ResultDisplayHandler getDisplayHandler(final TestSession session) {
+    private synchronized ResultDisplayHandler getDisplayHandler(final TestSession session) {
         ResultDisplayHandler displayHandler = (displayHandlers != null)
                                               ? displayHandlers.get(session)
                                               : null;
