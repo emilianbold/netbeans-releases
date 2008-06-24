@@ -61,6 +61,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.MetaLayerRelationFactory;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IAutonomousElement;
+import org.netbeans.modules.uml.core.metamodel.dynamics.IMessage;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.drawingarea.LabelManager;
@@ -271,6 +272,7 @@ public class SceneAcceptProvider implements AcceptProvider
                         Widget original = ((DiagramEngine) sourceEngine).getScene().findWidget(pre);
                         
                         if(original instanceof UMLNodeWidget && !((UMLNodeWidget)original).isCopyCutDeletable())continue;
+                        else if(original instanceof UMLEdgeWidget)continue;//we copy nodes in this section, see 2nd pass
                         
                         IPresentationElement presentation = Util.createNodePresentationElement();
                         presentation.addSubject(pre.getFirstSubject());
@@ -296,6 +298,7 @@ public class SceneAcceptProvider implements AcceptProvider
                         Widget original = ((DiagramEngine) sourceEngine).getScene().findWidget(pre);
                         if(original instanceof UMLNodeWidget && !((UMLNodeWidget)original).isCopyCutDeletable())continue;
                         IElement rel = pre.getFirstSubject();
+                        if(rel instanceof IMessage)continue;//copying of messages is not supported
                         if (original instanceof UMLEdgeWidget)
                         {
                             IPresentationElement source = ((DiagramEngine) sourceEngine).getScene().getEdgeSource(pre);
