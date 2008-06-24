@@ -794,6 +794,11 @@ final class Central implements ControllerHandler {
             return false;
         }
         
+        if( isViewMaximized() && mode.getKind() == Constants.MODE_KIND_SLIDING ) {
+            //134622 - unslide first if some other view is maximized, otherwise
+            //the view being closed will reopen in slidebar after restoring from maximized mode
+            mode = unSlide(tc, mode);
+        }
         // Validate the TopComponent was removed from other modes.
         removeTopComponentFromOtherModes(mode, tc);
         
@@ -2254,7 +2259,7 @@ final class Central implements ControllerHandler {
     /**
      * Cancel the sliding mode of the given TopComponent.
      */
-    private void unSlide(TopComponent tc, ModeImpl source) {
+    private ModeImpl unSlide(TopComponent tc, ModeImpl source) {
         String tcID = WindowManagerImpl.getInstance().findTopComponentID(tc);        
         
         ModeImpl targetMode = model.getModeTopComponentPreviousMode(source, tcID);
@@ -2290,6 +2295,7 @@ final class Central implements ControllerHandler {
         }
         WindowManagerImpl.getInstance().doFirePropertyChange(
             WindowManagerImpl.PROP_ACTIVE_MODE, null, getActiveMode());
+        return targetMode;
     }
   
     
