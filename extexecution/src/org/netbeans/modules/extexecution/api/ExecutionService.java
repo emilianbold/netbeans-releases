@@ -198,7 +198,6 @@ public final class ExecutionService {
         final StopAction workingStopAction = ioData.getStopAction();
         final RerunAction workingRerunAction = ioData.getRerunAction();
 
-        // FIXME custom io - cleanup task
         final InputOutput inputOutput = ioData.getInputOutput();
 
         Callable<Integer> callable = new Callable<Integer>() {
