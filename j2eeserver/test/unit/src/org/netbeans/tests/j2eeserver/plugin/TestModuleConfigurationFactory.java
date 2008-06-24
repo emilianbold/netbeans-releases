@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,54 +31,51 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.tests.j2eeserver.plugin.jsr88;
+package org.netbeans.tests.j2eeserver.plugin;
 
-import java.util.HashMap;
-import java.util.Map;
-import javax.enterprise.deploy.spi.factories.DeploymentFactory;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author  gfink
+ * @author Petr Hejl
  */
-public class DepFactory implements DeploymentFactory {
-    
-    private Map managers = new HashMap();
+public class TestModuleConfigurationFactory implements ModuleConfigurationFactory {
 
-    /** Creates a new instance of DepFactory */
-    public DepFactory() {
+    private static final TestModuleConfigurationFactory INSTANCE = new TestModuleConfigurationFactory();
+
+    private TestModuleConfigurationFactory() {
+        super();
     }
 
-    public synchronized javax.enterprise.deploy.spi.DeploymentManager getDeploymentManager(String str, String str1, String str2) throws javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException {
-        DepManager manager = (DepManager) managers.get(str + str1 + str2);
-        if (manager == null){
-            manager = new DepManager(str, str1, str2);
-            managers.put(str, manager);
-        }
-        return manager;
+    public static TestModuleConfigurationFactory getInstance() {
+        return INSTANCE;
     }
-    
-    public synchronized javax.enterprise.deploy.spi.DeploymentManager getDisconnectedDeploymentManager(String str) throws javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException {
-        DepManager manager = (DepManager) managers.get(str);
-        if (manager == null) {
-            manager = new DepManager(str,"","");
-            managers.put(str, manager);
-        }
-        return manager;
+
+    public ModuleConfiguration create(final J2eeModule j2eeModule) throws ConfigurationException {
+        return new ModuleConfiguration() {
+
+            public Lookup getLookup() {
+                return Lookup.EMPTY;
+            }
+
+            public J2eeModule getJ2eeModule() {
+                return j2eeModule;
+            }
+
+            public void dispose() {
+                // noop
+            }
+        };
     }
-    
-    public String getDisplayName() {
-        return "Sample JSR88 plugin";// PENDING parameterize this.
-    }
-    
-    public String getProductVersion() {
-        return "0.9";// PENDING version this plugin somehow?
-    }
-    
-    public boolean handlesURI(String str) {
-        return (str != null && str.startsWith("fooservice"));
-    }
-    
+
 }
