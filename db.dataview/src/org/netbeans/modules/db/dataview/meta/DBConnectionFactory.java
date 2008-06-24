@@ -67,12 +67,10 @@ public class DBConnectionFactory {
      * @return a service handle
      */
     public static DBConnectionFactory getInstance() {
-        if (INSTANCE == null) {
-            synchronized (DBConnectionFactory.class) {
+        synchronized (DBConnectionFactory.class) {
+            if (INSTANCE == null) {
                 if (INSTANCE == null) {
-                    if (INSTANCE == null) {
-                        INSTANCE = new DBConnectionFactory();
-                    }
+                    INSTANCE = new DBConnectionFactory();
                 }
             }
         }
@@ -107,7 +105,7 @@ public class DBConnectionFactory {
      * @return new Connection instance
      * @throws DBException if error occurs while constructing connection
      */
-    public Connection getConnection(DatabaseConnection dbConn) throws DBException {
+    public Connection getConnection(DatabaseConnection dbConn) {
         DBConnectionProvider connectionProvider = findDBConnectionProvider();
         if (connectionProvider != null) {
             return connectionProvider.getConnection(dbConn);
@@ -118,7 +116,6 @@ public class DBConnectionFactory {
 
     private Connection showConnectionDialog(final DatabaseConnection dbConn) {
         Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
-
             public Void run() {
                 ConnectionManager.getDefault().showConnectionDialog(dbConn);
                 return null;

@@ -66,27 +66,27 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
 /**
- * DataViewTableModel is a decorator for TableModels; adding sorting
- * functionality to a supplied TableModel. DataViewTableModel does
+ * DataViewTableSorter is a decorator for TableModels; adding sorting
+ * functionality to a supplied TableModel. DataViewTableSorter does
  * not store or copy the data in its TableModel; instead it maintains
  * a map from the row indexes of the view to the row indexes of the
  * model. As requests are made of the sorter (like getValueAt(row, col))
  * they are passed to the underlying model after the row numbers
  * have been translated via the internal mapping array. This way,
- * the DataViewTableModel appears to hold another copy of the table
+ * the DataViewTableSorter appears to hold another copy of the table
  * with the rows in a different order.
  * <p/>
- * DataViewTableModel registers itself as a listener to the underlying model,
+ * DataViewTableSorter registers itself as a listener to the underlying model,
  * just as the JTable itself would. Events recieved from the model
  * are examined, sometimes manipulated (typically widened), and then
- * passed on to the DataViewTableModel's listeners (typically the JTable).
- * If a change to the model has invalidated the order of DataViewTableModel's
+ * passed on to the DataViewTableSorter's listeners (typically the JTable).
+ * If a change to the model has invalidated the order of DataViewTableSorter's
  * rows, a note of this is made and the sorter will resort the
  * rows the next time a value is requested.
  * <p/>
  * When the tableHeader property is set, either by using the
  * setTableHeader() method or the two argument constructor, the
- * table header may be used as a complete UI for DataViewTableModel.
+ * table header may be used as a complete UI for DataViewTableSorter.
  * The default renderer of the tableHeader is decorated with a renderer
  * that indicates the sorting status of each column. In addition,
  * a mouse listener is installed with the following behavior:
@@ -112,7 +112,7 @@ import javax.swing.table.TableModel;
  * 
  * @author Ahimanikya Satapathy
  */
-final class DataViewTableModel extends AbstractTableModel {
+final class DataViewTableSorter extends AbstractTableModel {
 
     private TableModel tableModel;
     public static final int DESCENDING = -1;
@@ -144,17 +144,17 @@ final class DataViewTableModel extends AbstractTableModel {
     private Map<Object, Comparator<Object>> columnComparators = new HashMap<Object, Comparator<Object>>();
     private List<Directive> sortingColumns = new ArrayList<Directive>();
 
-    public DataViewTableModel() {
+    public DataViewTableSorter() {
         this.mouseListener = new MouseHandler();
         this.tableModelListener = new TableModelHandler();
     }
 
-    public DataViewTableModel(TableModel tableModel) {
+    public DataViewTableSorter(TableModel tableModel) {
         this();
         setTableModel(tableModel);
     }
 
-    public DataViewTableModel(TableModel tableModel, JTableHeader tableHeader) {
+    public DataViewTableSorter(TableModel tableModel, JTableHeader tableHeader) {
         this();
         setTableHeader(tableHeader);
         setTableModel(tableModel);
@@ -435,7 +435,7 @@ final class DataViewTableModel extends AbstractTableModel {
             int column = e.getColumn();
             if (e.getFirstRow() == e.getLastRow() && column != TableModelEvent.ALL_COLUMNS && getSortingStatus(column) == NOT_SORTED && modelToView != null) {
                 int viewIndex = getModelToView()[e.getFirstRow()];
-                fireTableChanged(new TableModelEvent(DataViewTableModel.this,
+                fireTableChanged(new TableModelEvent(DataViewTableSorter.this,
                         viewIndex, viewIndex,
                         column, e.getType()));
                 return;

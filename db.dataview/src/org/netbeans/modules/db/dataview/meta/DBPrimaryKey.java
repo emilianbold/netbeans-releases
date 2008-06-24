@@ -54,12 +54,12 @@ import java.sql.SQLException;
 public final class DBPrimaryKey extends DBObject {
 
     /**DatabaseMetaData ResultSet column name used to decode name of associated primary key     */
-    protected static final String RS_KEY_NAME = "PK_NAME"; // NOI18N
+    //private static final String RS_KEY_NAME = "PK_NAME"; // NOI18N
 
     private static final String RS_COLUMN_NAME = "COLUMN_NAME"; // NOI18N
 
     /** DatabaseMetaData ResultSet column name used to decode key sequence number*/
-    protected static final String RS_SEQUENCE_NUM = "KEY_SEQ";
+    //private static final String RS_SEQUENCE_NUM = "KEY_SEQ";
     /* List of column names in key sequence order. */
     private List<String> columnNames;
     /* Name of this key; may be null */
@@ -201,7 +201,7 @@ public final class DBPrimaryKey extends DBObject {
      *
      * @param newColNames array of names to supplant current list of column names
      */
-    public void setColumnNames(String[] newColNames) {
+    void setColumnNames(String[] newColNames) {
         if (newColNames == null) {
             throw new IllegalArgumentException("Must supply non-null String[] for param newColNames.");
         }
@@ -217,7 +217,7 @@ public final class DBPrimaryKey extends DBObject {
      *
      * @param newParent new parent of this primary key.
      */
-    public void setParent(DBTable newParent) {
+    void setParent(DBTable newParent) {
         parent = newParent;
     }
 }

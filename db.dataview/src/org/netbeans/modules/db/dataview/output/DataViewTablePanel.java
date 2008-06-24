@@ -42,8 +42,6 @@ package org.netbeans.modules.db.dataview.output;
 
 import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
 import java.awt.BorderLayout;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
@@ -69,43 +67,29 @@ class DataViewTablePanel extends JPanel {
 
     private final DataViewDBTable tblMeta;
     private final UpdatedRowContext tblContext;
-    private final DataViewUI parent;
-    private final DataViewTableUI table;
+    private final DataViewUI dataViewUI;
+    private final DataViewTableUI tableUI;
     private final SQLStatementGenerator stmtGenerator;
-    
     private boolean isEditable = true;
     private boolean isDirty = false;
     private int MAX_COLUMN_WIDTH = 50;
     private TableModel model;
-
+    private final List<Integer> columnWidthList;
     private static Logger mLogger = Logger.getLogger(DataViewTablePanel.class.getName());
 
-    public DataViewTablePanel(DataViewDBTable tblMeta, DataViewUI parent) {
+    public DataViewTablePanel(DataViewDBTable tblMeta, DataViewUI dataViewUI) {
         this.tblMeta = tblMeta;
-        this.parent = parent;
+        this.dataViewUI = dataViewUI;
 
         this.setLayout(new BorderLayout());
-        table = new DataViewTableUI(this);
-        table.setColumnToolTips(tblMeta.getColumnToolTips());
-        JScrollPane sp = new JScrollPane(table);
+        tableUI = new DataViewTableUI(this);
+        tableUI.setColumnToolTips(tblMeta.getColumnToolTips());
+        JScrollPane sp = new JScrollPane(tableUI);
         this.add(sp, BorderLayout.CENTER);
 
         stmtGenerator = new SQLStatementGenerator(tblMeta);
         tblContext = new UpdatedRowContext(stmtGenerator);
-    }
-
-    public void clearView() {
-        DataTableModel dtm = new DataTableModel();
-        final DataViewTableModel sorter = new DataViewTableModel(dtm);
-        sorter.setTableHeader(table.getTableHeader());
-
-        Runnable run = new Runnable() {
-
-            public void run() {
-                table.setModel(sorter);
-            }
-        };
-        SwingUtilities.invokeLater(run);
+        columnWidthList = getColumnWidthList();
     }
 
     public void fireTableModelChange() {
@@ -120,9 +104,6 @@ class DataViewTablePanel extends JPanel {
     }
 
     public boolean isDirty() {
-        if (!isDirty) {
-            tblContext.resetUpdateState();
-        }
         return isDirty;
     }
 
@@ -134,7 +115,7 @@ class DataViewTablePanel extends JPanel {
     }
 
     protected DataViewTableUI getResulSetTable() {
-        return table;
+        return tableUI;
     }
 
     protected UpdatedRowContext getResultSetRowContext() {
@@ -150,73 +131,22 @@ class DataViewTablePanel extends JPanel {
      *
      * @param rsMap new ResultSet to be displayed.
      */
-    public void setResultSet(ResultSet rs, int maxRowsToShow, int startFrom) throws SQLException {
-        assert rs != null : "Must supply non-null ResultSet reference for rs";
+    public void setResultSet(List<Object[]> rows) {
+        assert rows != null : "Must supply non-null TableModel";
 
-        List<Integer> columnWidthList = getColumnWidthList();
-        tblContext.resetUpdateState();
-        model = createModelFrom(rs, maxRowsToShow, startFrom);
+        setDirty(false);
+        model = createModelFrom(rows);
         final TableModel tempModel = model;
-        final List<Integer> columnWidthList1 = columnWidthList;
         Runnable run = new Runnable() {
 
             public void run() {
-                table.setModel(tempModel);
-                if (!columnWidthList1.isEmpty()) {
-                    setHeader(table, columnWidthList1);
+                tableUI.setModel(tempModel);
+                if (!columnWidthList.isEmpty()) {
+                    setHeader(tableUI, columnWidthList);
                 }
             }
         };
         SwingUtilities.invokeLater(run);
-    }
-
-    /**
-     * create a table model
-     *
-     * @param rs resultset
-     * @return TableModel
-     */
-    private TableModel createModelFrom(ResultSet rs, int pageSize, int startFrom) throws SQLException {
-        DataTableModel dtm = new DataTableModel();
-        DataViewTableModel sorter = new DataViewTableModel(dtm);
-        sorter.setTableHeader(table.getTableHeader());
-
-        try {
-            rs.setFetchSize(pageSize);
-            int colCnt = tblMeta.getColumnCount();
-            Object[] row = new Object[colCnt];
-
-            // Obtain display name
-            for (int i = 0; i < colCnt; i++) {
-                DBColumn col = tblMeta.getColumn(i);
-                dtm.addColumn(col.getDisplayName());
-            }
-
-            // Skip till current position
-            boolean lastRowPicked = rs.next();
-            while (lastRowPicked && rs.getRow() < (startFrom + 1)) {
-                lastRowPicked = rs.next();
-            }
-
-            // Get next page
-            int rowCnt = 0;
-            while (((pageSize == -1) || (pageSize > rowCnt)) && (lastRowPicked || rs.next())) {
-                for (int i = 0; i < colCnt; i++) {
-                    int type = tblMeta.getColumn(i).getJdbcType();
-                    row[i] = DBReadWriteHelper.readResultSet(rs, type, i + 1);
-                }
-                dtm.addRow(row);
-                rowCnt++;
-                if (lastRowPicked) {
-                    lastRowPicked = false;
-                }
-            }
-        } catch (SQLException e) {
-            mLogger.info(" Failed to set up table model " + DBException.getMessage(e));
-            throw e;
-        }
-
-        return sorter;
     }
 
     private void setHeader(JTable table, List<Integer> columnWidthList) {
@@ -233,25 +163,47 @@ class DataViewTablePanel extends JPanel {
     }
 
     private List<Integer> getColumnWidthList() {
-        List<Integer> columnWidthList = new ArrayList<Integer>();
+        List<Integer> colWidthList = new ArrayList<Integer>();
         try {
             for (int i = 0; i < tblMeta.getColumnCount(); i++) {
                 DBColumn col = tblMeta.getColumn(i);
                 int fieldWidth = col.getDisplaySize();
                 int labelWidth = col.getDisplayName().length();
-                int colWidth = Math.max(fieldWidth, labelWidth) * table.getMultiplier();
-                if (colWidth > MAX_COLUMN_WIDTH * table.getMultiplier()) {
-                    colWidth = MAX_COLUMN_WIDTH * table.getMultiplier();
+                int colWidth = Math.max(fieldWidth, labelWidth) * tableUI.getMultiplier();
+                if (colWidth > MAX_COLUMN_WIDTH * tableUI.getMultiplier()) {
+                    colWidth = MAX_COLUMN_WIDTH * tableUI.getMultiplier();
                 }
-                columnWidthList.add(colWidth);
+                colWidthList.add(colWidth);
             }
         } catch (Exception e) {
             mLogger.info("Failed to set the size of the table headers" + e);
         }
-        return columnWidthList;
+        return colWidthList;
     }
 
-    private class DataTableModel extends DefaultTableModel {
+    /**
+     * create a table model
+     *
+     * @param rs resultset
+     * @return TableModel
+     */
+    private TableModel createModelFrom(List<Object[]> rows) {
+        DataViewTableModel dtm = new DataViewTableModel();
+        DataViewTableSorter sorter = new DataViewTableSorter(dtm);
+        sorter.setTableHeader(tableUI.getTableHeader());
+        // Obtain display name
+        for (int i = 0, I = tblMeta.getColumnCount(); i < I; i++) {
+            DBColumn col = tblMeta.getColumn(i);
+            dtm.addColumn(col.getDisplayName());
+        }
+
+        for (Object[] row : rows) {
+            dtm.addRow(row);
+        }
+        return sorter;
+    }
+
+    class DataViewTableModel extends DefaultTableModel {
 
         /**
          * Returns true regardless of parameter values.
@@ -263,6 +215,11 @@ class DataViewTablePanel extends JPanel {
          */
         @Override
         public boolean isCellEditable(int row, int column) {
+            if(!isEditable) { 
+                return false;
+            }
+            
+            // column specific 
             DBColumn col = tblMeta.getColumn(column);
             if (col.isGenerated()) {
                 return false;
@@ -286,7 +243,7 @@ class DataViewTablePanel extends JPanel {
                 tblContext.createUpdateStatement(row, col, value, model);
                 isDirty = true;
                 super.setValueAt(value, row, col);
-                parent.setCommitEnabled(true);
+                dataViewUI.setCommitEnabled(true);
                 fireTableDataChanged();
             } catch (DBException dbe) {
                 NotifyDescriptor nd = new NotifyDescriptor.Message(dbe.getMessage());
@@ -295,8 +252,8 @@ class DataViewTablePanel extends JPanel {
                 //ignore
                 mLogger.warning(new DBException(ex).getMessage());
             }
-            table.revalidate();
-            table.repaint();
+            tableUI.revalidate();
+            tableUI.repaint();
         }
     }
 }

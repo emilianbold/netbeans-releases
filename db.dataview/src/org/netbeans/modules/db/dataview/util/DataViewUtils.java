@@ -350,7 +350,6 @@ public class DataViewUtils {
         boolean pk = column.isPrimaryKey();
         boolean fk = column.isForeignKey();
         boolean isNullable = column.isNullable();
-        boolean indexed = column.isIndexed();
         boolean generated = column.isGenerated();
 
         StringBuilder strBuf = new StringBuilder("<html> <table border=0 cellspacing=0 cellpadding=0 >");
@@ -392,10 +391,6 @@ public class DataViewUtils {
         }
         if (fk) {
             strBuf.append("<tr> <td>&nbsp; FK  </td> <td> &nbsp; : &nbsp; <b>" + getForeignKeyString(column)).append("</b>").append("</td> </tr>");
-        }
-
-        if (indexed) {
-            strBuf.append("<tr> <td>&nbsp; Indexed </td> <td> &nbsp; : &nbsp; <b> Yes </b> </td> </tr>");
         }
 
         if (!isNullable) {

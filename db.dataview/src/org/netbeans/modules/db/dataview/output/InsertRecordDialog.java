@@ -70,13 +70,13 @@ import org.openide.windows.WindowManager;
  */
 public class InsertRecordDialog extends javax.swing.JDialog {
 
-    private final DataView parent;
+    private final DataView dataView;
     private static Logger mLogger = Logger.getLogger(InsertRecordDialog.class.getName());
 
     /** Creates new form InsertRecordDialog */
-    public InsertRecordDialog(DataView parent) {
+    public InsertRecordDialog(DataView dataView) {
         super(WindowManager.getDefault().getMainWindow(), true);
-        this.parent = parent;
+        this.dataView = dataView;
 
         initComponents();
         addInputFields();
@@ -236,12 +236,12 @@ private void executeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     try {
         Object[] insertedRow = getInsertValues();
         
-        SQLStatementGenerator stmtBldr = parent.getSQLStatementGenerator();
+        SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();
         insertSQL = stmtBldr.generateInsertStatement(insertedRow);
-        mLogger.info("Statement: " + insertSQL[1]);
-        parent.setInfoStatusText("Statement: " + insertSQL[1]);
+        mLogger.info("Statement: " + insertSQL[1].replaceAll("\\n", "").replaceAll("\\t", ""));
+        dataView.setInfoStatusText("Statement: " + insertSQL[1]);
         
-        SQLExecutionHelper execHelper = parent.getSQLExecutionHelper();
+        SQLExecutionHelper execHelper = dataView.getSQLExecutionHelper();
         execHelper.executeInsert(insertSQL, insertedRow);
     } catch (DBException ex) {
         if (jSplitPane1.getBottomComponent() == null) {
@@ -250,7 +250,7 @@ private void executeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             previewBtn.setText("Hide SQL");
         }
         jEditorPane1.setContentType("text/plain");
-        jEditorPane1.setText("Invalid Data\n" + ex.getMessage());
+        jEditorPane1.setText(ex.getMessage());
 
         return;
     }
@@ -258,9 +258,9 @@ private void executeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 }//GEN-LAST:event_executeBtnActionPerformed
 
 private void clearBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearBtnActionPerformed
-    int rows = parent.getDataViewDBTable().getColumnCount();
+    int rows = dataView.getDataViewDBTable().getColumnCount();
     for (int i = 0; i < rows; i++) {
-        if (parent.getDataViewDBTable().getColumn(i).isGenerated()) {
+        if (dataView.getDataViewDBTable().getColumn(i).isGenerated()) {
             colValueTextField[i].setText("<GENERATED>");
             colValueTextField[i].setEditable(false);
         } else {
@@ -286,7 +286,7 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private void refreshSQL() {
         try {
             if (jSplitPane1.getBottomComponent() != null) {
-                SQLStatementGenerator stmtBldr = parent.getSQLStatementGenerator();
+                SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();
                 String sql = stmtBldr.generateInsertStatement(getInsertValues())[1];
                 jEditorPane1.setContentType("text/x-sql");
                 jEditorPane1.setText(sql);
@@ -300,7 +300,7 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     JTextField[] colValueTextField;
 
     private void addInputFields() {
-        int rows = parent.getDataViewDBTable().getColumnCount();
+        int rows = dataView.getDataViewDBTable().getColumnCount();
         JLabel[] colNameLabel = new JLabel[rows];
         JLabel[] colDataType = new JLabel[rows];
         colValueTextField = new JTextField[rows];
@@ -310,7 +310,7 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         int bottom = 5;
         int right = 10;
         for (int i = 0; i < rows; i++) {
-            final DBColumn col = parent.getDataViewDBTable().getColumn(i);
+            final DBColumn col = dataView.getDataViewDBTable().getColumn(i);
             colNameLabel[i] = new JLabel();
             colNameLabel[i].setText(col.getName());
 
@@ -394,7 +394,7 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         Object[] insertData = new String[colValueTextField.length];
         for (int i = 0; i < colValueTextField.length; i++) {
             JTextField textField = colValueTextField[i];
-            DBColumn col = parent.getDataViewDBTable().getColumn(i);
+            DBColumn col = dataView.getDataViewDBTable().getColumn(i);
             Object val;
             if ((col.isNullable() || col.isGenerated()) && !textField.isEditable()) {
                 val = null;

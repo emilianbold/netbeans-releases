@@ -40,12 +40,12 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
-import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
 /**
- *
+ * Handles all the DataView Panel actions.
+ * 
  * @author Ahimanikya Satapathy
  */
 class DataViewActionHandler {
@@ -53,14 +53,14 @@ class DataViewActionHandler {
     private final DataViewPageContext dataPage;
     private final SQLExecutionHelper execHelper;
     private final DataViewUI dataViewUI;
-    private final DataView parent;
+    private final DataView dataView;
 
-    DataViewActionHandler(DataViewUI dataViewUI, DataView parent) {
-        this.parent = parent;
+    DataViewActionHandler(DataViewUI dataViewUI, DataView dataView) {
+        this.dataView = dataView;
         this.dataViewUI = dataViewUI;
 
-        this.dataPage = parent.getDataViewPageContext();
-        this.execHelper = parent.getSQLExecutionHelper();
+        this.dataPage = dataView.getDataViewPageContext();
+        this.execHelper = dataView.getSQLExecutionHelper();
     }
 
     private boolean rejectModifications() {
@@ -80,78 +80,70 @@ class DataViewActionHandler {
             int pageSize = dataViewUI.getPageSize(dataPage.getTotalRows());
             dataPage.setPageSize(pageSize);
             dataPage.first();
-            parent.executeQuery();
+            execHelper.executeQuery();
         }
     }
 
     void firstActionPerformed() {
         if (rejectModifications()) {
             dataPage.first();
-            parent.executeQuery();
+            execHelper.executeQuery();
         }
     }
 
     void previousActionPerformed() {
         if (rejectModifications()) {
             dataPage.previous();
-            parent.executeQuery();
+            execHelper.executeQuery();
         }
     }
 
     void nextActionPerformed() {
         if (rejectModifications()) {
             dataPage.next();
-            parent.executeQuery();
+            execHelper.executeQuery();
         }
     }
 
     void lastActionPerformed() {
         if (rejectModifications()) {
             dataPage.last();
-            parent.executeQuery();
+            execHelper.executeQuery();
         }
     }
 
     void commitActionPerformed() {
         if (dataViewUI.isDirty()) {
-            try {
-                UpdatedRowContext tblContext = dataViewUI.getResultSetRowContext();
-                for (String key : tblContext.getUpdateKeys()) {
-                    execHelper.executeUpdate(key);
-                }
-            } catch (Exception ex) {
-                String errorMsg = DBException.getMessage(ex);
-                parent.setErrorStatusText(errorMsg);
-            } finally {
-                parent.executeQuery();
-            }
+            execHelper.executeUpdate();
         }
     }
 
     void insertActionPerformed() {
-        InsertRecordDialog dialog = new InsertRecordDialog(parent);
+        InsertRecordDialog dialog = new InsertRecordDialog(dataView);
+        dialog.setLocationRelativeTo(dataView);
         dialog.setVisible(true);
+    }
+
+    void truncateActionPerformed() {
+        String confirmMsg = "Truncate contents of table " + dataView.getDataViewDBTable().geTable(0).getDisplayName();
+        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(confirmMsg, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.WARNING_MESSAGE);
+
+        if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.CANCEL_OPTION) {
+            return;
+        }
+        execHelper.executeTruncate();
     }
 
     void deleteRecordActionPerformed() {
         DataViewTableUI rsTable = dataViewUI.getResulSetTable();
         if (rsTable.getSelectedRowCount() == 0) {
             String msg = "Please select a row to delete.";
-            parent.setErrorStatusText(msg);
+            dataView.setErrorStatusText(msg);
         } else {
-            try {
-                String msg = "Permanently delete record(s) from the database?";
-                NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, "Confirm delete", NotifyDescriptor.OK_CANCEL_OPTION);
-                if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
-                    int[] rows = rsTable.getSelectedRows();
-                    for (int j = 0; j < rows.length; j++) {
-                        execHelper.executeDeleteRow(rows[j], dataViewUI.getResulSetTable().getModel());
-                    }
-                    parent.executeQuery();
-                }
-            } catch (Exception ex) {
-                String msg = "Error Deleting Row(s): " + ex.getMessage();
-                parent.setErrorStatusText(msg);
+            String msg = "Permanently delete record(s) from the database?";
+            NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, "Confirm delete", NotifyDescriptor.OK_CANCEL_OPTION);
+            if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
+                execHelper.executeDeleteRow(rsTable);
             }
         }
     }
@@ -162,6 +154,6 @@ class DataViewActionHandler {
             return;
         }
         dataPage.setRecordToRefresh(intVal);
-        parent.executeQuery();
+        execHelper.executeQuery();
     }
 }

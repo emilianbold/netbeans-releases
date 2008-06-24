@@ -62,9 +62,9 @@ class DataViewDBTable {
 
     public DataViewDBTable(Collection<DBTable> tables) {
         assert tables != null;
-        
+
         dbTables = new DBTable[tables.size()];
-        List cols = new ArrayList<DBColumn>();
+        List<DBColumn> cols = new ArrayList<DBColumn>();
 
         for (DBTable tbl : tables.toArray(dbTables)) {
             cols.addAll(tbl.getColumnList());
@@ -75,9 +75,13 @@ class DataViewDBTable {
     public DBTable geTable(int index) {
         return dbTables[index];
     }
-    
+
     public int geTableCount() {
         return dbTables.length;
+    }
+
+    public boolean hasOneTable() {
+        return dbTables != null && dbTables.length == 1 && !dbTables[0].equals("");
     }
 
     public String getFullyQualifiedName(int index) {
@@ -99,24 +103,24 @@ class DataViewDBTable {
     public String getQualifiedName(int index) {
         return columns.get(index).getQualifiedName();
     }
-        
+
     public int getColumnCount() {
         return columns.size();
     }
-    
-    public synchronized  Map getColumns(){
+
+    public synchronized Map getColumns() {
         Map<String, DBColumn> colMap = new HashMap<String, DBColumn>();
-         for (DBTable tbl : dbTables) {
+        for (DBTable tbl : dbTables) {
             colMap.putAll(tbl.getColumns());
         }
-         return Collections.unmodifiableMap(colMap);
+        return Collections.unmodifiableMap(colMap);
     }
 
-    public synchronized  String[] getColumnToolTips() {
+    public synchronized String[] getColumnToolTips() {
         if (columnTooltipStr == null) {
             columnTooltipStr = new String[columns.size()];
-            int i =0;
-            for(DBColumn column: columns){
+            int i = 0;
+            for (DBColumn column : columns) {
                 columnTooltipStr[i++] = DataViewUtils.getColumnToolTip(column);
             }
         }

@@ -57,9 +57,7 @@ import java.util.Set;
 public final class DBModel extends DBObject<Object> {
 
     private static final String FQ_TBL_NAME_SEPARATOR = ".";
-    protected volatile String description;
-    protected volatile String name;
-    protected Map<String, DBTable> tables;
+    private Map<String, DBTable> tables;
 
     public DBModel() {
         tables = new HashMap<String, DBTable>();
@@ -73,7 +71,7 @@ public final class DBModel extends DBObject<Object> {
      * @throws IllegalStateException
      *             if unable to add table
      */
-    public void addTable(DBTable table) throws IllegalStateException {
+    public synchronized void addTable(DBTable table) throws IllegalStateException {
         if (table != null) {
 
             // if table already exists then we should throw exception
@@ -101,12 +99,9 @@ public final class DBModel extends DBObject<Object> {
     /**
      * Create DBTable instance with the given table, schema, and catalog names.
      *
-     * @param tableName
-     *            table name of new table
-     * @param schemaName
-     *            schema name of new table
-     * @param catalogName
-     *            catalog name of new table
+     * @param tableName  table name of new table
+     * @param schemaName schema name of new table
+     * @param catalogName catalog name of new table
      * @return an instance of SQLTable if successful, null if failed.
      */
     public DBTable createTable(String tableName, String schemaName, String catalogName) {
@@ -159,8 +154,6 @@ public final class DBModel extends DBObject<Object> {
         if (refObj instanceof DBModel) {
             DBModel aSrc = (DBModel) refObj;
 
-            result = ((aSrc.name != null) ? aSrc.name.equals(name) : (name == null));
-
             if (tables != null && aSrc.tables != null) {
                 Set<String> objTbls = aSrc.tables.keySet();
                 Set<String> myTbls = tables.keySet();
@@ -179,7 +172,7 @@ public final class DBModel extends DBObject<Object> {
      *
      * @return The allTables value
      */
-    public synchronized Map getAllDBTables() {
+    public Map getAllDBTables() {
         return tables;
     }
 
@@ -250,14 +243,6 @@ public final class DBModel extends DBObject<Object> {
         return null;
     }
 
-    public String getModelDescription() {
-        return description;
-    }
-
-    public String getModelName() {
-        return this.name;
-    }
-
     public DBTable getTable(String fqTableName) {
         return (DBTable) this.tables.get(fqTableName);
     }
@@ -324,23 +309,11 @@ public final class DBModel extends DBObject<Object> {
      */
     @Override
     public int hashCode() {
-        int myHash = (name != null) ? name.hashCode() : 0;
-
+        int myHash = 0;
         if (tables != null) {
             myHash += tables.keySet().hashCode();
         }
-
         return myHash;
-    }
-
-    /**
-     * Sets the description string of this DatabaseModel
-     *
-     * @param newDesc
-     *            new description string
-     */
-    public void setDescription(String newDesc) {
-        this.description = newDesc;
     }
 
     /**
@@ -350,10 +323,6 @@ public final class DBModel extends DBObject<Object> {
      */
     @Override
     public String toString() {
-        return this.getModelName();
-    }
-
-    public void setModelName(String theName) {
-        name = theName;
+        return this.getDisplayName();
     }
 }

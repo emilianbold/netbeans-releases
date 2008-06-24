@@ -69,24 +69,22 @@ public final class DBTable extends DBObject<DBModel> {
         }
     }
     private static final String FQ_TBL_NAME_SEPARATOR = ".";
-    protected String alias;
-    protected String catalog;
-    protected Map<String, DBColumn> columns;
-    protected String description;
-    protected boolean editable = true;
-    protected Map<String, DBForeignKey> foreignKeys;
-    protected Map<String, DBIndex> indexes;
-    protected String name;
-    protected DBModel parentDBModel;
-    protected DBPrimaryKey primaryKey;
-    protected String schema;
+    private String alias;
+    private String catalog;
+    private Map<String, DBColumn> columns;
+    private String description;
+    private boolean editable = true;
+    private Map<String, DBForeignKey> foreignKeys;
+    private String name;
+    private DBModel parentDBModel;
+    private DBPrimaryKey primaryKey;
+    private String schema;
     private String escapeString;
 
     /** No-arg constructor; initializes Collections-related member variables. */
-    protected DBTable() {
+    DBTable() {
         columns = new LinkedHashMap<String, DBColumn>();
         foreignKeys = new HashMap<String, DBForeignKey>();
-        indexes = new HashMap<String, DBIndex>();
     }
 
     /**
@@ -110,7 +108,7 @@ public final class DBTable extends DBObject<DBModel> {
      * @param theColumn column to be added.
      * @return true if successful. false if failed.
      */
-    public boolean addColumn(DBColumn theColumn) throws DBException {
+    public synchronized boolean addColumn(DBColumn theColumn) throws DBException {
         if (theColumn != null) {
             theColumn.setParent(this);
             columns.put(theColumn.getName(), theColumn);
@@ -126,43 +124,13 @@ public final class DBTable extends DBObject<DBModel> {
      * @param newFk new ForeignKeyImpl instance to be added
      * @return return true if addition succeeded, false otherwise
      */
-    public boolean addForeignKey(DBForeignKey newFk) throws DBException {
+    public synchronized boolean addForeignKey(DBForeignKey newFk) throws DBException {
         if (newFk != null) {
             newFk.setParentObject(this);
             foreignKeys.put(newFk.getName(), newFk);
             return true;
         }
         return false;
-    }
-
-    /**
-     * Adds the given IndexImpl, associating it with this DBTable instance.
-     * 
-     * @param newIndex new IndexImpl instance to be added
-     * @return return true if addition succeeded, false otherwise
-     */
-    public boolean addIndex(DBIndex newIndex) throws DBException {
-        if (newIndex != null) {
-            newIndex.setParentObject(this);
-            indexes.put(newIndex.getName(), newIndex);
-
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Clears list of foreign keys.
-     */
-    public void clearForeignKeys() {
-        foreignKeys.clear();
-    }
-
-    /**
-     * Clears list of indexes.
-     */
-    public void clearIndexes() {
-        indexes.clear();
     }
 
     /**
@@ -188,29 +156,6 @@ public final class DBTable extends DBObject<DBModel> {
         String myName = (parentDBModel != null) ? parentDBModel.getFullyQualifiedTableName(this) : name;
 
         return (myName != null) ? myName.compareTo(refName) : (refName != null) ? 1 : -1;
-    }
-
-    /**
-     * Deletes all columns associated with this table.
-     * 
-     * @return true if all columns were deleted successfully, false otherwise.
-     */
-    public boolean deleteAllColumns() {
-        columns.clear();
-        return false;
-    }
-
-    /**
-     * Deletes DBColumn, if any, associated with the given name from this table.
-     * 
-     * @param columnName column name to be removed.
-     * @return true if successful. false if failed.
-     */
-    public boolean deleteColumn(String columnName) {
-        if (columnName != null && columnName.trim().length() != 0) {
-            return (columns.remove(columnName) != null);
-        }
-        return false;
     }
 
     /**
@@ -246,7 +191,6 @@ public final class DBTable extends DBObject<DBModel> {
             Map<String, DBColumn> aTableColumns = aTable.getColumns();
             DBPrimaryKey aTablePK = aTable.getPrimaryKey();
             List<DBForeignKey> aTableFKs = aTable.getForeignKeys();
-            List<DBIndex> aTableIdxs = aTable.getIndexes();
 
             result &= (aTableName != null && name != null && name.equals(aTableName)) && (parentDBModel != null && aTableParent != null && parentDBModel.equals(aTableParent));
 
@@ -269,14 +213,6 @@ public final class DBTable extends DBObject<DBModel> {
             } else if (!(foreignKeys == null && aTableFKs == null)) {
                 result = false;
             }
-
-            if (indexes != null && aTableIdxs != null) {
-                Collection<DBIndex> myIdxs = indexes.values();
-                // Must be identical (no subsetting), hence the pair of tests.
-                result &= myIdxs.containsAll(aTableIdxs) && aTableIdxs.containsAll(myIdxs);
-            } else if (!(indexes == null && aTableIdxs == null)) {
-                result = false;
-            }
         }
         return result;
     }
@@ -293,7 +229,7 @@ public final class DBTable extends DBObject<DBModel> {
         return escapeString;
     }
 
-    public void setEscapeString(String escapeString) {
+    void setEscapeString(String escapeString) {
         this.escapeString = escapeString;
     }    
 
@@ -382,15 +318,7 @@ public final class DBTable extends DBObject<DBModel> {
         return buf.toString();
     }
 
-    public DBIndex getIndex(String indexName) {
-        return indexes.get(indexName);
-    }
-
-    public List<DBIndex> getIndexes() {
-        return new ArrayList<DBIndex>(indexes.values());
-    }
-
-    public synchronized String getName() {
+    public String getName() {
         return name;
     }
 
@@ -498,10 +426,6 @@ public final class DBTable extends DBObject<DBModel> {
             myHash += foreignKeys.keySet().hashCode();
         }
 
-        if (indexes != null) {
-            myHash += indexes.keySet().hashCode();
-        }
-
         myHash += (displayName != null) ? displayName.hashCode() : 0;
 
         return myHash;
@@ -521,26 +445,11 @@ public final class DBTable extends DBObject<DBModel> {
     }
 
     /**
-     * Dissociates the given ForeignKeyImpl from this DBTable instance, removing
-     * it from its internal FK collection.
-     * 
-     * @param oldKey new ForeignKeyImpl instance to be removed
-     * @return return true if removal succeeded, false otherwise
-     */
-    public boolean removeForeignKey(DBForeignKey oldKey) {
-        if (oldKey != null) {
-            return (foreignKeys.remove(oldKey.getName()) != null);
-        }
-
-        return false;
-    }
-
-    /**
      * set the alias name for this table
      * 
      * @param aName alias name
      */
-    public void setAliasName(String aName) {
+    void setAliasName(String aName) {
         this.alias = aName;
     }
 
@@ -551,7 +460,7 @@ public final class DBTable extends DBObject<DBModel> {
      * @param theColumns Map of columns to be substituted
      * @return true if successful. false if failed.
      */
-    public boolean setAllColumns(Map<String, DBColumn> theColumns) {
+    boolean setAllColumns(Map<String, DBColumn> theColumns) {
         columns.clear();
         if (theColumns != null) {
             columns.putAll(theColumns);
@@ -564,7 +473,7 @@ public final class DBTable extends DBObject<DBModel> {
      * 
      * @param newCatalog new value for catalog name
      */
-    public void setCatalog(String newCatalog) {
+    void setCatalog(String newCatalog) {
         catalog = newCatalog;
     }
 
@@ -573,7 +482,7 @@ public final class DBTable extends DBObject<DBModel> {
      * 
      * @param newDesc new descriptive text
      */
-    public void setDescription(String newDesc) {
+    void setDescription(String newDesc) {
         description = newDesc;
     }
 
@@ -582,7 +491,7 @@ public final class DBTable extends DBObject<DBModel> {
      * 
      * @param edit - editable
      */
-    public void setEditable(boolean edit) {
+    public synchronized void setEditable(boolean edit) {
         this.editable = edit;
     }
 
@@ -591,7 +500,7 @@ public final class DBTable extends DBObject<DBModel> {
      * 
      * @param newName new value for table name
      */
-    public void setName(String newName) {
+    void setName(String newName) {
         name = newName;
     }
 
@@ -600,7 +509,7 @@ public final class DBTable extends DBObject<DBModel> {
      * 
      * @param newParent new DatabaseModel parentDBModel
      */
-    public void setParent(DBModel newParent) {
+    void setParent(DBModel newParent) {
         parentDBModel = newParent;
         try {
             setParentObject(newParent);
@@ -615,7 +524,7 @@ public final class DBTable extends DBObject<DBModel> {
      * @param newPk new PrimaryKey instance to be associated
      * @return true if association succeeded, false otherwise
      */
-    public boolean setPrimaryKey(DBPrimaryKey newPk) {
+    boolean setPrimaryKey(DBPrimaryKey newPk) {
         if (newPk != null) {
             newPk.setParent(this);
         }
@@ -624,7 +533,7 @@ public final class DBTable extends DBObject<DBModel> {
         return true;
     }
 
-    public void setForeignKeyMap(Map<String, DBForeignKey> fkMap) {
+    void setForeignKeyMap(Map<String, DBForeignKey> fkMap) {
         foreignKeys = fkMap;
     }
 
@@ -633,7 +542,7 @@ public final class DBTable extends DBObject<DBModel> {
      * 
      * @param newSchema new value for schema name
      */
-    public void setSchema(String newSchema) {
+    void setSchema(String newSchema) {
         schema = newSchema;
     }
 

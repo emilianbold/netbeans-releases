@@ -56,7 +56,6 @@ class SQLStatementGenerator {
 
     private DataViewDBTable tblMeta;
 
-
     public SQLStatementGenerator(DataViewDBTable tblMeta) {
         assert tblMeta != null;
         this.tblMeta = tblMeta;
@@ -96,7 +95,7 @@ class SQLStatementGenerator {
         colNames += ") ";
         String tableName = tblMeta.getFullyQualifiedName(0);
         insertSql.append(tableName + colNames + " Values(" + values + ")");
-        rawInsertSql.append(tableName.trim() + "\n\t" + colNames + "\nVALUES\n\t (" + rawvalues + ") ");
+        rawInsertSql.append(tableName.trim() + "\n\t" + colNames + "\nVALUES\n\t (" + rawvalues + ")");
 
         return new String[]{insertSql.toString(), rawInsertSql.toString()};
     }
@@ -135,20 +134,20 @@ class SQLStatementGenerator {
         generateWhereCondition(deleteStmt, rawDeleteStmt, types, values, rowNum, tblModel);
         return new String[]{deleteStmt.toString(), rawDeleteStmt.toString()};
     }
-    
+
     static String getCountSQLQuery(String queryString) {
         // User may type "FROM" in either lower, upper or mixed case
         String[] splitByFrom = queryString.toUpperCase().split("FROM");
         return "SELECT COUNT(*) " + queryString.substring(splitByFrom[0].length());
     }
-    
+
     private boolean addSeparator(boolean and, StringBuilder result, StringBuilder raw, String sep) {
         if (and) {
             result.append(sep);
             raw.append(sep);
             return true;
         } else {
-            return false;
+            return true;
         }
     }
 
@@ -169,7 +168,7 @@ class SQLStatementGenerator {
 
         if (key != null) {
             for (String keyName : key.getColumnNames()) {
-                addSeparator(and, result, raw, " AND ");
+                and = addSeparator(and, result, raw, " AND ");
                 for (int i = 0; i < model.getColumnCount(); i++) {
                     String columnName = tblMeta.getColumnName(i);
                     if (columnName.equals(keyName)) {
@@ -185,7 +184,7 @@ class SQLStatementGenerator {
             for (int i = 0; i < model.getColumnCount(); i++) {
                 Object val = model.getValueAt(rowNum, i);
                 if (val != null) {
-                    addSeparator(and, result, raw, " AND ");
+                    and = addSeparator(and, result, raw, " AND ");
                     generateNameValue(i, result, raw, val, values, types);
                 }
             }

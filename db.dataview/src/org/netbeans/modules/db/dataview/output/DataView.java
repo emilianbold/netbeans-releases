@@ -40,88 +40,127 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JButton;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.dataview.meta.DBConnectionFactory;
-import org.netbeans.modules.db.dataview.meta.DBException;
-import org.netbeans.modules.db.dataview.meta.DBMetaDataFactory;
-import org.netbeans.modules.db.dataview.meta.DBTable;
-import org.netbeans.modules.db.dataview.util.DataViewUtils;
 import org.openide.awt.StatusDisplayer;
-import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 /**
- * DataView to show data of a given sql query string
+ * DataView to show data of a given sql query string, provides static method to create 
+ * the DataView Pannel from a given sql query string and a connection. 
  *
  * @author Ahimanikya Satapathy
  */
 public class DataView extends JPanel {
 
-    public static final int DEFAULT_TOOLBAR = 0;
-    public static final int HORIZONTALONLY_TOOLBAR = 1;
-    DatabaseConnection dbConn;
-    private String queryString;
-    private DataViewDBTable tblMeta;
-    private DataViewPageContext dataPage;
-    private SQLExecutionHelper execHelper;
-    private SQLStatementGenerator stmtGenerator;
-    private List<String> errMessages = new ArrayList<String>();
-    private DataViewUI dataViewUI;
-    private int toolbarType;
-    private ResultSet resultSet;
-    private ResultSet countresultSet;
-    // the RequestProcessor used for executing statements.
-    private final RequestProcessor rp = new RequestProcessor("SQLQueryExecution", 1, true); // NOI18N
-
     private static Logger mLogger = Logger.getLogger(DataView.class.getName());
+    public static final int VERTICAL_TOOLBAR = 0;
+    public static final int HORIZONTAL_TOOLBAR = 1; // Default
 
-    public static DataView create(final DatabaseConnection dbConn, String qs) {
-        DataView dataView = new DataView();
-        dataView.dbConn = dbConn;
+    private DatabaseConnection dbConn;
+    private List<String> errMessages = new ArrayList<String>();
+    private String queryString; // Once Set, Data View assumes it will never change
 
-        dataView.queryString = qs.trim();
-        dataView.toolbarType = HORIZONTALONLY_TOOLBAR;
+    DataViewDBTable tblMeta;
+    private SQLStatementGenerator stmtGenerator;
+    private SQLExecutionHelper execHelper;
+    private DataViewPageContext dataPage;
+    private DataViewUI dataViewUI;
+    private int toolbarType = HORIZONTAL_TOOLBAR;
 
-        dataView.dataPage = new DataViewPageContext();
-        dataView.execHelper = new SQLExecutionHelper(dataView, dbConn);
-
-        dataView.executeQuery();
-        return dataView;
+    /**
+     * Create and populate a DataView Object. Populates 1st data page of default size.
+     * The caller can run this in background thread and then create the GUI components 
+     * to render to render the DataView by calling DataView.createComponent()
+     * 
+     * @param dbConn instance of DBExplorer DatabaseConnection 
+     * @param queryString SQL query string 
+     * @return a new DataView instance
+     */
+    public static DataView create(DatabaseConnection dbConn, String queryString) {
+        assert dbConn!= null : "DatabaseConnection can't be null";
+        assert  isSelectStatement(queryString) : "Invalid query statement";
+                
+        DataView dv = new DataView();
+        dv.dbConn = dbConn;
+        dv.queryString = queryString.trim();
+        dv.toolbarType = HORIZONTAL_TOOLBAR;
+        try {
+            dv.dataPage = new DataViewPageContext();
+            dv.execHelper = new SQLExecutionHelper(dv, dbConn);
+            SQLExecutionHelper.initialDataLoad(dv, dbConn, dv.execHelper);
+            dv.stmtGenerator = new SQLStatementGenerator(dv.tblMeta);
+        } catch (Exception ex) {
+            dv.setErrorStatusText(ex.getMessage());
+        }
+        return dv;
     }
 
-    public static JComponent createComponent(final DataView dataView) throws SQLException {
-        if (dataView.dataViewUI == null) {
-            dataView.dataViewUI = new DataViewUI(dataView, dataView.toolbarType, dataView.queryString);
+    /**
+     * Create the UI component and renders the data fetched from database on create()
+     * 
+     * @param dataView DataView Object created using create()
+     * @return a JComponent that after rending the given dataview
+     */
+    public static JComponent createComponent(DataView dataView) {
+        assert dataView != null : "Should have called create()";
+        synchronized (dataView) {
+            dataView.dataViewUI = new DataViewUI(dataView, dataView.toolbarType);
+            dataView.setRowsInTableModel();
+            dataView.dataViewUI.setEditable(dataView.tblMeta.hasOneTable());
+            dataView.resetToolbar(dataView.hasException());
         }
         return dataView;
     }
 
+    /**
+     * Default is set to HORIZONTAL_TOOLBAR
+     * 
+     * @param toolbarType VERTICAL_TOOLBAR or HORIZONTAL_TOOLBAR
+     */
     public void setToolbarType(int toolbarType) {
         this.toolbarType = toolbarType;
     }
 
+    /**
+     * Returns true if there were any expection in the last database call.
+     * 
+     * @return true if error occurred in last database call, false otherwise.
+     */
     public boolean hasException() {
         return !errMessages.isEmpty();
     }
 
+    /**
+     * Returns iterator of a error messages of String type, if there were any 
+     * expection in the last database call, empty otherwise
+     * 
+     * @return Iterator<String>
+     */
     public Iterator<String> getExceptions() {
         return errMessages.iterator();
     }
 
+    /**
+     * Returns editing tool bar items.
+     * 
+     * @return an array of JButton
+     */
     public JButton[] getVerticalToolBar() {
         return dataViewUI.getVerticalToolBar();
+    }
+
+    static boolean isSelectStatement(String queryString){
+        return queryString.trim().toUpperCase().startsWith("SELECT");
+    }
+    
+    void clearErrorMessages() {
+        errMessages.clear();
     }
 
     DataViewDBTable getDataViewDBTable() {
@@ -132,10 +171,12 @@ public class DataView extends JPanel {
         return dataPage;
     }
 
-    void disableButtons() {
-        if (dataViewUI != null) {
-            dataViewUI.disableButtons();
-        }
+    DatabaseConnection getDatabaseConnection() {
+        return dbConn;
+    }
+
+    String getQueryString() {
+        return queryString;
     }
 
     UpdatedRowContext getResultSetUpdatedRowContext() {
@@ -150,115 +191,49 @@ public class DataView extends JPanel {
         return stmtGenerator;
     }
 
-    protected void clearDataViewPanel() {
-        dataViewUI.clearPanel();
+    void disableButtons() {
+        assert dataViewUI != null : "Should have called createComponent()";
+        if (dataViewUI != null) {
+            dataViewUI.disableButtons();
+        }
+    }
+
+    void setEditable(boolean editable) {
+        synchronized (dataViewUI) {
+            dataViewUI.setEditable(editable);
+        }
+    }
+
+    boolean isEditable() {
+        return dataViewUI.isEditable();
     }
 
     void setInfoStatusText(String statusText) {
-        StatusDisplayer.getDefault().setStatusText("INFO: " + statusText);
+        if (statusText != null) {
+            StatusDisplayer.getDefault().setStatusText(statusText);
+        }
     }
 
     void setErrorStatusText(String errorMsg) {
-        errMessages.add(errorMsg);
-        StatusDisplayer.getDefault().setStatusText("ERROR: " + errorMsg);
+        if (errorMsg != null && !errorMsg.equals("")) {
+            errMessages.add(errorMsg);
+            StatusDisplayer.getDefault().setStatusText("ERROR: " + errorMsg);
+            mLogger.severe(errorMsg);
+        }
     }
 
     void resetToolbar(boolean wasError) {
-        if (dataViewUI != null) {
-            dataViewUI.resetToolbar(wasError);
-        }
+        assert dataViewUI != null : "Should have called createComponent()";
+        dataViewUI.resetToolbar(wasError);
     }
 
-    void executeQuery() {
-        SQLStatementExecutor executor = new SQLStatementExecutor(this, "Executing Query", queryString) {
-            ResultSet rs = null;
-            ResultSet crs = null;
-            Statement stmt = null;
+    void setRowsInTableModel() {
+        assert dataViewUI != null : "Should have called createComponent()";
+        assert dataPage != null : "Should have called create()";
 
-            // Execute the Select statement
-            public void execute() throws SQLException, DBException {
-                parent.disableButtons();
-                
-                Connection conn = DBConnectionFactory.getInstance().getConnection(parent.dbConn);
-                if(conn == null) {
-                    this.ex = new DBException("Unable to Connect to database");
-                }
-                
-                stmt = conn.createStatement(
-                        ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-                stmt.setFetchSize(parent.getDataViewPageContext().getPageSize());
-
-                rs = stmt.executeQuery(parent.queryString);
-                parent.setResultSet(rs);
-
-                // Get total row count
-                crs = stmt.executeQuery(
-                        SQLStatementGenerator.getCountSQLQuery(
-                        parent.queryString));
-                parent.setTotalCount(crs);
-            }
-
-            public void finished() {
-                DataViewUtils.closeResources(stmt);
-                DataViewUtils.closeResources(rs);
-                DataViewUtils.closeResources(crs);
-                parent.resetToolbar(this.ex != null);
-                if (this.ex != null) {
-                    parent.setErrorStatusText(ex.getMessage());
-                } else {
-                    parent.setInfoStatusText("Query Executed Successfully");
-                }
-            }
-        };
-        RequestProcessor.Task task = rp.create(executor);
-        executor.setTask(task);
-        task.schedule(0);
-    }
-
-    void setResultSet(ResultSet resultSet) throws DBException, SQLException {
-        if (resultSet == null) {
-            return;
-        }
-
-        this.resultSet = resultSet;
-        if (dataViewUI == null) {
-            dataViewUI = new DataViewUI(this, toolbarType, queryString);
-        }
-
-        if (tblMeta == null) {
-            try {
-                Connection conn = DBConnectionFactory.getInstance().getConnection(dbConn);
-                DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
-                Collection<DBTable> tables = dbMeta.generateDBTables(resultSet);
-                this.tblMeta = new DataViewDBTable(tables);
-                this.stmtGenerator = new SQLStatementGenerator(tblMeta);
-                if (!tables.isEmpty()) {
-                    for (DBTable tbl : tables) {
-                        tbl.setEditable(tables.size() == 1 && !tbl.getName().equals(""));
-                    }
-                }
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        dataViewUI.setResultSet(resultSet, dataPage.getPageSize(), dataPage.getCurrentPos() - 1);
-        dataViewUI.setEditable(tblMeta.geTableCount() == 1 && !tblMeta.geTable(0).equals(""));
-    }
-
-    void setTotalCount(ResultSet countresultSet) {
-        this.countresultSet = countresultSet;
-        try {
-            if (countresultSet == null) {
-                dataViewUI.setTotalCount(0);
-            } else {
-                if (countresultSet.next()) {
-                    int count = countresultSet.getInt(1);
-                    dataViewUI.setTotalCount(count);
-                    dataPage.setTotalRows(count);
-                }
-            }
-        } catch (SQLException ex) {
-            mLogger.info("Could not get total row count " + ex);
+        if (dataPage.getCurrentRows() != null) {
+            dataViewUI.setDataRows(dataPage.getCurrentRows());
+            dataViewUI.setTotalCount(dataPage.getTotalRows());
         }
     }
 

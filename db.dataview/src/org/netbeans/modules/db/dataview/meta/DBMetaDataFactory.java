@@ -120,7 +120,7 @@ public final class DBMetaDataFactory {
     private DatabaseMetaData dbmeta; // db metadata
     private Logger mLogger = Logger.getLogger(DBMetaDataFactory.class.getName());
 
-    public DBMetaDataFactory(Connection conn) throws Exception {
+    public DBMetaDataFactory(Connection conn) throws DBException {
         if (conn == null) {
             throw new NullPointerException("Connection can't be null.");
         }
@@ -130,9 +130,9 @@ public final class DBMetaDataFactory {
         try {
             dbmeta = dbconn.getMetaData();
             dbType = getDBTypeCode(getDBName());
-        } catch (SQLException e) {
+        } catch (Exception e) {
             mLogger.severe(DBException.getMessage(e));
-            throw e;
+            throw new DBException(e);
         }
     }
     

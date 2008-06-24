@@ -40,10 +40,13 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.logging.Logger;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.db.dataview.meta.DBConnectionFactory;
 import org.openide.util.Cancellable;
 import org.openide.util.RequestProcessor;
 
@@ -52,49 +55,141 @@ import org.openide.util.RequestProcessor;
  */
 abstract class SQLStatementExecutor implements Runnable, Cancellable {
 
+    protected final DataView dataView;
+    protected Connection conn = null;
+    protected boolean error = false;
     protected volatile Throwable ex;
+    protected String errorMsg = "";
+    protected boolean lastCommitState;
     private String title;
-    private String msg;
-    // the task representing the execution of statements
+    private String titleMsg;
     private volatile RequestProcessor.Task task;
-    protected final DataView parent;
+    private static Logger mLogger = Logger.getLogger(SQLStatementExecutor.class.getName());
 
     public SQLStatementExecutor(DataView parent, String title, String msg) {
         this.title = title;
-        this.msg = msg;
-        this.parent = parent;
+        this.titleMsg = msg;
+        this.dataView = parent;
     }
 
     public void setTask(RequestProcessor.Task task) {
         this.task = task;
     }
 
-    public abstract void finished();
-
-    public abstract void execute() throws SQLException, DBException;
-
     public void run() {
         assert task != null : "Should have called setTask()";
         try {
             ProgressHandle handle = ProgressHandleFactory.createHandle(title, this);
-            handle.setDisplayName(msg);
+            handle.setDisplayName(titleMsg);
             handle.start();
             try {
                 handle.switchToIndeterminate();
-                parent.setInfoStatusText("");
-                // NOI18N
-                execute();
+                dataView.setInfoStatusText(""); // NOI18N
+
+                synchronized (dataView) {
+                    dataView.disableButtons();
+                    dataView.clearErrorMessages();
+                }
+
+                conn = DBConnectionFactory.getInstance().getConnection(dataView.getDatabaseConnection());
+                if (conn == null) {
+                    this.ex = new DBException("Unable to Connect to database");
+                    return;
+                }
+                lastCommitState = setAutocommit(conn, false);
+
+                execute(); // delegate 
+
             } finally {
                 handle.finish();
             }
         } catch (Exception e) {
             this.ex = e;
         } finally {
-            finished();
+            if (ex != null) {
+                errorMsg += ex.getMessage();
+                error = true;
+            }
+
+            finished(); // delegate 
+
+            resetAutocommitState(conn, lastCommitState);
         }
     }
 
     public boolean cancel() {
         return task.cancel();
+    }
+
+    public abstract void finished();
+
+    public abstract void execute() throws SQLException, DBException;
+
+    protected void executeOnSucess() {
+    }
+
+    protected void reinstateToolbar() {
+        // reinstate the toolbar
+        synchronized (dataView) {
+            dataView.resetToolbar(false);
+        }
+    }
+
+    protected void commitOrRollback(String cmdName) {
+        if (!error && commit(conn)) {
+            String infoMsg = cmdName + " Executed successfully\n";
+            dataView.setInfoStatusText(infoMsg);
+            executeOnSucess(); // delegate 
+        } else {
+            rollback(conn);
+            reinstateToolbar();
+            errorMsg = cmdName + " failed:" + errorMsg;
+            dataView.setErrorStatusText(errorMsg);
+        }
+    }
+
+    private boolean setAutocommit(Connection conn, boolean newState) {
+        try {
+            boolean lastState = conn.getAutoCommit();
+            conn.setAutoCommit(newState);
+            return lastState;
+        } catch (SQLException e) {
+            return newState;
+        }
+    }
+
+    private void resetAutocommitState(Connection conn, boolean lastState) {
+        if (conn != null) {
+            try {
+                conn.setAutoCommit(lastState);
+            } catch (SQLException e) {
+                //ignore
+            }
+        }
+    }
+
+    private boolean commit(Connection conn) {
+        try {
+            if (!conn.getAutoCommit()) {
+                conn.commit();
+            }
+        } catch (SQLException e) {
+            String msg = "\nFailure while commiting changes to database.\n";
+            msg = msg + DBException.getMessage(e);
+            dataView.setErrorStatusText(msg);
+            return false;
+        }
+        return true;
+    }
+
+    private void rollback(Connection conn) {
+        try {
+            if (!conn.getAutoCommit()) {
+                conn.rollback();
+            }
+        } catch (SQLException e) {
+            String err = "\nFail to rollback.\n";
+            dataView.setErrorStatusText(err + DBException.getMessage(e));
+        }
     }
 }

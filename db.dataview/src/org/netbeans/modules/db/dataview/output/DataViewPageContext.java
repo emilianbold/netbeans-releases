@@ -40,67 +40,70 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
+import java.util.List;
+
 /**
- * Holds Resultset page pointers 
+ * Holds data view page pointers and the current page data set
  * 
  * @author Ahimanikya Satapathy
  */
- class DataViewPageContext {
+class DataViewPageContext {
 
     private int pageSize = 10;
     private int totalRows;
     private int currentPos = 1;
     private int recordToRefresh = 10;
+    private List<Object[]> rows;
 
-    public int getPageSize() {
+    int getPageSize() {
         return pageSize;
     }
 
-    public void setPageSize(int pageSize) {
+    void setPageSize(int pageSize) {
         this.pageSize = pageSize;
     }
 
-    public int getCurrentPos() {
+    int getCurrentPos() {
         return currentPos;
     }
 
-    public void setCurrentPos(int currentPos) {
+    void setCurrentPos(int currentPos) {
         this.currentPos = currentPos;
     }
 
-    public int getRecordToRefresh() {
+    int getRecordToRefresh() {
         return recordToRefresh;
     }
 
-    public void setRecordToRefresh(int recordToRefresh) {
+    void setRecordToRefresh(int recordToRefresh) {
         this.recordToRefresh = recordToRefresh;
     }
 
-    public int getTotalRows() {
+    int getTotalRows() {
         return totalRows;
     }
 
-    public void setTotalRows(int totalCount) {
+    synchronized void setTotalRows(int totalCount) {
         this.totalRows = totalCount;
     }
 
-    public boolean hasRows() {
+    boolean hasRows() {
         return (totalRows != 0 && pageSize != 0);
     }
 
-    public boolean hasNext() {
+    boolean hasNext() {
         return ((currentPos + pageSize) <= totalRows) && hasRows();
     }
 
-    public boolean hasOnePageOnly() {
+    boolean hasOnePageOnly() {
         return (currentPos - pageSize) <= 0;
     }
 
-    public boolean hasPrevious() {
-        return ((currentPos - pageSize) > 0) && hasRows();
+    boolean hasPrevious() {
+        return ((currentPos - pageSize) >= 0) && hasRows();
     }
 
-    public void first() {
+    void first() {
         currentPos = 1;
         recordToRefresh = pageSize;
         if (recordToRefresh > totalRows) {
@@ -108,18 +111,18 @@ package org.netbeans.modules.db.dataview.output;
         }
     }
 
-    public void previous() {
+    void previous() {
         currentPos -= pageSize;
         recordToRefresh = currentPos + pageSize - 1;
     }
 
-    public void next() {
+    void next() {
         currentPos += pageSize;
         recordToRefresh = currentPos + pageSize - 1;
     }
 
-    public void last() {
-        if (pageSize == 0) {
+    void last() {
+        if (pageSize < 1) {
             return;
         }
 
@@ -128,7 +131,29 @@ package org.netbeans.modules.db.dataview.output;
         recordToRefresh = totalRows;
     }
 
-    public boolean isLastPage() {
+    boolean isLastPage() {
         return (currentPos + pageSize) > totalRows;
+    }
+
+    synchronized void setCurrentRows(List<Object[]> rows) {
+        this.rows = rows;
+    }
+
+    List<Object[]> getCurrentRows() {
+        return rows;
+    }
+
+    boolean hasDataRows() {
+        return (rows != null && !rows.isEmpty());
+    }
+
+    String pageOf() {
+        if (pageSize < 1) {
+            return "";
+        }
+        
+        int curPage = recordToRefresh / pageSize + (recordToRefresh % pageSize > 0 ? 1 : 0);
+        int totalPages = totalRows / pageSize + (totalRows % pageSize > 0 ? 1 : 0);
+        return " (Page " + curPage + " of " + totalPages + ") ";
     }
 }

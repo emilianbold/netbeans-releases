@@ -74,11 +74,11 @@ class DataViewTableUI extends JTable {
     private String[] columnToolTips;
     private JPopupMenu tablePopupMenu;
     private final int multiplier;
-    private final DataViewTablePanel parent;
+    private final DataViewTablePanel tablePanel;
     private static final String data = "WE WILL EITHER FIND A WAY, OR MAKE ONE.";
 
-    public DataViewTableUI(DataViewTablePanel parent) {
-        this.parent = parent;
+    public DataViewTableUI(DataViewTablePanel tablePanel) {
+        this.tablePanel = tablePanel;
 
         addKeyListener(new KeyListener() {
 
@@ -92,7 +92,7 @@ class DataViewTableUI extends JTable {
                     editCellAt(row, col);
                     TableCellEditor editor = getCellEditor();
                     if (editor != null) {
-                        DBColumn dbcol = DataViewTableUI.this.parent.getDataViewDBTable().getColumn(col);
+                        DBColumn dbcol = DataViewTableUI.this.tablePanel.getDataViewDBTable().getColumn(col);
                         if (dbcol.isGenerated() || !dbcol.isNullable()) {
                             Toolkit.getDefaultToolkit().beep();
                             editor.stopCellEditing();
@@ -240,7 +240,7 @@ class DataViewTableUI extends JTable {
                 public void keyPressed(KeyEvent e) {
                     if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_0) {
                         int col = getEditingColumn();
-                        DBColumn dbcol = DataViewTableUI.this.parent.getDataViewDBTable().getColumn(col);
+                        DBColumn dbcol = DataViewTableUI.this.tablePanel.getDataViewDBTable().getColumn(col);
                         if (dbcol.isGenerated() || !dbcol.isNullable()) {
                             Toolkit.getDefaultToolkit().beep();
                         } else {
@@ -287,7 +287,7 @@ class DataViewTableUI extends JTable {
     }
 
     private UpdatedRowContext getResultSetRowContext() {
-        return parent.getResultSetRowContext();
+        return tablePanel.getResultSetRowContext();
     }
 
     private void copyRowValues(boolean withHeader) {
@@ -343,7 +343,7 @@ class DataViewTableUI extends JTable {
 
     @Override
     public TableCellRenderer getCellRenderer(int row, int column) {
-        if (parent.getDataViewDBTable().getColumn(column).isGenerated()) {
+        if (tablePanel.getDataViewDBTable().getColumn(column).isGenerated()) {
             return new GeneratedResultSetCellRenderer();
         } else if (getResultSetRowContext().getValueList((row + 1) + ";" + (column + 1)) != null) {
             return new UpdatedResultSetCellRenderer();

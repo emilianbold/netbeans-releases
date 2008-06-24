@@ -50,9 +50,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.net.URL;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import javax.swing.Action;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -66,7 +64,7 @@ import javax.swing.JToolBar;
  *
  * @author Ahimanikya Satapathy
  */
-class DataViewUI  {
+class DataViewUI {
 
     private JButton commit;
     private JButton refreshButton;
@@ -83,23 +81,29 @@ class DataViewUI  {
     private JButton[] editButtons = new JButton[5];
     private String imgPrefix = "/org/netbeans/modules/db/dataview/images/";
     private DataViewTablePanel dataPanel;
-    private final DataView parent;
+    private final DataView dataView;
 
-    DataViewUI(DataView parent, int toolbarType, String name) {
-        this.parent = parent;
+    DataViewUI(DataView dataView, int toolbarType) {
+        this.dataView = dataView;
 
         //do not show tab view if there is only one tab
-        parent.putClientProperty("TabPolicy", "HideWhenAlone"); //NOI18N
+        dataView.putClientProperty("TabPolicy", "HideWhenAlone"); //NOI18N
 
-        parent.putClientProperty("PersistenceType", "Never"); //NOI18N
+        dataView.putClientProperty("PersistenceType", "Never"); //NOI18N
 
-        parent.setLayout(new BorderLayout());
-        parent.setBorder(BorderFactory.createEmptyBorder());
-
+        dataView.setLayout(new BorderLayout());
+        dataView.setBorder(BorderFactory.createEmptyBorder());
+        dataView.setName("Data:" + dataView.getQueryString());
+        
         // Main pannel with toolbars
         JPanel panel = initializeMainPanel(toolbarType);
-        parent.add(panel, BorderLayout.NORTH);
-        parent.setName("Data:" + name);
+        dataView.add(panel, BorderLayout.NORTH);
+
+        //add resultset data panel
+        dataPanel = new DataViewTablePanel(dataView.getDataViewDBTable(), this);
+        dataView.add(dataPanel, BorderLayout.CENTER);
+        dataPanel.revalidate();
+        dataPanel.repaint();
     }
 
     JButton[] getVerticalToolBar() {
@@ -115,7 +119,7 @@ class DataViewUI  {
     }
 
     void setTotalCount(int count) {
-        totalRowsLabel.setText(String.valueOf(count));
+        totalRowsLabel.setText(String.valueOf(count) + dataView.getDataViewPageContext().pageOf());
     }
 
     boolean isCommitEnabled() {
@@ -134,32 +138,8 @@ class DataViewUI  {
         commit.setEnabled(flag);
     }
 
-    void setResultSet(ResultSet rs, int maxRowsToShow, int startFrom) throws SQLException {
-        //add resultset data panel
-        if (dataPanel == null) {
-            dataPanel = new DataViewTablePanel(parent.getDataViewDBTable(), this);
-            parent.add(dataPanel, BorderLayout.CENTER);
-            dataPanel.revalidate();
-            dataPanel.repaint();
-        }
-        dataPanel.setResultSet(rs, maxRowsToShow, startFrom);
-    }
-
-    void clearPanel() {
-        refreshButton.setEnabled(true);
-        refreshField.setEnabled(true);
-
-        first.setEnabled(false);
-        previous.setEnabled(false);
-        next.setEnabled(false);
-        last.setEnabled(false);
-        deleteRow.setEnabled(false);
-        commit.setEnabled(false);
-        truncateButton.setEnabled(false);
-
-        dataPanel.clearView();
-        dataPanel.revalidate();
-        dataPanel.repaint();
+    void setDataRows(List<Object[]> rows) {
+        dataPanel.setResultSet(rows);
     }
 
     void disableButtons() {
@@ -173,16 +153,16 @@ class DataViewUI  {
         last.setEnabled(false);
         deleteRow.setEnabled(false);
         commit.setEnabled(false);
-        if (dataPanel != null) {
-            dataPanel.setDirty(false);
-            dataPanel.revalidate();
-            dataPanel.repaint();
-        }
+        insert.setEnabled(false);
+        
+        dataPanel.revalidate();
+        dataPanel.repaint();
     }
 
     int getPageSize(int totalCount) {
         try {
-            return Integer.parseInt(refreshField.getText().trim());
+            int count = Integer.parseInt(refreshField.getText().trim());
+            return count < 0 ? 10 : count;
         } catch (NumberFormatException ex) {
             return totalCount < 10 ? totalCount : 10;
         }
@@ -195,7 +175,7 @@ class DataViewUI  {
     void resetToolbar(boolean wasError) {
         refreshButton.setEnabled(true);
         refreshField.setEnabled(true);
-        DataViewPageContext dataPage = parent.getDataViewPageContext();
+        DataViewPageContext dataPage = dataView.getDataViewPageContext();
         if (!wasError) {
             if (dataPage.hasPrevious()) {
                 first.setEnabled(true);
@@ -249,7 +229,7 @@ class DataViewUI  {
 
     private ActionListener createOutputListener() {
 
-        final DataViewActionHandler actionHandler = new DataViewActionHandler(this, parent);
+        final DataViewActionHandler actionHandler = new DataViewActionHandler(this, dataView);
         ActionListener outputListener = new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -272,6 +252,8 @@ class DataViewUI  {
                     actionHandler.deleteRecordActionPerformed();
                 } else if (src.equals(insert)) {
                     actionHandler.insertActionPerformed();
+                } else if (src.equals(truncateButton)) {
+                    actionHandler.truncateActionPerformed();
                 }
             }
         };
@@ -334,7 +316,7 @@ class DataViewUI  {
 
         //add refresh text field
         refreshField = new JTextField();
-        refreshField.setText("" + parent.getDataViewPageContext().getRecordToRefresh());
+        refreshField.setText("" + dataView.getDataViewPageContext().getRecordToRefresh());
         refreshField.setPreferredSize(new Dimension(30, refreshField.getHeight()));
         refreshField.setSize(30, refreshField.getHeight());
         refreshField.addKeyListener(new KeyAdapter() {
@@ -371,7 +353,7 @@ class DataViewUI  {
 
         url = getClass().getResource(imgPrefix + "row_delete.png");
         deleteRow = new JButton(new ImageIcon(url));
-        String nbBundle10 = "Delete Selected Records.";
+        String nbBundle10 = "Delete selected records.";
         deleteRow.setToolTipText(nbBundle10);
         deleteRow.addActionListener(outputListener);
         deleteRow.setEnabled(false);
@@ -379,19 +361,19 @@ class DataViewUI  {
 
         url = getClass().getResource(imgPrefix + "row_commit.png");
         commit = new JButton(new ImageIcon(url));
-        String nbBundle11 = "Commit the Changes done on parent page.";
+        String nbBundle11 = "Commit changes done on current page.";
         commit.setToolTipText(nbBundle11);
         commit.addActionListener(outputListener);
         commit.setEnabled(false);
         editButtons[2] = commit;
 
         //add truncate button
-        String nbBundle14 = "Truncate parent table";
-        TruncateTableAction truncAction = new TruncateTableAction(parent);
-        truncAction.putValue(Action.SHORT_DESCRIPTION, nbBundle14);
         url = getClass().getResource(imgPrefix + "table_truncate.png");
-        truncAction.putValue(Action.SMALL_ICON, new ImageIcon(url));
-        truncateButton = new JButton(truncAction);
+        truncateButton = new JButton(new ImageIcon(url));
+        String nbBundle14 = "Truncate table";
+        truncateButton.setToolTipText(nbBundle14);
+        truncateButton.addActionListener(outputListener);
+        truncateButton.setEnabled(false);
         editButtons[3] = truncateButton;
     }
 
@@ -408,7 +390,7 @@ class DataViewUI  {
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
 
-        if (toolbarType == DataView.HORIZONTALONLY_TOOLBAR) {
+        if (toolbarType == DataView.HORIZONTAL_TOOLBAR) {
             JButton[] btns = getVerticalToolBar();
             for (JButton btn : btns) {
                 if (btn != null) {
@@ -424,7 +406,7 @@ class DataViewUI  {
         c.gridwidth = GridBagConstraints.RELATIVE;
         c.anchor = GridBagConstraints.FIRST_LINE_START;
         panel.add(toolbar, c);
-        parent.validate();
+        dataView.validate();
 
         return panel;
     }
