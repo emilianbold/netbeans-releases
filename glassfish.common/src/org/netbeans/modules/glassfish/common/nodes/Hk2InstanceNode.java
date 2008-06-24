@@ -203,11 +203,15 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
         Image badge = null;        
         switch (serverInstance.getServerState()) {
             case RUNNING:
-                badge = ImageUtilities.loadImage(RUNNING_ICON);
+                if(isDebug()) {
+                    badge = ImageUtilities.loadImage(DEBUGGING_ICON);
+                } else {
+                    badge = ImageUtilities.loadImage(RUNNING_ICON);
+                }
                 break;
-            case RUNNING_JVM_DEBUG:
-                badge = ImageUtilities.loadImage(DEBUGGING_ICON);
-                break;
+//            case RUNNING_JVM_DEBUG:
+//                badge = ImageUtilities.loadImage(DEBUGGING_ICON);
+//                break;
             case STARTING:
                 badge = ImageUtilities.loadImage(WAITING_ICON);
                 break;
@@ -232,7 +236,12 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
 //                break;
         }
         return badge != null ? ImageUtilities.mergeImages(origImg, badge, 15, 8) : origImg;
-    }    
+    }
+
+    private boolean isDebug() {
+        return GlassfishModule.DEBUG_MODE.equals(
+                serverInstance.getCommonSupport().getInstanceProperties().get(GlassfishModule.JVM_MODE));
+    }
     
     private Map<String, String> getInstanceProperties() {
         Map<String, String> ip = null;
