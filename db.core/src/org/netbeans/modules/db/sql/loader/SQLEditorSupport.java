@@ -329,11 +329,7 @@ public class SQLEditorSupport extends DataEditorSupport
                     components = new ArrayList<JComponent>();
 
                     for (DataView view : results.getResults()) {
-                        try {
-                            components.add(DataView.createComponent(view));
-                        } catch (SQLException sqle) {
-                            exceptions.add(sqle);
-                        }
+                        components.add(view.createComponent());
                     }
                 }
                 

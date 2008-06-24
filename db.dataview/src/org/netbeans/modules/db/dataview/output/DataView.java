@@ -107,15 +107,14 @@ public class DataView extends JPanel {
      * @param dataView DataView Object created using create()
      * @return a JComponent that after rending the given dataview
      */
-    public static JComponent createComponent(DataView dataView) {
-        assert dataView != null : "Should have called create()";
-        synchronized (dataView) {
-            dataView.dataViewUI = new DataViewUI(dataView, dataView.toolbarType);
-            dataView.setRowsInTableModel();
-            dataView.dataViewUI.setEditable(dataView.tblMeta.hasOneTable());
-            dataView.resetToolbar(dataView.hasException());
+    public JComponent createComponent() {
+        synchronized (this) {
+            this.dataViewUI = new DataViewUI(this, toolbarType);
+            setRowsInTableModel();
+            dataViewUI.setEditable(tblMeta.hasOneTable());
+            resetToolbar(hasException());
         }
-        return dataView;
+        return this;
     }
 
     /**
