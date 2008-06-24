@@ -138,7 +138,7 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
         });
 
         // XXX: workaround for #137528, touches project settings
-        getShiftWidth();
+        IndentUtils.indentLevelSize(this);
     }
 
     public @Override int getShiftWidth() {
