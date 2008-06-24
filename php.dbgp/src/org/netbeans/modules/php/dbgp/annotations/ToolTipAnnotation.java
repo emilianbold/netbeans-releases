@@ -179,7 +179,7 @@ public class ToolTipAnnotation extends Annotation
             sendEvalCommand( selectedText );
         } else {
             JEditorPane ep = Utils.getEditorPane( editorCookie );
-            final String identifier = getIdentifier(document, ep, offset);            
+            final String identifier = ep != null ? getIdentifier(document, ep, offset) : null;            
             if (identifier != null && isDollarMark(identifier.charAt(0))) {
                 Runnable runnable = new Runnable(){
                     public void run() {
@@ -286,7 +286,7 @@ public class ToolTipAnnotation extends Annotation
     
     private String getSelectedText( EditorCookie cookie , int offset ){
         JEditorPane pane = Utils.getEditorPane( cookie );
-        if ((pane.getSelectionStart() <= offset) && 
+        if ((pane != null && pane.getSelectionStart() <= offset) && 
                 (offset <= pane.getSelectionEnd()))
         {
             return pane.getSelectedText();

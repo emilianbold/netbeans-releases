@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,10 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-/*
- * AdminAuthenticator.java
- *
- */
 
 package org.netbeans.modules.j2ee.sun.ide.editors;
 
@@ -54,13 +50,10 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
-
-
 /** Global password protected sites Authenticator for IDE
  *
  * @author  Ludo, Petr Hrebejk
  */
-
 public class AdminAuthenticator extends java.net.Authenticator {
     private  SunDeploymentManagerInterface preferredSunDeploymentManagerInterface;
     private boolean displayed = false;
@@ -73,18 +66,22 @@ public class AdminAuthenticator extends java.net.Authenticator {
         preferredSunDeploymentManagerInterface=dm ;
     }
 
+    @Override
     protected java.net.PasswordAuthentication getPasswordAuthentication() {
+        String title = getRequestingPrompt();
+        if (!"admin-realm".equals(title)) {  // NOI18N
+            displayed = false;
+        }
         if (!displayed) {
             displayed = true;
             
             java.net.InetAddress site = getRequestingSite();
             ResourceBundle bundle = NbBundle.getBundle( AdminAuthenticator.class );
             String host = site == null ? bundle.getString( "CTL_PasswordProtected" ) : site.getHostName(); // NOI18N
-            String title = getRequestingPrompt();
             InstanceProperties ip = null;
             String keyURI;
             String name=""; // NOI18N
-            if (title.equals("admin-realm")){ // NOI18N so this is a request from the sun server
+            if ("admin-realm".equals(title)){ // NOI18N so this is a request from the sun server
                 if (preferredSunDeploymentManagerInterface!=null){
                     //Make sure this is really the admin port and not the app port (see bug 85605
                     if ( preferredSunDeploymentManagerInterface.getPort()==getRequestingPort()){
@@ -99,7 +96,7 @@ public class AdminAuthenticator extends java.net.Authenticator {
                 //            ip= InstanceProperties.getInstanceProperties(keyURI);
                 //
                 //        }
-            }
+            } 
             if (ip!=null){
                 title =ip.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
                 name = ip.getProperty(InstanceProperties.USERNAME_ATTR);
@@ -166,6 +163,7 @@ public class AdminAuthenticator extends java.net.Authenticator {
             passwordField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_PasswordField"));
         }
         
+        @Override
         public java.awt.Dimension getPreferredSize() {
             java.awt.Dimension sup = super.getPreferredSize();
             return new java.awt.Dimension( Math.max(sup.width, DEFAULT_WIDTH), Math.max(sup.height, DEFAULT_HEIGHT ));

@@ -82,7 +82,7 @@ public class RakeTaskReaderTest extends RubyProjectTestBase {
         dumpRakefile(rakeContent, project);
         RakeSupport.refreshTasks(project);
         RakeTaskReader rakeTaskReader = new RakeTaskReader(project);
-        SortedSet<RakeTask> tasks = (SortedSet<RakeTask>) rakeTaskReader.getRakeTaskTree();
+        Set<RakeTask> tasks = rakeTaskReader.getRakeTaskTree();
         assertEquals("two tasks", 2, tasks.size());
         RakeTask multi = RakeSupport.getRakeTask(project, "multiline_dummy");
         assertNotNull(multi);
@@ -100,8 +100,29 @@ public class RakeTaskReaderTest extends RubyProjectTestBase {
         dumpRakefile(rakeContent, project);
         RakeSupport.refreshTasks(project);
         RakeTaskReader rakeTaskReader = new RakeTaskReader(project);
-        SortedSet<RakeTask> tasks = (SortedSet<RakeTask>) rakeTaskReader.getRakeTaskTree();
-        assertEquals("one tasks", 1, tasks.size());
+        Set<RakeTask> tasks = rakeTaskReader.getRakeTaskTree();
+        assertEquals("one task", 1, tasks.size());
+        RakeTask multi = RakeSupport.getRakeTask(project, "test:coverage");
+        assertNotNull(multi);
+        assertEquals("semicoloned task", "test:coverage", multi.getTask());
+        assertEquals("semicoloned task", "coverage", multi.getDisplayName());
+    }
+
+    public void testTaskWithTaskAndNamespaceHavingSameName() throws Exception {
+        registerLayer();
+        RubyProject project = createTestProject();
+        String rakeContent =
+                "desc 'runs tests'\n" +
+                "task :test\n" +
+                "namespace 'test' do\n" +
+                "  desc 'test coverage'\n" +
+                "  task :coverage\n" +
+                "end";
+        dumpRakefile(rakeContent, project);
+        RakeSupport.refreshTasks(project);
+        RakeTaskReader rakeTaskReader = new RakeTaskReader(project);
+        Set<RakeTask> tasks = rakeTaskReader.getRakeTaskTree();
+        assertEquals("two tasks", 2, tasks.size());
         RakeTask multi = RakeSupport.getRakeTask(project, "test:coverage");
         assertNotNull(multi);
         assertEquals("semicoloned task", "test:coverage", multi.getTask());
