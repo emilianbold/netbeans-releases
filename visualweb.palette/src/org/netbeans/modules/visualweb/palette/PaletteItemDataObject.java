@@ -81,7 +81,6 @@ import org.openide.loaders.*;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.xml.XMLUtil;
-import org.openide.actions.*;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
@@ -266,10 +265,7 @@ public class PaletteItemDataObject extends MultiDataObject {
         
         PaletteItemDataLoader() {
             super("org.netbeans.modules.visualweb.palette.PaletteItemDataObject"); // NOI18N
-            
-            ExtensionList ext = new ExtensionList();
-            ext.addExtension(ITEM_EXT);
-            setExtensions(ext);
+            getExtensions().addMimeType("text/x-comp-palette+xml");
         }
         
         /** Gets default display name. Overides superclass method. */
