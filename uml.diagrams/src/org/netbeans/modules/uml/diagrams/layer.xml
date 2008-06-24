@@ -2097,10 +2097,12 @@ made subject to such option by the copyright holder.
                     <folder name="SubmachineState">
                         <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-StateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.SubMachineStateInitializer"/>
+                        <attr name="showPreference" boolvalue="false"/>
                     </folder>
                     <folder name="CompositeState">
                         <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-StateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.CompositeStateInitializer"/>
+                        <attr name="showPreference" boolvalue="false"/>
                     </folder>                       
                 </folder>
                 <folder name="FinalState">

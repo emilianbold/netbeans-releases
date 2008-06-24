@@ -156,14 +156,17 @@ public class ElementCustomizationPanel extends JPanel implements ItemListener
 
         blinkWidget.bringToFront();
         // display all the customizable widgets on a scene
-        SwingUtilities.invokeLater(new Runnable()
+        if (selectedTypeIndex == 0)
         {
-            public void run()
+            SwingUtilities.invokeLater(new Runnable()
             {
-                GraphLayout gLayout = GraphLayoutFactory.createHierarchicalGraphLayout(scene, true);
-                gLayout.layoutGraph(scene);
-            }
-        });
+                public void run()
+                {
+                    GraphLayout gLayout = GraphLayoutFactory.createHierarchicalGraphLayout(scene, true);
+                    gLayout.layoutGraph(scene);
+                }
+            });
+        }
     }
 
     private void hideNodes()

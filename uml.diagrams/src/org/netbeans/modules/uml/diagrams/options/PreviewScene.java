@@ -142,6 +142,9 @@ public class PreviewScene extends GraphScene<IPresentationElement, IPresentation
                                     DataObject[] subs = d.getChildren();
                                     for (DataObject o : subs)
                                     {
+                                        Object showPreference = o.getPrimaryFile().getAttribute("showPreference");
+                                        if (showPreference instanceof Boolean && ((Boolean)showPreference).booleanValue() == false)
+                                            continue;
                                         presentationObj = factory.retrieveMetaType("NodePresentation", null);
                                         pe = ((IPresentationElement) presentationObj);
                                         element = (IElement) FactoryRetriever.instance().createType(types[i], null);
