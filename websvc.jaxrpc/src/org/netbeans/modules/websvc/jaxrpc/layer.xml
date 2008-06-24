@@ -93,7 +93,7 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="org-netbeans-modules-j2ee-clientproject">
             <folder name="Lookup">
-                <file name="org.netbeans.modules.websvc.core.jaxws.project.JaxRpcLookupProvider.instance"/>
+                <file name="org.netbeans.modules.websvc.jaxrpc.project.JaxRpcLookupProvider.instance"/>
             </folder>
         </folder>
     </folder>
