@@ -73,8 +73,11 @@ import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtSettingsDefaults;
 import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmClassifierBasedTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateParameterResultItem;
@@ -664,6 +667,28 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             return new Context(component, sup, openingSource, endOffset, finder, compResolver, contextElement, sort);
         }
 
+        private CsmClassifier resolveTemplateParameter(CsmClassifier cls, CsmType type) {
+            if (cls instanceof CsmClassifierBasedTemplateParameter) {
+                CsmClassifierBasedTemplateParameter tp = (CsmClassifierBasedTemplateParameter) cls;
+                String n = tp.getName().toString();
+                CsmScope container = tp.getScope();
+                if (CsmKindUtilities.isTemplate(container)) {
+                    CsmTemplate template = (CsmTemplate) container;
+                    List<CsmTemplateParameter> formal = template.getTemplateParameters();
+                    List<CsmType> fact = type.getInstantiationParams();
+                    for (int i = 0; i < fact.size() && i < formal.size(); i++) {
+                        CsmTemplateParameter formalParameter = formal.get(i);
+                        CsmType factParameter = fact.get(i);
+                        String name = formalParameter.getName().toString();
+                        if (name.equals(n)) {
+                            return factParameter.getClassifier();
+                        }
+                    }
+                }
+            }
+            return cls;
+        }
+
         private CsmType resolveType(CsmCompletionExpression exp) {
             Context ctx = (Context)clone();
             ctx.setFindType(true);
@@ -714,6 +739,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                     if ((i < parmCnt-1 || lastDot || findType) && lastType != null && lastType.getArrayDepth() == 0 && kind == ExprKind.ARROW) {
                         CsmClassifier cls = getClassifier(lastType, CsmFunction.OperatorKind.ARROW);
                         if (cls != null) {
+                            cls = resolveTemplateParameter(cls, lastType);
                             lastType = CsmCompletion.getType(cls, 0);
                         }
                     }                    
@@ -1099,7 +1125,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                         lastType = null;
                                         cont = false;
                                     } else {
-                                        List res = findFieldsAndMethods(finder, contextElement, cls, var, false, staticOnly, false, true,this.scopeAccessedClassifier,sort);
+                                        List res = findFieldsAndMethods(finder, contextElement, cls, var, openingSource, staticOnly, false, true,this.scopeAccessedClassifier,sort);
                                         List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, var, false, true, sort);
                                         res.addAll(nestedClassifiers);
                                         result = new CsmCompletionResult(
@@ -1301,6 +1327,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                     staticOnly = false;
                     CsmClassifier cls = lastType == null ? null : CsmCompletionQuery.getClassifier(lastType, CsmFunction.OperatorKind.POINTER);
                     if (cls != null) {
+                        cls = resolveTemplateParameter(cls, lastType);
                         lastType = CsmCompletion.getType(cls, 0);
                     }
                     // TODO: need to convert lastType into reference based on item token '&' or '*'

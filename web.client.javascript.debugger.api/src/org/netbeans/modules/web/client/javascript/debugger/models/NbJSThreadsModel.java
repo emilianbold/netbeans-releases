@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.client.javascript.debugger.models;
 
 import static org.netbeans.spi.debugger.ui.Constants.THREAD_STATE_COLUMN_ID;
+import static org.netbeans.spi.debugger.ui.Constants.THREAD_SUSPENDED_COLUMN_ID;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -129,7 +130,7 @@ public final class NbJSThreadsModel implements TreeModel, TableModel, NodeModel,
             return new Object[0];
         } else if (parent instanceof JSWindow) {
             JSWindow[] childWindows = ((JSWindow) parent).getChildren();
-            return (childWindows == null ? JSWindow.EMPTY_ARRAY : childWindows);
+            return (childWindows == null || childWindows.length == 0 ? JSWindow.EMPTY_ARRAY : childWindows);
         } 
         throw new UnknownTypeException(parent);
     }
@@ -173,6 +174,7 @@ public final class NbJSThreadsModel implements TreeModel, TableModel, NodeModel,
         }
     }
 
+
     // NodeModel implementation ................................................
 
     public String getDisplayName(Object node) throws UnknownTypeException {
@@ -215,20 +217,22 @@ public final class NbJSThreadsModel implements TreeModel, TableModel, NodeModel,
 
     public Object getValueAt(Object node, String columnID) throws
             UnknownTypeException {
-        if (node instanceof JSWindow && THREAD_STATE_COLUMN_ID.equals(columnID)) {
-            return debugger.getState();
+        if (node instanceof JSWindow ) {
+            if ( THREAD_STATE_COLUMN_ID.equals(columnID) ) {
+                return debugger.getState();
+            }
+            else if ( THREAD_SUSPENDED_COLUMN_ID.equals(columnID)){
+                if( debugger.getState().getState().equals(JSDebuggerState.State.SUSPENDED) ){
+                    return Boolean.TRUE;
+                }
+                return Boolean.FALSE;
+            }
         } 
         throw new UnknownTypeException(node);
     }
 
     public boolean isReadOnly(Object node, String columnID) throws
             UnknownTypeException {
-//        if (node instanceof JSWindow && THREAD_STATE_COLUMN_ID.equals(columnID)) {
-//            return true;
-//        } else {
-//            throw new UnknownTypeException(node);
-//        }
-        /* No Columns in the Threads Model should be writeable */
         return true;
     }
 
@@ -272,5 +276,6 @@ public final class NbJSThreadsModel implements TreeModel, TableModel, NodeModel,
         }
 
         fireChanges();
-    }    
+    }
+
 }

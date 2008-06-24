@@ -1556,7 +1556,9 @@ public class ResourceUtils implements WizardConstants{
                 LOG.log(Level.SEVERE, "getResourcesGraph failed", ex);
             } finally {
                 try {
-                    in.close();
+                    if (null != in)  {
+                        in.close();
+                    }
                 } catch (IOException ex) {
                     LOG.log(Level.SEVERE, "getResourcesGraph failed", ex);
                 }
