@@ -49,7 +49,6 @@ import java.util.HashMap;
 import java.text.AttributedCharacterIterator;
 import javax.swing.text.AttributeSet;
 import javax.swing.JEditorPane;
-import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.PrintContainer;
 import org.netbeans.editor.Utilities;
@@ -62,18 +61,15 @@ import java.beans.PropertyChangeEvent;
 import java.util.Dictionary;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.prefs.Preferences;
 import javax.swing.JToolBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.editor.BaseDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.modules.editor.impl.ComplexValueSettingsFactory;
-import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -140,6 +136,9 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
                 return ComplexValueSettingsFactory.getIndentEngine(mimePath);
             }
         });
+
+        // XXX: workaround for #137528, touches project settings
+        getShiftWidth();
     }
 
     public @Override int getShiftWidth() {
