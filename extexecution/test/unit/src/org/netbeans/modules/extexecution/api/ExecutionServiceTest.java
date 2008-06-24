@@ -49,6 +49,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.extexecution.InputOutputManager;
 import org.netbeans.modules.extexecution.api.input.TestInputUtils;
 
 /**
@@ -146,29 +147,70 @@ public class ExecutionServiceTest extends NbTestCase {
         });
     }
 
-//    public void testMultipleRun() throws InvocationTargetException, InterruptedException {
-//        SwingUtilities.invokeAndWait(new Runnable() {
-//
-//            public void run() {
-//                TestProcess process = new TestProcess(0);
-//                TestCallable callable = new TestCallable(process);
-//
-//                ExecutionDescriptorBuilder builder = new ExecutionDescriptorBuilder();
-//                ExecutionService service = ExecutionService.newService(callable, builder.create(), "Test");
-//
-//                Future<Integer> task = service.run();
-//                assertNotNull(task);
-//                assertFalse(process.isFinished());
-//
-//                try {
-//                    service.run();
-//                    fail("Allows multiple concurrent runs");
-//                } catch (IllegalStateException ex) {
-//                    // expected
-//                }
-//            }
-//        });
-//    }
+    public void testIOHandling() throws InterruptedException, InvocationTargetException, ExecutionException {
+        TestProcess process = new TestProcess(0);
+        TestCallable callable = new TestCallable(process);
+
+        ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
+        builder.postExecution(new Runnable() {
+            public void run() {
+                try {
+                    if (!SwingUtilities.isEventDispatchThread()) {
+                        SwingUtilities.invokeAndWait(this);
+                        return;
+                    }
+                    assertNotNull(getInputOutput("Test", false));
+                } catch (InterruptedException ex) {
+                    fail("Unexpected interruption");
+                } catch (InvocationTargetException ex) {
+                    fail("Unexpected invocation exception");
+                }
+            }
+        });
+
+        final ExecutionService service = ExecutionService.newService(
+                callable, builder.create(), "Test");
+
+        class TaskHolder {
+            public Future<Integer> task;
+        }
+
+        final TaskHolder holder = new TaskHolder();
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+                holder.task = service.run();
+            }
+        });
+
+        assertNull(getInputOutput("Test", false));
+        process.destroy();
+        holder.task.get();
+
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+                assertNotNull(getInputOutput("Test", false));
+            }
+        });
+
+        // rerun once again
+        process = new TestProcess(0);
+        callable.setProcess(process);
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+                holder.task = service.run();
+            }
+        });
+
+        assertNull(getInputOutput("Test", false));
+        process.destroy();
+        holder.task.get();
+
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+                assertNotNull(getInputOutput("Test", false));
+            }
+        });
+    }
 
     public void testInvocationThread() {
         try {
@@ -184,6 +226,16 @@ public class ExecutionServiceTest extends NbTestCase {
         } catch (IllegalStateException ex) {
             // expected
         }
+    }
+
+    private static InputOutputManager.InputOutputData getInputOutput(String name, boolean actions) {
+        InputOutputManager.InputOutputData data = InputOutputManager.getInputOutput(name, actions);
+        // put it back
+        if (data != null) {
+            InputOutputManager.addInputOutput(data.getInputOutput(), data.getDisplayName(),
+                    data.getStopAction(), data.getRerunAction());
+        }
+        return data;
     }
 
     private static class TestRunnable implements Runnable {
