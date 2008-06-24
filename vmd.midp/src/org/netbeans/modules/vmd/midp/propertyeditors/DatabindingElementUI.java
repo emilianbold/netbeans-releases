@@ -254,7 +254,9 @@ public class DatabindingElementUI extends javax.swing.JPanel {
                         String commandName = (String) command.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue();
                         jComboBoxCommands.setSelectedItem(commandName);
                     }
-                    jLabelPreview.setText(jComboBoxDatasets.getSelectedItem().toString()+"."+jTextFieldExpression.getText());
+                    if (jComboBoxDatasets.getSelectedItem() != null) {
+                        jLabelPreview.setText(jComboBoxDatasets.getSelectedItem().toString()+"."+jTextFieldExpression.getText());
+                    }
                 }
             }
         });
@@ -286,7 +288,8 @@ public class DatabindingElementUI extends javax.swing.JPanel {
                         if (selectedUpdateCommand != null && !selectedDataSet.equalsIgnoreCase(NULL)) {
                             Collection<DesignComponent> commands = MidpDocumentSupport.getCategoryComponent(document, CommandsCategoryCD.TYPEID).getComponents();
                             for (DesignComponent command : commands) {
-                                if (command.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue().equals(selectedUpdateCommand)) {
+                                PropertyValue  value = command.readProperty(ClassCD.PROP_INSTANCE_NAME);
+                                if (value != PropertyValue.createNull() && value.getPrimitiveValue().equals(selectedUpdateCommand)) {
                                     connector.writeProperty(DataSetConnectorCD.PROP_UPDATE_COMMAND, PropertyValue.createComponentReference(command));
                                     break;
                                 }
@@ -368,7 +371,8 @@ public class DatabindingElementUI extends javax.swing.JPanel {
                         String n = (String) item;
                         Collection<DesignComponent> components = MidpDocumentSupport.getCategoryComponent(component.getDocument(), categoryType).getComponents();
                         for (DesignComponent c : components) {
-                            if (c.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue().equals(n) || n.equals(NULL)) {
+                            PropertyValue  value = c.readProperty(ClassCD.PROP_INSTANCE_NAME);
+                            if ( value != PropertyValue.createNull() && value.getPrimitiveValue().equals(n) || n.equals(NULL)) {
                                 selectedItem = (String) item;
                                 break;
                             }
