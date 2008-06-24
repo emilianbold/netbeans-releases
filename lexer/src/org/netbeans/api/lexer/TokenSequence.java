@@ -413,9 +413,8 @@ public final class TokenSequence<T extends TokenId> {
     int startSkipLength, int endSkipLength, boolean joinSections) {
         checkTokenNotNull();
         // Write-lock presence checked in the impl
-        return false;
-//        return EmbeddingContainer.createEmbedding(tokenList, tokenIndex,
-//                embeddedLanguage, startSkipLength, endSkipLength, joinSections);
+        return EmbeddingContainer.createEmbedding(tokenList, tokenIndex,
+                embeddedLanguage, startSkipLength, endSkipLength, joinSections);
     }
     
     /**
@@ -709,8 +708,14 @@ public final class TokenSequence<T extends TokenId> {
     
     @Override
     public String toString() {
-        return LexerUtilsConstants.appendTokenList(null, tokenList,
-                tokenIndex, 0, Integer.MAX_VALUE, true, 0, true).toString();
+        StringBuilder sb = new StringBuilder(200);
+        sb.append("TokenSequence for ").append(tokenList.languagePath().mimePath()); // NOI18N
+        sb.append(" at tokenIndex=").append(tokenIndex); // NOI18N
+        sb.append(". TokenList contains ").append(tokenList.tokenCount()).append(" tokens:\n"); // NOI18N
+        LexerUtilsConstants.appendTokenList(sb, tokenList,
+                tokenIndex, 0, Integer.MAX_VALUE, true, 0, true);
+        sb.append('\n');
+        return sb.toString();
     }
     
     private void resetTokenIndex(int index, int offset) {
@@ -723,9 +728,9 @@ public final class TokenSequence<T extends TokenId> {
     private void checkTokenNotNull() {
         if (token == null) {
             throw new IllegalStateException(
-                "Caller of TokenSequence forgot to call moveNext/Previous() " +
-                "or it returned false (no more tokens): tokenIndex=" + tokenIndex
-            ); // NOI18N
+                "Caller of TokenSequence forgot to call moveNext/Previous() " + // NOI18N
+                "or it returned false (no more tokens)\n" + this // NOI18N
+            );
         }
     }
     

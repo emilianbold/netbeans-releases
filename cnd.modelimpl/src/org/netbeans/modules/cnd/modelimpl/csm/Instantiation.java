@@ -203,6 +203,8 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
                 return new Typedef((CsmTypedef)member, this);
             } else if (member instanceof CsmClass) {
                 return new Class((CsmClass)member, getMapping());
+            } else if (member instanceof CsmClassForwardDeclaration) {
+                return new ClassForward((CsmClassForwardDeclaration)member, this);
             }
             assert false : "Unknown class for member instantiation:" + member + " of class:" + member.getClass(); // NOI18N
             return member;
@@ -407,6 +409,36 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         }
     }
     
+    private static class ClassForward extends Instantiation<CsmClassForwardDeclaration> implements CsmClassForwardDeclaration, CsmMember<CsmClassForwardDeclaration> {
+        private CsmClassForwardDeclaration forward;
+
+        public ClassForward(CsmClassForwardDeclaration forward, CsmInstantiation instantiation) {
+            super(forward, instantiation.getMapping());
+            this.forward = forward;
+        }
+
+        public CsmClass getContainingClass() {
+            return ((CsmMember)declaration).getContainingClass();
+        }
+
+        public CsmVisibility getVisibility() {
+            return ((CsmMember)declaration).getVisibility();
+        }
+
+        public boolean isStatic() {
+            return ((CsmMember)declaration).isStatic();
+        }
+
+        @Override
+        public String toString() {
+            return "INSTANTIATION OF TYPEDEF: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
+        }
+
+        public CsmClass getCsmClass() {
+            return forward.getCsmClass();
+        }
+    }
+
     private static class Method extends Instantiation implements CsmMethod, CsmFunctionDefinition {
         private final CsmInstantiation instantiation;
         private final CsmType retType;
