@@ -44,7 +44,6 @@ package org.netbeans.test.cvsmodule;
 import java.io.File;
 import java.io.InputStream;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -57,10 +56,8 @@ import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
 import org.netbeans.jellytools.modules.javacvs.TagOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbModuleSuite;
@@ -85,20 +82,24 @@ public class TagTest extends JellyTestCase {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {
-        
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
         System.out.println("### "+getName()+" ###");
-        
+        try {
+            TestKit.extractProtocol(getDataDir());
+        } catch (Exception e ) {
+            e.printStackTrace();
+        } 
     }
     
     protected boolean isUnix() {
-        boolean unix = false;
+        boolean _unix = false;
         if (os_name.indexOf("Windows") == -1) {
-            unix = true;
+            _unix = true;
         }
-        return unix;
+        return _unix;
     }
     
     public static Test suite() {
@@ -166,6 +167,7 @@ public class TagTest extends JellyTestCase {
         //combo.setSelectedItem(CVSroot);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         cwo.finish();
+        Thread.sleep(3000);
         
         
         //System.out.println(CVSroot);

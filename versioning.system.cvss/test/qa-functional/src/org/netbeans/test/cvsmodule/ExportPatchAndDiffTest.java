@@ -55,7 +55,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.InputStream;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -69,11 +68,8 @@ import org.netbeans.jellytools.modules.javacvs.DiffOperator;
 import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JMenuOperator;
-import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
@@ -101,6 +97,7 @@ public class ExportPatchAndDiffTest extends JellyTestCase {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);

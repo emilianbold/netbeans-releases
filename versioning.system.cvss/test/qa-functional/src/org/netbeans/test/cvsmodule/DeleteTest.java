@@ -12,7 +12,6 @@ package org.netbeans.test.cvsmodule;
 import java.io.File;
 import java.io.InputStream;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputOperator;
@@ -24,10 +23,7 @@ import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
 import org.netbeans.jellytools.modules.javacvs.VersioningOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.QueueTool;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
@@ -69,12 +65,17 @@ public class DeleteTest extends JellyTestCase {
         );
      }
     
+    @Override
     protected void setUp() throws Exception {
         
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
         System.out.println("### "+getName()+" ###");
-        
+        try {
+            TestKit.extractProtocol(getDataDir());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
     protected boolean isUnix() {
@@ -89,6 +90,7 @@ public class DeleteTest extends JellyTestCase {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         TestKit.closeProject(projectName);
+        OutputOperator.invoke();
         new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -118,7 +120,7 @@ public class DeleteTest extends JellyTestCase {
         
         File tmp = new File("/tmp"); // NOI18N
         File work = new File(tmp, "" + File.separator + System.currentTimeMillis());
-        File cacheFolder = new File(work, projectName + File.separator + "src" + File.separator + "forimport" + File.separator + "CVS" + File.separator + "RevisionCache");
+        File _cacheFolder = new File(work, projectName + File.separator + "src" + File.separator + "forimport" + File.separator + "CVS" + File.separator + "RevisionCache");
         tmp.mkdirs();
         work.mkdirs();
         tmp.deleteOnExit();
@@ -141,10 +143,10 @@ public class DeleteTest extends JellyTestCase {
         cwo.finish();
         Thread.sleep(3000);
         
-        OutputOperator oo = OutputOperator.invoke();
+        //OutputOperator oo = OutputOperator.invoke();
         //System.out.println(CVSroot);
         
-        OutputTabOperator oto = oo.getOutputTab(sessionCVSroot);
+        OutputTabOperator oto = new OutputTabOperator(sessionCVSroot);
         oto.waitText("Checking out finished");
         cvss.stop();
         in.close();
@@ -153,8 +155,8 @@ public class DeleteTest extends JellyTestCase {
         open.push();
         
         ProjectSupport.waitScanFinished();
-        TestKit.waitForQueueEmpty();
-        ProjectSupport.waitScanFinished();
+//        TestKit.waitForQueueEmpty();
+//        ProjectSupport.waitScanFinished();
         
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }

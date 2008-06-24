@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Random;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputOperator;
@@ -57,7 +56,6 @@ import org.netbeans.jellytools.modules.javacvs.CVSRootStepOperator;
 import org.netbeans.jellytools.modules.javacvs.CheckoutWizardOperator;
 import org.netbeans.jellytools.modules.javacvs.EditCVSRootOperator;
 import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
-import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
@@ -65,7 +63,6 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JPasswordFieldOperator;
-import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
@@ -121,12 +118,17 @@ public class CheckOutWizardTest extends JellyTestCase {
         );
      }
     
+    @Override
     protected void setUp() throws Exception {
-        
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
         System.out.println("### "+getName()+" ###");
-        
+        //extract CVS protocol dump file
+        try {
+            TestKit.extractProtocol(getDataDir());
+        } catch (Exception e ) {
+            e.printStackTrace();
+        }
     }
     
     protected boolean isUnix() {
@@ -223,7 +225,7 @@ public class CheckOutWizardTest extends JellyTestCase {
         assertEquals("Wrong repository path Edit CVSRoot dialog", "/cvs", editOperator.getRepositoryPath());
         
         //change values in EditCVSRoot dialog but cancel it
-        editOperator.selectAccessMethod(editOperator.ITEM_PSERVER);
+        editOperator.selectAccessMethod(EditCVSRootOperator.ITEM_PSERVER);
         editOperator.setRepositoryPath("/cvs/repo");
         editOperator.setHost("127.0.0.1");
         editOperator.setUser("user");
@@ -233,7 +235,7 @@ public class CheckOutWizardTest extends JellyTestCase {
         
         //change values in EditCVSRoot dialog
         editOperator = crso.edit();
-        editOperator.selectAccessMethod(editOperator.ITEM_PSERVER);
+        editOperator.selectAccessMethod(EditCVSRootOperator.ITEM_PSERVER);
         editOperator.setRepositoryPath("/cvs/repo");
         editOperator.setHost("127.0.0.1");
         editOperator.setUser("user");
@@ -268,7 +270,7 @@ public class CheckOutWizardTest extends JellyTestCase {
         assertEquals("Wrong repository path Edit CVSRoot dialog", "/cvs", editOperator.getRepositoryPath());
         
         //change values in EditCVSRoot dialog but cancel it
-        editOperator.selectAccessMethod(editOperator.ITEM_EXT);
+        editOperator.selectAccessMethod(EditCVSRootOperator.ITEM_EXT);
         editOperator.setRepositoryPath("/cvs/repo");
         editOperator.setHost("127.0.0.1");
         editOperator.setUser("user");
@@ -278,7 +280,7 @@ public class CheckOutWizardTest extends JellyTestCase {
         
         //change values in EditCVSRoot dialog
         editOperator = crso.edit();
-        editOperator.selectAccessMethod(editOperator.ITEM_EXT);
+        editOperator.selectAccessMethod(EditCVSRootOperator.ITEM_EXT);
         editOperator.setRepositoryPath("/cvs/repo");
         editOperator.setHost("127.0.0.1");
         editOperator.setUser("user");
@@ -981,13 +983,15 @@ public class CheckOutWizardTest extends JellyTestCase {
             //crso.setCVSRoot(CVSroot);
             System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
             cwo.finish();
+            Thread.sleep(3000);
         
         
             //System.out.println(CVSroot);
-            oo = OutputOperator.invoke();
+            //oo = OutputOperator.invoke();
             //System.out.println(CVSroot);
         
-            OutputTabOperator oto = oo.getOutputTab(sessionCVSroot);
+            OutputTabOperator oto = new OutputTabOperator(sessionCVSroot); 
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
             oto.waitText("Checking out finished");
             cvss.stop();
             in.close();
@@ -996,8 +1000,8 @@ public class CheckOutWizardTest extends JellyTestCase {
             open.push();
         
             ProjectSupport.waitScanFinished();
-            TestKit.waitForQueueEmpty();
-            ProjectSupport.waitScanFinished();
+//            TestKit.waitForQueueEmpty();
+//            ProjectSupport.waitScanFinished();
         } catch (Exception e) {
             throw new Exception("Test failed: " + e);
         } finally {
