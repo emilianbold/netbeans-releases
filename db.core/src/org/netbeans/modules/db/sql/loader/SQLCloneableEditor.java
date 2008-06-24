@@ -55,14 +55,13 @@ import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
-import org.netbeans.modules.db.sql.execute.SQLHistory;
 import org.netbeans.modules.db.sql.execute.ui.SQLResultPanel;
-import org.netbeans.modules.db.sql.history.SQLHistoryManager;
 import org.openide.text.CloneableEditor;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -81,7 +80,7 @@ import org.openide.windows.TopComponent;
 public class SQLCloneableEditor extends CloneableEditor {
 
     private transient JSplitPane splitter;
-    private transient SQLResultPanel resultComponent;
+    private transient JTabbedPane resultComponent;
 
     private transient SQLExecutionImpl sqlExecution;
 
@@ -103,19 +102,12 @@ public class SQLCloneableEditor extends CloneableEditor {
         initialize();
     }
 
-    public boolean hasResultComponent() {
-        return resultComponent != null;
-    }
-
-    public SQLResultPanel getResultComponent() {
+    void setResults(JTabbedPane tabbedPane) {
         assert SwingUtilities.isEventDispatchThread();
-        if (resultComponent == null) {
-            createResultComponent();
-        }
-        return resultComponent;
+        createResultComponent(tabbedPane);
     }
 
-    private void createResultComponent() {
+    private void createResultComponent(JTabbedPane results) {
         JPanel container = findContainer(this);
         if (container == null) {
             // the editor has just been deserialized and has not been initialized yet
@@ -126,8 +118,7 @@ public class SQLCloneableEditor extends CloneableEditor {
         Component editor = container.getComponent(0);
         container.removeAll();
 
-        resultComponent = new SQLResultPanel();
-        splitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, editor, resultComponent);
+        splitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, editor, results);
         splitter.setBorder(null);
 
         container.add(splitter);
@@ -147,7 +138,7 @@ public class SQLCloneableEditor extends CloneableEditor {
         if (equals(TopComponent.getRegistry().getActivated())) {
             // setting back the focus lost when removing the editor from the CloneableEditor
             requestFocusInWindow();
-        }
+        }        
     }
 
     /**
