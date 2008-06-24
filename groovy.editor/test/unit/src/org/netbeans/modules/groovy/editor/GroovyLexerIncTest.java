@@ -89,6 +89,8 @@ public class GroovyLexerIncTest extends NbTestCase {
         String text = "println \"Hello $name\"";
         doc.insertString(0, text, null);
 
+//        Logger.getLogger(org.netbeans.lib.lexer.inc.TokenListUpdater.class.getName()).setLevel(Level.FINE); // Extra logging
+//        Logger.getLogger(org.netbeans.lib.lexer.inc.TokenHierarchyUpdate.class.getName()).setLevel(Level.FINE); // Extra logging
         // Last token sequence should throw exception - new must be obtained
         try {
             ts.moveNext();
@@ -100,6 +102,7 @@ public class GroovyLexerIncTest extends NbTestCase {
         ts = hi.tokenSequence();
 
         next(ts, GroovyTokenId.IDENTIFIER, "println", 0);
+        assertEquals(1, LexerTestUtilities.lookahead(ts));
         next(ts, GroovyTokenId.WHITESPACE, " ", 7);
         next(ts, GroovyTokenId.STRING_LITERAL, "\"Hello $", 8);
         next(ts, GroovyTokenId.IDENTIFIER, "name", 16);
