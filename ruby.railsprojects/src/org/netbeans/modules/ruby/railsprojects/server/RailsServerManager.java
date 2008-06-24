@@ -50,12 +50,14 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Socket;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
@@ -87,8 +89,12 @@ import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
-import org.netbeans.modules.web.client.javascript.debugger.api.IdentityURLMapper;
-import org.netbeans.modules.web.client.javascript.debugger.api.NbJSDebugger;
+import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
+import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
+import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionException;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarter;
+import org.netbeans.modules.web.client.tools.projectsupport.BrowserUtilities;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -450,29 +456,39 @@ public final class RailsServerManager {
                 // launch browser with clientside debugger
                 FileObject projectDocBase = project.getRakeProjectHelper().resolveFileObject("public"); // NOI18N
                 String hostPrefix = "http://localhost:" + port + "/"; // NOI18N
-                                  
-                // TODO provide 'welcome file' mapping
-                IdentityURLMapper mapper = new IdentityURLMapper(hostPrefix, projectDocBase, null);
-                Lookup debugLookup = Lookups.fixed(mapper, project);
                 
-                NbJSDebugger.startDebugging(url.toURI(), getHtmlBrowserFactory(), debugLookup);
+                // hardcode firefox browser until additional browsers are supported
+                HtmlBrowser.Factory browser = BrowserUtilities.getFirefoxBrowser();
+                if (browser == null) {
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+                    return;
+                }
+                
+                WebClientToolsSessionStarter debugger = Lookup.getDefault().lookup(WebClientToolsSessionStarter.class);
+                LocationMappersFactory mapperFactory = Lookup.getDefault().lookup(LocationMappersFactory.class);
+
+                Lookup debuggerLookup = null;
+                if (mapperFactory != null) {
+                    URI appContext = new URI(hostPrefix);
+
+                    JSToNbJSLocationMapper forwardMapper =
+                            mapperFactory.getJSToNbJSLocationMapper(projectDocBase, appContext, null);
+                    NbJSToJSLocationMapper reverseMapper =
+                            mapperFactory.getNbJSToJSLocationMapper(projectDocBase, appContext, null);
+                    debuggerLookup = Lookups.fixed(forwardMapper, reverseMapper, project);
+                } else {
+                    debuggerLookup = Lookups.fixed(project);
+                }
+                
+                debugger.startSession(url.toURI(), browser, debuggerLookup);
             }
         } catch (MalformedURLException ex) {
             ErrorManager.getDefault().notify(ex);
         } catch (URISyntaxException ex) {
             ErrorManager.getDefault().notify(ex);
+        } catch (WebClientToolsSessionException ex) {
+            ErrorManager.getDefault().notify(ex);
         }
-    }
-
-    private static HtmlBrowser.Factory getHtmlBrowserFactory() {
-        Collection<? extends HtmlBrowser.Factory> htmlBrowserFactories = Lookup.getDefault().lookupAll(HtmlBrowser.Factory.class);
-        for (HtmlBrowser.Factory factory : htmlBrowserFactories) {
-            // Hardcode Firefox
-            if (factory.getClass().getName().equals("org.netbeans.modules.extbrowser.FirefoxBrowser")) { // NOI18N
-                return factory;
-            }
-        }
-        return htmlBrowserFactories.iterator().next();
     }
     
     /**
