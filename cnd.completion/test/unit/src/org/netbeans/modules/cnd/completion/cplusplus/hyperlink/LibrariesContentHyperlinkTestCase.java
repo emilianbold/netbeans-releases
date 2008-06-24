@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,28 +41,61 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 
 /**
- *
- * @author Vladimir Voskresensky
+ * Test case for hyperlink to library content
+ * 
+ * @author Nick Krasilnikov
  */
-public class CsmHyperlinkTest extends BaseTestSuite {
+public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
     
-    public CsmHyperlinkTest() {
-        super("C/C++ Hyperlink");
-        
-        this.addTestSuite(ClassMembersHyperlinkTestCase.class);
-        this.addTestSuite(NamespacesHyperlinkTestCase.class);
-        this.addTestSuite(BasicHyperlinkTestCase.class);
-        this.addTestSuite(UnnamedEnumTestCase.class);
-        this.addTestSuite(LibrariesContentHyperlinkTestCase.class);
+    public LibrariesContentHyperlinkTestCase(String testName) {
+        super(testName, true);
     }
 
-    public static Test suite() {
-        TestSuite suite = new CsmHyperlinkTest();
-        return suite;
+    @Override
+    protected File changeDefProjectDirBeforeParsingProjectIfNeeded(File projectDir) {
+        // we have following structure for this test
+        // test-folder
+        //  --src\
+        //        main.cc
+        //  --sys_include1\ 
+        //        include1.h
+        //  --sys_include2\
+        //        include2.h
+        //
+        // so, adjust used folders
+        
+        File srcDir = new File(projectDir, "src");
+        File incl1 = new File(projectDir, "sys_include");
+        File incl2 = new File(projectDir, "sys_include2");
+        checkDir(srcDir);
+        checkDir(incl1);
+        checkDir(incl2);
+        List<String> sysIncludes = Arrays.asList(incl1.getAbsolutePath(), incl2.getAbsolutePath());
+        super.setSysIncludes(sysIncludes);
+        return srcDir;
+    }
+    
+    private void checkDir(File srcDir) {
+        assertTrue("Not existing directory" + srcDir, srcDir.exists());
+        assertTrue("Not directory" + srcDir, srcDir.isDirectory());
+    }
+    
+    public void testLibraryClass() throws Exception {
+
+        super.performTest("src/main.cc", 7, 6, "sys_include2/include2.h", 9, 1);
+    }
+
+    public void testLibraryClassConstructor() throws Exception {
+        // IZ 137971 : library class name after "new" is not resolved
+        super.performTest("src/main.cc", 7, 20, "sys_include2/include2.h", 9, 1);
+    }
+
+    public void testLibraryClassConstructor2() throws Exception {
+        super.performTest("src/main.cc", 9, 20, "sys_include/include1.h", 12, 5);
     }
 }
