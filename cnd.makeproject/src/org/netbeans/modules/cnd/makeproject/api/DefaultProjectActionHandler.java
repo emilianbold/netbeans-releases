@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
+import org.netbeans.modules.cnd.makeproject.ui.utils.NativePathMap;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -315,6 +316,18 @@ public class DefaultProjectActionHandler implements ActionListener {
                 String args = pae.getProfile().getArgsFlat();
                 String[] env = pae.getProfile().getEnvironment().getenv();
                 boolean showInput = pae.getID() == ProjectActionEvent.RUN;
+                String user_and_host = ((MakeConfiguration) pae.getConfiguration()).getDevelopmentHost().getName();
+                
+                if (user_and_host != null && !user_and_host.equals("localhost")) { // NOI18N
+                    // Make sure the project root is visible remotely
+                    String basedir = pae.getProfile().getBaseDir();
+                    if (!NativePathMap.isRemote(user_and_host, basedir)) {
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                NbBundle.getMessage(DefaultProjectActionHandler.class, "Err_CannotRunLocalProjectRemotely")));
+                        progressHandle.finish();
+                        return;
+                    }
+                }
                 
                 if (pae.getID() == ProjectActionEvent.RUN) {
                     int conType = pae.getProfile().getConsoleType().getValue();
@@ -395,7 +408,6 @@ public class DefaultProjectActionHandler implements ActionListener {
                 } else { // Build or Clean
                     String[] env1 = new String[env.length + 1];
                     String csname = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getOption();
-                    String csdname = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getName();
                     String csdirs = CompilerSetManager.getDefault().getCompilerSet(csname).getDirectory();
                     if (((MakeConfiguration)pae.getConfiguration()).getCompilerSet().getFlavor().equals(CompilerFlavor.MinGW.toString())) {
                         // Also add msys to path. Thet's where sh, mkdir, ... are.
@@ -421,6 +433,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                     env = env1;
                 }
                 projectExecutor =  new NativeExecutor(
+                        user_and_host,
                         pae.getProfile().getRunDirectory(),
                         exe, args, env,
                         pae.getTabName(),

@@ -50,26 +50,22 @@ import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 
 import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
 
 /**
  *
  * @author Alexander Simon
  */
-public class FortranDataLoader extends CndAbstractDataLoader {
+public class FortranDataLoader extends CndAbstractDataLoaderExt {
     
     private static FortranDataLoader instance;
 
     /** Serial version number */
     static final long serialVersionUID = 6801389470714975686L;
 
-    /** The suffix list for Fortran primary files */
-    private static final String[] fortranExtensions =
-	   { "f", "F", "f90", "F90", "f95", "F95", "f03", "F03", "for", "il", "mod" };// NOI18N
-
     protected FortranDataLoader() {
 	super("org.netbeans.modules.cnd.loaders.FortranDataObject"); // NOI18N
         instance = this;
-        createExtentions(fortranExtensions);
     }
 
     public static FortranDataLoader getInstance(){
@@ -80,6 +76,7 @@ public class FortranDataLoader extends CndAbstractDataLoader {
     }
 
     /** set the default display name */
+    @Override
     protected String defaultDisplayName() {
 	return NbBundle.getMessage(CndAbstractDataLoader.class, "PROP_FortranDataLoader_Name"); // NOI18N
     }
@@ -90,5 +87,13 @@ public class FortranDataLoader extends CndAbstractDataLoader {
 
     protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
         return new FortranDataObject(primaryFile, this);
+    }
+
+    public String getDisplayNameForExtensionList() {
+	throw new UnsupportedOperationException();
+    }
+
+    public String getSettingsName() {
+        return ExtensionsSettings.FORTRAN;
     }
 }

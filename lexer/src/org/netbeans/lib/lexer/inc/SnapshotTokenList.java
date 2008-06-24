@@ -44,7 +44,6 @@ package org.netbeans.lib.lexer.inc;
 import java.util.Set;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.CompactMap;
 import org.netbeans.lib.lexer.EmbeddedTokenList;
@@ -52,6 +51,7 @@ import org.netbeans.lib.lexer.EmbeddingContainer;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.TokenList;
+import org.netbeans.lib.lexer.TokenOrEmbedding;
 import org.netbeans.lib.lexer.token.AbstractToken;
 import org.netbeans.lib.lexer.token.TextToken;
 
@@ -79,7 +79,7 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
     private int liveTokenOffsetDiff;
 
     /** Captured original tokens or branches. */
-    private Object[] origTokensOrBranches;
+    private TokenOrEmbedding<T>[] origTokenOrEmbeddings;
 
     /** Original token's offsets. The array is occupied
      * and maintained in the same way like origTokensOrBranches.
@@ -118,15 +118,15 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
         return liveTokenList.languagePath();
     }
     
-    public Object tokenOrEmbeddingContainer(int index) {
+    public TokenOrEmbedding<T> tokenOrEmbedding(int index) {
         if (liveTokenGapStart == -1 || index < liveTokenGapStart) {
-            return liveTokenList.tokenOrEmbeddingContainer(index);
+            return liveTokenList.tokenOrEmbedding(index);
         }
         index -= liveTokenGapStart;
         if (index < origTokenCount) {
-            return origTokensOrBranches[origTokenStartIndex + index];
+            return origTokenOrEmbeddings[origTokenStartIndex + index];
         }
-        return liveTokenList.tokenOrEmbeddingContainer(liveTokenGapEnd + index - origTokenCount);
+        return liveTokenList.tokenOrEmbedding(liveTokenGapEnd + index - origTokenCount);
     }
 
     public int lookahead(int index) {
@@ -141,9 +141,9 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
         return null;
     }
 
-    public int tokenOffset(int index) {
+    public int tokenOffsetByIndex(int index) {
         if (liveTokenGapStart == -1 || index < liveTokenGapStart) {
-            return liveTokenList.tokenOffset(index);
+            return liveTokenList.tokenOffsetByIndex(index);
         }
         index -= liveTokenGapStart;
         if (index < origTokenCount) {
@@ -151,32 +151,34 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
         }
         index -= origTokenCount;
 
-        AbstractToken<T> token = LexerUtilsConstants.token(liveTokenList.
-                tokenOrEmbeddingContainerUnsync(liveTokenGapEnd + index));
+        AbstractToken<T> token = liveTokenList.tokenOrEmbeddingUnsync(liveTokenGapEnd + index).token();
         int offset;
         if (token.isFlyweight()) {
             offset = token.length();
             while (--index >= 0) {
-                token = LexerUtilsConstants.token(liveTokenList.
-                        tokenOrEmbeddingContainerUnsync(liveTokenGapEnd + index));
+                token = liveTokenList.tokenOrEmbeddingUnsync(liveTokenGapEnd + index).token();
                 if (token.isFlyweight()) {
                     offset += token.length();
                 } else { // non-flyweight element
-                    offset += tokenOffset(token, liveTokenList, token.rawOffset());
+                    offset += tokenOffset(token, liveTokenList);
                     break;
                 }
             }
             if (index == -1) { // below the boundary of above-gap live tokens
                 index += liveTokenGapStart + origTokenCount;
                 if (index >= 0) {
-                    offset += tokenOffset(index);
+                    offset += tokenOffsetByIndex(index);
                 }
             }
             
         } else { // non-flyweight
-            offset = tokenOffset(token, liveTokenList, token.rawOffset());
+            offset = tokenOffset(token, liveTokenList);
         }
         return offset;
+    }
+
+    public int[] tokenIndex(int offset) {
+        return LexerUtilsConstants.tokenIndexLazyTokenCreation(this, offset);
     }
 
     /**
@@ -186,7 +188,7 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
      * @return offset for the particular token.
      */
     public <TT extends TokenId> int tokenOffset(
-    AbstractToken<TT> token, TokenList<TT> tokenList, int rawOffset) {
+    AbstractToken<TT> token, TokenList<TT> tokenList) {
         // The following situations can happen:
         // 1. Token instance is contained in token2offset map so the token's
         //    offset is overriden by the information in the map.
@@ -205,13 +207,13 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
         //    needs to be corrected if necessary.
         if (tokenList.getClass() == EmbeddedTokenList.class) {
             EmbeddedTokenList<TT> etl = (EmbeddedTokenList<TT>)tokenList;
-            AbstractToken<?> rootBranchToken = etl.rootToken();
+            AbstractToken<?> rootBranchToken = null; // originally etl.rootToken();
             Token2OffsetEntry<T> entry = token2offset.get(rootBranchToken);
             if (entry != null) {
-                return entry.offset() + etl.childTokenOffsetShift(rawOffset);
+                return entry.offset();// used to be: + etl.childTokenOffsetShift(rawOffset);
             } else { // no special entry => check whether the regular offset is below liveTokenGapStartOffset
-                int offset = etl.childTokenOffset(rawOffset);
-                TokenList rootTokenList = etl.root();
+                int offset = etl.tokenOffset(token);
+                TokenList rootTokenList = etl.rootTokenList();
                 if (rootTokenList != null && rootTokenList.getClass() == IncTokenList.class) {
                     if (offset >= liveTokenGapStartOffset) {
                         offset += liveTokenOffsetDiff;
@@ -226,14 +228,13 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
             if (entry != null) {
                 return entry.offset();
             } else {
+                int offset = tokenList.tokenOffset(token);
                 if (tokenList.getClass() == IncTokenList.class) {
-                    rawOffset = tokenList.childTokenOffset(rawOffset);
-                    if (rawOffset >= liveTokenGapStartOffset) {
-                        rawOffset += liveTokenOffsetDiff;
+                    if (offset >= liveTokenGapStartOffset) {
+                        offset += liveTokenOffsetDiff;
                     }
-                    return rawOffset;
                 }
-                return tokenList.childTokenOffset(rawOffset);
+                return offset;
             }
         }
     }
@@ -253,27 +254,28 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
     }
 
     public int modCount() {
-        return -1;
+        return LexerUtilsConstants.MOD_COUNT_IMMUTABLE_INPUT;
     }
     
-    public int childTokenOffset(int rawOffset) {
+    public int tokenOffset(AbstractToken<T> token) {
+        int rawOffset = token.rawOffset();
         // Offset of the standalone token is absolute
         return rawOffset;
     }
     
-    public char childTokenCharAt(int rawOffset, int index) {
+    public char charAt(int offset) {
         // No tokens expected to be parented to this token list
         throw new IllegalStateException("Not expected to be called"); // NOI18N
     }
 
-    public void wrapToken(int index, EmbeddingContainer embeddingContainer) {
+    public void wrapToken(int index, EmbeddingContainer<T> embeddingContainer) {
         // Allow branching
         if (liveTokenGapStart == -1 || index < liveTokenGapStart) {
             liveTokenList.wrapToken(index, embeddingContainer);
         } else {
             index -= liveTokenGapStart;
             if (index < origTokenCount) {
-                origTokensOrBranches[origTokenStartIndex + index] = embeddingContainer;
+                origTokenOrEmbeddings[origTokenStartIndex + index] = embeddingContainer;
             } else {
                 liveTokenList.wrapToken(liveTokenGapEnd + index - origTokenCount, embeddingContainer);
             }
@@ -288,7 +290,7 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
             index -= liveTokenGapStart;
             if (index < origTokenCount) {
                 nonFlyToken = ((TextToken<T>)flyToken).createCopy(this, offset);
-                origTokensOrBranches[origTokenStartIndex + index] = nonFlyToken;
+                origTokenOrEmbeddings[origTokenStartIndex + index] = nonFlyToken;
             } else {
                 nonFlyToken = liveTokenList.replaceFlyToken(
                         liveTokenGapEnd + index - origTokenCount,
@@ -298,10 +300,14 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
         return nonFlyToken;
     }
     
-    public TokenList<?> root() {
+    public TokenList<?> rootTokenList() {
         return this;
     }
-    
+
+    public CharSequence inputSourceText() {
+        return rootTokenList().inputSourceText();
+    }
+
     public TokenHierarchyOperation<?,?> tokenHierarchyOperation() {
         return snapshot;
     }
@@ -320,14 +326,14 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
 
     public int startOffset() {
         if (tokenCountCurrent() > 0 || tokenCount() > 0)
-            return tokenOffset(0);
+            return tokenOffsetByIndex(0);
         return 0;
     }
 
     public int endOffset() {
         int cntM1 = tokenCount() - 1;
         if (cntM1 >= 0)
-            return tokenOffset(cntM1) + LexerUtilsConstants.token(this, cntM1).length();
+            return tokenOffsetByIndex(cntM1) + tokenOrEmbedding(cntM1).token().length();
         return 0;
     }
     
@@ -350,8 +356,10 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
             liveTokenGapStart = startRemovedIndex;
             liveTokenGapEnd = startRemovedIndex;
             liveTokenGapStartOffset = change.offset();
-            origTokensOrBranches = new Object[removedTokenList.tokenCount()];
-            origOffsets = new int[origTokensOrBranches.length];
+            @SuppressWarnings("unchecked")
+            TokenOrEmbedding<T>[] tokenOrEmbeddings = new TokenOrEmbedding[removedTokenList.tokenCount()];
+            origTokenOrEmbeddings = tokenOrEmbeddings;
+            origOffsets = new int[origTokenOrEmbeddings.length];
         }
 
         int liveTokenIndexDiff = change.tokenChangeInfo().addedTokenCount()
@@ -367,29 +375,29 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
             int offset = change.offset();
             liveTokenGapStartOffset = offset;
             for (index = startRemovedIndex; index < bound; index++) {
-                Object tokenOrEmbeddingContainer = removedTokenList.tokenOrEmbeddingContainer(index - startRemovedIndex);
-                AbstractToken<T> token = LexerUtilsConstants.token(tokenOrEmbeddingContainer);
+                TokenOrEmbedding<T> tokenOrEmbedding = removedTokenList.tokenOrEmbedding(index - startRemovedIndex);
+                AbstractToken<T> token = tokenOrEmbedding.token();
                 if (!token.isFlyweight()) {
                     TokenList<T> tokenList = token.tokenList();
                     if (tokenList == null) {
-                        tokenList = new StandaloneTokenList<T>(change.languagePath(),
-                                eventInfo.originalText().toCharArray(offset, offset + token.length()));
+                        tokenList = null; // new StandaloneTokenList<T>(change.languagePath(),
+                                // eventInfo.originalText().toCharArray(offset, offset + token.length()));
                         token.setTokenList(tokenList);
                     }
                 }
                 origOffsets[origTokenStartIndex] = offset;
-                origTokensOrBranches[origTokenStartIndex++] = tokenOrEmbeddingContainer;
+                origTokenOrEmbeddings[origTokenStartIndex++] = tokenOrEmbedding;
                 offset += token.length();
             }
 
             while (index < liveTokenGapStart) {
-                Object tokenOrEmbeddingContainer = liveTokenList.tokenOrEmbeddingContainerUnsync(index + liveTokenIndexDiff);
-                AbstractToken<T> t = LexerUtilsConstants.token(tokenOrEmbeddingContainer);
+                TokenOrEmbedding<T> tokenOrEmbedding = liveTokenList.tokenOrEmbeddingUnsync(index + liveTokenIndexDiff);
+                AbstractToken<T> t = tokenOrEmbedding.token();
                 if (!t.isFlyweight()) {
                     token2offset.putEntry(new Token2OffsetEntry<T>(t, offset));
                 }
                 origOffsets[origTokenStartIndex] = offset;
-                origTokensOrBranches[origTokenStartIndex++] = tokenOrEmbeddingContainer;
+                origTokenOrEmbeddings[origTokenStartIndex++] = tokenOrEmbedding;
                 offset += t.length();
                 index++;
             }
@@ -406,14 +414,14 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
             int index = endRemovedIndex;
             int offset = change.removedEndOffset();
             for (index = endRemovedIndex - 1; index >= bound; index--) {
-                Object tokenOrEmbeddingContainer = removedTokenList.tokenOrEmbeddingContainer(index - startRemovedIndex);
-                AbstractToken<T> token = LexerUtilsConstants.token(tokenOrEmbeddingContainer);
+                TokenOrEmbedding<T> tokenOrEmbedding = removedTokenList.tokenOrEmbedding(index - startRemovedIndex);
+                AbstractToken<T> token = tokenOrEmbedding.token();
                 offset -= token.length();
                 if (!token.isFlyweight()) {
                     TokenList<T> tokenList = token.tokenList();
                     if (tokenList == null) {
-                        tokenList = new StandaloneTokenList<T>(change.languagePath(),
-                                eventInfo.originalText().toCharArray(offset, offset + token.length()));
+                        tokenList = null; // new StandaloneTokenList<T>(change.languagePath(),
+                                // eventInfo.originalText().toCharArray(offset, offset + token.length()));
                         token.setTokenList(tokenList);
                     }
                 }
@@ -422,19 +430,19 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
                 if (liveTokenOffsetDiff != 0) {
                     token2offset.putEntry(new Token2OffsetEntry<T>(token, origOffsets[origTokenIndex]));
                 }
-                origTokensOrBranches[origTokenIndex--] = tokenOrEmbeddingContainer;
+                origTokenOrEmbeddings[origTokenIndex--] = tokenOrEmbedding;
             }
 
             while (index >= liveTokenGapEnd) {
-                Object tokenOrEmbeddingContainer = liveTokenList.tokenOrEmbeddingContainerUnsync(index + liveTokenIndexDiff);
-                AbstractToken<T> token = LexerUtilsConstants.token(tokenOrEmbeddingContainer);
+                TokenOrEmbedding<T> tokenOrEmbedding = liveTokenList.tokenOrEmbeddingUnsync(index + liveTokenIndexDiff);
+                AbstractToken<T> token = tokenOrEmbedding.token();
                 offset -= token.length();
                 if (!token.isFlyweight()) {
                     token2offset.putEntry(new Token2OffsetEntry<T>(token, offset));
                 }
                 origOffsets[origTokenIndex] = offset + liveTokenOffsetDiff;
                 token2offset.putEntry(new Token2OffsetEntry<T>(token, origOffsets[origTokenIndex]));
-                origTokensOrBranches[origTokenIndex--] = tokenOrEmbeddingContainer;
+                origTokenOrEmbeddings[origTokenIndex--] = tokenOrEmbedding;
                 index--;
             }
             liveTokenGapEnd = endRemovedIndex;
@@ -445,52 +453,56 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
     }
 
     private void ensureOrigTokensStartCapacity(int extraOrigTokenCount) {
-        if (extraOrigTokenCount > origTokensOrBranches.length - origTokenCount) { // will need to reallocate
+        if (extraOrigTokenCount > origTokenOrEmbeddings.length - origTokenCount) { // will need to reallocate
             // Could check for maximum possible token count (origTokenCount + below-and-above live token counts)
             // but would cause init of live tokens above gap which is undesirable
-            Object[] newOrigTokensOrBranches = new Object[(origTokensOrBranches.length * 3 / 2) + extraOrigTokenCount];
+            @SuppressWarnings("unchecked")
+            TokenOrEmbedding<T>[] newOrigTokensOrBranches = new TokenOrEmbedding[
+                    (origTokenOrEmbeddings.length * 3 / 2) + extraOrigTokenCount];
             int[] newOrigOffsets = new int[newOrigTokensOrBranches.length];
             int newIndex = Math.max(extraOrigTokenCount, (newOrigTokensOrBranches.length
                     - (origTokenCount + extraOrigTokenCount)) / 2);
-            System.arraycopy(origTokensOrBranches, origTokenStartIndex,
+            System.arraycopy(origTokenOrEmbeddings, origTokenStartIndex,
                     newOrigTokensOrBranches, newIndex, origTokenCount);
             System.arraycopy(origOffsets, origTokenStartIndex,
                     newOrigOffsets, newIndex, origTokenCount);
-            origTokensOrBranches = newOrigTokensOrBranches;
+            origTokenOrEmbeddings = newOrigTokensOrBranches;
             origOffsets = newOrigOffsets;
             origTokenStartIndex = newIndex;
 
         } else if (extraOrigTokenCount > origTokenStartIndex) { // only move
             // Move to the end of the array
-            int newIndex = origTokensOrBranches.length - origTokenCount;
-            System.arraycopy(origTokensOrBranches, origTokenStartIndex,
-                    origTokensOrBranches, newIndex, origTokenCount);
+            int newIndex = origTokenOrEmbeddings.length - origTokenCount;
+            System.arraycopy(origTokenOrEmbeddings, origTokenStartIndex,
+                    origTokenOrEmbeddings, newIndex, origTokenCount);
             System.arraycopy(origOffsets, origTokenStartIndex,
                     origOffsets, newIndex, origTokenCount);
-            origTokenStartIndex = origTokensOrBranches.length - origTokenCount;
+            origTokenStartIndex = origTokenOrEmbeddings.length - origTokenCount;
         }
     }
     
     private void ensureOrigTokensEndCapacity(int extraOrigTokenCount) {
-        if (extraOrigTokenCount > origTokensOrBranches.length - origTokenCount) { // will need to reallocate
+        if (extraOrigTokenCount > origTokenOrEmbeddings.length - origTokenCount) { // will need to reallocate
             // Could check for maximum possible token count (origTokenCount + below-and-above live token counts)
             // but would cause init of live tokens above gap which is undesirable
-            Object[] newOrigTokensOrBranches = new Object[(origTokensOrBranches.length * 3 / 2) + extraOrigTokenCount];
+            @SuppressWarnings("unchecked")
+            TokenOrEmbedding<T>[] newOrigTokensOrBranches = new TokenOrEmbedding[
+                    (origTokenOrEmbeddings.length * 3 / 2) + extraOrigTokenCount];
             int[] newOrigOffsets = new int[newOrigTokensOrBranches.length];
             int newIndex = (newOrigTokensOrBranches.length
                     - (origTokenCount + extraOrigTokenCount)) / 2;
-            System.arraycopy(origTokensOrBranches, origTokenStartIndex,
+            System.arraycopy(origTokenOrEmbeddings, origTokenStartIndex,
                     newOrigTokensOrBranches, newIndex, origTokenCount);
             System.arraycopy(origOffsets, origTokenStartIndex,
                     newOrigOffsets, newIndex, origTokenCount);
-            origTokensOrBranches = newOrigTokensOrBranches;
+            origTokenOrEmbeddings = newOrigTokensOrBranches;
             origOffsets = newOrigOffsets;
             origTokenStartIndex = newIndex;
 
-        } else if (extraOrigTokenCount > origTokensOrBranches.length - origTokenCount - origTokenStartIndex) { // only move
+        } else if (extraOrigTokenCount > origTokenOrEmbeddings.length - origTokenCount - origTokenStartIndex) { // only move
             // Move to the end of the array
-            System.arraycopy(origTokensOrBranches, origTokenStartIndex,
-                    origTokensOrBranches, 0, origTokenCount);
+            System.arraycopy(origTokenOrEmbeddings, origTokenStartIndex,
+                    origTokenOrEmbeddings, 0, origTokenCount);
             System.arraycopy(origOffsets, origTokenStartIndex,
                     origOffsets, 0, origTokenCount);
             origTokenStartIndex = 0;

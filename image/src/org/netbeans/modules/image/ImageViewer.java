@@ -227,7 +227,8 @@ public class ImageViewer extends CloneableTopComponent {
 
         };
         // vlv: print
-        panel.putClientProperty(java.awt.print.Printable.class, getToolTipText());
+        panel.putClientProperty("print.printable", Boolean.TRUE); // NOI18N
+        panel.putClientProperty("print.name", getToolTipText()); // NOI18N
 
         storedImage.setImageObserver(panel);
         panel.setPreferredSize(new Dimension(storedImage.getIconWidth(), storedImage.getIconHeight() ));

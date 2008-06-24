@@ -234,14 +234,7 @@ public class NbToolTip extends FileChangeAdapter {
             if (dob != null && dob.isValid()) {
                 EditorCookie ec = dob.getCookie(EditorCookie.class);
                 if (ec != null) {
-                    StyledDocument openedDoc;
-                    try {
-                        openedDoc = ec.openDocument();
-                    } catch (IOException e) {
-                        LOG.log(Level.FINE, null, e);
-                        openedDoc = null; // should return in next if stmt
-                    }
-
+                    StyledDocument openedDoc = ec.getDocument();
                     if (openedDoc != doc) { // doc has changed in meantime
                         return;
                     }

@@ -43,6 +43,7 @@ package org.openide.explorer.propertysheet;
 
 import javax.swing.JWindow;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -79,11 +80,9 @@ public class MorePropertySheetTest extends NbTestCase {
         assertEquals("Helper nodes are still available even after several addNotify()/removeNotify() calls",
                 ps.helperNodes[0], n);
     }
-    
+
+    @RandomlyFails
     public void testSheetCleared_126818 () throws Exception {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return;
-        }
         final PropertySheet ps = new PropertySheet();
         Node n = new AbstractNode( Children.LEAF );
         ps.setNodes( new Node[] {n} );

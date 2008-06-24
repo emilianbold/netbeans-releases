@@ -133,6 +133,7 @@ public class AddTableDlg extends javax.swing.JPanel {
             new HelpCtx( "projrave_ui_elements_editors_about_query_editor" ) );        // NOI18N
 
         dialog = DialogDisplayer.getDefault().createDialog(dlg);
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddTableDlg.class, "TABLE_LIST_a11yDescription"));
         dialog.setVisible(true);
     }
 

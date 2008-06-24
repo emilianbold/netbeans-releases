@@ -42,10 +42,8 @@ import java.io.IOException;
 import java.util.Properties;
 
 import net.java.hulp.i18n.Logger;
-import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.sql.framework.common.utils.MigrationUtils;
 import org.openide.nodes.BeanNode;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -225,11 +223,11 @@ public class AxionDBConfiguration {
                 nbHomeDir = driver.getAbsolutePath();
            }*/
         }
-        nbHomeDir = driver.getAbsolutePath();        
-        String DEFAULT_DB_LOCATION = nbUsrDir + File.separator + "MashupDatabases" + File.separator;        
+        nbHomeDir = driver.getAbsolutePath();
+        String DEFAULT_DB_LOCATION = nbUsrDir + File.separator + "MashupDatabases" + File.separator;
         nbUsrDir = nbUsrDir + File.separator + "config" + File.separator + "Databases" + File.separator + "MashupDB";
         File conf = new File(nbUsrDir);
-        java.util.logging.Logger.getLogger(AxionDBConfiguration.class.getName()).info("**************** conf.exists() =  " + conf.exists());
+        //java.util.logging.Logger.getLogger(AxionDBConfiguration.class.getName()).info("**************** conf.exists() =  " + conf.exists());
         if (!conf.exists()) {
             conf.mkdirs();
         }
@@ -250,12 +248,12 @@ public class AxionDBConfiguration {
 
                     out.close();
                 } catch (FileNotFoundException ex) {
-                   java.util.logging.Logger.getLogger(AxionDBConfiguration.class.getName()).info("****************FileNotFoundException =  " + ex.getMessage());
+                   //java.util.logging.Logger.getLogger(AxionDBConfiguration.class.getName()).info("****************FileNotFoundException =  " + ex.getMessage());
                 } catch (IOException ioEx) {
-                   java.util.logging.Logger.getLogger(AxionDBConfiguration.class.getName()).info("****************IOException =  " + ioEx.getMessage());
+                   //java.util.logging.Logger.getLogger(AxionDBConfiguration.class.getName()).info("****************IOException =  " + ioEx.getMessage());
                 }
             } catch (IOException ex) {
-                java.util.logging.Logger.getLogger(AxionDBConfiguration.class.getName()).info("****************IOException =  " + ex.getMessage());
+                //java.util.logging.Logger.getLogger(AxionDBConfiguration.class.getName()).info("****************IOException =  " + ex.getMessage());
                 conf = null;
             }
         }

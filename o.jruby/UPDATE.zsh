@@ -42,12 +42,16 @@ if test "$ar" = "" ; then
   ar="both"
 fi
 
-
 export PATH=$NATIVERUBYHOME/bin:$PATH
 CLUSTERS=$NBHGHOME/nbbuild/netbeans
 RUBY=$CLUSTERS/ruby2
 GSF=$CLUSTERS/gsf1
 unset GEM_HOME
+
+if test ! -f $CLUSTERS/extra/modules/org-netbeans-modules-gsf-tools.jar ; then
+  echo "You should build contrib/gsf.tools first, which will automate the indexing process within the IDE when this script is run."
+  exit 0
+fi
 
 find $CLUSTERS . -name "netbeans-index*.zip" -exec rm {} \;
 rm -rf $RUBY/preindexed/lib

@@ -992,6 +992,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
     public static Library copyLibrary(final Library lib, final URL location, 
             final boolean generateLibraryUniqueName) throws IOException {
         final File libBaseFolder = new File(URI.create(location.toExternalForm())).getParentFile();
+        FileObject sharedLibFolder = null;
         final Map<String, List<URI>> content = new HashMap<String, List<URI>>();
         String[] volumes = LibrariesSupport.getLibraryTypeProvider(lib.getType()).getSupportedVolumeTypes();
         for (String volume : volumes) {
@@ -1025,7 +1026,9 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                     newFO = libEntryFO;
                     name = PropertyUtils.relativizeFile(libBaseFolder, FileUtil.toFile(newFO));
                 } else {
-                    FileObject sharedLibFolder = getSharedLibFolder(libBaseFolder, lib);
+                    if (sharedLibFolder == null) {
+                        sharedLibFolder = getSharedLibFolder(libBaseFolder, lib);
+                    }
                     if (libEntryFO.isFolder()) {
                         newFO = FileChooserAccessory.copyFolderRecursively(libEntryFO, sharedLibFolder);
                         name = sharedLibFolder.getNameExt()+File.separatorChar+newFO.getName()+File.separatorChar;

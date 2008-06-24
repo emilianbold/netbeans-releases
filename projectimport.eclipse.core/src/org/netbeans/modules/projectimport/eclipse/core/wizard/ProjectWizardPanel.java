@@ -91,7 +91,7 @@ final class ProjectWizardPanel extends ImporterWizardPanel implements
         return panel.getDestination();
     }
     
-    void loadProjects(String workspaceDir) {
+    void loadProjects(File workspaceDir) {
         panel.loadProjects(workspaceDir);
     }
     

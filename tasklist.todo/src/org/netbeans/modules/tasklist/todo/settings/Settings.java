@@ -91,6 +91,7 @@ final public class Settings {
         ext2comments.put( "PROPERTIES", new CommentTags("#") ); //NOI18N //NOI18N
         ext2comments.put( "SH", new CommentTags("#") ); //NOI18N //NOI18N
         ext2comments.put( "RB", new CommentTags("#") ); //NOI18N //NOI18N
+        ext2comments.put( "PHP", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
         
         mime2comments.put( "text/x-java", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
         mime2comments.put( "text/html", new CommentTags( "<!--", "-->") ); //NOI18N //NOI18N //NOI18N

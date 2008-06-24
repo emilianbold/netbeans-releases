@@ -64,6 +64,15 @@ public interface IDiagram extends IPresentationElement
    public static final int DK_STATE_DIAGRAM         = 128;
    public static final int DK_USECASE_DIAGRAM       = 256;
    public static final int DK_ALL                   = 0xffff;
+
+        /**
+         * Notifies the diagram to refresh the node graphical object that 
+         * is associated with the presentation element.
+         * 
+         * @param presentation The presentation element that needs to be refreshed.
+         * @return true if the presenation element was found and refreshed.
+         */
+        public boolean refresh(IPresentationElement presentation);
       
 	/**
 	 * Saves the diagram.

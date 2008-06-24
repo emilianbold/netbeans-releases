@@ -39,6 +39,13 @@
 
 package org.netbeans.modules.php.editor.parser;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.StringReader;
+import java_cup.runtime.Symbol;
+import org.netbeans.modules.php.editor.lexer.PHPLexerUtils;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
+
 /**
  *
  * @author Petr Pisl
@@ -62,52 +69,85 @@ public class ASTPHP5ParserTest extends ParserTestBase {
    
     public void testTextSearchQuery () throws Exception {
         // testing real file from phpwiki
-        performFileParserTest("TextSearchQuery");
+        performTest("TextSearchQuery");
     }
     
     public void testPHPDoc () throws Exception {
         //unfinished phpdoc
-        performFileParserTest("test01");
+        performTest("test01");
     }
 
     public void testNowdoc () throws Exception {
-        performFileParserTest("nowdoc01");
-        performFileParserTest("nowdoc02");
-        performFileParserTest("nowdoc_000");
-        performFileParserTest("nowdoc_001");
-        performFileParserTest("nowdoc_002");
-        performFileParserTest("nowdoc_003");
-        performFileParserTest("nowdoc_004");
-        performFileParserTest("nowdoc_005");
-        performFileParserTest("nowdoc_006");
-        performFileParserTest("nowdoc_007");
-        performFileParserTest("nowdoc_008");
-        performFileParserTest("nowdoc_009");
-        performFileParserTest("nowdoc_010");
-        performFileParserTest("nowdoc_011");
-        performFileParserTest("nowdoc_012");
-        performFileParserTest("nowdoc_013");
-        performFileParserTest("nowdoc_014");
-        performFileParserTest("nowdoc_015");
+        performTest("nowdoc01");
+        performTest("nowdoc02");
+        performTest("nowdoc_000");
+        performTest("nowdoc_001");
+        performTest("nowdoc_002");
+        performTest("nowdoc_003");
+        performTest("nowdoc_004");
+        performTest("nowdoc_005");
+        performTest("nowdoc_006");
+        performTest("nowdoc_007");
+        performTest("nowdoc_008");
+        performTest("nowdoc_009");
+        performTest("nowdoc_010");
+        performTest("nowdoc_011");
+        performTest("nowdoc_012");
+        performTest("nowdoc_013");
+        performTest("nowdoc_014");
+        performTest("nowdoc_015");
     }
 
     public void testHereDoc() throws Exception {
-        performFileParserTest("heredoc00");
+        performTest("heredoc00");
         //unfinished hredoc
-        performFileParserTest("heredoc01");
-        performFileParserTest("heredoc_001");
-        performFileParserTest("heredoc_002");
-        performFileParserTest("heredoc_003");
-        performFileParserTest("heredoc_004");
-        performFileParserTest("heredoc_005");
-        performFileParserTest("heredoc_006");
-        performFileParserTest("heredoc_007");
-        performFileParserTest("heredoc_008");
-        performFileParserTest("heredoc_009");
-        performFileParserTest("heredoc_010");
-        performFileParserTest("heredoc_011");
-        performFileParserTest("heredoc_012");
-        performFileParserTest("heredoc_013");
-        performFileParserTest("heredoc_014");
+        performTest("heredoc01");
+        performTest("heredoc_001");
+        performTest("heredoc_002");
+        performTest("heredoc_003");
+        performTest("heredoc_004");
+        performTest("heredoc_005");
+        performTest("heredoc_006");
+        performTest("heredoc_007");
+        performTest("heredoc_008");
+        performTest("heredoc_009");
+        performTest("heredoc_010");
+        performTest("heredoc_011");
+        performTest("heredoc_012");
+        performTest("heredoc_013");
+        performTest("heredoc_014");
+    }
+
+    @Override
+    protected String getTestResult(String filename) throws Exception {
+        File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");
+        StringBuffer result = new StringBuffer();
+        String content = PHPLexerUtils.getFileContent(testFile);
+        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(content));
+
+        Symbol symbol;
+        result.append("<testresult testFile='").append(testFile.getName()).append("'>\n");
+        result.append("    <scanner>\n");
+        do {
+            symbol = scanner.next_token();
+            result.append("        <token id='").append(Utils.getASTScannerTokenName(symbol.sym)).append("' start='");
+            result.append(symbol.left).append("' end='").append(symbol.right + "'>\n");
+            result.append("            <text>");
+            result.append(PHPLexerUtils.getXmlStringValue(content.substring(symbol.left, symbol.right)));
+            result.append("</text>\n");
+            result.append("        </token>\n");
+        } while (symbol.sym != ASTPHP5Symbols.EOF);
+        result.append("    </scanner>\n");
+
+        scanner.reset(new FileReader(testFile));
+        ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
+        Symbol root = parser.parse();
+        if (root != null){
+            Program rootnode = (Program)root.value;
+
+            result.append((new PrintASTVisitor()).printTree(rootnode, 1));
+        }
+        result.append("</testresult>\n");
+        return result.toString();
     }
 }

@@ -96,10 +96,10 @@ public class FolderTreeElement implements TreeElement {
         if (cp==null) {
             return fo.getPath();
         } else {
-            if (getRubySourceGroup(fo)!=null) {
+            if (getPhpSourceGroup(fo)!=null) {
                 String name = cp.getResourceName(fo).replace('/','.');
                 if ("".equals(name))
-                    return NbBundle.getMessage(UiUtils.class, "LBL_DefaultPackage_PDU");
+                    return NbBundle.getMessage(FolderTreeElement.class, "LBL_DefaultPackage_PDU");
                 return name;
             } else {
                 return fo.getPath();
@@ -112,8 +112,6 @@ public class FolderTreeElement implements TreeElement {
         if (prj == null)
             return null;
         Sources src = ProjectUtils.getSources(prj);
-        //TODO: needs to be generified
-        //SourceGroup[] rubygroups = src.getSourceGroups(RubyProject.SOURCES_TYPE_RUBY);
         SourceGroup[] jsgroups = src.getSourceGroups(Sources.TYPE_GENERIC);
         SourceGroup[] xmlgroups = src.getSourceGroups("xml");//NOI18N
 
@@ -132,17 +130,16 @@ public class FolderTreeElement implements TreeElement {
         return null;
     }
     
-    private static SourceGroup getRubySourceGroup(FileObject file) {
+    private static SourceGroup getPhpSourceGroup(FileObject file) {
         Project prj = FileOwnerQuery.getOwner(file);
         if (prj == null)
             return null;
         Sources src = ProjectUtils.getSources(prj);
-//        SourceGroup[] rubygroups = src.getSourceGroups(RubyProject.SOURCES_TYPE_RUBY);
-        SourceGroup[] rubygroups = src.getSourceGroups(Sources.TYPE_GENERIC);
+        SourceGroup[] phpgroups = src.getSourceGroups(Sources.TYPE_GENERIC);
         
-        for(int i=0; i<rubygroups.length; i++) {
-            if (rubygroups[i].getRootFolder().equals(file) || FileUtil.isParentOf(rubygroups[i].getRootFolder(), file))
-                return rubygroups[i];
+        for(int i=0; i<phpgroups.length; i++) {
+            if (phpgroups[i].getRootFolder().equals(file) || FileUtil.isParentOf(phpgroups[i].getRootFolder(), file))
+                return phpgroups[i];
         }
         return null;
     }

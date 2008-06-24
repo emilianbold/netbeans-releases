@@ -57,6 +57,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
 public class Util {
@@ -65,6 +66,7 @@ public class Util {
     }
 
     static ClassPath createClassPath(String classpath) {
+        Parameters.notNull("classpath", classpath);
         StringTokenizer tokenizer = new StringTokenizer(classpath, File.pathSeparator);
         List<PathResourceImplementation> list = new ArrayList<PathResourceImplementation>();
         while (tokenizer.hasMoreTokens()) {

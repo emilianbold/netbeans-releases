@@ -82,18 +82,18 @@ public abstract class AbstractUmlParserTestCase extends AbstractUMLTestCase {
    protected void setUp() throws Exception {
 		super.setUp();
 	
-        if(m_EventController==null) {
-            m_EventController =  new ParserEventController(
-                    new CommentGather(JavaTokenTypes.SL_COMMENT,
-                    JavaTokenTypes.ML_COMMENT), "Java");
-            
-            javaUMLParserProcessor = new UMLParserTestListener();
-            
-            m_EventController.setTokenProcessor(javaUMLParserProcessor);
-            m_EventController.setStateListener(javaUMLParserProcessor);
-            m_EventController.setTokenFilter(javaUMLParserProcessor);
-            m_EventController.setStateFilter(javaUMLParserProcessor);
-        }
+//        if(m_EventController==null) {
+//            m_EventController =  new ParserEventController(
+//                    new CommentGather(JavaTokenTypes.SL_COMMENT,
+//                    JavaTokenTypes.ML_COMMENT), "Java");
+//            
+//            javaUMLParserProcessor = new UMLParserTestListener();
+//            
+//            m_EventController.setTokenProcessor(javaUMLParserProcessor);
+//            m_EventController.setStateListener(javaUMLParserProcessor);
+//            m_EventController.setTokenFilter(javaUMLParserProcessor);
+//            m_EventController.setStateFilter(javaUMLParserProcessor);
+//        }
         
     }
     
@@ -104,70 +104,70 @@ public abstract class AbstractUmlParserTestCase extends AbstractUMLTestCase {
      *            ClassName TestCase Name is passed
      */
     public void execute(String className) {      
-        javaUMLParserProcessor.clearList();
-		String fileNameInput = getDataDir() + "InputFiles" + File.separator
-				+ className + "InputFile.txt";
-		assertTrue("Input File Not Found", new File(fileNameInput).exists());
-        
-        // Read States and Tokens from Input file
-        String strInput = readFile(fileNameInput);
-		assertNotSame("Input File contains Empty String:", strInput, "");
-        
-        int level = -1;
-        StringTokenizer strTokens = new StringTokenizer(strInput, "\r\n");
-        while (strTokens.hasMoreTokens()) {
-            String strToken = (String) strTokens.nextElement();
-            if (strToken.trim().equals(""))
-                continue;
-            
-            // Initial State Finding Algorithm
-            if (!strToken.startsWith(" ")) {
-                if (strToken.startsWith("{"))
-                    throw new RuntimeException("Instead of State, Token Found");
-                
-                // If Same class has more than one root tag then we need close
-                // all states of previous root node
-                while (level > -1) {
-                    m_EventController.stateEnd();
-                    level--;
-                }
-                m_EventController.stateBegin(strToken);
-                level++;
-                continue;
-            }
-            
-            // Calculate The Level
-            int tmpLevel = 0;
-            while (strToken.startsWith(" ")) {
-                strToken = strToken.substring(1);
-                tmpLevel++;
-            }
-            
-            // Close The States Which are unwanted
-            while (tmpLevel <= level) {
-                m_EventController.stateEnd();
-                level--;
-            }
-            
-            // check strToken contains state or token
-            if (!strToken.startsWith("{")) {
-                level = tmpLevel;
-                m_EventController.stateBegin(strToken);
-            } else {
-                m_EventController.tokenFound(
-                        makeASTNode(getTokenName(strToken)),
-                        getTokenType(strToken));
-            }
-            
-        }
-        
-        // Close All States
-        while (level > -1) {
-            m_EventController.stateEnd();
-            level--;
-        }
-        
-        compareXMI(className);
+//        javaUMLParserProcessor.clearList();
+//		String fileNameInput = getDataDir() + "InputFiles" + File.separator
+//				+ className + "InputFile.txt";
+//		assertTrue("Input File Not Found", new File(fileNameInput).exists());
+//        
+//        // Read States and Tokens from Input file
+//        String strInput = readFile(fileNameInput);
+//		assertNotSame("Input File contains Empty String:", strInput, "");
+//        
+//        int level = -1;
+//        StringTokenizer strTokens = new StringTokenizer(strInput, "\r\n");
+//        while (strTokens.hasMoreTokens()) {
+//            String strToken = (String) strTokens.nextElement();
+//            if (strToken.trim().equals(""))
+//                continue;
+//            
+//            // Initial State Finding Algorithm
+//            if (!strToken.startsWith(" ")) {
+//                if (strToken.startsWith("{"))
+//                    throw new RuntimeException("Instead of State, Token Found");
+//                
+//                // If Same class has more than one root tag then we need close
+//                // all states of previous root node
+//                while (level > -1) {
+//                    m_EventController.stateEnd();
+//                    level--;
+//                }
+//                m_EventController.stateBegin(strToken);
+//                level++;
+//                continue;
+//            }
+//            
+//            // Calculate The Level
+//            int tmpLevel = 0;
+//            while (strToken.startsWith(" ")) {
+//                strToken = strToken.substring(1);
+//                tmpLevel++;
+//            }
+//            
+//            // Close The States Which are unwanted
+//            while (tmpLevel <= level) {
+//                m_EventController.stateEnd();
+//                level--;
+//            }
+//            
+//            // check strToken contains state or token
+//            if (!strToken.startsWith("{")) {
+//                level = tmpLevel;
+//                m_EventController.stateBegin(strToken);
+//            } else {
+//                m_EventController.tokenFound(
+//                        makeASTNode(getTokenName(strToken)),
+//                        getTokenType(strToken));
+//            }
+//            
+//        }
+//        
+//        // Close All States
+//        while (level > -1) {
+//            m_EventController.stateEnd();
+//            level--;
+//        }
+//        
+//        compareXMI(className);
         
     }
     

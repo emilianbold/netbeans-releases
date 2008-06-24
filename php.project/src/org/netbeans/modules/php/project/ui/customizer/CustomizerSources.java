@@ -42,11 +42,15 @@ package org.netbeans.modules.php.project.ui.customizer;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -64,6 +68,8 @@ import org.netbeans.modules.php.project.ui.SourcesFolderNameProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -77,6 +83,8 @@ public class CustomizerSources extends JPanel implements SourcesFolderNameProvid
     final Category category;
     final PhpProjectProperties properties;
     final PropertyEvaluator evaluator;
+    String originalEncoding;
+    boolean notified;
     private final LocalServerController localServerController;
     private final CopyFilesVisual copyFilesVisual;
     private final boolean originalCopySrcFiles;
@@ -110,10 +118,16 @@ public class CustomizerSources extends JPanel implements SourcesFolderNameProvid
             public void actionPerformed(ActionEvent e) {
                 Charset enc = (Charset) encodingComboBox.getSelectedItem();
                 String encName;
-                if (enc == null) {
-                    return;
+                if (enc != null) {
+                    encName = enc.name();
+                } else {
+                    encName = originalEncoding;
                 }
-                encName = enc.name();
+                if (!notified && encName != null && !encName.equals(originalEncoding)) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                            NbBundle.getMessage(CustomizerSources.class, "MSG_EncodingWarning"), NotifyDescriptor.WARNING_MESSAGE));
+                    notified = true;
+                }
                 properties.setEncoding(encName);
             }
         });
@@ -125,8 +139,22 @@ public class CustomizerSources extends JPanel implements SourcesFolderNameProvid
     }
 
     private void initEncoding() {
+        originalEncoding = evaluator.getProperty(PhpProjectProperties.SOURCE_ENCODING);
+        if (originalEncoding == null) {
+            originalEncoding = Charset.defaultCharset().name();
+        }
         encodingComboBox.setRenderer(new EncodingRenderer());
-        encodingComboBox.setModel(new EncodingModel(evaluator.evaluate(properties.getEncoding())));
+        encodingComboBox.setModel(new EncodingModel(originalEncoding));
+        final String lafid = UIManager.getLookAndFeel().getID();
+        if (!"Aqua".equals(lafid)) { // NOI18N
+             encodingComboBox.putClientProperty("JComboBox.isTableCellEditor", Boolean.TRUE); // NOI18N
+             encodingComboBox.addItemListener(new ItemListener() {
+                 public void itemStateChanged(ItemEvent e) {
+                     JComboBox combo = (JComboBox) e.getSource();
+                     combo.setPopupVisible(false);
+                 }
+             });
+        }
     }
 
     private LocalServer initSources() {

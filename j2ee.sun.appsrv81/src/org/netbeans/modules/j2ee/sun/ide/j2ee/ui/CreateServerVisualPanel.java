@@ -44,6 +44,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -62,26 +63,26 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
      */
 //    private final AddInstancePortsDefPanel panel;
 //    private final TargetServerData targetData;
-    private static javax.swing.SpinnerNumberModel adminPortValue =
-                new javax.swing.SpinnerNumberModel(0,0,65535,1);
-    private static javax.swing.SpinnerNumberModel instanceHttpPortValue =
-                new javax.swing.SpinnerNumberModel(0,0,65535,1);
-    private static javax.swing.SpinnerNumberModel adminJmxPortValue =
-                new javax.swing.SpinnerNumberModel(0,0,65535,1);
-    private static javax.swing.SpinnerNumberModel jmsPortValue =
-                new javax.swing.SpinnerNumberModel(0,0,65535,1);
-    private static javax.swing.SpinnerNumberModel orbPortValue =
-                new javax.swing.SpinnerNumberModel(0,0,65535,1);
-    private static javax.swing.SpinnerNumberModel httpsPortValue =
-                new javax.swing.SpinnerNumberModel(0,0,65535,1);
-    private static javax.swing.SpinnerNumberModel orbSslPortValue =
-                new javax.swing.SpinnerNumberModel(0,0,65535,1);
-    private static javax.swing.SpinnerNumberModel orbMutualauthPortValue =
-                new javax.swing.SpinnerNumberModel(0,0,65535,1);
-    private static javax.swing.SpinnerNumberModel sipPortValue =
-                new javax.swing.SpinnerNumberModel(0,0,65535,1);
-    private static javax.swing.SpinnerNumberModel sipSslPortValue =
-                new javax.swing.SpinnerNumberModel(0,0,65535,1);
+    private static SpinnerNumberModel adminPortValue =
+            new SpinnerNumberModel(0,0,65535,1);
+    private static SpinnerNumberModel instanceHttpPortValue =
+            new SpinnerNumberModel(0,0,65535,1);
+    private static SpinnerNumberModel adminJmxPortValue =
+            new SpinnerNumberModel(0,0,65535,1);
+    private static SpinnerNumberModel jmsPortValue =
+            new SpinnerNumberModel(0,0,65535,1);
+    private static SpinnerNumberModel orbPortValue =
+            new SpinnerNumberModel(0,0,65535,1);
+    private static SpinnerNumberModel httpsPortValue =
+            new SpinnerNumberModel(0,0,65535,1);
+    private static SpinnerNumberModel orbSslPortValue =
+            new SpinnerNumberModel(0,0,65535,1);
+    private static SpinnerNumberModel orbMutualauthPortValue =
+            new SpinnerNumberModel(0,0,65535,1);
+    private static SpinnerNumberModel sipPortValue =
+            new SpinnerNumberModel(0,0,65535,1);
+    private static SpinnerNumberModel sipSslPortValue =
+            new SpinnerNumberModel(0,0,65535,1);
     
     /** Create the wizard panel and set up some basic properties. */
     public CreateServerVisualPanel() { 
@@ -186,8 +187,8 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         sipSslPort.setVisible(b);
     }
     
-    private class PortSetter implements javax.swing.event.ChangeListener {
-        public void stateChanged(javax.swing.event.ChangeEvent ce) {
+    private class PortSetter implements ChangeListener {
+        public void stateChanged(ChangeEvent ce) {
             fireChangeEvent();
         }
     }    
@@ -324,6 +325,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         portConfPanel.add(orbMutualauthPortLbl, gridBagConstraints);
 
         instanceHttpPort.setModel(instanceHttpPortValue);
+        instanceHttpPort.setEditor(new javax.swing.JSpinner.NumberEditor(instanceHttpPort, "#####"));
         instanceHttpPort.setMaximumSize(null);
         instanceHttpPort.setMinimumSize(null);
         instanceHttpPort.setPreferredSize(null);
@@ -339,6 +341,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         instanceHttpPort.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSD_HTTP_PORT")); // NOI18N
 
         adminJmxPort.setModel(adminJmxPortValue);
+        adminJmxPort.setEditor(new javax.swing.JSpinner.NumberEditor(adminJmxPort, "#####"));
         adminJmxPort.setMaximumSize(null);
         adminJmxPort.setMinimumSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -353,6 +356,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         adminJmxPort.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSD_ADMIN_JMX_PORT")); // NOI18N
 
         jmsPort.setModel(jmsPortValue);
+        jmsPort.setEditor(new javax.swing.JSpinner.NumberEditor(jmsPort, "#####"));
         jmsPort.setMaximumSize(null);
         jmsPort.setMinimumSize(null);
         jmsPort.setPreferredSize(null);
@@ -368,6 +372,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         jmsPort.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSD_JMS_PORT")); // NOI18N
 
         orbListenerPort.setModel(orbPortValue);
+        orbListenerPort.setEditor(new javax.swing.JSpinner.NumberEditor(orbListenerPort, "#####"));
         orbListenerPort.setMaximumSize(null);
         orbListenerPort.setMinimumSize(null);
         orbListenerPort.setPreferredSize(null);
@@ -383,6 +388,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         orbListenerPort.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSD_ORB_PORT")); // NOI18N
 
         httpsPort.setModel(httpsPortValue);
+        httpsPort.setEditor(new javax.swing.JSpinner.NumberEditor(httpsPort, "#####"));
         httpsPort.setMaximumSize(null);
         httpsPort.setMinimumSize(null);
         httpsPort.setPreferredSize(null);
@@ -398,6 +404,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         httpsPort.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSD_HTTPS_PORT")); // NOI18N
 
         orbSslPort.setModel(orbSslPortValue);
+        orbSslPort.setEditor(new javax.swing.JSpinner.NumberEditor(orbSslPort, "#####"));
         orbSslPort.setMaximumSize(null);
         orbSslPort.setMinimumSize(null);
         orbSslPort.setPreferredSize(null);
@@ -413,6 +420,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         orbSslPort.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSD_ORB_SSL_PORT")); // NOI18N
 
         orbMutualauthPort.setModel(orbMutualauthPortValue);
+        orbMutualauthPort.setEditor(new javax.swing.JSpinner.NumberEditor(orbMutualauthPort, "#####"));
         orbMutualauthPort.setMaximumSize(null);
         orbMutualauthPort.setMinimumSize(null);
         orbMutualauthPort.setPreferredSize(null);
@@ -439,6 +447,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         portConfPanel.add(adminPortLbl, gridBagConstraints);
 
         adminPort.setModel(adminPortValue);
+        adminPort.setEditor(new javax.swing.JSpinner.NumberEditor(adminPort, "#####"));
         adminPort.setMaximumSize(null);
         adminPort.setMinimumSize(null);
         adminPort.setPreferredSize(null);
@@ -461,6 +470,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         portConfPanel.add(sipPortLbl, gridBagConstraints);
 
         sipPort.setModel(sipPortValue);
+        sipPort.setEditor(new javax.swing.JSpinner.NumberEditor(sipPort, "#####"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
@@ -477,6 +487,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         portConfPanel.add(sipSslPortLbl, gridBagConstraints);
 
         sipSslPort.setModel(sipSslPortValue);
+        sipSslPort.setEditor(new javax.swing.JSpinner.NumberEditor(sipSslPort, "#####"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;

@@ -81,6 +81,7 @@ import com.sun.jdi.Method;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
+import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.VirtualMachine;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
@@ -651,12 +652,17 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         public void run() {
             synchronized (this) {
                 if (watchTask == null) return ; // We're done
-                if (request.thread().isSuspended()) {
-                    watchTask.schedule(DELAY);
-                    return ;
-                }
-                if (request.thread().status() == ThreadReference.THREAD_STATUS_ZOMBIE) {
-                    // Do not wait for zombie!
+                try {
+                    if (request.thread().isSuspended()) {
+                        watchTask.schedule(DELAY);
+                        return ;
+                    }
+                    if (request.thread().status() == ThreadReference.THREAD_STATUS_ZOMBIE) {
+                        // Do not wait for zombie!
+                        return ;
+                    }
+                } catch (VMDisconnectedException vmdex) {
+                    // Do not wait for finished/disconnected threads
                     return ;
                 }
                 if (!request.isEnabled()) {

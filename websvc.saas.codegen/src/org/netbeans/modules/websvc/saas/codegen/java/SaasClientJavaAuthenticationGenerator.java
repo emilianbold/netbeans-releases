@@ -118,14 +118,16 @@ public class SaasClientJavaAuthenticationGenerator extends SaasClientAuthenticat
             paramStr += "        String " +
                     Util.getVariableName(sigName) + " = " +
                     getBean().getAuthenticatorClassName() + ".sign(\n";//sig
-            paramStr += "                new String[][] {\n";
+            paramStr += "                new String[][] {";
             for (ParameterInfo p : getBean().getInputParameters()) {
                 if (p.getName().equals(sigName)) continue;
                 
                 paramStr += "                    {\"" + p.getName() + "\", " +
-                        Util.getVariableName(p.getName()) + "},\n";
+                        Util.getVariableName(p.getName()) + "}, ";
             }
-            paramStr += "        });\n";
+            if(getBean().getInputParameters().size() > 0)
+                paramStr = paramStr.substring(0, paramStr.length()-2);
+            paramStr += "});\n";
             methodBody += paramStr;
 
         } else if (authType == SaasAuthenticationType.HTTP_BASIC) {
@@ -149,12 +151,14 @@ public class SaasClientJavaAuthenticationGenerator extends SaasClientAuthenticat
                 paramStr += "        String " +
                         Util.getVariableName(signedUrl.getSigKeyName()) + " = " +
                         getBean().getAuthenticatorClassName() + ".sign(\n";
-                paramStr += "                new String[][] {\n";
+                paramStr += "                new String[][] {";
                 for (ParameterInfo p : signParams) {
                     paramStr += "                    {\"" + p.getName() + "\", " +
-                            Util.getVariableName(p.getName()) + "},\n";
+                            Util.getVariableName(p.getName()) + "}, ";
                 }
-                paramStr += "        });\n";
+                if(getBean().getInputParameters().size() > 0)
+                    paramStr = paramStr.substring(0, paramStr.length()-2);
+                paramStr += "});\n";
                 methodBody += paramStr;
             }
         }

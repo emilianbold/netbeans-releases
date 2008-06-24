@@ -54,10 +54,10 @@ import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DatasourceConfiguration;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.config.EjbResourceConfiguration;
+//import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DatasourceConfiguration;
+//import org.netbeans.modules.j2ee.deployment.plugins.spi.config.EjbResourceConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ContextRootConfiguration;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.config.MappingConfiguration;
+//import org.netbeans.modules.j2ee.deployment.plugins.spi.config.MappingConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
 import org.openide.ErrorManager;
@@ -72,8 +72,13 @@ import org.openide.util.lookup.Lookups;
  *  is not.
  *
  */
-public class ModuleConfigurationImpl implements DatasourceConfiguration, DeploymentPlanConfiguration,
-        EjbResourceConfiguration, ContextRootConfiguration, MappingConfiguration, ModuleConfiguration {
+public class ModuleConfigurationImpl implements 
+        //DatasourceConfiguration, 
+        DeploymentPlanConfiguration,
+        //EjbResourceConfiguration, 
+        ContextRootConfiguration, 
+        //MappingConfiguration, 
+        ModuleConfiguration {
     
     private Hk2Configuration config;
     private J2eeModule module;

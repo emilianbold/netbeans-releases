@@ -108,7 +108,7 @@ public class DateFieldCD extends ComponentDescriptor {
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
         presenters.addAll(MIDPDatabindingCodeSupport.createDatabindingPresenters(PROP_DATE
-                                                                                 ,"getDate()"
+                                                                                 ,"getDate()" //NOI18N
                                                                                  , MIDPDatabindingCodeSupport.ProviderType.DataField
                                                                                  , MIDPDatabindingCodeSupport.FeatureType.DataField_FEATURE_DATETIME));
         super.gatherPresenters (presenters);
@@ -117,7 +117,7 @@ public class DateFieldCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty(NbBundle.getMessage(DateFieldCD.class, "DISP_DateField_Date"), "dd.mm.yyyy hh:mm:ss", PropertyEditorDate.createInstance(), PROP_DATE) // NOI18N
+                .addProperty(NbBundle.getMessage(DateFieldCD.class, "DISP_DateField_Date"), "dd.mm.yyyy hh:mm:ss", PropertyEditorDate.createInstanceWithDatabinding(), PROP_DATE) // NOI18N
                 .addProperty(NbBundle.getMessage(DateFieldCD.class, "DISP_DateField_Time_Zone"), PropertyEditorTimeZone.createInstance(), PROP_TIME_ZONE) // NOI18N
                 .addProperty(NbBundle.getMessage(DateFieldCD.class, "DISP_DateField_Input_Mode"), // NOI18N
                     PropertyEditorComboBox.createInstance(getInputModeValues(), TYPEID,

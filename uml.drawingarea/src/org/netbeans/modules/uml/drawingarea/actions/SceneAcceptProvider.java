@@ -55,11 +55,12 @@ import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityGroup;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityNode;
-import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IStateMachine;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.MetaLayerRelationFactory;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IAutonomousElement;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.drawingarea.LabelManager;
@@ -84,10 +85,17 @@ public class SceneAcceptProvider implements AcceptProvider
 {
 
     protected INamespace sceneNamespace = null;
+    protected boolean handleMovingNodes = false;
 
     public SceneAcceptProvider(INamespace space)
     {
+        this(space, true);
+    }
+    
+    public SceneAcceptProvider(INamespace space, boolean handleMoving)
+    {
         sceneNamespace = space;
+        handleMovingNodes = handleMoving;
     }
     
     public ConnectorState isAcceptable(Widget widget, Point point, Transferable transferable)
@@ -153,7 +161,8 @@ public class SceneAcceptProvider implements AcceptProvider
                     Exceptions.printStackTrace(ex);
                 }
             }
-            else if (transferable.isDataFlavorSupported(MoveWidgetTransferable.FLAVOR))
+            else if ((handleMovingNodes == true) && 
+                     transferable.isDataFlavorSupported(MoveWidgetTransferable.FLAVOR))
             {
                 try
                 {
@@ -340,6 +349,10 @@ public class SceneAcceptProvider implements AcceptProvider
                         int x = (int) p.getX() + 50;
                         int y = (int) p.getY() + 50;
                         p = new Point(x, y);
+                        
+                        // import element if from different project
+                        importElement(toDrop);
+                       
                     }
                 }
                 
@@ -389,6 +402,8 @@ public class SceneAcceptProvider implements AcceptProvider
                             int x = (int) p.getX() + 50;
                             int y = (int) p.getY() + 50;
                             p = new Point(x, y);
+                            
+                            importElement(toDrop);
                         }
                     }                            
                 }
@@ -397,7 +412,8 @@ public class SceneAcceptProvider implements AcceptProvider
                 discoverRleationships = true;
             }
             
-            else if (transferable.isDataFlavorSupported(MoveWidgetTransferable.FLAVOR))
+            else if ((handleMovingNodes == true) && 
+                    transferable.isDataFlavorSupported(MoveWidgetTransferable.FLAVOR))
             {
                 try
                 {
@@ -407,30 +423,34 @@ public class SceneAcceptProvider implements AcceptProvider
 
                     IPresentationElement pe = (IPresentationElement) ((DesignerScene) engine.getScene()).findObject(transferWidget);
                     IElement element = pe.getFirstSubject();
-                    if (ns!=null && !ns.equals(element.getOwner()))
+                    
+                    // do not change ownership if it's an imported element
+                    if ( ns != null && ns.getProject() == element.getProject())
                     {
-                        if (element instanceof INamedElement)
+                        if (ns!=null && !ns.equals(element.getOwner()))
                         {
-                            ns.addOwnedElement((INamedElement) element);
-                        }
-                    }
-                    else 
-                    {
-                         if (element instanceof IActivityNode)
-                        {   
-                            IActivityNode activityElem = (IActivityNode) element;
-                            ETList<IActivityGroup> groups = activityElem.getGroups();
-                            // Remove an activity node from its container nodes, i.e., activity groups
-                            for (IActivityGroup aGroup : groups)
+                            if (element instanceof INamedElement)
                             {
-                                aGroup.removeNodeContent(activityElem);
-                                activityElem.removeGroup(aGroup);
+                                ns.addOwnedElement((INamedElement) element);
                             }
-                            ns.addOwnedElement(activityElem);
+                        }
+                        else 
+                        {
+                             if (element instanceof IActivityNode)
+                            {   
+                                IActivityNode activityElem = (IActivityNode) element;
+                                ETList<IActivityGroup> groups = activityElem.getGroups();
+                                // Remove an activity node from its container nodes, i.e., activity groups
+                                for (IActivityGroup aGroup : groups)
+                                {
+                                    aGroup.removeNodeContent(activityElem);
+                                    activityElem.removeGroup(aGroup);
+                                }
+                                ns.addOwnedElement(activityElem);
+                            }
                         }
                     }
                     
-                    System.out.println("Comparing Scenes: " + transferWidget.getScene() + ", " + engine.getScene());
                     transferWidget.removeFromParent();
                     engine.getScene().getMainLayer().addChild(transferWidget);
                     transferWidget.setPreferredLocation(point);
@@ -557,5 +577,21 @@ public class SceneAcceptProvider implements AcceptProvider
         double y = dropPoint.getY() - startingPoint.getY();
         newPoint.setLocation(original.getX() + x, original.getY() + y);
         return newPoint;
+    }
+    
+    private void importElement(INamedElement element)
+    {
+        if (getNamespace() == null)
+            return;
+        
+        if (element.getProject() != getNamespace().getProject())
+        {
+            // Only AutonomousElements can be imported across Projects
+            if (element instanceof IAutonomousElement)
+            {
+                // create flat import element structure
+                MetaLayerRelationFactory.instance().establishImportIfNeeded(getNamespace().getProject(), element);
+            } 
+        }
     }
 }

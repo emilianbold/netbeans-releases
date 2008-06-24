@@ -49,21 +49,15 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 import org.openide.filesystems.*;
-import org.openide.loaders.*;
 import org.openide.cookies.*;
 import org.openide.util.*;
 
 import org.netbeans.junit.*;
 import java.util.Enumeration;
-import junit.framework.Test;
 
 public class FolderInstanceTest extends NbTestCase {
     private Logger err;
 
-    public FolderInstanceTest() {
-        super("");
-    }
-    
     public FolderInstanceTest(java.lang.String testName) {
         super(testName);
     }
@@ -78,19 +72,6 @@ public class FolderInstanceTest extends NbTestCase {
         return 20000;
     }
 
-    public static Test suite() {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return new FolderInstanceTest("testListenersCountNoCookie");
-        }
-        return new NbTestSuite(FolderInstanceTest.class);
-    }
-    
-    private static void setSystemProp(String key, String value) {
-        java.util.Properties prop = System.getProperties();
-        if (prop.get(key) != null) return;
-        prop.put(key, value);
-    }
-    
     protected void setUp () throws Exception {
         MockServices.setServices(Pool.class);
         
@@ -196,6 +177,7 @@ public class FolderInstanceTest extends NbTestCase {
 
     /** Checks whether folder instance correctly reacts to changes of cookies in data objects.
      */
+    @RandomlyFails
     public void testChangeCookie () throws Exception {
         String fsstruct [] = new String [] {
             "AA/A.simple"
@@ -273,6 +255,7 @@ public class FolderInstanceTest extends NbTestCase {
     
     /** Does FolderInstance react to change of order?
      */
+    @RandomlyFails
     public void testChangeOfOrder () throws Exception {
         String fsstruct [] = new String [] {
             "AA/A.simple",
@@ -338,6 +321,7 @@ public class FolderInstanceTest extends NbTestCase {
     /** Tests whether correct result is returned when an object is added and removed
      * from the folder.
      */
+    @RandomlyFails
     public void testModification () throws Exception {
         String fsstruct [] = new String [] {
             "AA/"
@@ -358,6 +342,7 @@ public class FolderInstanceTest extends NbTestCase {
     /** Tests whether correct result is returned when an object is added and removed
      * from the folder.
      */
+    @RandomlyFails
     public void testModificationOnSubfolder () throws Exception {
         String fsstruct [] = new String [] {
             "AA/BB/"
@@ -377,6 +362,7 @@ public class FolderInstanceTest extends NbTestCase {
     /** Tests whether correct result is returned when an object is added and removed
      * from the folder.
      */
+    @RandomlyFails
     public void testModificationOnSubSubfolder () throws Exception {
         String fsstruct [] = new String [] {
             "/AA/BB/CC/DD/EE/FF/GG/HH/II/JJ/KK"
@@ -403,6 +389,7 @@ public class FolderInstanceTest extends NbTestCase {
         modification (new F (folder), subfolder);
     }
     
+    @RandomlyFails
     public void testWhetherRenameTriggersRevalidationOfTheFolderInstance() throws Exception {
         String fsstruct [] = new String [] {
             "/AAXX/OldName.shadow"
@@ -541,6 +528,7 @@ public class FolderInstanceTest extends NbTestCase {
      * on occasion, which of course it was not prepared to deal with.
      * @author Jesse Glick
      */
+    @RandomlyFails
     public void testFolderInstanceNeverPassesInvObjects() throws Exception {
         doFolderInstanceNeverPassesInvObjects (100, 1000);
     }
@@ -625,7 +613,7 @@ public class FolderInstanceTest extends NbTestCase {
         }
     }
 
-    
+    @RandomlyFails
     public void testFolderInstanceNeverPassesInvFolders() throws Exception {
         String[] names = {
             "folder/sub/"

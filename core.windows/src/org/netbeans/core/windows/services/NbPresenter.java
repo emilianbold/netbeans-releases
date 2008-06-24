@@ -728,11 +728,30 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
      */
     private void updateDefaultButton() {
         // bugfix 37083, respects DialogDescriptor's initial value ?
-        if (descriptor.getDefaultValue () != null && descriptor.getDefaultValue () instanceof JButton) {
-            JButton b = (JButton)descriptor.getDefaultValue ();
+        if (descriptor.getDefaultValue () != null) {
+            if (descriptor.getDefaultValue () instanceof JButton) {
+                JButton b = (JButton)descriptor.getDefaultValue ();
             if (b.isVisible() && b.isEnabled () && b.isDefaultCapable ()) {
-                getRootPane ().setDefaultButton (b);
-                return ;
+                    getRootPane ().setDefaultButton (b);
+                    return ;
+                }
+            } else {
+                JButton b = null;
+                if (descriptor.getDefaultValue ().equals (NotifyDescriptor.OK_OPTION) && stdOKButton.isEnabled ()) {;
+                    b = stdOKButton;
+                } else if (descriptor.getDefaultValue ().equals (NotifyDescriptor.YES_OPTION) && stdYesButton.isEnabled ()) {
+                    b = stdYesButton;
+                } else if (descriptor.getDefaultValue ().equals (NotifyDescriptor.NO_OPTION)) {
+                    b = stdNoButton;
+                } else if (descriptor.getDefaultValue ().equals (NotifyDescriptor.CANCEL_OPTION)) {
+                    b = stdCancelButton;
+                } else if (descriptor.getDefaultValue ().equals (NotifyDescriptor.CLOSED_OPTION)) {
+                    b = stdClosedButton;
+                }
+                if (b != null && b.isVisible() && b.isEnabled ()) {
+                    getRootPane ().setDefaultButton (b);
+                    return ;
+                }
             }
         } else {
             // ??? unset default button if descriptor.getValue() is null
