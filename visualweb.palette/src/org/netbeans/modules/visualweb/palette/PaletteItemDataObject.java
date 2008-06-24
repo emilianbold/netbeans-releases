@@ -261,7 +261,7 @@ public class PaletteItemDataObject extends MultiDataObject {
     /** DataLoader for the palette item files. */
     public static final class PaletteItemDataLoader extends UniFileLoader {
         
-        static final String ITEM_EXT = "comp_palette_item"; // NOI18N
+        //static final String ITEM_EXT = "comp_palette_item"; // NOI18N
         
         PaletteItemDataLoader() {
             super("org.netbeans.modules.visualweb.palette.PaletteItemDataObject"); // NOI18N
