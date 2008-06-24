@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -61,7 +62,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
-import org.netbeans.modules.db.sql.execute.ui.SQLResultPanel;
+import org.netbeans.modules.db.dataview.output.DataView;
 import org.openide.text.CloneableEditor;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -102,23 +103,44 @@ public class SQLCloneableEditor extends CloneableEditor {
         initialize();
     }
 
-    void setResults(JTabbedPane tabbedPane) {
+    void setResults(List<JComponent> results) {
         assert SwingUtilities.isEventDispatchThread();
-        createResultComponent(tabbedPane);
+        if (resultComponent == null && results != null) {
+            createResultComponent(); 
+        }
+        
+        if (resultComponent != null) {
+            populateResults(results);
+        }
     }
-
-    private void createResultComponent(JTabbedPane results) {
+    
+    private void populateResults(List<JComponent> components) {
+        // TODO - make it an option to keep existing tabs
+        resultComponent.removeAll();
+        
+        if (components == null) {
+            return;
+        }
+        
+        for ( JComponent comp : components ) {
+            resultComponent.add(comp);            
+        }
+        
+    }
+    private void createResultComponent() {
         JPanel container = findContainer(this);
         if (container == null) {
             // the editor has just been deserialized and has not been initialized yet
             // thus CES.wrapEditorComponent() has not been called yet
             return;
         }
-
+        
+        resultComponent = new JTabbedPane();
         Component editor = container.getComponent(0);
+
         container.removeAll();
 
-        splitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, editor, results);
+        splitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, editor, resultComponent);
         splitter.setBorder(null);
 
         container.add(splitter);

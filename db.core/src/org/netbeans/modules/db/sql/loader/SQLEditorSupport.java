@@ -323,15 +323,14 @@ public class SQLEditorSupport extends DataEditorSupport
        List<SQLException> exceptions = Mutex.EVENT.writeAccess(new Mutex.Action<List<SQLException>>() {
             public List<SQLException> run() {
                 List<SQLException> exceptions = new ArrayList<SQLException>();
-                JTabbedPane tabbedPane = null;
+                List<JComponent> components = null;
                 
                 if (results != null) {
-                    tabbedPane = new JTabbedPane();
+                    components = new ArrayList<JComponent>();
 
                     for (DataView view : results.getResults()) {
                         try {
-                            JComponent component = DataView.createComponent(view);
-                            tabbedPane.add(component);
+                            components.add(DataView.createComponent(view));
                         } catch (SQLException sqle) {
                             exceptions.add(sqle);
                         }
@@ -342,7 +341,7 @@ public class SQLEditorSupport extends DataEditorSupport
                 while (editors.hasMoreElements()) {
                     SQLCloneableEditor editor = (SQLCloneableEditor)editors.nextElement();
 
-                    editor.setResults(tabbedPane);
+                    editor.setResults(components);
                 }
                 
                 return exceptions;
