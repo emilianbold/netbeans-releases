@@ -63,6 +63,7 @@ public final class InputOutputManager {
         super();
     }
 
+    // FIXME use InputOutputData
     public static void addInputOutput(InputOutput io, String displayName,
             StopAction stopAction, RerunAction rerunAction) {
 
