@@ -66,27 +66,55 @@ public class GraphLayoutFactory {
      * @return the tree graph layout
      * @since 2.4
      */
-    public static <N,E> GraphLayout<N,E> createTreeGraphLayout (int originX, int originY, int verticalGap, int horizontalGap, boolean vertical) {
-        return new TreeGraphLayout<N,E> (originX, originY, verticalGap, horizontalGap, vertical);
+    public static <N, E> GraphLayout<N, E> createTreeGraphLayout(int originX, int originY, int verticalGap, int horizontalGap, boolean vertical) {
+        return new TreeGraphLayout<N, E>(originX, originY, verticalGap, horizontalGap, vertical);
     }
-    
+
     /**
      * 
      * @param graphScene
      * @param animate
      * @return
      */
-    public static <N,E> GraphLayout<N,E> createOrthogonalGraphLayout (GraphScene<N,E> graphScene, boolean animate) {
+    public static <N, E> GraphLayout<N, E> createOrthogonalGraphLayout(GraphScene<N, E> graphScene, boolean animate) {
         return new OrthogonalLayout(graphScene, animate);
     }
-    
+
     /**
      * 
      * @param graphScene
      * @param animate
      * @return
      */
-    public static <N,E> GraphLayout<N,E> createHierarchicalGraphLayout (GraphScene<N,E> graphScene, boolean animate) {
+    public static <N, E> GraphLayout<N, E> createHierarchicalGraphLayout(GraphScene<N, E> graphScene, boolean animate) {
         return new HierarchicalLayout(graphScene, animate);
     }
+
+    /**
+     * 
+     * @param graphScene
+     * @param animate
+     * @return
+     */
+    public static <N, E> GraphLayout<N, E> createHierarchicalGraphLayout(GraphScene<N, E> graphScene, boolean animate, boolean inverted) {
+        return new HierarchicalLayout(graphScene, animate, inverted);
+    }
+    
+    /**
+     * 
+     * @param <N> the nodes
+     * @param <E>
+     * @param graphScene
+     * @param animate
+     * @param inverted
+     * @param xOffset
+     * @param layerOffset
+     * @return
+     */
+    public static <N, E> GraphLayout<N, E> createHierarchicalGraphLayout(GraphScene<N, E> graphScene, boolean animate, boolean inverted,
+            int xOffset, int layerOffset) {
+        return new HierarchicalLayout(graphScene, animate, inverted, xOffset, layerOffset);
+    }
+    
+
 }
