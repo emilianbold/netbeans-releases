@@ -78,10 +78,8 @@ public class ClassPathProviderMergerTest extends NbTestCase {
         defaultCP.paths.put(ClassPath.COMPILE, ClassPathSupport.createClassPath(url));
         ClassPathProviderMerger instance = new ClassPathProviderMerger(defaultCP);
         ClassPathProvider result = instance.merge(lookup);
-        /* XXX failing: #137769
         ClassPath cp = result.findClassPath(null, ClassPath.BOOT);
-        assertNotNull(cp);
-         */
+        assertNull(cp);
         
         ClassPath compile = result.findClassPath(null, ClassPath.COMPILE);
         assertNotNull(compile);
@@ -112,7 +110,7 @@ public class ClassPathProviderMergerTest extends NbTestCase {
         assertEquals(2, fos.length);
         assertEquals(2, count.get()); // why 2 changes are fired?
         
-        ClassPath cp = result.findClassPath(null, ClassPath.COMPILE);
+        cp = result.findClassPath(null, ClassPath.COMPILE);
         assertEquals(cp, compile);
         
         cp = result.findClassPath(null, ClassPath.BOOT);

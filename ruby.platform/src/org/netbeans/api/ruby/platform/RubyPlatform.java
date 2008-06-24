@@ -44,6 +44,8 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -638,6 +640,26 @@ public final class RubyPlatform {
             errors.append(NbBundle.getMessage(RubyPlatform.class, "RubyPlatform.GemInVersionMissing", gemName, gemVersions[gemVersions.length - 1]));
             errors.append("<br>"); // NOI18N
         }
+    }
+
+    /**
+     * Returns latest available, but valid version of rdebug-ide gem for this
+     * platform. So if e.g. 0.1.10, 0.2.0 and 0.3.0 versions are available, but
+     * this platform can work only with 0.1.10 and 0.2.0, version 0.2.0 is
+     * returned.
+     *
+     * @return latest available valid version: <tt>null</tt> if none suitable
+     *         version is found
+     */
+    public String getLatestAvailableValidRDebugIDEVersions() {
+        String[] versions = getRequiredRDebugIDEVersions();
+        Arrays.sort(versions, Collections.reverseOrder());
+        for (String version : versions) {
+            if (gemManager.isGemInstalledForPlatform(RUBY_DEBUG_IDE_NAME, version, true)) {
+                return version;
+            }
+        }
+        return null;
     }
 
     String getLatestRequiredRDebugIDEVersion() {

@@ -88,7 +88,7 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
         this.project = project;
     }
     
-    private static void addFile(FileObject projectDirectory, String fileName, List/*<FileObject>*/ result) {
+    private static void addFile(FileObject projectDirectory, String fileName, List<FileObject> result) {
         FileObject file = projectDirectory.getFileObject(fileName);
         
         if (file != null) {
@@ -96,9 +96,9 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
         }
     }
     
-    public List/*<FileObject>*/ getMetadataFiles() {
+    public List<FileObject> getMetadataFiles() {
         FileObject projectDirectory = project.getProjectDirectory();
-        List/*<FileObject>*/ files = new ArrayList();
+        List<FileObject> files = new ArrayList();
         
         addFile(projectDirectory, "nbproject", files); // NOI18N
         addFile(projectDirectory, project.getBuildXmlName(), files);
@@ -107,8 +107,8 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
         return files;
     }
     
-    public List/*<FileObject>*/ getDataFiles() {
-        List/*<FileObject>*/ files = new ArrayList();
+    public List<FileObject> getDataFiles() {
+        List<FileObject> files = new ArrayList();
         
         FileObject docRoot = project.getAPIWebModule().getDocumentBase();
         if (docRoot != null)
@@ -146,6 +146,18 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
         
         for (int cntr = 0; cntr < testRoots.length; cntr++) {
             files.add(testRoots[cntr]);
+        }
+
+        // add libraries folder if it is within project:
+        AntProjectHelper helper = project.getAntProjectHelper();
+        if (helper.getLibrariesLocation() != null) {
+            File f = helper.resolveFile(helper.getLibrariesLocation());
+            if (f != null && f.exists()) {
+                FileObject libFolder = FileUtil.toFileObject(f).getParent();
+                if (FileUtil.isParentOf(project.getProjectDirectory(), libFolder)) {
+                    files.add(libFolder);
+                }
+            }
         }
 
         return files;

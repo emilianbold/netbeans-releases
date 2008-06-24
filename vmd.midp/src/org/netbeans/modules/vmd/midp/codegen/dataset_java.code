@@ -50,7 +50,7 @@
         __stop_guardedblock__
         
         __start_guardedblock__
-        public Object getValue(String vlue) throws DataBindingException {
+        public Object getValue(String name) throws DataBindingException {
         __stop_guardedblock__
 
             throw new DataBindingException("Not implemented yet.");
