@@ -1315,35 +1315,29 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         
         @Override
         public Transferable clipboardCopy() throws IOException {
-            try {
-                Transferable t = new ViewItemTransferable(this, DnDConstants.ACTION_COPY);
-                return t;
-            } catch (ClassNotFoundException e) {
-                throw new AssertionError(e);
-            }
-            
+            return addViewItemTransferable(super.clipboardCopy(), DnDConstants.ACTION_MOVE);
         }
         
         @Override
         public Transferable clipboardCut() throws IOException {
-            try {
-                Transferable t = new ViewItemTransferable(this, DnDConstants.ACTION_MOVE);
-                return t;
-            } catch (ClassNotFoundException e) {
-                throw new AssertionError(e);
-            }
+            return addViewItemTransferable(super.clipboardCut(), DnDConstants.ACTION_MOVE);
         }
         
         @Override
         public Transferable drag() throws IOException {
+            return addViewItemTransferable(super.drag(), DnDConstants.ACTION_NONE);
+        }
+
+        private ExTransferable addViewItemTransferable(Transferable t, int operation) {
             try {
-                Transferable t = new ViewItemTransferable(this, DnDConstants.ACTION_NONE);
-                return t;
+                ExTransferable extT = ExTransferable.create(t);
+                ViewItemTransferable viewItem = new ViewItemTransferable(this, operation);
+                extT.put(viewItem);
+                return extT;
             } catch (ClassNotFoundException e) {
                 throw new AssertionError(e);
             }
         }
-        
         // The node will be removed when the Item gets notification that the file has been destroyed.
         // No need to do it here.
         @Override
