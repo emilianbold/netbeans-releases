@@ -64,6 +64,7 @@ import org.netbeans.core.windows.model.DockingStatus;
 import org.netbeans.core.windows.model.Model;
 import org.netbeans.core.windows.model.ModelElement;
 import org.netbeans.core.windows.model.ModelFactory;
+import org.netbeans.core.windows.options.WinSysPrefs;
 import org.netbeans.core.windows.view.ControllerHandler;
 import org.netbeans.core.windows.view.View;
 import org.openide.windows.Mode;
@@ -922,7 +923,7 @@ final class Central implements ControllerHandler {
         TopComponent recentTc = null;
         if( mode.getKind() == Constants.MODE_KIND_EDITOR ) {
             //an editor document is being closed so let's find the most recent editor to select
-            recentTc = getRecentTopComponent( mode, tc );
+            recentTc = findTopComponentToActivateAfterClose( mode, tc );
         }
         model.removeModeTopComponent(mode, tc, recentTc);
 
@@ -1925,7 +1926,7 @@ final class Central implements ControllerHandler {
         TopComponent recentTc = null;
         if( mode.getKind() == Constants.MODE_KIND_EDITOR ) {
             //an editor document is being closed so let's find the most recent editor to select
-            recentTc = getRecentTopComponent( mode, tc );
+            recentTc = findTopComponentToActivateAfterClose( mode, tc );
         }
         boolean wasTcClosed = false;
         if (PersistenceHandler.isTopComponentPersistentWhenClosed(tc)) {
@@ -1962,6 +1963,23 @@ final class Central implements ControllerHandler {
         if ((recentTc != null) && wasTcClosed) {
             recentTc.requestActive();
         }
+    }
+    
+    private TopComponent findTopComponentToActivateAfterClose( ModeImpl editorMode, TopComponent tcBeingClosed ) {
+        TopComponent result = null;
+        if( !WinSysPrefs.HANDLER.getBoolean(WinSysPrefs.EDITOR_CLOSE_ACTIVATES_RECENT, true)
+                && tcBeingClosed.equals( editorMode.getSelectedTopComponent() ) ) {
+            List<TopComponent> opened = editorMode.getOpenedTopComponents();
+            int index = opened.indexOf(tcBeingClosed)+1;
+            if( index >= opened.size() )
+                index = opened.size()-2;
+            if( index >= 0 && index < opened.size() ) {
+                result = opened.get(index);
+            }
+        } else {
+            result = getRecentTopComponent( editorMode, tcBeingClosed );
+        }
+        return result;
     }
     
     /**

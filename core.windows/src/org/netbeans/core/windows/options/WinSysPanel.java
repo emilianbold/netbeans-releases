@@ -74,6 +74,7 @@ final class WinSysPanel extends javax.swing.JPanel {
         isSnapping = new javax.swing.JCheckBox();
         isDragImageAlpha = new javax.swing.JCheckBox();
         isSnapScreenEdges = new javax.swing.JCheckBox();
+        isCloseActivatesMostRecentDocument = new javax.swing.JCheckBox();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         setLayout(new java.awt.GridBagLayout());
@@ -111,7 +112,6 @@ final class WinSysPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(20, 12, 0, 0);
         add(isAlphaFloating, gridBagConstraints);
 
@@ -146,6 +146,17 @@ final class WinSysPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 25, 0, 0);
         add(isSnapScreenEdges, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(isCloseActivatesMostRecentDocument, org.openide.util.NbBundle.getMessage(WinSysPanel.class, "LBL_CloseActivatesRecentDocument")); // NOI18N
+        isCloseActivatesMostRecentDocument.setToolTipText(org.openide.util.NbBundle.getMessage(WinSysPanel.class, "TIP_CloseActivatesMostRecentDocument")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(20, 12, 0, 0);
+        add(isCloseActivatesMostRecentDocument, gridBagConstraints);
+        isCloseActivatesMostRecentDocument.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.isCloseActivatesMostRecentDocument.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void isDragImageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isDragImageActionPerformed
@@ -180,6 +191,8 @@ private void isAlphaFloatingStateChanged(javax.swing.event.ChangeEvent evt) {//G
         
         isSnapping.setSelected(prefs.getBoolean(WinSysPrefs.SNAPPING, true));
         isSnapScreenEdges.setSelected(prefs.getBoolean(WinSysPrefs.SNAPPING_SCREENEDGES, true));
+        
+        isCloseActivatesMostRecentDocument.setSelected(prefs.getBoolean(WinSysPrefs.EDITOR_CLOSE_ACTIVATES_RECENT, true));
 
         updateDragSection();
         updateSnapSection();
@@ -195,6 +208,8 @@ private void isAlphaFloatingStateChanged(javax.swing.event.ChangeEvent evt) {//G
         
         prefs.putBoolean(WinSysPrefs.SNAPPING, isSnapping.isSelected());
         prefs.putBoolean(WinSysPrefs.SNAPPING_SCREENEDGES, isSnapScreenEdges.isSelected());
+        
+        prefs.putBoolean(WinSysPrefs.EDITOR_CLOSE_ACTIVATES_RECENT, isCloseActivatesMostRecentDocument.isSelected());
     }
 
     boolean valid() {
@@ -238,6 +253,7 @@ private void isAlphaFloatingStateChanged(javax.swing.event.ChangeEvent evt) {//G
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox isAlphaFloating;
+    private javax.swing.JCheckBox isCloseActivatesMostRecentDocument;
     private javax.swing.JCheckBox isDragImage;
     private javax.swing.JCheckBox isDragImageAlpha;
     private javax.swing.JCheckBox isSnapScreenEdges;
