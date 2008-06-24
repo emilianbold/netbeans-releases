@@ -44,7 +44,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -56,7 +55,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
-import java.util.TreeMap;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -90,6 +88,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
@@ -111,6 +110,9 @@ import org.openide.util.Union2;
  * @author Jan Lahoda, Radek Matous
  */
 public class AttributedNodes extends DefaultVisitor {
+    private static final List<String> SUPERGLOBALS = Arrays.asList(
+            "GLOBALS", "_SERVER", "_GET", "_POST", "_FILES", //NOI18N
+            "_COOKIE", "_SESSION", "_REQUEST", "_ENV"); //NOI18N
 
     public DefinitionScope global;
     private Stack<DefinitionScope> scopes = new Stack<DefinitionScope>();
@@ -129,140 +131,29 @@ public class AttributedNodes extends DefaultVisitor {
         scopes.push(global = new DefinitionScope());
     }
 
-    public Map<ASTNode, AttributedElement> findDirectSubclasses(AttributedElement el) {
-        //TODO: copy/paste maxi mess
-        Map<AttributedElement, List<ASTNode>> forDuplCheck = new HashMap<AttributedElement, List<ASTNode>>();
+    public Map<ASTNode, AttributedElement> findDirectSubclasses(AttributedElement elemToBeFound) {
         Map<ASTNode, AttributedElement> results = new HashMap<ASTNode, AttributedElement>();
-        assert el != null;
         for (Entry<ASTNode, AttributedElement> entry : node2Element.entrySet()) {
-            AttributedElement value = entry.getValue();
-            if (value != null) {
-                if (!(entry.getKey() instanceof ClassDeclaration)) {
-                    continue;
-                }
-                if (!(value instanceof ClassElement)) {
-                    continue;
-                } else {
-                    ClassElement superClass = ((ClassElement) value).getSuperClass();
-                    if (superClass == null || !superClass.equals(el)) {
-                        continue;
-                    }
-                }
-                //cp/paste
-                boolean overlap = false;
-                ASTNode node = entry.getKey();
-                List<ASTNode> ls = forDuplCheck.get(value);
-                if (ls == null) {
-                    ls = new ArrayList<ASTNode>();
-                }
-                OffsetRange newOne = new OffsetRange(node.getStartOffset(), node.getEndOffset());
-                for (Iterator<ASTNode> it = ls.iterator(); it.hasNext();) {
-                    ASTNode aSTNode = it.next();
-                    OffsetRange oldOne = new OffsetRange(aSTNode.getStartOffset(), aSTNode.getEndOffset());
-                    if (newOne.overlaps(oldOne) || oldOne.overlaps(newOne) || newOne.containsInclusive(oldOne.getStart()) || oldOne.containsInclusive(newOne.getStart())) {
-                        overlap = true;
-                        break;
-                    }
-                }
-                if (!overlap) {
-                    ls.add(node);
-                    forDuplCheck.put(value, ls);
-                    results.put(node, value);
+            AttributedElement elem = entry.getValue();
+            ASTNode node = entry.getKey();
+            if (WhereUsedSupport.matchDirectSubclass(elemToBeFound, node, elem)) {
+                if (!WhereUsedSupport.isAlreadyInResults(node, results.keySet())) {
+                    results.put(node, elem);
                 }
             }
         }
-
         return results;
     }
 
-    public Map<ASTNode, AttributedElement> findUsages(AttributedElement el) {
-        //TODO: maxi mess - deserves to be be polished
-        Map<AttributedElement, List<ASTNode>> forDuplCheck = new HashMap<AttributedElement, List<ASTNode>>();
+    public Map<ASTNode, AttributedElement> findUsages(AttributedElement elemToBeFound) {
         Map<ASTNode, AttributedElement> results = new HashMap<ASTNode, AttributedElement>();
-        assert el != null;
         for (Entry<ASTNode, AttributedElement> entry : node2Element.entrySet()) {
             AttributedElement value = entry.getValue();
-            if (value != null && (el.getName().equals(value.getName()) && el.getKind().equals(value.getKind()))) {
-                boolean same = true;
-                List<Union2<ASTNode, IndexedElement>> writes = value.getWrites();
-                List<Union2<ASTNode, IndexedElement>> writes2 = el.getWrites();
-                Map<FileObject, Integer> idxs = new HashMap<FileObject, Integer>();
-                if (writes2.size() != 0 && writes.size() != 0) {
-                    for (Union2<ASTNode, IndexedElement> union : writes2) {
-                        if (union.hasSecond()) {
-                            IndexedElement second = union.second();
-                            idxs.put(second.getFileObject(), second.getOffset());
-                        }
-                    }
-                    if (idxs.size() > 0) {
-                        same = false;
-                    }
-                    for (Union2<ASTNode, IndexedElement> union : writes) {
-                        if (union.hasSecond()) {
-                            IndexedElement second = union.second();
-                            Integer offset = idxs.get(second.getFileObject());
-                            if (offset != null) {
-                                if (offset.equals(second.getOffset())) {
-                                    same = true;
-                                    break;
-                                }
-                            }
-                        } else {
-                            if (el.getKind().equals(Kind.VARIABLE)) {
-                                Types elTypes = el.getTypes();
-                                Types valueTypes = value.getTypes();
-                                int s = Math.min(elTypes.size(), valueTypes.size());
-                                for (int i = 0; i < s; i++) {
-                                    AttributedType elT = elTypes.getType(i);
-                                    AttributedType vT = valueTypes.getType(i);
-                                    boolean elIsFuncType = (elT != null) ? (elT instanceof FunctionType) : false;
-                                    boolean vIsFuncType = (vT != null) ? (vT instanceof FunctionType) : false;
-                                    if (elIsFuncType != vIsFuncType) {
-                                        same = false;
-                                    } else {
-                                        if (elIsFuncType) {
-                                            FunctionType elFT =(FunctionType) elT;
-                                            FunctionType vFT =(FunctionType) vT;
-                                            if (!elFT.getElement().getName().equals(vFT.getElement().getName())) {                                                
-                                                same = false;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+            ASTNode node = entry.getKey();
+            if (WhereUsedSupport.match(elemToBeFound, value)) {
+                if (!WhereUsedSupport.isAlreadyInResults(node, results.keySet())) {
+                    results.put(node, value);
                 }
-                
-                boolean elIsClassMember = el instanceof ClassMemberElement;
-                boolean valIsClassMember = value instanceof ClassMemberElement;                
-                if (elIsClassMember != valIsClassMember) {
-                    same = false;
-                }
-                if (same /*&& !s.contains(value)*/) {
-                    boolean overlap = false;
-                    ASTNode node = entry.getKey();
-                    List<ASTNode> ls = forDuplCheck.get(value);
-                    if (ls == null) {
-                        ls = new ArrayList<ASTNode>();
-                    }
-                    OffsetRange newOne = new OffsetRange(node.getStartOffset(), node.getEndOffset());
-                    for (Iterator<ASTNode> it = ls.iterator(); it.hasNext();) {
-                        ASTNode aSTNode = it.next();
-                        OffsetRange oldOne = new OffsetRange(aSTNode.getStartOffset(), aSTNode.getEndOffset());
-                        if (newOne.overlaps(oldOne) || oldOne.overlaps(newOne) || newOne.containsInclusive(oldOne.getStart()) || oldOne.containsInclusive(newOne.getStart())) {
-                            overlap = true;
-                            break;
-                        }
-                    }
-                    if (!overlap) {
-                        ls.add(node);
-                        forDuplCheck.put(value, ls);
-                        results.put(node, value);
-                    }
-                }
-
-
             }
         }
         return results;
@@ -304,6 +195,9 @@ public class AttributedNodes extends DefaultVisitor {
         if (vb instanceof Variable) {
             AttributedType at = null;
             Expression rightSideExpression = node.getRightHandSide();
+            if (rightSideExpression instanceof Reference) {
+                rightSideExpression = ((Reference)rightSideExpression).getExpression();
+            }
 
             if (rightSideExpression instanceof ClassInstanceCreation) {
                 ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) rightSideExpression;
@@ -321,7 +215,7 @@ public class AttributedNodes extends DefaultVisitor {
                 FieldAccess access = (FieldAccess) rightSideExpression;
                 Variable field = access.getField();
                 node2Element.put(vb, scopes.peek().enterWrite(extractVariableName(field), Kind.VARIABLE, access, at));
-            }
+            } 
 
             String name = extractVariableName((Variable) vb);
 
@@ -541,9 +435,9 @@ public class AttributedNodes extends DefaultVisitor {
             AttributedElement thisEl = ce.lookup(name, Kind.VARIABLE);
             node2Element.put(node, thisEl);
             node2Element.put(node.getField(), thisEl);
+        } else {
+            scan(node.getField());
         }
-
-        scan(node.getField());
     }
 
     @Override
@@ -709,7 +603,7 @@ public class AttributedNodes extends DefaultVisitor {
                     }
                 }
             } else {
-                AttributedElement el = name2El.get(fName);
+                AttributedElement el = (name2El != null) ? name2El.get(fName) : null;
                 if (el != null) {
                     retval.add(el);
                 }
@@ -896,6 +790,11 @@ public class AttributedNodes extends DefaultVisitor {
         if (var.getName() instanceof Identifier) {
             Identifier id = (Identifier) var.getName();
             return id.getName();
+        } else {
+            if (var.getName() instanceof Variable) {
+                Variable name = (Variable) var.getName();
+                return extractVariableName(name);
+            }
         }
 
         return null;
@@ -1019,6 +918,19 @@ public class AttributedNodes extends DefaultVisitor {
         Types getTypes() {
             return new Types(this);
         }
+        
+        public String getScopeName() {
+            String retval = "";//NOI18N
+            Types types = getTypes();
+            for (int i = 0; i < types.size(); i++) {
+                AttributedType type = types.getType(i);
+                if (type != null) {
+                    retval = type.getTypeName();
+                    break;
+                }
+            }
+            return retval;
+        }
 
         public enum Kind {
 
@@ -1059,7 +971,11 @@ public class AttributedNodes extends DefaultVisitor {
             return getClassElement().getName();
         }
 
-        //see BodyDeclaration.Modifier
+        @Override
+        public String getScopeName() {
+            return getClassName();
+        }
+        
         public int getModifier() {
             return modifier;
         }
@@ -1152,7 +1068,7 @@ public class AttributedNodes extends DefaultVisitor {
         }
     }
 
-    public static class ClassElement extends AttributedElement {
+    public  class ClassElement extends AttributedElement {
 
         private final DefinitionScope enclosedElements;
         private ClassElement superClass;
@@ -1234,7 +1150,7 @@ public class AttributedNodes extends DefaultVisitor {
         }
     }
 
-    public static class FunctionElement extends AttributedElement {
+    public  class FunctionElement extends AttributedElement {
 
         private final DefinitionScope enclosedElements;
         private boolean initialized;
@@ -1283,10 +1199,10 @@ public class AttributedNodes extends DefaultVisitor {
 
         void initialized() {
             initialized = true;
-        }
+        }                
     }
 
-    public static class DefinitionScope {
+    public  class DefinitionScope {
 
         private final Map<Kind, Map<String, AttributedElement>> name2Writes = new HashMap<Kind, Map<String, AttributedElement>>();
 //        private final Map<AttributedElement, ASTNode> reads = new HashMap<AttributedElement, ASTNode>();
@@ -1327,6 +1243,13 @@ public class AttributedNodes extends DefaultVisitor {
         }
 
         private AttributedElement enterWrite(String name, Kind k, Union2<ASTNode, IndexedElement> node, AttributedType type) {
+            if (k == Kind.VARIABLE && this != global) {
+                //TODO: review
+                if (SUPERGLOBALS.contains(name)) {
+                    return AttributedNodes.this.enterGlobalVariable(name);
+                }
+            }
+            
             Map<String, AttributedElement> name2El = name2Writes.get(k);
 
             if (name2El == null) {

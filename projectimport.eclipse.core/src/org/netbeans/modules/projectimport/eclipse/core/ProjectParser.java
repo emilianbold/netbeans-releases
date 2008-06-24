@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.projectimport.eclipse.core.Workspace.Variable;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -59,20 +60,20 @@ import org.xml.sax.SAXException;
  */
 final class ProjectParser {
     
-    public static String parse(File dotProject, Set<String> natures, List<Link> links) throws IOException {
+    public static String parse(File dotProject, Set<String> natures, List<Link> links, Set<Variable> variables) throws IOException {
         Document dotProjectXml;
         try {
             dotProjectXml = XMLUtil.parse(new InputSource(dotProject.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
         } catch (SAXException e) {
-            IOException ioe = (IOException) new IOException(dotProject + ": " + e.toString()).initCause(e);
+            IOException ioe = (IOException) new IOException(dotProject + ": " + e.toString()).initCause(e); // NOI18N
             throw ioe;
         }
         Element projectDescriptionEl = dotProjectXml.getDocumentElement();
         if (!"projectDescription".equals(projectDescriptionEl.getLocalName())) { // NOI18N
-            throw new IllegalStateException("given file is not eclipse .project file");
+            throw new IllegalStateException("given file is not eclipse .project file"); // NOI18N
         }
         
-        Element naturesEl = Util.findElement(projectDescriptionEl, "natures", null);
+        Element naturesEl = Util.findElement(projectDescriptionEl, "natures", null); // NOI18N
         if (naturesEl != null) {
             List<Element> natureEls = Util.findSubElements(naturesEl);
             if (natureEls != null) {
@@ -82,32 +83,51 @@ final class ProjectParser {
             }
         }
         
-        Element linksEl = Util.findElement(projectDescriptionEl, "linkedResources", null);
+        Element linksEl = Util.findElement(projectDescriptionEl, "linkedResources", null); // NOI18N
         if (linksEl != null) {
             List<Element> linkEls = Util.findSubElements(linksEl);
             if (linkEls != null) {
                 for (Element link : linkEls) {
-                    // TODO: location can start with environment variable:
-                    /*
-                        <link>
-                            <name>classes-webapp5</name>
-                            <type>2</type>
-                            <locationURI>SOME_ROOT/WebApplication5/build/web/WEB-INF/classes</locationURI>
-                        </link>
-                     */
-                    //
-                    // environment variable are stored in 
-                    // .metadata/.plugins/org.eclipse.core.runtime/.settings/org.eclipse.core.resources.prefs
-                    // which in this case would contain property:
-                    // pathvariable.SOME_ROOT=/home/david/projs
-                    links.add(new Link(Util.findElement(link, "name", null).getTextContent(), 
-                            "1".equals(Util.findElement(link, "type", null).getTextContent()),
-                            Util.findElement(link, "location", null).getTextContent()));
+                    Element locationElement = Util.findElement(link, "location", null); // NOI18N
+                    String loc;
+                    if (locationElement == null) {
+                        assert Util.findElement(link, "locationURI", null) != null : Util.findSubElements(link); // NOI18N
+                        // XXX external source root can be defined using IDE variable. For some reason (in Eclipse)
+                        // these variables are stored/managed separately from variables which can be used
+                        // in classpath. For now these variables are not transfer to NetBeans and normalized
+                        // path will be returned instead.
+                        loc = resolveLink(Util.findElement(link, "locationURI", null).getTextContent(), variables); // NOI18N
+                    } else {
+                        loc = locationElement.getTextContent();
+                    }
+                    links.add(new Link(Util.findElement(link, "name", null).getTextContent(),  // NOI18N
+                            "1".equals(Util.findElement(link, "type", null).getTextContent()), // NOI18N
+                            loc));
                 }
             }
         }
         return Util.findElement(projectDescriptionEl, "name", null).getTextContent();
     }
-    
+
+    private static String resolveLink(String location, Set<Variable> vars) {
+        /*
+            <link>
+                <name>classes-webapp5</name>
+                <type>2</type>
+                <locationURI>SOME_ROOT/WebApplication5/build/web/WEB-INF/classes</locationURI>
+            </link>
+         */
+        //
+        // environment variable are stored in 
+        // .metadata/.plugins/org.eclipse.core.runtime/.settings/org.eclipse.core.resources.prefs
+        // which in this case would contain property:
+        // pathvariable.SOME_ROOT=/home/david/projs
+        for (Variable v : vars) {
+            if (location.startsWith(v.getName())) {
+                return v.getLocation() + location.substring(v.getName().length());
+            }
+        }
+        return location;
+    }
     
 }

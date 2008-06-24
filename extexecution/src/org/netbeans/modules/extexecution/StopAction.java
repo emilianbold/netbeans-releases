@@ -41,43 +41,46 @@
 package org.netbeans.modules.extexecution;
 
 import java.awt.event.ActionEvent;
+import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
- * The StopAction is placed into the I/O window, allowing the user to halt
+ * The StopAction is placed into the I/O window, allowing the user to stop
  * execution.
  *
- * Based on the equivalent StopAction in the ant support.
- *
- * @author Tor Norbye
+ * @author Petr Hejl
  */
 public final class StopAction extends AbstractAction {
 
-    private transient Process process;
+    private Future<?> task;
 
     public StopAction() {
         setEnabled(false); // initially, until ready
-        putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage(
+        putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(
                 "org/netbeans/modules/extexecution/resources/stop.png"))); // NOI18N
         putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(StopAction.class, "Stop"));
     }
 
-    public synchronized Process getProcess() {
-        return process;
+    public void setTask(Future<?> task) {
+        synchronized (this) {
+            this.task = task;
+        }
     }
 
-    public synchronized void setProcess(Process process) {
-        this.process = process;
-    }
-
-    public synchronized void actionPerformed(ActionEvent e) {
+    public void actionPerformed(ActionEvent e) {
         setEnabled(false); // discourage repeated clicking
-        if (process != null) {
-            process.destroy();
+
+        Future<?> actionTask;
+        synchronized (this) {
+            actionTask = task;
+        }
+
+        if (actionTask != null) {
+            actionTask.cancel(true);
         }
     }
 

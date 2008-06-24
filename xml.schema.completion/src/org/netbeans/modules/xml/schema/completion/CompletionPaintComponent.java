@@ -192,6 +192,12 @@ public abstract class CompletionPaintComponent extends JPanel {
         }        
     }
     
+    public static class ValuePaintComponent extends CompletionPaintComponent {
+        public ValuePaintComponent(CompletionResultItem item) {
+            super(item);
+        }        
+    }
+    
     protected int drawX;
     protected int drawY;
     protected int drawHeight;

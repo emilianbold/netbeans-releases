@@ -48,14 +48,10 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.editor.filecreation.CndExtensionList;
-import org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions;
-import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.ExtensionList;
 import org.openide.loaders.MultiDataObject;
 import org.openide.util.Exceptions;
 
@@ -63,34 +59,10 @@ import org.openide.util.Exceptions;
  *
  * @author Sergey Grinev
  */
-public abstract class CndAbstractDataLoaderExt extends CndAbstractDataLoader 
-        implements CndHandlableExtensions {
+public abstract class CndAbstractDataLoaderExt extends CndAbstractDataLoader {
 
     protected CndAbstractDataLoaderExt(String representationClassName) {
         super(representationClassName);
-    }
-
-    @Override
-    protected void createExtentions(String[] extensions) {
-        setExtensions(new CndExtensionList(extensions));
-    }
-
-    @Override
-    public ExtensionList getExtensions() {
-        return ExtensionsSettings.getInstance(this).getExtensionList();
-    }
-
-    @Override
-    public void setExtensions(ExtensionList ext) {
-        ExtensionsSettings.getInstance(this).setExtensionList((CndExtensionList)ext);
-    }
-
-    protected static CndExtensionList arrayToExtensionList(String[] ar) {
-        return new CndExtensionList(ar);
-    }
-
-    public String getSettingsName() {
-        return getRepresentationClassName();
     }
 
     @Override
@@ -108,7 +80,7 @@ public abstract class CndAbstractDataLoaderExt extends CndAbstractDataLoader
         public FileObject createFromTemplate(FileObject f, String name) throws IOException {
             // we don't want extension to be taken from template filename
             String ext = FileUtil.getExtension(name);
-            assert ext.length() > 0;
+
             name = name.substring(0, name.length() - ext.length() - 1);
 
             FileObject fo = f.createData(name, ext);

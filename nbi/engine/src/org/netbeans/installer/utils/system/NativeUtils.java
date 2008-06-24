@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import org.netbeans.installer.Installer;
+import org.netbeans.installer.utils.EngineUtils;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
@@ -138,7 +139,7 @@ public abstract class NativeUtils {
         final File engine = new File(descriptor.getInstallPath(),
                 "uninstall.jar");
         try {
-            Installer.getInstance().cacheInstallerEngine(engine, new Progress());
+            EngineUtils.cacheEngine(engine, new Progress());
             
             final LauncherProperties props = new LauncherProperties();
             
@@ -152,7 +153,7 @@ public abstract class NativeUtils {
                 "-Xms64m",
                 "-D" + Installer.LOCAL_DIRECTORY_PATH_PROPERTY +
                         "=" + Installer.getInstance().getLocalDirectory()});
-            props.setMainClass(Installer.class.getName());
+            props.setMainClass(EngineUtils.getEngineMainClass().getName());
             
             if (uninstall) {
                 props.setAppArguments(descriptor.getUninstallCommand());

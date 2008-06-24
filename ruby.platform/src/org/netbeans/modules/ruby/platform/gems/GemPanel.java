@@ -317,7 +317,6 @@ public final class GemPanel extends JPanel implements Runnable {
         // allow certain actions only when all tabs are updated
         manageButton.setEnabled(everythingDone);
         browseGemHome.setEnabled(everythingDone);
-        gemsTab.setEnabledAt(3, everythingDone);
     }
 
     /**

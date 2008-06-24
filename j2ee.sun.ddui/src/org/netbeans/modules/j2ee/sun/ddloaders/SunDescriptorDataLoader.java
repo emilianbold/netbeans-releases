@@ -41,7 +41,6 @@
 package org.netbeans.modules.j2ee.sun.ddloaders;
 
 import java.io.IOException;
-import java.util.Arrays;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
@@ -57,23 +56,13 @@ public class SunDescriptorDataLoader extends UniFileLoader {
     
     private static final long serialVersionUID = 8616780278674213L;
     
-    // mime types for various sun appserver descriptor files.
-//    private static final String MIME_SUNEJBJAR_70 = "text/x-dd-sjsas-ejbjar2.0"; // NOI18N
-//    private static final String MIME_SUNEJBJAR_80 = "text/x-dd-sjsas-ejbjar2.1"; // NOI18N
-//    private static final String MIME_SUNEJBJAR_81 = "text/x-dd-sjsas-ejbjar2.11"; // NOI18N
-//    private static final String MIME_SUNEJBJAR_90 = "text/x-dd-sjsas-ejbjar3.0"; // NOI18N
-//    private static final String MIME_SUNWEBAPP_70 = "text/x-dd-sjsas-servlet2.3"; // NOI18N
-//    private static final String MIME_SUNWEBAPP_80 = "text/x-dd-sjsas-servlet2.4"; // NOI18N
-//    private static final String MIME_SUNWEBAPP_81 = "text/x-dd-sjsas-servlet2.41"; // NOI18N
-//    private static final String MIME_SUNWEBAPP_90 = "text/x-dd-sjsas-servlet2.5"; // NOI18N
-//    private static final String MIME_SUNAPPLICATION_70 = "text/x-dd-sjsas-application1.3"; // NOI18N
-//    private static final String MIME_SUNAPPLICATION_80 = "text/x-dd-sjsas-application1.4"; // NOI18N
-//    private static final String MIME_SUNAPPLICATION_90 = "text/x-dd-sjsas-application5.0"; // NOI18N
-//    private static final String MIME_SUNAPPCLIENT_70 = "text/x-dd-sjsas-appclient1.3"; // NOI18N
-//    private static final String MIME_SUNAPPCLIENT_80 = "text/x-dd-sjsas-appclient1.4"; // NOI18N
-//    private static final String MIME_SUNAPPCLIENT_81 = "text/x-dd-sjsas-appclient1.41"; // NOI18N
-//    private static final String MIME_SUNAPPCLIENT_90 = "text/x-dd-sjsas-appclient5.0"; // NOI18N
-
+    private static final String [] SUPPORTED_MIME_TYPES = {
+        "text/x-dd-sun-web+xml",            // NOI18N
+        "text/x-dd-sun-ejb-jar+xml",        // NOI18N
+        "text/x-dd-sun-application+xml",    // NOI18N
+        "text/x-dd-sun-app-client+xml"      // NOI18N
+    };
+    
     public SunDescriptorDataLoader() {
         this("org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject");  // NOI18N
     }
@@ -82,22 +71,25 @@ public class SunDescriptorDataLoader extends UniFileLoader {
         super(name);
     }
 
+    @Override
     protected String defaultDisplayName() {
         return NbBundle.getMessage (SunDescriptorDataLoader.class, "LBL_LoaderName"); // NOI18N
     }
     
+    @Override
     protected String actionsContext() {
         return "Loaders/text/x-sun-dd/Actions/"; // NOI18N
     }
     
-//    protected void initialize() {
-//         super.initialize();
-//         String[] supportedTypes = getSupportedMimeTypes(); 
-//         for (int i = 0; i < supportedTypes.length; i++) {
-//             getExtensions().addMimeType(supportedTypes[i]);
-//         }
-//     }
+    @Override
+    protected void initialize() {
+         super.initialize();
+         for (int i = 0; i < SUPPORTED_MIME_TYPES.length; i++) {
+             getExtensions().addMimeType(SUPPORTED_MIME_TYPES[i]);
+         }
+     }
 
+    @Override
     protected FileObject findPrimaryFile(FileObject fo) {
         FileObject result = null;
         
@@ -113,15 +105,4 @@ public class SunDescriptorDataLoader extends UniFileLoader {
         return new SunDescriptorDataObject(primaryFile, this);
     }
 
-    /**
-     *@return Array containing MIME types that this loader supports.
-     */
-//    protected String[] getSupportedMimeTypes() {
-//        return new String[] { 
-//            MIME_SUNEJBJAR_70, MIME_SUNEJBJAR_80, MIME_SUNEJBJAR_81, MIME_SUNEJBJAR_90,
-//            MIME_SUNWEBAPP_70, MIME_SUNWEBAPP_80, MIME_SUNWEBAPP_81, MIME_SUNWEBAPP_90,
-//            MIME_SUNAPPLICATION_70, MIME_SUNAPPLICATION_80, MIME_SUNAPPLICATION_90,
-//            MIME_SUNAPPCLIENT_70, MIME_SUNAPPCLIENT_80, MIME_SUNAPPCLIENT_81, MIME_SUNAPPCLIENT_90
-//        };
-//    }
 }

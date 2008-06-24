@@ -42,9 +42,7 @@
 package org.netbeans.modules.websvc.wsitmodelext.trust.impl;
 
 import org.netbeans.modules.websvc.wsitmodelext.trust.TokenType;
-import org.netbeans.modules.websvc.wsitmodelext.trust.TrustQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -60,15 +58,6 @@ public class TokenTypeImpl extends TrustComponentImpl implements TokenType {
         super(model, e);
     }
     
-    public TokenTypeImpl(WSDLModel model){
-        this(model, createPrefixedElement(TrustQName.TOKENTYPE.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
     public String getContent() {
         return getText();
     }

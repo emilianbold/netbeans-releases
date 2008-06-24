@@ -244,7 +244,7 @@ public class WebBrowsersOptionsModel extends DefaultListModel {
                     }
                     
                     if (pd.isPreferred() && !pd.isExpert() && !pd.isHidden()) {
-                        propertyPanel = new WebBrowsersPropertyPanel(cookie.instanceCreate(), 
+                        propertyPanel = new PropertyPanel(cookie.instanceCreate(), 
                                 pd.getName(), PropertyPanel.PREF_CUSTOM_EDITOR);
                         propertyPanelID = "PROPERTY_PANEL_" + propertyPanelIDCounter++;
                         break;
@@ -253,7 +253,7 @@ public class WebBrowsersOptionsModel extends DefaultListModel {
                 }
                 
                 if (propertyPanel == null) {
-                    propertyPanel = new WebBrowsersPropertyPanel(cookie.instanceCreate(), 
+                    propertyPanel = new PropertyPanel(cookie.instanceCreate(), 
                             fallbackProp.getName(), PropertyPanel.PREF_CUSTOM_EDITOR);
                     propertyPanelID = "PROPERTY_PANEL_" + propertyPanelIDCounter++;
                 }
@@ -364,18 +364,4 @@ public class WebBrowsersOptionsModel extends DefaultListModel {
         }
         
     }
-    
-    private static class WebBrowsersPropertyPanel extends PropertyPanel {
-
-        private WebBrowsersPropertyPanel(Object obj, String nm, int pref) {
-            super(obj, nm, pref);
-        }
-        
-        @Override
-        public void removeNotify() {
-            // disabled super.removeNotify() to be able to call updateValue to save changed value
-        }
-        
-    }
-    
 }

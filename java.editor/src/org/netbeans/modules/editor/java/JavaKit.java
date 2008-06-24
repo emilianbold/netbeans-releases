@@ -155,7 +155,6 @@ public class JavaKit extends NbEditorKit {
     
 
     public JavaKit(){
-        org.netbeans.modules.java.editor.JavaEditorModule.init();
     }
     
     public String getContentType() {
@@ -170,22 +169,9 @@ public class JavaKit extends NbEditorKit {
         return new JavaSyntax(getSourceLevel((BaseDocument)doc));
     }
 
-    public Completion createCompletion(ExtEditorUI extEditorUI) {
-        return null;
-    }
-
-    public CompletionJavaDoc createCompletionJavaDoc(ExtEditorUI extEditorUI) {
-        return null;
-    }
-
     @Override
     public Document createDefaultDocument() {
-        Document doc = new JavaDocument(this.getClass());
-        Object mimeType = doc.getProperty("mimeType"); //NOI18N
-        if (mimeType == null){
-            doc.putProperty("mimeType", getContentType()); //NOI18N
-        }
-        return doc;
+        return new JavaDocument(getContentType());
     }
     
     public String getSourceLevel(BaseDocument doc) {

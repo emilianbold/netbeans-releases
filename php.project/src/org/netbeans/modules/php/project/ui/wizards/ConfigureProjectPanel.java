@@ -45,12 +45,13 @@ import org.netbeans.modules.php.project.ui.SourcesFolderNameProvider;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import java.awt.Component;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
-import javax.swing.ComboBoxModel;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -74,10 +75,15 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     static final String SET_AS_MAIN = "setAsMain"; // NOI18N
     static final String SOURCES_FOLDER = "sourcesFolder"; // NOI18N
     static final String LOCAL_SERVERS = "localServers"; // NOI18N
-    static final String CREATE_INDEX_FILE = "createIndexFile"; // NOI18N
     static final String INDEX_FILE = "indexFile"; // NOI18N
     static final String ENCODING = "encoding"; // NOI18N
     static final String ROOTS = "roots"; // NOI18N
+
+    private static final FilenameFilter NB_FILENAME_FILTER = new FilenameFilter() {
+        public boolean accept(File dir, String name) {
+            return "nbproject".equals(name); // NOI18N
+        }
+    };
 
     private final String[] steps;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -125,20 +131,13 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         }
 
         // index file
-        Boolean createIndex = isCreateIndex();
-        if (createIndex != null) {
-            configureProjectPanelVisual.setCreateIndex(createIndex);
-        }
         String indexName = getIndexName();
         if (indexName != null) {
             configureProjectPanelVisual.setIndexName(indexName);
         }
 
         // encoding
-        Charset encoding = getEncoding();
-        if (encoding != null) {
-            configureProjectPanelVisual.setEncoding(encoding);
-        }
+        configureProjectPanelVisual.setEncoding(getEncoding());
 
         // set as main project
         Boolean setAsMain = isSetAsMain();
@@ -160,7 +159,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         settings.putProperty(LOCAL_SERVERS, configureProjectPanelVisual.getLocalServerModel());
 
         // index file
-        settings.putProperty(CREATE_INDEX_FILE, configureProjectPanelVisual.isCreateIndex());
         settings.putProperty(INDEX_FILE, configureProjectPanelVisual.getIndexName());
 
         // encoding
@@ -199,6 +197,12 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             descriptor.putProperty("WizardPanel_errorMessage", error); // NOI18N
             return false;
         }
+        // #133041
+        String warning = validateIndexFileInNonEmptySources();
+        if (warning != null) {
+            descriptor.putProperty("WizardPanel_errorMessage", warning); // NOI18N
+        }
+
         return true;
     }
 
@@ -261,7 +265,12 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private Charset getEncoding() {
-        return (Charset) descriptor.getProperty(ENCODING);
+        Charset enc = (Charset) descriptor.getProperty(ENCODING);
+        if (enc == null) {
+            // #136917
+            enc = FileEncodingQuery.getDefaultEncoding();
+        }
+        return enc;
     }
 
     private LocalServer getLocalServer() {
@@ -292,10 +301,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         return model;
     }
 
-    private Boolean isCreateIndex() {
-        return (Boolean) descriptor.getProperty(CREATE_INDEX_FILE);
-    }
-
     private Boolean isSetAsMain() {
         return (Boolean) descriptor.getProperty(SET_AS_MAIN);
     }
@@ -324,8 +329,20 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         if (err != null) {
             return err;
         }
+        if (isProjectAlready(projectFolder)) {
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_AlreadyProject");
+        }
         warnIfNotEmpty(projectFolder.getAbsolutePath(), "Project"); // NOI18N
         return null;
+    }
+
+    // #137230
+    private boolean isProjectAlready(File projectFolder) {
+        if (!projectFolder.exists()) {
+            return false;
+        }
+        File[] kids = projectFolder.listFiles(NB_FILENAME_FILTER);
+        return kids != null && kids.length > 0;
     }
 
     private String validateSources() {
@@ -359,15 +376,23 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         if (!Utils.isValidFileName(indexName)) {
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalIndexName");
         }
-        if (configureProjectPanelVisual.isCreateIndex()) {
-            // check whether the index file already exists
-            LocalServer localServer = configureProjectPanelVisual.getSourcesLocation();
-            if (!isProjectFolder(localServer)) {
-                File indexFile = new File(localServer.getSrcRoot(), indexName);
-                if (indexFile.exists()) {
-                    return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IndexNameExists");
-                }
-            }
+        return null;
+    }
+
+    private String validateIndexFileInNonEmptySources() {
+        // warn user if sources directory is not empty and the index file does not exist
+        LocalServer localServer = configureProjectPanelVisual.getSourcesLocation();
+        if (isProjectFolder(localServer)) {
+            return null;
+        }
+        File srcRoot = new File(localServer.getSrcRoot());
+        String[] files = srcRoot.list();
+        if (files == null || files.length == 0) {
+            return null;
+        }
+        File indexFile = new File(srcRoot, configureProjectPanelVisual.getIndexName());
+        if (!indexFile.exists()) {
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IndexFileNotExists");
         }
         return null;
     }

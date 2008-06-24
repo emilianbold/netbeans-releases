@@ -42,6 +42,7 @@ package org.netbeans.modules.extexecution;
 
 import java.awt.event.ActionEvent;
 
+import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
@@ -50,66 +51,108 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptor.RerunCondition;
 import org.netbeans.modules.extexecution.api.ExecutionService;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Task;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.openide.windows.InputOutput;
 
 
 /**
  * The RerunAction is placed into the I/O window, allowing the user to restart
  * a particular execution context.
  *
- * Based on the equivalent RerunAction in the ant support.
- *
- * @author Tor Norbye, Petr Hejl
+ * @author Petr Hejl
  */
 public final class RerunAction extends AbstractAction implements ChangeListener {
 
-    private transient ExecutionService prototype;
+    private InputOutput parent;
 
-    private final RerunCondition rerunCondition;
+    private ExecutionService service;
 
-    public RerunAction(ExecutionService prototype, RerunCondition rerunCondition) {
-        this.prototype = prototype;
+    private RerunCondition condition;
+
+    private ChangeListener listener;
+
+    public RerunAction() {
         setEnabled(false); // initially, until ready
-        putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage(
-                "org/netbeans/modules/extexecution/resources/rerun.png")));
+        putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(
+                "org/netbeans/modules/extexecution/resources/rerun.png"))); // NOI18N
         putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(RerunAction.class, "Rerun"));
+    }
 
-        this.rerunCondition = rerunCondition;
-        if (rerunCondition != null) {
-            rerunCondition.addChangeListener(WeakListeners.change(this, rerunCondition));
+    public InputOutput getParent() {
+        return parent;
+    }
+
+    public void setParent(InputOutput parent) {
+        synchronized (this) {
+            this.parent = parent;
         }
     }
 
-    public void actionPerformed(ActionEvent e) {
-        setEnabled(false);
+    public void setExecutionService(ExecutionService service) {
+        synchronized (this) {
+            this.service = service;
+        }
+    }
 
-        if (prototype != null) {
-            Accessor.getDefault().rerun(prototype);
+    public void setRerunCondition(RerunCondition condition) {
+        synchronized (this) {
+            if (this.condition != null) {
+                this.condition.removeChangeListener(listener);
+            }
+            this.condition = condition;
+            if (this.condition != null) {
+                listener = WeakListeners.change(this, this.condition);
+                this.condition.addChangeListener(listener);
+            }
+        }
+        stateChanged(null);
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        setEnabled(false); // discourage repeated clicking
+
+        ExecutionService actionService;
+        InputOutput required;
+        synchronized (this) {
+            actionService = service;
+            required = parent;
+        }
+
+        if (actionService != null) {
+            Accessor.getDefault().run(actionService, required);
         }
     }
 
     public void stateChanged(ChangeEvent e) {
-        firePropertyChange("enabled", null, rerunCondition.isRerunPossible()); // NOI18N
+        Boolean value = null;
+        synchronized (this) {
+            if (condition != null) {
+                value = condition.isRerunPossible();
+            }
+        }
+
+        if (value != null) {
+            firePropertyChange("enabled", null, value); // NOI18N
+        }
     }
 
     @Override
     public boolean isEnabled() {
-        return super.isEnabled() && (rerunCondition == null || rerunCondition.isRerunPossible());
+        synchronized (this) {
+            return super.isEnabled() && (condition == null || condition.isRerunPossible());
+        }
     }
 
-    /**
-     * The accessor pattern class.
-     */
-    public abstract static class Accessor {
+    public static abstract class Accessor {
 
         private static volatile Accessor accessor;
 
         public static void setDefault(Accessor accessor) {
-            assert Accessor.accessor == null : "Already initialized accessor";
-
+            if (Accessor.accessor != null) {
+                throw new IllegalStateException("Already initialized accessor");
+            }
             Accessor.accessor = accessor;
         }
 
@@ -126,12 +169,11 @@ public final class RerunAction extends AbstractAction implements ChangeListener 
             } catch (ClassNotFoundException ex) {
                 assert false : ex;
             }
-
-            assert accessor != null : "The DEFAULT field must be initialized";
+            assert accessor != null : "The accessor field must be initialized";
             return accessor;
         }
 
-        public abstract Task rerun(ExecutionService service);
-
+        public abstract Future<Integer> run(ExecutionService service, InputOutput required);
     }
+
 }

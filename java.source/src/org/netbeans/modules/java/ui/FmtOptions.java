@@ -47,6 +47,8 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.ComboBoxModel;
@@ -59,17 +61,13 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.EditorKit;
-
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.java.source.CodeStyle;
 import static org.netbeans.api.java.source.CodeStyle.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.editor.Formatter;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -85,9 +83,9 @@ import org.openide.util.NbPreferences;
  */
 public class FmtOptions {
 
-    public static final String expandTabToSpaces = "expandTabToSpaces"; //NOI18N
-    public static final String tabSize = "tabSize"; //NOI18N
-    public static final String indentSize = "indentSize"; //NOI18N
+    public static final String expandTabToSpaces = SimpleValueNames.EXPAND_TABS;
+    public static final String tabSize = SimpleValueNames.TAB_SIZE;
+    public static final String indentSize = SimpleValueNames.INDENT_SHIFT_WIDTH;
     public static final String continuationIndentSize = "continuationIndentSize"; //NOI18N
     public static final String labelIndent = "labelIndent"; //NOI18N
     public static final String absoluteLabelIndent = "absoluteLabelIndent"; //NOI18N
@@ -235,7 +233,8 @@ public class FmtOptions {
     static final String PROJECT_PROFILE = "project"; // NOI18N
     static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
     static final String usedProfile = "usedProfile"; // NOI18N
-    private static Class<? extends EditorKit> kitClass;
+    
+    private static final String JAVA = "text/x-java"; //NOI18N
     
     private FmtOptions() {}
 
@@ -252,35 +251,23 @@ public class FmtOptions {
     }
     
     public static boolean getGlobalExpandTabToSpaces() {
-        Formatter f = (Formatter)Settings.getValue(getKitClass(), "formatter");
-        if (f != null)
-            return f.expandTabs();
-        return getDefaultAsBoolean(expandTabToSpaces);
+        Preferences prefs = MimeLookup.getLookup(JAVA).lookup(Preferences.class);
+        return prefs.getBoolean(SimpleValueNames.EXPAND_TABS, getDefaultAsBoolean(expandTabToSpaces));
     }
     
     public static int getGlobalTabSize() {
-        Integer i = (Integer)Settings.getValue(getKitClass(), SettingsNames.TAB_SIZE);
-        return i != null ? i.intValue() : getDefaultAsInt(tabSize);
+        Preferences prefs = MimeLookup.getLookup(JAVA).lookup(Preferences.class);
+        return prefs.getInt(SimpleValueNames.TAB_SIZE, getDefaultAsInt(tabSize));
     }
     
     public static int getGlobalIndentSize() {
-        Formatter f = (Formatter)Settings.getValue(getKitClass(), "formatter");
-        if (f != null)
-            return f.getShiftWidth();
-        return getDefaultAsInt(indentSize);
+        Preferences prefs = MimeLookup.getLookup(JAVA).lookup(Preferences.class);
+        return prefs.getInt(SimpleValueNames.SPACES_PER_TAB, getDefaultAsInt(indentSize));
     }
     
     public static int getGlobalRightMargin() {
-        Integer i = (Integer)Settings.getValue(getKitClass(), SettingsNames.TEXT_LIMIT_WIDTH);
-        return i != null ? i.intValue() : getDefaultAsInt(rightMargin);
-    }
-    
-    public static Class<? extends EditorKit> getKitClass() {
-        if (kitClass == null) {
-            EditorKit kit = MimeLookup.getLookup(MimePath.get(JAVA_MIME_TYPE)).lookup(EditorKit.class);
-            kitClass = kit != null ? kit.getClass() : EditorKit.class;
-        }
-        return kitClass;
+        Preferences prefs = MimeLookup.getLookup(JAVA).lookup(Preferences.class);
+        return prefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, getDefaultAsInt(rightMargin));
     }
     
     public static boolean isInteger(String optionID) {
@@ -524,6 +511,7 @@ public class FmtOptions {
         
         private boolean changed = false;
         private JPanel panel;
+        private List<JComponent> components = new LinkedList<JComponent>();                
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
         
         protected Preferences preferences;
@@ -532,29 +520,30 @@ public class FmtOptions {
             super(nameKey);
             this.preferences = preferences;
             this.panel = panel;            
+            scan(panel, components);
             this.previewText = previewText == null ? this.previewText : previewText;
             this.forcedOptions = forcedOptions;
             addListeners();
         }
         
         protected void addListeners() {
-            scan(panel, ADD_LISTENERS, null);
+            scan(ADD_LISTENERS, null);
         }
         
         public void update() {
-            scan(panel, LOAD, preferences);
+            scan(LOAD, preferences);
         }
 
         public void applyChanges() {
-            scan(panel, STORE, preferences);
+            scan(STORE, preferences);
         }
 
         public void loadFrom(Preferences preferences) {
-            scan(panel, LOAD, preferences);
+            scan(LOAD, preferences);
         }
 
         public void storeTo(Preferences preferences) {
-            scan(panel, STORE, preferences);
+            scan(STORE, preferences);
         }
 
         public void refreshPreview(JEditorPane pane, Preferences p ) {
@@ -637,30 +626,36 @@ public class FmtOptions {
                 
         // Private methods -----------------------------------------------------
         
-        private void scan( Container container, int what, Preferences p ) {
-            for (Component c : container.getComponents() ) {
-                if (c instanceof JComponent ) {
+        private void scan(int what, Preferences p ) {
+            for (JComponent jc : components) {
+                Object o = jc.getClientProperty(OPTION_ID);
+                if (o instanceof String) {
+                    switch(what) {
+                    case LOAD:
+                        loadData(jc, (String)o, p);
+                        break;
+                    case STORE:
+                        storeData(jc, (String)o, p);
+                        break;
+                    case ADD_LISTENERS:
+                        addListener(jc);
+                        break;
+                    }
+                }                    
+            }
+        }
+
+        private void scan(Container container, List<JComponent> components) {
+            for (Component c : container.getComponents()) {
+                if (c instanceof JComponent) {
                     JComponent jc = (JComponent)c;
                     Object o = jc.getClientProperty(OPTION_ID);
-                    if ( o != null && o instanceof String ) {
-                        switch( what ) {
-                        case LOAD:
-                            loadData( jc, (String)o, p );
-                            break;
-                        case STORE:
-                            storeData( jc, (String)o, p );
-                            break;
-                        case ADD_LISTENERS:
-                            addListener( jc );
-                            break;
-                        }
-                    }                    
-                }
-                if ( c instanceof Container ) {
-                    scan((Container)c, what, p);
-                }
+                    if (o instanceof String)
+                        components.add(jc);
+                }                    
+                if (c instanceof Container)
+                    scan((Container)c, components);
             }
-
         }
 
         /** Very smart method which tries to set the values in the components correctly

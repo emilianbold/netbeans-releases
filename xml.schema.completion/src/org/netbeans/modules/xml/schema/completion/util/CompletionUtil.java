@@ -64,12 +64,14 @@ import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIDocument;
 import org.netbeans.modules.xml.axi.AXIModel;
 import org.netbeans.modules.xml.axi.AXIModelFactory;
+import org.netbeans.modules.xml.axi.AXIType;
 import org.netbeans.modules.xml.axi.AbstractAttribute;
 import org.netbeans.modules.xml.axi.AbstractElement;
 import org.netbeans.modules.xml.axi.AnyAttribute;
 import org.netbeans.modules.xml.axi.AnyElement;
 import org.netbeans.modules.xml.axi.Attribute;
 import org.netbeans.modules.xml.axi.Element;
+import org.netbeans.modules.xml.axi.datatype.Datatype;
 import org.netbeans.modules.xml.schema.completion.*;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.CompletionModel;
 import org.netbeans.modules.xml.schema.model.Form;
@@ -246,7 +248,7 @@ public class CompletionUtil {
      */
     public static List<CompletionResultItem> getElements(
             CompletionContextImpl context) {
-        Element element = findAXIElementAtContext(context);        
+        Element element = findAXIElementAtContext(context);
         if(element == null)
             return null;
         
@@ -270,7 +272,47 @@ public class CompletionUtil {
     
     public static List<CompletionResultItem> getElementValues(
             CompletionContextImpl context) {
-        return null;
+        Element element = findAXIElementAtContext(context);
+        List<CompletionResultItem> result = new ArrayList<CompletionResultItem>();
+        if(element == null)
+            return null;
+        AXIType type = element.getType();
+        if( type == null || !(type instanceof Datatype) ||
+            ((Datatype)type).getEnumerations() == null)
+            return null;
+        for(Object value: ((Datatype)type).getEnumerations()) {
+            ValueResultItem item = new ValueResultItem(element, (String)value, context);
+            result.add(item);
+        }
+        return result;
+    }    
+    
+    public static List<CompletionResultItem> getAttributeValues(
+            CompletionContextImpl context) {
+        Element element = findAXIElementAtContext(context);
+        if(element == null)
+            return null;        
+        List<CompletionResultItem> result = new ArrayList<CompletionResultItem>();
+        Attribute attr = null;
+        for(AbstractAttribute a: element.getAttributes()) {
+            if(a instanceof AnyAttribute)
+                continue;
+            if(a.getName().equals(context.getAttribute())) {
+                attr = (Attribute)a;
+                break;
+            }
+        }
+        if(attr == null)
+            return null;
+        AXIType type = attr.getType();
+        if(type == null || !(type instanceof Datatype))
+            return null;                
+        Datatype dataType = (Datatype)type;
+        for(Object value: dataType.getEnumerations()) {
+            ValueResultItem item = new ValueResultItem(attr, (String)value, context);
+            result.add(item);
+        }
+        return result;
     }    
     
     private static void addNSAwareCompletionItems(AXIComponent axi, CompletionContextImpl context,

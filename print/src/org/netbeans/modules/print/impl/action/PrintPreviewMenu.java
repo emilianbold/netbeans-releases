@@ -43,7 +43,6 @@ package org.netbeans.modules.print.impl.action;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
-import java.awt.print.Printable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -56,6 +55,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 
+import org.netbeans.modules.print.api.PrintManager;
 import org.netbeans.modules.print.spi.PrintProvider;
 import org.netbeans.modules.print.impl.provider.ComponentProvider;
 import org.netbeans.modules.print.impl.provider.TextProvider;
@@ -157,17 +157,14 @@ public class PrintPreviewMenu extends IconAction {
     if (components.size() == 0) {
       return null;
     }
-    return new ComponentProvider(
-      components,
-      getName(components, top, data),
-      getDate(components, data));
+    return new ComponentProvider(components, getName(components, top, data), getDate(data));
   }
 
   private String getName(List<JComponent> components, TopComponent top, DataObject data) {
     for (JComponent component : components) {
-      Object object = component.getClientProperty(Printable.class);
+      Object object = component.getClientProperty(PrintManager.PRINT_NAME);
 
-      if (object instanceof String && !object.equals("")) { // NOI18N
+      if (object instanceof String) {
         return (String) object;
       }
     }
@@ -177,16 +174,9 @@ public class PrintPreviewMenu extends IconAction {
     return data.getName();
   }
 
-  private Date getDate(List<JComponent> components, DataObject data) {
-    for (JComponent component : components) {
-      Object object = component.getClientProperty(Date.class);
-
-      if (object instanceof Date) {
-        return (Date) object;
-      }
-    }
+  private Date getDate(DataObject data) {
     if (data != null) {
-      return getDate(data);
+      return data.getPrimaryFile().lastModified();
     }
     return new Date(System.currentTimeMillis());
   }
@@ -200,7 +190,7 @@ public class PrintPreviewMenu extends IconAction {
   }
 
   private void getPrintable(Container container, List<JComponent> printable) {
-    if (container.isShowing() && container instanceof JComponent && ((JComponent) container).getClientProperty(Printable.class) != null) {
+    if (container.isShowing() && isPrintable(container)) {
 //out("see: " + container.getClass().getName());
       printable.add((JComponent) container);
     }
@@ -211,6 +201,12 @@ public class PrintPreviewMenu extends IconAction {
         getPrintable((Container) component, printable);
       }
     }
+  }
+
+  private boolean isPrintable(Container container) {
+    return
+      container instanceof JComponent &&
+      ((JComponent) container).getClientProperty(PrintManager.PRINT_PRINTABLE) == Boolean.TRUE;
   }
 
   private List<PrintProvider> getNodeProviders() {
@@ -267,10 +263,6 @@ public class PrintPreviewMenu extends IconAction {
     }
 //out("get editor provider.4");
     return new TextProvider(editor, getDate(data));
-  }
-
-  private Date getDate(DataObject data) {
-    return data.getPrimaryFile().lastModified();
   }
 
   private PrintCookie getPrintCookie() {

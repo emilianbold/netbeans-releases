@@ -120,13 +120,13 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Registry>Registry</Spry.Effe
 	{
 		for (var <Number>i = <Number>0</Number></Number>; <Boolean><Number>i</Number> &lt; <effectA.effectsArray.length>effectA.<effectA.effectsArray>effectsArray</effectA.effectsArray>.length</effectA.effectsArray.length></Boolean>; <Number>i</Number>++)
 		{
-			if(!<Spry.Effect.Utils.optionsAreIdentical>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.<Spry.Effect.Utils.optionsAreIdentical>optionsAreIdentical</Spry.Effect.Utils.optionsAreIdentical>(effectA.<effectA.effectsArray>effectsArray</effectA.effectsArray>[<Number>i</Number>].effect.options, effectB.<effectB.effectsArray>effectsArray</effectB.effectsArray>[<Number>i</Number>].effect.options)</Spry.Effect.Utils.optionsAreIdentical>)
+			if(!<Spry.Effect.Utils.optionsAreIdentical>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.<Boolean>optionsAreIdentical</Boolean>(effectA.<effectA.effectsArray>effectsArray</effectA.effectsArray>[<Number>i</Number>].effect.options, effectB.<effectB.effectsArray>effectsArray</effectB.effectsArray>[<Number>i</Number>].effect.options)</Spry.Effect.Utils.optionsAreIdentical>)
 				return <Boolean>false</Boolean>;
 		}
 	}
 	else // single effect
 	{
-		if(!<Spry.Effect.Utils.optionsAreIdentical>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.<Spry.Effect.Utils.optionsAreIdentical>optionsAreIdentical</Spry.Effect.Utils.optionsAreIdentical>(<effectA.options>effectA.options</effectA.options>, <effectB.options>effectB.options</effectB.options>)</Spry.Effect.Utils.optionsAreIdentical>)
+		if(!<Spry.Effect.Utils.optionsAreIdentical>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.<Boolean>optionsAreIdentical</Boolean>(<effectA.options>effectA.options</effectA.options>, <effectB.options>effectB.options</effectB.options>)</Spry.Effect.Utils.optionsAreIdentical>)
 			return <Boolean>false</Boolean>;
 	}
 
@@ -1092,15 +1092,15 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>AppearFade</String> = <Function>f
 
 	if (options)
 	{
-		if (<Boolean><options.duration>options.duration</options.duration> != null</Boolean>) <options.duration>durationInMilliseconds</options.duration> = <options.duration>options.duration</options.duration>;
+		if (<Boolean><Number>options.duration</Number> != null</Boolean>) <Number>durationInMilliseconds</Number> = <Number>options.duration</Number>;
 		if (<Boolean><options.from>options.from</options.from> != null</Boolean>) <options.from>fromOpacity</options.from> = <options.from>options.from</options.from>;
 		if (<Boolean><options.to>options.to</options.to> != null</Boolean>) <options.to>toOpacity</options.to> = <options.to>options.to</options.to>;
-		if (<Boolean><options.toggle>options.toggle</options.toggle> != null</Boolean>) <options.toggle>doToggle</options.toggle> = <options.toggle>options.toggle</options.toggle>;
+		if (<Boolean><Boolean>options.toggle</Boolean> != null</Boolean>) <Boolean>doToggle</Boolean> = <Boolean>options.toggle</Boolean>;
 		if (<Boolean><options.transition>options.transition</options.transition> != null</Boolean>) <options.transition>kindOfTransition</options.transition> = <options.transition>options.transition</options.transition>;
 		if (<Boolean><options.setup>options.setup</options.setup> != null</Boolean>) <options.setup>setupCallback</options.setup> = <options.setup>options.setup</options.setup>;
 		if (<Boolean><options.finish>options.finish</options.finish> != null</Boolean>) <options.finish>finishCallback</options.finish> = <options.finish>options.finish</options.finish>;
 	}
-	options = {duration: <options.duration>durationInMilliseconds</options.duration>, toggle: <options.toggle>doToggle</options.toggle>, transition: <options.transition>kindOfTransition</options.transition>, setup: <options.setup>setupCallback</options.setup>, finish: <options.finish>finishCallback</options.finish>, from: <options.from>fromOpacity</options.from>, to: <options.to>toOpacity</options.to>};
+	options = {duration: <Number>durationInMilliseconds</Number>, toggle: <Boolean>doToggle</Boolean>, transition: <options.transition>kindOfTransition</options.transition>, setup: <options.setup>setupCallback</options.setup>, finish: <options.finish>finishCallback</options.finish>, from: <options.from>fromOpacity</options.from>, to: <options.to>toOpacity</options.to>};
 
 	fromOpacity = fromOpacity/ <Number>100.0</Number>;
 	toOpacity = toOpacity / <Number>100.0</Number>;
@@ -1141,7 +1141,7 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>Blind</String> = <Function>functi
 
 	if (options)
 	{
-		if (<Boolean><options.duration>options.duration</options.duration> != null</Boolean>) <options.duration>durationInMilliseconds</options.duration> = <options.duration>options.duration</options.duration>;
+		if (<Boolean><Number>options.duration</Number> != null</Boolean>) <Number>durationInMilliseconds</Number> = <Number>options.duration</Number>;
 		if (<Boolean><options.from>options.from</options.from> != null</Boolean>)
 		{
 			if (<Spry.Effect.Utils.isPercentValue>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.<Spry.Effect.Utils.isPercentValue>isPercentValue</Spry.Effect.Utils.isPercentValue>(<options.from>options.from</options.from>)</Spry.Effect.Utils.isPercentValue>)
@@ -1164,7 +1164,7 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>Blind</String> = <Function>functi
 				toHeight = (<Spry.Effect.Utils.getPixelValue>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.<Spry.Effect.Utils.getPixelValue>getPixelValue</Spry.Effect.Utils.getPixelValue>(<options.to>options.to</options.to>)</Spry.Effect.Utils.getPixelValue> / <originalRect.height>startHeightPx</originalRect.height>) * <Number>100</Number>;
 			}
 		}
-		if (<Boolean><options.toggle>options.toggle</options.toggle> != null</Boolean>) <options.toggle>doToggle</options.toggle> = <options.toggle>options.toggle</options.toggle>;
+		if (<Boolean><Boolean>options.toggle</Boolean> != null</Boolean>) <Boolean>doToggle</Boolean> = <Boolean>options.toggle</Boolean>;
 		if (<Boolean><options.transition>options.transition</options.transition> != null</Boolean>) <options.transition>kindOfTransition</options.transition> = <options.transition>options.transition</options.transition>;
 		if (<Boolean><options.setup>options.setup</options.setup> != null</Boolean>) <options.setup>setupCallback</options.setup> = <options.setup>options.setup</options.setup>;
 		if (<Boolean><options.finish>options.finish</options.finish> != null</Boolean>) <options.finish>finishCallback</options.finish> = <options.finish>options.finish</options.finish>;
@@ -1181,7 +1181,7 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>Blind</String> = <Function>functi
 	<Spry.Effect.Utils.Rectangle>toRect</Spry.Effect.Utils.Rectangle>.<String>width</String> = <originalRect.width>stopWidthPx</originalRect.width>;
 	<Spry.Effect.Utils.Rectangle>toRect</Spry.Effect.Utils.Rectangle>.<String>height</String> = <originalRect.height>stopHeightPx</originalRect.height> * (toHeight / <Number>100</Number>);
 
-	options = {duration:<options.duration>durationInMilliseconds</options.duration>, toggle:<options.toggle>doToggle</options.toggle>, transition:<options.transition>kindOfTransition</options.transition>, scaleContent:<Boolean>doScaleContent</Boolean>, setup: <options.setup>setupCallback</options.setup>, finish: <options.finish>finishCallback</options.finish>, from: <options.from>optionFrom</options.from>, to: <options.to>optionTo</options.to>};
+	options = {duration:<Number>durationInMilliseconds</Number>, toggle:<Boolean>doToggle</Boolean>, transition:<options.transition>kindOfTransition</options.transition>, scaleContent:<Boolean>doScaleContent</Boolean>, setup: <options.setup>setupCallback</options.setup>, finish: <options.finish>finishCallback</options.finish>, from: <options.from>optionFrom</options.from>, to: <options.to>optionTo</options.to>};
 
 	var <Spry.Effect.Size>blindEffect = <Spry.Effect.Size>new <Spry.Effect.Size>Spry.<Spry.Effect>Effect</Spry.Effect>.Size</Spry.Effect.Size>(<HTMLElement>element</HTMLElement>, <Spry.Effect.Utils.Rectangle>fromRect</Spry.Effect.Utils.Rectangle>, <Spry.Effect.Utils.Rectangle>toRect</Spry.Effect.Utils.Rectangle>, options)</Spry.Effect.Size></Spry.Effect.Size>;
 	<Spry.Effect.Size>blindEffect</Spry.Effect.Size>.<String>name</String> = <String>'Blind'</String>;
@@ -1191,12 +1191,12 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>Blind</String> = <Function>functi
 }</Function>;
 
 
-<Function>function setupHighlight(<HTMLElement>element</HTMLElement>, effect) 
+<Function>function <void>setupHighlight</void>(<HTMLElement>element</HTMLElement>, effect) 
 {
 	<Spry.Effect.setStyleProp>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.setStyleProp>setStyleProp</Spry.Effect.setStyleProp>(<HTMLElement>element</HTMLElement>, <String>'background-image'</String>, <String>'none'</String>)</Spry.Effect.setStyleProp>;
 }</Function>;
 
-<Function>function finishHighlight(<HTMLElement>element</HTMLElement>, effect) 
+<Function>function <void>finishHighlight</void>(<HTMLElement>element</HTMLElement>, effect) 
 {
 	<Spry.Effect.setStyleProp>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.setStyleProp>setStyleProp</Spry.Effect.setStyleProp>(<HTMLElement>element</HTMLElement>, <String>'background-image'</String>, <effect.options.restoreBackgroundImage>effect.<effect.options>options</effect.options>.restoreBackgroundImage</effect.options.restoreBackgroundImage>)</Spry.Effect.setStyleProp>;
 
@@ -1210,8 +1210,8 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>Highlight</String> = <Function>fu
 	var <String>toColor = <String>"#ffffff"</String></String>;
 	var <Boolean>doToggle = <Boolean>false</Boolean></Boolean>;
 	var <Spry.sinusoidalTransition>kindOfTransition = <Spry.sinusoidalTransition>Spry.sinusoidalTransition</Spry.sinusoidalTransition></Spry.sinusoidalTransition>;
-	var setupCallback = setupHighlight;
-	var finishCallback = finishHighlight;
+	var <void>setupCallback = <void>setupHighlight</void></void>;
+	var <void>finishCallback = <void>finishHighlight</void></void>;
 	var <HTMLElement>element = <Spry.Effect.getElement>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.getElement>getElement</Spry.Effect.getElement>(<HTMLElement>element</HTMLElement>)</Spry.Effect.getElement></HTMLElement>;
 	var fromColor = <Spry.Effect.getStyleProp>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.getStyleProp>getStyleProp</Spry.Effect.getStyleProp>(<HTMLElement>element</HTMLElement>, <String>"background-color"</String>)</Spry.Effect.getStyleProp>;
 	var restoreColor = fromColor;
@@ -1225,11 +1225,11 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>Highlight</String> = <Function>fu
 
 	if (options)
 	{
-		if (<Boolean><options.duration>options.duration</options.duration> != null</Boolean>) <options.duration>durationInMilliseconds</options.duration> = <options.duration>options.duration</options.duration>;
+		if (<Boolean><Number>options.duration</Number> != null</Boolean>) <Number>durationInMilliseconds</Number> = <Number>options.duration</Number>;
 		if (<Boolean><options.from>options.from</options.from> != null</Boolean>) <options.from>fromColor</options.from> = <options.from>options.from</options.from>;
 		if (<Boolean><options.to>options.to</options.to> != null</Boolean>) <options.to>toColor</options.to> = <options.to>options.to</options.to>;
 		if (<options.restoreColor>options.restoreColor</options.restoreColor>) <options.restoreColor>restoreColor</options.restoreColor> = <options.restoreColor>options.restoreColor</options.restoreColor>;
-		if (<Boolean><options.toggle>options.toggle</options.toggle> != null</Boolean>) <options.toggle>doToggle</options.toggle> = <options.toggle>options.toggle</options.toggle>;
+		if (<Boolean><Boolean>options.toggle</Boolean> != null</Boolean>) <Boolean>doToggle</Boolean> = <Boolean>options.toggle</Boolean>;
 		if (<Boolean><options.transition>options.transition</options.transition> != null</Boolean>) <options.transition>kindOfTransition</options.transition> = <options.transition>options.transition</options.transition>;
 		if (<Boolean><options.setup>options.setup</options.setup> != null</Boolean>) <options.setup>setupCallback</options.setup> = <options.setup>options.setup</options.setup>;
 		if (<Boolean><options.finish>options.finish</options.finish> != null</Boolean>) <options.finish>finishCallback</options.finish> = <options.finish>options.finish</options.finish>;
@@ -1237,7 +1237,7 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>Highlight</String> = <Function>fu
 
 	var restoreBackgroundImage = <Spry.Effect.getStyleProp>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.getStyleProp>getStyleProp</Spry.Effect.getStyleProp>(<HTMLElement>element</HTMLElement>, <String>'background-image'</String>)</Spry.Effect.getStyleProp>;
 	
-	options = {duration: <options.duration>durationInMilliseconds</options.duration>, toggle: <options.toggle>doToggle</options.toggle>, transition: <options.transition>kindOfTransition</options.transition>, setup: <options.setup>setupCallback</options.setup>, finish: <options.finish>finishCallback</options.finish>, <options.restoreColor>restoreColor</options.restoreColor>: <options.restoreColor>restoreColor</options.restoreColor>, restoreBackgroundImage: restoreBackgroundImage, from: <options.from>optionFrom</options.from>, to: <options.to>optionTo</options.to>};
+	options = {duration: <Number>durationInMilliseconds</Number>, toggle: <Boolean>doToggle</Boolean>, transition: <options.transition>kindOfTransition</options.transition>, setup: <options.setup>setupCallback</options.setup>, finish: <options.finish>finishCallback</options.finish>, <options.restoreColor>restoreColor</options.restoreColor>: <options.restoreColor>restoreColor</options.restoreColor>, restoreBackgroundImage: restoreBackgroundImage, from: <options.from>optionFrom</options.from>, to: <options.to>optionTo</options.to>};
 
 	var <Spry.Effect.Color>highlightEffect = <Spry.Effect.Color>new <Spry.Effect.Color>Spry.<Spry.Effect>Effect</Spry.Effect>.Color</Spry.Effect.Color>(<HTMLElement>element</HTMLElement>, <options.from>fromColor</options.from>, <options.to>toColor</options.to>, options)</Spry.Effect.Color></Spry.Effect.Color>;
 	<Spry.Effect.Color>highlightEffect</Spry.Effect.Color>.<String>name</String> = <String>'Highlight'</String>;
@@ -1258,7 +1258,7 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>Slide</String> = <Function>functi
 	var firstChildElt = <Spry.Effect.Utils.getFirstChildElement>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.<Spry.Effect.Utils.getFirstChildElement>getFirstChildElement</Spry.Effect.Utils.getFirstChildElement>(<HTMLElement>element</HTMLElement>)</Spry.Effect.Utils.getFirstChildElement>;
 
 	
-	<Spry.Effect.makeClipping>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.makeClipping>makeClipping</Spry.Effect.makeClipping>(<HTMLElement>element</HTMLElement>)</Spry.Effect.makeClipping>;
+	<Spry.Effect.makeClipping>Spry.<Spry.Effect>Effect</Spry.Effect>.<void>makeClipping</void>(<HTMLElement>element</HTMLElement>)</Spry.Effect.makeClipping>;
 
 	// for IE 6 on win: check if position is static or fixed -&gt; not supported and would cause trouble
 	if(<RegExp.test><RegExp>/MSIE 6.0/</RegExp>.<RegExp.test>test</RegExp.test>(<Navigator.userAgent><Navigator>navigator</Navigator>.userAgent</Navigator.userAgent>)</RegExp.test> &amp;&amp; <RegExp.test><RegExp>/Windows NT 5.1/</RegExp>.<RegExp.test>test</RegExp.test>(<Navigator.userAgent><Navigator>navigator</Navigator>.userAgent</Navigator.userAgent>)</RegExp.test>)
@@ -1274,33 +1274,33 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>Slide</String> = <Function>functi
 
 	if(firstChildElt)
 	{
-		<Spry.Effect.makePositioned>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.makePositioned>makePositioned</Spry.Effect.makePositioned>(firstChildElt)</Spry.Effect.makePositioned>;
-		<Spry.Effect.makeClipping>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.makeClipping>makeClipping</Spry.Effect.makeClipping>(firstChildElt)</Spry.Effect.makeClipping>;
+		<Spry.Effect.makePositioned>Spry.<Spry.Effect>Effect</Spry.Effect>.<void>makePositioned</void>(firstChildElt)</Spry.Effect.makePositioned>;
+		<Spry.Effect.makeClipping>Spry.<Spry.Effect>Effect</Spry.Effect>.<void>makeClipping</void>(firstChildElt)</Spry.Effect.makeClipping>;
 	}
 
 	var elementRect = <Spry.Effect.getDimensions>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.getDimensions>getDimensions</Spry.Effect.getDimensions>(<HTMLElement>element</HTMLElement>)</Spry.Effect.getDimensions>;
 	var <Spry.Effect.Utils.Position>startOffsetPosition = <Spry.Effect.Utils.Position>new <Spry.Effect.Utils.Position>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.Position</Spry.Effect.Utils.Position>()</Spry.Effect.Utils.Position></Spry.Effect.Utils.Position>;
 	<Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.<String>x</String> = <parseInt>parseInt(<Spry.Effect.getStyleProp>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.getStyleProp>getStyleProp</Spry.Effect.getStyleProp>(firstChildElt, <String>"left"</String>)</Spry.Effect.getStyleProp>)</parseInt>;
 	<Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.<String>y</String> = <parseInt>parseInt(<Spry.Effect.getStyleProp>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.getStyleProp>getStyleProp</Spry.Effect.getStyleProp>(firstChildElt, <String>"top"</String>)</Spry.Effect.getStyleProp>)</parseInt>;
-	if (!<Spry.Effect.Utils.Position.x><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Spry.Effect.Utils.Position.x>) <Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.<String>x</String> = <Number>0</Number>;
-	if (!<Spry.Effect.Utils.Position.y><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Spry.Effect.Utils.Position.y>) <Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.<String>y</String> = <Number>0</Number>;
+	if (!<Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Number>) <Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.<String>x</String> = <Number>0</Number>;
+	if (!<Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Number>) <Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.<String>y</String> = <Number>0</Number>;
 
 	var <elementRect.height>verticalMovePx = <elementRect.height>elementRect.height</elementRect.height></elementRect.height>;
 
 	var <Spry.Effect.Utils.Position>fromPos = <Spry.Effect.Utils.Position>new <Spry.Effect.Utils.Position>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.Position</Spry.Effect.Utils.Position></Spry.Effect.Utils.Position></Spry.Effect.Utils.Position>;
-	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>x</String> = <Spry.Effect.Utils.Position.x><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Spry.Effect.Utils.Position.x>;
-	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>y</String> = <Spry.Effect.Utils.Position.y><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Spry.Effect.Utils.Position.y>;
+	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>x</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Number>;
+	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>y</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Number>;
 
 	var <Spry.Effect.Utils.Position>toPos = <Spry.Effect.Utils.Position>new <Spry.Effect.Utils.Position>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.Position</Spry.Effect.Utils.Position></Spry.Effect.Utils.Position></Spry.Effect.Utils.Position>;
-	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>x</String> = <Spry.Effect.Utils.Position.x><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Spry.Effect.Utils.Position.x>;
-	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>y</String> = <Spry.Effect.Utils.Position.y><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Spry.Effect.Utils.Position.y> - <elementRect.height>verticalMovePx</elementRect.height>;
+	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>x</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Number>;
+	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>y</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Number> - <elementRect.height>verticalMovePx</elementRect.height>;
 
 	var <options.from>optionFrom = <options.from>options.from</options.from></options.from>;
 	var <options.to>optionTo   = <options.to>options.to</options.to></options.to>;
 
 	if (options)
 	{
-		if (<Boolean><options.duration>options.duration</options.duration> != null</Boolean>) <options.duration>durationInMilliseconds</options.duration> = <options.duration>options.duration</options.duration>;
+		if (<Boolean><Number>options.duration</Number> != null</Boolean>) <Number>durationInMilliseconds</Number> = <Number>options.duration</Number>;
 
 		if (<Boolean><options.from>options.from</options.from> != null</Boolean>)
 		{
@@ -1318,13 +1318,13 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>Slide</String> = <Function>functi
 				<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>y</String> = <Spry.Effect.Utils.getPixelValue>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.<Spry.Effect.Utils.getPixelValue>getPixelValue</Spry.Effect.Utils.getPixelValue>(<options.to>options.to</options.to>)</Spry.Effect.Utils.getPixelValue>;
 		}
 
-		if (<Boolean><options.toggle>options.toggle</options.toggle> != null</Boolean>) <options.toggle>doToggle</options.toggle> = <options.toggle>options.toggle</options.toggle>;
+		if (<Boolean><Boolean>options.toggle</Boolean> != null</Boolean>) <Boolean>doToggle</Boolean> = <Boolean>options.toggle</Boolean>;
 		if (<Boolean><options.transition>options.transition</options.transition> != null</Boolean>) <options.transition>kindOfTransition</options.transition> = <options.transition>options.transition</options.transition>;
 		if (<Boolean><options.setup>options.setup</options.setup> != null</Boolean>) <options.setup>setupCallback</options.setup> = <options.setup>options.setup</options.setup>;
 		if (<Boolean><options.finish>options.finish</options.finish> != null</Boolean>) <options.finish>finishCallback</options.finish> = <options.finish>options.finish</options.finish>;
 	}
 
-	options = {duration:<options.duration>durationInMilliseconds</options.duration>, toggle:<options.toggle>doToggle</options.toggle>, transition:<options.transition>kindOfTransition</options.transition>, setup: <options.setup>setupCallback</options.setup>, finish: <options.finish>finishCallback</options.finish>, from: <options.from>optionFrom</options.from>, to: <options.to>optionTo</options.to>};
+	options = {duration:<Number>durationInMilliseconds</Number>, toggle:<Boolean>doToggle</Boolean>, transition:<options.transition>kindOfTransition</options.transition>, setup: <options.setup>setupCallback</options.setup>, finish: <options.finish>finishCallback</options.finish>, from: <options.from>optionFrom</options.from>, to: <options.to>optionTo</options.to>};
 
 	var <Spry.Effect.MoveSlide>slideEffect = <Spry.Effect.MoveSlide>new <Spry.Effect.MoveSlide>Spry.<Spry.Effect>Effect</Spry.Effect>.MoveSlide</Spry.Effect.MoveSlide>(<HTMLElement>element</HTMLElement>, <Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>, <Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>, options)</Spry.Effect.MoveSlide></Spry.Effect.MoveSlide>;
 	<Spry.Effect.MoveSlide>slideEffect</Spry.Effect.MoveSlide>.<String>name</String> = <String>'Slide'</String>;
@@ -1338,14 +1338,14 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>GrowShrink</String> = <Function>f
 {
 	var <HTMLElement>element = <Spry.Effect.getElement>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.getElement>getElement</Spry.Effect.getElement>(<HTMLElement>element</HTMLElement>)</Spry.Effect.getElement></HTMLElement>;
 	
-	<Spry.Effect.makePositioned>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.makePositioned>makePositioned</Spry.Effect.makePositioned>(<HTMLElement>element</HTMLElement>)</Spry.Effect.makePositioned>; // for move
-	<Spry.Effect.makeClipping>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.makeClipping>makeClipping</Spry.Effect.makeClipping>(<HTMLElement>element</HTMLElement>)</Spry.Effect.makeClipping>;
+	<Spry.Effect.makePositioned>Spry.<Spry.Effect>Effect</Spry.Effect>.<void>makePositioned</void>(<HTMLElement>element</HTMLElement>)</Spry.Effect.makePositioned>; // for move
+	<Spry.Effect.makeClipping>Spry.<Spry.Effect>Effect</Spry.Effect>.<void>makeClipping</void>(<HTMLElement>element</HTMLElement>)</Spry.Effect.makeClipping>;
 
 	var <Spry.Effect.Utils.Position>startOffsetPosition = <Spry.Effect.Utils.Position>new <Spry.Effect.Utils.Position>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.Position</Spry.Effect.Utils.Position>()</Spry.Effect.Utils.Position></Spry.Effect.Utils.Position>;
 	<Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.<String>x</String> = <parseInt>parseInt(<Spry.Effect.getStyleProp>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.getStyleProp>getStyleProp</Spry.Effect.getStyleProp>(<HTMLElement>element</HTMLElement>, <String>"left"</String>)</Spry.Effect.getStyleProp>)</parseInt>;
 	<Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.<String>y</String> = <parseInt>parseInt(<Spry.Effect.getStyleProp>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.getStyleProp>getStyleProp</Spry.Effect.getStyleProp>(<HTMLElement>element</HTMLElement>, <String>"top"</String>)</Spry.Effect.getStyleProp>)</parseInt>;	
-	if (!<Spry.Effect.Utils.Position.x><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Spry.Effect.Utils.Position.x>) <Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.<String>x</String> = <Number>0</Number>;
-	if (!<Spry.Effect.Utils.Position.y><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Spry.Effect.Utils.Position.y>) <Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.<String>y</String> = <Number>0</Number>;
+	if (!<Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Number>) <Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.<String>x</String> = <Number>0</Number>;
+	if (!<Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Number>) <Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.<String>y</String> = <Number>0</Number>;
 	
 	var <Spry.Effect.Cluster>effectCluster = <Spry.Effect.Cluster>new <Spry.Effect.Cluster>Spry.<Spry.Effect>Effect</Spry.Effect>.Cluster</Spry.Effect.Cluster></Spry.Effect.Cluster></Spry.Effect.Cluster>;
 
@@ -1376,7 +1376,7 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>GrowShrink</String> = <Function>f
 
 	if (options)
 	{
-		if (<Boolean><options.duration>options.duration</options.duration> != null</Boolean>) <options.duration>durationInMilliseconds</options.duration> = <options.duration>options.duration</options.duration>;
+		if (<Boolean><Number>options.duration</Number> != null</Boolean>) <Number>durationInMilliseconds</Number> = <Number>options.duration</Number>;
 		if (<Boolean><options.from>options.from</options.from> != null</Boolean>) 
 		{
 		if (<Spry.Effect.Utils.isPercentValue>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.<Spry.Effect.Utils.isPercentValue>isPercentValue</Spry.Effect.Utils.isPercentValue>(<options.from>options.from</options.from>)</Spry.Effect.Utils.isPercentValue>)
@@ -1403,34 +1403,34 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>GrowShrink</String> = <Function>f
 				<Spry.Effect.Utils.Rectangle>toRect</Spry.Effect.Utils.Rectangle>.<String>height</String> = <Spry.Effect.Utils.getPixelValue>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.<Spry.Effect.Utils.getPixelValue>getPixelValue</Spry.Effect.Utils.getPixelValue>(<options.to>options.to</options.to>)</Spry.Effect.Utils.getPixelValue>;
 			}
 		}
-		if (<Boolean><options.toggle>options.toggle</options.toggle> != null</Boolean>) <options.toggle>doToggle</options.toggle> = <options.toggle>options.toggle</options.toggle>;
+		if (<Boolean><Boolean>options.toggle</Boolean> != null</Boolean>) <Boolean>doToggle</Boolean> = <Boolean>options.toggle</Boolean>;
 		if (<Boolean><options.transition>options.transition</options.transition> != null</Boolean>) <options.transition>kindOfTransition</options.transition> = <options.transition>options.transition</options.transition>;
 		if (<Boolean><options.setup>options.setup</options.setup> != null</Boolean>) <options.setup>setupCallback</options.setup> = <options.setup>options.setup</options.setup>;
 		if (<Boolean><options.finish>options.finish</options.finish> != null</Boolean>) <options.finish>finishCallback</options.finish> = <options.finish>options.finish</options.finish>;
 	}
 
-	options = {duration:<options.duration>durationInMilliseconds</options.duration>, toggle:<options.toggle>doToggle</options.toggle>, transition:<options.transition>kindOfTransition</options.transition>, scaleContent:<Boolean>doScaleContent</Boolean>, from: <options.from>optionFrom</options.from>, to: <options.to>optionTo</options.to>};
+	options = {duration:<Number>durationInMilliseconds</Number>, toggle:<Boolean>doToggle</Boolean>, transition:<options.transition>kindOfTransition</options.transition>, scaleContent:<Boolean>doScaleContent</Boolean>, from: <options.from>optionFrom</options.from>, to: <options.to>optionTo</options.to>};
 	var <Spry.Effect.Size>sizeEffect = <Spry.Effect.Size>new <Spry.Effect.Size>Spry.<Spry.Effect>Effect</Spry.Effect>.Size</Spry.Effect.Size>(<HTMLElement>element</HTMLElement>, <Spry.Effect.Utils.Rectangle>fromRect</Spry.Effect.Utils.Rectangle>, <Spry.Effect.Utils.Rectangle>toRect</Spry.Effect.Utils.Rectangle>, options)</Spry.Effect.Size></Spry.Effect.Size>;
-	<Spry.Effect.Cluster.addParallelEffect><Spry.Effect.Cluster>effectCluster</Spry.Effect.Cluster>.<Spry.Effect.Cluster.addParallelEffect>addParallelEffect</Spry.Effect.Cluster.addParallelEffect>(<Spry.Effect.Size>sizeEffect</Spry.Effect.Size>)</Spry.Effect.Cluster.addParallelEffect>;
+	<Spry.Effect.Cluster.addParallelEffect><Spry.Effect.Cluster>effectCluster</Spry.Effect.Cluster>.<void>addParallelEffect</void>(<Spry.Effect.Size>sizeEffect</Spry.Effect.Size>)</Spry.Effect.Cluster.addParallelEffect>;
 
-	options = {duration:<options.duration>durationInMilliseconds</options.duration>, toggle:<options.toggle>doToggle</options.toggle>, transition:<options.transition>kindOfTransition</options.transition>, from: <options.from>optionFrom</options.from>, to: <options.to>optionTo</options.to>};
+	options = {duration:<Number>durationInMilliseconds</Number>, toggle:<Boolean>doToggle</Boolean>, transition:<options.transition>kindOfTransition</options.transition>, from: <options.from>optionFrom</options.from>, to: <options.to>optionTo</options.to>};
 	var <Spry.Effect.Utils.Position>fromPos = <Spry.Effect.Utils.Position>new <Spry.Effect.Utils.Position>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.Position</Spry.Effect.Utils.Position></Spry.Effect.Utils.Position></Spry.Effect.Utils.Position>;
-	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>x</String> = <Spry.Effect.Utils.Position.x><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Spry.Effect.Utils.Position.x> + (<dimRect.width>originalWidth</dimRect.width> - <Spry.Effect.Utils.Rectangle.width><Spry.Effect.Utils.Rectangle>fromRect</Spry.Effect.Utils.Rectangle>.width</Spry.Effect.Utils.Rectangle.width>) / <Number>2.0</Number>;
-	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>y</String> = <Spry.Effect.Utils.Position.y><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Spry.Effect.Utils.Position.y> + (<dimRect.height>originalHeight</dimRect.height> -<Spry.Effect.Utils.Rectangle.height><Spry.Effect.Utils.Rectangle>fromRect</Spry.Effect.Utils.Rectangle>.height</Spry.Effect.Utils.Rectangle.height>) / <Number>2.0</Number>;
+	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>x</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Number> + (<dimRect.width>originalWidth</dimRect.width> - <Number><Spry.Effect.Utils.Rectangle>fromRect</Spry.Effect.Utils.Rectangle>.width</Number>) / <Number>2.0</Number>;
+	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>y</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Number> + (<dimRect.height>originalHeight</dimRect.height> -<Number><Spry.Effect.Utils.Rectangle>fromRect</Spry.Effect.Utils.Rectangle>.height</Number>) / <Number>2.0</Number>;
 
 	var <Spry.Effect.Utils.Position>toPos = <Spry.Effect.Utils.Position>new <Spry.Effect.Utils.Position>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.Position</Spry.Effect.Utils.Position></Spry.Effect.Utils.Position></Spry.Effect.Utils.Position>;
-	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>x</String> = <Spry.Effect.Utils.Position.x><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Spry.Effect.Utils.Position.x> + (<dimRect.width>originalWidth</dimRect.width> - <Spry.Effect.Utils.Rectangle.width><Spry.Effect.Utils.Rectangle>toRect</Spry.Effect.Utils.Rectangle>.width</Spry.Effect.Utils.Rectangle.width>) / <Number>2.0</Number>;
-	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>y</String> = <Spry.Effect.Utils.Position.y><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Spry.Effect.Utils.Position.y> + (<dimRect.height>originalHeight</dimRect.height> -<Spry.Effect.Utils.Rectangle.height><Spry.Effect.Utils.Rectangle>toRect</Spry.Effect.Utils.Rectangle>.height</Spry.Effect.Utils.Rectangle.height>) / <Number>2.0</Number>;
+	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>x</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Number> + (<dimRect.width>originalWidth</dimRect.width> - <Number><Spry.Effect.Utils.Rectangle>toRect</Spry.Effect.Utils.Rectangle>.width</Number>) / <Number>2.0</Number>;
+	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>y</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Number> + (<dimRect.height>originalHeight</dimRect.height> -<Number><Spry.Effect.Utils.Rectangle>toRect</Spry.Effect.Utils.Rectangle>.height</Number>) / <Number>2.0</Number>;
 
-	var initialProps2 = {top: <Spry.Effect.Utils.Position.y><Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.y</Spry.Effect.Utils.Position.y>, left: <Spry.Effect.Utils.Position.x><Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.x</Spry.Effect.Utils.Position.x>};
+	var initialProps2 = {top: <Number><Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.y</Number>, left: <Number><Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.x</Number>};
 
 	var <Spry.Effect.Move>moveEffect = <Spry.Effect.Move>new <Spry.Effect.Move>Spry.<Spry.Effect>Effect</Spry.Effect>.Move</Spry.Effect.Move>(<HTMLElement>element</HTMLElement>, <Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>, <Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>, options, initialProps2)</Spry.Effect.Move></Spry.Effect.Move>;
-	<Spry.Effect.Cluster.addParallelEffect><Spry.Effect.Cluster>effectCluster</Spry.Effect.Cluster>.<Spry.Effect.Cluster.addParallelEffect>addParallelEffect</Spry.Effect.Cluster.addParallelEffect>(<Spry.Effect.Move>moveEffect</Spry.Effect.Move>)</Spry.Effect.Cluster.addParallelEffect>;
+	<Spry.Effect.Cluster.addParallelEffect><Spry.Effect.Cluster>effectCluster</Spry.Effect.Cluster>.<void>addParallelEffect</void>(<Spry.Effect.Move>moveEffect</Spry.Effect.Move>)</Spry.Effect.Cluster.addParallelEffect>;
 
 	<Spry.Effect.Cluster>effectCluster</Spry.Effect.Cluster>.<String>setup</String> = <options.setup>setupCallback</options.setup>;
 	<Spry.Effect.Cluster>effectCluster</Spry.Effect.Cluster>.<String>finish</String> = <options.finish>finishCallback</options.finish>;
 	
-	<Spry.Effect.Cluster.setToggle><Spry.Effect.Cluster>effectCluster</Spry.Effect.Cluster>.<Spry.Effect.Cluster.setToggle>setToggle</Spry.Effect.Cluster.setToggle>(<options.toggle>doToggle</options.toggle>)</Spry.Effect.Cluster.setToggle>;
+	<Spry.Effect.Cluster.setToggle><Spry.Effect.Cluster>effectCluster</Spry.Effect.Cluster>.<void>setToggle</void>(<Boolean>doToggle</Boolean>)</Spry.Effect.Cluster.setToggle>;
 	<Spry.Effect.Cluster>effectCluster</Spry.Effect.Cluster>.<String>name</String> = <String>'GrowShrink'</String>;
 
 	var registeredEffect = <SpryRegistry.getRegisteredEffect>SpryRegistry.<SpryRegistry.getRegisteredEffect>getRegisteredEffect</SpryRegistry.getRegisteredEffect>(<HTMLElement>element</HTMLElement>, <Spry.Effect.Cluster>effectCluster</Spry.Effect.Cluster>)</SpryRegistry.getRegisteredEffect>;
@@ -1443,7 +1443,7 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>Shake</String> = <Function>functi
 {
 	var <HTMLElement>element = <Spry.Effect.getElement>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.getElement>getElement</Spry.Effect.getElement>(<HTMLElement>element</HTMLElement>)</Spry.Effect.getElement></HTMLElement>;
 
-	<Spry.Effect.makePositioned>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.makePositioned>makePositioned</Spry.Effect.makePositioned>(<HTMLElement>element</HTMLElement>)</Spry.Effect.makePositioned>;
+	<Spry.Effect.makePositioned>Spry.<Spry.Effect>Effect</Spry.Effect>.<void>makePositioned</void>(<HTMLElement>element</HTMLElement>)</Spry.Effect.makePositioned>;
 	
 
 	var setupCallback = null;
@@ -1458,82 +1458,82 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>Shake</String> = <Function>functi
 	var <Spry.Effect.Utils.Position>startOffsetPosition = <Spry.Effect.Utils.Position>new <Spry.Effect.Utils.Position>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.Position</Spry.Effect.Utils.Position>()</Spry.Effect.Utils.Position></Spry.Effect.Utils.Position>;
 	<Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.<String>x</String> = <parseInt>parseInt(<Spry.Effect.getStyleProp>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.getStyleProp>getStyleProp</Spry.Effect.getStyleProp>(<HTMLElement>element</HTMLElement>, <String>"left"</String>)</Spry.Effect.getStyleProp>)</parseInt>;
 	<Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.<String>y</String> = <parseInt>parseInt(<Spry.Effect.getStyleProp>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.getStyleProp>getStyleProp</Spry.Effect.getStyleProp>(<HTMLElement>element</HTMLElement>, <String>"top"</String>)</Spry.Effect.getStyleProp>)</parseInt>;	
-	if (!<Spry.Effect.Utils.Position.x><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Spry.Effect.Utils.Position.x>) <Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.<String>x</String> = <Number>0</Number>;
-	if (!<Spry.Effect.Utils.Position.y><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Spry.Effect.Utils.Position.y>) <Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.<String>y</String> = <Number>0</Number>;	
+	if (!<Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Number>) <Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.<String>x</String> = <Number>0</Number>;
+	if (!<Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Number>) <Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.<String>y</String> = <Number>0</Number>;	
 
 	var <Spry.Effect.Cluster>shakeEffectCluster = <Spry.Effect.Cluster>new <Spry.Effect.Cluster>Spry.<Spry.Effect>Effect</Spry.Effect>.Cluster</Spry.Effect.Cluster>()</Spry.Effect.Cluster></Spry.Effect.Cluster>;
 
 	var <Spry.Effect.Utils.Position>fromPos = <Spry.Effect.Utils.Position>new <Spry.Effect.Utils.Position>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.Position</Spry.Effect.Utils.Position></Spry.Effect.Utils.Position></Spry.Effect.Utils.Position>;
-	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>x</String> = <Spry.Effect.Utils.Position.x><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Spry.Effect.Utils.Position.x> + <Number>0</Number>;
-	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>y</String> = <Spry.Effect.Utils.Position.y><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Spry.Effect.Utils.Position.y> + <Number>0</Number>;
+	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>x</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Number> + <Number>0</Number>;
+	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>y</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Number> + <Number>0</Number>;
 
 	var <Spry.Effect.Utils.Position>toPos = <Spry.Effect.Utils.Position>new <Spry.Effect.Utils.Position>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.Position</Spry.Effect.Utils.Position></Spry.Effect.Utils.Position></Spry.Effect.Utils.Position>;
-	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>x</String> = <Spry.Effect.Utils.Position.x><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Spry.Effect.Utils.Position.x> + <Number>20</Number>;
-	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>y</String> = <Spry.Effect.Utils.Position.y><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Spry.Effect.Utils.Position.y> + <Number>0</Number>;
+	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>x</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Number> + <Number>20</Number>;
+	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>y</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Number> + <Number>0</Number>;
 
 	options = {duration:<Number>50</Number>, toggle:<Boolean>false</Boolean>};
 	var <Spry.Effect.Move>effect = <Spry.Effect.Move>new <Spry.Effect.Move>Spry.<Spry.Effect>Effect</Spry.Effect>.Move</Spry.Effect.Move>(<HTMLElement>element</HTMLElement>, <Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>, <Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>, options)</Spry.Effect.Move></Spry.Effect.Move>;
-	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>shakeEffectCluster</Spry.Effect.Cluster>.<Spry.Effect.Cluster.addNextEffect>addNextEffect</Spry.Effect.Cluster.addNextEffect>(<Spry.Effect.Move>effect</Spry.Effect.Move>)</Spry.Effect.Cluster.addNextEffect>;
+	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>shakeEffectCluster</Spry.Effect.Cluster>.<void>addNextEffect</void>(<Spry.Effect.Move>effect</Spry.Effect.Move>)</Spry.Effect.Cluster.addNextEffect>;
 	
 	var <Spry.Effect.Utils.Position>fromPos = <Spry.Effect.Utils.Position>new <Spry.Effect.Utils.Position>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.Position</Spry.Effect.Utils.Position></Spry.Effect.Utils.Position></Spry.Effect.Utils.Position>;
-	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>x</String> = <Spry.Effect.Utils.Position.x><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Spry.Effect.Utils.Position.x> + <Number>20</Number>;
-	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>y</String> = <Spry.Effect.Utils.Position.y><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Spry.Effect.Utils.Position.y> + <Number>0</Number>;
+	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>x</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Number> + <Number>20</Number>;
+	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>y</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Number> + <Number>0</Number>;
 
 	var <Spry.Effect.Utils.Position>toPos = <Spry.Effect.Utils.Position>new <Spry.Effect.Utils.Position>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.Position</Spry.Effect.Utils.Position></Spry.Effect.Utils.Position></Spry.Effect.Utils.Position>;
-	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>x</String> = <Spry.Effect.Utils.Position.x><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Spry.Effect.Utils.Position.x> + -<Number>20</Number>;
-	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>y</String> = <Spry.Effect.Utils.Position.y><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Spry.Effect.Utils.Position.y> + <Number>0</Number>;
+	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>x</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Number> + -<Number>20</Number>;
+	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>y</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Number> + <Number>0</Number>;
 
 	options = {duration:<Number>100</Number>, toggle:<Boolean>false</Boolean>};
 	var <Spry.Effect.Move>effect = <Spry.Effect.Move>new <Spry.Effect.Move>Spry.<Spry.Effect>Effect</Spry.Effect>.Move</Spry.Effect.Move>(<HTMLElement>element</HTMLElement>, <Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>, <Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>, options)</Spry.Effect.Move></Spry.Effect.Move>;
-	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>shakeEffectCluster</Spry.Effect.Cluster>.<Spry.Effect.Cluster.addNextEffect>addNextEffect</Spry.Effect.Cluster.addNextEffect>(<Spry.Effect.Move>effect</Spry.Effect.Move>)</Spry.Effect.Cluster.addNextEffect>;
+	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>shakeEffectCluster</Spry.Effect.Cluster>.<void>addNextEffect</void>(<Spry.Effect.Move>effect</Spry.Effect.Move>)</Spry.Effect.Cluster.addNextEffect>;
 
 	var <Spry.Effect.Utils.Position>fromPos = <Spry.Effect.Utils.Position>new <Spry.Effect.Utils.Position>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.Position</Spry.Effect.Utils.Position></Spry.Effect.Utils.Position></Spry.Effect.Utils.Position>;
-	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>x</String> = <Spry.Effect.Utils.Position.x><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Spry.Effect.Utils.Position.x> + -<Number>20</Number>;
-	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>y</String> = <Spry.Effect.Utils.Position.y><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Spry.Effect.Utils.Position.y> + <Number>0</Number>;
+	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>x</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Number> + -<Number>20</Number>;
+	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>y</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Number> + <Number>0</Number>;
 
 	var <Spry.Effect.Utils.Position>toPos = <Spry.Effect.Utils.Position>new <Spry.Effect.Utils.Position>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.Position</Spry.Effect.Utils.Position></Spry.Effect.Utils.Position></Spry.Effect.Utils.Position>;
-	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>x</String> = <Spry.Effect.Utils.Position.x><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Spry.Effect.Utils.Position.x> + <Number>20</Number>;
-	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>y</String> = <Spry.Effect.Utils.Position.y><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Spry.Effect.Utils.Position.y> + <Number>0</Number>;
+	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>x</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Number> + <Number>20</Number>;
+	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>y</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Number> + <Number>0</Number>;
 
 	options = {duration:<Number>100</Number>, toggle:<Boolean>false</Boolean>};
 	var <Spry.Effect.Move>effect = <Spry.Effect.Move>new <Spry.Effect.Move>Spry.<Spry.Effect>Effect</Spry.Effect>.Move</Spry.Effect.Move>(<HTMLElement>element</HTMLElement>, <Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>, <Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>, options)</Spry.Effect.Move></Spry.Effect.Move>;
-	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>shakeEffectCluster</Spry.Effect.Cluster>.<Spry.Effect.Cluster.addNextEffect>addNextEffect</Spry.Effect.Cluster.addNextEffect>(<Spry.Effect.Move>effect</Spry.Effect.Move>)</Spry.Effect.Cluster.addNextEffect>;
+	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>shakeEffectCluster</Spry.Effect.Cluster>.<void>addNextEffect</void>(<Spry.Effect.Move>effect</Spry.Effect.Move>)</Spry.Effect.Cluster.addNextEffect>;
 
 	var <Spry.Effect.Utils.Position>fromPos = <Spry.Effect.Utils.Position>new <Spry.Effect.Utils.Position>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.Position</Spry.Effect.Utils.Position></Spry.Effect.Utils.Position></Spry.Effect.Utils.Position>;
-	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>x</String> = <Spry.Effect.Utils.Position.x><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Spry.Effect.Utils.Position.x> + <Number>20</Number>;
-	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>y</String> = <Spry.Effect.Utils.Position.y><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Spry.Effect.Utils.Position.y> + <Number>0</Number>;
+	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>x</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Number> + <Number>20</Number>;
+	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>y</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Number> + <Number>0</Number>;
 
 	var <Spry.Effect.Utils.Position>toPos = <Spry.Effect.Utils.Position>new <Spry.Effect.Utils.Position>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.Position</Spry.Effect.Utils.Position></Spry.Effect.Utils.Position></Spry.Effect.Utils.Position>;
-	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>x</String> = <Spry.Effect.Utils.Position.x><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Spry.Effect.Utils.Position.x> + -<Number>20</Number>;
-	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>y</String> = <Spry.Effect.Utils.Position.y><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Spry.Effect.Utils.Position.y> + <Number>0</Number>;
+	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>x</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Number> + -<Number>20</Number>;
+	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>y</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Number> + <Number>0</Number>;
 
 	options = {duration:<Number>100</Number>, toggle:<Boolean>false</Boolean>};
 	var <Spry.Effect.Move>effect = <Spry.Effect.Move>new <Spry.Effect.Move>Spry.<Spry.Effect>Effect</Spry.Effect>.Move</Spry.Effect.Move>(<HTMLElement>element</HTMLElement>, <Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>, <Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>, options)</Spry.Effect.Move></Spry.Effect.Move>;
-	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>shakeEffectCluster</Spry.Effect.Cluster>.<Spry.Effect.Cluster.addNextEffect>addNextEffect</Spry.Effect.Cluster.addNextEffect>(<Spry.Effect.Move>effect</Spry.Effect.Move>)</Spry.Effect.Cluster.addNextEffect>;
+	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>shakeEffectCluster</Spry.Effect.Cluster>.<void>addNextEffect</void>(<Spry.Effect.Move>effect</Spry.Effect.Move>)</Spry.Effect.Cluster.addNextEffect>;
 
 	var <Spry.Effect.Utils.Position>fromPos = <Spry.Effect.Utils.Position>new <Spry.Effect.Utils.Position>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.Position</Spry.Effect.Utils.Position></Spry.Effect.Utils.Position></Spry.Effect.Utils.Position>;
-	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>x</String> = <Spry.Effect.Utils.Position.x><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Spry.Effect.Utils.Position.x> + -<Number>20</Number>;
-	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>y</String> = <Spry.Effect.Utils.Position.y><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Spry.Effect.Utils.Position.y> + <Number>0</Number>;
+	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>x</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Number> + -<Number>20</Number>;
+	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>y</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Number> + <Number>0</Number>;
 
 	var <Spry.Effect.Utils.Position>toPos = <Spry.Effect.Utils.Position>new <Spry.Effect.Utils.Position>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.Position</Spry.Effect.Utils.Position></Spry.Effect.Utils.Position></Spry.Effect.Utils.Position>;
-	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>x</String> = <Spry.Effect.Utils.Position.x><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Spry.Effect.Utils.Position.x> + <Number>20</Number>;
-	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>y</String> = <Spry.Effect.Utils.Position.y><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Spry.Effect.Utils.Position.y> + <Number>0</Number>;
+	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>x</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Number> + <Number>20</Number>;
+	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>y</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Number> + <Number>0</Number>;
 
 	options = {duration:<Number>100</Number>, toggle:<Boolean>false</Boolean>};
 	var <Spry.Effect.Move>effect = <Spry.Effect.Move>new <Spry.Effect.Move>Spry.<Spry.Effect>Effect</Spry.Effect>.Move</Spry.Effect.Move>(<HTMLElement>element</HTMLElement>, <Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>, <Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>, options)</Spry.Effect.Move></Spry.Effect.Move>;
-	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>shakeEffectCluster</Spry.Effect.Cluster>.<Spry.Effect.Cluster.addNextEffect>addNextEffect</Spry.Effect.Cluster.addNextEffect>(<Spry.Effect.Move>effect</Spry.Effect.Move>)</Spry.Effect.Cluster.addNextEffect>;
+	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>shakeEffectCluster</Spry.Effect.Cluster>.<void>addNextEffect</void>(<Spry.Effect.Move>effect</Spry.Effect.Move>)</Spry.Effect.Cluster.addNextEffect>;
 
 	var <Spry.Effect.Utils.Position>fromPos = <Spry.Effect.Utils.Position>new <Spry.Effect.Utils.Position>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.Position</Spry.Effect.Utils.Position></Spry.Effect.Utils.Position></Spry.Effect.Utils.Position>;
-	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>x</String> = <Spry.Effect.Utils.Position.x><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Spry.Effect.Utils.Position.x> + <Number>20</Number>;
-	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>y</String> = <Spry.Effect.Utils.Position.y><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Spry.Effect.Utils.Position.y> + <Number>0</Number>;
+	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>x</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Number> + <Number>20</Number>;
+	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>y</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Number> + <Number>0</Number>;
 
 	var <Spry.Effect.Utils.Position>toPos = <Spry.Effect.Utils.Position>new <Spry.Effect.Utils.Position>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.Position</Spry.Effect.Utils.Position></Spry.Effect.Utils.Position></Spry.Effect.Utils.Position>;
-	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>x</String> = <Spry.Effect.Utils.Position.x><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Spry.Effect.Utils.Position.x> + <Number>0</Number>;
-	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>y</String> = <Spry.Effect.Utils.Position.y><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Spry.Effect.Utils.Position.y> + <Number>0</Number>;
+	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>x</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Number> + <Number>0</Number>;
+	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>y</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Number> + <Number>0</Number>;
 
 	options = {duration:<Number>50</Number>, toggle:<Boolean>false</Boolean>};
 	var <Spry.Effect.Move>effect = <Spry.Effect.Move>new <Spry.Effect.Move>Spry.<Spry.Effect>Effect</Spry.Effect>.Move</Spry.Effect.Move>(<HTMLElement>element</HTMLElement>, <Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>, <Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>, options)</Spry.Effect.Move></Spry.Effect.Move>;
-	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>shakeEffectCluster</Spry.Effect.Cluster>.<Spry.Effect.Cluster.addNextEffect>addNextEffect</Spry.Effect.Cluster.addNextEffect>(<Spry.Effect.Move>effect</Spry.Effect.Move>)</Spry.Effect.Cluster.addNextEffect>;
+	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>shakeEffectCluster</Spry.Effect.Cluster>.<void>addNextEffect</void>(<Spry.Effect.Move>effect</Spry.Effect.Move>)</Spry.Effect.Cluster.addNextEffect>;
 
 	<Spry.Effect.Cluster>shakeEffectCluster</Spry.Effect.Cluster>.<String>setup</String> = <options.setup>setupCallback</options.setup>;
 	<Spry.Effect.Cluster>shakeEffectCluster</Spry.Effect.Cluster>.<String>finish</String> = <options.finish>finishCallback</options.finish>;
@@ -1558,13 +1558,13 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>Squish</String> = <Function>funct
 
 	if (options)
 	{
-		if (<Boolean><options.duration>options.duration</options.duration> != null</Boolean>) <options.duration>durationInMilliseconds</options.duration> = <options.duration>options.duration</options.duration>;
-		if (<Boolean><options.toggle>options.toggle</options.toggle> != null</Boolean>) <options.toggle>doToggle</options.toggle> = <options.toggle>options.toggle</options.toggle>;
+		if (<Boolean><Number>options.duration</Number> != null</Boolean>) <Number>durationInMilliseconds</Number> = <Number>options.duration</Number>;
+		if (<Boolean><Boolean>options.toggle</Boolean> != null</Boolean>) <Boolean>doToggle</Boolean> = <Boolean>options.toggle</Boolean>;
 		if (<Boolean><options.setup>options.setup</options.setup> != null</Boolean>) <options.setup>setupCallback</options.setup> = <options.setup>options.setup</options.setup>;
 		if (<Boolean><options.finish>options.finish</options.finish> != null</Boolean>) <options.finish>finishCallback</options.finish> = <options.finish>options.finish</options.finish>;
 	}
 
-	<Spry.Effect.makePositioned>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.makePositioned>makePositioned</Spry.Effect.makePositioned>(<HTMLElement>element</HTMLElement>)</Spry.Effect.makePositioned>; // for move
+	<Spry.Effect.makePositioned>Spry.<Spry.Effect>Effect</Spry.Effect>.<void>makePositioned</void>(<HTMLElement>element</HTMLElement>)</Spry.Effect.makePositioned>; // for move
 	
 	var originalRect = <Spry.Effect.getDimensions>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.getDimensions>getDimensions</Spry.Effect.getDimensions>(<HTMLElement>element</HTMLElement>)</Spry.Effect.getDimensions>;
 
@@ -1584,7 +1584,7 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>Squish</String> = <Function>funct
 	
 	var <Boolean>doScaleContent = <Boolean>true</Boolean></Boolean>;
 
-	options = {duration:<options.duration>durationInMilliseconds</options.duration>, toggle:<options.toggle>doToggle</options.toggle>, scaleContent:<Boolean>doScaleContent</Boolean>, setup: <options.setup>setupCallback</options.setup>, finish: <options.finish>finishCallback</options.finish>};
+	options = {duration:<Number>durationInMilliseconds</Number>, toggle:<Boolean>doToggle</Boolean>, scaleContent:<Boolean>doScaleContent</Boolean>, setup: <options.setup>setupCallback</options.setup>, finish: <options.finish>finishCallback</options.finish>};
 
 	var <Spry.Effect.Size>squishEffect = <Spry.Effect.Size>new <Spry.Effect.Size>Spry.<Spry.Effect>Effect</Spry.Effect>.Size</Spry.Effect.Size>(<HTMLElement>element</HTMLElement>, <Spry.Effect.Utils.Rectangle>fromRect</Spry.Effect.Utils.Rectangle>, <Spry.Effect.Utils.Rectangle>toRect</Spry.Effect.Utils.Rectangle>, options)</Spry.Effect.Size></Spry.Effect.Size>;
 	<Spry.Effect.Size>squishEffect</Spry.Effect.Size>.<String>name</String> = <String>'Squish'</String>;
@@ -1608,15 +1608,15 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>Pulsate</String> = <Function>func
 
 	if (options)
 	{
-		if (<Boolean><options.duration>options.duration</options.duration> != null</Boolean>) <options.duration>durationInMilliseconds</options.duration> = <options.duration>options.duration</options.duration>;
+		if (<Boolean><Number>options.duration</Number> != null</Boolean>) <Number>durationInMilliseconds</Number> = <Number>options.duration</Number>;
 		if (<Boolean><options.from>options.from</options.from> != null</Boolean>) <options.from>fromOpacity</options.from> = <options.from>options.from</options.from>;
 		if (<Boolean><options.to>options.to</options.to> != null</Boolean>) <options.to>toOpacity</options.to> = <options.to>options.to</options.to>;
-		if (<Boolean><options.toggle>options.toggle</options.toggle> != null</Boolean>) <options.toggle>doToggle</options.toggle> = <options.toggle>options.toggle</options.toggle>;
+		if (<Boolean><Boolean>options.toggle</Boolean> != null</Boolean>) <Boolean>doToggle</Boolean> = <Boolean>options.toggle</Boolean>;
 		if (<Boolean><options.transition>options.transition</options.transition> != null</Boolean>) <options.transition>kindOfTransition</options.transition> = <options.transition>options.transition</options.transition>;
 		if (<Boolean><options.setup>options.setup</options.setup> != null</Boolean>) <options.setup>setupCallback</options.setup> = <options.setup>options.setup</options.setup>;
 		if (<Boolean><options.finish>options.finish</options.finish> != null</Boolean>) <options.finish>finishCallback</options.finish> = <options.finish>options.finish</options.finish>;
 	}
-	options = {duration:<options.duration>durationInMilliseconds</options.duration>, toggle:<options.toggle>doToggle</options.toggle>, transition:<options.transition>kindOfTransition</options.transition>, setup: <options.setup>setupCallback</options.setup>, finish: <options.finish>finishCallback</options.finish>};
+	options = {duration:<Number>durationInMilliseconds</Number>, toggle:<Boolean>doToggle</Boolean>, transition:<options.transition>kindOfTransition</options.transition>, setup: <options.setup>setupCallback</options.setup>, finish: <options.finish>finishCallback</options.finish>};
 	fromOpacity = fromOpacity / <Number>100.0</Number>;
 	toOpacity = toOpacity / <Number>100.0</Number>;
 	
@@ -1625,12 +1625,12 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>Pulsate</String> = <Function>func
 	var <Spry.Effect.Opacity>fadeEffect = <Spry.Effect.Opacity>new <Spry.Effect.Opacity>Spry.<Spry.Effect>Effect</Spry.Effect>.Opacity</Spry.Effect.Opacity>(<HTMLElement>element</HTMLElement>, fromOpacity, toOpacity, options)</Spry.Effect.Opacity></Spry.Effect.Opacity>;
 	var <Spry.Effect.Opacity>appearEffect = <Spry.Effect.Opacity>new <Spry.Effect.Opacity>Spry.<Spry.Effect>Effect</Spry.Effect>.Opacity</Spry.Effect.Opacity>(<HTMLElement>element</HTMLElement>, toOpacity, fromOpacity, options)</Spry.Effect.Opacity></Spry.Effect.Opacity>;
 	
-	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>pulsateEffectCluster</Spry.Effect.Cluster>.<Spry.Effect.Cluster.addNextEffect>addNextEffect</Spry.Effect.Cluster.addNextEffect>(<Spry.Effect.Opacity>fadeEffect</Spry.Effect.Opacity>)</Spry.Effect.Cluster.addNextEffect>;
-	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>pulsateEffectCluster</Spry.Effect.Cluster>.<Spry.Effect.Cluster.addNextEffect>addNextEffect</Spry.Effect.Cluster.addNextEffect>(<Spry.Effect.Opacity>appearEffect</Spry.Effect.Opacity>)</Spry.Effect.Cluster.addNextEffect>;
-	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>pulsateEffectCluster</Spry.Effect.Cluster>.<Spry.Effect.Cluster.addNextEffect>addNextEffect</Spry.Effect.Cluster.addNextEffect>(<Spry.Effect.Opacity>fadeEffect</Spry.Effect.Opacity>)</Spry.Effect.Cluster.addNextEffect>;
-	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>pulsateEffectCluster</Spry.Effect.Cluster>.<Spry.Effect.Cluster.addNextEffect>addNextEffect</Spry.Effect.Cluster.addNextEffect>(<Spry.Effect.Opacity>appearEffect</Spry.Effect.Opacity>)</Spry.Effect.Cluster.addNextEffect>;
-	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>pulsateEffectCluster</Spry.Effect.Cluster>.<Spry.Effect.Cluster.addNextEffect>addNextEffect</Spry.Effect.Cluster.addNextEffect>(<Spry.Effect.Opacity>fadeEffect</Spry.Effect.Opacity>)</Spry.Effect.Cluster.addNextEffect>;
-	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>pulsateEffectCluster</Spry.Effect.Cluster>.<Spry.Effect.Cluster.addNextEffect>addNextEffect</Spry.Effect.Cluster.addNextEffect>(<Spry.Effect.Opacity>appearEffect</Spry.Effect.Opacity>)</Spry.Effect.Cluster.addNextEffect>;
+	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>pulsateEffectCluster</Spry.Effect.Cluster>.<void>addNextEffect</void>(<Spry.Effect.Opacity>fadeEffect</Spry.Effect.Opacity>)</Spry.Effect.Cluster.addNextEffect>;
+	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>pulsateEffectCluster</Spry.Effect.Cluster>.<void>addNextEffect</void>(<Spry.Effect.Opacity>appearEffect</Spry.Effect.Opacity>)</Spry.Effect.Cluster.addNextEffect>;
+	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>pulsateEffectCluster</Spry.Effect.Cluster>.<void>addNextEffect</void>(<Spry.Effect.Opacity>fadeEffect</Spry.Effect.Opacity>)</Spry.Effect.Cluster.addNextEffect>;
+	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>pulsateEffectCluster</Spry.Effect.Cluster>.<void>addNextEffect</void>(<Spry.Effect.Opacity>appearEffect</Spry.Effect.Opacity>)</Spry.Effect.Cluster.addNextEffect>;
+	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>pulsateEffectCluster</Spry.Effect.Cluster>.<void>addNextEffect</void>(<Spry.Effect.Opacity>fadeEffect</Spry.Effect.Opacity>)</Spry.Effect.Cluster.addNextEffect>;
+	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>pulsateEffectCluster</Spry.Effect.Cluster>.<void>addNextEffect</void>(<Spry.Effect.Opacity>appearEffect</Spry.Effect.Opacity>)</Spry.Effect.Cluster.addNextEffect>;
 	
 	<Spry.Effect.Cluster>pulsateEffectCluster</Spry.Effect.Cluster>.<String>name</String> = <String>'Pulsate'</String>;
 
@@ -1643,7 +1643,7 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>Puff</String> = <Function>functio
 {
 	var <HTMLElement>element = <Spry.Effect.getElement>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.getElement>getElement</Spry.Effect.getElement>(<HTMLElement>element</HTMLElement>)</Spry.Effect.getElement></HTMLElement>;
 	
-	<Spry.Effect.makePositioned>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.makePositioned>makePositioned</Spry.Effect.makePositioned>(<HTMLElement>element</HTMLElement>)</Spry.Effect.makePositioned>; // for move
+	<Spry.Effect.makePositioned>Spry.<Spry.Effect>Effect</Spry.Effect>.<void>makePositioned</void>(<HTMLElement>element</HTMLElement>)</Spry.Effect.makePositioned>; // for move
 
 	var setupCallback = null;
 	var finishCallback = null;
@@ -1677,13 +1677,13 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>Puff</String> = <Function>functio
 	
 	options = {duration:<Number>durationInMilliseconds</Number>, toggle:<Boolean>false</Boolean>, scaleContent:<Boolean>doScaleContent</Boolean>};
 	var <Spry.Effect.Size>sizeEffect = <Spry.Effect.Size>new <Spry.Effect.Size>Spry.<Spry.Effect>Effect</Spry.Effect>.Size</Spry.Effect.Size>(<HTMLElement>element</HTMLElement>, <Spry.Effect.Utils.Rectangle>fromRect</Spry.Effect.Utils.Rectangle>, <Spry.Effect.Utils.Rectangle>toRect</Spry.Effect.Utils.Rectangle>, options)</Spry.Effect.Size></Spry.Effect.Size>;
-	<Spry.Effect.Cluster.addParallelEffect><Spry.Effect.Cluster>puffEffectCluster</Spry.Effect.Cluster>.<Spry.Effect.Cluster.addParallelEffect>addParallelEffect</Spry.Effect.Cluster.addParallelEffect>(<Spry.Effect.Size>sizeEffect</Spry.Effect.Size>)</Spry.Effect.Cluster.addParallelEffect>;
+	<Spry.Effect.Cluster.addParallelEffect><Spry.Effect.Cluster>puffEffectCluster</Spry.Effect.Cluster>.<void>addParallelEffect</void>(<Spry.Effect.Size>sizeEffect</Spry.Effect.Size>)</Spry.Effect.Cluster.addParallelEffect>;
 
 	options = {duration:<Number>durationInMilliseconds</Number>, toggle:<Boolean>false</Boolean>};
 	var <Number>fromOpacity = <Number>1.0</Number></Number>;
 	var <Number>toOpacity = <Number>0.0</Number></Number>;
 	var <Spry.Effect.Opacity>opacityEffect = <Spry.Effect.Opacity>new <Spry.Effect.Opacity>Spry.<Spry.Effect>Effect</Spry.Effect>.Opacity</Spry.Effect.Opacity>(<HTMLElement>element</HTMLElement>, <Number>fromOpacity</Number>, <Number>toOpacity</Number>, options)</Spry.Effect.Opacity></Spry.Effect.Opacity>;
-	<Spry.Effect.Cluster.addParallelEffect><Spry.Effect.Cluster>puffEffectCluster</Spry.Effect.Cluster>.<Spry.Effect.Cluster.addParallelEffect>addParallelEffect</Spry.Effect.Cluster.addParallelEffect>(<Spry.Effect.Opacity>opacityEffect</Spry.Effect.Opacity>)</Spry.Effect.Cluster.addParallelEffect>;
+	<Spry.Effect.Cluster.addParallelEffect><Spry.Effect.Cluster>puffEffectCluster</Spry.Effect.Cluster>.<void>addParallelEffect</void>(<Spry.Effect.Opacity>opacityEffect</Spry.Effect.Opacity>)</Spry.Effect.Cluster.addParallelEffect>;
 
 	options = {duration:<Number>durationInMilliseconds</Number>, toggle:<Boolean>false</Boolean>};
 	var <Spry.Effect.Utils.Position>fromPos = <Spry.Effect.Utils.Position>new <Spry.Effect.Utils.Position>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.Position</Spry.Effect.Utils.Position></Spry.Effect.Utils.Position></Spry.Effect.Utils.Position>;
@@ -1693,7 +1693,7 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>Puff</String> = <Function>functio
 	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>x</String> = <originalRect.width>startWidth</originalRect.width> / <Number>2.0</Number> * -<Number>1.0</Number>;
 	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>y</String> = <originalRect.height>startHeight</originalRect.height> / <Number>2.0</Number> * -<Number>1.0</Number>;
 	var <Spry.Effect.Move>moveEffect = <Spry.Effect.Move>new <Spry.Effect.Move>Spry.<Spry.Effect>Effect</Spry.Effect>.Move</Spry.Effect.Move>(<HTMLElement>element</HTMLElement>, <Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>, <Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>, options)</Spry.Effect.Move></Spry.Effect.Move>;
-	<Spry.Effect.Cluster.addParallelEffect><Spry.Effect.Cluster>puffEffectCluster</Spry.Effect.Cluster>.<Spry.Effect.Cluster.addParallelEffect>addParallelEffect</Spry.Effect.Cluster.addParallelEffect>(<Spry.Effect.Move>moveEffect</Spry.Effect.Move>)</Spry.Effect.Cluster.addParallelEffect>;
+	<Spry.Effect.Cluster.addParallelEffect><Spry.Effect.Cluster>puffEffectCluster</Spry.Effect.Cluster>.<void>addParallelEffect</void>(<Spry.Effect.Move>moveEffect</Spry.Effect.Move>)</Spry.Effect.Cluster.addParallelEffect>;
 
 	<Spry.Effect.Cluster>puffEffectCluster</Spry.Effect.Cluster>.<String>setup</String> = <options.setup>setupCallback</options.setup>;
 	<Spry.Effect.Cluster>puffEffectCluster</Spry.Effect.Cluster>.<String>finish</String> = <options.finish>finishCallback</options.finish>;
@@ -1712,7 +1712,7 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>DropOut</String> = <Function>func
 	
 	var <Number>durationInMilliseconds = <Number>500</Number></Number>;
 
-	<Spry.Effect.makePositioned>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.makePositioned>makePositioned</Spry.Effect.makePositioned>(<HTMLElement>element</HTMLElement>)</Spry.Effect.makePositioned>;
+	<Spry.Effect.makePositioned>Spry.<Spry.Effect>Effect</Spry.Effect>.<void>makePositioned</void>(<HTMLElement>element</HTMLElement>)</Spry.Effect.makePositioned>;
 
 	var setupCallback = null;
 	var finishCallback = null;
@@ -1726,26 +1726,26 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>DropOut</String> = <Function>func
 	var <Spry.Effect.Utils.Position>startOffsetPosition = <Spry.Effect.Utils.Position>new <Spry.Effect.Utils.Position>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.Position</Spry.Effect.Utils.Position>()</Spry.Effect.Utils.Position></Spry.Effect.Utils.Position>;
 	<Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.<String>x</String> = <parseInt>parseInt(<Spry.Effect.getStyleProp>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.getStyleProp>getStyleProp</Spry.Effect.getStyleProp>(<HTMLElement>element</HTMLElement>, <String>"left"</String>)</Spry.Effect.getStyleProp>)</parseInt>;
 	<Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.<String>y</String> = <parseInt>parseInt(<Spry.Effect.getStyleProp>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.getStyleProp>getStyleProp</Spry.Effect.getStyleProp>(<HTMLElement>element</HTMLElement>, <String>"top"</String>)</Spry.Effect.getStyleProp>)</parseInt>;	
-	if (!<Spry.Effect.Utils.Position.x><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Spry.Effect.Utils.Position.x>) <Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.<String>x</String> = <Number>0</Number>;
-	if (!<Spry.Effect.Utils.Position.y><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Spry.Effect.Utils.Position.y>) <Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.<String>y</String> = <Number>0</Number>;	
+	if (!<Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Number>) <Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.<String>x</String> = <Number>0</Number>;
+	if (!<Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Number>) <Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.<String>y</String> = <Number>0</Number>;	
 	
 	var <Spry.Effect.Utils.Position>fromPos = <Spry.Effect.Utils.Position>new <Spry.Effect.Utils.Position>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.Position</Spry.Effect.Utils.Position></Spry.Effect.Utils.Position></Spry.Effect.Utils.Position>;
-	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>x</String> = <Spry.Effect.Utils.Position.x><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Spry.Effect.Utils.Position.x> + <Number>0</Number>;
-	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>y</String> = <Spry.Effect.Utils.Position.y><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Spry.Effect.Utils.Position.y> + <Number>0</Number>;
+	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>x</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Number> + <Number>0</Number>;
+	<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>.<String>y</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Number> + <Number>0</Number>;
 
 	var <Spry.Effect.Utils.Position>toPos = <Spry.Effect.Utils.Position>new <Spry.Effect.Utils.Position>Spry.<Spry.Effect>Effect</Spry.Effect>.<Spry.Effect.Utils>Utils</Spry.Effect.Utils>.Position</Spry.Effect.Utils.Position></Spry.Effect.Utils.Position></Spry.Effect.Utils.Position>;
-	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>x</String> = <Spry.Effect.Utils.Position.x><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Spry.Effect.Utils.Position.x> + <Number>0</Number>;
-	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>y</String> = <Spry.Effect.Utils.Position.y><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Spry.Effect.Utils.Position.y> + <Number>160</Number>;
+	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>x</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.x</Number> + <Number>0</Number>;
+	<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>.<String>y</String> = <Number><Spry.Effect.Utils.Position>startOffsetPosition</Spry.Effect.Utils.Position>.y</Number> + <Number>160</Number>;
 
 	options = {from:<Spry.Effect.Utils.Position>fromPos</Spry.Effect.Utils.Position>, to:<Spry.Effect.Utils.Position>toPos</Spry.Effect.Utils.Position>, duration:<Number>durationInMilliseconds</Number>, toggle:<Boolean>true</Boolean>};
 	var <Spry.Effect.Move>moveEffect = <Spry.Effect.Move>new <Spry.Effect.Move>Spry.<Spry.Effect>Effect</Spry.Effect>.Move</Spry.Effect.Move>(<HTMLElement>element</HTMLElement>, <options.from>options.from</options.from>, <options.to>options.to</options.to>, options)</Spry.Effect.Move></Spry.Effect.Move>;
-	<Spry.Effect.Cluster.addParallelEffect><Spry.Effect.Cluster>dropoutEffectCluster</Spry.Effect.Cluster>.<Spry.Effect.Cluster.addParallelEffect>addParallelEffect</Spry.Effect.Cluster.addParallelEffect>(<Spry.Effect.Move>moveEffect</Spry.Effect.Move>)</Spry.Effect.Cluster.addParallelEffect>;
+	<Spry.Effect.Cluster.addParallelEffect><Spry.Effect.Cluster>dropoutEffectCluster</Spry.Effect.Cluster>.<void>addParallelEffect</void>(<Spry.Effect.Move>moveEffect</Spry.Effect.Move>)</Spry.Effect.Cluster.addParallelEffect>;
 
 	options = {duration:<Number>durationInMilliseconds</Number>, toggle:<Boolean>true</Boolean>};
 	var <Number>fromOpacity = <Number>1.0</Number></Number>;
 	var <Number>toOpacity = <Number>0.0</Number></Number>;
 	var <Spry.Effect.Opacity>opacityEffect = <Spry.Effect.Opacity>new <Spry.Effect.Opacity>Spry.<Spry.Effect>Effect</Spry.Effect>.Opacity</Spry.Effect.Opacity>(<HTMLElement>element</HTMLElement>, <Number>fromOpacity</Number>, <Number>toOpacity</Number>, options)</Spry.Effect.Opacity></Spry.Effect.Opacity>;
-	<Spry.Effect.Cluster.addParallelEffect><Spry.Effect.Cluster>dropoutEffectCluster</Spry.Effect.Cluster>.<Spry.Effect.Cluster.addParallelEffect>addParallelEffect</Spry.Effect.Cluster.addParallelEffect>(<Spry.Effect.Opacity>opacityEffect</Spry.Effect.Opacity>)</Spry.Effect.Cluster.addParallelEffect>;
+	<Spry.Effect.Cluster.addParallelEffect><Spry.Effect.Cluster>dropoutEffectCluster</Spry.Effect.Cluster>.<void>addParallelEffect</void>(<Spry.Effect.Opacity>opacityEffect</Spry.Effect.Opacity>)</Spry.Effect.Cluster.addParallelEffect>;
 
 	<Spry.Effect.Cluster>dropoutEffectCluster</Spry.Effect.Cluster>.<String>setup</String> = <options.setup>setupCallback</options.setup>;
 	<Spry.Effect.Cluster>dropoutEffectCluster</Spry.Effect.Cluster>.<String>finish</String> = <options.finish>finishCallback</options.finish>;
@@ -1784,7 +1784,7 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>Fold</String> = <Function>functio
 	
 	options = {duration:<Number>durationInMilliseconds</Number>, toggle:<Boolean>doToggle</Boolean>, scaleContent:<Boolean>doScaleContent</Boolean>};
 	var <Spry.Effect.Size>sizeEffect = <Spry.Effect.Size>new <Spry.Effect.Size>Spry.<Spry.Effect>Effect</Spry.Effect>.Size</Spry.Effect.Size>(<HTMLElement>element</HTMLElement>, <Spry.Effect.Utils.Rectangle>fromRect</Spry.Effect.Utils.Rectangle>, <Spry.Effect.Utils.Rectangle>toRect</Spry.Effect.Utils.Rectangle>, options)</Spry.Effect.Size></Spry.Effect.Size>;
-	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>foldEffectCluster</Spry.Effect.Cluster>.<Spry.Effect.Cluster.addNextEffect>addNextEffect</Spry.Effect.Cluster.addNextEffect>(<Spry.Effect.Size>sizeEffect</Spry.Effect.Size>)</Spry.Effect.Cluster.addNextEffect>;
+	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>foldEffectCluster</Spry.Effect.Cluster>.<void>addNextEffect</void>(<Spry.Effect.Size>sizeEffect</Spry.Effect.Size>)</Spry.Effect.Cluster.addNextEffect>;
 	
 	<Number>durationInMilliseconds</Number> = <Number>500</Number>;
 	options = {duration:<Number>durationInMilliseconds</Number>, toggle:<Boolean>doToggle</Boolean>, scaleContent:<Boolean>doScaleContent</Boolean>};
@@ -1793,7 +1793,7 @@ Spry.<Spry.Effect>Effect</Spry.Effect>.<String>Fold</String> = <Function>functio
 	<Spry.Effect.Utils.Rectangle>toRect</Spry.Effect.Utils.Rectangle>.<String>width</String> = <String>"10%"</String>;
 	<Spry.Effect.Utils.Rectangle>toRect</Spry.Effect.Utils.Rectangle>.<String>height</String> = <String>"20%"</String>;
 	var <Spry.Effect.Size>sizeEffect = <Spry.Effect.Size>new <Spry.Effect.Size>Spry.<Spry.Effect>Effect</Spry.Effect>.Size</Spry.Effect.Size>(<HTMLElement>element</HTMLElement>, <Spry.Effect.Utils.Rectangle>fromRect</Spry.Effect.Utils.Rectangle>, <Spry.Effect.Utils.Rectangle>toRect</Spry.Effect.Utils.Rectangle>, options)</Spry.Effect.Size></Spry.Effect.Size>;
-	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>foldEffectCluster</Spry.Effect.Cluster>.<Spry.Effect.Cluster.addNextEffect>addNextEffect</Spry.Effect.Cluster.addNextEffect>(<Spry.Effect.Size>sizeEffect</Spry.Effect.Size>)</Spry.Effect.Cluster.addNextEffect>;
+	<Spry.Effect.Cluster.addNextEffect><Spry.Effect.Cluster>foldEffectCluster</Spry.Effect.Cluster>.<void>addNextEffect</void>(<Spry.Effect.Size>sizeEffect</Spry.Effect.Size>)</Spry.Effect.Cluster.addNextEffect>;
 	<Spry.Effect.Cluster>foldEffectCluster</Spry.Effect.Cluster>.<String>name</String> = <String>'Fold'</String>;
 	
 	var registeredEffect = <SpryRegistry.getRegisteredEffect>SpryRegistry.<SpryRegistry.getRegisteredEffect>getRegisteredEffect</SpryRegistry.getRegisteredEffect>(<HTMLElement>element</HTMLElement>, <Spry.Effect.Cluster>foldEffectCluster</Spry.Effect.Cluster>)</SpryRegistry.getRegisteredEffect>;

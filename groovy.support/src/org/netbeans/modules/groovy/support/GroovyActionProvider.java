@@ -43,11 +43,17 @@ package org.netbeans.modules.groovy.support;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringTokenizer;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ui.ScanDialog;
@@ -85,10 +91,23 @@ public class GroovyActionProvider implements ActionProvider {
 
     // from J2SEProjectProperties
     public static final String BUILD_SCRIPT ="buildfile";      //NOI18N
+    // from J2SEConfigurationProvider
+    public static final String PROP_CONFIG = "config"; // NOI18N
 
+    // Commands available from J2SE project
     private static final String[] supportedActions = {
-        COMMAND_RUN_SINGLE
+        COMMAND_RUN_SINGLE,
+        COMMAND_DEBUG_SINGLE
     };
+
+
+    private static final String[] platformSensitiveActions = {
+        COMMAND_RUN_SINGLE,
+        COMMAND_DEBUG_SINGLE
+    };
+
+    /** Map from commands to ant targets */
+    Map<String,String[]> commands;
 
     private final Project project;
     /**Set of commands which are affected by background scanning*/
@@ -96,6 +115,11 @@ public class GroovyActionProvider implements ActionProvider {
     
     public GroovyActionProvider(Project project) {
         this.project = project;
+        commands = new HashMap<String,String[]>();
+        // treated specially: COMMAND_{,RE}BUILD
+        commands.put(COMMAND_RUN_SINGLE, new String[] {"run-single"}); // NOI18N
+        commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug-single"}); // NOI18N
+
         this.bkgScanSensitiveActions = new HashSet<String>(Arrays.asList(
             COMMAND_RUN_SINGLE,
             COMMAND_DEBUG_SINGLE
@@ -157,21 +181,62 @@ public class GroovyActionProvider implements ActionProvider {
     }
 
     private String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
-        if (command.equals(COMMAND_RUN_SINGLE)) {
-            FileObject file = findSources(context)[0];
-            Sources sources = ProjectUtils.getSources(project);
-            SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-            String clazz = FileUtil.getRelativePath(getRoot(sourceGroups, file), file);
-            p.setProperty("javac.includes", clazz); // NOI18N
-            // Convert foo/FooTest.groovy -> foo.FooTest
-            if (clazz.endsWith(".groovy")) { // NOI18N
-                clazz = clazz.substring(0, clazz.length() - 7);
+        Map<String,String[]> targetsFromConfig = loadTargetsFromConfig();
+        String[] targetNames = new String[0];
+        if (command.equals (COMMAND_RUN_SINGLE) || command.equals (COMMAND_DEBUG_SINGLE)) {
+            FileObject[] files = findTestSources(context, false);
+            if (files != null) {
+                if (command.equals(COMMAND_RUN_SINGLE)) {
+                    targetNames = setupTestSingle(p, files);
+                } else {
+                    targetNames = setupDebugTestSingle(p, files);
+                }
+            } else {
+                FileObject file = findSources(context)[0];
+                Sources sources = ProjectUtils.getSources(project);
+                SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                String clazz = FileUtil.getRelativePath(getRoot(sourceGroups, file), file);
+                p.setProperty("javac.includes", clazz); // NOI18N
+                // Convert foo/FooTest.java -> foo.FooTest
+                if (clazz.endsWith(".groovy")) { // NOI18N
+                    clazz = clazz.substring(0, clazz.length() - 7);
+                }
+                clazz = clazz.replace('/','.');
+//                final boolean hasMainClassFromTest = MainClassChooser.unitTestingSupport_hasMainMethodResult == null ? false :
+//                    MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue();
+////                final Collection<ElementHandle<TypeElement>> mainClasses = J2SEProjectUtil.getMainMethods (file);
+//                if (!hasMainClassFromTest){// && mainClasses.isEmpty()) {
+//                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(GroovyActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
+//                    DialogDisplayer.getDefault().notify(nd);
+//                    return null;
+//                } else {
+//                    if (!hasMainClassFromTest) {
+////                        if (mainClasses.size() == 1) {
+////                            //Just one main class
+////                            clazz = mainClasses.iterator().next().getBinaryName();
+////                        }
+////                        else {
+////                            //Several main classes, let the user choose
+////                            clazz = showMainClassWarning(file, mainClasses);
+////                            if (clazz == null) {
+////                                return null;
+////                            }
+////                        }
+//                    }
+                    if (command.equals (COMMAND_RUN_SINGLE)) {
+                        p.setProperty("run.class", clazz); // NOI18N
+                        String[] targets = targetsFromConfig.get(command);
+                        targetNames = (targets != null) ? targets : commands.get(COMMAND_RUN_SINGLE);
+                    } else {
+                        p.setProperty("debug.class", clazz); // NOI18N
+                        String[] targets = targetsFromConfig.get(command);
+                        targetNames = (targets != null) ? targets : commands.get(COMMAND_DEBUG_SINGLE);
+                    }
+//                }
             }
-            clazz = clazz.replace('/','.');
-            p.setProperty("run.class", clazz); // NOI18N
-            return new String[] { "run-single" }; // NOI18N
         }
-        return new String[0];
+
+        return targetNames;
     }
     
     private FileObject getRoot (SourceGroup[] groups, FileObject file) {
@@ -179,6 +244,19 @@ public class GroovyActionProvider implements ActionProvider {
         FileObject srcDir = null;
         for (int i=0; i< groups.length; i++) {
             FileObject root = groups[i].getRootFolder();
+            assert root != null : "Source Path Root can't be null"; //NOI18N
+            if (FileUtil.isParentOf(root, file) || root.equals(file)) {
+                srcDir = root;
+                break;
+            }
+        }
+        return srcDir;
+    }
+
+    private FileObject getRoot (FileObject[] groups, FileObject file) {
+        assert file != null : "File can't be null";   //NOI18N
+        FileObject srcDir = null;
+        for (FileObject root : groups) {
             assert root != null : "Source Path Root can't be null"; //NOI18N
             if (FileUtil.isParentOf(root, file) || root.equals(file)) {
                 srcDir = root;
@@ -200,17 +278,27 @@ public class GroovyActionProvider implements ActionProvider {
         return null;
     }
 
+    /** Find either selected tests or tests which belong to selected source files
+     */
+    private FileObject[] findTestSources(Lookup context, boolean checkInSrcDir) {
+        //XXX: Ugly, should be rewritten
+        FileObject[] testSrcPath = getTestSourceRoots(project);
+        for (int i=0; i< testSrcPath.length; i++) {
+            FileObject[] files = ActionUtils.findSelectedFiles(context, testSrcPath[i], ".groovy", true); // NOI18N
+            if (files != null) {
+                return files;
+            }
+        }
+        return null;
+    }
+
     private FileObject findBuildXml() {
         return getBuildXml(project);
     }
 
     public static String getBuildXmlName (final Project project) {
         assert project != null;
-        // XXX Use J2SEPropertyEvaluator from j2seproject friend API
-        // have to look at other possible property files
-        File propFile = FileUtil.toFile(project.getProjectDirectory().getFileObject("nbproject/project.properties")); // NOI18N
-        Map<String, String> map = PropertyUtils.propertiesFilePropertyProvider(propFile).getProperties();
-        String buildScriptPath = map.get(BUILD_SCRIPT);
+        String buildScriptPath = evaluateProperty(project, BUILD_SCRIPT);
         if (buildScriptPath == null) {
             buildScriptPath = GeneratedFilesHelper.BUILD_XML_PATH;
         }
@@ -219,6 +307,107 @@ public class GroovyActionProvider implements ActionProvider {
     
     public static FileObject getBuildXml (final Project project) {
         return project.getProjectDirectory().getFileObject (getBuildXmlName(project));
+    }
+
+    private static FileObject[] getTestSourceRoots(Project project) {
+        List<String> names = getTestRootsNames(project);
+        List<FileObject> result = new ArrayList<FileObject>();
+        for (String name : names) {
+            result.add(project.getProjectDirectory().getFileObject(name));
+        }
+        return result.toArray(new FileObject[result.size()]);
+    }
+
+    private static List<String> getTestRootsNames(Project project) {
+        // damn crazy hack, how do I get test source roots?
+
+        // XXX Use J2SEPropertyEvaluator from j2seproject friend API
+        // have to look at other possible property files
+        File propFile = FileUtil.toFile(project.getProjectDirectory().getFileObject("nbproject/project.properties")); // NOI18N
+        Map<String, String> map = PropertyUtils.propertiesFilePropertyProvider(propFile).getProperties();
+
+        List<String> result = new ArrayList<String>();
+
+        for (String key : map.keySet()) {
+            if (key.startsWith("test.") && key.endsWith(".dir")) { // NOI18N
+                result.add(map.get(key));
+            }
+        }
+
+        return result;
+    }
+
+    private static String evaluateProperty(Project project, String key) {
+        // XXX Use J2SEPropertyEvaluator from j2seproject friend API
+        // have to look at other possible property files
+        File propFile = FileUtil.toFile(project.getProjectDirectory().getFileObject("nbproject/project.properties")); // NOI18N
+        Map<String, String> map = PropertyUtils.propertiesFilePropertyProvider(propFile).getProperties();
+        return map.get(key);
+    }
+
+    private String[] setupTestSingle(Properties p, FileObject[] files) {
+        FileObject[] testSrcPath = getTestSourceRoots(project);
+        FileObject root = getRoot(testSrcPath, files[0]);
+        p.setProperty("test.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
+        p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
+        return new String[] {"test-single"}; // NOI18N
+    }
+
+    private String[] setupDebugTestSingle(Properties p, FileObject[] files) {
+        FileObject[] testSrcPath = getTestSourceRoots(project);
+        FileObject root = getRoot(testSrcPath, files[0]);
+        String path = FileUtil.getRelativePath(root, files[0]);
+        // Convert foo/FooTest.java -> foo.FooTest
+        p.setProperty("test.class", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
+        p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
+        return new String[] {"debug-test"}; // NOI18N
+    }
+
+    // loads targets for specific commands from shared config property file
+    // returns map; key=command name; value=array of targets for given command
+    private HashMap<String,String[]> loadTargetsFromConfig() {
+        HashMap<String,String[]> targets = new HashMap<String,String[]>(6);
+        String config = evaluateProperty(project, PROP_CONFIG);
+        // load targets from shared config
+        FileObject propFO = project.getProjectDirectory().getFileObject("nbproject/configs/" + config + ".properties");
+        if (propFO == null) {
+            return targets;
+        }
+        Properties props = new Properties();
+        try {
+            InputStream is = propFO.getInputStream();
+            try {
+                props.load(is);
+            } finally {
+                is.close();
+            }
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            return targets;
+        }
+        Enumeration propNames = props.propertyNames();
+        while (propNames.hasMoreElements()) {
+            String propName = (String) propNames.nextElement();
+            if (propName.startsWith("$target.")) {
+                String tNameVal = props.getProperty(propName);
+                String cmdNameKey = null;
+                if (tNameVal != null && !tNameVal.equals("")) {
+                    cmdNameKey = propName.substring("$target.".length());
+                    StringTokenizer stok = new StringTokenizer(tNameVal.trim(), " ");
+                    List<String> targetNames = new ArrayList<String>(3);
+                    while (stok.hasMoreTokens()) {
+                        targetNames.add(stok.nextToken());
+                    }
+                    targets.put(cmdNameKey, targetNames.toArray(new String[targetNames.size()]));
+                }
+            }
+        }
+        return targets;
+    }
+
+    private static final class MainClassChooser {
+        private static Boolean unitTestingSupport_hasMainMethodResult;
+
     }
 
 }

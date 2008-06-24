@@ -555,15 +555,25 @@ public class RubyPlatformCustomizer extends JPanel {
         });
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
-            File intepreter = FileUtil.normalizeFile(chooser.getSelectedFile());
+            final File intepreter = FileUtil.normalizeFile(chooser.getSelectedFile());
             Util.getPreferences().put(LAST_PLATFORM_DIRECTORY, intepreter.getParentFile().getAbsolutePath());
-            RubyPlatform platform = getPlafListModel().addPlatform(intepreter);
-            if (platform == null) {
-                Util.notifyLocalized(RubyPlatformCustomizer.class,
-                        "RubyPlatformCustomizer.invalid.platform.added", intepreter.getAbsolutePath()); // NOI18N
-            } else {
-                refreshPlatform();
-            }
+            setAutoDetecting(true);
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    final RubyPlatform platform = getPlafListModel().addPlatform(intepreter);
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            if (platform == null) {
+                                Util.notifyLocalized(RubyPlatformCustomizer.class,
+                                        "RubyPlatformCustomizer.invalid.platform.added", intepreter.getAbsolutePath()); // NOI18N
+                            } else {
+                                refreshPlatform();
+                            }
+                            setAutoDetecting(false);
+                        }
+                    });
+                }
+            });
         }
     }//GEN-LAST:event_addButtonaddPlatform
 
@@ -586,7 +596,12 @@ public class RubyPlatformCustomizer extends JPanel {
     }//GEN-LAST:event_autoDetectButtonremovePlatform
 
     private void installFastDebuggerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installFastDebuggerActionPerformed
-        if (getSelectedPlatform().installFastDebugger()) {
+        if (getSelectedPlatform().isJRuby()) {
+            // automatic installation is not available yet
+            Util.notifyLocalized(RubyPlatformCustomizer.class,
+                    "RubyPlatformCustomizer.instructionsToInstallJRubyDebugger",
+                    getSelectedPlatform().getFastDebuggerProblemsInHTML());
+        } else if (getSelectedPlatform().installFastDebugger()) {
             refreshDebugger();
         }
     }//GEN-LAST:event_installFastDebuggerActionPerformed
@@ -622,7 +637,7 @@ public class RubyPlatformCustomizer extends JPanel {
 
     private void refreshDebugger() {
         RubyPlatform platform = getSelectedPlatform();
-        boolean supportFastDebuggerInstallation = !platform.isJRuby() && !platform.isRubinius();
+        boolean supportFastDebuggerInstallation = !platform.isRubinius();
         boolean fdInstalled = platform.hasFastDebuggerInstalled();
         installFastDebugger.setEnabled(supportFastDebuggerInstallation && platform.hasRubyGemsInstalled());
         installFastDebugger.setVisible(supportFastDebuggerInstallation && !fdInstalled);
@@ -665,4 +680,5 @@ public class RubyPlatformCustomizer extends JPanel {
     private javax.swing.JLabel rubyDebuggerLabel;
     private javax.swing.JSeparator upperSep;
     // End of variables declaration//GEN-END:variables
+
 }

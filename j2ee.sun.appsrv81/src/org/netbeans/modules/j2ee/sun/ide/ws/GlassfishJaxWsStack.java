@@ -39,9 +39,15 @@
 
 package org.netbeans.modules.j2ee.sun.ide.ws;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import org.netbeans.modules.websvc.serverapi.api.WSStackFeature;
 import org.netbeans.modules.websvc.serverapi.api.WSStack;
 import org.netbeans.modules.websvc.serverapi.api.WSUriDescriptor;
@@ -63,8 +69,19 @@ public class GlassfishJaxWsStack implements WSStackSPI {
     private static final String ACTIVATION_JAR = "lib/activation.jar"; //NOI18N
     
     private File root;
+    private String version;
     public GlassfishJaxWsStack(File root) {
         this.root = root;
+        try {
+            version = resolveImplementationVersion();
+            if (version == null) {
+                // Default Version
+                version = "2.1.3"; // NOI18N
+            }
+        } catch (IOException ex) {
+            // Default Version
+            version = "2.1.3"; // NOI18N
+        };
     }
     
     public String getName() {
@@ -72,7 +89,7 @@ public class GlassfishJaxWsStack implements WSStackSPI {
     }
     
     public String getVersion() {
-        return "1.2";
+        return version;
     }
 
     public Set<String> getSupportedTools() {
@@ -139,6 +156,33 @@ public class GlassfishJaxWsStack implements WSStackSPI {
         wsFeatures.add(WSStackFeature.TESTER_PAGE);
         wsFeatures.add(WSStackFeature.WSIT);
         return wsFeatures;
+    }
+    
+    private String resolveImplementationVersion() throws IOException {
+        // take webservices-tools.jar file
+        File wsToolsJar = new File(root, WEBSERVICES_TOOLS_JAR);
+        // alternatively take appserv-ws.jar file
+        if (!wsToolsJar.exists()) wsToolsJar = new File(root, APPSERV_WS_JAR);
+        
+        if (wsToolsJar.exists()) {            
+            JarFile jarFile = new JarFile(wsToolsJar);
+            JarEntry entry = jarFile.getJarEntry("com/sun/tools/ws/version.properties"); //NOI18N
+            if (entry != null) {
+                InputStream is = jarFile.getInputStream(entry);
+                BufferedReader r = new BufferedReader(new InputStreamReader(is));
+                String ln = null;
+                String ver = null;
+                while ((ln=r.readLine()) != null) {
+                    String line = ln.trim();
+                    if (line.startsWith("major-version=")) { //NOI18N
+                        ver = line.substring(14);
+                    }
+                }
+                r.close();
+                return ver;
+            }           
+        }
+        return null;
     }
 
 }

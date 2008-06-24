@@ -44,6 +44,8 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -608,9 +610,9 @@ public final class RubyPlatform {
      */
     String[] getRequiredRDebugIDEVersions() {
         if (isJRuby() && Util.compareVersions(info.getJVersion(), "1.1.1") >= 0) { // NOI18N
-            return new String[]{"0.1.11"}; // NOI18N
+            return new String[]{"0.2.0"}; // NOI18N
         } else {
-            return new String[]{"0.1.10", "0.1.11"}; // NOI18N
+            return new String[]{"0.1.10", "0.2.0"}; // NOI18N
         }
     }
 
@@ -640,6 +642,26 @@ public final class RubyPlatform {
         }
     }
 
+    /**
+     * Returns latest available, but valid version of rdebug-ide gem for this
+     * platform. So if e.g. 0.1.10, 0.2.0 and 0.3.0 versions are available, but
+     * this platform can work only with 0.1.10 and 0.2.0, version 0.2.0 is
+     * returned.
+     *
+     * @return latest available valid version: <tt>null</tt> if none suitable
+     *         version is found
+     */
+    public String getLatestAvailableValidRDebugIDEVersions() {
+        String[] versions = getRequiredRDebugIDEVersions();
+        Arrays.sort(versions, Collections.reverseOrder());
+        for (String version : versions) {
+            if (gemManager.isGemInstalledForPlatform(RUBY_DEBUG_IDE_NAME, version, true)) {
+                return version;
+            }
+        }
+        return null;
+    }
+
     String getLatestRequiredRDebugIDEVersion() {
         String[] versions = getRequiredRDebugIDEVersions();
         return versions[versions.length - 1];
@@ -650,6 +672,12 @@ public final class RubyPlatform {
         return versions[versions.length - 1];
     }
     
+    /**
+     * Tries to install fast Ruby debugger for the platform. That is an
+     * appropriate version of <em>ruby-debug-ide</em> gem.
+     * 
+     * @return <tt>true</tt> whether the installation succeed; <tt>false</tt> otherwise
+     */
     public boolean installFastDebugger() {
         assert gemManager != null : "has gemManager when trying to install fast debugger";
         gemManager.installGem(RUBY_DEBUG_IDE_NAME, false, false, getLatestRequiredRDebugIDEVersion());
@@ -861,7 +889,7 @@ public final class RubyPlatform {
             String ver = isJRuby() ? jversion
                     : version + (patchlevel != null ? "-p" + patchlevel : ""); // NOI18N
             return (isDefault ? NbBundle.getMessage(RubyPlatform.class, "RubyPlatformManager.CTL_BundledJRubyLabel") : kind)
-                    + " (" + ver + ')'; // NOI18N
+                    + ' ' + ver;
         }
         
         public String getLongDescription() {

@@ -229,6 +229,14 @@ public abstract class Lookup {
      * Find all instances corresponding to a given class.
      * Equivalent to calling {@link #lookupResult} and asking for {@link Lookup.Result#allInstances} but slightly more convenient.
      * Subclasses may override this method to produce the same semantics more efficiently.
+     * <div class="nonnormative">
+     * <p>Example usage:</p>
+     * <pre>
+     * for (MyService svc : Lookup.getDefault().lookupAll(MyService.class)) {
+     *     svc.useMe();
+     * }
+     * </pre>
+     * </div>
      * @param clazz the supertype of the result
      * @return all currently available instances of that type
      * @since org.openide.util 6.10

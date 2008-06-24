@@ -49,6 +49,8 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
@@ -169,7 +171,7 @@ public class IDEValidation extends JellyTestCase {
     @Override
     public void setUp() {
         //Enable logging from CloneableEditor to investigate hang
-        System.setProperty("editor.log.enabled","true");
+        Logger.getLogger("org.openide.text.CloneableEditor").setLevel(Level.FINE);
         System.out.println("########  "+getName()+"  #######");
         // Close help window if any - it should not stay open between test cases.
         // Otherwise it can break next tests.
@@ -307,6 +309,8 @@ public class IDEValidation extends JellyTestCase {
         // "Refactor"
         String refactorLabel = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "CTL_Finish");
         new JButtonOperator(copyClassDialog, refactorLabel).push();
+        // refactoring is done asynchronously => need to wait until dialog dismisses
+        copyClassDialog.waitClosed();
         
         Node newClassNode = new Node(sample1Node, "SampleClass11"); // NOI18N
         newClassNode.select();
@@ -323,6 +327,8 @@ public class IDEValidation extends JellyTestCase {
         String moveClassTitle = Bundle.getString("org.netbeans.modules.refactoring.java.ui.Bundle", "LBL_MoveClass");
         NbDialogOperator moveClassDialog = new NbDialogOperator(moveClassTitle);
         new JButtonOperator(moveClassDialog, refactorLabel).push();
+        // refactoring is done asynchronously => need to wait until dialog dismisses
+        moveClassDialog.waitClosed();
         // "Delete"
         newClassNode = new Node(sampleProjectPackage, "SampleClass11"); // NOI18N
         new DeleteAction().perform(newClassNode);

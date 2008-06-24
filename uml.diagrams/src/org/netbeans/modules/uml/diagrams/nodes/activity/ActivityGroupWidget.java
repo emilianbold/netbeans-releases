@@ -264,6 +264,13 @@ public class ActivityGroupWidget extends UMLNodeWidget//ContainerNode
         return pNewExpression;
     }
 
+    @Override
+    public void addContainedChild(Widget widget)
+    {
+        widget.removeFromParent();
+        containerWidget.addChild(widget);
+    }
+    
 //    @Override
 //    public ContainerWidget getContainer()
 //    {

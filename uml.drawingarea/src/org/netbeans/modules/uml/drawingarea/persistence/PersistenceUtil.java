@@ -41,6 +41,7 @@
 package org.netbeans.modules.uml.drawingarea.persistence;
 
 import java.awt.Rectangle;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
@@ -51,6 +52,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
+import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
 
 /**
  *
@@ -60,6 +62,7 @@ public class PersistenceUtil {
 
     //Hashmap to maintain a list of anchors(aka GraphConnectors) and its XMI-IDs
     private static HashMap<Anchor, String> anchors = new HashMap();
+    private static boolean diagramLoading = false;
 
     public PersistenceUtil() {
     }
@@ -185,5 +188,41 @@ public class PersistenceUtil {
             writer.getProperties().clear();
         }
     }
+    
+    public static void saveDependencies(Widget widget, NodeWriter nodeWriter)
+    {
+        Collection depList = widget.getDependencies();
+        if (depList.size() > 0)
+        {
+            nodeWriter.beginDependencies();
+            Iterator iter = depList.iterator();
+            while (iter.hasNext())
+            {
+                Object obj = iter.next();
+                if (obj instanceof Anchor)
+                {
+                    //don't do anything yet.. we'll deal with this in anchorage section..
+                }
+                else { //assuming only movablelabelwidgets here...
+                    System.out.println(" obj is " + obj);
+                    if (obj instanceof DiagramNodeWriter) {
+                        ((DiagramNodeWriter)obj).save(nodeWriter);
+                    }
+                }
+            }
+            nodeWriter.endDependencies();
+        }        
+    }
+
+    public static boolean isDiagramLoading()
+    {
+        return diagramLoading;
+    }
+
+    public static void setDiagramLoading(boolean diagramLoading)
+    {
+        PersistenceUtil.diagramLoading = diagramLoading;
+    }
+    
     
 }

@@ -57,8 +57,8 @@ import org.apache.jasper.compiler.Localizer;
  */
 public class JspC extends org.apache.jasper.JspC {
     private static final String SOURCE_VM = "-compilerSourceVM";
-    
     private static final String TARGET_VM = "-compilerTargetVM";
+    private static final String JAVA_ENCODING = "-javaEncoding";
 
     public static void main(String arg[]) {
         if (arg.length == 0) {
@@ -71,11 +71,17 @@ public class JspC extends org.apache.jasper.JspC {
                    String oldArg = arg[i];
                    if (oldArg.contains(TARGET_VM)) {
                        String version = oldArg.substring(TARGET_VM.length()).trim();
+                       version = adjustVersion(version);
                        jspc.setCompilerTargetVM(version);
                    }
                    else if (oldArg.contains(SOURCE_VM)) {
                        String version = oldArg.substring(SOURCE_VM.length()).trim();
+                       version = adjustVersion(version);
                        jspc.setCompilerSourceVM(version);
+                   }
+                   else if (oldArg.contains(JAVA_ENCODING)) {
+                       String javaEncoding = oldArg.substring(JAVA_ENCODING.length()).trim();
+                       jspc.setJavaEncoding(javaEncoding);
                    }
                    else {
                         args.add(oldArg);
@@ -94,6 +100,14 @@ public class JspC extends org.apache.jasper.JspC {
         }
     }
     
+    // #135568
+    private static String adjustVersion(String version) {
+       if ("1.6".equals(version)) { // NOI18N
+           return "1.5"; // NOI18N
+       }
+       return version;
+    }
+
     public boolean isSmapSuppressed(){
         return false;
     }

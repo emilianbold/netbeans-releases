@@ -61,7 +61,7 @@ public class RemoteScriptSupport extends RemoteConnectionSupport {
 
     @Override
     protected Channel createChannel() throws JSchException {
-        echannel = (ChannelExec) session.openChannel("exec");
+        echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
         return echannel;
     }
     

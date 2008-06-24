@@ -45,22 +45,23 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.prefs.Preferences;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.ExtSettingsDefaults;
-import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -181,8 +182,10 @@ public final class CodeTemplateCompletionProvider implements CompletionProvider 
             queryCaretOffset = caretOffset;
             queryAnchorOffset = (identifierBeforeCursor != null) ? caretOffset - identifierBeforeCursor.length() : caretOffset;
             if (langPath != null && identifierBeforeCursor != null) {
-                boolean ignoreCase = !SettingsUtil.getBoolean(component.getUI().getEditorKit(component).getClass(), ExtSettingsNames.COMPLETION_CASE_SENSITIVE,
-                        ExtSettingsDefaults.defaultCompletionCaseSensitive);
+                String mimeType = DocumentUtilities.getMimeType(component);
+                MimePath mimePath = mimeType == null ? MimePath.EMPTY : MimePath.get(mimeType);
+                Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
+                boolean ignoreCase = prefs.getBoolean(SimpleValueNames.COMPLETION_CASE_SENSITIVE, false);
                 
                 CodeTemplateManagerOperation op = CodeTemplateManagerOperation.get(MimePath.parse(langPath));
                 op.waitLoaded();

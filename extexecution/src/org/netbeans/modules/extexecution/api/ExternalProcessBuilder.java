@@ -233,7 +233,7 @@ public final class ExternalProcessBuilder {
      * the working directory is placed to the beginning of the <code>PATH</code>.
      *   <li>If builder is configured to add java installation bin directory to
      * <code>PATH</code>:
-     * 
+     *
      *     <ol>
      *       <li>Ask system for value of each property configured by
      *     {@link #addJavaHomeProperty(java.lang.String)} (in order in which

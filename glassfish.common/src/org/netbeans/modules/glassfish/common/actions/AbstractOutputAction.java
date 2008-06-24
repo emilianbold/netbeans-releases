@@ -44,7 +44,7 @@ import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.spi.glassfish.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;

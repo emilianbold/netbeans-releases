@@ -41,91 +41,96 @@
 
 package org.netbeans.modules.extexecution;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeSet;
 import java.util.WeakHashMap;
-import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
 
 public final class InputOutputManager {
-    
+
     /**
      * All tabs which were used for some process which has now ended.
      * These are closed when you start a fresh process.
      * Map from tab to tab display name.
      * @see "#43001"
      */
-    private static final Map<InputOutput, Data> FREE_IOS =
-            new WeakHashMap<InputOutput, Data>();
+    private static final Map<InputOutput, InputOutputData> AVAILABLE =
+            new WeakHashMap<InputOutput, InputOutputData>();
 
-    private final InputOutput io;
-    private final Data data;
-    
-    private InputOutputManager(final InputOutput io, final Data data) {
-        this.io = io;
-        this.data = data;
-    }
-    
-    public InputOutput getIO() {
-        return io;
+    private InputOutputManager() {
+        super();
     }
 
-    public String getDisplayName() {
-        return data.displayName;
-    }
+    // FIXME use InputOutputData
+    public static void addInputOutput(InputOutput io, String displayName,
+            StopAction stopAction, RerunAction rerunAction) {
 
-    public StopAction getStopAction() {
-        return data.stopAction;
-    }
-
-    public RerunAction getRerunAction() {
-        return data.rerunAction;
-    }
-    
-    public static void addFreeIO(InputOutput io, String displayName, StopAction stopAction, RerunAction rerunAction) {
-        synchronized (FREE_IOS) {
-            FREE_IOS.put(io, new Data(displayName, stopAction, rerunAction));
+        synchronized (AVAILABLE) {
+            AVAILABLE.put(io, new InputOutputData(io, displayName, stopAction, rerunAction));
         }
     }
 
     /**
      * Tries to find free Output Window tab for the given name.
-     * 
+     *
      * @param name the name of the free tab. Other free tabs are ignored.
      * @return free tab and its current display name or <tt>null</tt>
      */
-    public static InputOutputManager findFreeIO(final String name, boolean actions) {
-        InputOutputManager result = null;
-        synchronized (FREE_IOS) {
-            for (Iterator<Entry<InputOutput, Data>> it = FREE_IOS.entrySet().iterator(); it.hasNext();) {
-                Entry<InputOutput, Data> entry = it.next();
-                final InputOutput freeIO = entry.getKey();
-                final Data data = entry.getValue();
-                if (freeIO.isClosed()) {
+    public static InputOutputData getInputOutput(String name, boolean actions) {
+        InputOutputData result = null;
+
+        TreeSet<InputOutputData> candidates = new TreeSet<InputOutputData>();
+
+        synchronized (AVAILABLE) {
+            for (Iterator<Entry<InputOutput, InputOutputData>> it = AVAILABLE.entrySet().iterator(); it.hasNext();) {
+                Entry<InputOutput, InputOutputData> entry = it.next();
+
+                final InputOutput free = entry.getKey();
+                final InputOutputData data = entry.getValue();
+
+                if (free.isClosed()) {
                     it.remove();
                     continue;
                 }
 
-                if (result == null && isAppropriateName(name, data.displayName)) {
+                if (isAppropriateName(name, data.displayName)) {
                     if ((actions && data.rerunAction != null && data.stopAction != null)
                             || !actions && data.rerunAction == null && data.stopAction == null) {
                         // Reuse it.
-                        result = new InputOutputManager(freeIO, data);
-                        try {
-                            freeIO.getOut().reset();
-                        } catch (IOException ioe) {
-                            Exceptions.printStackTrace(ioe);
-                        }
-                        it.remove();
-                    }
-                    // continue to remove all closed tabs
-                }// else {
-            // if ('auto close tabs' options implemented and checked) { // see #47753
-            //   free.io.closeInputOutput();
-            // }
-            //}
+                        candidates.add(data);
+                    } // continue to remove all closed tabs
+                }
+            }
+        }
+
+        if (!candidates.isEmpty()) {
+            result = candidates.first();
+            AVAILABLE.remove(result.inputOutput);
+        }
+        return result;
+    }
+
+    public static InputOutputData getInputOutput(InputOutput inputOutput) {
+        InputOutputData result = null;
+
+        synchronized (AVAILABLE) {
+            for (Iterator<Entry<InputOutput, InputOutputData>> it = AVAILABLE.entrySet().iterator(); it.hasNext();) {
+                Entry<InputOutput, InputOutputData> entry = it.next();
+
+                final InputOutput free = entry.getKey();
+                final InputOutputData data = entry.getValue();
+
+                if (free.isClosed()) {
+                    it.remove();
+                    continue;
+                }
+
+                if (free.equals(inputOutput)) {
+                    result = data;
+                    it.remove();
+                }
             }
         }
         return result;
@@ -137,17 +142,44 @@ public final class InputOutputManager {
         }
         return toMatch.substring(base.length()).matches("^(\\ #[0-9]+)?$"); // NOI18N
     }
-    
-    private static class Data {
-        
-        final String displayName;
-        final StopAction stopAction;
-        final RerunAction rerunAction;
-        
-        Data(final String displayName, final StopAction stopAction, final RerunAction rerunAction) {
+
+    public static class InputOutputData implements Comparable<InputOutputData> {
+
+        private final InputOutput inputOutput;
+
+        private final String displayName;
+
+        private final StopAction stopAction;
+
+        private final RerunAction rerunAction;
+
+        public InputOutputData(InputOutput inputOutput, String displayName,
+                StopAction stopAction, RerunAction rerunAction) {
             this.displayName = displayName;
             this.stopAction = stopAction;
             this.rerunAction = rerunAction;
+            this.inputOutput = inputOutput;
         }
+
+        public InputOutput getInputOutput() {
+            return inputOutput;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public RerunAction getRerunAction() {
+            return rerunAction;
+        }
+
+        public StopAction getStopAction() {
+            return stopAction;
+        }
+
+        public int compareTo(InputOutputData o) {
+            return displayName.compareTo(o.displayName);
+        }
+
     }
-}    
+}

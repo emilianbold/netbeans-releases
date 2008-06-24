@@ -1,4 +1,6 @@
-Results for Hello World with queryType=COMPLETION and nameKind=PREFIX
+Code completion result for source line:
+x = "Hell|o World"
+(QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
 KEYWORD    #{                                         #{expr}: Value of expr
 KEYWORD    \                                          \nnn Octal <i>nnn</i>

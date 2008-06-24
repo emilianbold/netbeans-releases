@@ -46,6 +46,11 @@ import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JSplitPane;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakSet;
@@ -56,7 +61,6 @@ import org.openide.util.WeakSet;
  * displayed, closed etc.
  * <p/>
  * <i>This is a modified copy of <code>o.n.m.junit.output.Manager</code></i>.
- *
  * @author Marian Petras, Erno Mononen
  */
 public final class Manager {
@@ -79,6 +83,7 @@ public final class Manager {
      */
     private final boolean lateWindowPromotion;
 
+    private static final Logger LOGGER = Logger.getLogger(Manager.class.getName());
     
     /**
      * Returns a singleton instance of this class.
@@ -87,12 +92,43 @@ public final class Manager {
      * @return  singleton of this class
      */
     public static Manager getInstance() {
-        Manager instance = (instanceRef != null) ? instanceRef.get() : null;
-        if (instance == null) {
-            instance = new Manager();
-            instanceRef = new WeakReference<Manager>(instance);
+        if (instanceRef != null && instanceRef.get() != null) {
+            return instanceRef.get();
         }
+
+        final Manager instance = new Manager();
+        
+        ResultWindow.getInstance().addAncestorListener(new AncestorListener() {
+
+            public void ancestorAdded(AncestorEvent event) {
+                instance.updateDisplayHandlerLayouts();
+            }
+
+            public void ancestorRemoved(AncestorEvent event) {
+                instance.updateDisplayHandlerLayouts();
+            }
+
+            public void ancestorMoved(AncestorEvent event) {
+                instance.updateDisplayHandlerLayouts();
+            }
+        });
+        instanceRef = new WeakReference<Manager>(instance);
         return instance;
+    }
+    
+    /**
+     * Updates the layout orientation of the test result window based on the 
+     * dimensions of the ResultWindow in its position.
+     */
+    private void updateDisplayHandlerLayouts() {
+        int x = ResultWindow.getInstance().getWidth();
+        int y = ResultWindow.getInstance().getHeight();
+        
+        int orientation = x > y
+                ? JSplitPane.HORIZONTAL_SPLIT 
+                : JSplitPane.VERTICAL_SPLIT;
+        
+        ResultWindow.getInstance().setOrientation(orientation);
     }
     
     private Manager() {
@@ -103,7 +139,7 @@ public final class Manager {
      * Called when an Ant task running JUnit tests is started.
      * Displays a message in the JUnit results window.
      */
-    void testStarted(final TestSession session) {
+    synchronized void testStarted(final TestSession session) {
         displayMessage(
                 session,
                 NbBundle.getMessage(getClass(), "LBL_RunningTests"));   //NOI18N
@@ -111,13 +147,21 @@ public final class Manager {
     
     /**
      */
-    void sessionFinished(final TestSession session) {
+    synchronized void sessionFinished(final TestSession session) {
         if (!testSessions.contains(session)) {
             /* This session did not run the "junit" task. */
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Finishing an unknown session: " + session);
+            }
             return;
         }
         
         displayMessage(session, null, true);  //updates the display
+
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Finishing session: " + session);
+        }
+        
         testSessions.remove(session);   //must be after displayMessage(...)
                                          //otherwise the window would get
                                          //activated
@@ -125,7 +169,7 @@ public final class Manager {
     
     /**
      */
-    void displayOutput(final TestSession session,
+    synchronized void displayOutput(final TestSession session,
                        final String text,
                        final boolean error) {
 
@@ -139,7 +183,7 @@ public final class Manager {
      * @param  suiteName  name of the running suite; or {@code null} in the case
      *                    of anonymous suite
      */
-    void displaySuiteRunning(final TestSession session,
+    synchronized void displaySuiteRunning(final TestSession session,
                              final String suiteName) {
 
         final ResultDisplayHandler displayHandler = getDisplayHandler(session);
@@ -149,7 +193,7 @@ public final class Manager {
     
     /**
      */
-    void displayReport(final TestSession session,
+    synchronized void displayReport(final TestSession session,
                        final Report report) {
 
         /* Called from the AntLogger's thread */
@@ -260,15 +304,14 @@ public final class Manager {
                                  final ResultDisplayHandler displayHandler,
                                  final boolean sessionEnd) {
         final boolean firstDisplay = (testSessions.add(session) == true);
-        final boolean promote = true;
-//                lateWindowPromotion
-//                        ? sessionEnd
-//                        : firstDisplay && (sessionType == TaskType.TEST_TASK);
-//        
+        
+        final boolean promote = session.getSessionType() == TestSession.SessionType.TEST 
+                ? firstDisplay || sessionEnd
+                : sessionEnd;
+                
         int displayIndex = getDisplayIndex(session);
         if (displayIndex == -1) {
             addDisplay(session);
-            
             Mutex.EVENT.writeAccess(new Displayer(displayHandler, promote));
         } else if (promote) {
             Mutex.EVENT.writeAccess(new Displayer(null, promote));
@@ -302,7 +345,7 @@ public final class Manager {
     
     /**
      */
-    private ResultDisplayHandler getDisplayHandler(final TestSession session) {
+    private synchronized ResultDisplayHandler getDisplayHandler(final TestSession session) {
         ResultDisplayHandler displayHandler = (displayHandlers != null)
                                               ? displayHandlers.get(session)
                                               : null;
@@ -337,5 +380,5 @@ public final class Manager {
         }
         displaysMap.put(session, Boolean.TRUE);
     }
-    
+
 }

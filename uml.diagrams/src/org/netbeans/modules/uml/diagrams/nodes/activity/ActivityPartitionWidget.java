@@ -43,25 +43,38 @@ import java.awt.Dimension;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
 import org.netbeans.api.visual.border.BorderFactory;
+import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivity;
+import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityGroup;
+import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityNode;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityPartition;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
+import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
+import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
 import org.netbeans.modules.uml.diagrams.nodes.ContainerNode;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
+import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
+import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
+import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
+import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.ResourceType;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
@@ -85,6 +98,11 @@ public class ActivityPartitionWidget extends UMLNodeWidget
     {
         super(scene);
         this.scene = scene;
+        
+        // initialize context palette
+        DefaultContextPaletteModel paletteModel = new DefaultContextPaletteModel(this);
+        paletteModel.initialize("UML/context-palette/ActivityFinal");
+        addToLookup(paletteModel);
     }
 
     @Override
@@ -127,8 +145,12 @@ public class ActivityPartitionWidget extends UMLNodeWidget
         partitionPanel = new Widget(scene);
         partitionPanel.setMinimumSize(new Dimension(100, 85));
         // TODO: need to find a way to figure out the exisiting orientation of sub parttition
-        //setOrientation(Orientation.VERTICAL);   
-        populateAllPartitions(partitionElement);
+        //setOrientation(Orientation.VERTICAL); 
+        if (!PersistenceUtil.isDiagramLoading())
+        {
+            initializeSubPartitions(partitionElement);
+            populatePartitions(partitionElement);
+        }
         mainView.addChild(partitionPanel, 1);
 
         return mainView;
@@ -312,13 +334,13 @@ public class ActivityPartitionWidget extends UMLNodeWidget
                 Widget w = children.get(i);
                 if (w instanceof SubPartitionWidget)
                 {
-                    partitionPanel.setChildConstraint(w, i == (count - 1) ? 1 :0);
+                    partitionPanel.setChildConstraint(w, i == (count - 1) ? 1 : 0);
                     ((SubPartitionWidget) w).showPartitionDivider(i != (count - 1));
                 }
             }
         }
     }
-
+    
     @Override
     public void propertyChange(PropertyChangeEvent event)
     {
@@ -327,7 +349,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget
         nameWidget.propertyChange(event);
     }
 
-    private void populateAllPartitions(IActivityPartition parentPartition)
+    private void initializeSubPartitions(IActivityPartition parentPartition)
     {
         SubPartitionWidget subPartWidget = null;
         if (parentPartition != null)
@@ -350,7 +372,54 @@ public class ActivityPartitionWidget extends UMLNodeWidget
             }
         }
     }
+    
+    private void populatePartitions(IActivityPartition parentPartition)
+    {
+        if (parentPartition != null)
+        {            
+            //get a list of all partitions
+            ETList<IActivityPartition> partitionList = parentPartition.getSubPartitions();
+            
+            //iterate thru each partition, and populate them
+            for (IActivityGroup partition : partitionList)
+            {
+                ETList<IActivityNode> nodeList = partition.getNodeContents();
+                for (IActivityNode node : nodeList)
+                {
+                    //we have a node that is contained in the subpartition.. 
+                    //add the appropriate widget
+                    addNodeWidget(node, partition);
+                }
+            }
+        }
+    }
+    Point point = new Point(20, 20);
+    private void addNodeWidget(IActivityNode node, IActivityGroup partition)
+    {
+        if (!(scene instanceof GraphScene) || (node == null) || (partition == null))
+        {
+            return;
+        }
 
+        // get the subpartition widget
+        SubPartitionWidget subPart = null;
+        if (partition instanceof IActivityPartition)
+        {
+            subPart = getSubPartitionWidget((IActivityPartition) partition);
+        }
+        IPresentationElement presentation = Util.createNodePresentationElement();
+        presentation.addSubject(node);
+
+        Widget w = ((DesignerScene) getScene()).addNode(presentation);
+        if (w != null)
+        {
+            subPart.addContainedChild(w);
+            w.setPreferredLocation(point);
+            point = new Point(point.x + 50, point.y + 50);
+        }
+
+    }
+    
     private SubPartitionWidget createSubPartitionWidget(IActivityPartition subPart)
     {
         SubPartitionWidget subPartWidget = new SubPartitionWidget(scene, subPart,
@@ -368,6 +437,65 @@ public class ActivityPartitionWidget extends UMLNodeWidget
     public IActivityPartition getParentPartition()
     {
         return parentPartition;
+    }
+
+    public SubPartitionWidget getSubPartitionWidget(IActivityPartition subPart)
+    {
+        if (subPart != null)
+        {
+            List<Widget> children = partitionPanel.getChildren();
+            if (children != null && children.size() > 0)
+            {
+                for (int i = 0; i < children.size(); i++)
+                {
+                    Widget w = children.get(i);
+                    if (w instanceof SubPartitionWidget)
+                    {
+                        if (PersistenceUtil.getModelElement(w).isSame(subPart))
+                            return (SubPartitionWidget)w;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    IElementLocator locator = new ElementLocator();
+    
+    @Override
+    public void load(NodeInfo nodeReader)
+    {
+        IElement elt = nodeReader.getModelElement();
+        if (elt == null)
+        {
+            elt = locator.findByID(nodeReader.getProject(), nodeReader.getMEID());
+        }   
+        if (elt != null && elt instanceof IActivityPartition)
+        {
+            if (elt.getOwner() instanceof IActivity)
+            {
+                String or = nodeReader.getProperties().get("Orientation").toString();
+                this.setOrientation(SeparatorWidget.Orientation.valueOf(or));
+                initializeSubPartitions((IActivityPartition)elt);
+                super.load(nodeReader);                
+            }
+            SubPartitionWidget subPart = getSubPartitionWidget((IActivityPartition) elt);
+            if (subPart != null)
+            {
+                //fix the size/location/properties
+                subPart.setPreferredSize(nodeReader.getSize());
+                IPresentationElement pElt = PersistenceUtil.getPresentationElement(subPart);
+                nodeReader.setPresentationElement(pElt);
+            }
+        }
+    }
+
+    @Override
+    public void save(NodeWriter nodeWriter)
+    {
+        HashMap map = nodeWriter.getProperties();
+        map.put("Orientation", this.getOrientation().toString());
+        nodeWriter.setProperties(map);
+        super.save(nodeWriter);
     }
 
     private class MainViewWidget extends CustomizableWidget

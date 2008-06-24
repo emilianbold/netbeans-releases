@@ -21,30 +21,42 @@ package org.netbeans.microedition.svg;
 
 import java.util.Vector;
 import org.netbeans.microedition.svg.input.InputHandler;
+import org.netbeans.microedition.svg.meta.ChildrenAcceptor;
+import org.netbeans.microedition.svg.meta.MetaData;
+import org.netbeans.microedition.svg.meta.ChildrenAcceptor.Visitor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.svg.SVGElement;
 import org.w3c.dom.svg.SVGLocatableElement;
+import org.w3c.dom.svg.SVGRect;
 
 /**
  *
  * @author Pavel Benes
  */
 public abstract class SVGComponent implements SVGForm.FocusListener {
-    public static final    String SVG_NS = "http://www.w3.org/2000/svg";
+    public static final    String SVG_NS = "http://www.w3.org/2000/svg";  // NOI18N
     
-    protected static final String TRAIT_X          = "x";
-    protected static final String TRAIT_Y          = "y";
-    protected static final String TRAIT_VISIBILITY = "visibility";
-    protected static final String TRAIT_FILL       = "fill";
+    protected static final String TRAIT_X          = "x";                 // NOI18N
+    protected static final String TRAIT_Y          = "y";                 // NOI18N
+    protected static final String TRAIT_VISIBILITY = "visibility";        // NOI18N
+    protected static final String TRAIT_FILL       = "fill";              // NOI18N
     
-    protected final String              elemId;
+    protected static final String TYPE             = "type";              // NOI18N
+    protected static final String REF              = "ref";               // NOI18N
+    
+    
     protected final SVGForm             form;
     protected final SVGLocatableElement wrapperElement;
     protected       Vector              actionListeners;
 
+    public SVGComponent( SVGForm form, SVGLocatableElement element ) {
+        this.form = form;
+        Document doc = form.getDocument();
+        wrapperElement = element;
+    }
+    
     public SVGComponent( SVGForm form, String elemId) {
-        this.elemId = elemId;
         this.form = form;
         Document doc = form.getDocument();
         wrapperElement = (SVGLocatableElement) doc.getElementById(elemId);
@@ -96,6 +108,7 @@ public abstract class SVGComponent implements SVGForm.FocusListener {
             }
         }
     }
+    
 
     protected static final SVGElement getElementById( SVGElement parent, String childId) {
         Element elem = parent.getFirstElementChild();
@@ -114,4 +127,50 @@ public abstract class SVGComponent implements SVGForm.FocusListener {
         
         return null;
     }   
+    
+    protected static final SVGElement getElementByMeta( SVGElement parent , 
+            String key, String value )
+    {
+        MetaFinder finder = new MetaFinder( key , value );
+        ChildrenAcceptor acceptor = new ChildrenAcceptor( finder );
+        acceptor.accept(parent);
+        return finder.getFound();
+    }
+    
+    private static class MetaFinder implements Visitor {
+        
+        MetaFinder( String key , String value ){
+            myKey = key;
+            myValue = value;
+            myMeta = new MetaData();
+        }
+
+        public boolean visit( Element element ) {
+            if ( !( element instanceof SVGElement )){
+                return true;
+            }
+            myMeta.loadFromElement((SVGElement)element);
+            if ( myValue== null && myMeta.get( myKey )==null){
+                myFound = (SVGElement)element;
+                return false;
+            }
+            if (myValue == null ){
+                return true;
+            }
+            if ( myValue.equals( myMeta.get(myKey))){
+                myFound = (SVGElement)element;
+                return false;
+            }
+            return true;
+        }
+        
+        SVGElement getFound(){
+            return myFound;
+        }
+        
+        private String myKey;
+        private String myValue;
+        private MetaData myMeta;
+        private SVGElement myFound;
+    }
 }

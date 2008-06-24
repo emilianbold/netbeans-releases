@@ -47,9 +47,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
+import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
+import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
+import org.netbeans.modules.websvc.saas.model.SaasMethod;
 
 /**
  * Code generator for Accessing Saas services.
@@ -63,6 +67,15 @@ public class CustomClientJspCodeGenerator extends CustomClientServletCodeGenerat
     public CustomClientJspCodeGenerator() throws IOException {
         setDropFileType(Constants.DropFileType.JSP);
         jspSpecialNamesMap.put("page", "page1");
+    }
+
+    @Override
+    public boolean canAccept(SaasMethod method, Document doc) {
+        if (SaasBean.canAccept(method, CustomSaasMethod.class, getDropFileType()) &&
+                Util.isJsp(doc)) {
+            return true;
+        }
+        return false;
     }
     
     /**

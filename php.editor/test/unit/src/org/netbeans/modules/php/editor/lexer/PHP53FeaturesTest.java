@@ -67,54 +67,54 @@ public class PHP53FeaturesTest extends PHPLexerTestBase {
     }
     
     public void testGoto() throws Exception {
-        performFileLexerTest("jump01");
-        performFileLexerTest("jump02");
-        performFileLexerTest("jump03");
-        performFileLexerTest("jump04");
-        performFileLexerTest("jump05");
-        performFileLexerTest("jump06");
-        performFileLexerTest("jump07");
-        performFileLexerTest("jump08");
-        performFileLexerTest("jump09");
-        performFileLexerTest("jump10");
-        performFileLexerTest("jump11");
-        performFileLexerTest("jump12");
-        performFileLexerTest("jump13");
+        performTest("jump01");
+        performTest("jump02");
+        performTest("jump03");
+        performTest("jump04");
+        performTest("jump05");
+        performTest("jump06");
+        performTest("jump07");
+        performTest("jump08");
+        performTest("jump09");
+        performTest("jump10");
+        performTest("jump11");
+        performTest("jump12");
+        performTest("jump13");
     }
     
     public void testNowDoc() throws Exception {
-        performFileLexerTest("nowdoc_000");
-        performFileLexerTest("nowdoc_001");
-        performFileLexerTest("nowdoc_002");
-        performFileLexerTest("nowdoc_003");
-        performFileLexerTest("nowdoc_004");
-        performFileLexerTest("nowdoc_005");
-        performFileLexerTest("nowdoc_006");
-        performFileLexerTest("nowdoc_007");
-        performFileLexerTest("nowdoc_008");
-        performFileLexerTest("nowdoc_009");
-        performFileLexerTest("nowdoc_010");
-        performFileLexerTest("nowdoc_011");
-        performFileLexerTest("nowdoc_012");
-        performFileLexerTest("nowdoc_013");
-        performFileLexerTest("nowdoc_014");
-        performFileLexerTest("nowdoc_015");
+        performTest("nowdoc_000");
+        performTest("nowdoc_001");
+        performTest("nowdoc_002");
+        performTest("nowdoc_003");
+        performTest("nowdoc_004");
+        performTest("nowdoc_005");
+        performTest("nowdoc_006");
+        performTest("nowdoc_007");
+        performTest("nowdoc_008");
+        performTest("nowdoc_009");
+        performTest("nowdoc_010");
+        performTest("nowdoc_011");
+        performTest("nowdoc_012");
+        performTest("nowdoc_013");
+        performTest("nowdoc_014");
+        performTest("nowdoc_015");
     }
     
     public void testHereDoc53() throws Exception {
-        performFileLexerTest("heredoc_001");
-        performFileLexerTest("heredoc_002");
-        performFileLexerTest("heredoc_003");
-        performFileLexerTest("heredoc_004");
-        performFileLexerTest("heredoc_005");
-        performFileLexerTest("heredoc_006");
-        performFileLexerTest("heredoc_007");
-        performFileLexerTest("heredoc_008");
-        performFileLexerTest("heredoc_009");
-        performFileLexerTest("heredoc_010");
-        performFileLexerTest("heredoc_011");
-        performFileLexerTest("heredoc_012");
-        performFileLexerTest("heredoc_013");
-        performFileLexerTest("heredoc_014");
+        performTest("heredoc_001");
+        performTest("heredoc_002");
+        performTest("heredoc_003");
+        performTest("heredoc_004");
+        performTest("heredoc_005");
+        performTest("heredoc_006");
+        performTest("heredoc_007");
+        performTest("heredoc_008");
+        performTest("heredoc_009");
+        performTest("heredoc_010");
+        performTest("heredoc_011");
+        performTest("heredoc_012");
+        performTest("heredoc_013");
+        performTest("heredoc_014");
     }
 }

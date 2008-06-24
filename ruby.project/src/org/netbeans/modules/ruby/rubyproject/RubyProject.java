@@ -60,9 +60,10 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -71,7 +72,7 @@ import org.openide.util.lookup.Lookups;
  */
 public final class RubyProject extends RubyBaseProject {
     
-    private static final Icon RUBY_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/ruby/rubyproject/ui/resources/jruby.png")); // NOI18N
+    private static final Icon RUBY_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/ruby/rubyproject/ui/resources/jruby.png")); // NOI18N
 
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;
@@ -134,7 +135,17 @@ public final class RubyProject extends RubyBaseProject {
         //GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
         GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
     }
-    
+
+    @Override
+    public FileObject[] getSourceRootFiles() {
+        return getSourceRoots().getRoots();
+    }
+
+    @Override
+    public FileObject[] getTestSourceRootFiles() {
+        return getTestSourceRoots().getRoots();
+    }
+   
     /**
      * Returns the source roots of this project
      * @return project's source roots

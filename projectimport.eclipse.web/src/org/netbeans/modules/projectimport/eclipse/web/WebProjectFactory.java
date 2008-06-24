@@ -41,13 +41,15 @@ package org.netbeans.modules.projectimport.eclipse.web;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectFactorySupport;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeUpdater;
@@ -58,6 +60,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -74,6 +77,7 @@ import org.xml.sax.SAXException;
 public class WebProjectFactory implements ProjectTypeUpdater {
 
     private static final String WEB_NATURE = "org.eclipse.wst.common.modulecore.ModuleCoreNature"; // NOI18N
+    private static final Icon WEB_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif")); // NOI18
     
     // TODO: check this one as well
     private static final String MYECLIPSE_WEB_NATURE = "com.genuitec.eclipse.j2eedt.core.webnature"; // NOI18N
@@ -87,7 +91,7 @@ public class WebProjectFactory implements ProjectTypeUpdater {
 
     public Project createProject(final ProjectImportModel model, final List<String> importProblems) throws IOException {
         // create nb project location
-        File nbProjectDir = FileUtil.normalizeFile(new File(model.getNetBeansProjectLocation() + "/" + model.getProjectName())); // NOI18N
+        File nbProjectDir = model.getNetBeansProjectLocation(); // NOI18N
         
         WebContentData webData = parseWebContent(model.getEclipseProjectFolder());
 
@@ -96,15 +100,20 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         // TODO: most of the values defaulted for now:
         //
         //
+        if (Deployment.getDefault().getServerInstanceIDs().length == 0) {
+            importProblems.add("project cannot be imported if there is no application server");
+            return null;
+        }
         
         WebProjectCreateData createData = new WebProjectCreateData();
         createData.setProjectDir(nbProjectDir);
         createData.setName(model.getProjectName());
-        assert Deployment.getDefault().getServerInstanceIDs().length > 0 : "sorry , for now you have to have at least one server";
         createData.setServerInstanceID(Deployment.getDefault().getServerInstanceIDs()[0]);
         createData.setJavaEEVersion("1.5");
         createData.setSourceLevel("1.5");
-        createData.setJavaPlatformName(model.getJavaPlatform().getDisplayName());
+        if (model.getJavaPlatform() != null) {
+            createData.setJavaPlatformName(model.getJavaPlatform().getDisplayName());
+        }
         createData.setServerLibraryName(null);
 
         FileObject root = FileUtil.toFileObject(model.getEclipseProjectFolder());
@@ -119,13 +128,13 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         createData.setBuildfile("build.xml");
         
         AntProjectHelper helper = WebProjectUtilities.importProject(createData);
-        Project nbProject = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+        WebProject nbProject = (WebProject)ProjectManager.getDefault().findProject(helper.getProjectDirectory());
         
         // set labels for source roots
-//        ProjectFactorySupport.updateSourceRootLabels(model.getEclipseSourceRoots(), nbProject.getSourceRoots());
-//        ProjectFactorySupport.updateSourceRootLabels(model.getEclipseTestSourceRoots(), nbProject.getTestSourceRoots());
+        ProjectFactorySupport.updateSourceRootLabels(model.getEclipseSourceRoots(), nbProject.getSourceRoots());
+        ProjectFactorySupport.updateSourceRootLabels(model.getEclipseTestSourceRoots(), nbProject.getTestSourceRoots());
         
-        // TODO: setup include/exclude here
+        ProjectFactorySupport.setupSourceExcludes(helper, model);
         
         // Make sure PCPM knows who owns this (J2SEProject will do the same later on anyway):
         if (!nbProjectDir.equals(model.getEclipseProjectFolder())) {
@@ -133,7 +142,7 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         }
         
         // update project classpath
-        ProjectFactorySupport.updateProjectClassPath(helper, model, importProblems);
+        ProjectFactorySupport.updateProjectClassPath(helper, nbProject.getReferenceHelper(), model, importProblems);
         
         // save project
         ProjectManager.getDefault().saveProject(nbProject);
@@ -189,16 +198,41 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         return ProjectFactorySupport.calculateKey(model) + "web=" + webData.webRoot + ";" + "context=" + webData.contextRoot + ";";
     }
 
-    public void update(Project project, ProjectImportModel model, String oldKey) throws IOException {
+    public String update(Project project, ProjectImportModel model, String oldKey, List<String> importProblems) throws IOException {
+        if (!(project instanceof WebProject)) {
+            throw new IOException("is not web project: "+project.getClass().getName());
+        }
         String newKey = calculateKey(model);
         
         // update project classpath
-        ProjectFactorySupport.synchronizeProjectClassPath(project, ((WebProject)project).getAntProjectHelper(), model, oldKey, newKey, new ArrayList<String>());
+        String actualKey = ProjectFactorySupport.synchronizeProjectClassPath(project, 
+                ((WebProject)project).getAntProjectHelper(), 
+                ((WebProject)project).getReferenceHelper(), model, oldKey, newKey, importProblems);
         
         // TODO:
         // update source roots and platform and server and web root and context
         
         // save project
         ProjectManager.getDefault().saveProject(project);
+        
+        return actualKey;
     }
+
+    public Icon getProjectTypeIcon() {
+        return WEB_PROJECT_ICON;
+    }
+
+    public String getProjectTypeName() {
+        return "Web Application";
+    }
+
+    public boolean prepare() {
+        if (Deployment.getDefault().getServerInstanceIDs().length == 0) {
+            if (ServerManager.showAddServerInstanceWizard() == null) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
 }

@@ -41,10 +41,7 @@
 
 package org.netbeans.modules.ruby;
 
-import javax.swing.JTextArea;
-import javax.swing.text.Caret;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
-import org.netbeans.editor.BaseDocument;
 
 /**
  *
@@ -92,21 +89,6 @@ public class RubyCodeCompleterTest extends RubyTestBase {
         checkPrefix("testfiles/cc-prefix8.rb");
     }
     
-    
-    private void assertAutoQuery(QueryType queryType, String source, String typedText) {
-        RubyCodeCompleter completer = new RubyCodeCompleter();
-        int caretPos = source.indexOf('^');
-        source = source.substring(0, caretPos) + source.substring(caretPos+1);
-        
-        BaseDocument doc = getDocument(source);
-        JTextArea ta = new JTextArea(doc);
-        Caret caret = ta.getCaret();
-        caret.setDot(caretPos);
-        
-        QueryType qt = completer.getAutoQuery(ta, typedText);
-        assertEquals(queryType, qt);
-    }
-
     public void testAutoQuery1() throws Exception {
         assertAutoQuery(QueryType.NONE, "foo^", "o");
         assertAutoQuery(QueryType.NONE, "foo^", " ");

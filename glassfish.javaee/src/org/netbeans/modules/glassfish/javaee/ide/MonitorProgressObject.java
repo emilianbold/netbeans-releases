@@ -51,8 +51,8 @@ import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
-import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
-import org.netbeans.spi.glassfish.OperationStateListener;
+import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
+import org.netbeans.modules.glassfish.spi.OperationStateListener;
 
 /**
  * Progress object that monitors events from GlassFish Common and translates

@@ -1,5 +1,6 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.glf;
 
+import java.util.regex.Pattern;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -33,15 +34,19 @@ public final class GLFTemplateVisualPanel2 extends JPanel {
         update ();
     }
     
+    private static final Pattern MIME_PATTERN = Pattern.compile("[\\w+-.]+/[\\w+-.]+");
+    private static final Pattern EXT_PATTERN = Pattern.compile("(\\w+\\s*)+");
+    
     private void update () {
-        if (getMimeType ().trim ().length () < 1) {
+        // reasonable mime type check
+        if (! MIME_PATTERN.matcher(getMimeType().trim()).matches()) {
             wizardPanel.getIterator ().getWizardDescriptor ().putProperty (
                 "WizardPanel_errorMessage",  // NOI18N
                 NbBundle.getMessage(GLFTemplateVisualPanel2.class, "CTL_Invalid_Mime_Type"));
             wizardPanel.setValid (false);
             return;
         }
-        if (getExtensions ().trim ().length () < 1) {
+        if (! EXT_PATTERN.matcher(getExtensions ().trim ()).matches()) {
             wizardPanel.getIterator ().getWizardDescriptor ().putProperty (
                 "WizardPanel_errorMessage",  // NOI18N
                 NbBundle.getMessage(GLFTemplateVisualPanel2.class, "CTL_Invalid_Extensions"));

@@ -90,6 +90,11 @@ public class AddCastTest extends ErrorHintsTestBase {
         performAnalysisTest("test/Test.java",
                             "package test; public class Test {private static void test() {Unknown u |= }}");
     }
+
+    public void test136313() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test; import java.util.ArrayList; public class Test {int[] convert(ArrayList<Integer> l) {Integer[] ex = {}; return |l.toArray(ex);}}");
+    }
     
     @Override
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {

@@ -24,7 +24,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.tree.TreePath;
-import org.netbeans.modules.bpel.mapper.cast.AbstractPseudoComp;
 import org.netbeans.modules.bpel.mapper.cast.AbstractTypeCast;
 import org.netbeans.modules.bpel.mapper.logging.tree.AlertItem;
 import org.netbeans.modules.bpel.mapper.logging.tree.LogItem;
@@ -44,6 +43,7 @@ import org.netbeans.modules.bpel.model.ext.logging.api.Log;
 import org.netbeans.modules.bpel.model.ext.logging.api.LogLevel;
 import org.netbeans.modules.bpel.model.ext.logging.api.Trace;
 import org.netbeans.modules.soa.mappercore.model.Graph;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
 import org.openide.util.NbBundle;
 
 /**
@@ -198,7 +198,7 @@ public class LoggingBpelModelUpdater extends BpelModelUpdater {
         //
         // Populate 
         Set<AbstractTypeCast> typeCastCollector = new HashSet<AbstractTypeCast>();
-        Set<AbstractPseudoComp> pseudoCollector = new HashSet<AbstractPseudoComp>();
+        Set<XPathPseudoComp> pseudoCollector = new HashSet<XPathPseudoComp>();
 
         updateFrom(graph, typeCastCollector, pseudoCollector, bpelExpr);
         

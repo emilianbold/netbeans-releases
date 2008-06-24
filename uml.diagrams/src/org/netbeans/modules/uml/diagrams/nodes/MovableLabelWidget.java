@@ -81,6 +81,7 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
     private Color initialBeforeSelectionFG;
     private Integer x0;
     private Integer y0;
+    private boolean diagramLoading = false;
 
     public MovableLabelWidget(Scene scene, Widget nodeWidget, IElement element, String widgetID, String displayName)
     {
@@ -124,6 +125,13 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
         updateLocation = true;
     }
 
+    public void refresh()
+    {
+        //this is called ONLY from diagram loading logic..
+        updateLocation = true;
+        diagramLoading = true;
+    }
+    
     protected void paintWidget()
     {
         super.paintWidget();
@@ -143,12 +151,6 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
         updateLabelLocation();
     }
 
-    public void forcePreferredLocation(Point loc)
-    {
-        setPreferredLocation(loc);
-        updateDistance();
-    }
-    
     private void updateLabelLocation()
     {
         Point point = new Point();
@@ -174,15 +176,19 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
             else dy=y0;
 
         }
-        
+        if (getPreferredLocation() != null && diagramLoading)
+        {
+            point = getPreferredLocation();
+        }
+       else
+        {
+            double nodeCenterX = nodeBnd.x + insets.left + (nodeBnd.width - insets.left - insets.right) / 2;
 
-        double nodeCenterX = nodeBnd.x+ insets.left + (nodeBnd.width - insets.left - insets.right) / 2;
+            double nodeCenterY = nodeBnd.y + insets.bottom + (nodeBnd.height - insets.top - insets.bottom) / 2;
 
-        double nodeCenterY = nodeBnd.y+ insets.bottom + (nodeBnd.height - insets.top - insets.bottom) / 2;
-
-        point = new Point((int) (nodeCenterX + dx - labelBnd.width / 2),
-                (int) (nodeCenterY + dy - labelBnd.height / 2));
-
+            point = new Point((int) (nodeCenterX + dx - labelBnd.width / 2),
+                    (int) (nodeCenterY + dy - labelBnd.height / 2));
+        }
         setPreferredLocation(point);
         getScene().revalidate();
     }
@@ -261,6 +267,9 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
 
     public void save(NodeWriter nodeWriter)
     {
+        if (!(this.isVisible()))
+            return;
+        
         nodeWriter = PersistenceUtil.populateNodeWriter(nodeWriter, this);
         nodeWriter.setTypeInfo("MovableLabel");
         nodeWriter.setHasPositionSize(true);        
@@ -269,6 +278,9 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
         nodeWriter.endGraphNode();
     }
     
+    public void saveChildren(Widget widget, NodeWriter nodeWriter) {
+        //not applicable
+    }
 
     private class LabelMoveSupport implements MoveStrategy, MoveProvider
     {

@@ -39,6 +39,7 @@
 package org.netbeans.modules.spring.beans.completion.completors;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.StringTokenizer;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
@@ -49,11 +50,12 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.spring.beans.completion.CompletionContext;
 import org.netbeans.modules.spring.beans.completion.Completor;
-import org.netbeans.modules.spring.beans.completion.QueryProgress;
+import org.netbeans.modules.spring.beans.completion.CompletorUtils;
 import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
 import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.spring.java.JavaUtils;
+import org.netbeans.modules.spring.java.MatchType;
 import org.netbeans.modules.spring.java.Property;
 import org.netbeans.modules.spring.java.PropertyFinder;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
@@ -64,11 +66,20 @@ import org.netbeans.modules.xml.text.syntax.dom.Tag;
  */
 public class PropertyCompletor extends Completor {
 
-    public PropertyCompletor() {
+    public PropertyCompletor(int invocationOffset) {
+        super(invocationOffset);
     }
 
     @Override
-    protected void computeCompletionItems(final CompletionContext context, QueryProgress progress) throws IOException {
+    protected int initAnchorOffset(CompletionContext context) {
+        int idx = context.getCurrentToken().getOffset() + 1;
+        String typedPrefix = context.getTypedPrefix();
+        int offset = typedPrefix.lastIndexOf('.'); // NOI18N
+        return idx + offset + 1;
+    }
+
+    @Override
+    protected void compute(final CompletionContext context) throws IOException {
         final String propertyPrefix = context.getTypedPrefix();
         final JavaSource js = JavaUtils.getJavaSource(context.getFileObject());
         if (js == null) {
@@ -102,7 +113,7 @@ public class PropertyCompletor extends Completor {
 
                     while (tokenizer.hasMoreTokens() && startType != null) {
                         String propertyName = tokenizer.nextToken();
-                        Property[] props = new PropertyFinder(startType, propertyName, eu).findProperties();
+                        Property[] props = new PropertyFinder(startType, propertyName, eu, MatchType.PREFIX).findProperties();
 
                         // no matching element found
                         if (props.length == 0 || props[0].getGetter() == null) {
@@ -128,21 +139,22 @@ public class PropertyCompletor extends Completor {
                     setterPrefix = propertyPrefix.substring(dotIndex + 1);
                 }
 
-                Property[] props = new PropertyFinder(startType, setterPrefix, eu).findProperties();
-                int substitutionOffset = context.getCurrentToken().getOffset() + 1;
-                if (dotIndex != -1) {
-                    substitutionOffset += dotIndex + 1;
-                }
+                Property[] props = new PropertyFinder(startType, setterPrefix, eu, MatchType.PREFIX).findProperties();
 
                 for (Property prop : props) {
-                    if (prop.getSetter() == null) {
-                        continue;
-                    }
-                    addItem(SpringXMLConfigCompletionItem.createPropertyItem(substitutionOffset, prop));
+                    addCacheItem(SpringXMLConfigCompletionItem.createPropertyItem(getAnchorOffset(), prop));
                 }
-
-                setAnchorOffset(substitutionOffset);
             }
         }, false);
+    }
+
+    @Override
+    public boolean canFilter(CompletionContext context) {
+        return CompletorUtils.canFilter(context.getDocument(), getInvocationOffset(), context.getCaretOffset(), getAnchorOffset(), CompletorUtils.RESOURCE_PATH_ELEMENT_ACCEPTOR);
+    }
+
+    @Override
+    protected List<SpringXMLConfigCompletionItem> doFilter(CompletionContext context) {
+        return CompletorUtils.filter(getCacheItems(), context.getDocument(), getInvocationOffset(), context.getCaretOffset(), getAnchorOffset());
     }
 }

@@ -75,6 +75,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
     private static final int METHOD = CsmCompletionExpression.METHOD;
     private static final int CONSTRUCTOR = CsmCompletionExpression.CONSTRUCTOR;
     private static final int CONVERSION = CsmCompletionExpression.CONVERSION;
+    private static final int CONVERSION_OPEN = CsmCompletionExpression.CONVERSION_OPEN;
     private static final int TYPE = CsmCompletionExpression.TYPE;
     private static final int NEW = CsmCompletionExpression.NEW;
     private static final int GOTO = CsmCompletionExpression.GOTO;
@@ -96,6 +97,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
     /** dereference "*" or address-of "&" operators in the '*value' or '&value'*/
     private static final int MEMBER_POINTER = CsmCompletionExpression.MEMBER_POINTER;
     private static final int MEMBER_POINTER_OPEN = CsmCompletionExpression.MEMBER_POINTER_OPEN;
+    private static final int CLASSIFIER = CsmCompletionExpression.CLASSIFIER;
     private static final int NO_EXP = -1;
 
     /** Buffer that is scanned */
@@ -288,6 +290,26 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                 break;
                         }
                         break;
+                    case TYPE_PREFIX:
+                        // Merge TYPE_PREFIX and VARIABLE expressions
+                        // into a single TYPE expression.
+                        switch (tokenID.getNumericID()) {
+                            case CCTokenContext.MUL_ID:
+                            case CCTokenContext.AND_ID:
+                            case CCTokenContext.CONST_ID:
+                            case CCTokenContext.IDENTIFIER_ID:
+                                popExp();
+                                top2.setExpID(TYPE);
+                                for (int i = 0; i < top.getTokenCount(); ++i) {
+                                    top2.addToken(top.getTokenID(i),
+                                                  top.getTokenOffset(i),
+                                                  top.getTokenText(i));
+                                }
+                                top = top2;
+                                stop = true;
+                                break;
+                        }
+                        break;
                 }
                 if (stop) {
                     break;
@@ -419,6 +441,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                 case CCTokenContext.MUL_ID:
                                 case CCTokenContext.AND_ID:
                                 case CCTokenContext.LBRACKET_ID:
+                                case CCTokenContext.GT_ID:
                                 {
                                     if (topID == OPERATOR && top.getParameterCount() == 0 &&
                                             top.getTokenCount() == 1 && 
@@ -572,7 +595,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
     public boolean token(TokenID tokenID, TokenContextPath tokenContextPath,
     int tokenOffset, int tokenLen) {
         
-        tokenOffset += bufferOffsetDelta;
+                tokenOffset += bufferOffsetDelta;
 
         if (tokenID != null){
             TokenCategory category = tokenID.getCategory();
@@ -610,7 +633,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
         } else { // valid token-id
             int tokenNumID = tokenID.getNumericID();
             if (tokenContextPath.contains(CCTokenContext.contextPath)){
-                switch (tokenNumID) { // test the token ID
+                switch (tokenNumID) { // test the token ID                    
 // XXX
 //                    case CCTokenContext.BOOLEAN_ID:
 //                        kwdType = JavaCompletion.BOOLEAN_TYPE;
@@ -637,6 +660,9 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
 //                        kwdType = JavaCompletion.SHORT_TYPE;
 //                        break;
 
+                    case CCTokenContext.STATIC_CAST_ID:
+                        pushExp(createTokenExp(CONVERSION_OPEN));
+                        break;
                     case CCTokenContext.TRUE_ID:
                     case CCTokenContext.FALSE_ID:
                         constExp = createTokenExp(CONSTANT);
@@ -651,9 +677,11 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                     case CCTokenContext.CLASS_ID:
                         if (topID == DOT_OPEN || topID == ARROW_OPEN || topID == SCOPE_OPEN) {
                             pushExp(createTokenExp(VARIABLE));
-                        } else {
-                            errorState = true;
+                            break;
                         }
+                    case CCTokenContext.STRUCT_ID:
+                    case CCTokenContext.UNION_ID:
+                        pushExp(createTokenExp(CLASSIFIER));
                         break;
                     case CCTokenContext.GOTO_ID:
                         pushExp(createTokenExp(GOTO));
@@ -779,6 +807,9 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                             case ANNOTATION:
                             case ANNOTATION_OPEN:
                             case CASE:
+                            case CLASSIFIER:
+                            case CONVERSION_OPEN:
+                            case TYPE_PREFIX:
                                 pushExp(createTokenExp(VARIABLE));
                                 break;
 
@@ -942,6 +973,11 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                         break;
                                 }
                             }
+                            
+                            if(topID == CONVERSION_OPEN) {
+                                addTokenTo(top);
+                                break;
+                            }
 
                             if (!errorState && !genericType) { // not generics -> handled compatibly
                                 // Operator handling
@@ -1010,8 +1046,33 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                 }
                             }
 
+                            boolean conversion = false;
+                            CsmCompletionExpression top2 = peekExp2();
+                            switch (getValidExpID(top2)) {
+                                case CLASSIFIER:
+                                    CsmCompletionExpression top3 = peekExp(3);
+                                    if (getValidExpID(top3) == CONVERSION_OPEN && CsmCompletionExpression.isValidType(top)) {
+                                        popExp();
+                                        popExp();
+                                        top3.addParameter(top);
+                                        top3.addParameter(top2);
+                                        addTokenTo(top3);
+                                        
+                                        conversion = true;
+                                    }
+                                    break;
+                                case CONVERSION_OPEN:
+                                    if (CsmCompletionExpression.isValidType(top)) {
+                                        popExp();
+                                        top2.addParameter(top);
+                                        addTokenTo(top2);
+                                        
+                                        conversion = true;
+                                    }
+                                    break;
+                            }
 
-                            if (!errorState && !genericType) { // not generics - handled compatibly
+                            if (!errorState && !genericType && !conversion) { // not generics - handled compatibly
                                 // Operator handling
                                 switch (topID) {
                                     case CONSTANT:
@@ -1335,15 +1396,18 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                 top.setExpID(SCOPE_OPEN);
                                 break;
 
+                            case METHOD_OPEN:
+                            case PARENTHESIS_OPEN:
+                            case OPERATOR:
+                            case UNARY_OPERATOR:
                             case NO_EXP: // alone :: is OK as access to global context
-                                if (tokenNumID == CCTokenContext.SCOPE_ID) {
-                                    CsmCompletionExpression emptyVar = CsmCompletionExpression.createEmptyVariable(curTokenPosition);
-                                    int openExpID = tokenID2OpenExpID(CCTokenContext.SCOPE_ID);
-                                    CsmCompletionExpression opExp = createTokenExp(openExpID);
-                                    opExp.addParameter(emptyVar);
-                                    pushExp(opExp);      
-                                    break;
-                                }
+                                CsmCompletionExpression emptyVar = CsmCompletionExpression.createEmptyVariable(curTokenPosition);
+                                int openExpID = tokenID2OpenExpID(tokenNumID);
+                                CsmCompletionExpression opExp = createTokenExp(openExpID);
+                                opExp.addParameter(emptyVar);
+                                pushExp(opExp);      
+                                break;
+                                    
                             default:
                                 errorState = true;
                                 break;
@@ -1469,6 +1533,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                             case NO_EXP:
                             case OPERATOR:         // 3+(
                             case CONVERSION:       // (int)(
+                            case CONVERSION_OPEN:  // static_cast<int>(
                             case PARENTHESIS:      // if (a > b) (
                             case GENERIC_TYPE_OPEN:// a < (
                                 pushExp(createTokenExp(PARENTHESIS_OPEN));
@@ -1501,12 +1566,41 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                             case METHOD:
                             case GENERIC_TYPE:
                                 CsmCompletionExpression top2 = peekExp2();
+                                CsmCompletionExpression top3;
                                 switch (getValidExpID(top2)) {
+                                    case CLASSIFIER:
+                                        top3 = peekExp(3);
+                                        if(getValidExpID(top3) == PARENTHESIS_OPEN && CsmCompletionExpression.isValidType(top))
+                                        {
+                                            popExp();
+                                            popExp();
+                                            top3.addParameter(top);
+                                            top3.addParameter(top2);
+                                            top3.setExpID(CONVERSION);
+                                            addTokenTo(top3);                                            
+                                        }
+                                        break;
                                     case PARENTHESIS_OPEN:
-                                        popExp();
-                                        top2.addParameter(top);
-                                        top2.setExpID(CsmCompletionExpression.isValidType(top) ? CONVERSION : PARENTHESIS);
-                                        addTokenTo(top2);
+                                        top3 = peekExp(3);
+                                        if (getValidExpID(top3) == CONVERSION_OPEN) {
+                                            popExp();
+                                            popExp();
+                                            popExp();
+                                            
+                                            top3.addParameter(top);
+                                            top3.setExpID(CONVERSION);
+                                                                                        
+                                            top2.addParameter(top3);
+                                            top2.setExpID(PARENTHESIS);
+                                            top = top2;
+                                            
+                                            pushExp(top);                                            
+                                        } else {
+                                            popExp();
+                                            top2.addParameter(top);
+                                            top2.setExpID(CsmCompletionExpression.isValidType(top) ? CONVERSION : PARENTHESIS);
+                                            addTokenTo(top2);
+                                        }
                                         break;
 
                                     case GENERIC_TYPE_OPEN:
@@ -1809,13 +1903,17 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
             case METHOD_OPEN:
             {
                 // TODO: we know, this is method declaration/definition
-                CsmCompletionExpression kwdExp = createTokenExp(TYPE);
+                CsmCompletionExpression kwdExp = createTokenExp(
+                        "const".equals(kwdType)? TYPE_PREFIX : TYPE);
                 //addTokenTo(kwdExp);
                 kwdExp.setType(kwdType);
                 pushExp(kwdExp);
                 errorState = false;
                 break;
             }
+            case TYPE_PREFIX:
+                top.setExpID(TYPE);
+                // fallthrough
             case TYPE:
             {
                 CsmCompletionExpression kwdExp = top;

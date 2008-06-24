@@ -61,7 +61,7 @@ public class EnterPasswordTask extends Task {
     /**
      * Holds value of property keyStore.
      */
-    private String keyStore;
+    private File keyStore;
     
     /**
      * Holds value of property keyAlias.
@@ -104,8 +104,8 @@ public class EnterPasswordTask extends Task {
         if (d && (a || b)) throw new BuildException(NbBundle.getMessage(EnterPasswordTask.class, "ERR_InvalidUsernameUsage")); //NOI18N
         String password = null;
         if (a) {
-            if (!new File(keyStore).isFile()) throw new BuildException(NbBundle.getMessage(EnterPasswordTask.class, "ERR_InvalidKeystore")); //NOI18N
-            password = keyAlias == null ? EnterPasswordPanel.getKeystorePassword(keyStore) : EnterPasswordPanel.getAliasPassword(keyStore, keyAlias);
+            if (!keyStore.isFile()) throw new BuildException(NbBundle.getMessage(EnterPasswordTask.class, "ERR_InvalidKeystore")); //NOI18N
+            password = keyAlias == null ? EnterPasswordPanel.getKeystorePassword(keyStore.getAbsolutePath()) : EnterPasswordPanel.getAliasPassword(keyStore.getAbsolutePath(), keyAlias);
         } else if (b) {
             password = EnterPasswordPanel.getKeyfilePassword(keyFile);
         } else if (c) {
@@ -127,7 +127,7 @@ public class EnterPasswordTask extends Task {
      * Setter for property keyStore.
      * @param keystore New value of property keyStore.
      */
-    public void setKeyStore(String keyStore) {
+    public void setKeyStore(File keyStore) {
         this.keyStore = keyStore;
     }
     

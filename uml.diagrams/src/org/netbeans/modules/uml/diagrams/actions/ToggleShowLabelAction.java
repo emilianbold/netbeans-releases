@@ -41,8 +41,6 @@ package org.netbeans.modules.uml.diagrams.actions;
 import javax.swing.Action;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IControlNode;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.view.LabelNode;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
@@ -66,7 +64,7 @@ public final class ToggleShowLabelAction extends CookieAction
     {
         scene = actionContext.lookup(DesignerScene.class);
         pe = actionContext.lookup(IPresentationElement.class);
-        return this;
+        return super.createContextAwareInstance(actionContext);
     }
    
     protected void performAction(Node[] activatedNodes)
@@ -83,14 +81,9 @@ public final class ToggleShowLabelAction extends CookieAction
     
      private Widget getTargetWidget(ObjectScene scene, IPresentationElement pe)
     {
-         Widget widget = scene.findWidget(pe);
-         if ( pe != null) 
-         {
-             IElement element = pe.getFirstSubject();
-             if (element instanceof IControlNode)
-             {
-                widget = scene.findWidget(pe);
-             }
+         Widget widget = null;
+         if ( scene != null) {
+             widget = scene.findWidget(pe);
          }
         return widget;
     }

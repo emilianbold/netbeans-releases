@@ -262,10 +262,11 @@ public class TraceXRef extends TraceModel {
             if (callback != null) {
                 callback.fileParsingStarted(file);
             }
-            analyzeFile(file, params, bag, printOut, printErr);
+            analyzeFile(file, params, bag, printOut, printErr, canceled);
             if (canceled.get()) {
+                printOut.println("Cancelled");
                 break;
-            }
+            }            
         }
         if (callback != null) {
             callback.projectParsingFinished(csmPrj);
@@ -297,16 +298,13 @@ public class TraceXRef extends TraceModel {
     public static String toString(CsmReference ref, CsmObject targetDecl, CsmObject targetDef) {
         String out = CsmTracer.getOffsetString(ref, true);
         CsmReferenceKind kind = ref.getKind();
-        String postfix;
+        String postfix = "";
         if (kind == CsmReferenceKind.DECLARATION) {
             postfix = " (DECLARATION)"; // NOI18N
         } else if (kind == CsmReferenceKind.DEFINITION) {
             postfix = " (DEFINITION)"; // NOI18N
-        } else if (CsmReferenceKind.ANY_USAGE.contains(kind)) {
-            postfix = "";
-        } else {
+        } else if (kind == CsmReferenceKind.UNKNOWN) {
             System.err.println("unknown reference kind " + kind + " for " + ref);           
-            postfix = "";
         }
         return out + postfix;
     }
@@ -336,26 +334,68 @@ public class TraceXRef extends TraceModel {
         }            
     };  
 
-    private static void analyzeFile(CsmFile file, StatisticsParameters params, XRefResultSet bag, PrintWriter out, OutputWriter printErr) {
+    private static void analyzeFile(final CsmFile file, final StatisticsParameters params, 
+            final XRefResultSet bag, final PrintWriter out, final OutputWriter printErr, 
+            final AtomicBoolean canceled) {
         long time = System.currentTimeMillis();
-        visitDeclarations(file.getDeclarations(), params, bag, out, printErr);
+        if (params.analyzeSmartAlgorith) {
+            // for smart algorithm visit functions
+            visitDeclarations(file.getDeclarations(), params, bag, out, printErr, canceled);
+        } else {
+            // otherwise visit active code in whole file
+            CsmFileReferences.getDefault().accept(file, new LWVisitor(bag, printErr, canceled), params.interestedReferences);            
+        }
         time = System.currentTimeMillis() - time;
         out.println(file.getAbsolutePath() + " took " + time + "ms"); // NOI18N
     }
     
     private static void visitDeclarations(Collection<? extends CsmOffsetableDeclaration> decls, StatisticsParameters params, XRefResultSet bag, 
-            PrintWriter printOut, OutputWriter printErr) {
+            PrintWriter printOut, OutputWriter printErr, AtomicBoolean canceled) {
         for (CsmOffsetableDeclaration decl : decls) {
             if (CsmKindUtilities.isFunctionDefinition(decl)) {
                 handleFunctionDefinition((CsmFunctionDefinition)decl, params, bag, printOut, printErr);
             } else if (CsmKindUtilities.isNamespaceDefinition(decl)) {
-                visitDeclarations(((CsmNamespaceDefinition)decl).getDeclarations(), params, bag, printOut, printErr);
+                visitDeclarations(((CsmNamespaceDefinition)decl).getDeclarations(), params, bag, printOut, printErr, canceled);
             } else if (CsmKindUtilities.isClass(decl)) {
-                visitDeclarations(((CsmClass)decl).getMembers(), params, bag, printOut, printErr);
+                visitDeclarations(((CsmClass)decl).getMembers(), params, bag, printOut, printErr, canceled);
             }
+            if (canceled.get()) {
+                break;
+            }            
         }
     }
     
+    private static final class LWVisitor implements CsmFileReferences.Visitor {
+        private final XRefResultSet bag;
+        private final OutputWriter printErr;
+        private final AtomicBoolean canceled;
+        public LWVisitor(XRefResultSet bag, OutputWriter printErr, AtomicBoolean canceled) {
+            this.bag = bag;
+            this.printErr = printErr;
+            this.canceled = canceled;
+        }
+        
+        public void visit(CsmReference ref) {
+            if (canceled.get()) {
+                return;
+            }
+            XRefResultSet.ContextEntry entry = createLightWeightEntry(ref, printErr);
+            if (entry != null) {
+                bag.addEntry(XRefResultSet.ContextScope.UNRESOLVED, entry);
+                if (entry == XRefResultSet.ContextEntry.UNRESOLVED) {
+                    CharSequence text = ref.getText();
+                    UnresolvedEntry unres = bag.<UnresolvedEntry>getUnresolvedEntry(text);
+                    if (unres == null) {
+                        unres = new UnresolvedEntry(text, new RefLink(ref));
+                        bag.addUnresolvedEntry(text, unres);
+                    }
+                    unres.increment();
+                }
+            }
+        }
+        
+    }
+            
     private static void handleFunctionDefinition(final CsmFunctionDefinition fun, final StatisticsParameters params, final XRefResultSet bag, 
             final PrintWriter printOut, final OutputWriter printErr) {
         final CsmScope scope = fun.getBody();
@@ -389,6 +429,22 @@ public class TraceXRef extends TraceModel {
         }
     }
     
+    private static XRefResultSet.ContextEntry createLightWeightEntry(CsmReference ref, OutputWriter printErr) {
+        XRefResultSet.ContextEntry entry;
+        CsmObject target = ref.getReferencedObject();
+        if (target == null) {
+            entry = XRefResultSet.ContextEntry.UNRESOLVED;
+            try {
+                printErr.println("UNRESOLVED:" + ref, new RefLink(ref), true); // NOI18N
+            } catch (IOException ioe) {
+                // skip it
+            }
+        } else {
+            entry = XRefResultSet.ContextEntry.RESOLVED;
+        }
+        return entry;        
+    }    
+
     private static XRefResultSet.ContextEntry createEntry(Set<CsmObject> objectsUsedInScope, StatisticsParameters params, CsmReference ref, ObjectContext<CsmFunctionDefinition> fun, 
             PrintWriter printOut, OutputWriter printErr) {
         XRefResultSet.ContextEntry entry;
@@ -401,27 +457,19 @@ public class TraceXRef extends TraceModel {
                 // skip it
             }
         } else {
-            if (params.analyzeSmartAlgorith) {
-                if (params.interestedReferences.contains(ref.getKind())) { 
-                    XRefResultSet.DeclarationKind declaration = classifyDeclaration(target, printOut);
-                    XRefResultSet.DeclarationScope declarationScope = classifyDeclarationScopeForFunction(declaration, target, fun, printOut);
-                    XRefResultSet.IncludeLevel declarationIncludeLevel = classifyIncludeLevel(target, fun.objFile, printOut);
-                    XRefResultSet.UsageStatistics usageStat = XRefResultSet.UsageStatistics.FIRST_USAGE;
-                    if (objectsUsedInScope.contains(target)) {
-                        usageStat = XRefResultSet.UsageStatistics.NEXT_USAGE;
-                    } else {
-                        objectsUsedInScope.add(target);
-                    }
-                    entry = new XRefResultSet.ContextEntry(declaration, declarationScope, declarationIncludeLevel, usageStat);
+            if (params.interestedReferences.contains(ref.getKind())) { 
+                XRefResultSet.DeclarationKind declaration = classifyDeclaration(target, printOut);
+                XRefResultSet.DeclarationScope declarationScope = classifyDeclarationScopeForFunction(declaration, target, fun, printOut);
+                XRefResultSet.IncludeLevel declarationIncludeLevel = classifyIncludeLevel(target, fun.objFile, printOut);
+                XRefResultSet.UsageStatistics usageStat = XRefResultSet.UsageStatistics.FIRST_USAGE;
+                if (objectsUsedInScope.contains(target)) {
+                    usageStat = XRefResultSet.UsageStatistics.NEXT_USAGE;
                 } else {
-                    entry = null;
+                    objectsUsedInScope.add(target);
                 }
+                entry = new XRefResultSet.ContextEntry(declaration, declarationScope, declarationIncludeLevel, usageStat);
             } else {
-                if (params.interestedReferences == CsmReferenceKind.ALL || params.interestedReferences.contains(ref.getKind())) {
-                    entry = XRefResultSet.ContextEntry.RESOLVED;
-                } else {
-                    entry = null;
-                }
+                entry = null;
             }
         }
         return entry;
@@ -1003,9 +1051,6 @@ public class TraceXRef extends TraceModel {
         public final Set<CsmReferenceKind> interestedReferences;
         public final boolean analyzeSmartAlgorith;
         
-        public StatisticsParameters(Set<CsmReferenceKind> kinds) {
-            this(kinds, false);
-        }
         public StatisticsParameters(Set<CsmReferenceKind> kinds, boolean analyzeSmartAlgorith) {
             this.analyzeSmartAlgorith = analyzeSmartAlgorith;
             this.interestedReferences = kinds;

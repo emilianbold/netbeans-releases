@@ -71,12 +71,11 @@ public class RemoteNativeExecution extends NativeExecution {
             String[] envp,
             PrintWriter out,
             Reader in) throws IOException, InterruptedException {
-        String host = System.getProperty("cnd.remote.server");
-        String user = System.getProperty("user.name");
         if (host != null && host.length() > 0) {
-//            RemoteOutputOnlyCommandSupport support = new RemoteOutputOnlyCommandSupport(host, user);
-//            out.print(support.toString());
-            RemoteNativeExecutionSupport support = new RemoteNativeExecutionSupport(host, user, runDirFile, executable, arguments, envp, out);
+            int pos = host.indexOf('@');
+            String user = host.substring(0, pos);
+            String server = host.substring(pos + 1);
+            RemoteNativeExecutionSupport support = new RemoteNativeExecutionSupport(server, user, runDirFile, executable, arguments, envp, out);
         }
         return 0;
     }

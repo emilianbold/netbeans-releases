@@ -51,5 +51,9 @@ package org.netbeans.modules.uml.core.metamodel.common.commonactivities;
  */
 public class ControlNode extends ActivityNode implements IControlNode
 {
-
+    @Override
+    public void establishNodeAttributes(org.dom4j.Element elem) {
+		super.establishNodeAttributes(elem);
+		establishDefaultName();
+	}
 }

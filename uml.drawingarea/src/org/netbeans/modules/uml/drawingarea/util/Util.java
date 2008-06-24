@@ -53,6 +53,9 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ICreationFactory;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
+import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -209,6 +212,51 @@ public class Util
                 set.add(obj);
                 objectScene.setSelectedObjects(set);
             }
+        }
+    }
+    
+    /**
+     * Resets the size of the node to display the contents of the node.
+     *  
+     * @param scene The scene that contains the node.
+     * @param modelElement 
+     */
+    public static void resizeNodeToContents(Widget widget)
+    {
+        if (widget instanceof UMLNodeWidget)
+        {
+            final UMLNodeWidget nW = (UMLNodeWidget) widget;
+            //check mode first
+            nW.setResizeMode(UMLNodeWidget.RESIZEMODE.MINIMUMSIZE);
+            nW.setIsManuallyResized(false); //drop manually resized status
+            //
+            nW.setPreferredBounds(null);
+            nW.setPreferredSize(null);
+            nW.setMinimumSize(null);
+            switch (nW.getResizeMode())
+            {
+                case MINIMUMSIZE:
+                    nW.setMinimumSize(nW.getDefaultMinimumSize());
+                    break;
+                case PREFERREDBOUNDS:
+                    nW.setPreferredBounds(new Rectangle(new Point(), nW.getDefaultMinimumSize()));
+                    break;
+                case PREFERREDSIZE:
+                    nW.setPreferredSize(nW.getPreferredSize());
+                    break;
+            }
+            //as in 6.1 if mode is set to never resize we need to change min size if necessary to poref bounds after validation
+            
+            ActionProvider provider = new ActionProvider()
+            {
+
+                public void perfomeAction()
+                {
+                    nW.updateSizeWithOptions();
+                }
+            };
+            
+            new AfterValidationExecutor(provider, widget.getScene());
         }
     }
 }

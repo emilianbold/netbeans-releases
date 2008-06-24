@@ -48,12 +48,14 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.ContentSection;
+import org.netbeans.modules.welcome.content.Utils;
 
 /**
  * 'Welcome' tab of the Start Page
@@ -68,8 +70,11 @@ class WelcomeTab extends AbstractTab {
 
     protected void buildContent() {
         JPanel main = new JPanel( new GridBagLayout() );
-        main.setOpaque( false );
+        main.setOpaque( true );
+        main.setBackground(Utils.getColor(COLOR_SCREEN_BACKGROUND));
+        main.setBorder(BorderFactory.createEmptyBorder());
         add( main, BorderLayout.CENTER );
+        setBorder(BorderFactory.createEmptyBorder());
         
         JPanel upperSpace = new Stripe( true );
         upperSpace.setBackground( Color.red );

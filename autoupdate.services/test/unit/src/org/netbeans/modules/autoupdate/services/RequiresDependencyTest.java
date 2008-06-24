@@ -48,6 +48,7 @@ import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
 import org.netbeans.modules.autoupdate.updateprovider.ModuleItem;
 import org.netbeans.spi.autoupdate.UpdateItem;
@@ -63,15 +64,18 @@ public class RequiresDependencyTest extends NbmAdvancedTestCase {
     }
     
     private static String TOKEN = "org.netbeans.modules.autoupdate.test.token";
-    
+
+    @RandomlyFails
     public void testInstallModuleWhichRequires () throws IOException {
         testInstallModuleWhichWants ("Requires");
     }
     
+    @RandomlyFails
     public void testInstallModuleWhichNeeds () throws IOException {
         testInstallModuleWhichWants ("Needs");
     }
     
+    @RandomlyFails
     public void testInstallModuleWhichRecommends () throws IOException {
         testInstallModuleWhichWants ("Recommends");
     }
@@ -90,9 +94,6 @@ public class RequiresDependencyTest extends NbmAdvancedTestCase {
     
     @SuppressWarnings("unchecked")
     private void testInstallModuleWhichWants (String type) throws IOException {
-        if (Boolean.getBoolean ("ignore.random.failures")) {
-           return;
-        }
         String providerModule = "org.yourorghere.provider.testtoken";
         String wantsModule = "org.yourorghere." + type + ".testtoken";
         String catalog = generateCatalog (

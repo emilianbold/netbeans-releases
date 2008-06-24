@@ -50,22 +50,21 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import javax.swing.KeyStroke;
-import javax.swing.text.JTextComponent;
 
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.api.editor.settings.KeyBindingSettings;
+import org.netbeans.api.editor.settings.MultiKeyBinding;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Coloring;
-import org.netbeans.editor.MultiKeyBinding;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsChangeEvent;
-import org.netbeans.editor.SettingsChangeListener;
-import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.SettingsUtil;
 import org.netbeans.modules.properties.TableViewSettings;
 
-import org.openide.util.SharedClassObject;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.WeakListeners;
 
 /**
  * TableViewSettings that delegates to text editor module settings.
@@ -73,11 +72,12 @@ import org.openide.util.SharedClassObject;
  * @author Peter Zavadsky, refactored by Petr Kuzel
  * @see org.netbeans.modules.propeties.BundleEditPanel
  */
-public class EditorSettingsCopy extends TableViewSettings implements SettingsChangeListener {
+public class EditorSettingsCopy extends TableViewSettings {
 
     /** Singleton instance of <code>EditorSettingsCopy</code>. */
     private static EditorSettingsCopy editorSettingsCopy;
     
+    private Font font;
     /** Value of key color retrieved from settings in editor module. */
     private Color keyColor;
     /** Value of key background retrieved from settings in editor module. */
@@ -106,6 +106,19 @@ public class EditorSettingsCopy extends TableViewSettings implements SettingsCha
     /** Flag indicating whether the settings are prepared. */
     private boolean prepared = false;
     
+    private Lookup.Result<FontColorSettings> fontsColors = null;
+    private final LookupListener fontsColorsTracker = new LookupListener() {
+        public void resultChanged(LookupEvent ev) {
+            updateColors();
+        }
+    };
+    
+    private Lookup.Result<KeyBindingSettings> keybindings = null;
+    private final LookupListener keybindingsTracker = new LookupListener() {
+        public void resultChanged(LookupEvent ev) {
+            updateKeyStrokes();
+        }
+    };
     
     /** Private constructor. */
     private EditorSettingsCopy() {
@@ -184,10 +197,7 @@ public class EditorSettingsCopy extends TableViewSettings implements SettingsCha
 
     public Font getFont() {
         prepareSettings();
-        Font font = SettingsUtil.getColoring(PropertiesKit.class, 
-                                             SettingsNames.DEFAULT_COLORING, 
-                                             false).getFont();
-        return font;            
+        return font;
     }    
 
 
@@ -253,59 +263,45 @@ public class EditorSettingsCopy extends TableViewSettings implements SettingsCha
     /** Prepares settings. */
     private void prepareSettings() {
         if (prepared) return;
-        
-        // Set listening on changes of settings.
-        Settings.addSettingsChangeListener(this);
-
-        // Init settings.                            
-        updateSettings();
         prepared = true;
-    }
-    
-    
-    /**
-     * Handle settings change.
-     */
-    public void settingsChange(SettingsChangeEvent evt) {
-        // maybe could be refined
-        updateSettings();
-    }
-    
-    /** Updates settings from properties options. Only editor module dependent code. */
-    private void updateSettings() {
-        if(updateColors())
-            updateKeyStrokes();
-    }
 
+        // Set listening on changes of settings.
+        fontsColors = MimeLookup.getLookup(PropertiesKit.PROPERTIES_MIME_TYPE).lookupResult(FontColorSettings.class);
+        fontsColors.addLookupListener(WeakListeners.create(LookupListener.class, fontsColorsTracker, fontsColors));
+        
+        keybindings = MimeLookup.getLookup(PropertiesKit.PROPERTIES_MIME_TYPE).lookupResult(KeyBindingSettings.class);
+        keybindings.addLookupListener(WeakListeners.create(LookupListener.class, keybindingsTracker, keybindings));
+        
+        // Init settings.                            
+        updateColors();
+        updateKeyStrokes();
+    }
+    
     /** Updates colors.
      * @return <code>true</code> if colors updated succesfully or <code>false</code> otherwise. */
-    private boolean updateColors() {
-        PropertiesOptions propertiesOptions = (PropertiesOptions)SharedClassObject.findObject(PropertiesOptions.class, false);
-        if(propertiesOptions == null) {
-            return false;
-        }
+    private void updateColors() {
+        FontColorSettings fcs = fontsColors.allInstances().iterator().next();
+        String namePrefix = PropertiesTokenContext.context.getNamePrefix();
         
         // Update colors.
-        Map map = propertiesOptions.getColoringMap();
-        Coloring keyColoring = (Coloring)map.get(PropertiesTokenContext.contextPath.getFullTokenName(
-            PropertiesTokenContext.KEY));
+        Coloring keyColoring = Coloring.fromAttributeSet(fcs.getTokenFontColors(namePrefix + PropertiesTokenContext.KEY.getName()));
         keyColor = keyColoring.getForeColor();
         keyBackground = keyColoring.getBackColor();
         
-        Coloring valueColoring = (Coloring)map.get(PropertiesTokenContext.contextPath.getFullTokenName(
-            PropertiesTokenContext.VALUE));
+        Coloring valueColoring = Coloring.fromAttributeSet(fcs.getTokenFontColors(namePrefix + PropertiesTokenContext.VALUE.getName()));
         valueColor = valueColoring.getForeColor();
         valueBackground = valueColoring.getBackColor();
         
-        Coloring highlightColoring = (Coloring)map.get(SettingsNames.HIGHLIGHT_SEARCH_COLORING);
+        Coloring highlightColoring = Coloring.fromAttributeSet(fcs.getFontColors(FontColorNames.HIGHLIGHT_SEARCH_COLORING));
         highlightColor = highlightColoring.getForeColor();
         highlightBackground = highlightColoring.getBackColor();
 
-        shadowColor = propertiesOptions.getShadowTableCell();
-
         // If there is not the colors specified use default inherited colors.
-        Color defaultForeground = ((Coloring)map.get("default")).getForeColor(); // NOI18N
-        Color defaultBackground = ((Coloring)map.get("default")).getBackColor(); // NOI18N
+        Coloring defaultColoring = Coloring.fromAttributeSet(fcs.getFontColors(FontColorNames.DEFAULT_COLORING));
+        font = defaultColoring.getFont();
+        
+        Color defaultForeground = defaultColoring.getForeColor();
+        Color defaultBackground = defaultColoring.getBackColor();
         
         if(keyColor == null) keyColor = defaultForeground;
         if(keyBackground == null) keyBackground = defaultBackground;
@@ -314,62 +310,42 @@ public class EditorSettingsCopy extends TableViewSettings implements SettingsCha
         if(highlightColor == null) highlightColor = new Color(SystemColor.textHighlightText.getRGB());
         if(highlightBackground == null) highlightBackground = new Color(SystemColor.textHighlight.getRGB());
         if(shadowColor == null) shadowColor = new Color(SystemColor.controlHighlight.getRGB());
-        
-        return true;
+     
     }
 
     /** Updates keystrokes. Dependent code. */
     private void updateKeyStrokes() {
+        KeyBindingSettings kbs = keybindings.allInstances().iterator().next();
+        
         // Update keyStrokes.
-        // Retrieve key bindings for Propeties Kit and super kits.
-        Settings.KitAndValue kv[] = Settings.getValueHierarchy(
-            PropertiesKit.class, SettingsNames.KEY_BINDING_LIST);
+        HashSet<KeyStroke> nextKS = new HashSet<KeyStroke>();
+        HashSet<KeyStroke> prevKS = new HashSet<KeyStroke>();
+        HashSet<KeyStroke> toggleKS = new HashSet<KeyStroke>();
+        
+        // Loop thru all bindings in the kit class.
+        
+        for(MultiKeyBinding mkb : kbs.getKeyBindings()) {
 
-        // Go through all levels (PropertiesKit and its supeclasses) and collect key bindings.
-        HashSet nextKS = new HashSet();
-        HashSet prevKS = new HashSet();
-        HashSet toggleKS = new HashSet();
-        // Loop thru each keylist for the kit class.
-        for (int i = kv.length - 1; i >= 0; i--) {
-            List keyList = (List)kv[i].value;
-            
-            JTextComponent.KeyBinding[] bindings = new JTextComponent.KeyBinding[keyList.size()];
-            
-            keyList.toArray(bindings);
-            
-            // Loop thru all bindings in the kit class.
-            for(int j=0; j<bindings.length; j++) {
-                JTextComponent.KeyBinding binding = bindings[j];
-                if(binding == null) 
-                    continue;
-                
-                // Find key keystrokes for find next action.
-                if(binding.actionName.equals(BaseKit.findNextAction)) {
-                    if(binding instanceof MultiKeyBinding && ((MultiKeyBinding)binding).keys != null)
-                        for (int k=0; k<((MultiKeyBinding)binding).keys.length; k++)
-                            nextKS.add(((MultiKeyBinding)binding).keys[k]);
-                    else
-                        nextKS.add(binding.key);
+            // Find key keystrokes for find next action.
+            if(mkb.getActionName().equals(BaseKit.findNextAction)) {
+                for (int k = 0; k < mkb.getKeyStrokeCount(); k++) {
+                    nextKS.add(mkb.getKeyStroke(k));
                 }
-                // Find key keystrokes for find previous action.
-                if(binding.actionName.equals(BaseKit.findPreviousAction)) {
-                    if(binding instanceof MultiKeyBinding && ((MultiKeyBinding)binding).keys != null)
-                        for (int k=0; k<((MultiKeyBinding)binding).keys.length; k++)
-                            prevKS.add(((MultiKeyBinding)binding).keys[k]);
-                    else
-                        prevKS.add(binding.key);
+            }
+            // Find key keystrokes for find previous action.
+            if(mkb.getActionName().equals(BaseKit.findPreviousAction)) {
+                for (int k = 0; k < mkb.getKeyStrokeCount(); k++) {
+                    prevKS.add(mkb.getKeyStroke(k));
                 }
-                // Find key keystrokes for toggle highlight action.
-                if(binding.actionName.equals(BaseKit.toggleHighlightSearchAction)) {
-                    if(binding instanceof MultiKeyBinding && ((MultiKeyBinding)binding).keys != null)
-                        for (int k=0; k<((MultiKeyBinding)binding).keys.length; k++)
-                            toggleKS.add(((MultiKeyBinding)binding).keys[k]);
-                    else
-                        toggleKS.add(binding.key);
+            }
+            // Find key keystrokes for toggle highlight action.
+            if(mkb.getActionName().equals(BaseKit.toggleHighlightSearchAction)) {
+                for (int k = 0; k < mkb.getKeyStrokeCount(); k++) {
+                    toggleKS.add(mkb.getKeyStroke(k));
                 }
-                
-            } // End of inner loop.
-        } // End of outer loop.
+            }
+
+        } // End of inner loop.
         
         // Copy found values to our variables.
         nextKS.toArray(keyStrokesFindNext = new KeyStroke[nextKS.size()]);

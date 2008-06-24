@@ -48,11 +48,14 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.ExecutionService;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
+import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.TestSession;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
 import org.netbeans.modules.ruby.testrunner.ui.TestRecognizer;
+import org.netbeans.modules.ruby.testrunner.ui.TestSession.SessionType;
 import org.netbeans.modules.ruby.testrunner.ui.TestUnitHandlerFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -123,17 +126,17 @@ public final class TestUnitRunner implements TestRunner {
         String charsetName = null;
         desc = new ExecutionDescriptor(platform, name, FileUtil.toFile(project.getProjectDirectory()), targetPath);
         desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
-        desc.initialArgs("-Ilib:test"); //NOI18N
+        desc.initialArgs(RubyProjectUtil.getLoadPath(project)); //NOI18N
 
         desc.debug(debug);
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
         TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(), 
-                new TestSession(locator), 
-                TestUnitHandlerFactory.getHandlers());
-        desc.addOutputRecognizer(recognizer);
-        new RubyExecution(desc, charsetName).run();
+                locator, 
+                TestUnitHandlerFactory.getHandlers(),
+                debug ? SessionType.DEBUG : SessionType.TEST);
+        TestExecutionManager.getInstance().start(desc, recognizer);
     }
 
     public boolean supports(TestType type) {

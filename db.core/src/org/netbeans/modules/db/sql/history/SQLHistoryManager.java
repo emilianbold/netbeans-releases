@@ -39,8 +39,8 @@
 package org.netbeans.modules.db.sql.history;
 
 
+import java.io.File;
 import java.io.IOException;
-import org.netbeans.modules.db.sql.execute.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -55,12 +55,13 @@ import org.openide.util.Exceptions;
  */
 public class SQLHistoryManager  {
     public static final String SQL_HISTORY_FOLDER = "Databases/SQLHISTORY"; // NOI18N
+    public static final String SQL_HISTORY_FILE_NAME = "sql_history";  // NOI18N
     private static SQLHistoryManager _instance = null;    
     private static final Logger LOGGER = Logger.getLogger(SQLHistory.class.getName());
     private List<SQLHistory> sqlList = new ArrayList<SQLHistory>();
-    
+    private int listSize;
+
     private SQLHistoryManager() {
-        generatePersistedFilename();
     }
     
     public static SQLHistoryManager getInstance() {
@@ -70,19 +71,27 @@ public class SQLHistoryManager  {
         return _instance;
     }
 
-    public void saveSQL(SQLHistory sqlStored) {
-        sqlList.add(sqlStored);
+    /**
+     * Get the value of listSize
+     *
+     * @return the value of listSize
+     */
+    public int getListSize() {
+        return listSize;
     }
 
-    private void generatePersistedFilename()  {
-        FileObject databaseDir = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("Databases");
-        try {
-            if (databaseDir.getFileObject("sql_history", "xml") == null) {  // NOI18N
-                databaseDir.createData("sql_history", "xml"); // NOI18N
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    /**
+     * Set the value of listSize
+     *
+     * @param listSize new value of listSize
+     */
+    public void setListSize(int listSize) {
+        this.listSize = listSize;
+    }
+
+    
+    public void saveSQL(SQLHistory sqlStored) {
+        sqlList.add(sqlStored);
     }
 
     public void save() {
@@ -140,5 +149,28 @@ public class SQLHistoryManager  {
             }
         }
         return urls;
+    }
+    
+    public int updateList(int limit, String historyFilePath, FileObject root) {
+        List<SQLHistory> updatedSQLHistoryList = new ArrayList<SQLHistory>();
+        int numItemsToRemove = 0;
+        try {
+
+            updatedSQLHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, root);
+            if (limit >= updatedSQLHistoryList.size()) {
+                // no changes needed to the current list
+                return -1;
+            }
+            // Remove elements from list based on the number of statements to save that is set in the SQL History dialog
+            numItemsToRemove = updatedSQLHistoryList.size() - limit;
+            for (int i = 0; i < numItemsToRemove; i++) {
+                updatedSQLHistoryList.remove(0);
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ClassNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }                    
+        return numItemsToRemove;
     }
 }

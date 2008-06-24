@@ -41,19 +41,24 @@
 
 package org.netbeans.modules.editor.completion;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.ref.SoftReference;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.text.JTextComponent;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsChangeEvent;
-import org.netbeans.editor.SettingsChangeListener;
-import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.ExtSettingsDefaults;
-import org.netbeans.editor.ext.ExtSettingsNames;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.openide.util.WeakListeners;
 
 /**
  * Maintenance of the editor settings related to the code completion.
@@ -62,122 +67,168 @@ import org.netbeans.editor.ext.ExtSettingsNames;
  * @version 1.00
  */
 
-public final class CompletionSettings implements SettingsChangeListener {
+public final class CompletionSettings implements PreferenceChangeListener {
     
-    public static final CompletionSettings INSTANCE = new CompletionSettings();
+    // -----------------------------------------------------------------------
+    // public implementation
+    // -----------------------------------------------------------------------
     
-    private static final Object NULL_VALUE = new Object();
-    
-    private Reference<JTextComponent> editorComponentRef;
-    
-    private Map<String, Object> settingName2value = new HashMap<String, Object>();
-    
-    private CompletionSettings() {
-        Settings.addSettingsChangeListener(this);
+    public static synchronized CompletionSettings getInstance() {
+        CompletionSettings instance = ref == null ? null : ref.get();
+        if (instance == null) {
+            instance = new CompletionSettings();
+            ref = new SoftReference<CompletionSettings>(instance);
+        }
+        return instance;
     }
     
     public boolean completionAutoPopup() {
-        return ((Boolean)getValue(
-                ExtSettingsNames.COMPLETION_AUTO_POPUP,
-                ExtSettingsDefaults.defaultCompletionAutoPopup)
-        ).booleanValue();
+        initialize();
+        return completionAutoPopup;
     }
     
     public int completionAutoPopupDelay() {
-        return ((Integer)getValue(
-                ExtSettingsNames.COMPLETION_AUTO_POPUP_DELAY,
-                ExtSettingsDefaults.defaultCompletionAutoPopupDelay)
-        ).intValue();
+        initialize();
+        return completionAutoPopupDelay;
     }
     
     public boolean documentationAutoPopup() {
-        return ((Boolean)getValue(
-                ExtSettingsNames.JAVADOC_AUTO_POPUP,
-                ExtSettingsDefaults.defaultJavaDocAutoPopup)
-        ).booleanValue();
+        initialize();
+        return docsAutoPopup;
     }
     
     public int documentationAutoPopupDelay() {
-        return ((Integer)getValue(
-                ExtSettingsNames.JAVADOC_AUTO_POPUP_DELAY,
-                ExtSettingsDefaults.defaultJavaDocAutoPopupDelay)
-        ).intValue();
+        initialize();
+        return docsAutoPopupDelay;
     }
     
-    public Dimension completionPopupMaximumSize() {
-        return (Dimension)getValue(
-                ExtSettingsNames.COMPLETION_PANE_MAX_SIZE,
-                ExtSettingsDefaults.defaultCompletionPaneMaxSize);
+    public Dimension completionPaneMaximumSize() {
+        initialize();
+        return completionPaneMaxSize;
     }
     
     public Dimension documentationPopupPreferredSize() {
-        return (Dimension)getValue(
-                ExtSettingsNames.JAVADOC_PREFERRED_SIZE,
-                ExtSettingsDefaults.defaultJavaDocPreferredSize);
+        initialize();
+        return docsPreferredSize;
     }
     
-    public Color documentationBackgroundColor() {
-        return (Color)CompletionSettings.INSTANCE.getValue(
-                ExtSettingsNames.JAVADOC_BG_COLOR,
-                ExtSettingsDefaults.defaultJavaDocBGColor);
-    }
-
     public boolean completionInstantSubstitution() {
-        return ((Boolean)getValue(
-                ExtSettingsNames.COMPLETION_INSTANT_SUBSTITUTION,
-                ExtSettingsDefaults.defaultCompletionInstantSubstitution)
-        ).booleanValue();
+        initialize();
+        return completionInstantSubstitution;
     }
     
-    public void notifyEditorComponentChange(JTextComponent newEditorComponent) {
-        this.editorComponentRef = new WeakReference<JTextComponent>(newEditorComponent);
-        clearSettingValues();
-    }
-    
-    public Object getValue(String settingName) {
-        Object value;
-        synchronized (this) {
-            value = settingName2value.get(settingName);
+    public synchronized void notifyEditorComponentChange(JTextComponent newEditorComponent) {
+        if (preferences != null) {
+            assert weakListener != null;
+            preferences.removePreferenceChangeListener(weakListener);
+            preferences = null;
+            weakListener = null;
         }
         
-        if (value == null) {
-            JTextComponent c = editorComponentRef.get();
-            if (c != null) {
-                Class kitClass = Utilities.getKitClass(c);
-                if (kitClass != null) {
-                    value = Settings.getValue(kitClass, settingName);
-                    if (value == null) {
-                        value = NULL_VALUE;
-                    }
+        if (newEditorComponent != null) {
+            String mimeType = DocumentUtilities.getMimeType(newEditorComponent);
+            Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+            read(prefs);
+
+            preferences = prefs;
+            weakListener = WeakListeners.create(PreferenceChangeListener.class, this, preferences);
+            preferences.addPreferenceChangeListener(weakListener);
+        }
+    }
+    
+    // -----------------------------------------------------------------------
+    // PreferenceChangeListener implementation
+    // -----------------------------------------------------------------------
+    
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        String settingName = evt != null ? evt.getKey() : null;
+        if (settingName == null || MANAGED_SETTINGS.contains(settingName)) {
+            synchronized (this) {
+                if (preferences != null) {
+                    read(preferences);
                 }
             }
+        }
+    }
+    
+    // -----------------------------------------------------------------------
+    // private implementation
+    // -----------------------------------------------------------------------
+
+    private static final Logger LOG = Logger.getLogger(CompletionSettings.class.getName());
+    
+    private static final Set<String> MANAGED_SETTINGS = new HashSet<String>(Arrays.asList(new String [] {
+        SimpleValueNames.COMPLETION_AUTO_POPUP,
+        SimpleValueNames.COMPLETION_AUTO_POPUP_DELAY,
+        SimpleValueNames.COMPLETION_PANE_MAX_SIZE,
+        SimpleValueNames.COMPLETION_INSTANT_SUBSTITUTION,
+        SimpleValueNames.JAVADOC_AUTO_POPUP,
+        SimpleValueNames.JAVADOC_AUTO_POPUP_DELAY,
+        SimpleValueNames.JAVADOC_PREFERRED_SIZE,
+    }));
+
+    private static Reference<CompletionSettings> ref = null;
+    
+    private Preferences preferences = null;
+    private PreferenceChangeListener weakListener = null;
+    
+    private boolean completionAutoPopup;
+    private int completionAutoPopupDelay;
+    private Dimension completionPaneMaxSize;
+    private boolean completionInstantSubstitution;
+    private boolean docsAutoPopup;
+    private int docsAutoPopupDelay;
+    private Dimension docsPreferredSize;
+    
+    private CompletionSettings() {
+    }
+    
+    private synchronized void initialize() {
+        if (preferences == null) {
+            Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+            read(prefs);
             
-            if (value != null) {
-                synchronized (this) {
-                    settingName2value.put(settingName, value);
+            preferences = prefs;
+            weakListener = WeakListeners.create(PreferenceChangeListener.class, this, preferences);
+            preferences.addPreferenceChangeListener(weakListener);
+        }
+    }
+    
+    private void read(Preferences prefs) {
+        completionAutoPopup = prefs.getBoolean(SimpleValueNames.COMPLETION_AUTO_POPUP, true);
+        completionAutoPopupDelay = prefs.getInt(SimpleValueNames.COMPLETION_AUTO_POPUP_DELAY, 250);
+        completionPaneMaxSize = parseDimension(prefs.get(SimpleValueNames.COMPLETION_PANE_MAX_SIZE, null), new Dimension(400, 300));
+        completionInstantSubstitution = prefs.getBoolean(SimpleValueNames.COMPLETION_INSTANT_SUBSTITUTION, true);
+        docsAutoPopup = prefs.getBoolean(SimpleValueNames.JAVADOC_AUTO_POPUP, true);
+        docsAutoPopupDelay = prefs.getInt(SimpleValueNames.JAVADOC_AUTO_POPUP_DELAY, 200);
+        docsPreferredSize = parseDimension(prefs.get(SimpleValueNames.JAVADOC_PREFERRED_SIZE, null), new Dimension(500, 300));
+    }
+    
+    private static Dimension parseDimension(String s, Dimension d) {
+        int arr[] = new int[2];
+        int i = 0;
+        
+        if (s != null) {
+            StringTokenizer st = new StringTokenizer(s, ","); // NOI18N
+
+            while (st.hasMoreElements()) {
+                if (i > 1) {
+                    return d;
                 }
+                try {
+                    arr[i] = Integer.parseInt(st.nextToken());
+                } catch (NumberFormatException nfe) {
+                    LOG.log(Level.WARNING, null, nfe);
+                    return d;
+                }
+                i++;
             }
         }
         
-        if (value == NULL_VALUE) {
-            value = null;
+        if (i != 2) {
+            return d;
+        } else {
+            return new Dimension(arr[0], arr[1]);
         }
-        return value;
-    }
-    
-    public Object getValue(String settingName, Object defaultValue) {
-        Object value = getValue(settingName);
-        if (value == null) {
-            value = defaultValue;
-        }
-        return value;
-    }
-    
-    public void settingsChange(SettingsChangeEvent evt) {
-        clearSettingValues();
-    }
-    
-    private synchronized void clearSettingValues() {
-        settingName2value.clear();
     }
 }
