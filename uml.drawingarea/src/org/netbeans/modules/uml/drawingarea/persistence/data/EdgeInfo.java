@@ -181,6 +181,7 @@ public class EdgeInfo
         private String label;
         private Point position;
         private Dimension size;
+        private Hashtable<String, String> labelProperties = new Hashtable();
 
         public EdgeLabel()
         {
@@ -215,6 +216,18 @@ public class EdgeInfo
         {
             this.size = size;
         }
+
+        public Hashtable<String, String> getLabelProperties()
+        {
+            return labelProperties;
+        }
+
+        public void setLabelProperties(Hashtable<String, String> labelProperties)
+        {
+            this.labelProperties = labelProperties;
+        }
+        
+        
     }
 
     public class EndDetails

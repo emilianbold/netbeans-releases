@@ -73,6 +73,7 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
     protected static final String TAGGEDVALUE = "TaggedValue"; //NOI18N
     protected static final String OPERATION = "Operation"; //NOI18N
     public final static AnchorShape ARROW_END = AnchorShapeFactory.createArrowAnchorShape(50, 10);
+    protected static final String LABEL_TYPE = "LABEL_TYPE"; //NOI18N
 
     public UMLEdgeWidget(Scene scene)
     {
@@ -130,6 +131,11 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
                 {
                     //begin contained  
                     edgeWriter.setTypeInfo(childType);
+
+                    HashMap map = edgeWriter.getProperties();
+                    map.put(LABEL_TYPE, child);
+                    edgeWriter.setProperties(map);
+
                     ((DiagramEdgeWriter) childWidget).save(edgeWriter);
                 }
                 else
@@ -171,7 +177,25 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
             for (Iterator<EdgeInfo.EdgeLabel> it = edgeLabels.iterator(); it.hasNext();)
             {
                 EdgeInfo.EdgeLabel edgeLabel = it.next();
-                manager.showLabel(edgeLabel.getLabel());
+                String labelTypeStr = edgeLabel.getLabelProperties().get(LABEL_TYPE); 
+                LabelManager.LabelType labelType = null;
+                if (labelTypeStr != null && labelTypeStr.trim().length() > 0)
+                {                    
+                    if (labelTypeStr.endsWith(LabelManager.LabelType.SOURCE.toString()))
+                        labelType = LabelManager.LabelType.SOURCE;
+                    else if (labelTypeStr.endsWith(LabelManager.LabelType.TARGET.toString()))
+                        labelType = LabelManager.LabelType.TARGET;
+                    else if (labelTypeStr.endsWith(LabelManager.LabelType.EDGE.toString()))
+                        labelType = LabelManager.LabelType.EDGE;
+                }
+                if (labelType != null)
+                {                        
+                    manager.showLabel(edgeLabel.getLabel(), labelType);
+                }
+                else
+                {
+                     manager.showLabel(edgeLabel.getLabel());
+                }
             }
         }
     }

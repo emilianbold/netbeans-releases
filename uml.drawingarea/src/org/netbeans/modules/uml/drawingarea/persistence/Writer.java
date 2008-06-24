@@ -186,7 +186,7 @@ public class Writer {
 //    }
 
     @SuppressWarnings(value = "unchecked")
-    private HashMap getNodeAttrs() {
+    protected HashMap getNodeAttrs() {
         nodeAttrs.put(XMIConstants.XMI_ID, PEID);
         nodeAttrs.put(XMIConstants.ISVISIBLE, visible);
         return nodeAttrs;
