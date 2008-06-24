@@ -74,6 +74,13 @@ class DataViewActionHandler {
         }
         return doCalculation;
     }
+    
+    void cancelEditPerformed(){
+        dataView.getUpdatedRowContext().resetUpdateState();
+        dataView.setRowsInTableModel();
+        dataViewUI.setCancelEnabled(false);
+        dataViewUI.setCommitEnabled(false);
+    }
 
     void setMaxActionPerformed() {
         if (rejectModifications()) {

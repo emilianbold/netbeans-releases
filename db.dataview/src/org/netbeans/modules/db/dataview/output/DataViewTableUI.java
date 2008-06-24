@@ -77,9 +77,8 @@ class DataViewTableUI extends JTable {
     private final DataViewTablePanel tablePanel;
     private static final String data = "WE WILL EITHER FIND A WAY, OR MAKE ONE.";
 
-    public DataViewTableUI(DataViewTablePanel tablePanel) {
+    public DataViewTableUI(DataViewTablePanel tablePanel, final DataViewActionHandler handler) {
         this.tablePanel = tablePanel;
-
         addKeyListener(new KeyListener() {
 
             public void keyTyped(KeyEvent e) {
@@ -126,6 +125,14 @@ class DataViewTableUI extends JTable {
             }
         });
         tablePopupMenu.add(printTable);
+        
+        JMenuItem miRefreshAction = new JMenuItem("Refresh records"); //NOI18N
+        miRefreshAction.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                handler.refreshActionPerformed();
+            }
+        });
+        tablePopupMenu.add(miRefreshAction);
         tablePopupMenu.addSeparator();
 
         JMenuItem miCopyValue = new JMenuItem("Copy Cell Value"); //NOI18N
@@ -165,6 +172,40 @@ class DataViewTableUI extends JTable {
             }
         });
         tablePopupMenu.add(miCopyRowValuesH);
+        tablePopupMenu.addSeparator();   
+       
+        JMenuItem miInsertAction = new JMenuItem("Insert a Record"); //NOI18N
+        miInsertAction.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                handler.insertActionPerformed();
+            }
+        });
+        tablePopupMenu.add(miInsertAction);
+        
+        JMenuItem miDeleteAction = new JMenuItem("Delete a Record"); //NOI18N
+        miDeleteAction.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                handler.deleteRecordActionPerformed();
+            }
+        });
+        tablePopupMenu.add(miDeleteAction);
+        
+        JMenuItem miCommitAction = new JMenuItem("Commit a Record"); //NOI18N
+        miCommitAction.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                handler.commitActionPerformed();
+            }
+        });
+        tablePopupMenu.add(miCommitAction);
+        
+        JMenuItem miCancelEdits = new JMenuItem("Cancel Edits"); //NOI18N
+        miCancelEdits.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                handler.cancelEditPerformed();
+            }
+        });
+        tablePopupMenu.add(miCancelEdits);
+        tablePopupMenu.addSeparator();      
 
         getTableHeader().setReorderingAllowed(false);
         setDefaultRenderer(Object.class, new ResultSetCellRenderer());
@@ -287,7 +328,7 @@ class DataViewTableUI extends JTable {
     }
 
     private UpdatedRowContext getResultSetRowContext() {
-        return tablePanel.getResultSetRowContext();
+        return tablePanel.getUpdatedRowContext();
     }
 
     private void copyRowValues(boolean withHeader) {

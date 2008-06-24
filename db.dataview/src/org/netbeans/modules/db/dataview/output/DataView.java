@@ -178,8 +178,8 @@ public class DataView extends JPanel {
         return queryString;
     }
 
-    UpdatedRowContext getResultSetUpdatedRowContext() {
-        return dataViewUI.getResultSetRowContext();
+    UpdatedRowContext getUpdatedRowContext() {
+        return dataViewUI.getUpdatedRowContext();
     }
 
     SQLExecutionHelper getSQLExecutionHelper() {
@@ -198,7 +198,7 @@ public class DataView extends JPanel {
     }
 
     void setEditable(boolean editable) {
-        synchronized (dataViewUI) {
+        synchronized (this) {
             dataViewUI.setEditable(editable);
         }
     }

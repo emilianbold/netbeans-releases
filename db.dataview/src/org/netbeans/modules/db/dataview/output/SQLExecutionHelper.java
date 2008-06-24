@@ -229,14 +229,14 @@ class SQLExecutionHelper {
             @Override
             public void execute() throws SQLException, DBException {
                 dataView.setEditable(false);
-                UpdatedRowContext tblContext = dataView.getResultSetUpdatedRowContext();
+                UpdatedRowContext tblContext = dataView.getUpdatedRowContext();
                 for (String key : tblContext.getUpdateKeys()) {
                     updateARow(key);
                 }
             }
 
             private void updateARow(String key) throws SQLException, DBException {
-                UpdatedRowContext tblContext = dataView.getResultSetUpdatedRowContext();
+                UpdatedRowContext tblContext = dataView.getUpdatedRowContext();
                 final String updateStmt = tblContext.getUpdateStmt(key);
                 final String rawUpdateStmt = tblContext.getRawUpdateStmt((key));
                 final List<Object> values = tblContext.getValueList(key);

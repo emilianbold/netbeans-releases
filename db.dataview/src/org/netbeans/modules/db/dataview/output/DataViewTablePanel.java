@@ -77,12 +77,12 @@ class DataViewTablePanel extends JPanel {
     private final List<Integer> columnWidthList;
     private static Logger mLogger = Logger.getLogger(DataViewTablePanel.class.getName());
 
-    public DataViewTablePanel(DataViewDBTable tblMeta, DataViewUI dataViewUI) {
+    public DataViewTablePanel(DataViewDBTable tblMeta, DataViewUI dataViewUI, DataViewActionHandler actionHandler) {
         this.tblMeta = tblMeta;
         this.dataViewUI = dataViewUI;
 
         this.setLayout(new BorderLayout());
-        tableUI = new DataViewTableUI(this);
+        tableUI = new DataViewTableUI(this, actionHandler);
         tableUI.setColumnToolTips(tblMeta.getColumnToolTips());
         JScrollPane sp = new JScrollPane(tableUI);
         this.add(sp, BorderLayout.CENTER);
@@ -118,7 +118,7 @@ class DataViewTablePanel extends JPanel {
         return tableUI;
     }
 
-    protected UpdatedRowContext getResultSetRowContext() {
+    protected UpdatedRowContext getUpdatedRowContext() {
         return tblContext;
     }
 
@@ -192,7 +192,7 @@ class DataViewTablePanel extends JPanel {
         DataViewTableSorter sorter = new DataViewTableSorter(dtm);
         sorter.setTableHeader(tableUI.getTableHeader());
         // Obtain display name
-        for (int i = 0, I = tblMeta.getColumnCount(); i < I; i++) {
+        for (int i = 0,  I = tblMeta.getColumnCount(); i < I; i++) {
             DBColumn col = tblMeta.getColumn(i);
             dtm.addColumn(col.getDisplayName());
         }
@@ -215,10 +215,10 @@ class DataViewTablePanel extends JPanel {
          */
         @Override
         public boolean isCellEditable(int row, int column) {
-            if(!isEditable) { 
+            if (!isEditable) {
                 return false;
             }
-            
+
             // column specific 
             DBColumn col = tblMeta.getColumn(column);
             if (col.isGenerated()) {
@@ -244,6 +244,7 @@ class DataViewTablePanel extends JPanel {
                 isDirty = true;
                 super.setValueAt(value, row, col);
                 dataViewUI.setCommitEnabled(true);
+                dataViewUI.setCancelEnabled(true);
                 fireTableDataChanged();
             } catch (DBException dbe) {
                 NotifyDescriptor nd = new NotifyDescriptor.Message(dbe.getMessage());

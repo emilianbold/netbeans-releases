@@ -82,6 +82,8 @@ class DataViewUI {
     private String imgPrefix = "/org/netbeans/modules/db/dataview/images/";
     private DataViewTablePanel dataPanel;
     private final DataView dataView;
+    private JButton cancel;
+    private DataViewActionHandler actionHandler;
 
     DataViewUI(DataView dataView, int toolbarType) {
         this.dataView = dataView;
@@ -98,9 +100,11 @@ class DataViewUI {
         // Main pannel with toolbars
         JPanel panel = initializeMainPanel(toolbarType);
         dataView.add(panel, BorderLayout.NORTH);
+        
+        actionHandler = new DataViewActionHandler(this, dataView);
 
         //add resultset data panel
-        dataPanel = new DataViewTablePanel(dataView.getDataViewDBTable(), this);
+        dataPanel = new DataViewTablePanel(dataView.getDataViewDBTable(), this,actionHandler);
         dataView.add(dataPanel, BorderLayout.CENTER);
         dataPanel.revalidate();
         dataPanel.repaint();
@@ -130,13 +134,17 @@ class DataViewUI {
         return dataPanel.getResulSetTable();
     }
 
-    UpdatedRowContext getResultSetRowContext() {
-        return dataPanel.getResultSetRowContext();
+    UpdatedRowContext getUpdatedRowContext() {
+        return dataPanel.getUpdatedRowContext();
     }
 
     void setCommitEnabled(boolean flag) {
         commit.setEnabled(flag);
     }
+    
+    void setCancelEnabled(boolean flag) {
+        cancel.setEnabled(flag);
+    }    
 
     void setDataRows(List<Object[]> rows) {
         dataPanel.setResultSet(rows);
@@ -153,6 +161,7 @@ class DataViewUI {
         last.setEnabled(false);
         deleteRow.setEnabled(false);
         commit.setEnabled(false);
+        cancel.setEnabled(false);
         insert.setEnabled(false);
         
         dataPanel.revalidate();
@@ -200,6 +209,7 @@ class DataViewUI {
             // editing controls
             if (!isEditable()) {
                 commit.setEnabled(false);
+                cancel.setEnabled(false);
                 deleteRow.setEnabled(false);
                 insert.setEnabled(false);
                 truncateButton.setEnabled(false);
@@ -215,6 +225,7 @@ class DataViewUI {
                 }
                 insert.setEnabled(true);
                 commit.setEnabled(false);
+                cancel.setEnabled(false);
             }
         } else {
             disableButtons();
@@ -229,7 +240,6 @@ class DataViewUI {
 
     private ActionListener createOutputListener() {
 
-        final DataViewActionHandler actionHandler = new DataViewActionHandler(this, dataView);
         ActionListener outputListener = new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -248,6 +258,8 @@ class DataViewUI {
                     actionHandler.setMaxActionPerformed();
                 } else if (src.equals(commit)) {
                     actionHandler.commitActionPerformed();
+                } else if (src.equals(cancel)) {
+                    actionHandler.cancelEditPerformed();
                 } else if (src.equals(deleteRow)) {
                     actionHandler.deleteRecordActionPerformed();
                 } else if (src.equals(insert)) {
@@ -358,15 +370,23 @@ class DataViewUI {
         deleteRow.addActionListener(outputListener);
         deleteRow.setEnabled(false);
         editButtons[1] = deleteRow;
-
+        
         url = getClass().getResource(imgPrefix + "row_commit.png");
         commit = new JButton(new ImageIcon(url));
-        String nbBundle11 = "Commit changes done on current page.";
-        commit.setToolTipText(nbBundle11);
+        String nbBundle31 = "Commit changes done on current page.";
+        commit.setToolTipText(nbBundle31);
         commit.addActionListener(outputListener);
         commit.setEnabled(false);
         editButtons[2] = commit;
-
+        
+        url = getClass().getResource(imgPrefix + "cancel_edits.png");
+        cancel = new JButton(new ImageIcon(url));
+        String nbBundle11 = "Cancel changes done on current page.";
+        cancel.setToolTipText(nbBundle11);
+        cancel.addActionListener(outputListener);
+        cancel.setEnabled(false);
+        editButtons[3] = cancel;
+   
         //add truncate button
         url = getClass().getResource(imgPrefix + "table_truncate.png");
         truncateButton = new JButton(new ImageIcon(url));
@@ -374,7 +394,7 @@ class DataViewUI {
         truncateButton.setToolTipText(nbBundle14);
         truncateButton.addActionListener(outputListener);
         truncateButton.setEnabled(false);
-        editButtons[3] = truncateButton;
+        editButtons[4] = truncateButton;
     }
 
     private JPanel initializeMainPanel(int toolbarType) {
