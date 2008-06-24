@@ -145,13 +145,11 @@ public class RspecRunner implements TestRunner {
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
         
-        final ExecutionService execution = new RubyExecution(desc, charsetName);
         TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
                 locator,
                 RspecHandlerFactory.getHandlers(),
                 debug ? SessionType.DEBUG : SessionType.TEST);
-        desc.addOutputRecognizer(recognizer);
-        TestExecutionManager.getInstance().start(execution);
+        TestExecutionManager.getInstance().start(desc, recognizer);
     }
 
     private File getSpec(Project project) {

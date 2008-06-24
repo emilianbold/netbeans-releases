@@ -257,7 +257,12 @@ public class BindingPanel extends SectionInnerPanel {
 
         ConfigVersion userExpectedCfgVersion = getUserExpectedConfigVersion();
         if (source.equals(cfgVersionCombo)) {
-            PolicyModelHelper.setConfigVersion(binding, userExpectedCfgVersion, project);
+            doNotSync = true;
+            try {
+                PolicyModelHelper.setConfigVersion(binding, userExpectedCfgVersion, project);
+            } finally {
+                doNotSync = false;
+            }
         }
 
         RMModelHelper rmh = RMModelHelper.getInstance(userExpectedCfgVersion);
