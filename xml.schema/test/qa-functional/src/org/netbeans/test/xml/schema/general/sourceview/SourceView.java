@@ -46,6 +46,7 @@ import java.util.zip.CRC32;
 import javax.swing.tree.TreePath;
 import junit.framework.TestSuite;
 import org.netbeans.jellytools.EditorOperator;
+import java.util.regex.*;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
@@ -109,5 +110,73 @@ public class SourceView extends GeneralXMLTest {
       ClickForTextPopup( code );
       JPopupMenuOperator popup = new JPopupMenuOperator( );
       popup.pushMenuNoBlock( name );
+    }
+
+    protected void CheckCheckXMLOutput( )
+    {
+      // "Output - XML Check"
+      OutputOperator out = new OutputOperator( );
+      String sText = out.getText( );
+
+      String[] asIdealOutputCheck =
+      {
+        "XML checking started.",
+        "Checking file:",
+        "XML checking finished."
+      };
+      // wait till stop line will appear
+      while( -1 == sText.indexOf( asIdealOutputCheck[ asIdealOutputCheck.length - 1 ] ) )
+      {
+        try{ Thread.sleep( 100 ); } catch( InterruptedException ex ) { }
+        sText = out.getText( );
+      }
+      // Find errors
+      Pattern p = Pattern.compile( "\\[[0-9]+\\]" );
+      Matcher m = p.matcher( sText );
+      if( m.find( ) )
+        fail( "Errors in the checker output." );
+
+      // Check ideal
+      for( String sChecker : asIdealOutputCheck )
+      {
+        if( -1 == sText.indexOf( sChecker ) )
+          fail( "Unable to find ideal XML checker output: \"" + sChecker + "\"\n\"" + sText + "\"" );
+      }
+    }
+
+    protected void CheckValidateXMLOutput( )
+    {
+      // "Output - XML Check"
+      OutputOperator out = new OutputOperator( );
+      String sText = out.getText( );
+
+      String[] asIdealOutputValidate =
+      {
+        "XML validation started.",
+        "0 Error(s),  0 Warning(s).",
+        "XML validation finished."
+      };
+      // wait till stop line will appear
+      while( -1 == sText.indexOf( asIdealOutputValidate[ asIdealOutputValidate.length - 1 ] ) )
+      {
+        try{ Thread.sleep( 100 ); } catch( InterruptedException ex ) { }
+        sText = out.getText( );
+      }
+      // Check ideal
+      for( String sValidator: asIdealOutputValidate )
+      {
+        if( -1 == sText.indexOf( sValidator ) )
+          fail( "Unable to find ideal XML validate output: \"" + sValidator + "\"\n\"" + sText + "\"" );
+      }
+
+      out.close( );
+    }
+
+    protected void CheckTransformationDialog( )
+    {
+      JDialogOperator jdTrans = new JDialogOperator( "XSL Transformation" );
+      JButtonOperator jbCancel = new JButtonOperator( jdTrans, "Cancel" );
+      jbCancel.push( );
+      jdTrans.waitClosed( );
     }
 }

@@ -51,18 +51,19 @@ made subject to such option by the copyright holder.
 <changes>
     <change id="Utilities.toolTips">
         <api name="util"/>
-        <summary>Image methods were made deprecated in Utilities, replacement is 
-        ImageUtilities class (with additional methods). </summary>
-        <version major="7" minor="14"/>
+        <summary>ImageUtilities class (with additional methods) was created as 
+        replacement for "image methods" in Utilities. </summary>
+        <version major="7" minor="15"/>
         <date day="6" month="6" year="2008"/>
         <author login="t_h"/>
         <compatibility addition="yes"/>
         <description>
             <p>
-                Image methods were made deprecated in Utilities. Replacement is
-                <a href="@TOP@/org/openide/util/ImageUtilities.html">ImageUtilities</a>
-                (renamed IconManager). It contains also new 
-                methods for image tool tips manipulation:
+                Image methods were separated to <a href="@TOP@/org/openide/util/ImageUtilities.html">ImageUtilities</a>
+                (renamed IconManager) as replacement for methods in Utilities. 
+                There are some additional methods for image tool tips manipulation.
+            </p>
+            <p>    
                 New methods for tool tips manipulation:
                 <code>Image assignToolTipToImage(Image image, String text)</code>;
                 <code>String getImageToolTip(Image image)</code>;
@@ -73,7 +74,7 @@ made subject to such option by the copyright holder.
                 <code>Icon image2Icon(Image image)</code>;
             </p>
             <p>
-                Deprecated methods in <a href="@TOP@/org/openide/util/Utilities.html">Utilities</a>:
+                "Moved" methods from <a href="@TOP@/org/openide/util/Utilities.html">Utilities</a>:
                 <code>Image icon2Image(Icon icon)</code>;
                 <code>Image loadImage(String resourceID)</code>;
                 <code>Image loadImage(String resource, boolean localized)</code>;
