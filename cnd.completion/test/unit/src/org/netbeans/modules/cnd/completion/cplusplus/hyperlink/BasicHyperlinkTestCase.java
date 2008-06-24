@@ -198,6 +198,10 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ136146.cc", 21, 12, "IZ136146.cc", 15, 5);
     }
 
+//    public void testIZ132903() throws Exception {
+//            performTest("IZ132903.cc", 16, 10, "IZ132903.cc",  9, 5);
+//    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
