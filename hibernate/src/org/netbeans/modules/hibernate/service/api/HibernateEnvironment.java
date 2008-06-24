@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.hibernate.service.api;
 
 import org.netbeans.modules.hibernate.service.*;
@@ -149,4 +148,12 @@ public interface HibernateEnvironment extends HibernateFileLocationProvider {
      */
     List<URL> getProjectClassPath(FileObject projectFile);
 
+    /**
+     * Tries to load the JDBC driver read from the configuration.The classpath
+     * used to load the driver class includes the project classpath.
+     * 
+     * @param config the Hibernate Configuration
+     * @return true if JDBC driver class can be loaded, else false.
+     */
+    boolean canLoadDBDriver(HibernateConfiguration config);
 }

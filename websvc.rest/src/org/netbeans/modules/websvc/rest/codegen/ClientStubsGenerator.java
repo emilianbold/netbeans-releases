@@ -861,10 +861,18 @@ public class ClientStubsGenerator extends AbstractGenerator {
         
         protected Resource r;
         protected FileObject jsFolder;
+        protected RepresentationNode root;
+        protected String pkg;
+        protected String object;
+        protected String stubJSToken;
         
         public ResourceJavaScript(Resource r, FileObject jsFolder) {
             this.r = r;
             this.jsFolder = jsFolder;
+            pkg = "";
+            object = "";
+            root = r.getRepresentation().getRoot();
+            stubJSToken = createStubJSMethods(r, object, pkg);
         }
         
         public FileObject getFolder() {
@@ -1043,7 +1051,6 @@ public class ClientStubsGenerator extends AbstractGenerator {
         
         @Override
         protected String replaceTokens(String line, String object, String pkg) {
-            RepresentationNode root = r.getRepresentation().getRoot();
             String replacedLine = line;
             String[] containerStubTokens = {
                 "__CONTAINER_NAME__",
@@ -1088,6 +1095,10 @@ public class ClientStubsGenerator extends AbstractGenerator {
     }
     
     public class ContainerItemJavaScript extends ResourceJavaScript {
+        private String fieldsDefToken;
+        private String getSetToken;
+        private String fieldsInitToken;
+        private String toStringToken;
         
         public ContainerItemJavaScript(Resource r, FileObject jsFolder) {
             super(r, jsFolder);
@@ -1110,13 +1121,16 @@ public class ClientStubsGenerator extends AbstractGenerator {
             }
             createDataObjectFromTemplate(JS_CONTAINERITEMSTUB_TEMPLATE, jsFolder, fileName, JS, canOverwrite());
             fo = jsFolder.getFileObject(fileNameExt);
+            fieldsDefToken = createFieldsDefinition(root, true);
+            getSetToken = createGetterSetterMethods(root, true);
+            fieldsInitToken = createFieldsInitBody(root, true, pkg);
+            toStringToken = createFieldsToStringBody(root, true);
             replaceTokens(fo);
             return fo;
         }
         
         @Override
         protected String replaceTokens(String line, String object, String pkg) {
-            RepresentationNode root = r.getRepresentation().getRoot();
             String replacedLine = line;
             String[] genericStubTokens = {
                 "__GENERIC_NAME__",
@@ -1139,22 +1153,22 @@ public class ClientStubsGenerator extends AbstractGenerator {
                     } else if("__GENERIC_PATH_NAME__".equals(token)) {
                         replacedLine = replacedLine.replaceAll("__GENERIC_PATH_NAME__", resourceRepName);
                     } else if("__FIELDS_DEFINITION__".equals(token)) {
-                        replacedLine = replacedLine.replaceAll("__FIELDS_DEFINITION__", createFieldsDefinition(root, true));
+                        replacedLine = replacedLine.replaceAll("__FIELDS_DEFINITION__", fieldsDefToken);
                     } else if("__GETTER_SETTER_METHODS__".equals(token)) {
-                        replacedLine = replacedLine.replace("__GETTER_SETTER_METHODS__", createGetterSetterMethods(root, true));
+                        replacedLine = replacedLine.replace("__GETTER_SETTER_METHODS__", getSetToken);
                     } else if("__FIELDS_INIT__".equals(token)) {
-                        replacedLine = replacedLine.replace("__FIELDS_INIT__", createFieldsInitBody(root, true, pkg));
+                        replacedLine = replacedLine.replace("__FIELDS_INIT__", fieldsInitToken);
                     } else if("__SUB_RESOURCE_NAME__".equals(token)) {
                         replacedLine = replacedLine.replaceAll("__SUB_RESOURCE_NAME__", "");
                     } else if("__SUB_RESOURCE_PATH_NAME__".equals(token)) {
                         replacedLine = replacedLine.replaceAll("__SUB_RESOURCE_PATH_NAME__", "");
                     } else if("__FIELDS_TOSTRING__".equals(token)) {
-                        replacedLine = replacedLine.replace("__FIELDS_TOSTRING__", createFieldsToStringBody(root, true));
+                        replacedLine = replacedLine.replace("__FIELDS_TOSTRING__", toStringToken);
                     } else if("__FIELD_NAMES_TOSTRING__".equals(token)) {
                         String fieldsToString = createFieldNamesBody(root, true);
                         replacedLine = replacedLine.replace("__FIELD_NAMES_TOSTRING__", fieldsToString);
                     } else if("__STUB_METHODS__".equals(token)) {
-                        replacedLine = replacedLine.replace("__STUB_METHODS__", createStubJSMethods(r, object, pkg));
+                        replacedLine = replacedLine.replace("__STUB_METHODS__", stubJSToken);
                     }
                 }
             }
@@ -1194,7 +1208,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             }
             for(RepresentationNode child:root.getChildren()) {
                 String name = child.getName();
-                if(child.isRoot()) {
+                if(child.isContainer()) {
                     sb.append("    this."+name+" = new Array();\n");
                 } else {
                     sb.append("    this."+name+" = '';\n");
@@ -1213,8 +1227,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
             }
             for(RepresentationNode child:root.getChildren()) {
                 String childName = child.getName();
-                if(child.isReference() || child.isRoot()) {
-                    String refName = child.isRoot()?pluralize(childName):childName;
+                if(child.isRoot() || child.isReference()) {
+                    String refName = child.getId();//child.isContainer()?pluralize(childName):child.getId();
                     sb.append("         this."+childName+" = new "+pkg+
                             findResourceName(childName)+"("+repName+"['"+refName+"']['@uri']);\n");
                 } else {
@@ -1241,10 +1255,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
             }
             for(RepresentationNode child:root.getChildren()) {
                 String childName = child.getName();
-                if(child.isReference()) {
+                if(child.isRoot() || child.isReference()) {
                     sb.append("         ', \""+childName+"\":{\"@uri\":\"'+this."+childName+".getUri()+'\"}'+\n");
-                }else if(child.isRoot()) {
-                    sb.append("         ', '+this."+childName+".toString()+\n");
                 }else
                     sb.append("         ', \""+childName+"\":\"'+this."+childName+"+'\"'+\n");
             }
@@ -1331,7 +1343,6 @@ public class ClientStubsGenerator extends AbstractGenerator {
         
         @Override
         protected String replaceTokens(String line, String object, String pkg) {
-            RepresentationNode root = r.getRepresentation().getRoot();
             String replacedLine = line;
             String[] stubOnlyTokens = {
                 "__RESOURCE_NAME__",
@@ -1342,7 +1353,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 if("__RESOURCE_NAME__".equals(token))
                     replacedLine = replacedLine.replaceAll("__RESOURCE_NAME__", resourceName);
                 else if("__STUB_METHODS__".equals(token))
-                    replacedLine = replacedLine.replace("__STUB_METHODS__", createStubJSMethods(r, object, pkg));
+                    replacedLine = replacedLine.replace("__STUB_METHODS__", stubJSToken);
             }
             return replacedLine;
         } 
@@ -1375,7 +1386,6 @@ public class ClientStubsGenerator extends AbstractGenerator {
             replacedLine = replacedLine.replaceAll("//__RESOURCES_DOJO_SCRIPTS__", resourcesDojo+"\n//__RESOURCES_DOJO_SCRIPTS__");
             replacedLine = replacedLine.replaceAll("//__REQUIRE_DOJO_SCRIPTS__", requireDojo+"\n//__REQUIRE_DOJO_SCRIPTS__");
 
-            RepresentationNode root = r.getRepresentation().getRoot();
             if(r.isContainer() && root != null && root.getChildren().size() > 0) {
                 String containerName = r.getName();
                 String containerRepName = root.getName();
@@ -1392,7 +1402,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                     else if("__CONTAINER_ITEM_PATH_NAME__".equals(token))
                         replacedLine = replacedLine.replaceAll("__CONTAINER_ITEM_PATH_NAME__", containerItemRepName);
                     else if("__STUB_METHODS__".equals(token))
-                        replacedLine = replacedLine.replace("__STUB_METHODS__", createStubJSMethods(r, object, pkg));
+                        replacedLine = replacedLine.replace("__STUB_METHODS__", stubJSToken);
                     else if("__PROJECT_NAME__".equals(token))
                         replacedLine = replacedLine.replaceAll("__PROJECT_NAME__", getProjectName());
                     else if("<!-- __DOJO_RESOURCE_SELECT_LIST__ -->".equals(token))
@@ -1466,7 +1476,6 @@ public class ClientStubsGenerator extends AbstractGenerator {
         }
 
         protected String replaceTokens(String line, String object, String pkg) {
-            RepresentationNode root = r.getRepresentation().getRoot();
             String replacedLine = line;
             if(r.isContainer() && root != null && root.getChildren().size() > 0) {
                 String containerName = r.getName();
@@ -1484,7 +1493,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                     else if("__CONTAINER_ITEM_PATH_NAME__".equals(token))
                         replacedLine = replacedLine.replaceAll("__CONTAINER_ITEM_PATH_NAME__", containerItemRepName);
                     else if("__STUB_METHODS__".equals(token))
-                        replacedLine = replacedLine.replace("__STUB_METHODS__", createStubJSMethods(r, object, pkg));
+                        replacedLine = replacedLine.replace("__STUB_METHODS__", stubJSToken);
                     else if("__PROJECT_NAME__".equals(token))
                         replacedLine = replacedLine.replaceAll("__PROJECT_NAME__", getProjectName());
                     else if("<!-- __DOJO_RESOURCE_SELECT_LIST__ -->".equals(token))
