@@ -17,7 +17,7 @@ import org.openide.awt.DynamicMenuContent;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptorBuilder;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
 import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
@@ -47,7 +47,7 @@ public final class GenerateAllAction extends NodeAction {
         Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
                 command, GrailsProjectConfig.forProject(prj), dataObject.getPrimaryFile().getName()); // NOI18N
 
-        ExecutionDescriptorBuilder builder = new ExecutionDescriptorBuilder();
+        ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
         builder.controllable(true).frontWindow(true).inputVisible(true).showProgress(true);
         builder.postExecution(new RefreshProjectRunnable(prj));
 
