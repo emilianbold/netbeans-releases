@@ -62,9 +62,9 @@ import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
@@ -203,35 +203,35 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
         Image badge = null;        
         switch (serverInstance.getServerState()) {
             case RUNNING:
-                badge = Utilities.loadImage(RUNNING_ICON);
+                badge = ImageUtilities.loadImage(RUNNING_ICON);
                 break;
             case RUNNING_JVM_DEBUG:
-                badge = Utilities.loadImage(DEBUGGING_ICON);
+                badge = ImageUtilities.loadImage(DEBUGGING_ICON);
                 break;
             case STARTING:
-                badge = Utilities.loadImage(WAITING_ICON);
+                badge = ImageUtilities.loadImage(WAITING_ICON);
                 break;
             case STOPPED:
-//                badge = Utilities.loadImage(SUSPENDED_ICON);
+//                badge = ImageUtilities.loadImage(SUSPENDED_ICON);
                 break;
             case STOPPED_JVM_BP:
-                badge = Utilities.loadImage(SUSPENDED_ICON);
+                badge = ImageUtilities.loadImage(SUSPENDED_ICON);
                 break;
             case STOPPING:
-                badge = Utilities.loadImage(WAITING_ICON);
+                badge = ImageUtilities.loadImage(WAITING_ICON);
                 break;
             // TODO profiler states
 //            case PROFILING: 
-//                badge = Utilities.loadImage(PROFILING_ICON);
+//                badge = ImageUtilities.loadImage(PROFILING_ICON);
 //                break;
 //            case PROFILER_BLOCKING: 
-//                badge = Utilities.loadImage(PROFILER_BLOCKING_ICON);
+//                badge = ImageUtilities.loadImage(PROFILER_BLOCKING_ICON);
 //                break;
 //            case PROFILER_STARTING: 
-//                badge = Utilities.loadImage(WAITING_ICON);
+//                badge = ImageUtilities.loadImage(WAITING_ICON);
 //                break;
         }
-        return badge != null ? Utilities.mergeImages(origImg, badge, 15, 8) : origImg;
+        return badge != null ? ImageUtilities.mergeImages(origImg, badge, 15, 8) : origImg;
     }    
     
     private Map<String, String> getInstanceProperties() {

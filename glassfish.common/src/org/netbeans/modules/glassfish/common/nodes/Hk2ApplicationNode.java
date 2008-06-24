@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,42 +31,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.glassfish.spi;
+package org.netbeans.modules.glassfish.common.nodes;
+
+import java.util.Map;
+import org.netbeans.modules.glassfish.common.nodes.actions.OpenURLActionCookie;
+import org.netbeans.modules.glassfish.spi.AppDesc;
+import org.netbeans.modules.glassfish.spi.Decorator;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.openide.nodes.Children;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Peter Williams
  */
-public class ResourceDesc implements Comparable<ResourceDesc> {
-    
-    private final String name;
-    private final String cmdSuffix;
-    
-    public ResourceDesc(final String name, final String cmdSuffix) {
-        this.name = name;
-        this.cmdSuffix = cmdSuffix;
-    }
+public class Hk2ApplicationNode extends Hk2ItemNode {
 
-    public String getName() {
-        return name;
-    }
+    public Hk2ApplicationNode(final Lookup lookup, final AppDesc app, final Decorator decorator) {
+        super(Children.LEAF, lookup, app.getName(), decorator);
+        setDisplayName(app.getName());
+        setShortDescription("<html>name: " + app.getName() + "<br>path: " + app.getPath() + "</html>");
 
-    public String getCommandSuffix() {
-        return cmdSuffix;
-    }
-
-    public int compareTo(ResourceDesc o) {
-        int result = name.compareTo(o.name);
-        if(result == 0) {
-            result = cmdSuffix.compareTo(o.cmdSuffix);
+        // !PW FIXME should method of retrieving context root be controlled by decorator?
+        if(decorator.canShowBrowser()) {
+            getCookieSet().add(new OpenURLActionCookie() {
+                public String getWebURL() {
+                    String result = null;
+                    GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
+                    if(commonModule != null) {
+                        Map<String, String> ip = commonModule.getInstanceProperties();
+                        String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
+                        String httpPort = ip.get(GlassfishModule.HTTPPORT_ATTR);
+                        result = HTTP_HEADER + host + ":" + httpPort + "/" + app.getContextRoot() + "/";
+                    }
+                    return result;
+                }
+            });
         }
-        return result;
     }
-    
+
 }
