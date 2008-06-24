@@ -5,7 +5,7 @@ set -x
 DIRNAME=`dirname $0`
 cd ${DIRNAME}
 TRUNK_CB_DIRNAME=`pwd`
-export BUILD_DESC=trunk-cb
+export BUILD_DESC=6.5_m1_cb
 source init.sh
 
 ###################################################################
