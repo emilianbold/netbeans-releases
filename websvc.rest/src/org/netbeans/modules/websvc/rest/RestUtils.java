@@ -223,11 +223,11 @@ public class RestUtils {
 
     public static String findStubNameFromClass(String className) {
         String name = className;
-        int index = name.lastIndexOf("Resource");
+        int index = name.lastIndexOf(Constants.RESOURCE_SUFFIX);
         if (index != -1) {
             name = name.substring(0, index);
         } else {
-            index = name.lastIndexOf("Converter");
+            index = name.lastIndexOf(Constants.CONVERTER_SUFFIX);
             if (index != -1)
                 name = name.substring(0, index);
         }

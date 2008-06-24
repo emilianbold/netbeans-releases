@@ -300,7 +300,7 @@ public final class SpringXMLConfigEditorUtils {
                     while (currParent != null && (logicalBean[0].getClassName() == null 
                             || logicalBean[0].getFactoryBean() == null || logicalBean[0].getFactoryMethod() == null)) {
                         SpringBean currBean = springBeans.findBean(currParent);
-                        if (walkedBeans.contains(currBean)) {
+                        if (currBean == null || walkedBeans.contains(currBean)) {
                             // circular dep. nullify everything
                             logicalBean[0] = null;
                             break;

@@ -281,7 +281,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         if (unboxInstantiation && CsmKindUtilities.isTemplateInstantiation(referencedObj)) {
             referencedObj = ((CsmInstantiation)referencedObj).getTemplateDeclaration();
         }
-        if (targetDecl.equals(referencedObj)) {
+        if (targetDecl.equals(referencedObj) || (targetDef != null && targetDef.equals(referencedObj))) {
             if (kinds == CsmReferenceKind.ALL) {
                 accept = true;
             } else { 

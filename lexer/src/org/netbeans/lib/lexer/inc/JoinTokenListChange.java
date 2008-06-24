@@ -234,6 +234,15 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
             TokenListChange<T> change = relexChanges.get(index - startRelexTokenListIndex);
             change.setMatchIndex(change.tokenList().tokenCountCurrent());
         }
+        // Check for empty ETLs that were at end of added ETLs - they would not be covered
+        // by tokens since they were empty and there is no relex change for them and so
+        // they do not contain join info.
+        while ((index = startRelexTokenListIndex + relexChanges.size()) <
+                tokenListListUpdate.modTokenListIndex + tokenListListUpdate.addedTokenLists.size()
+        ) {
+            // Add an empty relex change for ending added ETL(s)
+            relexChanges.add(new RelexTokenListChange<T>(tokenListListUpdate.afterUpdateTokenList(jtl, index)));
+        }
 
         // Physically replace the token lists
         if (tokenListListUpdate.isTokenListsMod()) {
