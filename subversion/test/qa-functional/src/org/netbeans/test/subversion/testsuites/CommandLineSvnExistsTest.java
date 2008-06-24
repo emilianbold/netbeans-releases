@@ -41,7 +41,6 @@ package org.netbeans.test.subversion.testsuites;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.test.subversion.main.archeology.AnnotationsTest;
 import org.netbeans.test.subversion.main.archeology.SearchHistoryUITest;
 import org.netbeans.test.subversion.main.archeology.SearchRevisionsTest;
@@ -52,19 +51,17 @@ import org.netbeans.test.subversion.main.branches.RevertUiTest;
 import org.netbeans.test.subversion.main.branches.SwitchUiTest;
 import org.netbeans.test.subversion.main.checkout.CheckoutContentTest;
 import org.netbeans.test.subversion.main.checkout.CheckoutUITest;
-import org.netbeans.test.subversion.main.checkout.CreateProjectVersionedDirTest;
 import org.netbeans.test.subversion.main.checkout.ImportUITest;
-import org.netbeans.test.subversion.main.checkout.ProxySettingsUITest;
 import org.netbeans.test.subversion.main.commit.CommitDataTest;
 import org.netbeans.test.subversion.main.commit.CommitUiTest;
 import org.netbeans.test.subversion.main.commit.IgnoreTest;
 import org.netbeans.test.subversion.main.delete.DeleteTest;
-import org.netbeans.test.subversion.main.delete.FilesViewDoubleRefTest;
 import org.netbeans.test.subversion.main.delete.FilesViewRefTest;
 import org.netbeans.test.subversion.main.delete.RefactoringTest;
 import org.netbeans.test.subversion.main.diff.DiffTest;
 import org.netbeans.test.subversion.main.diff.ExportDiffPatchTest;
 import org.netbeans.test.subversion.main.properties.SvnPropertiesTest;
+import org.netbeans.test.subversion.utils.svnExistsChecker;
 
 /**
  *
@@ -87,10 +84,7 @@ public class CommandLineSvnExistsTest extends JellyTestCase {
      * tests-qa-functional
      */
     public static Test suite() {
-        if (System.getProperty("netbeans.user") == null) {
-            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
-        }
-        if (Subversion.getInstance().checkClientAvailable()) {
+        if (svnExistsChecker.check(false)) {
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
                     .addTest(CheckoutUITest.class, "testInvokeClose", "testChangeAccessTypes", "testIncorrentUrl", "testAvailableFields", "testRepositoryFolder")
                     .addTest(CheckoutContentTest.class, "testCheckoutProject", "testCheckoutContent")

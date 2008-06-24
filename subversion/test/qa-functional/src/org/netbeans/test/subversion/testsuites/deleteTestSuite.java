@@ -42,10 +42,10 @@ package org.netbeans.test.subversion.testsuites;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.test.subversion.main.delete.DeleteTest;
 import org.netbeans.test.subversion.main.delete.FilesViewRefTest;
 import org.netbeans.test.subversion.main.delete.RefactoringTest;
+import org.netbeans.test.subversion.utils.svnExistsChecker;
 
 /**
  *
@@ -67,10 +67,7 @@ public class deleteTestSuite extends JellyTestCase {
      * tests-qa-functional
      */
     public static Test suite() {
-        if (System.getProperty("netbeans.user") == null) {
-            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
-        }
-        if (Subversion.getInstance().checkClientAvailable()) {
+        if (svnExistsChecker.check(false)) {
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
                     .addTest(DeleteTest.class, "testDeleteRevert", "testDeleteCommit")
                     .addTest(RefactoringTest.class, "testRefactoring")

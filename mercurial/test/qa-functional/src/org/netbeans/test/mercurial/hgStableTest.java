@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.test.mercurial;
 
 import junit.framework.Test;
@@ -50,6 +49,7 @@ import org.netbeans.test.mercurial.main.commit.IgnoreTest;
 import org.netbeans.test.mercurial.main.commit.InitializeTest;
 import org.netbeans.test.mercurial.main.delete.DeleteUpdateTest;
 import org.netbeans.test.mercurial.main.properties.HgPropertiesTest;
+import org.netbeans.test.mercurial.utils.hgExistsChecker;
 
 /**
  *
@@ -60,18 +60,22 @@ public class hgStableTest extends JellyTestCase {
     public hgStableTest(String name) {
         super(name);
     }
-    
-    public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                .addTest(InitializeTest.class, "testInitializeAndFirstCommit")
-                .addTest(CommitDataTest.class, "testCommitFile", "testRecognizeMimeType")
-                .addTest(CommitUiTest.class, "testInvokeCloseCommit")
-                .addTest(CloneTest.class, "testCloneProject")
-                .addTest(IgnoreTest.class, "testIgnoreUnignoreFile")
-                .addTest(DeleteUpdateTest.class, "testDeleteUpdate")
-                .addTest(AnnotationsTest.class, "testShowAnnotations")
-                .addTest(HgPropertiesTest.class, "testHgPropertiesTest")
-                .enableModules(".*").clusters(".*"));
-    }
 
+    public static Test suite() {
+        if (hgExistsChecker.check(false)) {
+            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+                    .addTest(InitializeTest.class, "testInitializeAndFirstCommit")
+                    .addTest(CommitDataTest.class, "testCommitFile", "testRecognizeMimeType")
+                    .addTest(CommitUiTest.class, "testInvokeCloseCommit")
+                    .addTest(CloneTest.class, "testCloneProject")
+                    .addTest(IgnoreTest.class, "testIgnoreUnignoreFile")
+                    .addTest(DeleteUpdateTest.class, "testDeleteUpdate")
+                    .addTest(AnnotationsTest.class, "testShowAnnotations")
+                    .addTest(HgPropertiesTest.class, "testHgPropertiesTest")
+                    .enableModules(".*")
+                    .clusters(".*"));
+        } else {
+            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
+        }
+    }
 }

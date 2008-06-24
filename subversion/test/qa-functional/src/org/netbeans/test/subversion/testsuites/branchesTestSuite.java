@@ -42,12 +42,12 @@ package org.netbeans.test.subversion.testsuites;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.test.subversion.main.branches.CopyTest;
 import org.netbeans.test.subversion.main.branches.CopyUiTest;
 import org.netbeans.test.subversion.main.branches.MergeUiTest;
 import org.netbeans.test.subversion.main.branches.RevertUiTest;
 import org.netbeans.test.subversion.main.branches.SwitchUiTest;
+import org.netbeans.test.subversion.utils.svnExistsChecker;
 
 /**
  *
@@ -69,10 +69,7 @@ public class branchesTestSuite extends JellyTestCase {
      * tests-qa-functional
      */
     public static Test suite() {
-        if (System.getProperty("netbeans.user") == null) {
-            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
-        }
-        if (Subversion.getInstance().checkClientAvailable()) {
+        if (svnExistsChecker.check(false)) {
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
                     .addTest(CopyTest.class, "testCreateNewCopySwitch", "testCreateNewCopy")
                     .addTest(CopyUiTest.class, "testInvokeCloseCopy")

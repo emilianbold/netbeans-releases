@@ -42,10 +42,10 @@ package org.netbeans.test.subversion.testsuites;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.test.subversion.main.commit.CommitDataTest;
 import org.netbeans.test.subversion.main.commit.CommitUiTest;
 import org.netbeans.test.subversion.main.commit.IgnoreTest;
+import org.netbeans.test.subversion.utils.svnExistsChecker;
 
 /**
  *
@@ -67,10 +67,7 @@ public class commitTestSuite extends JellyTestCase {
      * tests-qa-functional
      */
     public static Test suite() {
-        if (System.getProperty("netbeans.user") == null) {
-            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
-        }
-        if (Subversion.getInstance().checkClientAvailable()) {
+        if (svnExistsChecker.check(false)) {
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
                     .addTest(CommitDataTest.class, "testCommitFile", "testCommitPackage", "testRecognizeMimeType")
                     .addTest(CommitUiTest.class, "testInvokeCloseCommit")
