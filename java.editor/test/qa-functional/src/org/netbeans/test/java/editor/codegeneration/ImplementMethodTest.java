@@ -47,7 +47,7 @@ public class ImplementMethodTest extends GenerateCodeTestCase {
     }
 
     public void testIssue112613() {
-        openSourceFile("org.netbeans.test.java.editor.codegeneration.ImplementMethod", "test112613");
+        openSourceFile("org.netbeans.test.java.editor.codegeneration", "test112613");
         editor = new EditorOperator("test112613");
         txtOper = editor.txtEditorPane();
         try {
@@ -57,7 +57,7 @@ public class ImplementMethodTest extends GenerateCodeTestCase {
         } finally {
             editor.close(false);
         }
-        openSourceFile("org.netbeans.test.java.editor.codegeneration.ImplementMethod", "test112613b");
+        openSourceFile("org.netbeans.test.java.editor.codegeneration", "test112613b");
         editor = new EditorOperator("test112613b");
         txtOper = editor.txtEditorPane();
         try {
@@ -79,7 +79,7 @@ public class ImplementMethodTest extends GenerateCodeTestCase {
     }
 
     public void testMoreIfaces() {
-        openSourceFile("org.netbeans.test.java.editor.codegeneration.ImplementMethod", "testMoreIfaces");
+        openSourceFile("org.netbeans.test.java.editor.codegeneration", "testMoreIfaces");
         editor = new EditorOperator("testMoreIfaces");
         txtOper = editor.txtEditorPane();
         try {
@@ -92,13 +92,11 @@ public class ImplementMethodTest extends GenerateCodeTestCase {
             jto.selectRow(1);
             jto.selectRow(5);
             imo.btGenerate().push();
-            String expected = "" +
-                    "    @Override\n" +
+            String expected = "" +                    
                     "    public int getColumnCount() {\n" +
                     "        throw new UnsupportedOperationException(\"Not supported yet.\");\n" +
                     "    }\n" +
-                    "\n" +
-                    "    @Override\n" +
+                    "\n" +                    
                     "    public void run() {\n" +
                     "        throw new UnsupportedOperationException(\"Not supported yet.\");\n" +
                     "    }\n";

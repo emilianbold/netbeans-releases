@@ -57,8 +57,8 @@ public class CreateEqualsHashcodeTest extends GenerateCodeTestCase {
     }
 
     public void testEqualsOnly() {
-        openSourceFile("org.netbeans.test.java.editor.codegeneration", "testEqualsHascode");
-        editor = new EditorOperator("testEqualsHascode");
+        openSourceFile("org.netbeans.test.java.editor.codegeneration", "testEqualsHashcode");
+        editor = new EditorOperator("testEqualsHashcode");
         txtOper = editor.txtEditorPane();
         try {
             editor.requestFocus();

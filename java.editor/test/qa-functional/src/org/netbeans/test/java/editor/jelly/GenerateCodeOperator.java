@@ -76,8 +76,9 @@ public class GenerateCodeOperator {
     public static boolean openDialog(String type, EditorOperator editor) {
         new EventTool().waitNoEvent(1000);
         editor.pushKey(KeyEvent.VK_INSERT, KeyEvent.ALT_DOWN_MASK);
-        JDialogOperator jdo = new JDialogOperator();        
-        JListOperator list = new JListOperator(jdo);
+        JDialogOperator jdo = new JDialogOperator();
+        new EventTool().waitNoEvent(1000);
+        JListOperator list = new JListOperator(jdo);        
         ListModel lm = list.getModel();
         for (int i = 0; i < lm.getSize(); i++) {
             CodeGenerator cg  = (CodeGenerator) lm.getElementAt(i);
