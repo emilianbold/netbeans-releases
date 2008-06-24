@@ -107,7 +107,7 @@ class ExtPlainView extends PlainView {
         if (doc instanceof OutputDocument) {                                         
             Segment s = getSegment();
             if (!getText(p0, p1 - p0, s)) {
-                return 0;
+                return x;
             }
             g.setColor(getColorForLocation(p0, doc, true));
             int ret = Utilities.drawTabbedText(s, x, y, g, this, p0);
@@ -130,7 +130,7 @@ class ExtPlainView extends PlainView {
         if (doc instanceof OutputDocument) {                                         
             Segment s = getSegment();
             if (!getText(p0, p1 - p0, s)) {
-                return 0;
+                return x;
             }
             g.setColor(getColorForLocation(p0, doc, false));
             int ret = Utilities.drawTabbedText(s, x, y, g, this, p0);
@@ -155,9 +155,10 @@ class ExtPlainView extends PlainView {
         int lineIndex = elem.getElementIndex(offset);
         Element lineElem = elem.getElement(lineIndex);
         int lineStart = lineElem.getStartOffset();
-        int lineLength = lineElem.getEndOffset() - lineStart;
+        int lineLength = lineElem.getEndOffset() - 1 - lineStart;
         int newLen = Math.min(length, lineStart + MAXLINELEN - offset);
-        if (newLen < 0) {
+        if (newLen <= 0) {
+            txt.count = 0;
             return false;
         }
         doc.getText(offset, newLen, txt);
@@ -364,7 +365,7 @@ class ExtPlainView extends PlainView {
      */
     protected int getLineWidth(Element line) {
 	int p0 = line.getStartOffset();
-	int p1 = line.getEndOffset();
+	int p1 = line.getEndOffset() - 1;
 	int w;
         Segment s = getSegment();
 	try {
@@ -418,9 +419,11 @@ class ExtPlainView extends PlainView {
 	    if (changes.getType() == DocumentEvent.EventType.INSERT) {
 		// check to see if the line is longer than current longest line.
 		Element e = map.getElement(line);
+                int lineLen = getLineWidth(e);
 		if (e == longestLine) {
 		    preferenceChanged(null, true, false);
-		} else if (getLineWidth(e) > longestLineLength) {
+		} else if (lineLen > longestLineLength) {
+                    longestLineLength = lineLen;
 		    longestLine = e;
 		    preferenceChanged(null, true, false);
 		}
@@ -465,7 +468,7 @@ class ExtPlainView extends PlainView {
                     int linePos = pos - lineStart;
                     Element el = elem.getElement(lineIndex - 1);
                     pos = el.getStartOffset();
-                    pos += Math.min(Math.min(MAXLINELEN, el.getEndOffset() - el.getStartOffset() - 1), linePos);
+                    pos += Math.min(Math.min(MAXLINELEN, el.getEndOffset() - pos - 1), linePos);
                 }
                 break;
             case SOUTH:
@@ -475,7 +478,7 @@ class ExtPlainView extends PlainView {
                     int linePos = pos - lineStart;
                     Element el = elem.getElement(lineIndex + 1);
                     pos = el.getStartOffset();
-                    pos += Math.min(Math.min(MAXLINELEN, el.getEndOffset() - el.getStartOffset() - 1), linePos);
+                    pos += Math.min(Math.min(MAXLINELEN, el.getEndOffset() - pos - 1), linePos);
                 }
                 break;
             case WEST:
@@ -487,7 +490,7 @@ class ExtPlainView extends PlainView {
                 }
                 break;
             case EAST:
-                pos = Math.min(pos + 1, elem.getEndOffset());
+                pos = Math.min(pos + 1, elem.getEndOffset() - 1);
                 lineIndex = elem.getElementIndex(pos);
                 lineStart = elem.getElement(lineIndex).getStartOffset();
                 if (pos - lineStart > MAXLINELEN) {

@@ -129,11 +129,15 @@ final class LexerLayer extends DrawLayer.AbstractLayer {
 
         if (active) {
             pastSequences = new Stack<TokenSequence>();
-            tokenSequence = hi.tokenSequence();
-            tokenSequence.move(startOffset);
-            if (tokenSequence.moveNext()) {
-                updateTokenEndOffsetAndColoring(startOffset);
-            } else { // no tokens
+            if (hi.isActive()) {
+                tokenSequence = hi.tokenSequence();
+                tokenSequence.move(startOffset);
+                if (tokenSequence.moveNext()) {
+                    updateTokenEndOffsetAndColoring(startOffset);
+                } else { // no tokens
+                    active = false;
+                }
+            } else {
                 active = false;
             }
         }
