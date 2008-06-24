@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,67 +31,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.core.output2;
+package org.netbeans.modules.websvc.jaxrpc.project;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
+import org.netbeans.api.project.Project;
+
+import org.netbeans.spi.project.LookupProvider;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
- * Heap based implementation of the Storage interface, over a byte array.
+ * Lookup Provider provided by JAX-RPC Support for all projects
  *
+ * @author mkuchtiak
  */
-class HeapStorage implements Storage {
-    private boolean closed = true;
-    private byte[] bytes = new byte[2048];
-    private int size = 0;
+public class JaxRpcLookupProvider implements LookupProvider {
 
-    public Storage toFileMapStorage() throws IOException {
-        FileMapStorage result = new FileMapStorage();
-        result.write(getReadBuffer(0, size));
-        return result;
+    /** Creates a new instance of JaxRpcLookupProvider */
+    public JaxRpcLookupProvider() {
     }
 
-    public ByteBuffer getReadBuffer(int start, int length) throws IOException {
-        return ByteBuffer.wrap(bytes, start, Math.min(length, bytes.length - start));
+    public Lookup createAdditionalLookup(Lookup baseContext) {
+        final Project prj = baseContext.lookup(Project.class);
+
+        return Lookups.fixed(new Object[]{new JaxRpcArtifactsClassPathProvider(prj)});
     }
 
-    public ByteBuffer getWriteBuffer(int length) throws IOException {
-        return ByteBuffer.allocate(length);
-    }
-
-    public synchronized int write(ByteBuffer buf) throws IOException {
-        closed = false;
-        int oldSize = size;
-        size += buf.limit();
-        if (size > bytes.length) {
-            byte[] oldBytes = bytes;
-            bytes = new byte[Math.max (oldSize * 2, (buf.limit() * 2) + oldSize)]; 
-            System.arraycopy (oldBytes, 0, bytes, 0, oldSize);
-        }
-        buf.flip();
-        buf.get(bytes, oldSize, buf.limit());
-        return oldSize;
-    }
-
-    public synchronized void dispose() {
-        bytes = new byte[0];
-        size = 0;
-    }
-
-    public synchronized int size() {
-        return size;
-    }
-
-    public void flush() throws IOException {
-        //N/A
-    }
-
-    public void close() throws IOException {
-        closed = true;
-    }
-
-    public boolean isClosed() {
-        return closed;  //To change body of implemented methods use File | Settings | File Templates.
-    }
 }

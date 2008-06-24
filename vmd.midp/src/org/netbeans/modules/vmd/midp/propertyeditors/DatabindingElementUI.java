@@ -349,7 +349,7 @@ public class DatabindingElementUI extends javax.swing.JPanel {
             Collection<DesignComponent> components = MidpDocumentSupport.getCategoryComponent(component.getDocument(), categoryType).getComponents();
             for (DesignComponent c : components) {
                 String name = (String) c.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue();
-                if (name != null || !name.trim().equals("")) { //NOI18N
+                if (name != null && !name.trim().equals("")) { //NOI18N
                     names.add(name);
                 }
             }
