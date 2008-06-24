@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  * 
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,19 +31,38 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.sun.ide.editors;
 
-public class BooleanEditor extends ChoiceEditor {
+package org.netbeans.modules.cnd.makeproject.ui.utils;
 
-    private String[] choices = {
-        "true", // NOI18N
-        "false" // NOI18N
-    };
+import org.netbeans.modules.cnd.api.remote.PathMapProvider;
+import org.openide.util.Lookup;
 
-    @Override
-    public String[] getTags() {
-        return choices.clone();
+/**
+ * Local path map utility. The implementation is provided by the cnd.remote module.
+ * 
+ * @author gordonp
+ */
+public class NativePathMap {
+    
+    private static PathMapProvider provider = null;
+    
+    public static boolean isRemote(String name, String path) {
+        
+        if (provider == null) {
+            provider = (PathMapProvider) Lookup.getDefault().lookup(PathMapProvider.class);
+        }
+        if (provider != null) {
+            int pos = name.indexOf('@');
+            String user = name.substring(0, pos);
+            String host = name.substring(pos + 1);
+            return provider.getMapper(user, host).isRemote(path);
+        } else {
+            return false;
+        }
     }
-
 }

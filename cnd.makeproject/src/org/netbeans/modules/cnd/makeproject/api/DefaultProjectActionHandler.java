@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
+import org.netbeans.modules.cnd.makeproject.ui.utils.NativePathMap;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -315,7 +316,18 @@ public class DefaultProjectActionHandler implements ActionListener {
                 String args = pae.getProfile().getArgsFlat();
                 String[] env = pae.getProfile().getEnvironment().getenv();
                 boolean showInput = pae.getID() == ProjectActionEvent.RUN;
-                String host = ((MakeConfiguration) pae.getConfiguration()).getDevelopmentHost().getName();
+                String user_and_host = ((MakeConfiguration) pae.getConfiguration()).getDevelopmentHost().getName();
+                
+                if (user_and_host != null && !user_and_host.equals("localhost")) { // NOI18N
+                    // Make sure the project root is visible remotely
+                    String basedir = pae.getProfile().getBaseDir();
+                    if (!NativePathMap.isRemote(user_and_host, basedir)) {
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                NbBundle.getMessage(DefaultProjectActionHandler.class, "Err_CannotRunLocalProjectRemotely")));
+                        progressHandle.finish();
+                        return;
+                    }
+                }
                 
                 if (pae.getID() == ProjectActionEvent.RUN) {
                     int conType = pae.getProfile().getConsoleType().getValue();
@@ -421,7 +433,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                     env = env1;
                 }
                 projectExecutor =  new NativeExecutor(
-                        host,
+                        user_and_host,
                         pae.getProfile().getRunDirectory(),
                         exe, args, env,
                         pae.getTabName(),
