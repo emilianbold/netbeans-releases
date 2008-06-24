@@ -104,7 +104,7 @@ class DataViewUI {
         actionHandler = new DataViewActionHandler(this, dataView);
 
         //add resultset data panel
-        dataPanel = new DataViewTablePanel(dataView.getDataViewDBTable(), this,actionHandler);
+        dataPanel = new DataViewTablePanel(dataView.getDataViewDBTable(), this,actionHandler,dataView);
         dataView.add(dataPanel, BorderLayout.CENTER);
         dataPanel.revalidate();
         dataPanel.repaint();

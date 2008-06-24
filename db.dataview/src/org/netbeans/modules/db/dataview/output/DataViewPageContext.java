@@ -148,7 +148,7 @@ class DataViewPageContext {
     }
 
     String pageOf() {
-        if (pageSize < 1) {
+        if (pageSize < 1 || totalRows < 1) {
             return "";
         }
         

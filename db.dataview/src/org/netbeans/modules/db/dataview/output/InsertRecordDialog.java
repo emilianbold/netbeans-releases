@@ -77,7 +77,7 @@ public class InsertRecordDialog extends javax.swing.JDialog {
     public InsertRecordDialog(DataView dataView) {
         super(WindowManager.getDefault().getMainWindow(), true);
         this.dataView = dataView;
-
+        executeBtn.setMnemonic('E');
         initComponents();
         addInputFields();
 

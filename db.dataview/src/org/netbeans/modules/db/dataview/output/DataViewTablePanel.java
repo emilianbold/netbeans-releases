@@ -77,12 +77,12 @@ class DataViewTablePanel extends JPanel {
     private final List<Integer> columnWidthList;
     private static Logger mLogger = Logger.getLogger(DataViewTablePanel.class.getName());
 
-    public DataViewTablePanel(DataViewDBTable tblMeta, DataViewUI dataViewUI, DataViewActionHandler actionHandler) {
+    public DataViewTablePanel(DataViewDBTable tblMeta, DataViewUI dataViewUI, DataViewActionHandler actionHandler,DataView dataView) {
         this.tblMeta = tblMeta;
         this.dataViewUI = dataViewUI;
 
         this.setLayout(new BorderLayout());
-        tableUI = new DataViewTableUI(this, actionHandler);
+        tableUI = new DataViewTableUI(this, actionHandler,dataView);
         tableUI.setColumnToolTips(tblMeta.getColumnToolTips());
         JScrollPane sp = new JScrollPane(tableUI);
         this.add(sp, BorderLayout.CENTER);

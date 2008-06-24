@@ -50,6 +50,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -61,6 +63,10 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
+import org.netbeans.modules.db.dataview.meta.DBException;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.datatransfer.ExClipboard;
 
@@ -77,7 +83,7 @@ class DataViewTableUI extends JTable {
     private final DataViewTablePanel tablePanel;
     private static final String data = "WE WILL EITHER FIND A WAY, OR MAKE ONE.";
 
-    public DataViewTableUI(DataViewTablePanel tablePanel, final DataViewActionHandler handler) {
+    public DataViewTableUI(DataViewTablePanel tablePanel, final DataViewActionHandler handler, final DataView dataView) {
         this.tablePanel = tablePanel;
         addKeyListener(new KeyListener() {
 
@@ -125,9 +131,10 @@ class DataViewTableUI extends JTable {
             }
         });
         tablePopupMenu.add(printTable);
-        
-        JMenuItem miRefreshAction = new JMenuItem("Refresh records"); //NOI18N
+
+        JMenuItem miRefreshAction = new JMenuItem("Refresh Records"); //NOI18N
         miRefreshAction.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 handler.refreshActionPerformed();
             }
@@ -135,8 +142,59 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.add(miRefreshAction);
         tablePopupMenu.addSeparator();
 
-        JMenuItem miCopyValue = new JMenuItem("Copy Cell Value"); //NOI18N
+        JMenuItem miInsertAction = new JMenuItem("Insert Record"); //NOI18N
+        miInsertAction.addActionListener(new ActionListener() {
 
+            public void actionPerformed(ActionEvent e) {
+                handler.insertActionPerformed();
+            }
+        });
+        tablePopupMenu.add(miInsertAction);
+
+        JMenuItem miDeleteAction = new JMenuItem("Delete Record(s)"); //NOI18N
+        miDeleteAction.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                handler.deleteRecordActionPerformed();
+            }
+        });
+        tablePopupMenu.add(miDeleteAction);
+
+        JMenuItem miCommitAction = new JMenuItem("Commit Record(s)"); //NOI18N
+        miCommitAction.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                handler.commitActionPerformed();
+            }
+        });
+        tablePopupMenu.add(miCommitAction);
+
+
+        JMenuItem miCancelEdits = new JMenuItem("Cancel Edits"); //NOI18N
+        miCancelEdits.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                handler.cancelEditPerformed();
+            }
+        });
+        tablePopupMenu.add(miCancelEdits);
+
+        JMenuItem miTruncateRecord = new JMenuItem("Truncate Table"); //NOI18N
+        miTruncateRecord.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                handler.truncateActionPerformed();
+            }
+        });
+        tablePopupMenu.add(miTruncateRecord);
+        tablePopupMenu.addSeparator();
+        if (!tablePanel.isEditable()) {
+            miInsertAction.setEnabled(false);
+            miDeleteAction.setEnabled(false);
+            miTruncateRecord.setEnabled(false);
+        }
+
+        JMenuItem miCopyValue = new JMenuItem("Copy Cell Value"); //NOI18N
         miCopyValue.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -154,7 +212,6 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.add(miCopyValue);
 
         JMenuItem miCopyRowValues = new JMenuItem("Copy Row Values"); //NOI18N
-
         miCopyRowValues.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -163,8 +220,7 @@ class DataViewTableUI extends JTable {
         });
         tablePopupMenu.add(miCopyRowValues);
 
-        JMenuItem miCopyRowValuesH = new JMenuItem("Copy Row Values With Header"); //NOI18N
-
+        JMenuItem miCopyRowValuesH = new JMenuItem("Copy Row Values(With Header)"); //NOI18N
         miCopyRowValuesH.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -172,40 +228,62 @@ class DataViewTableUI extends JTable {
             }
         });
         tablePopupMenu.add(miCopyRowValuesH);
-        tablePopupMenu.addSeparator();   
-       
-        JMenuItem miInsertAction = new JMenuItem("Insert a Record"); //NOI18N
-        miInsertAction.addActionListener(new ActionListener() {
+        tablePopupMenu.addSeparator();
+
+        JMenuItem miInsertSQLScript = new JMenuItem("Show SQL Script for INSERT"); //NOI18N
+        miInsertSQLScript.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
-                handler.insertActionPerformed();
+                try {
+                    Object[] insertRow = dataView.getDataViewPageContext().getCurrentRows().get(getSelectedRow());
+                    String insertSQL = dataView.getSQLStatementGenerator().generateInsertStatement(insertRow)[1];
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(insertSQL);
+                    //  JOptionPane.showMessageDialog(new JEditorPane(), insertSQL);
+                    DialogDisplayer.getDefault().notify(nd);
+                } catch (DBException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         });
-        tablePopupMenu.add(miInsertAction);
-        
-        JMenuItem miDeleteAction = new JMenuItem("Delete a Record"); //NOI18N
-        miDeleteAction.addActionListener(new ActionListener() {
+        tablePopupMenu.add(miInsertSQLScript);
+
+        JMenuItem miDeleteSQLScript = new JMenuItem("Show SQL Script for DELETE"); //NOI18N
+        miDeleteSQLScript.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
-                handler.deleteRecordActionPerformed();
+                int[] rows = getSelectedRows();
+                String rawDeleteStmt = "";
+                for (int j = 0; j < rows.length; j++) {
+
+                    final List<Object> values = new ArrayList<Object>();
+                    final List<Integer> types = new ArrayList<Integer>();
+
+                    SQLStatementGenerator generator = dataView.getSQLStatementGenerator();
+                    final String[] deleteStmt = generator.generateDeleteStatement(types, values, getSelectedRow(), getModel());
+                    rawDeleteStmt += deleteStmt[1];
+                }
+                NotifyDescriptor nd = new NotifyDescriptor.Message(rawDeleteStmt);
+                DialogDisplayer.getDefault().notify(nd);
+
             }
         });
-        tablePopupMenu.add(miDeleteAction);
-        
-        JMenuItem miCommitAction = new JMenuItem("Commit a Record"); //NOI18N
-        miCommitAction.addActionListener(new ActionListener() {
+        tablePopupMenu.add(miDeleteSQLScript);
+
+        JMenuItem miCommitSQLScript = new JMenuItem("Show SQL Script for UPDATE"); //NOI18N
+        miCommitSQLScript.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
-                handler.commitActionPerformed();
+                String rawUpdateStmt = "";
+                UpdatedRowContext tblContext = dataView.getUpdatedRowContext();
+                for (String key : tblContext.getUpdateKeys()) {
+                    rawUpdateStmt += tblContext.getRawUpdateStmt((key)) + "\n";
+                }
+                NotifyDescriptor nd = new NotifyDescriptor.Message(rawUpdateStmt);
+                DialogDisplayer.getDefault().notify(nd);
+
             }
         });
-        tablePopupMenu.add(miCommitAction);
-        
-        JMenuItem miCancelEdits = new JMenuItem("Cancel Edits"); //NOI18N
-        miCancelEdits.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                handler.cancelEditPerformed();
-            }
-        });
-        tablePopupMenu.add(miCancelEdits);
-        tablePopupMenu.addSeparator();      
+        tablePopupMenu.add(miCommitSQLScript);
 
         getTableHeader().setReorderingAllowed(false);
         setDefaultRenderer(Object.class, new ResultSetCellRenderer());
@@ -273,12 +351,19 @@ class DataViewTableUI extends JTable {
                 }
             };
             textField.addActionListener(delegate);
-            textField.addKeyListener(new KeyListener() {
+            textField.addKeyListener(new  
 
-                public void keyTyped(KeyEvent e) {
-                }
+                  KeyListener( ) {
+                
 
-                public void keyPressed(KeyEvent e) {
+                public  void keyTyped(KeyEvent e) {
+                          
+                           
+                           
+                           } 
+                            
+                          
+                            public void keyPressed(KeyEvent e) {
                     if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_0) {
                         int col = getEditingColumn();
                         DBColumn dbcol = DataViewTableUI.this.tablePanel.getDataViewDBTable().getColumn(col);
