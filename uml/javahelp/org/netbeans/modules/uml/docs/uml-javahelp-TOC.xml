@@ -142,8 +142,7 @@
 				</tocitem>
 			</tocitem>
 			<tocitem text="Working With Class Diagrams" target="uml_diagrams_class_ww_diagram_elements">
-				<tocitem text="Transforming Diagram Elements" target="uml_diagrams_class_transforming_diagram_elements" />
-				<tocitem text="Working With Operations" target="uml_diagrams_class_ww_operations">
+				    <tocitem text="Working With Operations" target="uml_diagrams_class_ww_operations">
 					<tocitem text="Creating Operations" target="uml_diagrams_class_creating_operations" />
 					<tocitem text="Renaming Operations" target="uml_diagrams_class_renaming_operations" />
 					<tocitem text="Reordering and Moving Operations" target="uml_diagrams_class_reordering_moving_operations" />
