@@ -42,10 +42,6 @@
 package org.netbeans.modules.db.sql.execute;
 
 import org.netbeans.modules.db.sql.history.SQLHistory;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -69,6 +65,7 @@ public final class SQLExecuteHelper {
 
     private static final Logger LOGGER = Logger.getLogger(SQLExecuteHelper.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
+    private static final int DEFAULT_PAGE_SIZE = 20;
     
     /**
      * Executes a SQL string, possibly containing multiple statements. Returns the execution
@@ -110,19 +107,16 @@ public final class SQLExecuteHelper {
                 LOGGER.log(Level.FINE, "Executing: " + sql);
             }
 
-            long startTime = System.currentTimeMillis();
-
-            DataView view = DataView.create(conn, sql);
-
-            long executionTime = System.currentTimeMillis() - startTime;
-            totalExecutionTime += executionTime;
+            DataView view = DataView.create(conn, sql, DEFAULT_PAGE_SIZE);
 
             // Save SQL statements executed for the SQLHistoryManager
-            SQLHistoryManager.getInstance().saveSQL(new SQLHistory(url, sql, new Date(startTime)));
+            SQLHistoryManager.getInstance().saveSQL(new SQLHistory(url, sql, new Date()));
 
-            result = new SQLExecutionResult(info, view, executionTime);
+            result = new SQLExecutionResult(info, view);
 
             executionLogger.log(result);
+
+            totalExecutionTime += result.getExecutionTime();
 
             results.add(result);
         }

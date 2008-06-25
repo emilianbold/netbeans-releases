@@ -55,22 +55,16 @@ public class SQLExecutionResult {
      * The info about the executed statement.
      */
     private final StatementInfo statementInfo;
-    
-    /**
-     * How long did it take to execute the statement
-     */
-    private final long executionTime;
-    
+        
     /**
      * The ResultSet returned by the statement execution.
      */
     private final DataView dataView;
     
     
-    public SQLExecutionResult(StatementInfo info, DataView dataView, long executionTime) {
+    public SQLExecutionResult(StatementInfo info, DataView dataView) {
         this.statementInfo = info;
         this.dataView = dataView;
-        this.executionTime = executionTime;
     }
     
     public StatementInfo getStatementInfo() {
@@ -93,12 +87,12 @@ public class SQLExecutionResult {
         return dataView.getUpdateCount();
     }
     
-    public Iterator<String> getExceptions() {
+    public Iterator<Throwable> getExceptions() {
         return dataView.getExceptions();
     }
     
     public long getExecutionTime() {
-        return 0;
+        return dataView.getExecutionTime();
     }
     
     public String toString() {

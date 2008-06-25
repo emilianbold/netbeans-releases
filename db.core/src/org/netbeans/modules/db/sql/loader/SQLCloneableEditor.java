@@ -150,6 +150,11 @@ public class SQLCloneableEditor extends CloneableEditor {
             resultComponent.add(comp);            
         }
 
+        // Put focus on the first result from the set
+        if (components.size() > 0) {
+            resultComponent.setSelectedComponent(components.get(0));
+        }
+
         showResultComponent();
     }
     
@@ -196,6 +201,7 @@ public class SQLCloneableEditor extends CloneableEditor {
         closeTabAction = new AbstractAction(getMessage("CLOSE_TAB_ACTION")) {
             public void actionPerformed(ActionEvent e) {
                 resultComponent.remove(resultComponent.getSelectedComponent());
+                enableTabActions();
                 if (resultComponent.getTabCount() == 0) {
                     hideResultComponent();
                 }
@@ -208,6 +214,7 @@ public class SQLCloneableEditor extends CloneableEditor {
                 for (Component component : resultComponent.getComponents()) {
                     if (! component.equals(resultComponent.getSelectedComponent())) {
                         resultComponent.remove(component);
+                        enableTabActions();
                     }
                 }
                 setEnabled(false);
@@ -220,6 +227,7 @@ public class SQLCloneableEditor extends CloneableEditor {
                 for (Component component : resultComponent.getComponents()) {
                     if ((currentResultTabs != null) && (! currentResultTabs.contains(component))) {
                         resultComponent.remove(component);
+                        enableTabActions();
                     }
                 }
                 setEnabled(false);
@@ -254,20 +262,25 @@ public class SQLCloneableEditor extends CloneableEditor {
         resultComponent.addChangeListener(new ChangeListener() {
 
             public void stateChanged(ChangeEvent e) {
-                int numtabs = resultComponent.getTabCount();
-                if (numtabs == 0) {
-                    hideResultComponent();
-                } else if (numtabs == 1) {
-                    closeAllTabsAction.setEnabled(true);
-                    closeOtherTabsAction.setEnabled(false);
-                } else {
-                    closeAllTabsAction.setEnabled(true);
-                    closeOtherTabsAction.setEnabled(true);
-                }                
+                enableTabActions();
             }
 
         });
-}
+    }
+
+    private void enableTabActions() {
+        int numtabs = resultComponent.getTabCount();
+        if (numtabs == 0) {
+            hideResultComponent();
+        } else if (numtabs == 1) {
+            closeAllTabsAction.setEnabled(true);
+            closeOtherTabsAction.setEnabled(false);
+            closePreviousTabsAction.setEnabled(false);
+        } else {
+            closeAllTabsAction.setEnabled(true);
+            closeOtherTabsAction.setEnabled(true);
+        }
+    }
 
     private static String getMessage(String key, String ... params) {
         return NbBundle.getMessage(SQLCloneableEditor.class, key, params);
@@ -305,6 +318,8 @@ public class SQLCloneableEditor extends CloneableEditor {
         container.invalidate();
         container.validate();
         container.repaint();
+
+        enableTabActions();
     }
 
     /**

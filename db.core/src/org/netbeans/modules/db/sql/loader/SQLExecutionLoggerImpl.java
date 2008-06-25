@@ -42,6 +42,7 @@
 package org.netbeans.modules.db.sql.loader;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.util.Iterator;
 import org.netbeans.modules.db.sql.execute.SQLExecutionLogger;
@@ -55,6 +56,7 @@ import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
+import org.openide.windows.OutputWriter;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -112,21 +114,29 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
 
         OutputWriter writer = inputOutput.getErr();
 
-        // Temporary until DataView returns exceptions instead of strings
-        Iterator<String> messageIterator = result.getExceptions();
-        while (messageIterator.hasNext()) {
-           writer.println(messageIterator.next());             
+        Iterator<Throwable> exceptionIterator = result.getExceptions();
+        while (exceptionIterator.hasNext()) {
+            Throwable e = exceptionIterator.next();
+            if (e instanceof SQLException) {
+                writeSQLException((SQLException)e, writer);
+            } else {
+                Exceptions.printStackTrace(e);
+            }
         }
         
-        /*
-         * Will comment back in when DataView returns exceptions instead of strings
-        writer.println(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ErrorCodeStateMessage",
-                String.valueOf(result.getException().getErrorCode()),
-                result.getException().getSQLState(),
-                result.getException().getMessage()));
-        */
         printLineColumn(writer, result.getStatementInfo(), true);
         writer.println(""); // NOI18N
+    }
+
+    private void writeSQLException(SQLException e, OutputWriter writer) {
+        while (e != null) {
+            writer.println(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ErrorCodeStateMessage",
+                    String.valueOf(e.getErrorCode()),
+                    e.getSQLState(),
+                    e.getMessage()));
+
+            e = e.getNextException();
+        }
     }
 
     private void logSuccess(SQLExecutionResult result) {
