@@ -50,6 +50,7 @@ import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  * @author  Radek Matous, Tomas Mysik
@@ -60,6 +61,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
     private final JTextField[] textFields;
     private final String[] propertyNames;
     private final String displayName;
+    private final PropertyChangeListener phpInterpreterListener;
     final Category category;
 
     public RunAsScript(ConfigManager manager, Category category) {
@@ -92,14 +94,17 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
 
         // php cli
         loadPhpInterpreter();
-        PhpOptions.getInstance().addPropertyChangeListener(new PropertyChangeListener() {
+        phpInterpreterListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (PhpOptions.PROP_PHP_INTERPRETER.equals(evt.getPropertyName())) {
                     loadPhpInterpreter();
+                    composeHint();
                     validateFields();
                 }
             }
-        });
+        };
+        PhpOptions phpOptions = PhpOptions.getInstance();
+        phpOptions.addPropertyChangeListener(WeakListeners.propertyChange(phpInterpreterListener, phpOptions));
     }
 
     void loadPhpInterpreter() {
@@ -141,11 +146,11 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         category.setValid(err == null);
     }
 
-    String composeHint() {
+    void composeHint() {
         String php = interpreterTextField.getText();
         String script = "./" + indexFileTextField.getText(); // NOI18N
         String args = argsTextField.getText();
-        return php + " " + script + " " + args; // NOI18N
+        hintLabel.setText(php + " " + script + " " + args); // NOI18N
     }
 
     private class FieldUpdater extends TextFieldUpdater {
@@ -161,7 +166,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         @Override
         protected void processUpdate() {
             super.processUpdate();
-            hintLabel.setText(composeHint());
+            composeHint();
         }
     }
 
