@@ -137,7 +137,8 @@ import org.w3c.dom.svg.SVGLocatableElement;
  * @author ads
  *
  */
-public class SVGComboBox extends SVGComponent implements DataListener
+public class SVGComboBox extends SVGComponent implements 
+    DataListener, SVGActionListener
 {
     
     private static final String EDITOR          = "editor";         // NOI18N
@@ -201,7 +202,11 @@ public class SVGComboBox extends SVGComponent implements DataListener
     }
     
     public void setEditor(  ComboBoxEditor editor ){
+        if ( myEditor != null) {
+            myEditor.removeActionListener( this );
+        }
         myEditor = editor;
+        myEditor.addActionListener( this );
     }
     
     public SVGListCellRenderer getRenderer(){
@@ -217,31 +222,7 @@ public class SVGComboBox extends SVGComponent implements DataListener
     }
     
     public void setSelectedItem( Object value ){
-        mySelectedValue = value;
-        int size = getModel().getSize();
-        boolean found = false;
-        for ( int i=0; i<size ; i++ ){
-            Object obj = getModel().getElementAt( i );
-            if ( value == null ){
-                if ( obj == null ){
-                    getModel().setSelectedIndex( i );
-                    myIndex = i;
-                    found = true;
-                }
-            }
-            else {
-                if ( value.equals(obj)){
-                    getModel().setSelectedIndex( i );
-                    myIndex = i;
-                    found = true;
-                }
-            }
-        }
-        if ( !found ){
-            myIndex = -1;
-            myList.getSelectionModel().clearSelection();
-            getModel().setSelectedIndex( -1 );
-        }
+        setSelected(value);
         setItem();
         fireActionPerformed();
     }
@@ -268,6 +249,41 @@ public class SVGComboBox extends SVGComponent implements DataListener
         }
     }
    
+    /* (non-Javadoc)
+     * @see org.netbeans.microedition.svg.SVGActionListener#actionPerformed(org.netbeans.microedition.svg.SVGComponent)
+     */
+    public void actionPerformed( SVGComponent comp ) {
+        setSelected( getEditor().getItem());
+        fireActionPerformed();
+    }
+    
+    private void setSelected( Object value ){
+        mySelectedValue = value;
+        int size = getModel().getSize();
+        boolean found = false;
+        for ( int i=0; i<size ; i++ ){
+            Object obj = getModel().getElementAt( i );
+            if ( value == null ){
+                if ( obj == null ){
+                    getModel().setSelectedIndex( i );
+                    myIndex = i;
+                    found = true;
+                }
+            }
+            else {
+                if ( value.equals(obj)){
+                    getModel().setSelectedIndex( i );
+                    myIndex = i;
+                    found = true;
+                }
+            }
+        }
+        if ( !found ){
+            myIndex = -1;
+            myList.getSelectionModel().clearSelection();
+            getModel().setSelectedIndex( -1 );
+        }
+    }
     
     private void showList(){
         isListShown = true;
@@ -454,6 +470,7 @@ public class SVGComboBox extends SVGComponent implements DataListener
                 setText( "null" );                           // NOI18N
             }
         }
+        
     }
     
     private ComboBoxModel myModel;

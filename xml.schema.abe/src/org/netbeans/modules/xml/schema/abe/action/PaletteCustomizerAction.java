@@ -37,43 +37,54 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.support;
+package org.netbeans.modules.xml.schema.abe.action;
 
-import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
-import org.netbeans.modules.cnd.test.BaseTestCase;
-
+import java.io.IOException;
+import org.netbeans.modules.xml.schema.abe.InstanceDesignerPanel;
+import org.openide.ErrorManager;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.CallableSystemAction;
 /**
- * A common base class for remote "unit" tests
- * @author Sergey Grinev
+ *
+ * @author Sonali
  */
-public abstract class RemoteTestBase extends BaseTestCase {
+public class PaletteCustomizerAction extends CallableSystemAction {
 
-    protected RemoteTestBase(String testName) {
-        super(testName);
-    }
+    private static String name;
     
-    protected String getUserName() {
-        String userName = System.getProperty("cnd.remote.user.name");
-        if( userName == null ) {
-            userName = System.getenv("CND_REMOTE_USER_NAME");
-        }
-        if( userName == null ) {
-            userName = System.getProperty("user.name");
-        }
-        assertNotNull(userName);
-        return userName;
+    public PaletteCustomizerAction () {
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
-    protected String getHostName() throws Exception {
-        String hostName = System.getProperty("cnd.remote.host.name");
-        if( hostName == null ) {
-            hostName = System.getenv("CND_REMOTE_HOST_NAME");
-        }
-        if( hostName == null ) {
-            hostName = "eaglet-sr";
-        }
-        assertNotNull(hostName);
-        return hostName;
+    protected boolean asynchronous() {
+        return false;
+    }
+
+    /** Human presentable name of the action. This should be
+     * presented as an item in a menu.
+     * @return the name of the action
+     */
+    public String getName() {
+        if (name == null)
+            name = NbBundle.getBundle(PaletteCustomizerAction.class).getString("ACT_OpenXMLCustomizer"); // NOI18N
+        
+        return name;
+    }
+
+    /** Help context where to find more about the action.
+     * @return the help context for this action
+     */
+    public HelpCtx getHelpCtx() {
+        return null;
+    }
+
+    /** This method is called by one of the "invokers" as a result of
+     * some user's action that should lead to actual "performing" of the action.
+     */
+    public void performAction() {
+            InstanceDesignerPanel.getPaletteController().showCustomizer();
     }
 
 }
+
