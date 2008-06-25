@@ -49,7 +49,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTargetImpl;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
-import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
 import org.netbeans.tests.j2eeserver.plugin.jsr88.DepManager;
 import org.openide.filesystems.FileUtil;
@@ -83,8 +82,26 @@ public class ServerFileDistributorTest extends ServerRegistryTestBase {
         super.tearDown();
     }
 
-    public void testDistributeOnSaveSimple() throws IOException, ServerException {
-        File f = getProjectAsFile(this, "deploytest1");
+    public void testDistributeOnSaveWar() throws IOException, ServerException {
+        // class
+        singleFileTest("deploytest1", "build/web/WEB-INF/classes/test/TestServlet.class",
+                "testplugin/applications/web/WEB-INF/classes/test/TestServlet.class",
+                true, false, false, false, false);
+
+        // jsp
+        singleFileTest("deploytest1", "build/web/index.jsp", "testplugin/applications/web/index.jsp",
+                false, false, false, false, false);
+
+        // web.xml
+        singleFileTest("deploytest1", "build/web/WEB-INF/web.xml", "testplugin/applications/web/WEB-INF/web.xml",
+                false, true, false, false, false);
+    }
+
+    private void singleFileTest(String projectName, String testFilePath, String createdFilePath,
+            boolean classesChanged, boolean descriptorChanged, boolean ejbChanged, boolean manifestChanged,
+            boolean serverDescriptorChanged) throws IOException, ServerException {
+
+        File f = getProjectAsFile(this, projectName);
         Project project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         provider.setServerInstanceID(URL);
@@ -106,12 +123,21 @@ public class ServerFileDistributorTest extends ServerRegistryTestBase {
         ServerFileDistributor dist = new ServerFileDistributor(instance, dtarget);
 
         File testFile = new File(f,
-                "build/web/WEB-INF/classes/test/TestServlet.class".replace("/", File.separator));
+                testFilePath.replace("/", File.separator));
         DeploymentChangeDescriptor desc = dist.distributeOnSave(module,
                 dtarget.getModuleChangeReporter(), Collections.singleton(testFile));
 
-        assertTrue(desc.classesChanged());
-        assertTrue(new File(getWorkDir(),
-                "testplugin/applications/web/WEB-INF/classes/test/TestServlet.class".replace("/", File.separator)).exists());
+        File created = new File(getWorkDir(),
+                createdFilePath.replace("/", File.separator));
+
+        assertEquals(classesChanged, desc.classesChanged());
+        assertEquals(descriptorChanged, desc.descriptorChanged());
+        assertEquals(ejbChanged, desc.ejbsChanged());
+        assertEquals(manifestChanged, desc.manifestChanged());
+        assertEquals(serverDescriptorChanged, desc.serverDescriptorChanged());
+        assertEquals(1, desc.getChangedFiles().length);
+        assertEquals(created.getAbsoluteFile(), desc.getChangedFiles()[0].getAbsoluteFile());
+
+        assertTrue(created.exists());
     }
 }

@@ -56,13 +56,13 @@ public final class DeploymentChangeDescriptor implements AppChangeDescriptor {
     static {
         ServerFileDistributor.Accessor.setDefault(new ServerFileDistributor.Accessor() {
             @Override
-            public DeploymentChangeDescriptor newDescriptor(AppChangeDescriptor desc) {
+            public DeploymentChangeDescriptor newDescriptor(ServerFileDistributor.AppChanges desc) {
                 return new DeploymentChangeDescriptor(desc);
             }
         });
     }
 
-    private DeploymentChangeDescriptor(AppChangeDescriptor desc) {
+    private DeploymentChangeDescriptor(ServerFileDistributor.AppChanges desc) {
         this.desc = desc;
     }
 

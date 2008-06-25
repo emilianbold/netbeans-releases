@@ -237,6 +237,7 @@ public class ServerFileDistributor extends ServerProgress {
             file.refresh ();
             if (file.lastModified().after(lastDeployed)) {
                 String relativePath = re.getRelativePath ();
+                // FIXME destdir
                 mc.record(relativePath);
             }
         }
@@ -252,13 +253,15 @@ public class ServerFileDistributor extends ServerProgress {
 
         FileObject contentDirectory = getJ2eeModule(target).getContentDirectory();
         assert contentDirectory != null;
+        File destDir = FileUtil.toFile(contentDirectory);
+        assert destDir != null;
 
         for (File fsFile : artifacts) {
             FileObject file = FileUtil.toFileObject(FileUtil.normalizeFile(fsFile));
             if (file != null && !file.isFolder()) {
                 String relative = FileUtil.getRelativePath(contentDirectory, file);
                 if (relative != null) {
-                    mc.record(relative);
+                    mc.record(destDir, relative);
                 }
             }
         }
@@ -315,6 +318,7 @@ public class ServerFileDistributor extends ServerProgress {
             for (int n=0; n<rPaths.length; n++) {
                 paths[n] = new File(FileUtil.toFile(destRoot), rPaths[n]);
                 if (paths[n].exists() && paths[n].lastModified() > configFile.lastModified())
+                    // FIXME destdir
                     mc.record(rPaths[n]);
             }
 
@@ -374,9 +378,11 @@ public class ServerFileDistributor extends ServerProgress {
 
             File[] paths = new File[rPaths.length];
             for (int n=0; n<rPaths.length; n++) {
-                paths[n] = new File(FileUtil.toFile(destRoot), rPaths[n]);
+                File dest = FileUtil.toFile(destRoot);
+                assert dest != null;
+                paths[n] = new File(dest, rPaths[n]);
                 if (paths[n].exists() && paths[n].lastModified() > configFile.lastModified())
-                    mc.record(rPaths[n]);
+                    mc.record(dest, rPaths[n]);
             }
 
             return mc;
@@ -393,6 +399,8 @@ public class ServerFileDistributor extends ServerProgress {
         FileObject destFolder;
         OutputStream destStream = null;
         InputStream sourceStream = null;
+        File dest = FileUtil.toFile(destRoot);
+        
         Date ldDate = new Date(lastDeployTime);
         try {
             // double check that the target does not exist... 107526
@@ -409,7 +417,7 @@ public class ServerFileDistributor extends ServerProgress {
                 // for web app changes... since the 'copy' was already done by
                 // the build target.
                 if (targetFO.equals(sourceFO) && targetFO.lastModified().after(ldDate))
-                    mc.record(relativePath);
+                    mc.record(dest, relativePath);
 
                 //check timestamp
                 if (! sourceFO.lastModified().after(targetFO.lastModified())) {
@@ -422,7 +430,7 @@ public class ServerFileDistributor extends ServerProgress {
                 destStream = targetFO.getOutputStream();
 
             }
-            mc.record(relativePath);
+            mc.record(dest, relativePath);
 
             if (null == destStream) {
                 FileUtil.copyFile(sourceFO, destFolder, sourceFO.getName());
@@ -486,80 +494,142 @@ public class ServerFileDistributor extends ServerProgress {
     }
 
 
-    static class AppChanges implements AppChangeDescriptor {
+    public static final class AppChanges implements AppChangeDescriptor {
 
-        boolean descriptorChanged = false;
-        boolean serverDescriptorChanged = false;
-        boolean classesChanged = false;
-        boolean manifestChanged = false;
-        boolean ejbsChanged = false;
-        List changedEjbs = Collections.EMPTY_LIST;
-        ModuleType moduleType = null;
-        List changedFiles = new ArrayList();
-        List descriptorRelativePaths;
-        List serverDescriptorRelativePaths;
+        private boolean descriptorChanged = false;
+        private boolean serverDescriptorChanged = false;
+        private boolean classesChanged = false;
+        private boolean manifestChanged = false;
+        private boolean ejbsChanged = false;
+        private List changedEjbs = Collections.EMPTY_LIST;
+        private ModuleType moduleType = null;
+        private List changedFiles = new ArrayList();
+        private List descriptorRelativePaths;
+        private List serverDescriptorRelativePaths;
+        
         AppChanges() {
+            super();
         }
+        
         AppChanges(List descriptorRelativePaths, List serverDescriptorRelativePaths, ModuleType moduleType) {
             this.descriptorRelativePaths = descriptorRelativePaths;
             this.serverDescriptorRelativePaths = serverDescriptorRelativePaths;
             this.moduleType = moduleType;
         }
         private void record(AppChanges changes) {
-            if (!descriptorChanged) descriptorChanged = changes.descriptorChanged();
-            if (!serverDescriptorChanged) serverDescriptorChanged = changes.serverDescriptorChanged();
-            if (!classesChanged) classesChanged = changes.classesChanged();
-            if (!manifestChanged) manifestChanged = changes.manifestChanged();
-            if (!ejbsChanged) ejbsChanged = changes.ejbsChanged();
+            if (!descriptorChanged) {
+                descriptorChanged = changes.descriptorChanged();
+            }
+            if (!serverDescriptorChanged) {
+                serverDescriptorChanged = changes.serverDescriptorChanged();
+            }
+            if (!classesChanged) {
+                classesChanged = changes.classesChanged();
+            }
+            if (!manifestChanged) {
+                manifestChanged = changes.manifestChanged();
+            }
+            if (!ejbsChanged) {
+                ejbsChanged = changes.ejbsChanged();
+            }
             List ejbs = Arrays.asList(changes.getChangedEjbs());
-            if (ejbs.size() > 0)
+            if (ejbs.size() > 0) {
                 changedEjbs.addAll(ejbs);
+            }
             changedFiles.addAll(changes.changedFiles);
         }
 
+        /**
+         * 
+         * @param relativePath
+         * @deprecated use {@link #record(java.io.File, java.lang.String)}
+         */
         private void record(String relativePath) {
-            if (! classesChanged) {
-                boolean classes = ( !moduleType.equals (ModuleType.WAR) && !relativePath.startsWith("META-INF") )|| relativePath.startsWith ("WEB-INF/classes/"); //NOI18N
-                if (moduleType.equals(ModuleType.EAR))
+            record(null, relativePath);
+        }
+
+        private void record(File destDir, String relativePath) {
+            if (destDir != null) {
+                changedFiles.add(new File(destDir, relativePath));
+            } else {
+                changedFiles.add(new File(relativePath));
+            }
+
+            if (!classesChanged) {
+                boolean classes = (!moduleType.equals(ModuleType.WAR)
+                        && !relativePath.startsWith("META-INF")) // NOI18N
+                            || relativePath.startsWith("WEB-INF/classes/"); // NOI18N
+
+                if (moduleType.equals(ModuleType.EAR)) {
                     classes = false;
-                boolean importantLib = !moduleType.equals (ModuleType.WAR) || relativePath.startsWith ("WEB-INF/lib/"); //NOI18N
-                boolean libs = importantLib && (relativePath.endsWith(".jar") || relativePath.endsWith(".zip")); //NOI18N
+                }
+
+                boolean importantLib = !moduleType.equals(ModuleType.WAR)
+                        || relativePath.startsWith("WEB-INF/lib/"); // NOI18N
+                boolean libs = importantLib
+                        && (relativePath.endsWith(".jar") // NOI18N
+                        || relativePath.endsWith(".zip")); // NOI18N
                 if (classes || libs) {
                     classesChanged = true;
                     return;
                 }
             }
-            if (! descriptorChanged && (
-                ((descriptorRelativePaths != null && descriptorRelativePaths.contains(relativePath)) ||
-                 (relativePath.startsWith ("WEB-INF") && (relativePath.endsWith (".tld") || relativePath.endsWith (".xml") || relativePath.endsWith (".dtd")))))) {
+            if (!descriptorChanged
+                    && (((descriptorRelativePaths != null
+                            && descriptorRelativePaths.contains(relativePath))
+                                || (relativePath.startsWith("WEB-INF") // NOI18N
+                                    && (relativePath.endsWith(".tld") // NOI18N
+                                        || relativePath.endsWith(".xml") // NOI18N
+                                        || relativePath.endsWith(".dtd")))))) { // NOI18N
+
                 descriptorChanged = true;
                 return;
             }
-            if (! serverDescriptorChanged && serverDescriptorRelativePaths != null && serverDescriptorRelativePaths.contains(relativePath)) {
+            if (!serverDescriptorChanged
+                    && serverDescriptorRelativePaths != null
+                    && serverDescriptorRelativePaths.contains(relativePath)) {
+
                 serverDescriptorChanged = true;
                 return;
             }
-            changedFiles.add(new File(relativePath));
         }
 
         private void record(ModuleChangeReporter mcr, long since) {
             EjbChangeDescriptor ecd = mcr.getEjbChanges(since);
             ejbsChanged = ecd.ejbsChanged();
             String[] ejbs = ecd.getChangedEjbs();
-            if (ejbs != null && ejbs.length > 0)
+            if (ejbs != null && ejbs.length > 0) {
                 changedEjbs.addAll(Arrays.asList(ejbs));
-            if (! manifestChanged)
+            }
+            if (!manifestChanged) {
                 manifestChanged = mcr.isManifestChanged(since);
+            }
         }
-        public boolean classesChanged() { return classesChanged; }
-        public boolean descriptorChanged() { return descriptorChanged; }
-        public boolean manifestChanged() { return manifestChanged; }
-        public boolean serverDescriptorChanged() { return serverDescriptorChanged; }
 
-        public boolean ejbsChanged() { return ejbsChanged; }
+        public boolean classesChanged() { 
+            return classesChanged;
+        }
+
+        public boolean descriptorChanged() {
+            return descriptorChanged;
+        }
+
+        public boolean manifestChanged() {
+            return manifestChanged;
+        }
+
+        public boolean serverDescriptorChanged() {
+            return serverDescriptorChanged;
+        }
+
+        public boolean ejbsChanged() {
+            return ejbsChanged;
+        }
+
         public String[] getChangedEjbs() {
             return (String[]) changedEjbs.toArray(new String[]{});
         }
+
         public File[] getChangedFiles() {
             return (File[]) changedFiles.toArray(new File[changedFiles.size()]);
         }
@@ -568,24 +638,24 @@ public class ServerFileDistributor extends ServerProgress {
         public String toString() {
             StringBuilder builder = new StringBuilder();
             builder.append(super.toString());
-            builder.append(" [");
+            builder.append(" ["); // NOI18N
             for (File file : getChangedFiles()) {
                 builder.append(file.getAbsolutePath()).append(", ");
             }
             if (getChangedFiles().length > 0) {
                 builder.setLength(builder.length() - 2);
             }
-            builder.append("], ");
+            builder.append("], "); // NOI18N
 
-            builder.append("classesChanged=").append(classesChanged());
+            builder.append("classesChanged=").append(classesChanged()); // NOI18N
             builder.append(", ");
-            builder.append("descriptorChanged=").append(this.descriptorChanged());
+            builder.append("descriptorChanged=").append(this.descriptorChanged()); // NOI18N
             builder.append(", ");
-            builder.append("ejbsChanged=").append(this.ejbsChanged());
+            builder.append("ejbsChanged=").append(this.ejbsChanged()); // NOI18N
             builder.append(", ");
-            builder.append("manifestChanged=").append(this.manifestChanged());
+            builder.append("manifestChanged=").append(this.manifestChanged()); // NOI18N
             builder.append(", ");
-            builder.append("serverDescriptorChanged=").append(this.serverDescriptorChanged());
+            builder.append("serverDescriptorChanged=").append(this.serverDescriptorChanged()); // NOI18N
 
             return builder.toString();
         }
@@ -601,7 +671,7 @@ public class ServerFileDistributor extends ServerProgress {
             }
             Accessor.accessor = accessor;
         }
-        
+
         public static Accessor getDefault() {
             if (accessor != null) {
                 return accessor;
@@ -620,7 +690,7 @@ public class ServerFileDistributor extends ServerProgress {
         }
 
         /** Accessor to constructor */
-        public abstract DeploymentChangeDescriptor newDescriptor(AppChangeDescriptor desc);
+        public abstract DeploymentChangeDescriptor newDescriptor(AppChanges desc);
 
     }
 }
