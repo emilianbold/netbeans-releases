@@ -219,19 +219,4 @@ public abstract class EditorContext {
      */
     public abstract void removePropertyChangeListener(PropertyChangeListener l);
     
-    /**
-     * Adds a property change listener.
-     *
-     * @param propertyName the name of property
-     * @param l the listener to add
-     */
-    public abstract void addPropertyChangeListener(String propertyName, PropertyChangeListener l);
-    
-    /**
-     * Removes a property change listener.
-     *
-     * @param propertyName the name of property
-     * @param l the listener to remove
-     */
-    public abstract void removePropertyChangeListener(String propertyName, PropertyChangeListener l);
 }

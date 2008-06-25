@@ -41,11 +41,15 @@ package org.netbeans.modules.hibernate.wizards;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
+import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -57,8 +61,8 @@ public class HibernateRevengDbTablesWizardDescriptor implements WizardDescriptor
     private HibernateRevengDatabaseTablesPanel component;
     private boolean componentInitialized;
     private WizardDescriptor wizardDescriptor;
-    private Project project;        
-    
+    private Project project;
+
     public HibernateRevengDbTablesWizardDescriptor(Project project) {
         this.project = project;
     }
@@ -94,20 +98,37 @@ public class HibernateRevengDbTablesWizardDescriptor implements WizardDescriptor
     }
 
     public boolean isValid() {
+        if (getComponent().getConfigurationFile() != null) {
+            try {
+                DataObject cfgDataObject = DataObject.find(getComponent().getConfigurationFile());
+                HibernateCfgDataObject hco = (HibernateCfgDataObject) cfgDataObject;
+                HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
+                boolean value = env.canLoadDBDriver(hco.getHibernateConfiguration());
+                if (!value) {
+                    wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(HibernateRevengDbTablesWizardDescriptor.class, "ERR_Include_DBJars")); // NOI18N
+                    return false;
+                }               
+            } catch (Exception e) {
+                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(HibernateRevengDbTablesWizardDescriptor.class, "ERR_Include_DBJars")); // NOI18N
+                return false;
+            }
+        }        
+       
+        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
         return true;
     }
 
     public void storeSettings(WizardDescriptor settings) {
         WizardDescriptor wiz = settings;
         Object buttonPressed = wiz.getValue();
-                    if (buttonPressed.equals(WizardDescriptor.NEXT_OPTION) ||
-                    buttonPressed.equals(WizardDescriptor.FINISH_OPTION)) {
-                HibernateRevengWizardHelper helper = HibernateRevengWizard.getHelper(wizardDescriptor);               
-                
-                helper.setTableClosure(getComponent().getTableClosure());
-                helper.setConfigurationFile(getComponent().getConfigurationFile());
-                helper.setSchemaName(getComponent().getSchemaName());
-            }
+        if (buttonPressed.equals(WizardDescriptor.NEXT_OPTION) ||
+                buttonPressed.equals(WizardDescriptor.FINISH_OPTION)) {
+            HibernateRevengWizardHelper helper = HibernateRevengWizard.getHelper(wizardDescriptor);
+
+            helper.setTableClosure(getComponent().getTableClosure());
+            helper.setConfigurationFile(getComponent().getConfigurationFile());
+            helper.setSchemaName(getComponent().getSchemaName());
+        }
 
     }
 

@@ -106,6 +106,7 @@ made subject to such option by the copyright holder.
       <testset dir="qa-functional/src">
         <patternset>
           <include name="org/netbeans/test/xml/schema/general/schemaview/SchemaView_0001.class"/>
+          <include name="org/netbeans/test/xml/schema/general/schemaview/SchemaView_0002.class"/>
         </patternset>
       </testset>
     </testbag>
@@ -113,6 +114,7 @@ made subject to such option by the copyright holder.
     <testbag testattribs="all,draft,sourceview" executor="ide" name="Source View">
       <testset dir="qa-functional/src">
         <patternset>
+          <include name="org/netbeans/test/xml/schema/general/sourceview/SourceView_0001.class"/>
           <include name="org/netbeans/test/xml/schema/general/sourceview/SourceView_0002.class"/>
         </patternset>
       </testset>

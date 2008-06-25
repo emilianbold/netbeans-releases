@@ -87,8 +87,9 @@ public class WizardOperatorTest extends JellyTestCase implements PropertyChangeL
      * @return  created suite
      */
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite(WizardOperatorTest.class);
-        return suite;
+        //NbTestSuite suite = new NbTestSuite(WizardOperatorTest.class);
+        //return suite;
+        return (NbTestSuite) createModuleTest(WizardOperatorTest.class);
     }
     
     /** Redirect output to log files, wait before each test case and
@@ -193,7 +194,7 @@ public class WizardOperatorTest extends JellyTestCase implements PropertyChangeL
     
     /** Test of checkPanel method. Check first panel, then go to next panel
      * and check again. Then check negative case. */
-    public void testCheckPanel() {
+    public void tstCheckPanel() {
             WizardOperator wo = new WizardOperator(TEST_WIZARD_TITLE);
             try {
                 wo.checkPanel(TEST_WIZARD_PANEL0);

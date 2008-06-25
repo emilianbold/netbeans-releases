@@ -39,8 +39,6 @@
 package org.netbeans.modules.ws.qaf;
 
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -53,7 +51,7 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.ws.qaf.WebServicesTestBase.ProjectType;
 
 /**
@@ -98,31 +96,50 @@ public class EjbWsValidation extends WsValidation {
     protected String getWsClientPackage() {
         return getWsPackage(); //NOI18N
     }
-
-    /** Creates suite from particular test cases. You can define order of testcases here. */
-    public static TestSuite suite() {
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new EjbWsValidation("testCreateNewWs")); //NOI18N
-        suite.addTest(new EjbWsValidation("testAddOperation")); //NOI18N
-        suite.addTest(new EjbWsValidation("testStartServer")); //NOI18N
-        suite.addTest(new EjbWsValidation("testWsHandlers")); //NOI18N
-        suite.addTest(new EjbWsValidation("testDeployWsProject")); //NOI18N
-        suite.addTest(new EjbWsValidation("testCreateWsClient")); //NOI18N
-        suite.addTest(new EjbWsValidation("testRefreshClientAndReplaceWSDL")); //NOI18N
-        suite.addTest(new EjbWsValidation("testCallWsOperationInSessionEJB")); //NOI18N
-        suite.addTest(new EjbWsValidation("testCallWsOperationInJavaClass")); //NOI18N
-        suite.addTest(new EjbWsValidation("testWsFromEJBinClientProject")); //NOI18N
-        suite.addTest(new EjbWsValidation("testWsClientHandlers")); //NOI18N
-        suite.addTest(new EjbWsValidation("testDeployWsClientProject")); //NOI18N
-        suite.addTest(new EjbWsValidation("testUndeployProjects")); //NOI18N
-        suite.addTest(new EjbWsValidation("testStopServer")); //NOI18N
-        return suite;
+    
+    public static Test suite() {
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(EjbWsValidation.class),
+                "testCreateNewWs",
+                "testAddOperation",
+                "testStartServer",
+                "testWsHandlers",
+                "testDeployWsProject",
+                "testCreateWsClient",
+                "testRefreshClientAndReplaceWSDL",
+                "testCallWsOperationInSessionEJB",
+                "testCallWsOperationInJavaClass",
+                "testWsFromEJBinClientProject",
+                "testWsClientHandlers",
+                "testDeployWsClientProject",
+                "testUndeployProjects",
+                "testStopServer"
+                ).enableModules(".*").clusters(".*"));
     }
 
-    /* Method allowing test execution directly from the IDE. */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
+//    /** Creates suite from particular test cases. You can define order of testcases here. */
+//    public static TestSuite suite() {
+//        TestSuite suite = new NbTestSuite();
+//        suite.addTest(new EjbWsValidation("testCreateNewWs")); //NOI18N
+//        suite.addTest(new EjbWsValidation("testAddOperation")); //NOI18N
+//        suite.addTest(new EjbWsValidation("testStartServer")); //NOI18N
+//        suite.addTest(new EjbWsValidation("testWsHandlers")); //NOI18N
+//        suite.addTest(new EjbWsValidation("testDeployWsProject")); //NOI18N
+//        suite.addTest(new EjbWsValidation("testCreateWsClient")); //NOI18N
+//        suite.addTest(new EjbWsValidation("testRefreshClientAndReplaceWSDL")); //NOI18N
+//        suite.addTest(new EjbWsValidation("testCallWsOperationInSessionEJB")); //NOI18N
+//        suite.addTest(new EjbWsValidation("testCallWsOperationInJavaClass")); //NOI18N
+//        suite.addTest(new EjbWsValidation("testWsFromEJBinClientProject")); //NOI18N
+//        suite.addTest(new EjbWsValidation("testWsClientHandlers")); //NOI18N
+//        suite.addTest(new EjbWsValidation("testDeployWsClientProject")); //NOI18N
+//        suite.addTest(new EjbWsValidation("testUndeployProjects")); //NOI18N
+//        suite.addTest(new EjbWsValidation("testStopServer")); //NOI18N
+//        return suite;
+//    }
+//
+//    /* Method allowing test execution directly from the IDE. */
+//    public static void main(java.lang.String[] args) {
+//        TestRunner.run(suite());
+//    }
 
     public void testWsFromEJBinClientProject() {
         String wsName = "WsFromEJB"; //NOI18N

@@ -41,6 +41,7 @@
 
 package org.netbeans.jellytools.actions;
 
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -68,10 +69,19 @@ public class RenameActionTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new RenameActionTest("testPerformPopup"));
         suite.addTest(new RenameActionTest("testPerformAPI"));
         return suite;
+         */
+        return createModuleTest(RenameActionTest.class, 
+                "testPerformPopup", "testPerformAPI");
+    }
+
+    @Override
+    protected void setUp() throws IOException {
+        openDataProjects("SampleProject");
     }
     
     /** Use for internal test execution inside IDE
