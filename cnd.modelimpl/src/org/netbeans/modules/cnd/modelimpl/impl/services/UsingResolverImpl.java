@@ -114,7 +114,10 @@ public class UsingResolverImpl extends CsmUsingResolver implements CsmProgressLi
                 if (search == null || !search.valid(file, offset, onlyInProject)) {
                     FileElementsCollector collector = new FileElementsCollector(file, offset, onlyInProject);
                     search = new SearchInfo(file, offset, onlyInProject, collector);
-                    lastSearch = new SoftReference(search);
+                    lastSearch = new SoftReference<SearchInfo>(search);
+                } else {
+                    search.offset = offset;
+                    search.collector.incrementOffset(offset);
                 }
                 assert search != null;
                 assert search.collector != null;
@@ -125,7 +128,7 @@ public class UsingResolverImpl extends CsmUsingResolver implements CsmProgressLi
     
     private static final class SearchInfo {
         public final CsmFile file;
-        public final int offset;
+        public int offset;
         public final FileElementsCollector collector;
         public final CsmProject onlyInProject;
         public SearchInfo(CsmFile file, int offset, CsmProject onlyInProject, FileElementsCollector collector) {
@@ -136,7 +139,7 @@ public class UsingResolverImpl extends CsmUsingResolver implements CsmProgressLi
         }
         
         private boolean valid(CsmFile file, int offset, CsmProject onlyInProject) {
-            return this.file.equals(file) && this.offset == offset && this.onlyInProject == onlyInProject;
+            return this.file.equals(file) && this.offset <= offset && this.onlyInProject == onlyInProject;
         }
     }
     

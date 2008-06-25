@@ -30,10 +30,11 @@ package org.netbeans.test.syntax;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import junit.framework.Test;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileUtil;
@@ -44,7 +45,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  *
  * @author Jindrich Sedek
  */
-public class IndentCasesTest extends JellyTestCase {
+public class IndentCasesTest extends J2eeTestCase {
 
     private File projectDir;
     private boolean debug = false;
@@ -54,12 +55,16 @@ public class IndentCasesTest extends JellyTestCase {
         super("IndentationTesting");
     }
     
+    public static Test suite() {
+        return createAllModulesServerSuite(J2eeTestCase.Server.ANY, IndentCasesTest.class);
+    }
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         File dataDir = getDataDir();
-        projectDir = new File(new File(dataDir, "IndentationTestProjects"), "IndentationTest");
-        ProjectSupport.openProject(projectDir);
+        projectDir = new File(dataDir, "IndentationTestProjects/IndentationTest");
+        openProjects(projectDir.getAbsolutePath());
     }
     
     public void testJSPFirstLineIndent() throws Exception {

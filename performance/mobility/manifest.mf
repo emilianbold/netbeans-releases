@@ -1,6 +1,5 @@
 Manifest-Version: 1.0
-OpenIDE-Module: mobilityperftests
-OpenIDE-Module-Layer: mobilityperftests/layer.xml
-OpenIDE-Module-Localizing-Bundle: mobilityperftests/Bundle.properties
+OpenIDE-Module: org.netbeans.performance.mobility
+OpenIDE-Module-Localizing-Bundle: org/netbeans/performance/mobility/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
 

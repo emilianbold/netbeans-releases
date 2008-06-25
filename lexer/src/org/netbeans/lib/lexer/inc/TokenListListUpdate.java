@@ -171,14 +171,32 @@ final class TokenListListUpdate<T extends TokenId> {
 
     void addRemoveTokenLists(TokenHierarchyUpdate update, boolean tllChildrenMayExist) {
         assert (removedTokenListCount > 0 || addedTokenLists != null);
+        assert (!tokenListList.joinSections());
         EmbeddedTokenList<T>[] removedTokenLists = tokenListList.replace(
                 modTokenListIndex, removedTokenListCount, addedTokenLists);
         if (tllChildrenMayExist) {
             for (int i = 0; i < removedTokenLists.length; i++) {
                 update.collectRemovedEmbeddings(removedTokenLists[i]);
             }
-            for (int i = 0; i < addedTokenLists.size(); i++) {
-                EmbeddedTokenList<T> addedEtl = addedTokenLists.get(i);
+        }
+        // The TLL is non-joining yet but that may also be because there were no ETLs yet
+        // and once new ETLs are added they may be joining and whole TLL becomes joining
+        boolean becomeJoining = false;
+        for (int i = 0; i < addedTokenLists.size(); i++) {
+            EmbeddedTokenList<T> addedEtl = addedTokenLists.get(i);
+            becomeJoining |= addedEtl.embedding().joinSections();
+        }
+        
+        if (becomeJoining) {
+            // Create JTL to init tokens
+            JoinTokenList.init(tokenListList, 0, tokenListList.size());
+        }
+        for (int i = 0; i < addedTokenLists.size(); i++) {
+            EmbeddedTokenList<T> addedEtl = addedTokenLists.get(i);
+            if (!becomeJoining) {
+                addedEtl.initAllTokens();
+            }
+            if (tllChildrenMayExist) {
                 update.collectAddedEmbeddings(addedEtl, 0, addedEtl.tokenCountCurrent());
             }
         }

@@ -41,6 +41,7 @@
 package org.netbeans.jellytools.actions;
 
 import java.io.File;
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -69,9 +70,12 @@ public class SortByNameActionTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new SortByNameActionTest("testPerformPopup"));
         return suite;
+         */
+        return createModuleTest(SortByNameActionTest.class, "testPerformPopup");
     }
     
     /** Use for internal test execution inside IDE
@@ -79,6 +83,11 @@ public class SortByNameActionTest extends JellyTestCase {
      */
     public static void main(java.lang.String[] args) {
         TestRunner.run(suite());
+    }
+
+    @Override
+    protected void setUp() throws IOException {
+        openDataProjects("SampleProject");
     }
     
     /** Test performPopup */

@@ -140,7 +140,7 @@ Microsystems, Inc. All Rights Reserved.
       <h5>1. Implement <a href="@TOP@/org/netbeans/spi/quicksearch/SearchProvider.html">SearchProvider</a></h5>
         <ul>
             <li>Implement body of <b><code>SearchProvider.evaluate</code></b> method
-            like suggested in its <a href="@TOP@/org/netbeans/spi/quicksearch/SearchProvider.html#evaluate">javadoc</a>.
+            like suggested in its <a href="@TOP@/org/netbeans/spi/quicksearch/SearchProvider.html">javadoc</a>.
             </li>
         </ul>
       

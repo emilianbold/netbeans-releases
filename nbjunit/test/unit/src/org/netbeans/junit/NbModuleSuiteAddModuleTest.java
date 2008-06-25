@@ -40,8 +40,6 @@
 package org.netbeans.junit;
 
 import java.io.IOException;
-import java.util.Set;
-import java.util.TreeSet;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import org.openide.util.Exceptions;

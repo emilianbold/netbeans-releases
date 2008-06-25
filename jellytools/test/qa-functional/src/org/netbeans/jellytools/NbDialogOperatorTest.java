@@ -70,8 +70,9 @@ public class NbDialogOperatorTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        NbTestSuite suite = new NbTestSuite(NbDialogOperatorTest.class);
-        return suite;
+        //NbTestSuite suite = new NbTestSuite(NbDialogOperatorTest.class);
+        //return suite;
+        return createModuleTest(NbDialogOperatorTest.class);
     }
     
     /** Shows dialog to test. */

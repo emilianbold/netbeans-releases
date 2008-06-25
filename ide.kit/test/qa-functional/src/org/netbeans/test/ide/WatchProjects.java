@@ -49,6 +49,8 @@ import java.util.logging.Logger;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import junit.framework.Assert;
+import junit.framework.AssertionFailedError;
+import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.junit.Log;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
@@ -57,7 +59,7 @@ import org.openide.windows.TopComponent;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-final class WatchProjects {
+public final class WatchProjects {
     private static Logger LOG = Logger.getLogger(WatchProjects.class.getName());
     
     
@@ -146,4 +148,29 @@ final class WatchProjects {
         }
     }
     
+    
+    public static void waitScanFinished() {
+        try {
+            class Wait implements Runnable {
+
+                boolean initialized;
+                boolean ok;
+
+                public void run() {
+                    if (initialized) {
+                        ok = true;
+                        return;
+                    }
+                    initialized = true;
+                    boolean canceled = ScanDialog.runWhenScanFinished(this, "tests");
+                    Assert.assertFalse("Dialog really finished", canceled);
+                    Assert.assertTrue("Runnable run", ok);
+                }
+            }
+            Wait wait = new Wait();
+            SwingUtilities.invokeAndWait(wait);
+        } catch (Exception ex) {
+            throw (AssertionFailedError)new AssertionFailedError().initCause(ex);
+        }
+    }
 }

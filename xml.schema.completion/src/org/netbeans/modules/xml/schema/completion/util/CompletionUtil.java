@@ -277,10 +277,10 @@ public class CompletionUtil {
         if(element == null)
             return null;
         AXIType type = element.getType();
-        if(type == null || !(type instanceof Datatype))
-            return null;        
-        Datatype dataType = (Datatype)type;
-        for(Object value: dataType.getEnumerations()) {
+        if( type == null || !(type instanceof Datatype) ||
+            ((Datatype)type).getEnumerations() == null)
+            return null;
+        for(Object value: ((Datatype)type).getEnumerations()) {
             ValueResultItem item = new ValueResultItem(element, (String)value, context);
             result.add(item);
         }
