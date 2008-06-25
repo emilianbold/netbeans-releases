@@ -69,7 +69,7 @@ public class MemberResolverImpl extends CsmMemberResolver {
             List<CsmMember> res = new ArrayList<CsmMember>();
             getClassMembers((CsmClass)cls, name, res);
             getSuperClasses((CsmClass)cls, name, res, new HashSet<CsmClass>());
-            res.iterator();
+            return res.iterator();
         }
         return Collections.<CsmMember>emptyList().iterator();
     }       
