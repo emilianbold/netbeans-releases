@@ -44,6 +44,7 @@ package org.netbeans.modules.ruby.railsprojects.ui.customizer;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.client.tools.projectsupport.CustomizerDebug;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
@@ -102,7 +103,7 @@ public class RailsCompositePanelProvider implements ProjectCustomizer.CompositeC
             String serverMsg = bundle.getString("LBL_CustomizeDebug_ServerDebug_JCheckBox"); // NOI18N
             String clientMsg = bundle.getString("LBL_CustomizeDebug_ClientDebug_JCheckBox"); // NOI18N
             
-            return new CustomizerDebug(category, uiProps.DEBUG_SERVER_MODEL, serverMsg, uiProps.DEBUG_CLIENT_MODEL, clientMsg);
+            return new CustomizerDebug(category, context.lookup(Project.class), serverMsg, clientMsg);
         }
         return new JPanel();
 

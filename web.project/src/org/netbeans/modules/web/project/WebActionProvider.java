@@ -92,6 +92,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarter;
+import org.netbeans.modules.web.client.tools.projectsupport.JSDebuggerUtils;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.netbeans.modules.web.project.ui.ServletUriPanel;
@@ -381,12 +382,8 @@ class WebActionProvider implements ActionProvider {
         } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
             setDirectoryDeploymentProperty(p);
             
-            if (!isJsDebuggerAvailable()) {
-                // If JavaScript debugger is not available, set to server debugging only
-                p.setProperty("debug.client", "false"); // NOI18N
-                p.setProperty("debug.server", "true"); // NOI18N
-            }
-            
+            setJavaScriptDebuggerProperties(p);
+                        
             FileObject[] files = findTestSources(context, false);
             if (files != null) {
                 targetNames = setupDebugTestSingle(p, files);
@@ -522,11 +519,7 @@ class WebActionProvider implements ActionProvider {
                 return null;
             }
 
-            if (!isJsDebuggerAvailable()) {
-                // If JavaScript debugger is not available, set to server debugging only
-                p.setProperty("debug.client", "false"); // NOI18N
-                p.setProperty("debug.server", "true"); // NOI18N
-            }
+            setJavaScriptDebuggerProperties(p);
             
             WebServicesClientSupport wscs = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
             if (wscs != null) { //project contains ws reference
@@ -720,8 +713,21 @@ class WebActionProvider implements ActionProvider {
         return targetNames;
     }
 
-    private boolean isJsDebuggerAvailable() {
-        return Lookup.getDefault().lookup(WebClientToolsSessionStarter.class) != null;
+    private void setJavaScriptDebuggerProperties(Properties p) {
+        boolean isDebuggerAvailable = Lookup.getDefault().lookup(WebClientToolsSessionStarter.class) != null;
+        
+        if (!isDebuggerAvailable) {
+            // If JavaScript debugger is not available, set to server debugging only
+            p.setProperty("debug.client", "false"); // NOI18N
+            p.setProperty("debug.server", "true"); // NOI18N
+
+        } else {
+            boolean debugServer = JSDebuggerUtils.getServerDebugProperty(project);
+            boolean debugClient = JSDebuggerUtils.getClientDebugProperty(project);
+
+            p.setProperty("debug.client", String.valueOf(debugClient)); // NOI18N
+            p.setProperty("debug.server", String.valueOf(debugServer)); // NOI18N
+        }
     }
 
     private String[] setupTestSingle(Properties p, FileObject[] files) {

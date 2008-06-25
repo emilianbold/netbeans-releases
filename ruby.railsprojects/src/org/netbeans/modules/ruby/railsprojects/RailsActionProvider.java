@@ -81,6 +81,7 @@ import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarter;
+import org.netbeans.modules.web.client.tools.projectsupport.JSDebuggerUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.ErrorManager;
@@ -826,16 +827,17 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         if (!debug) {
             runServer(path, false, false);
         } else {
-            String serverValue = project.evaluator().getProperty(RailsProjectProperties.DEBUG_SERVER);
-            String clientValue = project.evaluator().getProperty(RailsProjectProperties.DEBUG_CLIENT);
-            boolean serverDebug = getBooleanValue(serverValue, true);
-            boolean clientDebug = getBooleanValue(clientValue, false);
+            boolean serverDebug;
+            boolean clientDebug;
             
             WebClientToolsSessionStarter clientDebugger = Lookup.getDefault().lookup(WebClientToolsSessionStarter.class);
             if (clientDebugger == null) {
                 // Ignore the debugging options if no Javascript debugger is present
                 clientDebug = false;
                 serverDebug = true;
+            } else {
+                serverDebug = JSDebuggerUtils.getServerDebugProperty(project);
+                clientDebug = JSDebuggerUtils.getClientDebugProperty(project);
             }
             assert serverDebug || clientDebug;
             
@@ -850,15 +852,6 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             server.setClientDebug(clientDebug);
             server.showUrl(path);
         }
-    }
-    
-    private static boolean getBooleanValue(String propValue, boolean defaultValue) {
-        if (propValue == null) {
-            return defaultValue;
-        }
-        
-        String lowercase = propValue.toLowerCase();
-        return lowercase.equals("yes") || lowercase.equals("on") || lowercase.equals("true"); // NOI18N
     }
     
     // TODO: duplicated in RubyActionProvider
