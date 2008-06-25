@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.hibernate.framework;
+package org.netbeans.modules.hibernateweb.framework;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -48,6 +48,7 @@ import org.openide.filesystems.FileObject;
  * This class provides utility methods such as getting the project from a 
  * WebModule to be used in Hibernate Framework Provider classes.
  * 
+ * @author gowri
  * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
 public class Util {
