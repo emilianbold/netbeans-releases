@@ -44,22 +44,19 @@ package org.netbeans.modules.groovy.editor;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.Variable;
-import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.ConstructorNode;
+import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.parser.GroovyParserResult;
 import org.openide.cookies.EditorCookie;
@@ -67,8 +64,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
-import org.codehaus.groovy.control.SourceUnit;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.groovy.editor.elements.AstElement;
 import org.netbeans.modules.groovy.editor.elements.IndexedElement;
@@ -154,7 +151,7 @@ public class AstUtilities {
     }
 
     // TODO use this from all the various places that have this inlined...
-    public static ASTNode getRoot(CompilationInfo info) {
+    public static ModuleNode getRoot(CompilationInfo info) {
         ParserResult result = info.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
 
         if (result == null) {
@@ -164,7 +161,7 @@ public class AstUtilities {
         return getRoot(result);
     }
 
-    public static ASTNode getRoot(ParserResult r) {
+    public static ModuleNode getRoot(ParserResult r) {
         assert r instanceof GroovyParserResult;
 
         GroovyParserResult result = (GroovyParserResult)r;
@@ -175,9 +172,7 @@ public class AstUtilities {
             return null;
         }
 
-        ASTNode root = (ASTNode)ast.getAstNode();
-
-        return root;
+        return (ModuleNode) ast.getAstNode();
     }
 
     public static OffsetRange getRangeFull(ASTNode node, BaseDocument doc) {
@@ -298,6 +293,19 @@ public class AstUtilities {
                 return OffsetRange.NONE;
             }
             return new OffsetRange(end - name.length(), end);
+        } else if (node instanceof MethodCallExpression) {
+            MethodCallExpression methodCall = (MethodCallExpression) node;
+            Expression method = methodCall.getMethod();
+            int start = getOffset(doc, method.getLineNumber(), method.getColumnNumber());
+            if (start >= 0) {
+                return new OffsetRange(start, start + methodCall.getMethodAsString().length());
+            }
+        } else if (node instanceof ClassExpression) {
+            ClassExpression clazz = (ClassExpression) node;
+            int start = getOffset(doc, clazz.getLineNumber(), clazz.getColumnNumber());
+            if (start >= 0) {
+                return new OffsetRange(start, start + clazz.getText().length());
+            }
         }
         return OffsetRange.NONE;
     }
@@ -384,81 +392,6 @@ public class AstUtilities {
         return offset;
     }
     
-    public static ASTNode findVariableScope(Variable variable, AstPath path, ModuleNode moduleNode) {
-        
-//        final Logger LOG = Logger.getLogger(AstUtilities.class.getName());
-//        LOG.setLevel(Level.FINEST);
-//        
-//        LOG.log(Level.FINEST, "findVariableScope(...)"); //NOI18N
-        
-        String name = variable.getName();
-        VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(moduleNode, name);
-        
-        for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
-            ASTNode current = it.next();
-            if (current instanceof MethodNode) {
-                MethodNode methodNode = (MethodNode) current;
-                for (Parameter parameter : methodNode.getParameters()) {
-                    if (name.equals(parameter.getName())) {
-                        return current;
-                    }
-                }
-                scopeVisitor.visitMethod(methodNode);
-                if (scopeVisitor.isDeclaring()) {
-                    return current;
-                }
-            } else if (current instanceof FieldNode) {
-                // if we are dealing with a FieldNode the scope is the surrounding
-                // class. So go and find it:
-                
-                while (it.hasNext()) {
-                    current = it.next();
-                    if (current instanceof ClassNode) {
-                        return current;
-                    }
-                }
-                
-//                scopeVisitor.visitField((FieldNode)current);
-//                if (scopeVisitor.isDeclaring()) {
-//                    return current;
-//                }
-            } else if (current instanceof ClassNode) {
-                scopeVisitor.visitClass((ClassNode)current);
-                if (scopeVisitor.isDeclaring()) {
-                    return current;
-                }
-            } else if (current instanceof Parameter) {
-                if (name.equals(((Parameter)current).getName())) {
-                    // found variable is method parameter, return method as scope
-                    return it.next();
-                }
-            } else if (current instanceof DeclarationExpression) {
-                DeclarationExpression declarationExpression = (DeclarationExpression) current;
-                if (name.equals(declarationExpression.getVariableExpression().getName())) {
-                    // ok, the variable i'm searching for (name) gets declared here.
-                    // It's either a file and i have to stop on the surrounding class or
-                    // it's a local-var and we need to stop on the method
-                    
-                    while (it.hasNext()){
-                        current = it.next();
-                        if(current instanceof MethodNode){
-                            return current;
-                        }
-                    }
-                    
-                    
-                }
-            } else {
-                // visit is not implemented for everybody and then it throws exception
-//                current.visit(scopeVisitor);
-//                if (scopeVisitor.isDeclaring()) {
-//                    return current;
-//                }
-            }
-        }
-        return path.root();
-    }
-
     public static ASTNode getForeignNode(final IndexedElement o, ASTNode[] foreignRootRet) {
 
         final ASTNode[] nodes = new ASTNode[1];
@@ -466,7 +399,6 @@ public class AstUtilities {
         try {
             source.runUserActionTask(new CancellableTask<CompilationController>() {
                 public void run(CompilationController controller) throws Exception {
-                    System.out.println("### Ast.getForeignNode()");
                     controller.toPhase(Phase.PARSED);
                     GroovyParserResult result = (GroovyParserResult) controller.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
                     if (result != null) {
@@ -507,55 +439,5 @@ public class AstUtilities {
         return sb.toString();
     }
 
-    public static final class VariableScopeVisitor extends ClassCodeVisitorSupport {
-
-        private final SourceUnit sourceUnit;
-        private final String name;
-        private final Set<Variable> localVariables = new HashSet<Variable>();
-        private boolean declaring = false;
-        
-        public VariableScopeVisitor(ModuleNode moduleNode, String variableName) {
-            sourceUnit = moduleNode.getContext();
-            name = variableName;
-        }
-        
-        public boolean isDeclaring() {
-            return declaring;
-        }
-        
-        @Override
-        protected SourceUnit getSourceUnit() {
-            return sourceUnit;
-        }
-
-        @Override
-        public void visitVariableExpression(VariableExpression variableExpression) {
-            if (!localVariables.contains(variableExpression)) {
-                if (name.equals(variableExpression.getName())) {
-                    localVariables.add(variableExpression);
-                }
-                super.visitVariableExpression(variableExpression);
-            }
-        }
-
-        @Override
-        public void visitDeclarationExpression(DeclarationExpression declarationExpression) {
-            super.visitDeclarationExpression(declarationExpression);
-            if (!declaring && name.equals(declarationExpression.getVariableExpression().getName())) {
-                declaring = true;
-            }
-        }
-        
-        @Override
-        public void visitField(FieldNode fieldNode) {
-            if (!localVariables.contains(fieldNode)) {
-                if (name.equals(fieldNode.getName())) {
-                    localVariables.add(fieldNode);
-                }
-                super.visitField(fieldNode);
-            }
-        }
-
-    }
     
 }
