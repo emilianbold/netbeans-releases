@@ -36,13 +36,13 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.hibernate.framework;
+package org.netbeans.modules.hibernateweb.framework;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.hibernate.util.HibernateUtil;
+import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
@@ -52,7 +52,9 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * Adds support for Hibernate framework as one of the available web frameworks
+ * for Web projects. 
+ * 
  * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
 public class HibernateFrameworkProvider extends WebFrameworkProvider {
@@ -86,7 +88,8 @@ public class HibernateFrameworkProvider extends WebFrameworkProvider {
     public File[] getConfigurationFiles(WebModule wm) {
         List<File> configFiles = new ArrayList<File>();
         Project enclosingProject = Util.getEnclosingProjectFromWebModule(wm);
-        List<FileObject> configFileObjects = HibernateUtil.getAllHibernateConfigFileObjects(enclosingProject);
+        HibernateEnvironment he = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
+        List<FileObject> configFileObjects = he.getAllHibernateConfigFileObjects();
         for(FileObject fo : configFileObjects) {
             configFiles.add(FileUtil.toFile(fo));
         }

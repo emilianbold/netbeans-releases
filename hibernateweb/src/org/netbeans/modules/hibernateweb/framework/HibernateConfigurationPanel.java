@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,36 +31,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
-/*
- * HibernateConfigurationWizardPanel.java
- *
- * Created on January 9, 2008, 4:26 PM
- */
-package org.netbeans.modules.hibernate.wizards;
+package org.netbeans.modules.hibernateweb.framework;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import javax.swing.event.ChangeListener;
-import org.openide.util.ChangeSupport;
-import org.openide.util.NbBundle;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
+import org.netbeans.modules.hibernate.wizards.Util;
+import org.netbeans.modules.web.api.webmodule.ExtenderController;
+import org.openide.util.NbBundle;
 
 /**
- *
- * @author  gowri
+ * Panel UI for Framework support for Hibernate. 
+ * 
+ * @author  Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
-public class HibernateConfigurationWizardPanel extends javax.swing.JPanel {
+public class HibernateConfigurationPanel extends javax.swing.JPanel implements DocumentListener, ItemListener {
 
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private HibernateWebModuleExtender webModuleExtender;
+    private ExtenderController controller;
+    private boolean forNewProjectWizard = false;
 
-    /** Creates new form HibernateConfigurationWizardPanel */
-    public HibernateConfigurationWizardPanel() {
+    /** Creates new form HibernateConfigurationPanel */
+    public HibernateConfigurationPanel(HibernateWebModuleExtender webModuleExtender,
+            ExtenderController controller, boolean forNewProjectWizard) {
+        this.webModuleExtender = webModuleExtender;
+        this.controller = controller;
+        this.forNewProjectWizard = forNewProjectWizard;
         initComponents();
         setDefaults();
+        fillPanel();
+        cmbDbConnection.addItemListener(this);
     }
 
     public void setDefaults() {
@@ -74,15 +78,54 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel {
         DatabaseExplorerUIs.connect(cmbDbConnection, ConnectionManager.getDefault());
     }
 
+    public void fillPanel() {
+        if (forNewProjectWizard) {
+            if (cmbDbConnection.getItemCount() != 0 && cmbDbConnection.getItemCount() > 1) {
+                cmbDbConnection.setSelectedIndex(1);
+            }
+        }
+    }
+
     @Override
     public String getName() {
-        return NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "LBL_HibernateConfigurationPanel_Name");
+        return NbBundle.getMessage(HibernateConfigurationPanel.class, "LBL_HibernateConfigurationPanel_Name");
     }
 
     private void fillComponents() {
         DatabaseConnection dbConn = getDatabaseConnection();
-        if (dbConn != null  && cmbDbConnection.getItemCount() != 0) {
+        if (dbConn != null && cmbDbConnection.getItemCount() != 0) {
             txtDialect.setText(Util.getDialectName(dbConn.getDriverClass()));
+        }
+    }
+
+    public boolean isPanelValid() {
+        if (forNewProjectWizard) { // Validate only in case of New Project Wizard.
+        }
+        return true;
+    }
+
+    @Override
+    public void disable() {
+        super.disable();
+        for (Component component : this.getComponents()) {
+            component.setEnabled(false);
+        }
+    }
+
+    public DatabaseConnection getDatabaseConnection() {
+        return (DatabaseConnection) cmbDbConnection.getSelectedItem();
+
+    }
+
+    public void setDatabaseConnection(String dbConnURL) {
+        for (int i = 0; i < cmbDbConnection.getItemCount(); i++) {
+            if (cmbDbConnection.getItemAt(i) instanceof DatabaseConnection) {
+                DatabaseConnection conn = (DatabaseConnection) cmbDbConnection.getItemAt(i);
+                if (conn.getDatabaseURL().equals(dbConnURL)) {
+                    cmbDbConnection.setSelectedItem(conn);
+                    break;
+                }
+            }
         }
     }
 
@@ -94,20 +137,12 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel4 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         cmbDbConnection = new javax.swing.JComboBox();
         txtDialect = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
 
-        setName(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "LBL_HibernateConfigurationPanel_Name")); // NOI18N
-
-        jLabel4.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("Dialect_mnemonic").charAt(0));
-        jLabel4.setLabelFor(txtDialect);
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.jLabel4.text")); // NOI18N
-
-        jLabel3.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("DatabaseConnection_mnemonic").charAt(0));
-        jLabel3.setLabelFor(cmbDbConnection);
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.jLabel3.text")); // NOI18N
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationPanel.class, "HibernateConfigurationPanel.jLabel3.text")); // NOI18N
 
         cmbDbConnection.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -116,7 +151,9 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel {
         });
 
         txtDialect.setEditable(false);
-        txtDialect.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.txtDialect.text")); // NOI18N
+        txtDialect.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationPanel.class, "HibernateConfigurationPanel.txtDialect.text")); // NOI18N
+
+        jLabel4.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationPanel.class, "HibernateConfigurationPanel.jLabel4.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -125,20 +162,18 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel4)
-                        .add(40, 40, 40)))
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(txtDialect, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, cmbDbConnection, 0, 392, Short.MAX_VALUE))
+                    .add(jLabel4)
+                    .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(txtDialect)
+                    .add(cmbDbConnection, 0, 281, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel3)
                     .add(cmbDbConnection, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -146,31 +181,34 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel4)
                     .add(txtDialect, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(24, Short.MAX_VALUE))
+                .addContainerGap())
         );
-
-        jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.jLabel4.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-    private void cmbDbConnectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbDbConnectionActionPerformed
-        // TODO add your handling code here:
-        fillComponents();
-    }//GEN-LAST:event_cmbDbConnectionActionPerformed
 
+private void cmbDbConnectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbDbConnectionActionPerformed
+// TODO add your handling code here:
+    fillComponents();
+}//GEN-LAST:event_cmbDbConnectionActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cmbDbConnection;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JTextField txtDialect;
     // End of variables declaration//GEN-END:variables
-    public void actionPerformed(ActionEvent e) {
+    public void insertUpdate(DocumentEvent e) {
+        webModuleExtender.fireChangeEvent();
     }
 
-    public void addChangeListener(ChangeListener l) {
-        changeSupport.addChangeListener(l);
+    public void removeUpdate(DocumentEvent e) {
+        webModuleExtender.fireChangeEvent();
     }
 
-    public void removeChangeListener(ChangeListener l) {
-        changeSupport.removeChangeListener(l);
+    public void changedUpdate(DocumentEvent e) {
+        webModuleExtender.fireChangeEvent();
+    }
+
+    public void itemStateChanged(ItemEvent e) {
+        webModuleExtender.fireChangeEvent();
     }
 
     public String getSelectedDialect() {
@@ -210,34 +248,5 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel {
             return getDatabaseConnection().getPassword().trim();
         }
         return null;
-    }
-
-    public DatabaseConnection getDatabaseConnection() {
-        return (DatabaseConnection) cmbDbConnection.getSelectedItem();
-
-    }
-
-    public void setDatabaseConnection(String dbConnURL) {
-        for (int i = 0; i < cmbDbConnection.getItemCount(); i++) {
-            if (cmbDbConnection.getItemAt(i) instanceof DatabaseConnection) {
-                DatabaseConnection conn = (DatabaseConnection) cmbDbConnection.getItemAt(i);
-                if (conn.getDatabaseURL().equals(dbConnURL)) {                
-                    cmbDbConnection.setSelectedItem(conn);
-                    break;
-                }
-            }
-        }        
-    }
-
-    public boolean isPanelValid() {
-        return true;
-    }
-
-    @Override
-    public void disable() {
-        super.disable();
-        for (Component component : this.getComponents()) {
-            component.setEnabled(false);
-        }
     }
 }
