@@ -51,9 +51,9 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.ruby.debugger.EditorUtil;
 import org.netbeans.modules.ruby.debugger.Util;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.text.Line;
 import org.openide.util.WeakListeners;
-import org.openide.windows.TopComponent;
 import org.rubyforge.debugcommons.RubyDebuggerException;
 
 /**
@@ -67,8 +67,9 @@ public final class RubyBreakpointActionProvider extends ActionsProviderSupport
     
     public RubyBreakpointActionProvider() {
         setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, true);
-        TopComponent.getRegistry().addPropertyChangeListener(
-                WeakListeners.propertyChange(this, TopComponent.getRegistry()));
+        PropertyChangeListener l = WeakListeners.propertyChange(this, EditorContextDispatcher.getDefault());
+        EditorContextDispatcher.getDefault().addPropertyChangeListener(Util.RUBY_MIME_TYPE, l);
+        EditorContextDispatcher.getDefault().addPropertyChangeListener(Util.ERB_MIME_TYPE, l);
     }
     
     @Override
