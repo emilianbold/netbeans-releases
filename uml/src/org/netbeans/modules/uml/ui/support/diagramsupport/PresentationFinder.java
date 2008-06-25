@@ -109,41 +109,32 @@ public class PresentationFinder implements IPresentationFinder
       
       // Now that we have the open diagrams ask them for the presentation elements that make up
       // the input model elements.
-      for(long index = 0L; index < numOpenDiagrams; index++)
-      {
-         IDiagram curDiagram = openDiagrams.get((int)index);
-//         if((curDiagram != null) && (curDiagram instanceof IUIDiagram))
-//         {
-//            IUIDiagram axDiagram = (IUIDiagram)curDiagram;
-//            IDrawingAreaControl control = axDiagram.getDrawingArea();
-//            
-//            if(control != null)
-//            {
-//               ETList<IPresentationElement> presElements = curDiagram.getAllItems2(element);
-//               
-//               long numPresentationItems = 0;
-//               if(presElements != null)
-//               {
-//                  numPresentationItems = presElements.size();
-//               }
-//               
-//               // Don't include labels in the list.
-//               for(int presIndex = 0; presIndex < numPresentationItems; presIndex++)
-//               {
-//                  IPresentationElement curElement = presElements.get(presIndex);
-//                  if( !(curElement instanceof ILabelPresentation) )
-//                  {
-//                     IPresentationTarget target = new PresentationTarget();
-//                     target.setPresentationID(curElement.getXMIID());
-//                     target.setDiagramFilename(control.getFilename());
-//                     target.setOpenDiagram(curDiagram);
-//                     
-//                     retVal.add(target);
-//                  }
-//               }
-//            }
-//         }
-      }
+       for (long index = 0L; index < numOpenDiagrams; index++)
+       {
+           IDiagram curDiagram = openDiagrams.get((int) index);
+           if (curDiagram != null)
+           {
+               ETList<IPresentationElement> presElements = curDiagram.getAllItems(element);
+
+               long numPresentationItems = 0;
+               if (presElements != null)
+               {
+                   numPresentationItems = presElements.size();
+               }
+
+               // Don't include labels in the list.
+               for (int presIndex = 0; presIndex < numPresentationItems; presIndex++)
+               {
+                   IPresentationElement curElement = presElements.get(presIndex);
+                   IPresentationTarget target = new PresentationTarget();
+                   target.setPresentationID(curElement.getXMIID());
+                   target.setDiagramFilename(curDiagram.getFilename());
+                   target.setOpenDiagram(curDiagram);
+
+                   retVal.add(target);
+               }
+           }
+       }
       
       // Now go through the closed diagrams looking for the model element id.
       // TS (ISSUE 6274443) The following line of code was making sure that we  

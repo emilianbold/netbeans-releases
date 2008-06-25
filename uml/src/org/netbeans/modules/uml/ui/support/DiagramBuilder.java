@@ -117,7 +117,7 @@ public class DiagramBuilder
             String meid = target.getModelElementID();
             if (presentationId != null && presentationId.length() > 0)
             {
-               diagram.centerPresentationElement2(target.getPresentationID(), true, true);
+               diagram.centerPresentationElement(target.getPresentationID(), true, true);
             }
             else if (meid != null && meid.length() > 0 && toplevelId != null && toplevelId.length() > 0)
             {
@@ -212,7 +212,7 @@ public class DiagramBuilder
                diaMgr.raiseWindow(openDia);
                if (presId != null && presId.length() > 0)
                {
-                  openDia.centerPresentationElement2(presId, true, true);
+                  openDia.centerPresentationElement(presId, true, true);
                }
                else if (topLevelId != null && topLevelId.length() > 0 && meid != null && meid.length() > 0)
                {

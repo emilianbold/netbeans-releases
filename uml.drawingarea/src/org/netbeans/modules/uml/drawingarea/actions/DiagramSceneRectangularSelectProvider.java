@@ -50,6 +50,8 @@ import org.netbeans.api.visual.action.RectangularSelectProvider;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 
@@ -66,46 +68,16 @@ public class DiagramSceneRectangularSelectProvider implements RectangularSelectP
     }
 
     public void performSelection (Rectangle sceneSelection) {
-        boolean entirely = sceneSelection.width > 0;
-        int w = sceneSelection.width;
-        int h = sceneSelection.height;
-        Rectangle rect = new Rectangle (w >= 0 ? 0 : w, h >= 0 ? 0 : h, w >= 0 ? w : -w, h >= 0 ? h : -h);
-        rect.translate (sceneSelection.x, sceneSelection.y);
-
-        HashSet<Object> set = new HashSet<Object> ();
-        Set<?> objects = scene.getObjects ();
-        for (Object object : objects) {
-            Widget widget = scene.findWidget (object);
-
-            if (widget == null ||  (!(widget instanceof UMLNodeWidget) && !(widget instanceof UMLEdgeWidget)))
-                continue;
-            
-            if (entirely) {
-                Rectangle widgetRect = widget.convertLocalToScene (widget.getBounds ());
-                if (rect.contains (widgetRect))
-                    set.add (object);
-            } else {
-                if (widget == null ||  (!(widget instanceof UMLNodeWidget) && !(widget instanceof UMLEdgeWidget)))
-                    continue;
-                if (widget instanceof ConnectionWidget) {
-                    ConnectionWidget conn = (ConnectionWidget) widget;
-                    java.util.List<Point> points = conn.getControlPoints ();
-                    for (int i = points.size () - 2; i >= 0; i --) {
-                        Point p1 = widget.convertLocalToScene (points.get (i));
-                        Point p2 = widget.convertLocalToScene (points.get (i + 1));
-                        if (new Line2D.Float (p1, p2).intersects (rect))
-                            set.add (object);
-                    }
-                } else {
-                    Rectangle widgetRect = widget.convertLocalToScene (widget.getBounds ());
-                    if (rect.intersects (widgetRect))
-                        set.add (object);
-                }
-            }
+        
+        if (scene instanceof DesignerScene)
+        {
+            DesignerScene designerScene = (DesignerScene) scene;
+            Set < IPresentationElement > set = designerScene.getGraphObjectInRectangle(sceneSelection, false);
+            Iterator<IPresentationElement> iterator = set.iterator ();
+            scene.setFocusedObject (iterator.hasNext () ? iterator.next () : null);
+            scene.userSelectionSuggested (set, false);
         }
-        Iterator<Object> iterator = set.iterator ();
-        scene.setFocusedObject (iterator.hasNext () ? iterator.next () : null);
-        scene.userSelectionSuggested (set, false);
+        
     }
 
 

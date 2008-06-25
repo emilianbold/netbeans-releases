@@ -41,11 +41,17 @@
 package org.netbeans.modules.uml.drawingarea.view;
 
 import java.awt.BasicStroke;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.geom.Line2D;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.JComponent;
+import javax.swing.JViewport;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.Anchor;
@@ -78,7 +84,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -507,5 +512,116 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         validate();
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Helper Methods
     
+    /**
+     * Retrieves all of the edges that are in a specified area.  The area is 
+     * specified in screen coordinates.
+     * 
+     * @param sceneSelection The area that must contain the edges.
+     * @return The edges in the specified area.
+     */
+    public Set <IPresentationElement> getEdgesInRectangle(Rectangle sceneSelection,
+                                                          boolean canIntersect)
+    {
+        Set < IPresentationElement > retVal = new HashSet < IPresentationElement >();
+        for(IPresentationElement item : getGraphObjectInRectangle(sceneSelection, canIntersect))
+        {
+            if(isEdge(item) == true)
+            {
+                retVal.add(item);
+            }
+        }
+        
+        return retVal;
+    }
+    
+    /**
+     * Retrieves all of the Nodes that are in a specified area.  The area is 
+     * specified in screen coordinates.
+     * 
+     * @param sceneSelection The area that must contain the nodes.
+     * @return The edges in the specified nodes.
+     */
+    public Set <IPresentationElement> getNodesInRectangle(Rectangle sceneSelection)
+    {
+        Set < IPresentationElement > retVal = new HashSet < IPresentationElement >();
+        for(IPresentationElement item : getGraphObjectInRectangle(sceneSelection, false))
+        {
+            if(isNode(item) == true)
+            {
+                retVal.add(item);
+            }
+        }
+        
+        return retVal;
+    }
+    
+    /**
+     * Retrieves all of the nodes and edges that are in a specified area.  The area is 
+     * specified in screen coordinates.
+     * 
+     * @param sceneSelection The area that must contain the nodes and edges.
+     * @return The nodes and edges in the specified area.
+     */
+    public Set <IPresentationElement> getGraphObjectInRectangle(Rectangle sceneSelection, boolean intersectEdges)
+    {
+        boolean entirely = sceneSelection.width > 0;
+        int w = sceneSelection.width;
+        int h = sceneSelection.height;
+        Rectangle rect = new Rectangle(w >= 0 ? 0 : w, h >= 0 ? 0 : h, w >= 0 ? w : -w, h >= 0 ? h : -h);
+        rect.translate(sceneSelection.x, sceneSelection.y);
+
+        HashSet<IPresentationElement> set = new HashSet<IPresentationElement>();
+        Set<?> objects = getObjects();
+        for (Object object : objects)
+        {
+            boolean isEdge = isEdge(object);
+            boolean isNode = isNode(object);
+            if((isEdge == false) && (isNode == false))
+            {
+                continue;
+            }
+            
+            Widget widget = findWidget(object);
+
+            if (((isNode == true) && (entirely == true)) || 
+                ((isEdge == true) && (intersectEdges == false)))
+            {
+                Rectangle widgetRect = widget.convertLocalToScene(widget.getBounds());
+                if (rect.contains(widgetRect) && (object instanceof IPresentationElement))
+                {
+                    set.add((IPresentationElement)object);
+                }
+            }
+            else
+            {
+                if (widget instanceof ConnectionWidget)
+                {
+                    ConnectionWidget conn = (ConnectionWidget) widget;
+                    java.util.List<Point> points = conn.getControlPoints();
+                    for (int i = points.size() - 2; i >= 0; i--)
+                    {
+                        Point p1 = widget.convertLocalToScene(points.get(i));
+                        Point p2 = widget.convertLocalToScene(points.get(i + 1));
+                        if (new Line2D.Float(p1, p2).intersects(rect))
+                        {
+                            set.add((IPresentationElement)object);
+                        }
+                    }
+                }
+                else
+                {
+                    Rectangle widgetRect = widget.convertLocalToScene(widget.getBounds());
+                    if (rect.intersects(widgetRect))
+                    {
+                        set.add((IPresentationElement)object);
+                    }
+                }
+            }
+        }
+        
+        return set;
+    }
 }
