@@ -47,7 +47,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -71,16 +70,19 @@ import org.openide.windows.WindowManager;
 public class InsertRecordDialog extends javax.swing.JDialog {
 
     private final DataView dataView;
-    private static Logger mLogger = Logger.getLogger(InsertRecordDialog.class.getName());
 
     /** Creates new form InsertRecordDialog */
     public InsertRecordDialog(DataView dataView) {
         super(WindowManager.getDefault().getMainWindow(), true);
         this.dataView = dataView;
-        executeBtn.setMnemonic('E');
         initComponents();
         addInputFields();
 
+        executeBtn.setMnemonic('E');
+        previewBtn.setMnemonic('S');
+        clearBtn.setMnemonic('C');
+        colValueTextField[0].requestFocus();
+        
         jSplitPane1.setBottomComponent(null);
 
         KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false);
@@ -228,8 +230,8 @@ public class InsertRecordDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
 private void cancelBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelBtnActionPerformed
-    dispose();
-}//GEN-LAST:event_cancelBtnActionPerformed
+    dispose();//GEN-LAST:event_cancelBtnActionPerformed
+}                                         
 
 private void executeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeBtnActionPerformed
     String[] insertSQL = null;
@@ -238,11 +240,8 @@ private void executeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         
         SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();
         insertSQL = stmtBldr.generateInsertStatement(insertedRow);
-        mLogger.info("Statement: " + insertSQL[1].replaceAll("\\n", "").replaceAll("\\t", ""));
-        dataView.setInfoStatusText("Statement: " + insertSQL[1]);
-        
         SQLExecutionHelper execHelper = dataView.getSQLExecutionHelper();
-        execHelper.executeInsert(insertSQL, insertedRow);
+        execHelper.executeInsertRow(insertSQL, insertedRow);
     } catch (DBException ex) {
         if (jSplitPane1.getBottomComponent() == null) {
             jSplitPane1.setDividerLocation(250);
@@ -257,10 +256,10 @@ private void executeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     dispose();
 }//GEN-LAST:event_executeBtnActionPerformed
 
-private void clearBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearBtnActionPerformed
-    int rows = dataView.getDataViewDBTable().getColumnCount();
-    for (int i = 0; i < rows; i++) {
-        if (dataView.getDataViewDBTable().getColumn(i).isGenerated()) {
+private void clearBtnActionPerformed(java.awt.event.ActionEvent evt) {                                          
+    int rows = dataView.getDataViewDBTable().getColumnCount();                                          
+    for (int i = 0; i < rows; i++) {//GEN-FIRST:event_clearBtnActionPerformed
+        if (dataView.getDataViewDBTable().getColumn(i).isGenerated()) {//GEN-HEADEREND:event_clearBtnActionPerformed
             colValueTextField[i].setText("<GENERATED>");
             colValueTextField[i].setEditable(false);
         } else {
@@ -271,22 +270,22 @@ private void clearBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     refreshSQL();
 }//GEN-LAST:event_clearBtnActionPerformed
 
-private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previewBtnActionPerformed
-    if (evt.getActionCommand().equalsIgnoreCase("Show SQL")) {
-        jSplitPane1.setDividerLocation(250);
+private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {                                        
+    if (evt.getActionCommand().equalsIgnoreCase("Show SQL")) {                                        
+        jSplitPane1.setDividerLocation(250);//GEN-FIRST:event_previewBtnActionPerformed
         jSplitPane1.setBottomComponent(jScrollPane2);
-        refreshSQL();
+        refreshSQL();//GEN-HEADEREND:event_previewBtnActionPerformed
         previewBtn.setText("Hide SQL");
     } else {
         jSplitPane1.setBottomComponent(null);
         previewBtn.setText("Show SQL");
     }
-}//GEN-LAST:event_previewBtnActionPerformed
+}                                          
 
     private void refreshSQL() {
-        try {
-            if (jSplitPane1.getBottomComponent() != null) {
-                SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();
+        try {//GEN-LAST:event_previewBtnActionPerformed
+            if (jSplitPane1.getBottomComponent() != null) {                                          
+                SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();                                          
                 String sql = stmtBldr.generateInsertStatement(getInsertValues())[1];
                 jEditorPane1.setContentType("text/x-sql");
                 jEditorPane1.setText(sql);

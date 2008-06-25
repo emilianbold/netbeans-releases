@@ -104,7 +104,7 @@ public final class SQLExecuteHelper {
             // Save SQL statements executed for the SQLHistoryManager
             SQLHistoryManager.getInstance().saveSQL(new SQLHistory(url, sql, new Date()));
             
-            results.add(DataView.create(conn, sql));
+            results.add(DataView.create(conn, sql, 20));
 
             if (LOG) {
                 LOGGER.log(Level.FINE, "Executing: " + sql);

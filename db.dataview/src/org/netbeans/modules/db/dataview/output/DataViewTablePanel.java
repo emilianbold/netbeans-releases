@@ -51,6 +51,7 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 import java.util.logging.Logger;
 import javax.swing.JScrollPane;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
@@ -201,6 +202,21 @@ class DataViewTablePanel extends JPanel {
             dtm.addRow(row);
         }
         return sorter;
+    }
+
+    List<Object[]> getPageDataFromTable() {
+        DataViewTableSorter sorter = (DataViewTableSorter) tableUI.getModel();
+        DefaultTableModel dtm = (DefaultTableModel)sorter.getTableModel();
+        List<Object[]> rows = new ArrayList<Object[]>();
+        int colCnt = dtm.getColumnCount();
+        for(Object row : dtm.getDataVector()){
+            Object[] rowObj = new Object[colCnt];
+            int i = 0;
+            for(Object colVal : (Vector)row){
+                rowObj[i++] = colVal;
+            }
+        }
+        return rows;
     }
 
     class DataViewTableModel extends DefaultTableModel {

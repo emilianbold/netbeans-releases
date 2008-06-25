@@ -56,17 +56,15 @@ import org.openide.awt.StatusDisplayer;
  *
  * @author Ahimanikya Satapathy
  */
-public class DataView  {
+public class DataView {
 
     private static Logger mLogger = Logger.getLogger(DataView.class.getName());
     public static final int VERTICAL_TOOLBAR = 0;
     public static final int HORIZONTAL_TOOLBAR = 1; // Default
-
     private DatabaseConnection dbConn;
     private List<String> errMessages = new ArrayList<String>();
-    private String queryString; // Once Set, Data View assumes it will never change
-
-    DataViewDBTable tblMeta;
+    private String sqlString; // Once Set, Data View assumes it will never change
+    private DataViewDBTable tblMeta;
     private SQLStatementGenerator stmtGenerator;
     private SQLExecutionHelper execHelper;
     private DataViewPageContext dataPage;
@@ -74,6 +72,7 @@ public class DataView  {
     private int toolbarType = HORIZONTAL_TOOLBAR;
     private boolean hasResultSet = false;
     private int updateCount;
+    private long executionTime;
 
     /**
      * Create and populate a DataView Object. Populates 1st data page of default size.
@@ -81,18 +80,19 @@ public class DataView  {
      * to render to render the DataView by calling DataView.createComponent()
      * 
      * @param dbConn instance of DBExplorer DatabaseConnection 
-     * @param queryString SQL query string 
+     * @param queryString SQL query string
+     * @param pageSize default page size for this data view
      * @return a new DataView instance
      */
-    public static DataView create(DatabaseConnection dbConn, String queryString) {
-        assert dbConn!= null : "DatabaseConnection can't be null";
-                
+    public static DataView create(DatabaseConnection dbConn, String sqlString, int pageSize) {
+        assert dbConn != null : "DatabaseConnection can't be null";
+
         DataView dv = new DataView();
         dv.dbConn = dbConn;
-        dv.queryString = queryString.trim();
+        dv.sqlString = sqlString.trim();
         dv.toolbarType = HORIZONTAL_TOOLBAR;
         try {
-            dv.dataPage = new DataViewPageContext();
+            dv.dataPage = new DataViewPageContext(pageSize);
             dv.execHelper = new SQLExecutionHelper(dv, dbConn);
             SQLExecutionHelper.initialDataLoad(dv, dbConn, dv.execHelper);
             dv.stmtGenerator = new SQLStatementGenerator(dv.tblMeta);
@@ -110,10 +110,10 @@ public class DataView  {
      */
     public List<Component> createComponents() {
         List<Component> results;
-        if(!hasResultSet){
+        if (!hasResultSet) {
             return Collections.emptyList();
         }
-        
+
         synchronized (this) {
             this.dataViewUI = new DataViewUI(this, toolbarType);
             setRowsInTableModel();
@@ -142,7 +142,7 @@ public class DataView  {
     public boolean hasException() {
         return !errMessages.isEmpty();
     }
-    
+
     /**
      * Returns true if the statement executed has ResultSet.
      * 
@@ -150,7 +150,7 @@ public class DataView  {
      */
     public boolean hasResultSet() {
         return hasResultSet;
-    }    
+    }
 
     /**
      * Returns iterator of a error messages of String type, if there were any 
@@ -161,9 +161,23 @@ public class DataView  {
     public Iterator<String> getExceptions() {
         return errMessages.iterator();
     }
-    
-    public int getUpdateCount(){
+
+    /**
+     * Get updated row count for the last executed sql statement.
+     * 
+     * @return number of rows updated in last execution, -1 if no rows updated
+     */
+    public int getUpdateCount() {
         return updateCount;
+    }
+
+    /**
+     * Get execution time for the last executed sql statement
+     * 
+     * @return execution time for last executed sql statement in milliseconds
+     */
+    public long getExecutionTime() {
+        return executionTime;
     }
 
     /**
@@ -175,10 +189,6 @@ public class DataView  {
         return dataViewUI.getVerticalToolBar();
     }
 
-    static boolean isSelectStatement(String queryString){
-        return queryString.trim().toUpperCase().startsWith("SELECT");
-    }
-    
     void clearErrorMessages() {
         errMessages.clear();
     }
@@ -195,8 +205,8 @@ public class DataView  {
         return dbConn;
     }
 
-    String getQueryString() {
-        return queryString;
+    String getSQLString() {
+        return sqlString;
     }
 
     UpdatedRowContext getUpdatedRowContext() {
@@ -256,14 +266,38 @@ public class DataView  {
             dataViewUI.setTotalCount(dataPage.getTotalRows());
         }
     }
-    
-    void setHasResultSet(boolean hasResultSet){
+
+    void incrementRowSize(int count){
+        assert dataViewUI != null : "Should have called createComponent()";
+        dataPage.setTotalRows(dataPage.getTotalRows() + count);
+        dataViewUI.setTotalCount(dataPage.getTotalRows());
+    }
+
+    void decrementRowSize(int count){
+        assert dataViewUI != null : "Should have called createComponent()";
+        dataPage.decrementRowSize(count);
+        dataViewUI.setTotalCount(dataPage.getTotalRows());
+    }
+
+    void syncPageWithTableModel() {
+        dataViewUI.syncPageWithTableModel();
+    }
+
+    void setHasResultSet(boolean hasResultSet) {
         this.hasResultSet = hasResultSet;
     }
-    
+
     void setUpdateCount(int updateCount) {
         this.updateCount = updateCount;
-    }    
+    }
+
+    void setExecutionTime(long executionTime) {
+        this.executionTime = executionTime;
+    }
+
+    void setDataViewDBTable(DataViewDBTable tblMeta) {
+        this.tblMeta = tblMeta;
+    }
 
     private DataView() {
     }

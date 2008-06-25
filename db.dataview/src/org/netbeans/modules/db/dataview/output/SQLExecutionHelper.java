@@ -45,6 +45,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -79,15 +80,17 @@ class SQLExecutionHelper {
 
     static void initialDataLoad(DataView dv, DatabaseConnection dbConn, SQLExecutionHelper execHelper) throws DBException, SQLException {
         Statement stmt = null;
+
         try {
             Connection conn = DBConnectionFactory.getInstance().getConnection(dbConn);
-            stmt = conn.createStatement();//ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-            //stmt.setFetchSize(10);
+            String sql = dv.getSQLString();
+            stmt = execHelper.prepareSQLStatement(conn, sql);
+            execHelper.executeSQLStatement(stmt, sql);
 
-            dv.setHasResultSet(stmt.execute(dv.getQueryString()));
-            dv.setUpdateCount(stmt.getUpdateCount());
-            
-            if (!dv.hasResultSet()) {
+            if(dv.getUpdateCount() != -1){
+                if(!conn.getAutoCommit()){
+                    conn.commit();
+                }
                 return;
             }
 
@@ -97,7 +100,7 @@ class SQLExecutionHelper {
                 DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
                 Collection<DBTable> tables = dbMeta.generateDBTables(resultSet);
 
-                dv.tblMeta = new DataViewDBTable(tables);
+                dv.setDataViewDBTable(new DataViewDBTable(tables));
                 if (!tables.isEmpty()) {
                     for (DBTable tbl : tables) {
                         tbl.setEditable(tables.size() == 1 && !tbl.getName().equals(""));
@@ -110,7 +113,7 @@ class SQLExecutionHelper {
 
             ResultSet cntResultSet = null;
             try {
-                cntResultSet = stmt.executeQuery(SQLStatementGenerator.getCountSQLQuery(dv.getQueryString()));
+                cntResultSet = stmt.executeQuery(SQLStatementGenerator.getCountSQLQuery(dv.getSQLString()));
                 execHelper.setTotalCount(cntResultSet);
             } finally {
                 DataViewUtils.closeResources(cntResultSet);
@@ -120,7 +123,7 @@ class SQLExecutionHelper {
         }
     }
 
-    void executeInsert(final String[] insertSQL, final Object[] insertedRow) {
+    void executeInsertRow(final String[] insertSQL, final Object[] insertedRow) {
 
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, "Executing Insert", "") {
 
@@ -136,7 +139,8 @@ class SQLExecutionHelper {
                         }
                     }
 
-                    int rows = pstmt.executeUpdate();
+                    executeSQLStatement(pstmt, insertSQL[1]);
+                    int rows = dataView.getUpdateCount();
                     if (rows != 1) {
                         error = true;
                         errorMsg = "No rows inserted ";
@@ -150,14 +154,22 @@ class SQLExecutionHelper {
             public void finished() {
                 dataView.setEditable(true);
                 commitOrRollback("Insert command");
-                if (dataView.getDataViewPageContext().getTotalRows() <= 0) {
-                    dataView.getDataViewPageContext().setTotalRows(1);
-                }
             }
 
             @Override
             protected void executeOnSucess() {
-                SQLExecutionHelper.this.executeQuery();
+                if (dataView.getDataViewPageContext().getTotalRows() < 0) {
+                    dataView.getDataViewPageContext().setTotalRows(0);
+                    dataView.getDataViewPageContext().first();
+                }
+                dataView.incrementRowSize(1);
+                
+                // refresh when required
+                if(dataView.getDataViewPageContext().refreshRequiredOnInsert()){
+                    SQLExecutionHelper.this.executeQuery();
+                } else {
+                    reinstateToolbar();
+                }
             }
         };
         RequestProcessor.Task task = rp.create(executor);
@@ -173,7 +185,7 @@ class SQLExecutionHelper {
             public void execute() throws SQLException, DBException {
                 dataView.setEditable(false);
                 int[] rows = rsTable.getSelectedRows();
-                for (int j = 0; j < rows.length; j++) {
+                for (int j = 0; j < rows.length && !error; j++) {
                     deleteARow(rows[j], rsTable.getModel());
                 }
             }
@@ -184,10 +196,6 @@ class SQLExecutionHelper {
 
                 SQLStatementGenerator generator = dataView.getSQLStatementGenerator();
                 final String[] deleteStmt = generator.generateDeleteStatement(types, values, rowNum, tblModel);
-                final String rawDeleteStmt = deleteStmt[1];
-                mLogger.info("Statement: " + rawDeleteStmt);
-                dataView.setInfoStatusText("Statement: " + rawDeleteStmt);
-
                 PreparedStatement pstmt = conn.prepareStatement(deleteStmt[0]);
                 try {
                     int pos = 1;
@@ -195,7 +203,9 @@ class SQLExecutionHelper {
                         DBReadWriteHelper.setAttributeValue(pstmt, pos, types.get(pos - 1), val);
                         pos++;
                     }
-                    int rows = pstmt.executeUpdate();
+
+                    executeSQLStatement(pstmt, deleteStmt[1]);
+                    int rows = dataView.getUpdateCount();
                     if (rows == 0) {
                         error = true;
                         errorMsg = errorMsg + "No matching row(s) to delete.\n";
@@ -216,6 +226,7 @@ class SQLExecutionHelper {
 
             @Override
             protected void executeOnSucess() {
+                dataView.decrementRowSize(rsTable.getSelectedRows().length);
                 SQLExecutionHelper.this.executeQuery();
             }
         };
@@ -225,7 +236,7 @@ class SQLExecutionHelper {
         task.schedule(0);
     }
 
-    void executeUpdate() {
+    void executeUpdateRow() {
 
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, "Executing Update", "") {
 
@@ -236,6 +247,9 @@ class SQLExecutionHelper {
                 dataView.setEditable(false);
                 UpdatedRowContext tblContext = dataView.getUpdatedRowContext();
                 for (String key : tblContext.getUpdateKeys()) {
+                    if(error) {
+                        break;
+                    }
                     updateARow(key);
                 }
             }
@@ -247,9 +261,6 @@ class SQLExecutionHelper {
                 final List<Object> values = tblContext.getValueList(key);
                 final List<Integer> types = tblContext.getTypeList(key);
 
-                mLogger.info("Statement: " + rawUpdateStmt);
-                dataView.setInfoStatusText("Statement: " + rawUpdateStmt);
-
                 pstmt = conn.prepareStatement(updateStmt);
                 int pos = 1;
                 for (Object val : values) {
@@ -258,7 +269,8 @@ class SQLExecutionHelper {
                 }
 
                 try {
-                    int rows = pstmt.executeUpdate();
+                    executeSQLStatement(pstmt, rawUpdateStmt);
+                    int rows = dataView.getUpdateCount();
                     if (rows == 0) {
                         error = true;
                         errorMsg = errorMsg + "No matching row(s) to update.\n";
@@ -279,7 +291,9 @@ class SQLExecutionHelper {
 
             @Override
             protected void executeOnSucess() {
-                SQLExecutionHelper.this.executeQuery();
+                dataView.syncPageWithTableModel();
+                reinstateToolbar();
+                //SQLExecutionHelper.this.executeQuery();
             }
         };
         RequestProcessor.Task task = rp.create(executor);
@@ -301,13 +315,11 @@ class SQLExecutionHelper {
                 DBTable dbTable = dataView.getDataViewDBTable().geTable(0);
                 String truncateSql = "Truncate table " + dbTable.getFullyQualifiedName();
                 try {
-                    mLogger.info("Trncating Table Using: " + truncateSql);
-                    stmt.executeUpdate(truncateSql);
+                    executeSQLStatement(stmt, truncateSql);
                 } catch (SQLException sqe) {
                     mLogger.info("TRUNCATE Not supported...will try DELETE * \n");
                     truncateSql = "Delete from " + dbTable.getFullyQualifiedName();
-                    mLogger.info("Trncating Table Using: " + truncateSql);
-                    stmt.executeUpdate(truncateSql);
+                    executeSQLStatement(stmt, truncateSql);
                 } finally {
                     DataViewUtils.closeResources(stmt);
                 }
@@ -320,6 +332,8 @@ class SQLExecutionHelper {
 
             @Override
             protected void executeOnSucess() {
+                dataView.getDataViewPageContext().setTotalRows(0);
+                dataView.getDataViewPageContext().first();
                 SQLExecutionHelper.this.executeQuery();
             }
         };
@@ -331,7 +345,7 @@ class SQLExecutionHelper {
 
     // Once Data View is created the it assumes the query never changes.
     void executeQuery() {
-        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, "Executing Query", dataView.getQueryString()) {
+        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, "Executing Query", dataView.getSQLString()) {
 
             private ResultSet rs = null;
             private ResultSet crs = null;
@@ -341,23 +355,30 @@ class SQLExecutionHelper {
             // Execute the Select statement
             public void execute() throws SQLException, DBException {
                 dataView.setEditable(false);
-                stmt = conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-                stmt.setFetchSize(dataView.getDataViewPageContext().getPageSize());
+                String sql = dataView.getSQLString();
+                stmt = prepareSQLStatement(conn, sql);
 
                 // Execute the query
                 try {
-                    rs = stmt.executeQuery(dataView.getQueryString());
-                    loadDataFrom(rs);
+                    executeSQLStatement(stmt, sql);
+                    if(dataView.hasResultSet()) {
+                        rs = stmt.getResultSet();
+                        loadDataFrom(rs);
+                    } else {
+                        return;
+                    }
                 } finally {
                     DataViewUtils.closeResources(rs);
                 }
 
                 // Get total row count
-                try {
-                    crs = stmt.executeQuery(SQLStatementGenerator.getCountSQLQuery(dataView.getQueryString()));
-                    setTotalCount(crs);
-                } finally {
-                    DataViewUtils.closeResources(crs);
+                if(dataView.getDataViewPageContext().getTotalRows() == -1) {
+                    try {
+                        crs = stmt.executeQuery(SQLStatementGenerator.getCountSQLQuery(dataView.getSQLString()));
+                        setTotalCount(crs);
+                    } finally {
+                        DataViewUtils.closeResources(crs);
+                    }
                 }
             }
 
@@ -384,13 +405,14 @@ class SQLExecutionHelper {
         }
 
         int pageSize = dataView.getDataViewPageContext().getPageSize();
+        int maxRows = dataView.getDataViewPageContext().getCurrentPos() + pageSize;
         int startFrom = dataView.getDataViewPageContext().getCurrentPos() - 1;
         DataViewDBTable tblMeta = dataView.getDataViewDBTable();
 
         List<Object[]> rows = new ArrayList<Object[]>();
         int colCnt = tblMeta.getColumnCount();
         try {
-            rs.setFetchSize(pageSize);
+            rs.setFetchSize(pageSize > maxRows ? maxRows : pageSize);
 
             // Skip till current position
             boolean lastRowPicked = rs.next();
@@ -433,5 +455,53 @@ class SQLExecutionHelper {
         } catch (SQLException ex) {
             mLogger.info("Could not get total row count " + ex);
         }
+    }
+
+    private Statement prepareSQLStatement(Connection conn, String sql) throws SQLException {
+        Statement stmt = null;
+        if (sql.startsWith("{")) { // NOI18N
+            stmt = conn.prepareCall(sql);
+        } else if (isSelectStatement(sql)) {
+            stmt = conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+        } else {
+            stmt = conn.createStatement();
+        }
+        int pageSize = dataView.getDataViewPageContext().getPageSize();
+        stmt.setFetchSize(pageSize);
+        stmt.setMaxRows(dataView.getDataViewPageContext().getCurrentPos() + pageSize);
+        return stmt;
+    }
+
+    private void executeSQLStatement(Statement stmt, String sql) throws SQLException {
+        sql = sql.replaceAll("\\n", "").replaceAll("\\t", "");
+        mLogger.info("Executing Statement: " + sql);
+        dataView.setInfoStatusText("Executing Statement: " + sql);
+
+        long startTime = System.currentTimeMillis();
+        boolean isResultSet;
+        if (stmt instanceof PreparedStatement) {
+            isResultSet = ((PreparedStatement) stmt).execute();
+        } else {
+            isResultSet = stmt.execute(sql);
+        }
+        long executionTime = System.currentTimeMillis() - startTime;
+
+        String execTimeStr = millisecondsToSeconds(executionTime);
+        mLogger.info("Executed Successfully in " + execTimeStr +" seconds");
+        dataView.setInfoStatusText("Executed Successfully in " + execTimeStr +" seconds");
+
+        dataView.setHasResultSet(isResultSet);
+        dataView.setUpdateCount(stmt.getUpdateCount());
+        dataView.setExecutionTime(executionTime);
+    }
+
+    private boolean isSelectStatement(String queryString) {
+        return queryString.trim().toUpperCase().startsWith("SELECT");
+    }
+
+    private String millisecondsToSeconds(long ms) {
+        NumberFormat fmt = NumberFormat.getInstance();
+        fmt.setMaximumFractionDigits(3);
+        return fmt.format(ms / 1000.0);
     }
 }

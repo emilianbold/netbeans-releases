@@ -50,41 +50,30 @@ import java.util.List;
 class DataViewPageContext {
 
     private int pageSize = 10;
-    private int totalRows;
+    private int totalRows = -1;
     private int currentPos = 1;
     private int recordToRefresh = 10;
     private List<Object[]> rows;
 
-    int getPageSize() {
-        return pageSize;
+    DataViewPageContext(int pageSize) {
+        this.pageSize = pageSize;
+        this.recordToRefresh = pageSize;
     }
 
-    void setPageSize(int pageSize) {
-        this.pageSize = pageSize;
+    int getPageSize() {
+        return pageSize;
     }
 
     int getCurrentPos() {
         return currentPos;
     }
 
-    void setCurrentPos(int currentPos) {
-        this.currentPos = currentPos;
-    }
-
-    int getRecordToRefresh() {
-        return recordToRefresh;
-    }
-
-    void setRecordToRefresh(int recordToRefresh) {
-        this.recordToRefresh = recordToRefresh;
+    List<Object[]> getCurrentRows() {
+        return rows;
     }
 
     int getTotalRows() {
         return totalRows;
-    }
-
-    synchronized void setTotalRows(int totalCount) {
-        this.totalRows = totalCount;
     }
 
     boolean hasRows() {
@@ -106,9 +95,6 @@ class DataViewPageContext {
     void first() {
         currentPos = 1;
         recordToRefresh = pageSize;
-        if (recordToRefresh > totalRows) {
-            recordToRefresh = totalRows;
-        }
     }
 
     void previous() {
@@ -135,12 +121,8 @@ class DataViewPageContext {
         return (currentPos + pageSize) > totalRows;
     }
 
-    synchronized void setCurrentRows(List<Object[]> rows) {
-        this.rows = rows;
-    }
-
-    List<Object[]> getCurrentRows() {
-        return rows;
+    boolean refreshRequiredOnInsert() {
+        return (isLastPage() && rows.size() <= pageSize) ? true : false;
     }
 
     boolean hasDataRows() {
@@ -151,9 +133,38 @@ class DataViewPageContext {
         if (pageSize < 1 || totalRows < 1) {
             return "";
         }
-        
-        int curPage = recordToRefresh / pageSize + (recordToRefresh % pageSize > 0 ? 1 : 0);
+
+        int curPage = currentPos / pageSize + 1;
         int totalPages = totalRows / pageSize + (totalRows % pageSize > 0 ? 1 : 0);
         return " (Page " + curPage + " of " + totalPages + ") ";
+    }
+
+    void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
+    }
+
+    void setRecordToRefresh(int recordToRefresh) {
+        this.recordToRefresh = recordToRefresh;
+    }
+
+    synchronized void setTotalRows(int totalCount) {
+        this.totalRows = totalCount;
+    }
+
+    void setCurrentPos(int pos) {
+        this.currentPos = pos;
+    }
+
+    void decrementRowSize(int count) {
+        totalRows -= count;
+        if (totalRows <= pageSize) {
+            first();
+        } else if (currentPos > totalRows) {
+            previous();
+        }
+    }
+
+    synchronized void setCurrentRows(List<Object[]> rows) {
+        this.rows = rows;
     }
 }

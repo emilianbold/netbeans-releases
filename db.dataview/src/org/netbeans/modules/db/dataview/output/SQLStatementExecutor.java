@@ -42,7 +42,6 @@ package org.netbeans.modules.db.dataview.output;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.logging.Logger;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -64,7 +63,6 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
     private String title;
     private String titleMsg;
     private volatile RequestProcessor.Task task;
-    private static Logger mLogger = Logger.getLogger(SQLStatementExecutor.class.getName());
 
     public SQLStatementExecutor(DataView parent, String title, String msg) {
         this.title = title;

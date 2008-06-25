@@ -95,7 +95,7 @@ class DataViewUI extends JPanel{
 
         this.setLayout(new BorderLayout());
         this.setBorder(BorderFactory.createEmptyBorder());
-        this.setName("Data:" + dataView.getQueryString());
+        this.setName("Data:" + dataView.getSQLString());
         
         // Main pannel with toolbars
         JPanel panel = initializeMainPanel(toolbarType);
@@ -150,6 +150,11 @@ class DataViewUI extends JPanel{
         dataPanel.setResultSet(rows);
     }
 
+    void syncPageWithTableModel(){
+        dataView.getDataViewPageContext().setCurrentRows(dataPanel.getPageDataFromTable());
+        dataView.getUpdatedRowContext().resetUpdateState();
+    }
+
     void disableButtons() {
         truncateButton.setEnabled(false);
         refreshButton.setEnabled(false);
@@ -168,12 +173,14 @@ class DataViewUI extends JPanel{
         dataPanel.repaint();
     }
 
-    int getPageSize(int totalCount) {
+    int getPageSize() {
+        int pageSize = dataView.getDataViewPageContext().getPageSize();
+        int totalCount = dataView.getDataViewPageContext().getTotalRows();
         try {
             int count = Integer.parseInt(refreshField.getText().trim());
-            return count < 0 ? 10 : count;
+            return count < 0 ? pageSize : count;
         } catch (NumberFormatException ex) {
-            return totalCount < 10 ? totalCount : 10;
+            return totalCount < pageSize ? totalCount : pageSize;
         }
     }
 
@@ -221,7 +228,7 @@ class DataViewUI extends JPanel{
                 } else {
                     deleteRow.setEnabled(false);
                     truncateButton.setEnabled(false);
-                    dataPage.setCurrentPos(0);
+                    dataPage.first();
                 }
                 insert.setEnabled(true);
                 commit.setEnabled(false);
@@ -328,7 +335,7 @@ class DataViewUI extends JPanel{
 
         //add refresh text field
         refreshField = new JTextField();
-        refreshField.setText("" + dataView.getDataViewPageContext().getRecordToRefresh());
+        refreshField.setText("" + dataView.getDataViewPageContext().getPageSize());
         refreshField.setPreferredSize(new Dimension(30, refreshField.getHeight()));
         refreshField.setSize(30, refreshField.getHeight());
         refreshField.addKeyListener(new KeyAdapter() {

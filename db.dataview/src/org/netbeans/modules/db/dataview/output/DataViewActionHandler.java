@@ -74,8 +74,8 @@ class DataViewActionHandler {
         }
         return doCalculation;
     }
-    
-    void cancelEditPerformed(){
+
+    void cancelEditPerformed() {
         dataView.getUpdatedRowContext().resetUpdateState();
         dataView.setRowsInTableModel();
         dataViewUI.setCancelEnabled(false);
@@ -84,9 +84,10 @@ class DataViewActionHandler {
 
     void setMaxActionPerformed() {
         if (rejectModifications()) {
-            int pageSize = dataViewUI.getPageSize(dataPage.getTotalRows());
+            int pageSize = dataViewUI.getPageSize();
             dataPage.setPageSize(pageSize);
             dataPage.first();
+            dataPage.setTotalRows(-1); // force total row refresh
             execHelper.executeQuery();
         }
     }
@@ -121,7 +122,7 @@ class DataViewActionHandler {
 
     void commitActionPerformed() {
         if (dataViewUI.isDirty()) {
-            execHelper.executeUpdate();
+            execHelper.executeUpdateRow();
         }
     }
 
@@ -156,11 +157,7 @@ class DataViewActionHandler {
     }
 
     void refreshActionPerformed() {
-        int intVal = dataPage.getTotalRows();
-        if (intVal < 0) {
-            return;
-        }
-        dataPage.setRecordToRefresh(intVal);
+        dataPage.setTotalRows(-1); // force total row refresh
         execHelper.executeQuery();
     }
 }
