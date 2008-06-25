@@ -141,7 +141,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                 if (externalOwnersReference != null) {
                     FileObject externalOwner = externalOwnersReference.get();
 
-                    if (externalOwner != null) {
+                    if (externalOwner != null && externalOwner.isValid()) {
                         try {
                             // Note: will be null if there is no such project.
                             Project p = ProjectManager.getDefault().findProject(externalOwner);

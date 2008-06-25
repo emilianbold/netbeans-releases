@@ -60,7 +60,9 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
     private static Class<? extends DocumentBuilderFactory> getFirst() {
         try {
             String name = System.getProperty("nb.backup." + Factory_PROP); // NOI18N
-            return name == null ? null : Class.forName(name).asSubclass(DocumentBuilderFactory.class);
+            return name == null ? null : Class.forName(
+                name, true, ClassLoader.getSystemClassLoader()
+            ).asSubclass(DocumentBuilderFactory.class);
         } catch (ClassNotFoundException ex) {
             Exceptions.printStackTrace(ex);
             return null;
@@ -84,7 +86,7 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
             ClassLoader orig = Thread.currentThread().getContextClassLoader();
             // Not app class loader. only ext and bootstrap
             try {
-               Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader().getParent());
+               Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader());
                System.setProperty("nb.backup." + Factory_PROP, DocumentBuilderFactory.newInstance().getClass().getName()); // NOI18N
             } finally {
                Thread.currentThread().setContextClassLoader(orig);            
@@ -140,12 +142,14 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
     private DocumentBuilder tryCreate() throws ParserConfigurationException, IllegalArgumentException {
         for (
             Iterator<Class<? extends DocumentBuilderFactory>> it 
-                = new LazyIterator(getFirst(), DocumentBuilderFactory.class, DOMFactoryImpl.class); 
+                = new LazyIterator<DocumentBuilderFactory>(getFirst(), DocumentBuilderFactory.class, DOMFactoryImpl.class); 
             it.hasNext(); 
         ) {
             try {
                 DocumentBuilder builder = tryCreate(it.next());
                 return builder;
+            } catch (ClassCastException e) {
+                if (!it.hasNext()) throw e;
             } catch (ParserConfigurationException e) {
                 if (!it.hasNext()) throw e;
             } catch (IllegalArgumentException e) {

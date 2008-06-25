@@ -41,8 +41,6 @@ package org.netbeans.modules.ws.qaf;
 import java.io.IOException;
 import javax.swing.ListModel;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -50,7 +48,7 @@ import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.ws.qaf.WebServicesTestBase.ProjectType;
 
 /**
@@ -81,22 +79,33 @@ public class JavaSEWsValidation extends WsValidation {
         return "o.n.m.ws.qaf.client.j2se"; //NOI18N
     }
 
-    /** Creates suite from particular test cases. You can define order of testcases here. */
-    public static TestSuite suite() {
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new JavaSEWsValidation("testCreateWsClient")); //NOI18N   
-        suite.addTest(new JavaSEWsValidation("testCallWsOperationInJavaMainClass")); //NOI18N
-        suite.addTest(new JavaSEWsValidation("testFixClientLibraries")); //NOI18N
-        suite.addTest(new JavaSEWsValidation("testWsClientHandlers")); //NOI18N
-//        suite.addTest(new EjbWsValidation("testRefreshClient")); //NOI18N
-        suite.addTest(new JavaSEWsValidation("testRunWsClientProject")); //NOI18N
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(JavaSEWsValidation.class),
+                "testCreateWsClient",
+                "testCallWsOperationInJavaMainClass",
+                "testFixClientLibraries",
+                "testWsClientHandlers",
+                //"testRefreshClient",
+                "testRunWsClientProject"
+                ).enableModules(".*").clusters(".*"));
     }
-
-    /* Method allowing test execution directly from the IDE. */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
+    
+//    /** Creates suite from particular test cases. You can define order of testcases here. */
+//    public static TestSuite suite() {
+//        TestSuite suite = new NbTestSuite();
+//        suite.addTest(new JavaSEWsValidation("testCreateWsClient")); //NOI18N   
+//        suite.addTest(new JavaSEWsValidation("testCallWsOperationInJavaMainClass")); //NOI18N
+//        suite.addTest(new JavaSEWsValidation("testFixClientLibraries")); //NOI18N
+//        suite.addTest(new JavaSEWsValidation("testWsClientHandlers")); //NOI18N
+////        suite.addTest(new EjbWsValidation("testRefreshClient")); //NOI18N
+//        suite.addTest(new JavaSEWsValidation("testRunWsClientProject")); //NOI18N
+//        return suite;
+//    }
+//
+//    /* Method allowing test execution directly from the IDE. */
+//    public static void main(java.lang.String[] args) {
+//        TestRunner.run(suite());
+//    }
 
     public void testCallWsOperationInJavaMainClass() {
         final EditorOperator eo = new EditorOperator("Main.java"); //NOI18N

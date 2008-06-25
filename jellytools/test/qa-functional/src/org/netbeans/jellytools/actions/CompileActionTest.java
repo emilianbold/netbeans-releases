@@ -41,6 +41,7 @@
 
 package org.netbeans.jellytools.actions;
 
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -66,13 +67,16 @@ public class CompileActionTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new CompileActionTest("testPerformPopup"));
         suite.addTest(new CompileActionTest("testPerformMenu"));
         suite.addTest(new CompileActionTest("testPerformShortcut"));
         return suite;
+         */
+        return createModuleTest(CompileActionTest.class, "testPerformPopup", "testPerformMenu", "testPerformShortcut");
     }
-    
+
     /** Use for internal test execution inside IDE
      * @param args command line arguments
      */
@@ -83,7 +87,8 @@ public class CompileActionTest extends JellyTestCase {
     private static Node node;
     private static MainWindowOperator.StatusTextTracer statusTextTracer;
     
-    public void setUp() {
+    public void setUp() throws IOException {
+        openDataProjects("SampleProject");
         if(node ==null) {
             node = new Node(new SourcePackagesNode("SampleProject"), "sample1|SampleClass1.java");
         }
