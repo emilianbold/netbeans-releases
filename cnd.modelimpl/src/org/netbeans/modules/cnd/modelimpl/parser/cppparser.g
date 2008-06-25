@@ -2050,6 +2050,8 @@ ctor_declarator[boolean definition]
 	LPAREN! (parameter_list)? RPAREN!
 	//{declaratorEndParameterList(definition);}
 	(exception_specification)?
+        // IZ 136239 : C++ grammar does not allow attributes after constructor
+        (function_attribute_specification)?
 	;
 
 // This matches a generic qualified identifier ::T::B::foo
