@@ -51,6 +51,7 @@ import org.jruby.ast.ConstNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeType;
 import org.jruby.ast.SymbolNode;
+import org.jruby.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Modifier;
@@ -132,14 +133,16 @@ public abstract class AstElement extends RubyElement {
         case MODULENODE:
             return new AstModuleElement(info, node);
         case CONSTNODE:
-            return new AstVariableElement(info, node, ((ConstNode)node).getName());
+            return new AstNameElement(info, node, ((INameNode)node).getName(),
+                    ElementKind.VARIABLE); // Why VARIABLE instead of CONSTANT?
         case CLASSVARNODE:
         case CLASSVARDECLNODE:
         case INSTASGNNODE:
         case INSTVARNODE:
             return new AstFieldElement(info, node);
         case CONSTDECLNODE:
-            return new AstConstantElement(info, (ConstDeclNode)node);
+            return new AstNameElement(info, node, ((INameNode)node).getName(),
+                    ElementKind.CONSTANT);
         case SYMBOLNODE:
             return new AstAttributeElement(info, (SymbolNode)node, null);
         default:

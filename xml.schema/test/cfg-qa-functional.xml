@@ -68,7 +68,7 @@ made subject to such option by the copyright holder.
       </testset>
     </testbag>
 
-    <testbag testattribs="generation" executor="ide" name="XML Schema and Document Generation">
+    <testbag testattribs="all,draft,generation" executor="ide" name="XML Schema and Document Generation">
       <testset dir="qa-functional/src">
         <patternset>
           <include name="org/netbeans/test/xml/schema/general/generation/XMLGeneration_0001.class"/>
@@ -80,7 +80,7 @@ made subject to such option by the copyright holder.
       </testset>
     </testbag>
 
-    <testbag testattribs="dtdactions" executor="ide" name="DTD Node Actions">
+    <testbag testattribs="all,draft,dtdactions" executor="ide" name="DTD Node Actions">
       <testset dir="qa-functional/src">
         <patternset>
           <include name="org/netbeans/test/xml/schema/general/dtd/DTDActions_0001.class"/>
@@ -88,15 +88,7 @@ made subject to such option by the copyright holder.
       </testset>
     </testbag>
 
-    <testbag testattribs="schemaview" executor="ide" name="Schema View">
-      <testset dir="qa-functional/src">
-        <patternset>
-          <include name="org/netbeans/test/xml/schema/general/schemaview/SchemaView_0001.class"/>
-        </patternset>
-      </testset>
-    </testbag>
-
-    <testbag testattribs="components" executor="ide" name="All components">
+    <testbag testattribs="all,draft,components" executor="ide" name="All components">
       <testset dir="qa-functional/src">
         <patternset>
           <include name="org/netbeans/test/xml/schema/general/components/all/AllComponent_0001.class"/>
@@ -106,6 +98,61 @@ made subject to such option by the copyright holder.
           <include name="org/netbeans/test/xml/schema/general/components/complex/ComplexComponent_0001.class"/>
           <include name="org/netbeans/test/xml/schema/general/components/simple/SimpleComponent_0001.class"/>
           <include name="org/netbeans/test/xml/schema/general/components/attribute/AttributeComponent_0001.class"/>
+        </patternset>
+      </testset>
+    </testbag>
+
+    <testbag testattribs="all,draft,schemaview" executor="ide" name="Schema View">
+      <testset dir="qa-functional/src">
+        <patternset>
+          <include name="org/netbeans/test/xml/schema/general/schemaview/SchemaView_0001.class"/>
+          <include name="org/netbeans/test/xml/schema/general/schemaview/SchemaView_0002.class"/>
+        </patternset>
+      </testset>
+    </testbag>
+
+    <testbag testattribs="all,draft,sourceview" executor="ide" name="Source View">
+      <testset dir="qa-functional/src">
+        <patternset>
+          <include name="org/netbeans/test/xml/schema/general/sourceview/SourceView_0001.class"/>
+          <include name="org/netbeans/test/xml/schema/general/sourceview/SourceView_0002.class"/>
+        </patternset>
+      </testset>
+    </testbag>
+
+    <testbag testattribs="all,draft,retriver" executor="ide" name="Retriver">
+      <testset dir="qa-functional/src">
+        <patternset>
+          <include name="org/netbeans/test/xml/schema/general/retriver/Retriver_0001.class"/>
+          <include name="org/netbeans/test/xml/schema/general/retriver/Retriver_0002.class"/>
+          <include name="org/netbeans/test/xml/schema/general/retriver/Retriver_0003.class"/>
+          <include name="org/netbeans/test/xml/schema/general/retriver/Retriver_0004.class"/>
+          <include name="org/netbeans/test/xml/schema/general/retriver/Retriver_0005.class"/>
+        </patternset>
+      </testset>
+    </testbag>
+
+    <testbag testattribs="all,draft,query" executor="ide" name="Query">
+      <testset dir="qa-functional/src">
+        <patternset>
+          <include name="org/netbeans/test/xml/schema/general/query/Query_0001.class"/>
+        </patternset>
+      </testset>
+    </testbag>
+
+    <testbag testattribs="all,draft,pattern" executor="ide" name="Apply Design Pattern">
+      <testset dir="qa-functional/src">
+        <patternset>
+          <include name="org/netbeans/test/xml/schema/general/pattern/Pattern_0001.class"/>
+          <include name="org/netbeans/test/xml/schema/general/pattern/Pattern_0002.class"/>
+        </patternset>
+      </testset>
+    </testbag>
+
+    <testbag testattribs="all,draft,navigator" executor="ide" name="Navigator">
+      <testset dir="qa-functional/src">
+        <patternset>
+          <include name="org/netbeans/test/xml/schema/general/navigator/Navigator_0001.class"/>
         </patternset>
       </testset>
     </testbag>

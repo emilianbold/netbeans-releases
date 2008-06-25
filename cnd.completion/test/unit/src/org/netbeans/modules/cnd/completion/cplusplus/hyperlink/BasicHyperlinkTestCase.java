@@ -181,6 +181,27 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("template_parameter.cc", 8, 11, "template_parameter.cc", 1, 10);
     }
 
+    public void testIZ131625() throws Exception {
+        performTest("IZ131625.cc",  4, 11, "IZ131625.cc", 10, 1);
+        performTest("IZ131625.cc",  7, 23, "IZ131625.cc", 10, 1);
+        performTest("IZ131625.cc",  7, 23, "IZ131625.cc", 10, 1);
+        performTest("IZ131625.cc", 14, 35, "IZ131625.cc", 12, 3);
+        performTest("IZ131625.cc", 18, 24, "IZ131625.cc", 10, 1);
+        performTest("IZ131625.cc", 20,  3, "IZ131625.cc", 10, 1);
+        performTest("IZ131625.cc", 21, 12, "IZ131625.cc", 13, 3);
+        performTest("IZ131625.cc", 22, 11, "IZ131625.cc", 13, 3);
+        performTest("IZ131625.cc", 10, 20, "IZ131625.cc",   4, 3);
+    }
+
+    public void testIZ136146() throws Exception {
+        performTest("IZ136146.cc", 20, 10, "IZ136146.cc", 15, 5);
+        performTest("IZ136146.cc", 21, 12, "IZ136146.cc", 15, 5);
+    }
+
+//    public void testIZ132903() throws Exception {
+//            performTest("IZ132903.cc", 16, 10, "IZ132903.cc",  9, 5);
+//    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
@@ -189,7 +210,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         }
 
         public Failed(String testName) {
-            super(testName);
+            super(testName, true);
         }
 
         public void testKRFuncParamDecl() throws Exception {

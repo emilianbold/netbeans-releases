@@ -56,6 +56,7 @@ import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyReference;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing10WsdlQName;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing10WsdlUsingAddressing;
+import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing13WsdlAddressing;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.wsdl.model.*;
 
@@ -227,7 +228,7 @@ public class PolicyModelHelper {
 
         All all = createTopExactlyOneAll(policy);
         if ((c instanceof Binding) && (addressing)) {
-            createElement(all, Addressing10WsdlQName.USINGADDRESSING.getQName(), Addressing10WsdlUsingAddressing.class, false);
+            AddressingModelHelper.getInstance(configVersion).enableAddressing(all);
         }
         return all;
     }
@@ -494,7 +495,7 @@ public class PolicyModelHelper {
                     (c instanceof All) || (c instanceof ExactlyOne)) {
                 return isEmpty(c);
             }
-            if (!(c instanceof Addressing10WsdlUsingAddressing)) {
+            if (!((c instanceof Addressing10WsdlUsingAddressing) || (c instanceof Addressing13WsdlAddressing))) {
                 return false;
             }
         }

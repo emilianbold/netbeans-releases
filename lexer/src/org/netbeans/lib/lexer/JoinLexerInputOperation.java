@@ -342,7 +342,7 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
                     // Also shift given offset value
                     offset += tokenListStartOffset - tokenListEndOffset;
                     tokenListEndOffset = etl.endOffset();
-                    if (readOffset < tokenListEndOffset) { // ETL might be empty
+                    if (offset < tokenListEndOffset) { // ETL might be empty
                         return inputSourceText.charAt(offset);
                     }
                 }
@@ -382,7 +382,7 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
                     // Also shift given offset value
                     offset -= tokenListStartOffset - tokenListEndOffset;
                     tokenListStartOffset = etl.startOffset();
-                    if (readOffset >= tokenListStartOffset) { // ETL might be empty
+                    if (offset >= tokenListStartOffset) { // ETL might be empty
                         return inputSourceText.charAt(offset);
                     }
                 }
@@ -397,7 +397,7 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
                     // Also shift given offset value
                     offset += tokenListStartOffset - tokenListEndOffset;
                     tokenListEndOffset = etl.endOffset();
-                    if (readOffset < tokenListEndOffset) { // ETL might be empty
+                    if (offset < tokenListEndOffset) { // ETL might be empty
                         return inputSourceText.charAt(offset);
                     }
                 }

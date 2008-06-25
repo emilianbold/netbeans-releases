@@ -1932,9 +1932,45 @@ final class Central implements ControllerHandler {
                 wasTcClosed = removeModeTopComponent(mode, tc);
             }
         }
+        if( wasTcClosed 
+                && mode.getKind() == Constants.MODE_KIND_EDITOR 
+                && "editor".equals(mode.getName())  //NOI18N
+                && mode.getOpenedTopComponentsIDs().isEmpty() ) {
+            
+            //134945 - if user just closed the last topcomponent in the default
+            //and permanent "editor" mode then pick some other arbitrary editor mode
+            //and move its topcomponents to the default editor mode. otherwise opening
+            //of a new editor window will cause a split in the editor area.
+            ModeImpl otherEditorMode = findSomeOtherEditorModeImpl();
+            if( null != otherEditorMode ) {
+                for( String closedTcId : otherEditorMode.getClosedTopComponentsIDs() ) {
+                    mode.addUnloadedTopComponent(closedTcId);
+                }
+                List<TopComponent> tcs = otherEditorMode.getOpenedTopComponents();
+                for( TopComponent t : tcs ) {
+                    int index = otherEditorMode.getTopComponentTabPosition(t);
+                    mode.addOpenedTopComponent(t, index);
+                }
+                removeMode(otherEditorMode);
+            }
+        }
         if ((recentTc != null) && wasTcClosed) {
             recentTc.requestActive();
         }
+    }
+    
+    /**
+     * @return ModeImpl with opened TopComponents which is 'editor' kind but 
+     * not the default and permanent one. Returns null if there is no such mode.
+     */
+    private ModeImpl findSomeOtherEditorModeImpl() {
+        for( ModeImpl m : getModes() ) {
+            if( m.getKind() == Constants.MODE_KIND_EDITOR 
+                    && !"editor".equals(m.getName()) //NOI18N
+                    && !m.getOpenedTopComponentsIDs().isEmpty() )
+                return m;
+        }
+        return null;
     }
     
     public void userClosedMode(ModeImpl mode) {

@@ -49,7 +49,7 @@ import org.netbeans.modules.ruby.platform.execution.FileLocator;
  */
 public class TestSession {
 
-    enum SessionType {
+    public enum SessionType {
 
         TEST,
         DEBUG
@@ -57,9 +57,11 @@ public class TestSession {
     private final List<Report.Testcase> testCases = new ArrayList<Report.Testcase>();
     private String suiteName;
     private final FileLocator fileLocator;
+    private final SessionType sessionType;
 
-    public TestSession(FileLocator fileLocator) {
+    public TestSession(FileLocator fileLocator, SessionType sessionType) {
         this.fileLocator = fileLocator;
+        this.sessionType = sessionType;
     }
 
     /**
@@ -113,5 +115,9 @@ public class TestSession {
     String getSuiteName() {
         return suiteName;
     }
-    
+
+    SessionType getSessionType() {
+        return sessionType;
+    }
+
 }

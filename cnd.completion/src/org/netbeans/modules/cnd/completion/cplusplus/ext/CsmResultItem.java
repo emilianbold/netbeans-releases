@@ -81,6 +81,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
@@ -1370,6 +1371,92 @@ public abstract class CsmResultItem
         
     }
     
+    public static class ForwardClassResultItem extends CsmResultItem{
+        
+        private CsmClassForwardDeclaration cls;
+        private CsmDeclaration.Kind kind;
+        private int classDisplayOffset;
+        private boolean displayFQN;
+        
+        private static CsmPaintComponent.ClassPaintComponent clsComponent = null;
+        private static CsmPaintComponent.StructPaintComponent structComponent = null;
+        private static CsmPaintComponent.UnionPaintComponent unionComponent = null;
+        
+        public ForwardClassResultItem(CsmClassForwardDeclaration cls, boolean displayFQN, int priotity){
+            this(cls, 0, displayFQN, priotity);
+        }
+        
+        public ForwardClassResultItem(CsmClassForwardDeclaration cls, int classDisplayOffset, boolean displayFQN, int priotity){
+            super(cls, priotity);
+            this.cls = cls;
+            CsmClass c = cls.getCsmClass();
+            if (c != null) {
+                this.kind = c.getKind();
+            } else {
+                this.kind = CsmDeclaration.Kind.STRUCT;
+            }
+            this.classDisplayOffset = classDisplayOffset;
+            this.displayFQN = displayFQN;
+        }
+        
+        
+        protected String getName(){
+            return cls.getName().toString(); 
+        }
+        
+        protected String getReplaceText(){
+            String text = getItemText();
+            if (classDisplayOffset > 0
+                    && classDisplayOffset < text.length()
+                    ) { // Only the last name for inner classes
+                text = text.substring(classDisplayOffset);
+            }
+            return text;
+        }
+        
+        public String getItemText() {
+            return displayFQN ? cls.getQualifiedName().toString() : getName();
+        }
+        
+        protected CsmPaintComponent.StructPaintComponent createStructPaintComponent(){
+            return new CsmPaintComponent.StructPaintComponent();
+        }
+        
+        protected CsmPaintComponent.UnionPaintComponent createUnionPaintComponent(){
+            return new CsmPaintComponent.UnionPaintComponent();
+        }
+        
+        protected CsmPaintComponent.ClassPaintComponent createClassPaintComponent(){
+            return new CsmPaintComponent.ClassPaintComponent();
+        }
+        
+        public Component getPaintComponent(boolean isSelected) {
+            if (kind == CsmDeclaration.Kind.STRUCT){
+                if (structComponent == null){
+                    structComponent = createStructPaintComponent();
+                }
+                structComponent.setSelected(isSelected);
+                structComponent.setFormatClassName(getName());
+                return structComponent;
+            }else if (kind == CsmDeclaration.Kind.UNION) {
+                if (unionComponent == null){
+                    unionComponent = createUnionPaintComponent();
+                }
+                unionComponent.setSelected(isSelected);
+                unionComponent.setFormatClassName(getName());
+                return unionComponent;
+            } else {
+                assert (kind == CsmDeclaration.Kind.CLASS) : "must be class kind";
+                if (clsComponent == null){
+                    clsComponent = createClassPaintComponent();
+                }
+                clsComponent.setSelected(isSelected);
+                clsComponent.setFormatClassName(getName());
+                return clsComponent;
+            }
+        }
+        
+    }
     
     public static class TypedefResultItem extends CsmResultItem {
         

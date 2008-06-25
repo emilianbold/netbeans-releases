@@ -18,15 +18,14 @@
  */
 package org.netbeans.microedition.svg;
 
-import java.util.Hashtable;
 import java.util.Vector;
+
 import javax.microedition.lcdui.Display;
 import javax.microedition.m2g.SVGEventListener;
 import javax.microedition.m2g.SVGImage;
+
 import org.netbeans.microedition.svg.input.InputHandler;
 import org.netbeans.microedition.svg.input.NumPadInputHandler;
-import org.w3c.dom.Node;
-import org.w3c.dom.svg.SVGElement;
 
 /**
  *
@@ -88,7 +87,7 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
         }
     }
      
-    private final Hashtable groups = new Hashtable(10);
+    /*private final Hashtable groups = new Hashtable(10);
     
     private SVGButtonGroup getGroup(String id) {
         synchronized(groups) {
@@ -117,7 +116,7 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
         }
         
         return true;
-    }
+    }*/
     
     public synchronized NumPadInputHandler getNumPadInputHandler() {
         if ( inputHandler == null) {
