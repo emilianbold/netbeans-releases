@@ -44,6 +44,8 @@ package org.netbeans.modules.db.sql.loader;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.KeyboardFocusManager;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -51,23 +53,26 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
 import org.netbeans.modules.db.sql.execute.ui.SQLHistoryPanel;
-import org.netbeans.modules.db.sql.execute.ui.SQLResultPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.netbeans.modules.db.dataview.output.DataView;
+import org.openide.awt.MouseUtils;
 import org.openide.text.CloneableEditor;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -88,6 +93,14 @@ public class SQLCloneableEditor extends CloneableEditor {
 
     private transient JSplitPane splitter;
     private transient JTabbedPane resultComponent;
+    private transient JPopupMenu resultPopupMenu;
+    private transient Action closeTabAction;
+    private transient Action closeOtherTabsAction;
+    private transient Action closeAllTabsAction;
+    private transient Action closePreviousTabsAction;
+    private transient Component editor;
+
+    private transient List<Component> currentResultTabs;
 
     private transient SQLExecutionImpl sqlExecution;
 
@@ -121,18 +134,25 @@ public class SQLCloneableEditor extends CloneableEditor {
     }
     
     private void populateResults(List<Component> components) {
-        // TODO - make it an option to keep existing tabs
-        resultComponent.removeAll();
-        
+        if (currentResultTabs != null && closePreviousTabsAction != null) {
+            closePreviousTabsAction.setEnabled(true);
+        } else {
+            closePreviousTabsAction.setEnabled(false);
+        }
+
         if (components == null) {
             return;
         }
+
+        currentResultTabs = components;
         
         for (Component comp : components ) {
             resultComponent.add(comp);            
         }
-        
+
+        showResultComponent();
     }
+    
     private void createResultComponent() {
         JPanel container = findContainer(this);
         if (container == null) {
@@ -142,7 +162,9 @@ public class SQLCloneableEditor extends CloneableEditor {
         }
         
         resultComponent = new JTabbedPane();
-        Component editor = container.getComponent(0);
+        createResultPopupMenu();
+
+        editor = container.getComponent(0);
 
         container.removeAll();
 
@@ -153,9 +175,7 @@ public class SQLCloneableEditor extends CloneableEditor {
         splitter.setDividerLocation(250);
         splitter.setDividerSize(7);
 
-        container.invalidate();
-        container.validate();
-        container.repaint();
+        showResultComponent();
 
         // #69642: the parent of the CloneableEditor's ActionMap is
         // the editor pane's ActionMap, therefore the delete action is always returned by the
@@ -167,6 +187,124 @@ public class SQLCloneableEditor extends CloneableEditor {
             // setting back the focus lost when removing the editor from the CloneableEditor
             requestFocusInWindow();
         }        
+    }
+
+    /**
+     * Create the popup menu for the result pane
+     */
+    private void createResultPopupMenu() {
+        closeTabAction = new AbstractAction(getMessage("CLOSE_TAB_ACTION")) {
+            public void actionPerformed(ActionEvent e) {
+                resultComponent.remove(resultComponent.getSelectedComponent());
+                if (resultComponent.getTabCount() == 0) {
+                    hideResultComponent();
+                }
+                revalidate();
+            }
+        };
+
+        closeOtherTabsAction = new AbstractAction(getMessage("CLOSE_OTHER_TABS_ACTION")) {
+            public void actionPerformed(ActionEvent e) {
+                for (Component component : resultComponent.getComponents()) {
+                    if (! component.equals(resultComponent.getSelectedComponent())) {
+                        resultComponent.remove(component);
+                    }
+                }
+                setEnabled(false);
+                revalidate();
+            }
+        };
+
+        closePreviousTabsAction = new AbstractAction(getMessage("CLOSE_PREVIOUS_TABS_ACTION")) {
+            public void actionPerformed(ActionEvent e) {
+                for (Component component : resultComponent.getComponents()) {
+                    if ((currentResultTabs != null) && (! currentResultTabs.contains(component))) {
+                        resultComponent.remove(component);
+                    }
+                }
+                setEnabled(false);
+                if (resultComponent.getTabCount() == 0) {
+                    hideResultComponent();
+                }
+                revalidate();
+            }
+        };
+
+        closeAllTabsAction = new AbstractAction(getMessage("CLOSE_ALL_TABS_ACTION")) {
+            public void actionPerformed(ActionEvent e) {
+                resultComponent.removeAll();
+                hideResultComponent();
+                revalidate();
+            }
+        };
+
+        resultPopupMenu = new JPopupMenu();
+        resultPopupMenu.add(closeTabAction);
+        resultPopupMenu.add(closeOtherTabsAction);
+        resultPopupMenu.add(closePreviousTabsAction);
+        resultPopupMenu.add(closeAllTabsAction);
+
+        resultComponent.addMouseListener(new MouseUtils.PopupMouseAdapter() {
+            @Override
+            protected void showPopup(MouseEvent evt) {
+                resultPopupMenu.show(resultComponent, evt.getX(), evt.getY());
+            }
+        });
+
+        resultComponent.addChangeListener(new ChangeListener() {
+
+            public void stateChanged(ChangeEvent e) {
+                int numtabs = resultComponent.getTabCount();
+                if (numtabs == 0) {
+                    hideResultComponent();
+                } else if (numtabs == 1) {
+                    closeAllTabsAction.setEnabled(true);
+                    closeOtherTabsAction.setEnabled(false);
+                } else {
+                    closeAllTabsAction.setEnabled(true);
+                    closeOtherTabsAction.setEnabled(true);
+                }                
+            }
+
+        });
+}
+
+    private static String getMessage(String key, String ... params) {
+        return NbBundle.getMessage(SQLCloneableEditor.class, key, params);
+    }
+
+    private void hideResultComponent() {
+        if (splitter == null) {
+            return;
+        }
+
+        splitter.setBottomComponent(null);
+    }
+
+    private void showResultComponent() {
+        JPanel container = findContainer(this);
+        if (container == null) {
+            // the editor has just been deserialized and has not been initialized yet
+            // thus CES.wrapEditorComponent() has not been called yet
+            return;
+        }
+
+        if (splitter == null) {
+            return;
+        }
+
+        splitter.setTopComponent(null);
+        splitter.setBottomComponent(null);
+        
+        splitter.setTopComponent(editor);
+        splitter.setBottomComponent(resultComponent);
+        
+        splitter.setDividerLocation(250);
+        splitter.setDividerSize(7);
+
+        container.invalidate();
+        container.validate();
+        container.repaint();
     }
 
     /**
