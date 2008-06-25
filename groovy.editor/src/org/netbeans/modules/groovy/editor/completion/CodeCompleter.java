@@ -55,6 +55,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
@@ -766,6 +767,28 @@ public class CodeCompleter implements CodeCompletionHandler {
         return false;
     }
     
+    private boolean completeNewVars(List<CompletionProposal> proposals, CompletionRequest request, List<String> newVars) {
+        LOG.log(Level.FINEST, "-> completeNewVars"); // NOI18N
+
+        if (request.location == CaretLocation.OUTSIDE_CLASSES) {
+            LOG.log(Level.FINEST, "outside of any class, bail out."); // NOI18N
+            return false;
+        }
+
+        if (request.behindDot) {
+            LOG.log(Level.FINEST, "We are invoked right behind a dot."); // NOI18N
+            return false;
+        }
+
+        boolean stuffAdded = false;
+
+        for (String var : newVars) {
+            proposals.add(new NewVarItem(var, anchor, request));
+            stuffAdded = true;
+        }
+        return stuffAdded;
+    }
+    
     
     /**
      * Complete the fields for a class. There are two principal completions for fields:
@@ -907,9 +930,96 @@ public class CodeCompleter implements CodeCompletionHandler {
                 
             }
         }
-        
+
         return true;
     }
+    
+    /**
+     * This is a minimal version of Utilities.varNamesForType() to suggest variable names.
+     * 
+     * See: 
+     * java.editor/src/org/netbeans/modules/editor/java/JavaCompletionProvider.java
+     * java.editor/src/org/netbeans/modules/editor/java/Utilities.varNamesSuggestions()
+     * how to do this right.
+     * 
+     * todo: recurse to look at arrays. For example: Long [] gives longs
+     * 
+     * @param ctx
+     * @return
+     */
+    
+    private List<String> getNewVarNameSuggestion (CompletionRequest request) {
+        LOG.log(Level.FINEST, "getNewVarNameSuggestion()"); // NOI18N
+
+        CompletionContext ctx = getCompletionContext(request);
+        
+        List<String> result = new ArrayList<String>();
+        
+        if (ctx == null || ctx.before1 == null) {
+            return result;
+        }
+        
+        // Check for primitive types first:
+        // int long char byte double float short boolean
+        
+        if (ctx.before1.id() == GroovyTokenId.LITERAL_boolean) {
+            result.add("b");
+        } else if (ctx.before1.id() == GroovyTokenId.LITERAL_byte) {
+            result.add("b");
+        } else if (ctx.before1.id() == GroovyTokenId.LITERAL_char) {
+            result.add("c");
+        } else if (ctx.before1.id() == GroovyTokenId.LITERAL_double) {
+            result.add("d");
+        } else if (ctx.before1.id() == GroovyTokenId.LITERAL_float) {
+            result.add("f");
+        } else if (ctx.before1.id() == GroovyTokenId.LITERAL_int) {
+            result.add("i");
+        } else if (ctx.before1.id() == GroovyTokenId.LITERAL_long) {
+            result.add("l");
+        } else if (ctx.before1.id() == GroovyTokenId.LITERAL_short) {
+            result.add("s");
+        }
+        
+        // now we propose variable names based on the type
+        
+        if (ctx.before1.id() == GroovyTokenId.IDENTIFIER) {
+            
+            String typeName = ctx.before1.text().toString();
+            
+            if (typeName != null) {
+                // Only First char, lowercase
+                addIfNotIn(result, typeName.substring(0, 1).toLowerCase(Locale.ENGLISH));
+                // name lowercase
+                addIfNotIn(result, typeName.toLowerCase(Locale.ENGLISH));
+                // camelcase hunches put together
+                addIfNotIn(result, camelCaseHunch(typeName));
+                // first char switched to lowercase
+                addIfNotIn(result, typeName.substring(0, 1).toLowerCase(Locale.ENGLISH) + typeName.substring(1));
+            }
+        }
+        return result;
+    }
+    
+    void addIfNotIn(List<String> result, String name){
+        if(!result.contains(name)){
+            result.add(name);
+        }
+    }
+
+
+    // this was: Utilities.nextName()
+    
+    private static String camelCaseHunch(CharSequence name) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            if (Character.isUpperCase(c)) {
+                char lc = Character.toLowerCase(c);
+                sb.append(lc);
+            }
+        }
+        return sb.toString();
+    }    
     
     private void getLocalVars(ASTNode node, List<ASTNode> result) {
         if (node instanceof Variable) {
@@ -1331,30 +1441,38 @@ public class CodeCompleter implements CodeCompletionHandler {
                 return new DefaultCompletionResult(proposals, false);
             }
             
-            
-            if (!(request.location == CaretLocation.OUTSIDE_CLASSES)) {
-                // complete packages
-                completePackages(proposals, request);
+            List<String> newVars = getNewVarNameSuggestion(request);
 
-                // complete classes, interfaces and enums
-                completeTypes(proposals, request);
+            if (newVars.isEmpty()) {
+
+                if (!(request.location == CaretLocation.OUTSIDE_CLASSES)) {
+                    // complete packages
+                    completePackages(proposals, request);
+
+                    // complete classes, interfaces and enums
+                    completeTypes(proposals, request);
+                }
+
+                // complette keywords
+                completeKeywords(proposals, request);
+
+                if (!checkForRequestBehindImportStatement(request)) {
+
+                    // complete methods
+                    completeMethods(proposals, request);
+
+
+                    // complete fields
+                    completeFields(proposals, request);
+
+                    // complete local variables
+                    completeLocalVars(proposals, request);
+
+                }
             }
-            
-            // complette keywords
-            completeKeywords(proposals, request);
-            
-            if (!checkForRequestBehindImportStatement(request)) {
 
-                // complete methods
-                completeMethods(proposals, request);
-
-
-                // complete fields
-                completeFields(proposals, request);
-
-                // complete local variables
-                completeLocalVars(proposals, request);
-            }
+            // proposals for new vars
+            completeNewVars(proposals, request, newVars);
 
             return new DefaultCompletionResult(proposals, false);
         } finally {
@@ -2093,6 +2211,49 @@ public class CodeCompleter implements CodeCompletionHandler {
         @Override
         public ImageIcon getIcon() {
             // todo: what happens, if i get a CCE here?
+            return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.LOCAL_VARIABLE, null);
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public ElementHandle getElement() {
+            return null;
+        }
+    }
+
+    /**
+     *
+     */
+    private class NewVarItem extends GroovyCompletionItem {
+
+        private final String var;
+
+        NewVarItem(String var, int anchorOffset, CompletionRequest request) {
+            super(null, anchorOffset, request);
+            this.var = var;
+        }
+
+        @Override
+        public String getName() {
+            return var;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.VARIABLE;
+        }
+
+        @Override
+        public String getRhsHtml() {
+            return null;
+        }
+
+        @Override
+        public ImageIcon getIcon() {
             return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.LOCAL_VARIABLE, null);
         }
 
