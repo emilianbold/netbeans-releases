@@ -77,6 +77,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
+import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
@@ -197,10 +198,10 @@ public class TargetServer {
         }
     }
     
-    private AppChangeDescriptor distributeChangesOnSave(TargetModule targetModule, Iterable<File> artifacts) throws IOException {
+    private DeploymentChangeDescriptor distributeChangesOnSave(TargetModule targetModule, Iterable<File> artifacts) throws IOException {
         ServerFileDistributor sfd = new ServerFileDistributor(instance, dtarget);
         ModuleChangeReporter mcr = dtarget.getModuleChangeReporter();
-        AppChangeDescriptor acd = sfd.distributeOnSave(targetModule, mcr, artifacts);
+        DeploymentChangeDescriptor acd = sfd.distributeOnSave(targetModule, mcr, artifacts);
         return acd;
     }
     
@@ -662,11 +663,11 @@ public class TargetServer {
         }
         
         try {
-            AppChangeDescriptor changes = distributeChangesOnSave(targetModule, artifacts);
+            DeploymentChangeDescriptor changes = distributeChangesOnSave(targetModule, artifacts);
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, changes.toString());
             }
-            reloadArtifacts(modules, artifacts);
+            reloadArtifacts(modules, changes);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -733,9 +734,9 @@ public class TargetServer {
         return true;
     }
     
-    private void reloadArtifacts(TargetModule[] modules, Iterable<File> files) {
+    private void reloadArtifacts(TargetModule[] modules, DeploymentChangeDescriptor desc) {
         for (TargetModule module : modules) {
-            ProgressObject obj = incremental.reloadArtifacts(module.delegate(), files);
+            ProgressObject obj = incremental.reloadArtifacts(module.delegate(), desc);
             ProgressUI ui = new ProgressUI("Deploying", false);
             ui.start();
             try {
