@@ -41,6 +41,8 @@
 
 package org.netbeans.test.java.editor.completion;
 
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 
 /**
@@ -56,73 +58,76 @@ public class SmartCCTests extends CompletionTestPerformer{
     
      
     public void testsmartassign() throws Exception {
-        new CompletionTest().test(outputWriter, logWriter, "Double x = ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Assign.java", 11,CompletionProvider.COMPLETION_QUERY_TYPE);        
+        new CompletionTestCase(this).test(outputWriter, logWriter, "Double x = ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Assign.java", 11,CompletionProvider.COMPLETION_QUERY_TYPE);        
     }
     
     public void testsmartassign2() throws Exception {
-        new CompletionTest().test(outputWriter, logWriter, "Number x = ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Assign.java", 11,CompletionProvider.COMPLETION_QUERY_TYPE);        
+        new CompletionTestCase(this).test(outputWriter, logWriter, "Number x = ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Assign.java", 11,CompletionProvider.COMPLETION_QUERY_TYPE);        
     }
     
     public void testsmartassign3() throws Exception {
-        new CompletionTest().test(outputWriter, logWriter, "Number x = new ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Assign.java", 11,CompletionProvider.COMPLETION_QUERY_TYPE);        
+        new CompletionTestCase(this).test(outputWriter, logWriter, "Number x = new ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Assign.java", 11,CompletionProvider.COMPLETION_QUERY_TYPE);        
     }
     
     public void testsmartassign4() throws Exception {
-        new CompletionTest().test(outputWriter, logWriter, "List x = new ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Assign.java", 11,CompletionProvider.COMPLETION_QUERY_TYPE);        
+        new CompletionTestCase(this).test(outputWriter, logWriter, "List x = new ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Assign.java", 11,CompletionProvider.COMPLETION_QUERY_TYPE);        
     }
     
     public void testsmartassign5() throws Exception {
-        new CompletionTest().test(outputWriter, logWriter, "String x = ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Assign.java", 11,CompletionProvider.COMPLETION_QUERY_TYPE);        
+        new CompletionTestCase(this).test(outputWriter, logWriter, "String x = ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Assign.java", 11,CompletionProvider.COMPLETION_QUERY_TYPE);        
     }
     
     public void testsmartExtends() throws Exception {
-        new CompletionTest().test(outputWriter, logWriter, "class A extends ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Types.java", 32,CompletionProvider.COMPLETION_QUERY_TYPE);        
+        new CompletionTestCase(this).test(outputWriter, logWriter, "class A extends ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Types.java", 32,CompletionProvider.COMPLETION_QUERY_TYPE);        
     }
     
     public void testsmartImplements() throws Exception {
-        new CompletionTest().test(outputWriter, logWriter, "class B implements ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Types.java", 32,CompletionProvider.COMPLETION_QUERY_TYPE);        
+        new CompletionTestCase(this).test(outputWriter, logWriter, "class B implements ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Types.java", 32,CompletionProvider.COMPLETION_QUERY_TYPE);        
     }
     
     public void testsmartThrows() throws Exception {
-        new CompletionTest().test(outputWriter, logWriter, "public void method() throws ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Types.java", 32,CompletionProvider.COMPLETION_QUERY_TYPE);        
+        new CompletionTestCase(this).test(outputWriter, logWriter, "public void method() throws ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Types.java", 32,CompletionProvider.COMPLETION_QUERY_TYPE);        
     }
     
     public void testsmartAnnotation() throws Exception {
-        new CompletionTest().test(outputWriter, logWriter, "@", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Types.java", 32,CompletionProvider.COMPLETION_QUERY_TYPE);        
+        new CompletionTestCase(this).test(outputWriter, logWriter, "@", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Types.java", 32,CompletionProvider.COMPLETION_QUERY_TYPE);        
     }
     
     public void testsmartImport() throws Exception {
-        new CompletionTest().test(outputWriter, logWriter, "import ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Types.java", 21,CompletionProvider.COMPLETION_QUERY_TYPE);        
+        new CompletionTestCase(this).test(outputWriter, logWriter, "import ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Types.java", 21,CompletionProvider.COMPLETION_QUERY_TYPE);        
     }
     
     public void testsmartImportStatic() throws Exception {
-        new CompletionTest().test(outputWriter, logWriter, "import static java.awt.Color.", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Types.java", 21,CompletionProvider.COMPLETION_QUERY_TYPE);        
+        new CompletionTestCase(this).test(outputWriter, logWriter, "import static java.awt.Color.", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Types.java", 21,CompletionProvider.COMPLETION_QUERY_TYPE);        
     }
     
     public void testsmartSuperParameter() throws Exception {
-        new CompletionTest().test(outputWriter, logWriter, "super(", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/SmartCC.java", 31,CompletionProvider.COMPLETION_QUERY_TYPE);        
+        new CompletionTestCase(this).test(outputWriter, logWriter, "super(", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/SmartCC.java", 31,CompletionProvider.COMPLETION_QUERY_TYPE);        
     }
     
     public void testsmartInnerClassAsParameter() throws Exception {
-        new CompletionTest().test(outputWriter, logWriter, "method(", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/SmartCC.java", 41,CompletionProvider.COMPLETION_QUERY_TYPE);        
+        new CompletionTestCase(this).test(outputWriter, logWriter, "method(", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/SmartCC.java", 41,CompletionProvider.COMPLETION_QUERY_TYPE);        
     }
     
     public void testsmartInnerClassAsParameter2() throws Exception {
-        new CompletionTest().test(outputWriter, logWriter, "method( new ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/SmartCC.java", 41,CompletionProvider.COMPLETION_QUERY_TYPE);        
+        new CompletionTestCase(this).test(outputWriter, logWriter, "method( new ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/SmartCC.java", 41,CompletionProvider.COMPLETION_QUERY_TYPE);        
     }
     
     public void testsmartReturn() throws Exception {
-        new CompletionTest().test(outputWriter, logWriter, "return ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/SmartCC.java", 41,CompletionProvider.COMPLETION_QUERY_TYPE);                
+        new CompletionTestCase(this).test(outputWriter, logWriter, "return ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/SmartCC.java", 41,CompletionProvider.COMPLETION_QUERY_TYPE);                
     }
     
     public void testsmartReturn2() throws Exception {
-        new CompletionTest().test(outputWriter, logWriter, "return new ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/SmartCC.java", 41,CompletionProvider.COMPLETION_QUERY_TYPE);        
+        new CompletionTestCase(this).test(outputWriter, logWriter, "return new ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/SmartCC.java", 41,CompletionProvider.COMPLETION_QUERY_TYPE);        
     }
     
     public void testsmartCatch() throws Exception {
-        new CompletionTest().test(outputWriter, logWriter, "catch (", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/SmartCC.java", 51,CompletionProvider.COMPLETION_QUERY_TYPE);        
+        new CompletionTestCase(this).test(outputWriter, logWriter, "catch (", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/SmartCC.java", 51,CompletionProvider.COMPLETION_QUERY_TYPE);        
     }
 
-    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(SmartCCTests.class).enableModules(".*").clusters(".*"));
+    }
     
 }

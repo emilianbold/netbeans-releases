@@ -187,7 +187,7 @@ public class NbMenuItem implements Comparable {
             } else {
                 if (Character.toUpperCase(this.getMnemo()) != Character.toUpperCase(obj.getMnemo()) ) {//TODO: for unknown reason the AbstarctButton.getMnemonic() returns always capital letter
 //                if (this.getMnemo() != obj.getMnemo()) {//TODO: for unknown reason the AbstarctButton.getMnemonic() returns always capital letter
-                    text += ", MNEMONICS 2are NOT same [" + this.getMnemo() + "] != [" + obj.getMnemo() + "]";
+                    text += ", MNEMONICS are NOT same [" + this.getMnemo() + "] != [" + obj.getMnemo() + "]";
                 }
                 if ((this.getSubmenu () != null) != (obj.getSubmenu () != null)) { //do they both have submenus?
                     text += ", " + (this.getSubmenu () != null ? obj.getName() : this.getName()) + " has NO SUBMENU";

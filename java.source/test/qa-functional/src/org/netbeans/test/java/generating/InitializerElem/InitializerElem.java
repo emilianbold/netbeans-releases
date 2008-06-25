@@ -47,8 +47,8 @@
 
 package org.netbeans.test.java.generating.InitializerElem;
 
+import junit.framework.Test;
 import org.netbeans.test.java.Common;
-import java.lang.reflect.Modifier;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.junit.*;
 import org.openide.filesystems.FileObject;
@@ -92,11 +92,7 @@ public class InitializerElem extends org.netbeans.test.java.XRunner {
     public InitializerElem(java.lang.String testName) {
         super(testName);
     }
-    
-    public static NbTest suite() {
-        return new NbTestSuite(InitializerElem.class);
-    }
-    
+       
     /** "body" of this TestCase
      * @param o SourceElement - target for generating
      * @param log log is used for logging StackTraces
@@ -122,6 +118,11 @@ public class InitializerElem extends org.netbeans.test.java.XRunner {
         super.setUp();
         name = "JavaTestSourceInitializerElem";
         packageName = "org.netbeans.test.java.testsources";
+    }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(InitializerElem.class).enableModules(".*").clusters(".*"));
     }
     
 }

@@ -41,6 +41,10 @@
 
 package org.netbeans.jellytools.modules.j2ee.nodes;
 
+import com.sun.source.tree.Tree;
+import java.lang.reflect.Method;
+import java.util.logging.Logger;
+import javax.naming.spi.DirStateFactory.Result;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.actions.Action;
@@ -53,9 +57,12 @@ import org.netbeans.jellytools.modules.j2ee.actions.RestartAction;
 import org.netbeans.jellytools.modules.j2ee.actions.StartAction;
 import org.netbeans.jellytools.modules.j2ee.actions.StopAction;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
-import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
+import org.netbeans.jemmy.operators.JTreeOperator;
+import org.openide.nodes.Node.Cookie;
+import org.openide.util.Exceptions;
 
 /** Node representing a J2EE Server node under Servers node. Default timeout
  * for all actions is 120 seconds.
@@ -163,31 +170,63 @@ public class J2eeServerNode extends Node {
         waitNotWaiting();
     }
     
+    static Class<? extends org.openide.nodes.Node.Cookie> classServerInstance() {
+        try {
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            Class<?> general = Class.forName("org.netbeans.modules.j2ee.deployment.impl.ServerInstance", false, loader);
+            return general.asSubclass(org.openide.nodes.Node.Cookie.class);
+        } catch (ClassNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+            return org.openide.nodes.Node.Cookie.class;
+        }
+    }
+    
+    //
+    // copied from ServerInstance
+    //
+    public static final int STATE_WAITING = 1;
+    public static final int STATE_STOPPED = 2;
+    public static final int STATE_RUNNING = 3;
+    public static final int STATE_DEBUGGING = 4;
+    public static final int STATE_SUSPENDED = 5;
+    public static final int STATE_PROFILING = 6;
+    public static final int STATE_PROFILER_BLOCKING = 7;
+    public static final int STATE_PROFILER_STARTING = 8;
+    
     /** Waits till server is running in debug mode. */
     private void waitDebugging() {
-        waitServerState(ServerInstance.STATE_DEBUGGING);
+        waitServerState(STATE_DEBUGGING);
     }
     
     /** Waits till server is running. */
     private void waitRunning() {
-        waitServerState(ServerInstance.STATE_RUNNING);
+        waitServerState(STATE_RUNNING);
     }
     
     /** Waits till server is stopped. */
     private void waitStopped() {
-        waitServerState(ServerInstance.STATE_STOPPED);
+        waitServerState(STATE_STOPPED);
     }
     
     //// PRIVATE METHODS ////
+    
+    private static int getServerState(org.openide.nodes.Node n) {
+        try {
+            Object server = n.getCookie(classServerInstance());
+            Method m = classServerInstance().getMethod("getServerState");
+            return (Integer) m.invoke(server);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            return STATE_STOPPED;
+        }
+    }
 
     private void waitServerState(int state) {
-        org.openide.nodes.Node ideNode = (org.openide.nodes.Node) getOpenideNode();
-        final ServerInstance server = (ServerInstance) ideNode.getCookie(
-                ServerInstance.class);
+        final org.openide.nodes.Node ideNode = (org.openide.nodes.Node) getOpenideNode();
         final int targetState = state;
         waitFor(new Waitable() {
             public Object actionProduced(Object obj) {
-                if (server.getServerState() == targetState) {
+                if (getServerState(ideNode) == targetState) {
                     return "Server state: "+getStateName()+" reached.";
                 }
                 return null;
@@ -197,15 +236,15 @@ public class J2eeServerNode extends Node {
             }
             private String getStateName() {
                 switch (targetState) {
-                    case ServerInstance.STATE_DEBUGGING:
+                    case STATE_DEBUGGING:
                         return "DEBUGGING";
-                    case ServerInstance.STATE_RUNNING:
+                    case STATE_RUNNING:
                         return "RUNNING";
-                    case ServerInstance.STATE_STOPPED:
+                    case STATE_STOPPED:
                         return "STOPPED";
-                    case ServerInstance.STATE_SUSPENDED:
+                    case STATE_SUSPENDED:
                         return "SUSPENDED";
-                    case ServerInstance.STATE_WAITING:
+                    case STATE_WAITING:
                         return "WAITING";
                     default:
                         return "UNKNOWN STATE";
@@ -215,12 +254,10 @@ public class J2eeServerNode extends Node {
     }
     
     private void waitNotWaiting() {
-        org.openide.nodes.Node ideNode = (org.openide.nodes.Node) getOpenideNode();
-        final ServerInstance server = (ServerInstance) ideNode.getCookie(
-                ServerInstance.class);
+        final org.openide.nodes.Node ideNode = (org.openide.nodes.Node) getOpenideNode();
         waitFor(new Waitable() {
             public Object actionProduced(Object obj) {
-                if (server.getServerState() != ServerInstance.STATE_WAITING) {
+                if (getServerState(ideNode) != STATE_WAITING) {
                     return "Server leaves WAITING state.";
                 }
                 return null;

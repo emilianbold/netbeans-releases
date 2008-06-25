@@ -616,15 +616,6 @@ public class EditorContextBridge {
             cp2.removePropertyChangeListener(l);
         }
         
-        public void addPropertyChangeListener(String propertyName, PropertyChangeListener l) {
-            cp1.addPropertyChangeListener(propertyName, l);
-            cp2.addPropertyChangeListener(propertyName, l);
-        }
-        
-        public void removePropertyChangeListener(String propertyName, PropertyChangeListener l) {
-            cp1.removePropertyChangeListener(propertyName, l);
-            cp2.removePropertyChangeListener(propertyName, l);
-        }
     }
     
     private static class CompoundAnnotation {

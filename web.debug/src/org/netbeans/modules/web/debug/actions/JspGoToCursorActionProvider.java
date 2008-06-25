@@ -78,7 +78,7 @@ public class JspGoToCursorActionProvider extends ActionsProviderSupport implemen
         setEnabled (
             ActionsManager.ACTION_RUN_TO_CURSOR,
             (debugger.getState () == debugger.STATE_STOPPED) &&
-            (Utils.isJsp(Context.getCurrentURL()) || Utils.isTag(Context.getCurrentURL()))
+            (Utils.isJsp(Context.getCurrentFile()) || Utils.isTag(Context.getCurrentFile()))
         );
         if ((debugger.getState () != debugger.STATE_RUNNING) && (breakpoint != null)) {
             DebuggerManager.getDebuggerManager ().removeBreakpoint (breakpoint);

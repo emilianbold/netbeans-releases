@@ -45,6 +45,8 @@ public abstract class SVGComponent implements SVGForm.FocusListener {
     protected static final String TYPE             = "type";              // NOI18N
     protected static final String REF              = "ref";               // NOI18N
     
+    protected static final String TR_VALUE_VISIBLE = "visible";           // NOI18N  
+    protected static final String TR_VALUE_HIDDEN  = "hidden";            // NOI18N
     
     protected final SVGForm             form;
     protected final SVGLocatableElement wrapperElement;
