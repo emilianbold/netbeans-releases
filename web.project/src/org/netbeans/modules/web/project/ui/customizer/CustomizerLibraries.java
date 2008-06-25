@@ -301,13 +301,13 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         JTableHeader header = table.getTableHeader();
         column.setMaxWidth(24 + SwingUtilities.computeStringWidth(header.getFontMetrics(header.getFont()), String.valueOf(column.getHeaderValue())));
 	
-	//#58200 - Need horizontal scrollbar for library names
-	//ugly but I didn't find a better way how to do it
-	table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        column = table.getColumnModel().getColumn(0);
-	column.setMinWidth(230);
-	column.setWidth(230);
-	column.setMinWidth(75);
+        //#58200 - Need horizontal scrollbar for library names
+        //ugly but I didn't find a better way how to do it
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+            column = table.getColumnModel().getColumn(0);
+        column.setMinWidth(230);
+        column.setWidth(230);
+        column.setMinWidth(75);
     }
     
     // Implementation of HelpCtx.Provider --------------------------------------
@@ -768,7 +768,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
             collectLibs(uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel(), libs, jars);
             collectLibs(uiProperties.JAVAC_TEST_CLASSPATH_MODEL, libs, jars);
             collectLibs(uiProperties.RUN_TEST_CLASSPATH_MODEL, libs, jars);
-            collectLibs(uiProperties.WAR_CONTENT_ADDITIONAL_MODEL, libs, jars);
+            collectLibs(uiProperties.WAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel(), libs, jars);
             boolean result = SharableLibrariesUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), uiProperties.getProject().getReferenceHelper(), libs, jars);
             if (result) {
                 isSharable = true;
@@ -797,25 +797,6 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
     private void collectLibs(DefaultListModel model, List<String> libs, List<String> jarReferences) { 
         for (int i = 0; i < model.size(); i++) {
             ClassPathSupport.Item item = (ClassPathSupport.Item) model.get(i);
-            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
-                if (!item.isBroken() && !libs.contains(item.getLibrary().getName())) {
-                    libs.add(item.getLibrary().getName());
-                }
-            }
-            if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
-                if (item.getReference() != null && item.getVariableBasedProperty() == null && !jarReferences.contains(item.getReference())) {
-                    //TODO reference is null for not yet persisted items.
-                    // there seems to be no way to generate a reference string without actually
-                    // creating and writing the property..
-                    jarReferences.add(item.getReference());
-                }
-            }
-        }
-    }    
-
-    private void collectLibs(WarIncludesUiSupport.ClasspathTableModel model, List<String> libs, List<String> jarReferences) { 
-        for (int i = 0; i < model.getRowCount(); i++) {
-            ClassPathSupport.Item item = (ClassPathSupport.Item) model.getValueAt(i, 0);
             if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
                 if (!item.isBroken() && !libs.contains(item.getLibrary().getName())) {
                     libs.add(item.getLibrary().getName());
