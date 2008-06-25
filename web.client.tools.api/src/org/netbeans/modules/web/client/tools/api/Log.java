@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.client.tools.projectsupport;
+package org.netbeans.modules.web.client.tools.api;
 
 import java.util.logging.Logger;
 

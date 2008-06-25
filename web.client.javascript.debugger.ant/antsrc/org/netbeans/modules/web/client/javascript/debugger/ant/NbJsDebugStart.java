@@ -54,8 +54,8 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
 import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarter;
-import org.netbeans.modules.web.client.tools.projectsupport.JSDebuggerUtils;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -147,7 +147,7 @@ public class NbJsDebugStart extends Task {
             URI clientUrl = new URI(webUrl);
             
             // hard-code Firefox until additional browsers are supported
-            HtmlBrowser.Factory browser = JSDebuggerUtils.getFirefoxBrowser();
+            HtmlBrowser.Factory browser = WebClientToolsProjectUtils.getFirefoxBrowser();
             
             if (browser == null) {
                 throw new BuildException("The configured debugging browser could not be found"); // NOI18N

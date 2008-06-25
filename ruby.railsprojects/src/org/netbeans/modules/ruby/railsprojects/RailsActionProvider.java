@@ -80,8 +80,8 @@ import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarter;
-import org.netbeans.modules.web.client.tools.projectsupport.JSDebuggerUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.ErrorManager;
@@ -836,8 +836,8 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
                 clientDebug = false;
                 serverDebug = true;
             } else {
-                serverDebug = JSDebuggerUtils.getServerDebugProperty(project);
-                clientDebug = JSDebuggerUtils.getClientDebugProperty(project);
+                serverDebug = WebClientToolsProjectUtils.getServerDebugProperty(project);
+                clientDebug = WebClientToolsProjectUtils.getClientDebugProperty(project);
             }
             assert serverDebug || clientDebug;
             

@@ -36,12 +36,13 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.client.tools.projectsupport;
+package org.netbeans.modules.web.client.tools.impl.projects;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.NbBundle;
 
@@ -66,8 +67,8 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
         
         initComponents();
         
-        boolean serverDebug = JSDebuggerUtils.getServerDebugProperty(project);
-        boolean clientDebug = JSDebuggerUtils.getClientDebugProperty(project);
+        boolean serverDebug = WebClientToolsProjectUtils.getServerDebugProperty(project);
+        boolean clientDebug = WebClientToolsProjectUtils.getClientDebugProperty(project);
         
         this.debugServerJCheckBox.setSelected(serverDebug);
         this.debugClientJCheckBox.setSelected(clientDebug);
@@ -149,7 +150,7 @@ private void debugClientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     // End of variables declaration//GEN-END:variables
 
     public void actionPerformed(ActionEvent e) {
-        JSDebuggerUtils.setProjectProperties(project, debugServerJCheckBox.isSelected(), debugClientJCheckBox.isSelected());
+        WebClientToolsProjectUtils.setProjectProperties(project, debugServerJCheckBox.isSelected(), debugClientJCheckBox.isSelected());
     }
 
 }

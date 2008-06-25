@@ -92,9 +92,9 @@ import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectPropert
 import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
 import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionException;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarter;
-import org.netbeans.modules.web.client.tools.projectsupport.JSDebuggerUtils;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -458,7 +458,7 @@ public final class RailsServerManager {
                 String hostPrefix = "http://localhost:" + port + "/"; // NOI18N
                 
                 // hardcode firefox browser until additional browsers are supported
-                HtmlBrowser.Factory browser = JSDebuggerUtils.getFirefoxBrowser();
+                HtmlBrowser.Factory browser = WebClientToolsProjectUtils.getFirefoxBrowser();
                 if (browser == null) {
                     HtmlBrowser.URLDisplayer.getDefault().showURL(url);
                     return;

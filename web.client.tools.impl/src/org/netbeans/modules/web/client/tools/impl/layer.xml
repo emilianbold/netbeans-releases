@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
         <folder name="org-netbeans-modules-web-project">
             <folder name="Customizer">
                 <file name="Debug.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createDebug"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.client.tools.impl.projects.DebugCustomizerPanelProvider.createWebProjectDebug"/>
                     <attr name="position" intvalue="550"/>
                 </file>
             </folder>
@@ -54,7 +54,7 @@ made subject to such option by the copyright holder.
         <folder name="org-netbeans-modules-ruby-railsprojects">
             <folder name="Customizer">
                 <file name="Debug.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsCompositePanelProvider.createDebug"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.client.tools.impl.projects.DebugCustomizerPanelProvider.createRailsProjectDebug"/>
                     <attr name="position" intvalue="300"/>
                 </file>
             </folder>

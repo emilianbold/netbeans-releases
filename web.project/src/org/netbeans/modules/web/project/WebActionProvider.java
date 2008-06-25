@@ -91,8 +91,8 @@ import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarter;
-import org.netbeans.modules.web.client.tools.projectsupport.JSDebuggerUtils;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.netbeans.modules.web.project.ui.ServletUriPanel;
@@ -722,8 +722,8 @@ class WebActionProvider implements ActionProvider {
             p.setProperty("debug.server", "true"); // NOI18N
 
         } else {
-            boolean debugServer = JSDebuggerUtils.getServerDebugProperty(project);
-            boolean debugClient = JSDebuggerUtils.getClientDebugProperty(project);
+            boolean debugServer = WebClientToolsProjectUtils.getServerDebugProperty(project);
+            boolean debugClient = WebClientToolsProjectUtils.getClientDebugProperty(project);
 
             p.setProperty("debug.client", String.valueOf(debugClient)); // NOI18N
             p.setProperty("debug.server", String.valueOf(debugServer)); // NOI18N

@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.client.tools.projectsupport;
+package org.netbeans.modules.web.client.tools.api;
 
 import java.util.Collection;
 import java.util.logging.Level;
@@ -59,9 +59,9 @@ import org.openide.util.MutexException;
  * 
  * @author Quy Nguyen <quynguyen@netbeans.org>
  */
-public final class JSDebuggerUtils {
-    private static final String CLIENT_DEBUG_PROP = "client_debug"; // NOI18N
-    private static final String SERVER_DEBUG_PROP = "server_debug"; // NOI18N
+public final class WebClientToolsProjectUtils {
+    private static final String CLIENT_DEBUG_PROP = "clientdebug"; // NOI18N
+    private static final String SERVER_DEBUG_PROP = "serverdebug"; // NOI18N
     
     private static final boolean CLIENT_DEBUG_DEFAULT = false;
     private static final boolean SERVER_DEBUG_DEFAULT = true;
@@ -84,18 +84,18 @@ public final class JSDebuggerUtils {
     }
     
     private static boolean getProjectProperty(Project project, String propKey, boolean def) {
-        Preferences prefs = ProjectUtils.getPreferences(project, JSDebuggerUtils.class, true);
+        Preferences prefs = ProjectUtils.getPreferences(project, WebClientToolsProjectUtils.class, true);
         assert prefs != null;
         
         return prefs.getBoolean(propKey, def);
     }
 
-    static void setProjectProperties(final Project project, final boolean serverDebug, final boolean clientDebug) {
+    public static void setProjectProperties(final Project project, final boolean serverDebug, final boolean clientDebug) {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
 
                 public Boolean run() throws BackingStoreException {
-                    Preferences prefs = ProjectUtils.getPreferences(project, JSDebuggerUtils.class, true);
+                    Preferences prefs = ProjectUtils.getPreferences(project, WebClientToolsProjectUtils.class, true);
                     assert prefs != null;
 
                     boolean currentServerValue = prefs.getBoolean(SERVER_DEBUG_PROP, SERVER_DEBUG_DEFAULT);
