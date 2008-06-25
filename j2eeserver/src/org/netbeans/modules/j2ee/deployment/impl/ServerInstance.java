@@ -1595,7 +1595,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
         try {
            new RequestProcessor().post(test).waitFinished(timeout);
         } catch (InterruptedException ie) {
-            Exceptions.printStackTrace(ie);
+            LOGGER.log(Level.INFO, null, ie);
         } finally {
             return test.result();
         }
