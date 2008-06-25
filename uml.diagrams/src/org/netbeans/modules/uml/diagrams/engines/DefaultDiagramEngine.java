@@ -237,7 +237,6 @@ public class DefaultDiagramEngine extends  DiagramEngine {
         WidgetAction.Chain selectTool = widget.createActions(DesignerTools.SELECT);      
         
         selectTool.addAction (ActionFactory.createAddRemoveControlPointAction ());
-        selectTool.addAction (ActionFactory.createFreeMoveControlPointAction ());
         selectTool.addAction(sceneSelectAction);
         
         widget.setPaintControlPoints (true);
@@ -250,6 +249,7 @@ public class DefaultDiagramEngine extends  DiagramEngine {
         navigateLinkTool.addAction(new NavigateLinkAction());
         navigateLinkTool.addAction(ActionFactory.createZoomAction());
         navigateLinkTool.addAction(POPUP_ACTION);
+        selectTool.addAction (ActionFactory.createFreeMoveControlPointAction ());
         
     }
     
