@@ -54,7 +54,6 @@ import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.netbeans.editor.BaseDocument;
@@ -70,14 +69,12 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.groovy.editor.elements.AstElement;
 import org.netbeans.modules.groovy.editor.elements.IndexedElement;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.editor.parser.SourceUtils;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.napi.gsfret.source.Phase;
-import org.netbeans.napi.gsfret.source.Source;
 
 /**
  *
@@ -395,24 +392,19 @@ public class AstUtilities {
     public static ASTNode getForeignNode(final IndexedElement o, ASTNode[] foreignRootRet) {
 
         final ASTNode[] nodes = new ASTNode[1];
-        Source source = Source.forFileObject(o.getFileObject());
         try {
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
-                public void run(CompilationController controller) throws Exception {
-                    controller.toPhase(Phase.PARSED);
-                    GroovyParserResult result = (GroovyParserResult) controller.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
-                    if (result != null) {
-                        String signature = o.getSignature();
-                        for (AstElement element : result.getStructure().getElements()) {
-                            if (signature.equals(element.getSignature())) {
-                                nodes[0] = element.getNode();
-                            }
+            SourceUtils.runUserActionTask(o.getFileObject(), new CancellableTask<GroovyParserResult>() {
+                public void run(GroovyParserResult result) throws Exception {
+                    String signature = o.getSignature();
+                    for (AstElement element : result.getStructure().getElements()) {
+                        if (signature.equals(element.getSignature())) {
+                            nodes[0] = element.getNode();
                         }
                     }
                 }
                 public void cancel() {}
-            }, true);
-        } catch (IOException ex) {
+            });
+        } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
         
