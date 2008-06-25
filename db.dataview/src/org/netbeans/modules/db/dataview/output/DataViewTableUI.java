@@ -351,19 +351,12 @@ class DataViewTableUI extends JTable {
                 }
             };
             textField.addActionListener(delegate);
-            textField.addKeyListener(new  
+            textField.addKeyListener(new KeyListener() {
 
-                  KeyListener( ) {
-                
+                public void keyTyped(KeyEvent e) {
+                }
 
-                public  void keyTyped(KeyEvent e) {
-                          
-                           
-                           
-                           } 
-                            
-                          
-                            public void keyPressed(KeyEvent e) {
+                public void keyPressed(KeyEvent e) {
                     if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_0) {
                         int col = getEditingColumn();
                         DBColumn dbcol = DataViewTableUI.this.tablePanel.getDataViewDBTable().getColumn(col);

@@ -40,13 +40,13 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
+import java.awt.Component;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.JButton;
 import java.util.Iterator;
 import java.util.logging.Logger;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.openide.awt.StatusDisplayer;
 
@@ -56,7 +56,7 @@ import org.openide.awt.StatusDisplayer;
  *
  * @author Ahimanikya Satapathy
  */
-public class DataView extends JPanel {
+public class DataView  {
 
     private static Logger mLogger = Logger.getLogger(DataView.class.getName());
     public static final int VERTICAL_TOOLBAR = 0;
@@ -72,6 +72,8 @@ public class DataView extends JPanel {
     private DataViewPageContext dataPage;
     private DataViewUI dataViewUI;
     private int toolbarType = HORIZONTAL_TOOLBAR;
+    private boolean hasResultSet = false;
+    private int updateCount;
 
     /**
      * Create and populate a DataView Object. Populates 1st data page of default size.
@@ -84,7 +86,6 @@ public class DataView extends JPanel {
      */
     public static DataView create(DatabaseConnection dbConn, String queryString) {
         assert dbConn!= null : "DatabaseConnection can't be null";
-        assert  isSelectStatement(queryString) : "Invalid query statement";
                 
         DataView dv = new DataView();
         dv.dbConn = dbConn;
@@ -107,14 +108,21 @@ public class DataView extends JPanel {
      * @param dataView DataView Object created using create()
      * @return a JComponent that after rending the given dataview
      */
-    public JComponent createComponent() {
+    public List<Component> createComponent() {
+        List<Component> results;
+        if(!hasResultSet){
+            return Collections.emptyList();
+        }
+        
         synchronized (this) {
             this.dataViewUI = new DataViewUI(this, toolbarType);
             setRowsInTableModel();
             dataViewUI.setEditable(tblMeta.hasOneTable());
             resetToolbar(hasException());
         }
-        return this;
+        results = new ArrayList<Component>();
+        results.add(dataViewUI);
+        return results;
     }
 
     /**
@@ -134,6 +142,15 @@ public class DataView extends JPanel {
     public boolean hasException() {
         return !errMessages.isEmpty();
     }
+    
+    /**
+     * Returns true if the statement executed has ResultSet.
+     * 
+     * @return true if the statement executed has ResultSet, false otherwise.
+     */
+    public boolean hasResultSet() {
+        return hasResultSet;
+    }    
 
     /**
      * Returns iterator of a error messages of String type, if there were any 
@@ -143,6 +160,10 @@ public class DataView extends JPanel {
      */
     public Iterator<String> getExceptions() {
         return errMessages.iterator();
+    }
+    
+    public int getUpdateCount(){
+        return updateCount;
     }
 
     /**
@@ -235,6 +256,14 @@ public class DataView extends JPanel {
             dataViewUI.setTotalCount(dataPage.getTotalRows());
         }
     }
+    
+    void setHasResultSet(boolean hasResultSet){
+        this.hasResultSet = hasResultSet;
+    }
+    
+    void setUpdateCount(int updateCount) {
+        this.updateCount = updateCount;
+    }    
 
     private DataView() {
     }

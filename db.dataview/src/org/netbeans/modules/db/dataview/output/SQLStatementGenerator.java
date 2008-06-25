@@ -57,7 +57,6 @@ class SQLStatementGenerator {
     private DataViewDBTable tblMeta;
 
     public SQLStatementGenerator(DataViewDBTable tblMeta) {
-        assert tblMeta != null;
         this.tblMeta = tblMeta;
     }
 

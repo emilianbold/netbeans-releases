@@ -72,7 +72,6 @@ class SQLExecutionHelper {
     // the RequestProcessor used for executing statements.
     private final RequestProcessor rp = new RequestProcessor("SQLStatementExecution", 1, true); // NOI18N
 
-
     SQLExecutionHelper(DataView dataView, DatabaseConnection dbConn) {
         this.dataView = dataView;
         this.dbConn = dbConn;
@@ -82,14 +81,20 @@ class SQLExecutionHelper {
         Statement stmt = null;
         try {
             Connection conn = DBConnectionFactory.getInstance().getConnection(dbConn);
-            DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
+            stmt = conn.createStatement();//ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            //stmt.setFetchSize(10);
 
-            stmt = conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-            stmt.setFetchSize(dv.getDataViewPageContext().getPageSize());
+            dv.setHasResultSet(stmt.execute(dv.getQueryString()));
+            dv.setUpdateCount(stmt.getUpdateCount());
+            
+            if (!dv.hasResultSet()) {
+                return;
+            }
 
             ResultSet resultSet = null;
             try {
-                resultSet = stmt.executeQuery(dv.getQueryString());
+                resultSet = stmt.getResultSet();
+                DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
                 Collection<DBTable> tables = dbMeta.generateDBTables(resultSet);
 
                 dv.tblMeta = new DataViewDBTable(tables);

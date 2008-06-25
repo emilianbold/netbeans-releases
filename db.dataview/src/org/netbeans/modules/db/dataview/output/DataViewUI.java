@@ -64,7 +64,7 @@ import javax.swing.JToolBar;
  *
  * @author Ahimanikya Satapathy
  */
-class DataViewUI {
+class DataViewUI extends JPanel{
 
     private JButton commit;
     private JButton refreshButton;
@@ -89,23 +89,23 @@ class DataViewUI {
         this.dataView = dataView;
 
         //do not show tab view if there is only one tab
-        dataView.putClientProperty("TabPolicy", "HideWhenAlone"); //NOI18N
+        this.putClientProperty("TabPolicy", "HideWhenAlone"); //NOI18N
 
-        dataView.putClientProperty("PersistenceType", "Never"); //NOI18N
+        this.putClientProperty("PersistenceType", "Never"); //NOI18N
 
-        dataView.setLayout(new BorderLayout());
-        dataView.setBorder(BorderFactory.createEmptyBorder());
-        dataView.setName("Data:" + dataView.getQueryString());
+        this.setLayout(new BorderLayout());
+        this.setBorder(BorderFactory.createEmptyBorder());
+        this.setName("Data:" + dataView.getQueryString());
         
         // Main pannel with toolbars
         JPanel panel = initializeMainPanel(toolbarType);
-        dataView.add(panel, BorderLayout.NORTH);
+        this.add(panel, BorderLayout.NORTH);
         
         actionHandler = new DataViewActionHandler(this, dataView);
 
         //add resultset data panel
         dataPanel = new DataViewTablePanel(dataView.getDataViewDBTable(), this,actionHandler,dataView);
-        dataView.add(dataPanel, BorderLayout.CENTER);
+        this.add(dataPanel, BorderLayout.CENTER);
         dataPanel.revalidate();
         dataPanel.repaint();
     }
@@ -426,7 +426,7 @@ class DataViewUI {
         c.gridwidth = GridBagConstraints.RELATIVE;
         c.anchor = GridBagConstraints.FIRST_LINE_START;
         panel.add(toolbar, c);
-        dataView.validate();
+        this.validate();
 
         return panel;
     }
