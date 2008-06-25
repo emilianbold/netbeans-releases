@@ -138,7 +138,8 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
     }
 
     public void initAllTokens() {
-        assert (!embedding.joinSections()); // Joined token creation must be used instead
+        assert (!embedding.joinSections()) : "Cannot init all tokens since ETL joins sections\n" + // NOI18N
+                this + '\n' + dumpRelatedTLL();
 //        initLAState();
         // Lex the whole input represented by token at once
         LexerInputOperation<T> lexerInputOperation = createLexerInputOperation(
@@ -466,7 +467,10 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
         if (sb == null) {
             sb = new StringBuilder(50);
         }
-        sb.append("ETL<").append(startOffset());
+        sb.append("ETL");
+        if (embedding.joinSections())
+            sb.append('j');
+        sb.append('<').append(startOffset());
         sb.append(",").append(endOffset());
         sb.append("> TC=").append(tokenCountCurrent());
         if (joinInfo != null) {
@@ -476,6 +480,13 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
         }
         sb.append(", IHC=").append(System.identityHashCode(this));
         return sb;
+    }
+
+    private String dumpRelatedTLL() {
+        TokenListList<T> tll = rootTokenList().tokenHierarchyOperation().existingTokenListList(languagePath);
+        return (tll != null)
+                ? tll.toString()
+                : "<No TokenListList for " + languagePath.mimePath() + ">";
     }
 
     @Override

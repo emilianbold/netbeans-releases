@@ -350,10 +350,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
     public synchronized String getSourceRoot(String url) {
         FileObject fo;
         try {
-            java.io.File file = new java.io.File(new java.net.URL(url).toURI());
-            fo = FileUtil.toFileObject(file);
-        } catch (java.net.URISyntaxException ex) {
-            fo = null;
+            fo = URLMapper.findFileObject(new java.net.URL(url));
         } catch (java.net.MalformedURLException ex) {
             fo = null;
         }

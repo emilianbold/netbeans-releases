@@ -374,6 +374,11 @@ public final class EclipseProject implements Comparable {
                 importProblems.add("javadoc location contains unsupported URL protocol which will be ignored: '"+javadoc+"'");
                 continue;
             }
+            // copied from FileUtil.getArchiveFile
+            if (javadoc.indexOf("file://") > -1 && javadoc.indexOf("file:////") == -1) {  //NOI18N
+                /* Replace because JDK application classloader wrongly recognizes UNC paths. */
+                javadoc = javadoc.replaceFirst("file://", "file:////");  //NOI18N
+            }
             URL u;
             try {
                 u = new URL(javadoc);

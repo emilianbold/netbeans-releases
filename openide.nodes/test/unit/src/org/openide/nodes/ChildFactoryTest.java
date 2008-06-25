@@ -118,6 +118,13 @@ public class ChildFactoryTest extends TestCase {
         assertEquals(4, n.length);
     }
     
+    public void testGetNodesWaitsFirstTime() {
+        System.out.println("testGetNodesWaits");
+        factory.wait = false;
+        Node[] n = kids.getNodes(true);
+        assertEquals(4, n.length);
+    }
+
     public void testInitialNodeIsWaitNode() throws Exception {
         System.out.println("testInitialNodeIsWaitNode");
         factory.wait = true;
