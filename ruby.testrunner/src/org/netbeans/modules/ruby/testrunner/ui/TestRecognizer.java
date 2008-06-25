@@ -93,9 +93,14 @@ public final class TestRecognizer extends OutputRecognizer {
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.log(Level.FINE, "Handler [" + handler + "] matched line: " + line);
                 }
-
-                handler.updateUI(manager, session);
-                return handler.getRecognizedOutput();
+                try {
+                    handler.updateUI(manager, session);
+                    return handler.getRecognizedOutput();
+                } catch (IllegalStateException ise) {
+                    // ISE is thrown when mathing a group fails, should be enough to log a warning
+                    LOGGER.log(Level.WARNING, "Failed to process line: " + line + " with handler: " + handler, ise);
+                    return null;
+                }
             }
         }
 
@@ -106,7 +111,7 @@ public final class TestRecognizer extends OutputRecognizer {
         manager.displayOutput(session, line, false);
         return null;
     }
-
+    
     @Override
     public void finish() {
         if (LOGGER.isLoggable(Level.FINE)) {

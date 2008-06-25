@@ -40,11 +40,9 @@ package org.netbeans.modules.ws.qaf;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.ws.qaf.WebServicesTestBase.ProjectType;
 
 /**
@@ -71,26 +69,38 @@ public class AppClientWsValidation extends EjbWsValidation {
     protected String getWsClientPackage() {
         return "o.n.m.ws.qaf.client.appclient"; //NOI18N
     }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(AppClientWsValidation.class),
+                "testCreateWsClient",
+                "testCallWsOperationInJavaMainClass",
+                "testCallWsOperationInJavaClass",
+                "testWsClientHandlers",
+                "testWsClientHandlers",
+                "testRunWsClientProject",
+                "testUndeployClientProject"
+                ).enableModules(".*").clusters(".*"));
+    }
 
     /** Creates suite from particular test cases. You can define order of testcases here.
      * Since it's currently impossible to create web service in Java Application,
      * this suite uses web service created previously by EjbWSValidation suite.
      */
-    public static TestSuite suite() {
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new AppClientWsValidation("testCreateWsClient")); //NOI18N   
-        suite.addTest(new AppClientWsValidation("testCallWsOperationInJavaMainClass")); //NOI18N
-        suite.addTest(new AppClientWsValidation("testCallWsOperationInJavaClass")); //NOI18N
-        suite.addTest(new AppClientWsValidation("testWsClientHandlers")); //NOI18N
-        suite.addTest(new AppClientWsValidation("testRunWsClientProject")); //NOI18N
-        suite.addTest(new AppClientWsValidation("testUndeployClientProject")); //NOI18N
-        return suite;
-    }
-
-    /* Method allowing test execution directly from the IDE. */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
+//    public static TestSuite suite() {
+//        TestSuite suite = new NbTestSuite();
+//        suite.addTest(new AppClientWsValidation("testCreateWsClient")); //NOI18N   
+//        suite.addTest(new AppClientWsValidation("testCallWsOperationInJavaMainClass")); //NOI18N
+//        suite.addTest(new AppClientWsValidation("testCallWsOperationInJavaClass")); //NOI18N
+//        suite.addTest(new AppClientWsValidation("testWsClientHandlers")); //NOI18N
+//        suite.addTest(new AppClientWsValidation("testRunWsClientProject")); //NOI18N
+//        suite.addTest(new AppClientWsValidation("testUndeployClientProject")); //NOI18N
+//        return suite;
+//    }
+//
+//    /* Method allowing test execution directly from the IDE. */
+//    public static void main(java.lang.String[] args) {
+//        TestRunner.run(suite());
+//    }
 
     /**
      * Tests Call Web Service Operation action in a servlet

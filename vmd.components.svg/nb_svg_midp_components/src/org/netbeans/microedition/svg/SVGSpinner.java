@@ -285,7 +285,7 @@ public class SVGSpinner extends SVGComponent {
         public void setValue( Object value ) {
             if ( ! (value instanceof Integer) ){
                 throw new IllegalArgumentException( value +" is not " +
-                		"allowed argument");
+                		"allowed argument");              // NOI18N
             }
             myValue = (Integer) value;
         }

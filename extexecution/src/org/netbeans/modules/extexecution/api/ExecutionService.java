@@ -181,7 +181,7 @@ public final class ExecutionService {
         final String displayName = ioData.getDisplayName();
         final ProgressHandle handle = createProgressHandle(ioData.getInputOutput(), displayName);
         final InputOutput io = ioData.getInputOutput();
-        
+
         final boolean input = descriptor.isInputVisible();
 
         final OutputWriter out = io.getOut();
@@ -301,56 +301,36 @@ public final class ExecutionService {
      * @return the output window usable for the current run
      */
     private InputOutputManager.InputOutputData getInputOutput(InputOutput required) {
-        String displayName = null;
-        InputOutput io = null;
-        StopAction stopAction = null;
-        RerunAction rerunAction = null;
+        InputOutputManager.InputOutputData result = null;
 
         synchronized (InputOutputManager.class) {
-            io = descriptor.getInputOutput();
+            InputOutput io = descriptor.getInputOutput();
+            if (io != null) {
+                result = new InputOutputManager.InputOutputData(io, originalDisplayName, null, null);
+            }
 
             // try to acquire required one (rerun action)
             // this will always succeed if this method is called from EDT
-            if (io == null) {
-                InputOutputManager.InputOutputData freeIO = InputOutputManager.getInputOutput(
-                        required);
-
-                if (freeIO != null) {
-                    io = freeIO.getInputOutput();
-                    displayName = freeIO.getDisplayName();
-                    stopAction = freeIO.getStopAction();
-                    rerunAction = freeIO.getRerunAction();
-                }
+            if (result == null) {
+                result = InputOutputManager.getInputOutput(required);
             }
 
             // try to find free output windows
-            if (io == null) {
-                InputOutputManager.InputOutputData freeIO = InputOutputManager.getInputOutput(
+            if (result == null) {
+                result = InputOutputManager.getInputOutput(
                         originalDisplayName, descriptor.isControllable());
-
-                if (freeIO != null) {
-                    io = freeIO.getInputOutput();
-                    displayName = freeIO.getDisplayName();
-                    stopAction = freeIO.getStopAction();
-                    rerunAction = freeIO.getRerunAction();
-                }
             }
 
             // free IO was not found, create new one
             if (io == null) {
-                InputOutputManager.InputOutputData freeIO = InputOutputManager.createInputOutput(
+                result = InputOutputManager.createInputOutput(
                         originalDisplayName, descriptor.isControllable());
-
-                io = freeIO.getInputOutput();
-                displayName = freeIO.getDisplayName();
-                stopAction = freeIO.getStopAction();
-                rerunAction = freeIO.getRerunAction();
             }
 
-            configureInputOutput(io);
+            configureInputOutput(result.getInputOutput());
         }
 
-        return new InputOutputManager.InputOutputData(io, displayName, stopAction, rerunAction);
+        return result;
     }
 
     /**
@@ -476,7 +456,7 @@ public final class ExecutionService {
         private final ProgressHandle handle;
 
         private final InputOutput inputOutput;
-        
+
         private final InputOutput custom;
 
         public CleanupTask(String displayName, ExecutorService executor,
