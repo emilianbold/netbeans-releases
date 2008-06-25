@@ -43,7 +43,6 @@ package org.netbeans.modules.db.sql.execute;
 
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.db.dataview.output.DataView;
 
 /**
  * Encapsulates the result of the execution of a list of SQL statements.
@@ -52,13 +51,13 @@ import org.netbeans.modules.db.dataview.output.DataView;
  */
 public class SQLExecutionResults {
     
-    private final List<DataView> results;
+    private final List<SQLExecutionResult> results;
     
-    public SQLExecutionResults(List<DataView> results) {
+    public SQLExecutionResults(List<SQLExecutionResult> results) {
         this.results = Collections.unmodifiableList(results);
     }
     
-    public List<DataView> getResults() {
+    public List<SQLExecutionResult> getResults() {
         return results;
     }
     
@@ -67,8 +66,8 @@ public class SQLExecutionResults {
     }
     
     public boolean hasExceptions() {
-        for (DataView result: results) {
-            if (result.hasException()) {
+        for (SQLExecutionResult result: results) {
+            if (result.hasExceptions()) {
                 return true;
             }
         }

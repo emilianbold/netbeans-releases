@@ -53,9 +53,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.progress.ProgressHandle;
@@ -65,7 +63,6 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.api.sql.execute.SQLExecuteCookie;
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
 import org.netbeans.modules.db.core.SQLCoreUILogger;
-import org.netbeans.modules.db.dataview.output.DataView;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -80,6 +77,7 @@ import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.db.sql.execute.SQLExecuteHelper;
+import org.netbeans.modules.db.sql.execute.SQLExecutionResult;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResults;
 import org.openide.cookies.CloseCookie;
 import org.openide.filesystems.FileLock;
@@ -328,9 +326,9 @@ public class SQLEditorSupport extends DataEditorSupport
                 if (results != null) {
                     components = new ArrayList<Component>();
 
-                    for (DataView view : results.getResults()) {
-                        for(Component result: view.createComponents()){
-                            components.add(result);
+                    for (SQLExecutionResult result : results.getResults()) {
+                        for(Component component : result.getDataView().createComponents()){
+                            components.add(component);
                         }
                     }
                 }
@@ -481,7 +479,7 @@ public class SQLEditorSupport extends DataEditorSupport
                     parent.closeExecutionResult();
 
                     SQLExecutionLoggerImpl logger = parent.createLogger();
-                    SQLExecutionResults executionResults = SQLExecuteHelper.execute(sql, startOffset, endOffset, dbconn, handle);
+                    SQLExecutionResults executionResults = SQLExecuteHelper.execute(sql, startOffset, endOffset, dbconn, handle, logger);
                     handleExecutionResults(executionResults, logger);
                 } finally {
                     handle.finish();
@@ -503,8 +501,6 @@ public class SQLEditorSupport extends DataEditorSupport
             if (executionResults.hasExceptions()) {
                 // there was at least one exception
                 setStatusText(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutionFinishedWithErrors"));
-                // just that, the exceptions are in the Output window
-                return;
             }
             
             if (executionResults.size() <= 0) {

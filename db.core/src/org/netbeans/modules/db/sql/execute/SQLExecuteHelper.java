@@ -77,20 +77,22 @@ public final class SQLExecuteHelper {
      * @param sqlScript the SQL script to execute. If it contains multiple lines
      * they have to be delimited by '\n' characters.
      */
-    public static SQLExecutionResults execute(String sqlScript, int startOffset, int endOffset, DatabaseConnection conn, ProgressHandle handle) {
+    public static SQLExecutionResults execute(String sqlScript, int startOffset, int endOffset, 
+            DatabaseConnection conn, ProgressHandle handle, SQLExecutionLogger executionLogger) {
         
         boolean cancelled = false;
         
         List<StatementInfo> statements = getStatements(sqlScript, startOffset, endOffset);
         
-        List<DataView> results = new ArrayList<DataView>();
+        List<SQLExecutionResult> results = new ArrayList<SQLExecutionResult>();
+        long totalExecutionTime = 0;
         String url = null;
         try {
             url = conn.getJDBCConnection().getMetaData().getURL();
         } catch (SQLException ex) {
             Exceptions.printStackTrace(ex);
         }
-        
+
         for (Iterator i = statements.iterator(); i.hasNext();) {
             
             cancelled = Thread.currentThread().isInterrupted();
@@ -100,15 +102,38 @@ public final class SQLExecuteHelper {
             
             StatementInfo info = (StatementInfo)i.next();
             String sql = info.getSQL();
-            
-            // Save SQL statements executed for the SQLHistoryManager
-            SQLHistoryManager.getInstance().saveSQL(new SQLHistory(url, sql, new Date()));
-            
-            results.add(DataView.create(conn, sql, 20));
 
+            SQLExecutionResult result = null;
+            
+            
             if (LOG) {
                 LOGGER.log(Level.FINE, "Executing: " + sql);
-            }            
+            }
+
+            long startTime = System.currentTimeMillis();
+
+            DataView view = DataView.create(conn, sql);
+
+            long executionTime = System.currentTimeMillis() - startTime;
+            totalExecutionTime += executionTime;
+
+            // Save SQL statements executed for the SQLHistoryManager
+            SQLHistoryManager.getInstance().saveSQL(new SQLHistory(url, sql, new Date(startTime)));
+
+            result = new SQLExecutionResult(info, view, executionTime);
+
+            executionLogger.log(result);
+
+            results.add(result);
+        }
+
+        if (!cancelled) {
+            executionLogger.finish(totalExecutionTime);
+        } else {
+            if (LOG) {
+                LOGGER.log(Level.FINE, "Execution cancelled"); // NOI18N
+            }
+            executionLogger.cancel();
         }
                 
         // Persist SQL executed

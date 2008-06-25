@@ -43,6 +43,7 @@ package org.netbeans.modules.db.sql.loader;
 
 import java.io.IOException;
 import java.text.NumberFormat;
+import java.util.Iterator;
 import org.netbeans.modules.db.sql.execute.SQLExecutionLogger;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResult;
 import org.netbeans.modules.db.sql.execute.StatementInfo;
@@ -76,7 +77,7 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
     }
 
     public void log(SQLExecutionResult result) {
-        if (result.getException() != null) {
+        if (result.hasExceptions()) {
             logException(result);
         } else {
             logSuccess(result);
@@ -111,10 +112,19 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
 
         OutputWriter writer = inputOutput.getErr();
 
+        // Temporary until DataView returns exceptions instead of strings
+        Iterator<String> messageIterator = result.getExceptions();
+        while (messageIterator.hasNext()) {
+           writer.println(messageIterator.next());             
+        }
+        
+        /*
+         * Will comment back in when DataView returns exceptions instead of strings
         writer.println(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ErrorCodeStateMessage",
                 String.valueOf(result.getException().getErrorCode()),
                 result.getException().getSQLState(),
                 result.getException().getMessage()));
+        */
         printLineColumn(writer, result.getStatementInfo(), true);
         writer.println(""); // NOI18N
     }
@@ -124,10 +134,10 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
 
         String executionTimeStr = millisecondsToSeconds(result.getExecutionTime());
         String successLine = null;
-        if (result.getRowCount() >= 0) {
+        if (result.getUpdateCount() >= 0) {
             successLine = NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutedSuccessfullyTimeRows",
                     String.valueOf(executionTimeStr),
-                    String.valueOf(result.getRowCount()));
+                    String.valueOf(result.getUpdateCount()));
         } else {
             successLine = NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutedSuccessfullyTime",
                     String.valueOf(executionTimeStr));
