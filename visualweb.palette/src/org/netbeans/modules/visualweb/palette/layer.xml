@@ -101,7 +101,7 @@ made subject to such option by the copyright holder.
                       stringvalue="org.netbeans.modules.visualweb.palette.Bundle"/>
                 <!--<attr name="SystemFileSystem.icon"
                       urlvalue="nbresloc:/org/netbeans/modules/visualweb/palette/resolver-icon.gif"/> -->
-                <attr name="position" intvalue="1255"/>
+                <attr name="position" intvalue="70001"/>
             </file>
         </folder>
     </folder>
