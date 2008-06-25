@@ -38,62 +38,20 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.db.dataview.spi;
 
-package org.netbeans.modules.db.sql.execute.ui;
-
-import java.io.IOException;
-import java.sql.SQLException;
-import org.netbeans.modules.db.sql.execute.SQLExecutionResult;
-import org.netbeans.modules.db.sql.execute.SQLExecutionResults;
+import java.sql.Connection;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 
 /**
- *
- * @author Andrei Badea
+ * An SPI for which different provider are available
+ * registered via standard META-INF/services
+ * 
+ * @author Ahimanikya Satapathy
  */
-public class SQLResultPanelModel {
-    
-    private final ResultSetTableModel resultSetModel;
-    private final String affectedRows;
-    
-    public static SQLResultPanelModel create(SQLExecutionResults executionResults) throws IOException, SQLException {
-        ResultSetTableModel resultSetModel = null;
-        String affectedRows = null;
-        
-        if (executionResults != null && executionResults.size() > 0) {
-            SQLExecutionResult result = (SQLExecutionResult)executionResults.getResults().iterator().next();
-            
-            if (result.getResultSet() != null) {
-                resultSetModel = ResultSetTableModel.create(
-                        result.getDatabaseMetaData(), result.getResultSet());
-                if (resultSetModel == null) { // thread interrupted
-                    return null;
-                }
-            } else {
-                return new SQLResultPanelModel();
-            }
-        }
-        
-        return new SQLResultPanelModel(resultSetModel, affectedRows);
-    }
+public interface DBConnectionProvider {
 
-    private SQLResultPanelModel() {
-        this(null, null);
-    }
-    
-    private SQLResultPanelModel(ResultSetTableModel resultSetModel, String affectedRows) {
-        this.resultSetModel = resultSetModel;
-        this.affectedRows = affectedRows;
-    }
-    
-    public ResultSetTableModel getResultSetModel() {
-        return resultSetModel;
-    }
-    
-    public String getAffectedRows() {
-        return affectedRows;
-    }
-    
-    public boolean isEmpty() {
-        return resultSetModel == null && affectedRows == null;
-    }
+    public Connection getConnection(DatabaseConnection dbConn);
+
+    public void closeConnection(Connection con);
 }

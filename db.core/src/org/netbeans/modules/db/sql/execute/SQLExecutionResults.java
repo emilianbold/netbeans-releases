@@ -41,12 +41,8 @@
 
 package org.netbeans.modules.db.sql.execute;
 
-import java.sql.SQLException;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Encapsulates the result of the execution of a list of SQL statements.
@@ -65,23 +61,13 @@ public class SQLExecutionResults {
         return results;
     }
     
-    public void close() {
-        for (Iterator<SQLExecutionResult> i = results.iterator(); i.hasNext();) {
-            try {
-                i.next().close();
-            } catch (SQLException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
-            }
-        }
-    }
-    
     public int size() {
         return results.size();
     }
     
     public boolean hasExceptions() {
         for (SQLExecutionResult result: results) {
-            if (result.getException() != null) {
+            if (result.hasExceptions()) {
                 return true;
             }
         }
