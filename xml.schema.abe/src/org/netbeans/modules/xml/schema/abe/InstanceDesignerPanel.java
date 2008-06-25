@@ -215,7 +215,7 @@ public class InstanceDesignerPanel extends ABEBaseDropPanel {
      *
      *
      */
-    public synchronized PaletteController getPaletteController() {
+    public static synchronized PaletteController getPaletteController() {
         if (paletteController!=null)
             return paletteController;
         
@@ -395,7 +395,7 @@ public class InstanceDesignerPanel extends ABEBaseDropPanel {
     
     private SchemaModel schemaModel;
     private AXIModel axiModel;
-    private PaletteController paletteController;
+    private static PaletteController paletteController;
     GlobalElementsContainerPanel globalElementsChildrenPanel;
     List<Component> childrenList = new ArrayList<Component>();
     NamespacePanel namespacePanel;

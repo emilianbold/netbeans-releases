@@ -1034,10 +1034,12 @@ public final class ParseProjectXml extends Task {
         }
         cnbs.add(cnb);
         if (entry != null) {
-            String testDeps[] = entry.getTestDependencies().get(testtype);
-            if (testDeps != null) {
-                for (String cnb2 : testDeps) {
-                    computeCompileDep(cnb2,cnbs,sb);
+            for (String othertesttype : new String[] {"unit", "qa-functional"}) {
+                String testDeps[] = entry.getTestDependencies().get(othertesttype);
+                if (testDeps != null) {
+                    for (String cnb2 : testDeps) {
+                        computeCompileDep(cnb2,cnbs,sb);
+                    }
                 }
             } 
         }
