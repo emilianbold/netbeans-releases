@@ -48,10 +48,12 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
+import javax.swing.text.JTextComponent;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CompoundEdit;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.lib.editor.util.GapList;
@@ -265,8 +267,18 @@ public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task, Doc
         /** Offset of '\n' on the current line. */
         private int lineLastOffset;
 
+        /**
+         * Line index that should be excluded from whitespace removal (line with caret)
+         * or -1 for none.
+         */
+        private final int excludeLineIndex;
+
         ModsProcessor() {
             lineElementRoot = DocumentUtilities.getParagraphRootElement(doc);
+            JTextComponent lastFocusedComponent = EditorRegistry.lastFocusedComponent();
+            excludeLineIndex = (lastFocusedComponent != null && lastFocusedComponent.getDocument() == doc)
+                    ? lineElementRoot.getElementIndex(lastFocusedComponent.getCaretPosition())
+                    : -1;
         }
 
         void removeWhitespace() {
@@ -317,6 +329,12 @@ public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task, Doc
         }
 
         private void removeWhitespaceOnLine() {
+            if (lineIndex == excludeLineIndex) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("Line index " + lineIndex + " excluded from whitespace removal.\n"); // NOI18N
+                }
+                return;
+            }
             int offset;
             for (offset = lineLastOffset - 1; offset >= lineStartOffset; offset--) {
                 char c = docText.charAt(offset);

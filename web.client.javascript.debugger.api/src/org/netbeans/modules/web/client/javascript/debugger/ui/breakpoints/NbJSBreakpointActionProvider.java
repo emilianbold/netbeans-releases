@@ -44,14 +44,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.Set;
-import java.util.Vector;
 
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.modules.web.client.javascript.debugger.ui.NbJSEditorUtil;
-import org.netbeans.spi.debugger.ActionsProviderListener;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.util.WeakListeners;
-import org.openide.windows.TopComponent;
 
 /**
  * Provides actions for adding and removing Javascript breakpoints.
@@ -63,9 +61,10 @@ public final class NbJSBreakpointActionProvider extends ActionsProviderSupport
             Collections.singleton(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
 
     public NbJSBreakpointActionProvider() {
-        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, true);
-        TopComponent.getRegistry().addPropertyChangeListener(
-                WeakListeners.propertyChange(this, TopComponent.getRegistry()));
+        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, NbJSEditorUtil.getCurrentLine() != null);
+        PropertyChangeListener l = WeakListeners.propertyChange(this, EditorContextDispatcher.getDefault());
+        EditorContextDispatcher.getDefault().addPropertyChangeListener(NbJSEditorUtil.JAVASCRIPT_MIME_TYPE, l);
+        EditorContextDispatcher.getDefault().addPropertyChangeListener(NbJSEditorUtil.HTML_MIME_TYPE, l);
     }
 
     @Override

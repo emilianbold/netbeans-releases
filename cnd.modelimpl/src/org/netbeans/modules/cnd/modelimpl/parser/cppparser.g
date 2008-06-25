@@ -363,6 +363,7 @@ tokens {
 	protected static final int tsCLASS     = 0x2000;
 	protected static final int tsWCHAR_T   = 0x4000;
 	protected static final int tsBOOL      = 0x8000;
+	protected static final int tsCOMPLEX   = 0x16000;
 
 	public static class TypeQualifier extends Enum { public TypeQualifier(String id) { super(id); } }
 
@@ -759,18 +760,6 @@ external_declaration_template { K_and_R = false; boolean ctrName=false;}
 			declaration
 			{ #external_declaration_template = #(#[CSM_TEMPLATE_CLASS_DECLARATION, "CSM_TEMPLATE_CLASS_DECLARATION"], #external_declaration_template); }
 		|
-			// templated forward class decl, init/decl of static member in template
-			(declaration_specifiers
-				(init_declarator_list)? SEMICOLON! /*{end_of_stmt();}*/)=>
-			//{beginTemplateDeclaration();}
-			{ if (statementTrace>=1) 
-				printf("external_declaration_template_10[%d]: Class template declaration\n",
-					LT(1).getLine());
-			}
-			declaration_specifiers
-				(init_declarator_list)? SEMICOLON! //{end_of_stmt();}
-			{/*endTemplateDeclaration();*/ #external_declaration_template = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #external_declaration_template);}
-		|  
 		// Templated FUNCTIONS and CONSTRUCTORS matched here.
                        // Templated CONSTRUCTOR declaration
                         (	(template_head)?   // :)
@@ -840,6 +829,23 @@ external_declaration_template { K_and_R = false; boolean ctrName=false;}
 			}
 			dtor_head[true] dtor_body
 			{ #external_declaration_template = #(#[CSM_DTOR_TEMPLATE_DEFINITION, "CSM_DTOR_TEMPLATE_DEFINITION"], #external_declaration_template); }
+		|  
+			// templated forward class decl, init/decl of static member in template
+                        // Changed alternative order as a fix for IZ#138099:
+                        // unresolved identifier for functions' template parameter.
+                        // If this alternative is before function declaration
+                        // then code like "template<T> int foo(T);" incorrectly
+                        // becomes a CSM_TEMPL_FWD_CL_OR_STAT_MEM.
+			(declaration_specifiers
+				(init_declarator_list)? SEMICOLON! /*{end_of_stmt();}*/)=>
+			//{beginTemplateDeclaration();}
+			{ if (statementTrace>=1) 
+				printf("external_declaration_template_10[%d]: Class template declaration\n",
+					LT(1).getLine());
+			}
+			declaration_specifiers
+				(init_declarator_list)? SEMICOLON! //{end_of_stmt();}
+			{/*endTemplateDeclaration();*/ #external_declaration_template = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #external_declaration_template);}
 		)
     		{endTemplateDefinition();}
 	;
@@ -1581,6 +1587,7 @@ simple_type_specifier returns [/*TypeSpecifier*/int ts = tsInvalid]
 			|	LITERAL_float		{ts |= tsFLOAT;}
 			|	LITERAL_double	{ts |= tsDOUBLE;}
 			|	LITERAL_void		{ts |= tsVOID;}
+                        |       literal_complex         {ts |= tsCOMPLEX;}
 			)+
 			{ #simple_type_specifier = #([CSM_TYPE_BUILTIN, "CSM_TYPE_BUILTIN"], #simple_type_specifier); }
 		|
@@ -1800,7 +1807,12 @@ cv_qualifier_seq
 
 declarator
 	:
-		//{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
+                // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
+                // This rule adds support for declarations like
+                // void (__attribute__((noreturn)) ****f) (void);
+                (attribute_specification)=> attribute_specification!
+                declarator
+	|       //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
                 // VV: 23/05/06 added support for __restrict after pointers
                 //i.e. void foo (char **__restrict a)
 		(ptr_operator)=> ptr_operator // AMPERSAND or STAR
@@ -1811,7 +1823,12 @@ declarator
 
 restrict_declarator
         :
-		//{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
+                // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
+                // This rule adds support for declarations like
+                // char *__attribute__((aligned(8))) *f;
+                (attribute_specification)=> attribute_specification!
+                restrict_declarator
+        |       //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
 		(ptr_operator)=> ptr_operator // AMPERSAND or STAR
 		restrict_declarator
 	|	
@@ -3496,3 +3513,6 @@ literal_typeof : LITERAL_typeof | LITERAL___typeof | LITERAL___typeof__ ;
 
 protected
 literal_restrict : LITERAL_restrict | LITERAL___restrict;
+
+protected
+literal_complex : LITERAL__Complex | LITERAL___complex__;

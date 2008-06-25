@@ -74,7 +74,7 @@ public final class TestKit {
         new JTextFieldOperator(npnlso, 0).setText(prj_name);
         new NewProjectWizardOperator().finish();
 
-        waitForScanFinishedAndQueueEmpty();
+        ProjectSupport.waitScanFinished();//AndQueueEmpty(); // test fails if there is waitForScanAndQueueEmpty()...
 
         return file;
     }
@@ -85,6 +85,7 @@ public final class TestKit {
             return "";
         }
         int hashPos = nodeHtmlDisplayName.indexOf('#');
+        if (hashPos == -1) return null;
         nodeHtmlDisplayName = nodeHtmlDisplayName.substring(hashPos);
         hashPos = nodeHtmlDisplayName.indexOf('"');
         nodeHtmlDisplayName = nodeHtmlDisplayName.substring(0, hashPos);

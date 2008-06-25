@@ -74,16 +74,20 @@ public final class PositionBounds {
         }
     }
     
-    private static final class BackwardPosition implements Position {
+    private static final class BiasedPosition implements Position {
         
         private Position delegate;
+        private Bias bias;
         
-        public BackwardPosition(Position delegate) {
+        public BiasedPosition(Position delegate, Bias bias) {
             this.delegate = delegate;
+            this.bias = bias;
         }
     
         public int getOffset() {
-            return this.delegate.getOffset() + 1;
+            return bias == Bias.Backward
+                    ? this.delegate.getOffset() + 1
+                    : this.delegate.getOffset() - 1;
         }
     }
 
@@ -109,7 +113,10 @@ public final class PositionBounds {
      */
     public static PositionBounds createBodyBounds(int begin, int end, GuardedSectionsImpl guards) throws BadLocationException {
         StyledDocument doc = guards.getDocument();
-        return new PositionBounds(new BackwardPosition(doc.createPosition(begin - 1)), doc.createPosition(end), guards);
+        return new PositionBounds(
+                new BiasedPosition(doc.createPosition(begin - 1), Position.Bias.Backward),
+                new BiasedPosition(doc.createPosition(end + 1), Position.Bias.Forward),
+                guards);
     }
     
     /**
@@ -126,16 +133,19 @@ public final class PositionBounds {
      * @see #resolvePositions
      */
     public static PositionBounds createBodyUnresolved(int begin, int end, GuardedSectionsImpl guards) throws BadLocationException {
-        return new PositionBounds(new BackwardPosition(new UnresolvedPosition(begin - 1)), new UnresolvedPosition(end), guards);
+        return new PositionBounds(
+                new BiasedPosition(new UnresolvedPosition(begin - 1), Position.Bias.Backward),
+                new BiasedPosition(new UnresolvedPosition(end + 1), Position.Bias.Forward),
+                guards);
     }
     
     public void resolvePositions() throws BadLocationException {
         StyledDocument doc = guards.getDocument();
         Position b, e;
         if (end instanceof UnresolvedPosition) {
-            if (begin instanceof BackwardPosition) {
-                b = ((BackwardPosition) begin).delegate = doc.createPosition(
-                        ((BackwardPosition) begin).delegate.getOffset());
+            if (begin instanceof BiasedPosition) {
+                b = ((BiasedPosition) begin).delegate = doc.createPosition(
+                        ((BiasedPosition) begin).delegate.getOffset());
             } else {
                 b = doc.createPosition(begin.getOffset());
             }

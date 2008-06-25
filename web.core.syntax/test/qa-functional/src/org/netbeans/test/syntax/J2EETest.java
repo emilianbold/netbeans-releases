@@ -80,7 +80,7 @@ public class J2EETest extends CompletionTest {
         while ((ConnectionManager.getDefault().getConnections().length == 0) && (time <= 12)) {
          time++;
             try {
-             Thread.currentThread().sleep(5000);
+             Thread.sleep(5000);
             } catch (Exception e) {
              e.printStackTrace(System.err);
          }
