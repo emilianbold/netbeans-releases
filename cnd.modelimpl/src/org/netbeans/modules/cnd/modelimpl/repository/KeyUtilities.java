@@ -139,6 +139,21 @@ public class KeyUtilities {
         }
         return null;
     }
+
+    public static int getKeyStartOffset(Key key){
+        if (key instanceof OffsetableKey) {
+            return ((OffsetableKey)key).getStartOffset();
+        }
+        return -1;
+    }
+
+    public static int getKeyEndOffset(Key key){
+        if (key instanceof OffsetableKey) {
+            return ((OffsetableKey)key).getEndOffset();
+        }
+        return -1;
+    }
+    
     // have to be public or UID factory does not work
 
 }
