@@ -37,17 +37,18 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bpel.mapper.tree.search;
+package org.netbeans.modules.soa.ui.tree.impl;
 
+import org.netbeans.modules.soa.ui.tree.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 import javax.swing.tree.TreePath;
-import org.netbeans.modules.bpel.mapper.tree.MapperTreeNode;
-import org.netbeans.modules.bpel.mapper.tree.spi.DataObjectHolder;
-import org.netbeans.modules.bpel.mapper.tree.spi.ExtTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
-import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder.FindResult;
+import org.netbeans.modules.soa.ui.tree.DataObjectHolder;
+import org.netbeans.modules.soa.ui.tree.ExtTreeModel;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
+import org.netbeans.modules.soa.ui.tree.TreeItemFinder;
+import org.netbeans.modules.soa.ui.tree.TreeItemFinder.FindResult;
 
 /**
  * The processor, which looks for a tree item inside of TreeModel by 
@@ -67,7 +68,7 @@ public class TreeFinderProcessor {
      * Looks for the first node, which satisfies the search conditions, 
      * which are specified by the finderList argument.
      * The finderList contains the list of TreeItemFinder objects which 
-     * has to be applied sequentially.
+     * have to be applied sequentially.
      * 
      * @param helper
      * @return TreePath of the found tree item. 
@@ -269,7 +270,7 @@ public class TreeFinderProcessor {
         }
         //
         Object parentObj = parentPath.getLastPathComponent();
-        assert parentObj instanceof MapperTreeNode;
+        assert parentObj instanceof TreeItem;
         //
         List<Object> children = mTreeModel.getChildren((Object)parentObj);
         for (Object childNode : children) {
@@ -299,7 +300,7 @@ public class TreeFinderProcessor {
         }
         //
         Object parentObj = parentPath.getLastPathComponent();
-        assert parentObj instanceof MapperTreeNode;
+        assert parentObj instanceof TreeItem;
         //
         ArrayList<TreePath> result = new ArrayList<TreePath>();
         List<Object> children = mTreeModel.getChildren(parentObj);
@@ -330,7 +331,7 @@ public class TreeFinderProcessor {
         }
         //
         Object parentObj = parentPath.getLastPathComponent();
-        assert parentObj instanceof MapperTreeNode;
+        assert parentObj instanceof TreeItem;
         //
         List<Object> children = mTreeModel.getChildren(parentObj);
         for (Object childNode : children) {
@@ -358,7 +359,7 @@ public class TreeFinderProcessor {
         }
         //
         Object parentObj = parentPath.getLastPathComponent();
-        assert parentObj instanceof MapperTreeNode;
+        assert parentObj instanceof TreeItem;
         //
         List<Object> children = mTreeModel.getChildren(parentObj);
         if (index >= children.size()) {

@@ -17,7 +17,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.bpel.mapper.tree.spi;
+package org.netbeans.modules.bpel.mapper.model;
 
 import org.netbeans.modules.bpel.mapper.multiview.DesignContextController;
 import org.netbeans.modules.soa.mappercore.Mapper;

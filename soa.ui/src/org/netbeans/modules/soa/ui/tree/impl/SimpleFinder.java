@@ -17,19 +17,31 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.bpel.mapper.tree.spi;
+package org.netbeans.modules.soa.ui.tree.impl;
 
-import org.netbeans.modules.soa.mappercore.model.MapperModel;
-import org.netbeans.modules.xml.xpath.ext.schema.CachingSchemaSearchVisitor;
+import org.netbeans.modules.soa.ui.tree.*;
+import org.netbeans.modules.soa.ui.tree.TreeItemFinder;
+import org.netbeans.modules.soa.ui.tree.TreeItemFinder.FindResult;
+
 
 /**
  *
  * @author nk160297
  */
-public interface MapperModelFactory {
+public abstract class SimpleFinder implements TreeItemFinder {
 
-    MapperModel constructModel();
-    
-    CachingSchemaSearchVisitor getCachingSchemaSearchVisitor();
-    
+    public FindResult process(Object treeItem, FindResult result) {
+        if (result == null) {
+            return new FindResult(isFit(treeItem), drillDeeper(treeItem));
+        } else {
+            result.setFit(isFit(treeItem));
+            result.setDrillDeeper(drillDeeper(treeItem));
+            return result;
+        }
+    }
+
+    protected abstract boolean isFit(Object treeItem);
+
+    protected abstract boolean drillDeeper(Object treeItem);
+
 }

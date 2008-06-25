@@ -37,19 +37,74 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bpel.mapper.tree.spi;
+package org.netbeans.modules.soa.ui.tree.impl;
 
-import java.util.List;
-import javax.swing.tree.TreeModel;
+import java.util.Iterator;
 
 /**
- * Extends standard TreeModel with the method, which returns 
- * all childrent of a parent. It is necesary for the optimization.
- * This interface is intended to be implemented by a phisical model 
- * The logical model has another parameters in the getChildren method.
+ * This iterable expands base iterable. It returns the iterator, which 
+ * will return newHead object and then will take other objects from the 
+ * base iterable. 
  * 
  * @author nk160297
  */
-public interface ExtTreeModel<ItemType> extends TreeModel {
-    List<ItemType> getChildren(ItemType parent);
+public class IterableExpander<T> implements Iterable<T> {
+
+    private Iterable<T> mBaseIterable;
+    private T mExtHead;
+    
+    public IterableExpander(Iterable<T> base, T newHead) {
+        mBaseIterable = base;
+        mExtHead = newHead;
+    }
+    
+    public Iterator iterator() {
+        return new MyIterator(this);
+    }
+    
+    private final class MyIterator implements Iterator<T> {
+    
+        private IterableExpander<T> mOwner;
+        private Iterator<T> mBaseIterator;
+        private boolean mBeforeHead;
+
+        public MyIterator(IterableExpander<T> owner) {
+            mOwner = owner;
+            mBeforeHead = true; // initially it before the head!
+        }
+        
+        public boolean hasNext() {
+            if (mBeforeHead) {
+                return true;
+            } else {
+                return getBaseIterator().hasNext();
+            }
+        }
+
+        public T next() {
+            if (mBeforeHead) {
+                mBeforeHead = false;
+                return mExtHead;
+            } else {
+                return getBaseIterator().next();
+            }
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException("This iterator is immutable."); // NOI18N
+        }
+    
+        /**
+         * Lazy iterator creation
+         * @return
+         */
+        private Iterator<T> getBaseIterator() {
+            if (mBaseIterator == null) {
+                mBaseIterator = mOwner.mBaseIterable.iterator();
+            }
+            return mBaseIterator;
+        }
+        
+    }
+
 }

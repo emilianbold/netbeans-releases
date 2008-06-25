@@ -27,15 +27,17 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeExtensionModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemInfoProvider;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.PartnerLinkContainer;
 import org.netbeans.modules.bpel.model.api.support.Roles;
+import org.netbeans.modules.soa.ui.tree.SoaTreeExtensionModel;
+import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
+import org.netbeans.modules.soa.ui.tree.TreeItemActionsProvider;
+import org.netbeans.modules.soa.ui.tree.TreeItemInfoProvider;
+import org.netbeans.modules.soa.ui.tree.TreeStructureProvider;
 import org.openide.util.NbBundle;
 
 /**
@@ -43,8 +45,9 @@ import org.openide.util.NbBundle;
  *
  * @author nk160297
  */
-public class PartnerLinkTreeExtModel 
-        implements MapperTreeExtensionModel<Object>, TreeItemInfoProvider {
+public class PartnerLinkTreeExtModel implements SoaTreeExtensionModel, 
+        TreeItemInfoProvider, TreeStructureProvider, 
+        TreeItemActionsProvider, MapperConnectabilityProvider {
 
 //    public static final String MY_ROLE = 
 //            NbBundle.getMessage(PartnerLinkTreeExtModel.class, "MY_ROLE"); // NOI18N
@@ -59,9 +62,9 @@ public class PartnerLinkTreeExtModel
         mShowEndpointRef = showEndpointRef;
     }
     
-    public List getChildren(Iterable<Object> dataObjectPathItrb) {
-        Object parent = dataObjectPathItrb.iterator().next();
-        if (parent == MapperTreeModel.TREE_ROOT) {
+    public List getChildren(TreeItem treeItem) {
+        Object parent = treeItem.getDataObject();
+        if (parent == SoaTreeModel.TREE_ROOT) {
             Process process = mContextEntity.getBpelModel().getProcess();
             PartnerLinkContainer plContainer = process.getPartnerLinkContainer();
             if (plContainer != null) {
@@ -119,48 +122,123 @@ public class PartnerLinkTreeExtModel
         return plsFiltred;
     }
     
-    public Boolean isLeaf(Object node) {
+    public Boolean isLeaf(TreeItem treeItem) {
         return null;
     }
 
-    public Boolean isConnectable(Object node) {
+    public Boolean isConnectable(TreeItem treeItem) {
+        Object dataObj = treeItem.getDataObject();
         if (mShowEndpointRef) {
-            return node instanceof Roles;
+            return dataObj instanceof Roles;
         } else {
-            return node instanceof PartnerLink;
+            return dataObj instanceof PartnerLink;
         }
+    }
+
+    public TreeStructureProvider getTreeStructureProvider() {
+        return this;
     }
 
     public TreeItemInfoProvider getTreeItemInfoProvider() {
         return this;
     }
 
-    public String getDisplayName(Object treeItem) {
-        if (treeItem instanceof PartnerLinkContainer) {
-            return NbBundle.getMessage(VariableTreeInfoProvider.class,
+    public TreeItemActionsProvider getTreeItemActionsProvider() {
+        return this;
+    }
+
+    public String getDisplayName(TreeItem treeItem) {
+        Object dataObj = treeItem.getDataObject();
+        //
+        if (dataObj instanceof PartnerLinkContainer) {
+            return NbBundle.getMessage(PartnerLinkTreeExtModel.class,
                     "PARTNER_LINK_CONTAINER"); // NOI18N
         }
+        //
+        if (dataObj instanceof Roles) {
+            return dataObj.toString();
+        }
+        //
         return null;
     }
 
-    public Icon getIcon(Object treeItem) {
-        if (treeItem instanceof PartnerLinkContainer) {
+    public Icon getIcon(TreeItem treeItem) {
+        Object dataObj = treeItem.getDataObject();
+        if (dataObj instanceof PartnerLinkContainer) {
             return NodeType.VARIABLE_CONTAINER.getIcon();
         } 
         return null;
     }
 
-    public List<Action> getMenuActions(MapperTcContext mapperTcContext, 
-            boolean inLeftTree, TreePath treePath, 
-            Iterable<Object> dataObjectPathItr) {
+    public List<Action> getMenuActions(TreeItem treeItem, Object context, 
+            TreePath treePath) {
         return null;
     }
 
-    public String getToolTipText(Iterable<Object> dataObjectPathItrb) {
-        Object treeItem = dataObjectPathItrb.iterator().next();
-        if (treeItem instanceof Roles) {
-            return ((Roles)treeItem).toString();
+    public String getToolTipText(TreeItem treeItem) {
+        Object dataObj = treeItem.getDataObject();
+
+//        if (dataObj instanceof PartnerLinkContainer) {
+//            String type = ((PartnerLinkContainer) dataObj).getBpelModel().
+//                    getProcess().getName();
+//            String name = getDisplayName(treeItem);
+//            return SchemaTreeInfoProvider.getColorTooltip(
+//                    null, name, type, null);
+//        }
+
+        if (dataObj instanceof PartnerLink) {
+            PartnerLink pLink = (PartnerLink) dataObj;
+            String result;
+            result = "<html> <body> Partner Link ";
+            if (pLink.getName() != null) {
+                result = result + "<b><font color =#7C0000>" + pLink.getName() + 
+                        "</font></b>";
+            }
+            if (pLink.getDocumentation() != null) {
+                result = result + "<hr>" + pLink.getDocumentation();
+            }
+            if (pLink.getMyRole() != null) {
+                result = result + "<hr><p><b><font color =#000099> myRole= </font></b>" 
+                        + pLink.getMyRole().getRefString() + "</p>";
+            }
+            if (pLink.getPartnerRole() != null) {
+                result = result + "<b><font color =#000099> partnerRole= </font></b>" +
+                        pLink.getPartnerRole().getRefString();
+            }
+            result = result + " </body>";
+            return result;
         }
+
+        if (dataObj instanceof Roles) {
+            Object parent = treeItem.getParent().getDataObject();
+            String value = null;
+            String nameSpace = null;
+            
+            if (parent instanceof PartnerLink) {
+                PartnerLink pLink = (PartnerLink) parent;
+                if (Roles.MY_ROLE.equals(dataObj)) {
+                    value = pLink.getMyRole().getRefString();
+                    nameSpace = pLink.getMyRole().getEffectiveNamespace();
+                }
+                if (Roles.PARTNER_ROLE.equals(dataObj)) {
+                    value = pLink.getPartnerRole().getRefString();
+                    nameSpace = pLink.getPartnerRole().getEffectiveNamespace();
+                }
+            }
+            String result;
+            result ="<html><body><b><font color =#000099>" + 
+                    ((Roles) dataObj).toString() + " = </font></b>";
+            if (value != null) {
+                result = result + value;
+            }
+            if (nameSpace != null && nameSpace.length() > 0) {
+                result = result + "<hr> NameSpace= " +nameSpace;
+            }
+            result = result + "</body>";
+            
+            return result;
+        }
+        //
         return null;
     }
 

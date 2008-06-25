@@ -37,17 +37,27 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bpel.mapper.tree.spi;
+package org.netbeans.modules.bpel.mapper.model;
 
 /**
- * The interface is useful in case when logical and phisical models are used. 
- * In the case the tree item of the phisical model refers to the item of 
- * logical model and this interface formalizes it. 
  *
  * @author nk160297
  */
-public interface DataObjectHolder<DataObject> {
-    
-    DataObject getDataObject();
+public final class MapperTreeContext {
 
+    private MapperTcContext mTcContext;
+    private boolean mInLeftTree;
+    
+    public MapperTreeContext(MapperTcContext tcContext, boolean inLeftTree) {
+        mTcContext = tcContext;
+        mInLeftTree = inLeftTree;
+    }
+    
+    public MapperTcContext getMapperTcContext() {
+        return mTcContext;
+    }
+    
+    public boolean inLeftTree() {
+        return mInLeftTree;
+    }
 }

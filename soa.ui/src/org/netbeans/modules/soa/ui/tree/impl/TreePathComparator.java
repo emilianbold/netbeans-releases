@@ -17,7 +17,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.bpel.mapper.tree;
+package org.netbeans.modules.soa.ui.tree.impl;
 
 import java.util.Comparator;
 import java.util.Iterator;
@@ -31,7 +31,7 @@ import javax.swing.tree.TreePath;
  *
  * @author nk160297
  */
-class TreePathComparator implements Comparator<TreePath> {
+public class TreePathComparator implements Comparator<TreePath> {
 
     private TreeModel mTreeModel;
     
@@ -106,6 +106,5 @@ class TreePathComparator implements Comparator<TreePath> {
         //
         return result;
     }
-    
     
 }

@@ -17,7 +17,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.bpel.mapper.predicates.editor;
+package org.netbeans.modules.bpel.mapper.model;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -33,6 +33,7 @@ import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.support.XPathBpelVariable;
 import org.netbeans.modules.bpel.model.api.support.BpelXPathModelFactory;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
 import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Part;
@@ -78,10 +79,9 @@ public class PathConverter {
      * @return
      */
     public static List<Object> constructObjectLocationtList(
-            Iterable<Object> pathItrb, 
-            boolean sameOrder, boolean skipFirst) {
+            TreeItem treeItem, boolean sameOrder, boolean skipFirst) {
         //
-        Iterator<Object> itr = pathItrb.iterator();
+        Iterator<Object> itr = treeItem.iterator();
         if (skipFirst && itr.hasNext()) {
             // move forward one step if possible
             itr.next();
@@ -253,11 +253,11 @@ public class PathConverter {
     }
     
     public static XPathExpression constructXPath(BpelEntity base, 
-            Iterable<Object> pathItrb, boolean skipFirst) {
+            TreeItem treeItem, boolean skipFirst) {
         //
         // It's necessary to have the order, oposite to the iterator. 
         // It's required for correct buildeing the XPath expression
-        List<Object> objList = constructObjectLocationtList(pathItrb, false, skipFirst);
+        List<Object> objList = constructObjectLocationtList(treeItem, false, skipFirst);
         //
         if (objList == null || objList.isEmpty()) {
             return null;
@@ -528,10 +528,10 @@ public class PathConverter {
      * @return
      */
     public static XPathSchemaContext constructContext(
-            Iterable<Object> pathItrb, boolean skipFirstItem) {
+            TreeItem treeItem, boolean skipFirstItem) {
         //
         SchemaContextBuilder builder = new SchemaContextBuilder();
-        return builder.constructContext(pathItrb, null, skipFirstItem);
+        return builder.constructContext(treeItem, null, skipFirstItem);
     }
     
     public static class SchemaContextBuilder {
@@ -546,12 +546,10 @@ public class PathConverter {
          * @param pathItr
          * @return
          */
-        public XPathSchemaContext constructContext(
-                Iterable<Object> pathItrb, 
-                XPathSchemaContext initialContext, 
-                boolean skipFirst) {
+        public XPathSchemaContext constructContext(TreeItem treeItem, 
+                XPathSchemaContext initialContext, boolean skipFirst) {
             //
-            Iterator itr = pathItrb.iterator();
+            Iterator itr = treeItem.iterator();
             //
             if (skipFirst) {
                 itr.next();

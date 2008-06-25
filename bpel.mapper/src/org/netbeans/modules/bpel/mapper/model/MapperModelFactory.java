@@ -17,27 +17,19 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.bpel.mapper.tree.spi;
+package org.netbeans.modules.bpel.mapper.model;
 
-import java.util.List;
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.tree.TreePath;
+import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.xml.xpath.ext.schema.CachingSchemaSearchVisitor;
 
 /**
- * The SPI interface for rendering tree items.
- * 
- * An external code can provide an instance of such interface 
- * to perform required view of tree items. 
- * 
+ *
  * @author nk160297
  */
-public interface TreeItemInfoProvider {
-    public String getDisplayName(Object treeItem);
-    public Icon getIcon(Object treeItem);
-    public List<Action> getMenuActions(MapperTcContext mapperTcContext, 
-            boolean inLeftTree, TreePath treePath, 
-            Iterable<Object> dataObjectPathItrb);
-//    public String getToolTipText(Object treeItem);
-    public String getToolTipText(Iterable<Object> dataObjectPathItrb);
+public interface MapperModelFactory {
+
+    MapperModel constructModel();
+    
+    CachingSchemaSearchVisitor getCachingSchemaSearchVisitor();
+    
 }
