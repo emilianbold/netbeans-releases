@@ -144,6 +144,11 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
                 }
             } else if (user.equals("sg155630")) { // Debug
                 // fill in your debugging pathmaps if you want...
+                if (lpath.toLowerCase().startsWith("z:")) { // Debug
+                    rpath = "/home/sg155630/" + lpath.substring(2); // Debug
+                } else {
+                    rpath = lpath;
+                }
             }
         }
         

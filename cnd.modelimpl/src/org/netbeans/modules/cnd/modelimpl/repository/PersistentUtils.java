@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.deep.EmptyCompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyCompoundStatementImpl;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.NestedType;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterTypeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
@@ -278,6 +279,10 @@ public class PersistentUtils {
         case TYPE_IMPL:
             obj = new TypeImpl(stream);
             break;
+
+        case NESTED_TYPE:
+            obj = new NestedType(stream);
+            break;
 	    
         case TYPE_FUN_PTR_IMPL:
             obj = new TypeFunPtrImpl(stream);
@@ -304,6 +309,9 @@ public class PersistentUtils {
         } else if (type instanceof TypeImpl) {
             stream.writeInt(TYPE_IMPL);
             ((TypeImpl)type).write(stream);
+        } else if (type instanceof NestedType) {
+            stream.writeInt(NESTED_TYPE);
+            ((NestedType)type).write(stream);
         } else if (type instanceof TemplateParameterTypeImpl) {
             stream.writeInt(TEMPLATE_PARAM_TYPE);
             ((TemplateParameterTypeImpl)type).write(stream);
@@ -552,7 +560,8 @@ public class PersistentUtils {
     // types
     private static final int NO_TYPE                = FILE_BUFFER_FILE + 1;
     private static final int TYPE_IMPL              = NO_TYPE + 1;
-    private static final int TYPE_FUN_PTR_IMPL	    = TYPE_IMPL + 1;
+    private static final int NESTED_TYPE         = TYPE_IMPL + 1;
+    private static final int TYPE_FUN_PTR_IMPL	    = NESTED_TYPE + 1;
     private static final int TEMPLATE_PARAM_TYPE    = TYPE_FUN_PTR_IMPL + 1;
     
     // state 
