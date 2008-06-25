@@ -86,7 +86,7 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
                         if(decorator != null) {
                             List<ResourceDesc> cpList = mgr.getResources(GlassfishModule.JDBC_CONNECTION_POOL);
                             for(ResourceDesc resource: cpList) {
-                                keys.add(new Hk2ItemNode(lookup, resource, decorator));
+                                keys.add(new Hk2ResourceNode(lookup, resource, decorator));
                             }
                         }
                         
@@ -94,7 +94,7 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
                         if(decorator != null) {
                             List<ResourceDesc> jdbcList = mgr.getResources(GlassfishModule.JDBC_RESOURCE);
                             for(ResourceDesc resource: jdbcList) {
-                                keys.add(new Hk2ItemNode(lookup, resource, decorator));
+                                keys.add(new Hk2ResourceNode(lookup, resource, decorator));
                             }
                         }
                     } catch (Exception ex) {
