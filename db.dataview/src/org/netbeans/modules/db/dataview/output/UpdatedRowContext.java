@@ -66,6 +66,7 @@ import org.netbeans.modules.db.dataview.meta.DBException;
         this.stmtGenerator = stmtGenerator;
     }
 
+    // TODO: We can defer creating these statements till user request to execute
     public void createUpdateStatement(int row, int col, Object value, TableModel tblModel) throws DBException {
         List<Object> values = new ArrayList<Object>();
         List<Integer> types = new ArrayList<Integer>();

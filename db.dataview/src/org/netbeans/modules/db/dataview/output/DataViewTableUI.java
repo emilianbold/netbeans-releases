@@ -64,8 +64,6 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.datatransfer.ExClipboard;
@@ -83,7 +81,7 @@ class DataViewTableUI extends JTable {
     private final DataViewTablePanel tablePanel;
     private static final String data = "WE WILL EITHER FIND A WAY, OR MAKE ONE.";
 
-    public DataViewTableUI(DataViewTablePanel tablePanel, final DataViewActionHandler handler, final DataView dataView) {
+    public DataViewTableUI(final DataViewTablePanel tablePanel, final DataViewActionHandler handler, final DataView dataView) {
         this.tablePanel = tablePanel;
         addKeyListener(new KeyListener() {
 
@@ -142,7 +140,7 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.add(miRefreshAction);
         tablePopupMenu.addSeparator();
 
-        JMenuItem miInsertAction = new JMenuItem("Insert Record"); //NOI18N
+        final JMenuItem miInsertAction = new JMenuItem("Insert Record..."); //NOI18N
         miInsertAction.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -151,7 +149,7 @@ class DataViewTableUI extends JTable {
         });
         tablePopupMenu.add(miInsertAction);
 
-        JMenuItem miDeleteAction = new JMenuItem("Delete Record(s)"); //NOI18N
+        final JMenuItem miDeleteAction = new JMenuItem("Delete Record(s)"); //NOI18N
         miDeleteAction.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -160,7 +158,7 @@ class DataViewTableUI extends JTable {
         });
         tablePopupMenu.add(miDeleteAction);
 
-        JMenuItem miCommitAction = new JMenuItem("Commit Record(s)"); //NOI18N
+        final JMenuItem miCommitAction = new JMenuItem("Commit Record(s)"); //NOI18N
         miCommitAction.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -170,7 +168,7 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.add(miCommitAction);
 
 
-        JMenuItem miCancelEdits = new JMenuItem("Cancel Edits"); //NOI18N
+        final JMenuItem miCancelEdits = new JMenuItem("Cancel Edits"); //NOI18N
         miCancelEdits.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -179,7 +177,7 @@ class DataViewTableUI extends JTable {
         });
         tablePopupMenu.add(miCancelEdits);
 
-        JMenuItem miTruncateRecord = new JMenuItem("Truncate Table"); //NOI18N
+        final JMenuItem miTruncateRecord = new JMenuItem("Truncate Table"); //NOI18N
         miTruncateRecord.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -188,11 +186,6 @@ class DataViewTableUI extends JTable {
         });
         tablePopupMenu.add(miTruncateRecord);
         tablePopupMenu.addSeparator();
-        if (!tablePanel.isEditable()) {
-            miInsertAction.setEnabled(false);
-            miDeleteAction.setEnabled(false);
-            miTruncateRecord.setEnabled(false);
-        }
 
         JMenuItem miCopyValue = new JMenuItem("Copy Cell Value"); //NOI18N
         miCopyValue.addActionListener(new ActionListener() {
@@ -230,16 +223,17 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.add(miCopyRowValuesH);
         tablePopupMenu.addSeparator();
 
-        JMenuItem miInsertSQLScript = new JMenuItem("Show SQL Script for INSERT"); //NOI18N
+        final JMenuItem miInsertSQLScript = new JMenuItem("Show SQL Script for INSERT"); //NOI18N
         miInsertSQLScript.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
                 try {
                     Object[] insertRow = dataView.getDataViewPageContext().getCurrentRows().get(getSelectedRow());
                     String insertSQL = dataView.getSQLStatementGenerator().generateInsertStatement(insertRow)[1];
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(insertSQL);
-                    //  JOptionPane.showMessageDialog(new JEditorPane(), insertSQL);
-                    DialogDisplayer.getDefault().notify(nd);
+                    ShowSQLDialog dialog = new ShowSQLDialog();
+                    dialog.setLocationRelativeTo(DataViewTableUI.this);
+                    dialog.setText(insertSQL);
+                    dialog.setVisible(true);
                 } catch (DBException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -247,7 +241,7 @@ class DataViewTableUI extends JTable {
         });
         tablePopupMenu.add(miInsertSQLScript);
 
-        JMenuItem miDeleteSQLScript = new JMenuItem("Show SQL Script for DELETE"); //NOI18N
+        final JMenuItem miDeleteSQLScript = new JMenuItem("Show SQL Script for DELETE"); //NOI18N
         miDeleteSQLScript.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -259,28 +253,33 @@ class DataViewTableUI extends JTable {
                     final List<Integer> types = new ArrayList<Integer>();
 
                     SQLStatementGenerator generator = dataView.getSQLStatementGenerator();
-                    final String[] deleteStmt = generator.generateDeleteStatement(types, values, getSelectedRow(), getModel());
-                    rawDeleteStmt += deleteStmt[1];
+                    final String[] deleteStmt = generator.generateDeleteStatement(types, values, rows[j], getModel());
+                    rawDeleteStmt += deleteStmt[1] + "\n";
                 }
-                NotifyDescriptor nd = new NotifyDescriptor.Message(rawDeleteStmt);
-                DialogDisplayer.getDefault().notify(nd);
-
+                ShowSQLDialog dialog = new ShowSQLDialog();
+                dialog.setLocationRelativeTo(DataViewTableUI.this);
+                dialog.setText(rawDeleteStmt);
+                dialog.setVisible(true);
             }
         });
         tablePopupMenu.add(miDeleteSQLScript);
 
-        JMenuItem miCommitSQLScript = new JMenuItem("Show SQL Script for UPDATE"); //NOI18N
+        final JMenuItem miCommitSQLScript = new JMenuItem("Show SQL Script for UPDATE"); //NOI18N
         miCommitSQLScript.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
                 String rawUpdateStmt = "";
                 UpdatedRowContext tblContext = dataView.getUpdatedRowContext();
+                if(tblContext.getUpdateKeys().isEmpty()){
+                    return;
+                }
                 for (String key : tblContext.getUpdateKeys()) {
                     rawUpdateStmt += tblContext.getRawUpdateStmt((key)) + "\n";
                 }
-                NotifyDescriptor nd = new NotifyDescriptor.Message(rawUpdateStmt);
-                DialogDisplayer.getDefault().notify(nd);
-
+                ShowSQLDialog dialog = new ShowSQLDialog();
+                dialog.setLocationRelativeTo(DataViewTableUI.this);
+                dialog.setText(rawUpdateStmt);
+                dialog.setVisible(true);
             }
         });
         tablePopupMenu.add(miCommitSQLScript);
@@ -319,6 +318,16 @@ class DataViewTableUI extends JTable {
                     }
                     if (!inSelection) {
                         changeSelection(row, column, false, false);
+                    }
+                    if (!tablePanel.isEditable()) {
+                        miInsertAction.setEnabled(false);
+                        miDeleteAction.setEnabled(false);
+                        miTruncateRecord.setEnabled(false);
+                        miInsertSQLScript.setEnabled(false);
+                        miDeleteSQLScript.setEnabled(false);
+                        miCommitAction.setEnabled(false);
+                        miCancelEdits.setEnabled(false);
+                        miCommitSQLScript.setEnabled(false);
                     }
                     tablePopupMenu.show(DataViewTableUI.this, e.getX(), e.getY());
                 }

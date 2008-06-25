@@ -81,7 +81,7 @@ class DataViewDBTable {
     }
 
     public boolean hasOneTable() {
-        return dbTables != null && dbTables.length == 1 && !dbTables[0].equals("");
+        return dbTables != null && dbTables.length == 1 && !dbTables[0].getName().equals("");
     }
 
     public String getFullyQualifiedName(int index) {

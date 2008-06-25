@@ -57,7 +57,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
     protected final DataView dataView;
     protected Connection conn = null;
     protected boolean error = false;
-    protected volatile Throwable ex;
+    protected volatile Exception ex;
     protected String errorMsg = "";
     protected boolean lastCommitState;
     private String title;
@@ -141,8 +141,8 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
         } else {
             rollback(conn);
             reinstateToolbar();
-            errorMsg = cmdName + " failed:" + errorMsg;
-            dataView.setErrorStatusText(errorMsg);
+            errorMsg = cmdName + " failed:";
+            dataView.setErrorStatusText(new DBException(errorMsg, ex));
         }
     }
 
@@ -172,9 +172,8 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
                 conn.commit();
             }
         } catch (SQLException e) {
-            String msg = "\nFailure while commiting changes to database.\n";
-            msg = msg + DBException.getMessage(e);
-            dataView.setErrorStatusText(msg);
+            String msg = "Failure while commiting changes to database.";
+            dataView.setErrorStatusText(new DBException(msg, e));
             return false;
         }
         return true;
@@ -186,8 +185,8 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
                 conn.rollback();
             }
         } catch (SQLException e) {
-            String err = "\nFail to rollback.\n";
-            dataView.setErrorStatusText(err + DBException.getMessage(e));
+            String msg = "Fail to rollback.";
+            dataView.setErrorStatusText(new DBException(msg, e));
         }
     }
 }

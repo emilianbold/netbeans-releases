@@ -64,7 +64,7 @@ import javax.swing.JToolBar;
  *
  * @author Ahimanikya Satapathy
  */
-class DataViewUI extends JPanel{
+class DataViewUI extends JPanel {
 
     private JButton commit;
     private JButton refreshButton;
@@ -96,15 +96,15 @@ class DataViewUI extends JPanel{
         this.setLayout(new BorderLayout());
         this.setBorder(BorderFactory.createEmptyBorder());
         this.setName("Data:" + dataView.getSQLString());
-        
+
         // Main pannel with toolbars
         JPanel panel = initializeMainPanel(toolbarType);
         this.add(panel, BorderLayout.NORTH);
-        
+
         actionHandler = new DataViewActionHandler(this, dataView);
 
         //add resultset data panel
-        dataPanel = new DataViewTablePanel(dataView.getDataViewDBTable(), this,actionHandler,dataView);
+        dataPanel = new DataViewTablePanel(dataView, this, actionHandler);
         this.add(dataPanel, BorderLayout.CENTER);
         dataPanel.revalidate();
         dataPanel.repaint();
@@ -130,8 +130,8 @@ class DataViewUI extends JPanel{
         return commit.isEnabled();
     }
 
-    DataViewTableUI getResulSetTable() {
-        return dataPanel.getResulSetTable();
+    DataViewTableUI getDataViewTableUI() {
+        return dataPanel.getDataViewTableUI();
     }
 
     UpdatedRowContext getUpdatedRowContext() {
@@ -141,16 +141,16 @@ class DataViewUI extends JPanel{
     void setCommitEnabled(boolean flag) {
         commit.setEnabled(flag);
     }
-    
+
     void setCancelEnabled(boolean flag) {
         cancel.setEnabled(flag);
-    }    
-
-    void setDataRows(List<Object[]> rows) {
-        dataPanel.setResultSet(rows);
     }
 
-    void syncPageWithTableModel(){
+    void setDataRows(List<Object[]> rows) {
+        dataPanel.createTableModel(rows);
+    }
+
+    void syncPageWithTableModel() {
         dataView.getDataViewPageContext().setCurrentRows(dataPanel.getPageDataFromTable());
         dataView.getUpdatedRowContext().resetUpdateState();
     }
@@ -168,7 +168,7 @@ class DataViewUI extends JPanel{
         commit.setEnabled(false);
         cancel.setEnabled(false);
         insert.setEnabled(false);
-        
+
         dataPanel.revalidate();
         dataPanel.repaint();
     }
@@ -377,7 +377,7 @@ class DataViewUI extends JPanel{
         deleteRow.addActionListener(outputListener);
         deleteRow.setEnabled(false);
         editButtons[1] = deleteRow;
-        
+
         url = getClass().getResource(imgPrefix + "row_commit.png");
         commit = new JButton(new ImageIcon(url));
         String nbBundle31 = "Commit changes done on current page.";
@@ -385,7 +385,7 @@ class DataViewUI extends JPanel{
         commit.addActionListener(outputListener);
         commit.setEnabled(false);
         editButtons[2] = commit;
-        
+
         url = getClass().getResource(imgPrefix + "cancel_edits.png");
         cancel = new JButton(new ImageIcon(url));
         String nbBundle11 = "Cancel changes done on current page.";
@@ -393,7 +393,7 @@ class DataViewUI extends JPanel{
         cancel.addActionListener(outputListener);
         cancel.setEnabled(false);
         editButtons[3] = cancel;
-   
+
         //add truncate button
         url = getClass().getResource(imgPrefix + "table_truncate.png");
         truncateButton = new JButton(new ImageIcon(url));

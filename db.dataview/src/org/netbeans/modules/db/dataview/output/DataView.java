@@ -62,7 +62,7 @@ public class DataView {
     public static final int VERTICAL_TOOLBAR = 0;
     public static final int HORIZONTAL_TOOLBAR = 1; // Default
     private DatabaseConnection dbConn;
-    private List<String> errMessages = new ArrayList<String>();
+    private List<Exception> errMessages = new ArrayList<Exception>();
     private String sqlString; // Once Set, Data View assumes it will never change
     private DataViewDBTable tblMeta;
     private SQLStatementGenerator stmtGenerator;
@@ -97,7 +97,7 @@ public class DataView {
             SQLExecutionHelper.initialDataLoad(dv, dbConn, dv.execHelper);
             dv.stmtGenerator = new SQLStatementGenerator(dv.tblMeta);
         } catch (Exception ex) {
-            dv.setErrorStatusText(ex.getMessage());
+            dv.setErrorStatusText(ex);
         }
         return dv;
     }
@@ -158,7 +158,7 @@ public class DataView {
      * 
      * @return Iterator<String>
      */
-    public Iterator<String> getExceptions() {
+    public Iterator<Exception> getExceptions() {
         return errMessages.iterator();
     }
 
@@ -189,10 +189,6 @@ public class DataView {
         return dataViewUI.getVerticalToolBar();
     }
 
-    void clearErrorMessages() {
-        errMessages.clear();
-    }
-
     DataViewDBTable getDataViewDBTable() {
         return tblMeta;
     }
@@ -221,6 +217,10 @@ public class DataView {
         return stmtGenerator;
     }
 
+    boolean isEditable() {
+        return dataViewUI.isEditable();
+    }
+
     void disableButtons() {
         assert dataViewUI != null : "Should have called createComponent()";
         if (dataViewUI != null) {
@@ -234,22 +234,22 @@ public class DataView {
         }
     }
 
-    boolean isEditable() {
-        return dataViewUI.isEditable();
-    }
-
     void setInfoStatusText(String statusText) {
         if (statusText != null) {
             StatusDisplayer.getDefault().setStatusText(statusText);
         }
     }
 
-    void setErrorStatusText(String errorMsg) {
-        if (errorMsg != null && !errorMsg.equals("")) {
-            errMessages.add(errorMsg);
-            StatusDisplayer.getDefault().setStatusText("ERROR: " + errorMsg);
-            mLogger.severe(errorMsg);
+    void setErrorStatusText(Exception ex) {
+        if (ex != null) {
+            errMessages.add(ex);
+            StatusDisplayer.getDefault().setStatusText("ERROR: " + ex.getMessage());
+            mLogger.severe(ex.getMessage());
         }
+    }
+
+    void clearErrorMessages() {
+        errMessages.clear();
     }
 
     void resetToolbar(boolean wasError) {
@@ -267,13 +267,13 @@ public class DataView {
         }
     }
 
-    void incrementRowSize(int count){
+    void incrementRowSize(int count) {
         assert dataViewUI != null : "Should have called createComponent()";
         dataPage.setTotalRows(dataPage.getTotalRows() + count);
         dataViewUI.setTotalCount(dataPage.getTotalRows());
     }
 
-    void decrementRowSize(int count){
+    void decrementRowSize(int count) {
         assert dataViewUI != null : "Should have called createComponent()";
         dataPage.decrementRowSize(count);
         dataViewUI.setTotalCount(dataPage.getTotalRows());

@@ -78,17 +78,17 @@ class DataViewTablePanel extends JPanel {
     private final List<Integer> columnWidthList;
     private static Logger mLogger = Logger.getLogger(DataViewTablePanel.class.getName());
 
-    public DataViewTablePanel(DataViewDBTable tblMeta, DataViewUI dataViewUI, DataViewActionHandler actionHandler,DataView dataView) {
-        this.tblMeta = tblMeta;
+    public DataViewTablePanel(DataView dataView, DataViewUI dataViewUI, DataViewActionHandler actionHandler) {
+        this.tblMeta = dataView.getDataViewDBTable();
         this.dataViewUI = dataViewUI;
 
         this.setLayout(new BorderLayout());
-        tableUI = new DataViewTableUI(this, actionHandler,dataView);
+        tableUI = new DataViewTableUI(this, actionHandler, dataView);
         tableUI.setColumnToolTips(tblMeta.getColumnToolTips());
         JScrollPane sp = new JScrollPane(tableUI);
         this.add(sp, BorderLayout.CENTER);
 
-        stmtGenerator = new SQLStatementGenerator(tblMeta);
+        stmtGenerator = dataView.getSQLStatementGenerator();
         tblContext = new UpdatedRowContext(stmtGenerator);
         columnWidthList = getColumnWidthList();
     }
@@ -115,16 +115,20 @@ class DataViewTablePanel extends JPanel {
         }
     }
 
-    protected DataViewTableUI getResulSetTable() {
+    DataViewTableUI getDataViewTableUI() {
         return tableUI;
     }
 
-    protected UpdatedRowContext getUpdatedRowContext() {
+    UpdatedRowContext getUpdatedRowContext() {
         return tblContext;
     }
 
-    protected DataViewDBTable getDataViewDBTable() {
+    DataViewDBTable getDataViewDBTable() {
         return tblMeta;
+    }
+
+    boolean isCommitEnabled(){
+        return dataViewUI.isCommitEnabled();
     }
 
     /**
@@ -132,7 +136,7 @@ class DataViewTablePanel extends JPanel {
      *
      * @param rsMap new ResultSet to be displayed.
      */
-    public void setResultSet(List<Object[]> rows) {
+    public void createTableModel(List<Object[]> rows) {
         assert rows != null : "Must supply non-null TableModel";
 
         setDirty(false);
@@ -193,7 +197,7 @@ class DataViewTablePanel extends JPanel {
         DataViewTableSorter sorter = new DataViewTableSorter(dtm);
         sorter.setTableHeader(tableUI.getTableHeader());
         // Obtain display name
-        for (int i = 0,  I = tblMeta.getColumnCount(); i < I; i++) {
+        for (int i = 0,   I = tblMeta.getColumnCount(); i < I; i++) {
             DBColumn col = tblMeta.getColumn(i);
             dtm.addColumn(col.getDisplayName());
         }
@@ -206,13 +210,13 @@ class DataViewTablePanel extends JPanel {
 
     List<Object[]> getPageDataFromTable() {
         DataViewTableSorter sorter = (DataViewTableSorter) tableUI.getModel();
-        DefaultTableModel dtm = (DefaultTableModel)sorter.getTableModel();
+        DefaultTableModel dtm = (DefaultTableModel) sorter.getTableModel();
         List<Object[]> rows = new ArrayList<Object[]>();
         int colCnt = dtm.getColumnCount();
-        for(Object row : dtm.getDataVector()){
+        for (Object row : dtm.getDataVector()) {
             Object[] rowObj = new Object[colCnt];
             int i = 0;
-            for(Object colVal : (Vector)row){
+            for (Object colVal : (Vector) row) {
                 rowObj[i++] = colVal;
             }
         }

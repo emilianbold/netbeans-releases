@@ -387,7 +387,7 @@ class SQLExecutionHelper {
                 dataView.setEditable(lastEditState);
                 synchronized (dataView) {
                     if (error) {
-                        dataView.setErrorStatusText(ex.getMessage());
+                        dataView.setErrorStatusText(ex);
                     }
                     dataView.resetToolbar(error);
                     dataView.setRowsInTableModel();

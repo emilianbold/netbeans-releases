@@ -52,12 +52,10 @@ class DataViewPageContext {
     private int pageSize = 10;
     private int totalRows = -1;
     private int currentPos = 1;
-    private int recordToRefresh = 10;
     private List<Object[]> rows;
 
     DataViewPageContext(int pageSize) {
         this.pageSize = pageSize;
-        this.recordToRefresh = pageSize;
     }
 
     int getPageSize() {
@@ -94,17 +92,14 @@ class DataViewPageContext {
 
     void first() {
         currentPos = 1;
-        recordToRefresh = pageSize;
     }
 
     void previous() {
         currentPos -= pageSize;
-        recordToRefresh = currentPos + pageSize - 1;
     }
 
     void next() {
         currentPos += pageSize;
-        recordToRefresh = currentPos + pageSize - 1;
     }
 
     void last() {
@@ -114,7 +109,6 @@ class DataViewPageContext {
 
         int rem = totalRows % pageSize;
         currentPos = totalRows - (rem == 0 ? pageSize : rem) + 1;
-        recordToRefresh = totalRows;
     }
 
     boolean isLastPage() {
@@ -141,10 +135,6 @@ class DataViewPageContext {
 
     void setPageSize(int pageSize) {
         this.pageSize = pageSize;
-    }
-
-    void setRecordToRefresh(int recordToRefresh) {
-        this.recordToRefresh = recordToRefresh;
     }
 
     synchronized void setTotalRows(int totalCount) {

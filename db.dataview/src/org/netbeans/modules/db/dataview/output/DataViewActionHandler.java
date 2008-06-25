@@ -143,10 +143,10 @@ class DataViewActionHandler {
     }
 
     void deleteRecordActionPerformed() {
-        DataViewTableUI rsTable = dataViewUI.getResulSetTable();
+        DataViewTableUI rsTable = dataViewUI.getDataViewTableUI();
         if (rsTable.getSelectedRowCount() == 0) {
             String msg = "Please select a row to delete.";
-            dataView.setErrorStatusText(msg);
+            dataView.setInfoStatusText(msg);
         } else {
             String msg = "Permanently delete record(s) from the database?";
             NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, "Confirm delete", NotifyDescriptor.OK_CANCEL_OPTION);
