@@ -58,6 +58,7 @@ import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.router.Router;
+import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.EventProcessingType;
 import org.netbeans.api.visual.widget.LayerWidget;
@@ -128,6 +129,7 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
     private IDiagram diagram = null;
     
     private Router edgeRouter;
+    private Router selfLinkRouter;
     public static String SceneDefaultWidgetID = "default";
 
     public DesignerScene(IDiagram diagram,UMLDiagramTopComponent topcomponent)
@@ -310,9 +312,9 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         
         if(edgeRouter != null && connection != null)
         {
-            connection.setRouter(edgeRouter);
-            connection.setRoutingPolicy (ConnectionWidget.RoutingPolicy.ALWAYS_ROUTE);
-        }
+                connection.setRouter(edgeRouter);
+                connection.setRoutingPolicy (ConnectionWidget.RoutingPolicy.ALWAYS_ROUTE);
+            }
         
         connectionLayer.addChild(connection);
         engine.setActions(connection,edge);
@@ -332,6 +334,8 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
             Anchor anchor = getAnchorFor(sourceWidget);
             widget.setSourceAnchor(anchor);
         }
+        if (isSelfLink(widget))
+            setSelfLinkRouter(widget);
     }
 
     protected void attachEdgeTargetAnchor(IPresentationElement edge, 
@@ -347,8 +351,32 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
             Anchor anchor = getAnchorFor(targetWidget);
             widget.setTargetAnchor(anchor);
         }
+        if (isSelfLink(widget))
+            setSelfLinkRouter(widget);
     }
 
+    
+    private boolean isSelfLink(ConnectionWidget connection)
+    {
+        Anchor sourceAnchor = connection.getSourceAnchor();
+        Anchor targetAnchor = connection.getTargetAnchor();
+        if (sourceAnchor != null && targetAnchor != null && sourceAnchor.getRelatedWidget() == targetAnchor.getRelatedWidget())
+            return true;
+        else
+            return false;
+    }
+    
+    private void setSelfLinkRouter(ConnectionWidget connection)
+    {
+        if (selfLinkRouter == null)
+            selfLinkRouter = RouterFactory.createOrthogonalSearchRouter(connectionLayer);
+        connection.setRouter(selfLinkRouter);
+        connection.setRoutingPolicy(ConnectionWidget.RoutingPolicy.ALWAYS_ROUTE);
+        WidgetAction.Chain chain = connection.getActions(DesignerTools.SELECT);
+        chain.removeAction(ActionFactory.createFreeMoveControlPointAction());
+    }
+    
+    
     protected Anchor getAnchorFor(Widget widget)
     {
         Anchor retVal = anchorMap.get(widget);
