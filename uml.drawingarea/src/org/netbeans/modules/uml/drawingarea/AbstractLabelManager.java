@@ -103,6 +103,8 @@ public abstract class AbstractLabelManager implements LabelManager
     
     public static final String END_NAME = "End Name"; //NOI18N
     
+    public static final String PRECONDITION = "precondition";
+    public static final String POSTCONDITION = "postcondition";
     /**
      * Creates an AbstractLabelManager and associates it to a connection 
      * widget.
