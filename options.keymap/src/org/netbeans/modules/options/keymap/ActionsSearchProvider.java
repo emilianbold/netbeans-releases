@@ -42,7 +42,9 @@ package org.netbeans.modules.options.keymap;
 
 import java.awt.event.ActionEvent;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
@@ -62,9 +64,11 @@ import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
+
+    
 /**
  * SearchProvider for all actions. 
- * @author  Jan Becicka
+ * @author  Jan Becicka, Dafe Simonek
  */
 public class ActionsSearchProvider implements SearchProvider {
 
@@ -74,6 +78,7 @@ public class ActionsSearchProvider implements SearchProvider {
      * and can be run meaningfully on current actions context.
      */
     public void evaluate(SearchRequest request, SearchResponse response) {
+        List<Object[]> possibleResults = new ArrayList<Object[]>(7);
         // iterate over all found KeymapManagers
         for (KeymapManager m : Lookup.getDefault().lookupAll(KeymapManager.class)) {
             for (Entry<String, Set<ShortcutAction>> entry : m.getActions().entrySet()) {
@@ -83,27 +88,43 @@ public class ActionsSearchProvider implements SearchProvider {
                     if (actAndEvent == null) {
                         continue;
                     }
-                    if (sa.getDisplayName().toLowerCase().indexOf(request.getText().toLowerCase()) != -1) {
-                        Object shortcut = ((Action)actAndEvent[0]).getValue(Action.ACCELERATOR_KEY);
-                        KeyStroke stroke = null;
-                        if (shortcut instanceof KeyStroke) {
-                            stroke = (KeyStroke)shortcut;
-                        }
-                        Object desc = ((Action)actAndEvent[0]).getValue(Action.SHORT_DESCRIPTION);
-                        String sDesc = null;
-                        if (sDesc instanceof String) {
-                            sDesc = (String)desc;
-                        }
-                        if (!response.addResult(
-                                new ActionResult((Action)actAndEvent[0], (ActionEvent)actAndEvent[1]),
-                                sa.getDisplayName(), sDesc, Collections.singletonList(stroke))) {
-                            // return immediatelly if no further result is needed
+                    int index = sa.getDisplayName().toLowerCase().indexOf(request.getText().toLowerCase());
+                    if (index == 0) {
+                        // typed text is prefix of action name, return these actions first
+                        if (!addAction(actAndEvent, response)) {
                             return;
                         }
+                    } else if (index != -1) {
+                        // typed text is contained in action name, but not as prefix,
+                        // store such actions if there are not enough "prefix" actions
+                        possibleResults.add(actAndEvent);
                     }
                 }
             }
         }
+        
+        // add results stored above, actions that contain typed text, but not as prefix
+        for (Object[] actAndEvent : possibleResults) {
+            if (!addAction(actAndEvent, response)) {
+                return;
+            }
+        }
+    }
+
+    private boolean addAction(Object[] actAndEvent, SearchResponse response) {
+        Object shortcut = ((Action) actAndEvent[0]).getValue(Action.ACCELERATOR_KEY);
+        KeyStroke stroke = null;
+        if (shortcut instanceof KeyStroke) {
+            stroke = (KeyStroke) shortcut;
+        }
+        /* uncomment if needed
+         Object desc = ((Action) actAndEvent[0]).getValue(Action.SHORT_DESCRIPTION);
+        String sDesc = null;
+        if (sDesc instanceof String) {
+            sDesc = (String) desc;
+        }*/
+        return response.addResult(new ActionResult((Action) actAndEvent[0], (ActionEvent) actAndEvent[1]),
+                ((ShortcutAction)actAndEvent[2]).getDisplayName(), null, Collections.singletonList(stroke));
     }
     
     private Object[] getActionAndEvent(ShortcutAction sa) {
@@ -141,7 +162,7 @@ public class ActionsSearchProvider implements SearchProvider {
                 evSource = TopComponent.getRegistry().getActivated();
             }
             
-            return new Object[] {action, new ActionEvent(evSource, evId, null)};
+            return new Object[] {action, new ActionEvent(evSource, evId, null), sa};
             
         } catch (Throwable thr) {
             if (thr instanceof ThreadDeath) {
