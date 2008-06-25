@@ -109,7 +109,7 @@ public class SQLCloneableEditor extends CloneableEditor {
         initialize();
     }
 
-    void setResults(List<JComponent> results) {
+    void setResults(List<Component> results) {
         assert SwingUtilities.isEventDispatchThread();
         if (resultComponent == null && results != null) {
             createResultComponent(); 
@@ -120,7 +120,7 @@ public class SQLCloneableEditor extends CloneableEditor {
         }
     }
     
-    private void populateResults(List<JComponent> components) {
+    private void populateResults(List<Component> components) {
         // TODO - make it an option to keep existing tabs
         resultComponent.removeAll();
         
@@ -128,7 +128,7 @@ public class SQLCloneableEditor extends CloneableEditor {
             return;
         }
         
-        for ( JComponent comp : components ) {
+        for (Component comp : components ) {
             resultComponent.add(comp);            
         }
         

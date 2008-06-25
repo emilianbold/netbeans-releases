@@ -323,13 +323,15 @@ public class SQLEditorSupport extends DataEditorSupport
        List<SQLException> exceptions = Mutex.EVENT.writeAccess(new Mutex.Action<List<SQLException>>() {
             public List<SQLException> run() {
                 List<SQLException> exceptions = new ArrayList<SQLException>();
-                List<JComponent> components = null;
+                List<Component> components = null;
                 
                 if (results != null) {
-                    components = new ArrayList<JComponent>();
+                    components = new ArrayList<Component>();
 
                     for (DataView view : results.getResults()) {
-                        components.add(view.createComponent());
+                        for(Component result: view.createComponents()){
+                            components.add(result);
+                        }
                     }
                 }
                 

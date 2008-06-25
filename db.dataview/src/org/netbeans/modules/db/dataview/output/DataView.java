@@ -108,7 +108,7 @@ public class DataView  {
      * @param dataView DataView Object created using create()
      * @return a JComponent that after rending the given dataview
      */
-    public List<Component> createComponent() {
+    public List<Component> createComponents() {
         List<Component> results;
         if(!hasResultSet){
             return Collections.emptyList();
