@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.remote.mapper;
 
 import java.util.HashMap;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.openide.util.Utilities;
 
 /**
  * An implementation of PathMap which returns remote path information.
@@ -107,6 +108,8 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
                     return true; // Debug
                 } else if (ch.equals("c:") || ch.equals("d:")) { // Debug
                     return false; // Debug
+                } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+                    return true; // for me, all relevant Solaris paths are remotely visible...
                 }
             } else if (user.equals("sg155630")) { // Debug
                 // fill in your debugging pathmaps if you want...
