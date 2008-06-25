@@ -41,8 +41,7 @@ package org.netbeans.modules.ws.qaf.customization;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -50,7 +49,7 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.ws.qaf.wsdl.FromWSDLTSuite;
 import org.openide.util.Exceptions;
 
@@ -110,21 +109,25 @@ public class CustomizationTest extends FromWSDLTSuite {
     public void testChangePortTypeFault() {
         customizeJavaName("AddNumbersFault", "AddFault");
     }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(CustomizationTest.class), "testCreateService", "testChangePortType", "testChangePortTypeOperation", "testChangePortTypeFault").enableModules(".*").clusters(".*"));
+    }
 
     /** Creates suite from particular test cases. You can define order of testcases here. */
-    public static TestSuite suite() {
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new CustomizationTest("testCreateService"));
-        suite.addTest(new CustomizationTest("testChangePortType"));
-        suite.addTest(new CustomizationTest("testChangePortTypeOperation"));
-        suite.addTest(new CustomizationTest("testChangePortTypeFault"));
-        return suite;
-    }
-
-    /* Method allowing test execution directly from the IDE. */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
+//    public static TestSuite suite() {
+//        TestSuite suite = new NbTestSuite(); 
+//        suite.addTest(new CustomizationTest("testCreateService"));
+//        suite.addTest(new CustomizationTest("testChangePortType"));
+//        suite.addTest(new CustomizationTest("testChangePortTypeOperation"));
+//        suite.addTest(new CustomizationTest("testChangePortTypeFault"));
+//        return suite;
+//    }
+//
+//    /* Method allowing test execution directly from the IDE. */
+//    public static void main(java.lang.String[] args) {
+//        TestRunner.run(suite());
+//    }
 
     private void customizeJavaName(String compName, String newName) {    
         Node n = new Node(getProjectRootNode(), "Web Services|AddNumbersService");

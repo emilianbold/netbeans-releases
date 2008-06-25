@@ -1,6 +1,4 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.jellytools/2
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/jellytools/Bundle.properties
-OpenIDE-Module-Layer: org/netbeans/modules/jellytools/mf-layer.xml
-Class-Path: ext/jelly2-nb.jar
 

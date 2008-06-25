@@ -68,6 +68,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  * @author Tomas Mysik
@@ -98,6 +99,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
 
     private final SourcesFolderNameProvider sourcesFolderNameProvider;
     private WizardDescriptor descriptor = null;
+    private PropertyChangeListener phpInterpreterListener;
 
     private ConfigManager.ConfigProvider configProvider;
     private ConfigManager configManager;
@@ -134,13 +136,15 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             runConfigurationPanelVisual = new RunConfigurationPanelVisual(this, sourcesFolderNameProvider, configManager, insidePanels);
 
             // listen to the changes in php interpreter
-            PhpOptions.getInstance().addPropertyChangeListener(new PropertyChangeListener() {
+            phpInterpreterListener = new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (PhpOptions.PROP_PHP_INTERPRETER.equals(evt.getPropertyName())) {
                         runAsScript.loadPhpInterpreter();
                     }
                 }
-            });
+            };
+            PhpOptions phpOptions = PhpOptions.getInstance();
+            phpOptions.addPropertyChangeListener(WeakListeners.propertyChange(phpInterpreterListener, phpOptions));
         }
         return runConfigurationPanelVisual;
     }

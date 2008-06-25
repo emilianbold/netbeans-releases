@@ -40,6 +40,7 @@
  */
 package org.netbeans.jellytools.nodes;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
 import javax.swing.tree.TreePath;
@@ -79,6 +80,7 @@ public class NodeTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new NodeTest("testConstructor"));
         suite.addTest(new NodeTest("testSelect"));
@@ -100,6 +102,27 @@ public class NodeTest extends JellyTestCase {
         suite.addTest(new NodeTest("testIsChildPresent"));
         suite.addTest(new NodeTest("testNodeRecreated"));
         return suite;
+         */
+        return createModuleTest(NodeTest.class, 
+        "testConstructor",
+        "testSelect",
+        "testSelectDoubleClick",
+        "testPerformAPIAction",
+        "testPerformAPIActionNoBlock",
+        "testPerformMenuAction",
+        "testPerformMenuActionNoBlock",
+        "testPerformPopupAction",
+        "testPerformPopupActionNoBlock",
+        "testGetPath",
+        "testGetParentPath",
+        "testGetChildren",
+        "testIsLeaf",
+        "testIsPresent",
+        "testVerifyPopup",
+        "testWaitNotPresent",
+        "testWaitChildNotPresent",
+        "testIsChildPresent",
+        "testNodeRecreated");
     }
     
     private static Node projectRootNode;
@@ -109,8 +132,9 @@ public class NodeTest extends JellyTestCase {
     
     /** method called before each testcase */
     @Override
-    protected void setUp() {
+    protected void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
+        openDataProjects("SampleProject");
         if(projectRootNode == null) {
             projectRootNode = new ProjectsTabOperator().getProjectRootNode("SampleProject");
         }
