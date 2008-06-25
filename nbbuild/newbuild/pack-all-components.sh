@@ -42,9 +42,10 @@ pack_all_components()
 
     rm -rf $NB_ALL/nbbuild/netbeans/extra
 
-    cd $NB_ALL/nbbuild
-
+    cd $NB_ALL/nbbuild/netbeans
     rm -rf uml*
+
+    cd $NB_ALL/nbbuild
 
     #Pack all the NetBeans
     pack_component $DIST_DIR/zip/moduleclusters $NAME all-in-one netbeans
