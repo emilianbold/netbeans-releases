@@ -56,7 +56,9 @@ import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.NamedArgumentListExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.control.SourceUnit;
 
@@ -190,15 +192,36 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
 
     private static boolean isSameMethod(MethodCallExpression methodCall1, MethodCallExpression methodCall2) {
         if (methodCall1.getMethodAsString().equals(methodCall2.getMethodAsString())) {
-            ArgumentListExpression argumentList1 = (ArgumentListExpression) methodCall1.getArguments();
-            ArgumentListExpression argumentList2 = (ArgumentListExpression) methodCall2.getArguments();
+            int size1 = getParameterCount(methodCall1);
+            int size2 = getParameterCount(methodCall2);
             // not comparing parameter types for now, only their count
             // is it even possible to make some check for parameter types?
-            if (argumentList1.getExpressions().size() == argumentList2.getExpressions().size()) {
+            if (size1 >= 0 && size1 == size2) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Tries to calculate number of method parameters.
+     *
+     * @param methodCall called method
+     * @return number of method parameters,
+     * 1 in case of named parameters represented by map,
+     * or -1 if it is unknown
+     */
+    private static int getParameterCount(MethodCallExpression methodCall) {
+        Expression expression = methodCall.getArguments();
+        if (expression instanceof ArgumentListExpression) {
+            return ((ArgumentListExpression) expression).getExpressions().size();
+        } else if (expression instanceof NamedArgumentListExpression) {
+            // this is in fact map acting as named parameters
+            // lets return size 1
+            return 1;
+        } else {
+            return -1;
+        }
     }
 
     @Override
