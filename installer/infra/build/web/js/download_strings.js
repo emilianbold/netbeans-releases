@@ -60,7 +60,7 @@ var MULTIPLE_NOT_AVAILABLE_BUNDLE = "{0} are not available for {1}";
 
 
 var NOTE_SOLARIS = "Note: Mobility is only available for Windows and Linux.";
-var NOTE_MACOSX  = "Note: Mobility is only available for Windows and Linux. UML for Mac OS X is only available from the IDE`s Plugin Manager (Tools | Plugins).";
+var NOTE_MACOSX  = "Note: Mobility is only available for Windows and Linux.";// UML for Mac OS X is only available from the IDE`s Plugin Manager (Tools | Plugins).";
 var NOTE_ZIP     = "Note: GlassFish and Apache Tomcat are only available in platform specific installers.";
 
 

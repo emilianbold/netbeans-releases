@@ -687,7 +687,7 @@ public class RegistriesManagerImpl implements RegistriesManager {
                 "nb-javame",
                 "nb-cnd",
                 "nb-soa",
-                "nb-uml",
+                //"nb-uml",
                 "nb-ruby",
                 "nb-groovy",
                 "nb-php",
