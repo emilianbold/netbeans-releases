@@ -68,7 +68,7 @@ public class DbJellyTestCase extends JellyTestCase {
     protected void sleep(int millis) {
         debug("Waiting " + millis + " millis ... ");
         try {
-            Thread.currentThread().sleep(millis);
+            Thread.sleep(millis);
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         }

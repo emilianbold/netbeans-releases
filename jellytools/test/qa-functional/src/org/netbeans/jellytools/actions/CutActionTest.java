@@ -42,6 +42,7 @@
 package org.netbeans.jellytools.actions;
 
 import java.awt.Toolkit;
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -69,12 +70,16 @@ public class CutActionTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new CutActionTest("testPerformPopup"));
         suite.addTest(new CutActionTest("testPerformMenu"));
         suite.addTest(new CutActionTest("testPerformAPI"));
         suite.addTest(new CutActionTest("testPerformShortcut"));
         return suite;
+         */
+        return createModuleTest(CutActionTest.class, "testPerformPopup", 
+                "testPerformMenu", "testPerformAPI", "testPerformShortcut");
     }
     
     /** Use for internal test execution inside IDE
@@ -87,8 +92,9 @@ public class CutActionTest extends JellyTestCase {
     private Object clipboard1;
     private static Node node;
     
-    public void setUp() {
+    public void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");  // NOI18N
+        openDataProjects("SampleProject");
         clipboard1 = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
         if(node == null) {
             node = new Node(new SourcePackagesNode("SampleProject"), "sample1|SampleClass1.java");

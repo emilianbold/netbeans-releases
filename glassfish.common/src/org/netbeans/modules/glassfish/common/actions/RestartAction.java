@@ -153,8 +153,8 @@ public class RestartAction extends NodeAction {
                 "org/netbeans/modules/glassfish/common/resources/restart.png"; // NOI18N
         
         public OutputAction(final GlassfishModule commonSupport) {
-            super(commonSupport, NbBundle.getMessage(RefreshAction.class, "LBL_RestartOutput"), // NOI18N
-                    NbBundle.getMessage(RefreshAction.class, "LBL_RestartOutputDesc"), // NOI18N
+            super(commonSupport, NbBundle.getMessage(RestartAction.class, "LBL_RestartOutput"), // NOI18N
+                    NbBundle.getMessage(RestartAction.class, "LBL_RestartOutputDesc"), // NOI18N
                     ICON);
         }
         

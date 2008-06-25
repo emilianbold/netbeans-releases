@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.api.compilers;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import org.netbeans.modules.cnd.compilers.DefaultCompilerProvider;
 import org.netbeans.modules.cnd.settings.CppSettings;
@@ -204,6 +203,7 @@ public class CompilerSet {
             return list;
         }
     
+        @Override
         public String toString() {
             return sval;
         }
@@ -273,7 +273,7 @@ public class CompilerSet {
             this.name = name;
         else
             this.name = flavor.toString();
-        displayName = mapNameToDisplayName(flavor, directory.length() == 0);
+        displayName = mapNameToDisplayName(flavor);
         if (flavor.isSunCompiler()) {
             librarySearchOption = "-L"; // NOI18N
             dynamicLibrarySearchOption = "-R"; // NOI18N
@@ -486,17 +486,11 @@ public class CompilerSet {
         return new CompilerSet();
     }
     
-    private String mapNameToDisplayName(CompilerFlavor flavor, boolean isMissing) {
-        String displayName;
+    private String mapNameToDisplayName(CompilerFlavor flavor) {
         StringBuffer label = new StringBuffer("LBL_"); // NOI18N
         
         label.append(flavor);
         label.append("CompilerSet_"); // NOI18N
-//        if (isMissing) {
-//            label.append("Missing"); // NOI18N
-//        } else {
-//            label.append(id == 0 ? "0" : "X"); // NOI18N
-//        }
         label.append("0"); // There is now only one of each // NOI18N
         return NbBundle.getMessage(CompilerSet.class, label.toString(), Integer.valueOf(id));
     }
@@ -547,10 +541,6 @@ public class CompilerSet {
         }
     }
     
-    private static boolean isSunUCBCompilerDirectory(String dir) {
-        return Utilities.getOperatingSystem() == Utilities.OS_SOLARIS && dir.equals("/usr/ucb"); // NOI18N
-    }
-    
     protected int getID() {
         return id;
     }
@@ -563,6 +553,7 @@ public class CompilerSet {
         return flavor.isSunCompiler();
     }
 
+    /** @depreacted */
     public boolean isSunUCBCompiler() {
         return flavor.isSunUCBCompiler();
     }

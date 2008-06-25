@@ -63,10 +63,14 @@ public class J2eeServerNodeTest extends JellyTestCase {
     
     /** method used for explicit testsuite definition */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new J2eeServerNodeTest("testVerifyPopup"));
         suite.addTest(new J2eeServerNodeTest("testProperties"));
         return suite;
+         */
+        return createModuleTest(J2eeServerNodeTest.class, 
+                "testVerifyPopup", "testProperties");
     }
     
     /** Use for internal test execution inside IDE
@@ -76,13 +80,16 @@ public class J2eeServerNodeTest extends JellyTestCase {
         TestRunner.run(suite());
     }
     
-    private static J2eeServerNode serverNode;
+    private static GlassFishV2ServerNode serverNode;
     
     protected void setUp() {
         System.out.println("### "+getName()+" ###");
         if(serverNode == null) {
+            /*
             RuntimeTabOperator.invoke();
             serverNode = new J2eeServerNode("GlassFish");
+             */
+            serverNode = getGlassFishV2Node();
         }
     }
     
