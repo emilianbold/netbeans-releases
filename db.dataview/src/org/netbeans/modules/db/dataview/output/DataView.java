@@ -62,7 +62,7 @@ public class DataView {
     public static final int VERTICAL_TOOLBAR = 0;
     public static final int HORIZONTAL_TOOLBAR = 1; // Default
     private DatabaseConnection dbConn;
-    private List<Exception> errMessages = new ArrayList<Exception>();
+    private List<Throwable> errMessages = new ArrayList<Throwable>();
     private String sqlString; // Once Set, Data View assumes it will never change
     private DataViewDBTable tblMeta;
     private SQLStatementGenerator stmtGenerator;
@@ -158,7 +158,7 @@ public class DataView {
      * 
      * @return Iterator<String>
      */
-    public Iterator<Exception> getExceptions() {
+    public Iterator<Throwable> getExceptions() {
         return errMessages.iterator();
     }
 
@@ -240,7 +240,7 @@ public class DataView {
         }
     }
 
-    void setErrorStatusText(Exception ex) {
+    void setErrorStatusText(Throwable ex) {
         if (ex != null) {
             errMessages.add(ex);
             StatusDisplayer.getDefault().setStatusText("ERROR: " + ex.getMessage());
