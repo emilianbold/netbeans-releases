@@ -106,7 +106,7 @@ final class Call implements CallDescriptor {
     }
     
     public List<Call> getReferences() {
-        return references;
+        return references != null ? references : Collections.<Call>emptyList();
     }
 
     void setReferences(List<Call> references) {
