@@ -302,7 +302,13 @@ introduced by support for multiple source roots. -jglick
                 </condition>
                 
                 <!-- COS feature -->
-                <condition property="ensure.built.source.roots" value="${{src.dir}}">
+                <condition>
+                    <xsl:attribute name="property">ensure.built.source.roots</xsl:attribute>
+                    <xsl:attribute name="value">
+                        <xsl:call-template name="createPath">
+                            <xsl:with-param name="roots" select="/p:project/p:configuration/webproject3:data/webproject3:source-roots"/>
+                        </xsl:call-template>
+                    </xsl:attribute>
                     <istrue value="${{deploy.on.save}}"/>
                 </condition>
             </target>
