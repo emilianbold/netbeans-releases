@@ -2524,6 +2524,8 @@ public class Reformatter implements ReformatTask {
                         if (lastToken != null) {
                             int offset = tokens.offset() - lastToken.length();
                             String text = lastToken.text().toString();
+                            if (count >= 0 && tokens.index() > 1 && after != 1 && text.indexOf('\n') >= 0)
+                                count++;
                             int idx = 0;
                             int lastIdx = 0;
                             while(count != 0 && (idx = text.indexOf('\n', lastIdx)) >= 0) { //NOI18N
