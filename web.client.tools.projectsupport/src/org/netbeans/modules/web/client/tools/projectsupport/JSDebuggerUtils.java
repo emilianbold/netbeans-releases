@@ -40,8 +40,16 @@
 package org.netbeans.modules.web.client.tools.projectsupport;
 
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 
 /**
  *
@@ -51,8 +59,14 @@ import org.openide.util.Lookup;
  * 
  * @author Quy Nguyen <quynguyen@netbeans.org>
  */
-public final class BrowserUtilities {
-
+public final class JSDebuggerUtils {
+    private static final String CLIENT_DEBUG_PROP = "client_debug"; // NOI18N
+    private static final String SERVER_DEBUG_PROP = "server_debug"; // NOI18N
+    
+    private static final boolean CLIENT_DEBUG_DEFAULT = false;
+    private static final boolean SERVER_DEBUG_DEFAULT = true;
+    
+    
     public static HtmlBrowser.Factory getFirefoxBrowser() {
         return findBrowser("org.netbeans.modules.extbrowser.FirefoxBrowser"); // NOI18N
     }
@@ -61,6 +75,53 @@ public final class BrowserUtilities {
         return findBrowser("org.netbeans.modules.extbrowser.IExplorerBrowser"); // NOI18N
     }
     
+    public static boolean getClientDebugProperty(Project project) {
+        return getProjectProperty(project, CLIENT_DEBUG_PROP, CLIENT_DEBUG_DEFAULT);
+    }
+
+    public static boolean getServerDebugProperty(Project project) {
+        return getProjectProperty(project, SERVER_DEBUG_PROP, SERVER_DEBUG_DEFAULT);
+    }
+    
+    private static boolean getProjectProperty(Project project, String propKey, boolean def) {
+        Preferences prefs = ProjectUtils.getPreferences(project, JSDebuggerUtils.class, true);
+        assert prefs != null;
+        
+        return prefs.getBoolean(propKey, def);
+    }
+
+    static void setProjectProperties(final Project project, final boolean serverDebug, final boolean clientDebug) {
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+
+                public Boolean run() throws BackingStoreException {
+                    Preferences prefs = ProjectUtils.getPreferences(project, JSDebuggerUtils.class, true);
+                    assert prefs != null;
+
+                    boolean currentServerValue = prefs.getBoolean(SERVER_DEBUG_PROP, SERVER_DEBUG_DEFAULT);
+                    boolean currentClientValue = prefs.getBoolean(CLIENT_DEBUG_PROP, CLIENT_DEBUG_DEFAULT);
+                    boolean changed = false;
+                    
+                    if (currentServerValue != serverDebug) {
+                        prefs.putBoolean(SERVER_DEBUG_PROP, serverDebug);
+                        changed = true;
+                    }
+                    if (currentClientValue != clientDebug) {
+                        prefs.putBoolean(CLIENT_DEBUG_PROP, clientDebug);
+                        changed = true;
+                    }
+                    
+                    if (changed) {
+                        prefs.sync();
+                    }
+
+                    return Boolean.TRUE;
+                }
+            });
+        } catch (MutexException ex) {
+            Log.getLogger().log(Level.SEVERE, "Unable to set javascript debugger project properties", ex);
+        }
+    }
     
     private static HtmlBrowser.Factory findBrowser(String browserClass) {
         Collection<? extends HtmlBrowser.Factory> htmlBrowserFactories = Lookup.getDefault().lookupAll(HtmlBrowser.Factory.class);

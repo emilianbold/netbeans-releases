@@ -38,8 +38,10 @@
  */
 package org.netbeans.modules.web.client.tools.projectsupport;
 
-import javax.swing.ButtonModel;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.JPanel;
+import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.NbBundle;
 
@@ -48,23 +50,29 @@ import org.openide.util.NbBundle;
  * 
  * @author  Quy Nguyen <quynguyen@netbeans.org>
  */
-public class CustomizerDebug extends JPanel {
+public final class CustomizerDebug extends JPanel implements ActionListener {
     private final ProjectCustomizer.Category category;
+    private final Project project;
     private final String debugServerMsg;
     private final String debugClientMsg;
     
     /** Creates new form CustomizerDebug */
-    public CustomizerDebug(ProjectCustomizer.Category category, ButtonModel debugServerModel, 
-            String debugServerMsg, ButtonModel debugClientModel, String debugClientMsg) {
+    public CustomizerDebug(ProjectCustomizer.Category category, final Project project,
+            String debugServerMsg, String debugClientMsg) {
         this.category = category;
         this.debugServerMsg = debugServerMsg;
         this.debugClientMsg = debugClientMsg;
+        this.project = project;
         
         initComponents();
         
-        this.debugServerJCheckBox.setModel(debugServerModel);
-        this.debugClientJCheckBox.setModel(debugClientModel);
+        boolean serverDebug = JSDebuggerUtils.getServerDebugProperty(project);
+        boolean clientDebug = JSDebuggerUtils.getClientDebugProperty(project);
         
+        this.debugServerJCheckBox.setSelected(serverDebug);
+        this.debugClientJCheckBox.setSelected(clientDebug);
+        
+        this.category.setStoreListener(this);
         validateCheckBoxes();
     }
 
@@ -139,5 +147,9 @@ private void debugClientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     private javax.swing.JCheckBox debugClientJCheckBox;
     private javax.swing.JCheckBox debugServerJCheckBox;
     // End of variables declaration//GEN-END:variables
+
+    public void actionPerformed(ActionEvent e) {
+        JSDebuggerUtils.setProjectProperties(project, debugServerJCheckBox.isSelected(), debugClientJCheckBox.isSelected());
+    }
 
 }
