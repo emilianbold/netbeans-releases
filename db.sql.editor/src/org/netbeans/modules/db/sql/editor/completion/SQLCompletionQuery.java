@@ -47,14 +47,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.db.sql.analyzer.FromTables;
 import org.netbeans.modules.db.sql.analyzer.QualIdent;
 import org.netbeans.modules.db.sql.analyzer.StatementAnalyzer;
+import org.netbeans.modules.db.sql.editor.completion.SQLCompletionEnv.Context;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
@@ -68,10 +66,9 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     // XXX quoted identifiers.
 
     private final MetadataModel model;
-    private TokenSequence<SQLTokenId> seq;
-    private StatementAnalyzer analyzer;
-    private int caretOffset;
 
+    private SQLCompletionEnv env;
+    private StatementAnalyzer analyzer;
     private int anchorOffset = -1;
     List<SQLCompletionItem> items;
 
@@ -81,20 +78,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     @Override
     protected void query(CompletionResultSet resultSet, final Document doc, final int caretOffset) {
-
-        String text = null;
-        BaseDocument baseDoc = (BaseDocument) doc;
-        baseDoc.atomicLock();
-        try {
-            text = baseDoc.getText(0, baseDoc.getLength());
-        } catch (BadLocationException e) {
-            // Should not happen.
-        } finally {
-            baseDoc.atomicUnlock();
-        }
-
-        doQuery(text, caretOffset);
-
+        doQuery(SQLCompletionEnv.create(doc, caretOffset));
         resultSet.addAllItems(items);
         if (anchorOffset != -1) {
             resultSet.setAnchorOffset(anchorOffset);
@@ -102,52 +86,61 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         resultSet.finish();
     }
 
-    void doQuery(String sql, final int caretOffset) {
-        this.caretOffset = caretOffset;
+    // Called by unit tests.
+    void doQuery(SQLCompletionEnv env) {
+        this.env = env;
         anchorOffset = -1;
         items = new ArrayList<SQLCompletionItem>();
-        if (sql != null) {
-            completeSelect(sql);
+        if (env != null && env.isSelect()) {
+            completeSelect();
         }
     }
 
-    private void completeSelect(String select) {
-        TokenHierarchy<String> hi = TokenHierarchy.create(select, SQLTokenId.language());
-        seq = hi.tokenSequence(SQLTokenId.language());
-        analyzer = new StatementAnalyzer(seq);
-        insideSelectValue();
-    }
-
-    private void insideSelectValue() {
-        List<String> typedIdent = findIdentifier();
-        assert anchorOffset >= 0;
-        String typedPrefix = null;
-        if (typedIdent.isEmpty()) {
-            // Nothing typed, just complete everything.
-        } else if (typedIdent.get(typedIdent.size() - 1) == null) {
-            if (typedIdent.size() == 1) {
-                // User just typed a dot, can't complete.
-                return;
-            }
-            typedIdent.remove(typedIdent.size() - 1);
-        } else {
-            typedPrefix = typedIdent.get(typedIdent.size() - 1);
-            typedIdent.remove(typedIdent.size() - 1);
+    private void completeSelect() {
+        Context context = env.getContext();
+        if (context == null) {
+            return;
         }
-        completeIdentifier(new QualIdent(typedIdent), typedPrefix);
-    }
-
-    private void completeIdentifier(QualIdent fullyTypedIdent, String typedPrefix) {
-        if (fullyTypedIdent.isEmpty()) {
-            completeSimpleIdentifier(typedPrefix);
-        } else if (fullyTypedIdent.isSimple()) {
-            completeSingleQualifiedIdentifier(fullyTypedIdent, typedPrefix);
-        } else if (fullyTypedIdent.isSingleQualified()) {
-            completeDoubleQualifiedIdentifier(fullyTypedIdent, typedPrefix);
+        analyzer = new StatementAnalyzer(env.getTokenSequence());
+        switch (context) {
+            case SELECT:
+                insideSelect();
+                break;
+            case FROM:
+                insideFrom();
+                break;
         }
     }
 
-    private void completeSimpleIdentifier(String typedPrefix) {
+    private void insideSelect() {
+        Identifier ident = findIdentifier();
+        if (ident == null) {
+            return;
+        }
+        anchorOffset = ident.anchorOffset;
+        if (ident.fullyTypedIdent.isEmpty()) {
+            completeSelectSimpleIdent(ident.lastPrefix);
+        } else if (ident.fullyTypedIdent.isSimple()) {
+            completeSelectSingleQualIdent(ident.fullyTypedIdent, ident.lastPrefix);
+        } else if (ident.fullyTypedIdent.isSingleQualified()) {
+            completeSelectDoubleQualIdent(ident.fullyTypedIdent, ident.lastPrefix);
+        }
+    }
+
+    private void insideFrom() {
+        Identifier ident = findIdentifier();
+        if (ident == null) {
+            return;
+        }
+        anchorOffset = ident.anchorOffset;
+        if (ident.fullyTypedIdent.isEmpty()) {
+            completeFromSimpleIdent(ident.lastPrefix);
+        } else if (ident.fullyTypedIdent.isSimple()) {
+            completeFromSingleQualIdent(ident.fullyTypedIdent, ident.lastPrefix);
+        }
+    }
+
+    private void completeSelectSimpleIdent(String typedPrefix) {
         FromTables fromTables = analyzer.getFromTables();
         if (fromTables != null) {
             // Columns from tables and aliases.
@@ -203,7 +196,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    private void completeSingleQualifiedIdentifier(QualIdent fullyTypedIdent, String lastPrefix) {
+    private void completeSelectSingleQualIdent(QualIdent fullyTypedIdent, String lastPrefix) {
         FromTables fromTables = analyzer.getFromTables();
         // Assume table name.
         QualIdent tableName = fullyTypedIdent;
@@ -239,7 +232,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         MetadataModelUtilities.addTableItems(items, model, schemaName, tableNames, lastPrefix, anchorOffset);
     }
 
-    private void completeDoubleQualifiedIdentifier(QualIdent fullyTypedIdent, String lastPrefix) {
+    private void completeSelectDoubleQualIdent(QualIdent fullyTypedIdent, String lastPrefix) {
         FromTables fromTables = analyzer.getFromTables();
         QualIdent tableName = fullyTypedIdent;
         if (fromTables != null) {
@@ -252,7 +245,21 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    private List<String> findIdentifier() {
+    private void completeFromSimpleIdent(String typedPrefix) {
+        String defaultSchemaName = model.getDefaultSchemaName();
+        // All tables in default schema.
+        MetadataModelUtilities.addTableItems(items, model, new QualIdent(defaultSchemaName), null, typedPrefix, anchorOffset);
+        // All schemas.
+        MetadataModelUtilities.addSchemaItems(items, model, null, typedPrefix, anchorOffset);
+    }
+
+    private void completeFromSingleQualIdent(QualIdent fullyTypedIdent, String lastPrefix) {
+        MetadataModelUtilities.addTableItems(items, model, fullyTypedIdent, null, lastPrefix, anchorOffset);
+    }
+
+    private Identifier findIdentifier() {
+        TokenSequence<SQLTokenId> seq = env.getTokenSequence();
+        int caretOffset = env.getCaretOffset();
         final List<String> parts = new ArrayList<String>();
         int offset = seq.move(caretOffset);
         if (offset > 0) {
@@ -261,19 +268,18 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                     case WHITESPACE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
-                        anchorOffset = caretOffset;
-                        return parts;
+                        return Identifier.create(parts, false, caretOffset);
                     case IDENTIFIER:
                         parts.add(seq.token().text().subSequence(0, offset).toString());
                         break;
                 }
             } else {
-                anchorOffset = caretOffset;
-                return parts;
+                return Identifier.create(parts, false, caretOffset);
             }
         }
-        boolean incomplete = false; // Whether incomplete, like "a.b."
-        boolean wasDot = false; // Whether previous token was a dot.
+        boolean incomplete = false; // Whether incomplete, like "foo.bar."
+        boolean wasDot = false; // Whether the previous token was a dot.
+        int identAnchorOffset = -1;
         main: for (;;) {
             if (!seq.movePrevious()) {
                 break;
@@ -281,7 +287,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             switch (seq.token().id()) {
                 case DOT:
                     if (parts.isEmpty()) {
-                        anchorOffset = caretOffset; // Not the dot offset,
+                        identAnchorOffset = caretOffset; // Not the dot offset,
                         // since the user may have typed whitespace after the dot.
                         incomplete = true;
                     }
@@ -290,8 +296,8 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 case IDENTIFIER:
                 case KEYWORD:
                     if (wasDot || parts.isEmpty()) {
-                        if (parts.isEmpty() && anchorOffset == -1) {
-                            anchorOffset = seq.offset();
+                        if (parts.isEmpty() && identAnchorOffset == -1) {
+                            identAnchorOffset = seq.offset();
                         }
                         wasDot = false;
                         parts.add(seq.token().text().toString());
@@ -304,12 +310,35 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             }
         }
         Collections.reverse(parts);
-        if (incomplete) {
-            parts.add(null);
+        return Identifier.create(parts, incomplete, identAnchorOffset >= 0 ? identAnchorOffset : caretOffset);
+    }
+
+    private static final class Identifier {
+
+        final QualIdent fullyTypedIdent;
+        final String lastPrefix;
+        final int anchorOffset;
+
+        public static Identifier create(List<String> parts, boolean incomplete, int anchorOffset) {
+            String lastPrefix = null;
+            if (parts.isEmpty()) {
+                if (incomplete) {
+                    // Just a dot was typed.
+                    return null;
+                }
+                // Fine, nothing was typed.
+            } else {
+                if (!incomplete) {
+                    lastPrefix = parts.remove(parts.size() - 1);
+                }
+            }
+            return new Identifier(new QualIdent(parts), lastPrefix, anchorOffset);
         }
-        if (anchorOffset == -1) {
-            anchorOffset = caretOffset;
+
+        private Identifier(QualIdent fullyTypedIdent, String lastPrefix, int anchorOffset) {
+            this.fullyTypedIdent = fullyTypedIdent;
+            this.lastPrefix = lastPrefix;
+            this.anchorOffset = anchorOffset;
         }
-        return parts;
     }
 }

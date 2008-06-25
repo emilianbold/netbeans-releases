@@ -78,6 +78,7 @@ public class SQLCompletionQueryTest extends NbTestCase {
     public static Test suite() throws Exception {
         TestSuite suite = new TestSuite();
         // Find a way to add the tests automatically (java.util.zip?).
+
         suite.addTest(new SQLCompletionQueryTest("selectAll"));
         suite.addTest(new SQLCompletionQueryTest("selectNoSchemas"));
         suite.addTest(new SQLCompletionQueryTest("selectSimple"));
@@ -91,6 +92,10 @@ public class SQLCompletionQueryTest extends NbTestCase {
         suite.addTest(new SQLCompletionQueryTest("selectFromQualTableInDefaultSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectFromUnqualTableInDefaultSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectFromSchema"));
+
+        suite.addTest(new SQLCompletionQueryTest("fromAll"));
+        suite.addTest(new SQLCompletionQueryTest("fromSimple"));
+        suite.addTest(new SQLCompletionQueryTest("fromSchema"));
 
         // Does not work yet.
         // suite.addTest(new SQLCompletionQueryTest("selectFromTableInNonDefaultSchema", true));
@@ -152,7 +157,7 @@ public class SQLCompletionQueryTest extends NbTestCase {
             throw new IllegalArgumentException();
         }
         SQLCompletionQuery query = new SQLCompletionQuery(model);
-        query.doQuery(sql, caretOffset);
+        query.doQuery(SQLCompletionEnv.create(sql, caretOffset));
         for (SQLCompletionItem item : query.items) {
             output.append(item.toString());
             output.append('\n');

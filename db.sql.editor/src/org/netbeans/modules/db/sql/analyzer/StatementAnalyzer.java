@@ -42,6 +42,7 @@ package org.netbeans.modules.db.sql.analyzer;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.db.sql.editor.StringUtils;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 
 /**
@@ -60,6 +61,7 @@ public class StatementAnalyzer {
 
     public StatementAnalyzer(TokenSequence<SQLTokenId> seq) {
         this.seq = seq;
+        seq.moveStart();
         parse();
         fromTables = state.ordinal() >= State.FROM.ordinal() ? new FromTables(fromTableList) : null;
     }
@@ -212,7 +214,7 @@ public class StatementAnalyzer {
     }
 
     private boolean isKeyword(CharSequence keyword) {
-        return seq.token().id() == SQLTokenId.KEYWORD && textEqualsIgnoreCase(seq.token().text(), keyword);
+        return seq.token().id() == SQLTokenId.KEYWORD && StringUtils.textEqualsIgnoreCase(seq.token().text(), keyword);
     }
 
     private boolean isKeywordAfterFrom() {
@@ -220,27 +222,9 @@ public class StatementAnalyzer {
             return false;
         }
         CharSequence keyword = seq.token().text();
-        return textEqualsIgnoreCase("WHERE", keyword) || // NOI18N
-               textEqualsIgnoreCase("HAVING", keyword) || // NOI18N
-               textEqualsIgnoreCase("ORDER", keyword); // NOI18N
-    }
-
-    private static boolean textEqualsIgnoreCase(CharSequence seq1, CharSequence seq2) {
-        if (seq1 == seq2) {
-            return true;
-        }
-        int len1 = seq1.length();
-        if (len1 != seq2.length()) {
-            return false;
-        }
-        for (int i = 0; i < len1; i++) {
-            char ch1 = Character.toLowerCase(seq1.charAt(i));
-            char ch2 = Character.toLowerCase(seq2.charAt(i));
-            if (ch1 != ch2) {
-                return false;
-            }
-        }
-        return true;
+        return StringUtils.textEqualsIgnoreCase("WHERE", keyword) || // NOI18N
+               StringUtils.textEqualsIgnoreCase("HAVING", keyword) || // NOI18N
+               StringUtils.textEqualsIgnoreCase("ORDER", keyword); // NOI18N
     }
 
     /**
