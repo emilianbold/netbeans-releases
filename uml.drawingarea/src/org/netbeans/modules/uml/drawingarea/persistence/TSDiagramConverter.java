@@ -68,6 +68,7 @@ import org.netbeans.modules.uml.core.IApplication;
 import org.netbeans.modules.uml.core.eventframework.IEventPayload;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityPartition;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IState;
+import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.ITransition;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
@@ -1299,11 +1300,15 @@ public class TSDiagramConverter
                     break;
                 case 16:
                     //pre consition(state)
-                    System.out.println("***WARNING: unsupported precondition label was skipped");
+                    endLabel=true;
+                    typeInfo=AbstractLabelManager.PRECONDITION;
+                    type=LabelManager.LabelType.SOURCE;
                     break;
                 case 17:
                     //post condition(state)
-                    System.out.println("***WARNING: unsupported postcondition label was skipped");
+                    endLabel=true;
+                    typeInfo=AbstractLabelManager.POSTCONDITION;
+                    type=LabelManager.LabelType.TARGET;
                     break;
                 default:
                     throw new UnsupportedOperationException("Converter can't handle label kind: "+tsType);
@@ -1322,6 +1327,11 @@ public class TSDiagramConverter
                     IAssociation ass=(IAssociation) elt;
                     sourceID=ass.getEndAtIndex(0).getXMIID();
                     targetID=ass.getEndAtIndex(1).getXMIID();
+                }
+                else if(elt!=null && elt instanceof ITransition)
+                {
+                    System.out.println("***WARNING: unsupported pre/postcondition label was skipped");
+                    continue;//pre-post transitions unsupported yet
                 }
                 else
                 {
