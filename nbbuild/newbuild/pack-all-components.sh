@@ -44,6 +44,8 @@ pack_all_components()
 
     cd $NB_ALL/nbbuild
 
+    rm -rf uml*
+
     #Pack all the NetBeans
     pack_component $DIST_DIR/zip/moduleclusters $NAME all-in-one netbeans
 
@@ -57,7 +59,7 @@ pack_all_components()
     rm -rf php*
 
     #pack_component $DIST_DIR/zip/moduleclusters $NAME uml "uml*"
-    rm -rf uml*
+    #rm -rf uml*
 
     pack_component $DIST_DIR/zip/moduleclusters $NAME visualweb "visualweb*"
     rm -rf visualweb*
