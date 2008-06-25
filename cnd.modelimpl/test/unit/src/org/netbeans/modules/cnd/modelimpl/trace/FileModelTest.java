@@ -311,6 +311,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("gcc_attribute.c"); // NOI18N
     }
 
+    public void testComplex() throws Exception {
+        // IZ 136729 : Code model is broken by _Complex keyword
+        performTest("complex.c"); // NOI18N
+    }
+
     public void testStringizeMacro() throws Exception {
         // IZ 137465 : wrong macro expansion for #x
         performPreprocessorTest("stringize_macro.cc"); // NOI18N

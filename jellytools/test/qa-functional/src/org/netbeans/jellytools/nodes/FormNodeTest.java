@@ -41,6 +41,7 @@
 package org.netbeans.jellytools.nodes;
 
 import java.awt.Toolkit;
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -67,6 +68,7 @@ public class FormNodeTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new FormNodeTest("testVerifyPopup"));
         suite.addTest(new FormNodeTest("testOpen"));
@@ -78,6 +80,17 @@ public class FormNodeTest extends JellyTestCase {
         suite.addTest(new FormNodeTest("testSaveAsTemplate"));
         suite.addTest(new FormNodeTest("testProperties"));
         return suite;
+         */
+        return createModuleTest(FormNodeTest.class, 
+        "testVerifyPopup",
+        "testOpen",
+        "testEdit",
+        "testCompile",
+        "testCut",
+        "testCopy",
+        "testDelete",
+        "testSaveAsTemplate",
+        "testProperties");
     }
     
     /** Use for internal test execution inside IDE
@@ -90,8 +103,9 @@ public class FormNodeTest extends JellyTestCase {
     private static FormNode formNode;
     
     /** Find node. */
-    protected void setUp() {
+    protected void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
+        openDataProjects("SampleProject");
         if(formNode == null) {
             formNode = new FormNode(new FilesTabOperator().getProjectNode("SampleProject"),
                                     "src|sample1|JFrameSample.java"); // NOI18N

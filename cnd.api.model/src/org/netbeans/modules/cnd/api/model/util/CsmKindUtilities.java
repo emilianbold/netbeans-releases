@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameterType;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
@@ -147,6 +148,10 @@ public class CsmKindUtilities {
     
     public static boolean isTemplate(CsmObject obj) {
         return (obj instanceof CsmTemplate);
+    }
+    
+    public static boolean isTemplateParameter(CsmObject obj) {
+        return (obj instanceof CsmTemplateParameter);
     }
     
     public static boolean isType(CsmObject obj) {

@@ -70,13 +70,19 @@ public final class InputOutputManager {
         super();
     }
 
-    // FIXME use InputOutputData
     public static void addInputOutput(InputOutput io, String displayName,
             StopAction stopAction, RerunAction rerunAction) {
 
         synchronized (InputOutputManager.class) {
             AVAILABLE.put(io, new InputOutputData(io, displayName, stopAction, rerunAction));
             ACTIVE_DISPLAY_NAMES.remove(displayName);
+        }
+    }
+
+    public static void addInputOutput(InputOutputData data) {
+        synchronized (InputOutputManager.class) {
+            AVAILABLE.put(data.inputOutput, data);
+            ACTIVE_DISPLAY_NAMES.remove(data.displayName);
         }
     }
 
@@ -201,7 +207,7 @@ public final class InputOutputManager {
         return nonActiveDN;
     }
 
-    public static class InputOutputData implements Comparable<InputOutputData> {
+    public static final class InputOutputData implements Comparable<InputOutputData> {
 
         private final InputOutput inputOutput;
 
