@@ -203,6 +203,10 @@ public class CompletionContextImpl extends CompletionContext {
                 //user enters < character
                 case XMLDefaultTokenContext.TEXT_ID:
                     String chars = token.getImage().trim();
+                    if(chars != null && chars.startsWith("&")) {
+                        completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
+                        break;
+                    }                    
                     if(chars != null && chars.equals("") &&
                        token.getPrevious().getImage().trim().equals("/>")) {
                         completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
@@ -313,9 +317,12 @@ public class CompletionContextImpl extends CompletionContext {
                     while( prev != null &&
                            (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.WS_ID) ) {
                             prev = prev.getPrevious();
-                    }                    
+                    }
                     if( (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.VALUE_ID) ||
                         (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.TAG_ID) ) {
+                        //no attr completion for end tags
+                        if(prev.getImage().startsWith("</"))
+                            break;
                         completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
                         pathFromRoot = getPathFromRoot(element);
                     }

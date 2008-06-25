@@ -1,5 +1,5 @@
 | Run |                     R (mnemonics)
-=======                    
+=======      
 Run Main Project            R
 Debug Main Project          D
 Test Project                j

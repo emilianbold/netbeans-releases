@@ -64,11 +64,15 @@ public class OutputWindowViewActionTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new OutputWindowViewActionTest("testPerformMenu"));
         suite.addTest(new OutputWindowViewActionTest("testPerformAPI"));
         suite.addTest(new OutputWindowViewActionTest("testPerformShortcut"));
         return suite;
+         */
+        return createModuleTest(OutputWindowViewActionTest.class,  
+                "testPerformMenu", "testPerformAPI", "testPerformShortcut");
     }
     
     /** Use for internal test execution inside IDE

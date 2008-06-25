@@ -43,22 +43,19 @@ package org.netbeans.modules.ruby.debugger;
 
 import java.awt.EventQueue;
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
 import javax.swing.text.Caret;
 import javax.swing.text.StyledDocument;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
-import org.openide.windows.TopComponent;
 
 public final class EditorUtil {
     
@@ -167,67 +164,14 @@ public final class EditorUtil {
      * supported mime-types}. For unsupported ones returns <code>null</code>.
      */
     public static Line getCurrentLine() {
-        Node[] nodes = TopComponent.getRegistry().getCurrentNodes();
-        if (nodes == null) return null;
-        if (nodes.length != 1) return null;
-        Node n = nodes [0];
-        FileObject fo = n.getLookup().lookup(FileObject.class);
-        if (fo == null) {
-            DataObject dobj = n.getLookup().lookup(DataObject.class);
-            if (dobj != null) {
-                fo = dobj.getPrimaryFile();
-            }
-        }
+        FileObject fo = EditorContextDispatcher.getDefault().getCurrentFile();
         if (fo == null) { return null; }
         if (!Util.isRubySource(fo)) {
             return null;
         }
-        LineCookie lineCookie = n.getCookie(LineCookie.class);
-        if (lineCookie == null) return null;
-        EditorCookie editorCookie = n.getCookie(EditorCookie.class);
-        if (editorCookie == null) return null;
-        JEditorPane jEditorPane = getEditorPane(editorCookie);
-        if (jEditorPane == null) return null;
-        StyledDocument document = editorCookie.getDocument();
-        if (document == null) return null;
-        Caret caret = jEditorPane.getCaret();
-        if (caret == null) return null;
-        int lineNumber = NbDocument.findLineNumber(document, caret.getDot());
-        try {
-            Line.Set lineSet = lineCookie.getLineSet();
-            assert lineSet != null : lineCookie;
-            return lineSet.getCurrent(lineNumber);
-        } catch (IndexOutOfBoundsException ex) {
-            return null;
-        }
+        return EditorContextDispatcher.getDefault().getCurrentLine();
     }
     
-    private static JEditorPane getEditorPane_(EditorCookie editorCookie) {
-        JEditorPane[] op = editorCookie.getOpenedPanes();
-        if ((op == null) || (op.length < 1)) return null;
-        return op [0];
-    }
-    
-    private static JEditorPane getEditorPane(final EditorCookie editorCookie) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            return getEditorPane_(editorCookie);
-        } else {
-            final JEditorPane[] ce = new JEditorPane[1];
-            try {
-                EventQueue.invokeAndWait(new Runnable() {
-                    public void run() {
-                        ce[0] = getEditorPane_(editorCookie);
-                    }
-                });
-            } catch (InvocationTargetException ex) {
-                Util.severe(ex);
-            } catch (InterruptedException ex) {
-                Util.severe(ex);
-                Thread.currentThread().interrupt();
-            }
-            return ce[0];
-        }
-    }
     // </editor-fold>
     
 }

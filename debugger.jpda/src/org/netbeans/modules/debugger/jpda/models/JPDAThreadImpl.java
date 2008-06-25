@@ -100,6 +100,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     private Object              cachedFramesLock = new Object();
     private JPDABreakpoint      currentBreakpoint;
     private PropertyChangeListener threadsResumeListener;
+    private final Object        threadsResumeListenerLock = new Object();
 
     public JPDAThreadImpl (
         ThreadReference     threadReference,
@@ -375,7 +376,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      */
     public CallStackFrame[] getCallStack (int from, int to) 
     throws AbsentInformationException {
-        synchronized (this) {
+        synchronized (threadsResumeListenerLock) {
             if (threadsResumeListener == null) {
                 threadsResumeListener = new ThreadsResumeListener();
                 debugger.getThreadsCollector().addPropertyChangeListener(WeakListeners.propertyChange(threadsResumeListener, debugger.getThreadsCollector()));

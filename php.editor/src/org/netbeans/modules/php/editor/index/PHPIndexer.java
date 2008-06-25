@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.editor.index;
 
+import com.sun.tools.javac.tree.Tree.Assign;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -53,7 +54,10 @@ import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
+import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.PHPCodeCompletion;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
@@ -127,6 +131,7 @@ public class PHPIndexer implements Indexer {
     static final String FIELD_METHOD = "method"; //NOI18N
     static final String FIELD_INCLUDE = "include"; //NOI18N
     static final String FIELD_IDENTIFIER = "identifier"; //NOI18N
+    static final String FIELD_VAR = "var"; //NOI18N
 
     public boolean isIndexable(ParserFile file) {
         // Cannot call file.getFileObject().getMIMEType() here for several reasons:
@@ -173,7 +178,7 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "0.4.3"; // NOI18N
+        return "0.4.4"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -239,6 +244,12 @@ public class PHPIndexer implements Indexer {
                     indexFunction((FunctionDeclaration)statement, document);
                 } else if (statement instanceof ExpressionStatement){
                     ExpressionStatement expressionStatement = (ExpressionStatement) statement;
+                    
+                    if (expressionStatement.getExpression() instanceof Assignment) {
+                        Assignment assignment = (Assignment) expressionStatement.getExpression();
+                        indexVarsInAssignment(assignment, document);
+                    }
+                    
                     if (expressionStatement.getExpression() instanceof Include) {
                         Include include = (Include) expressionStatement.getExpression();
                         
@@ -328,6 +339,29 @@ public class PHPIndexer implements Indexer {
                     }
                 }
 
+            }
+        }
+        
+        private void indexVarsInAssignment(Assignment assignment, IndexDocument document) {
+            if (assignment.getLeftHandSide() instanceof Variable) {
+                Variable var = (Variable) assignment.getLeftHandSide();
+                String varType = CodeUtils.extractVariableTypeFromAssignment(assignment);
+                String varName = CodeUtils.extractVariableName(var);
+                StringBuilder signature = new StringBuilder();
+                signature.append(varName.toLowerCase() + ";" + varName + ";");
+                
+                if (varType != null){
+                    signature.append(varType);
+                }
+                
+                signature.append(";"); //NOI18N
+                signature.append(var.getStartOffset() + ";");
+                document.addPair(FIELD_VAR, signature.toString(), true);
+            }
+            
+            if (assignment.getRightHandSide() instanceof Assignment) {
+                Assignment embeddedAssignment = (Assignment) assignment.getRightHandSide();
+                indexVarsInAssignment(embeddedAssignment, document);
             }
         }
 

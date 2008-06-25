@@ -323,7 +323,7 @@ public class RetoucheUtils {
         Project p = FileOwnerQuery.getOwner(file);
         Project[] opened = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i<opened.length; i++) {
-            if (p==opened[i])
+            if (p.equals(opened[i]))
                 return true;
         }
         return false;

@@ -106,7 +106,6 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
     private final String resourceAttr = "resource";
     private XMLHelper xmlHelper;
     private EntityResolver entityResolver;
-    
     private Logger logger = Logger.getLogger(HibernateRevengWizard.class.getName());
 
     public static HibernateRevengWizard create() {
@@ -254,8 +253,10 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
             }
             hro.addReveng();
             hro.save();
-            generateClasses(hro.getPrimaryFile());
-            updateConfiguration();
+            if (list.size() > 0) {
+                generateClasses(hro.getPrimaryFile());
+                updateConfiguration();
+            }
             return Collections.singleton(hro.getPrimaryFile());
         } catch (Exception e) {
             return Collections.EMPTY_SET;
@@ -312,15 +313,15 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
         File outputDir = FileUtil.toFile(helper.getLocation().getRootFolder());
 
         try {
-            
+
             // Setup classloader.
             logger.info("Setting up classloader");
             HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
-            CustomClassLoader ccl = new CustomClassLoader(env.getProjectClassPath(revengFile).toArray(new URL[]{}), 
+            CustomClassLoader ccl = new CustomClassLoader(env.getProjectClassPath(revengFile).toArray(new URL[]{}),
                     getClass().getClassLoader());
             oldClassLoader = Thread.currentThread().getContextClassLoader();
             Thread.currentThread().setContextClassLoader(ccl);
-            
+
             // Configuring the reverse engineering strategy
             try {
 
@@ -366,18 +367,18 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
     }
 
     // Update mapping entries in the selected configuration file 
-    public void updateConfiguration() {        
+    public void updateConfiguration() {
         try {
             DataObject confDataObject = DataObject.find(helper.getConfigurationFile());
             HibernateCfgDataObject hco = (HibernateCfgDataObject) confDataObject;
             SessionFactory sf = hco.getHibernateConfiguration().getSessionFactory();
             FileObject pkg = SourceGroups.getFolderForPackage(helper.getLocation(), helper.getPackageName(), false);
             if (pkg != null && pkg.isFolder()) {
-		    // bugfix: 137052
+                // bugfix: 137052
                 pkg.getFileSystem().refresh(true);
-                Enumeration<? extends FileObject> enumeration = pkg.getChildren(true);            
+                Enumeration<? extends FileObject> enumeration = pkg.getChildren(true);
                 while (enumeration.hasMoreElements()) {
-                    FileObject fo = enumeration.nextElement();                    
+                    FileObject fo = enumeration.nextElement();
                     if (fo.getNameExt() != null && fo.getMIMEType().equals(HibernateMappingDataLoader.REQUIRED_MIME)) {
                         int mappingIndex = sf.addMapping(true);
                         sf.setAttributeValue(SessionFactory.MAPPING, mappingIndex, resourceAttr, HibernateUtil.getRelativeSourcePath(fo, Util.getSourceRoot(project)));
@@ -385,7 +386,7 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
                         hco.save();
                     }
                 }
-            }            
+            }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
