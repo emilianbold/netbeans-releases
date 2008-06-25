@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.php.editor.index;
 
-import com.sun.tools.javac.tree.Tree.Assign;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -55,7 +54,6 @@ import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
 import org.netbeans.modules.php.editor.CodeUtils;
-import org.netbeans.modules.php.editor.PHPCodeCompletion;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassConstantDeclaration;
