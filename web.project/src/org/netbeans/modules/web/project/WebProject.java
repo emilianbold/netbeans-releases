@@ -93,6 +93,7 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathExtender;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifierSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -335,6 +336,10 @@ public final class WebProject implements Project, AntProjectListener {
 
     public ClassPathModifier getClassPathModifier() {
         return cpMod;
+    }
+
+    public WebProjectLibrariesModifierImpl getLibrariesModifier() {
+        return libMod;
     }
     
     private ClassPathModifier.Callback createClassPathModifierCallback() {
@@ -955,7 +960,8 @@ public final class WebProject implements Project, AntProjectListener {
             if (!toRemove.isEmpty()) {
                 LOGGER.log(Level.FINE, "Will remove broken classpath library references: " + toRemove);
                 try {
-                    cpMod.handleLibraryClassPathItems(toRemove, ProjectProperties.JAVAC_CLASSPATH, WebProjectProperties.TAG_WEB_MODULE_LIBRARIES, ClassPathModifier.REMOVE, false);
+                    ClassPathModifierSupport.handleLibraryClassPathItems(WebProject.this, getAntProjectHelper(), cpMod.getClassPathSupport(),  
+                            toRemove, ProjectProperties.JAVAC_CLASSPATH, WebProjectProperties.TAG_WEB_MODULE_LIBRARIES, ClassPathModifier.REMOVE, false);
                 } catch (IOException e) {
                     // should only occur when passing true as the saveProject parameter which we are not doing here
                     Exceptions.printStackTrace(e);
@@ -968,7 +974,8 @@ public final class WebProject implements Project, AntProjectListener {
             if (!toRemove.isEmpty()) {
                 LOGGER.log(Level.FINE, "Will remove broken additional library references: " + toRemove);
                 try {
-                    libMod.handlePackageLibraryClassPathItems(toRemove, WebProjectLibrariesModifierImpl.REMOVE, false);
+                    ClassPathModifierSupport.handleLibraryClassPathItems(WebProject.this, getAntProjectHelper(), cpMod.getClassPathSupport(),  
+                            toRemove, WebProjectProperties.WAR_CONTENT_ADDITIONAL, WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES, ClassPathModifier.REMOVE, false);
                 } catch (IOException e) {
                     // should only occur when passing true as the saveProject parameter which we are not doing here
                     Exceptions.printStackTrace(e);
