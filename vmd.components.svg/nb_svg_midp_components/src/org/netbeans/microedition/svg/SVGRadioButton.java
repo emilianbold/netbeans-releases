@@ -57,7 +57,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
  * @author ads
  */
 public class SVGRadioButton extends SVGAbstractButton {
-    private static final String DOT      = "dot";           // NIO18N
+    private static final String DOT      = "dot";           // NOI18N
     
     private final SVGLocatableElement dotElement;
     private       boolean             isSelected;
