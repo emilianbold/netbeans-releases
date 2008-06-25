@@ -49,19 +49,55 @@ import org.openide.util.Lookup;
 public class DevelopmentHostConfiguration extends IntConfiguration {
     
     private static ServerList serverList = null;
+    
+    private StringConfiguration developmentHostName;
 
     public DevelopmentHostConfiguration() {
-        super((IntConfiguration) null, getDefaultServerIndex(), getServerNames(), null);
+        super((IntConfiguration) null, _getDefaultServerIndex(), _getServerNames(), null);
+        developmentHostName = new StringConfiguration(null, _getServerNames()[_getDefaultServerIndex()]);
     }
     
-    private static int getDefaultServerIndex() {
+    // developmentHostName
+    public StringConfiguration getDevelopmentHostName() {
+        return developmentHostName;
+    }
+    
+    public void setDevelopmentHostName(StringConfiguration developmentHostName) {
+        this.developmentHostName = developmentHostName;
+    }
+    
+    public String[] getServerNames() {
+        return _getServerNames();
+    }
+    
+    public int getDefaultServerIndex() {
+        return _getDefaultServerIndex();
+    }
+    
+    public String getDisplayName() {
+        return developmentHostName.getValue();
+    }
+    
+    @Override
+    public void setValue(String v) {
+        super.setValue(v);
+    }
+    
+    private static int _getDefaultServerIndex() {
         if (getServerList() != null) {
             return serverList.getDefaultServerIndex();
         }
         return 0;
     }
     
-    private static String[] getServerNames() {
+    @Override
+    public Object clone() {
+        DevelopmentHostConfiguration clone = new DevelopmentHostConfiguration();
+        clone.setDevelopmentHostName((StringConfiguration) getDevelopmentHostName().clone());
+        return clone;
+    }
+    
+    private static String[] _getServerNames() {
         if (getServerList() != null) {
             return serverList.getServerNames();
         }

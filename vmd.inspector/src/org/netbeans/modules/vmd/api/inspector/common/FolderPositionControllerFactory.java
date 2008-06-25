@@ -57,7 +57,7 @@ public final class FolderPositionControllerFactory {
     
     public static InspectorPositionController createHierarchical(){
         return new InspectorPositionController() {
-            public boolean isInside(InspectorFolderPath path, InspectorFolder folder, DesignComponent component) {
+            public boolean isInside(InspectorFolderPath path,final InspectorFolder folder, DesignComponent component) {
                 if (path.getPath().isEmpty())
                     return false;
                 int parentIndex = path.getPath().size() - 1;

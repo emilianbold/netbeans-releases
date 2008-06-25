@@ -89,7 +89,7 @@ public class LogViewMgr {
     /**
      * Singleton model pattern
      */
-    private static Map<String, LogViewMgr> instances = new HashMap<String, LogViewMgr>();
+    private static final Map<String, LogViewMgr> instances = new HashMap<String, LogViewMgr>();
     
     /**
      * The I/O window where to output the changes

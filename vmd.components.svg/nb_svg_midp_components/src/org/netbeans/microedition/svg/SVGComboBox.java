@@ -57,34 +57,52 @@ import org.w3c.dom.svg.SVGLocatableElement;
 /**
  * Suggested svg snippet :
  * <pre>
- * &lt;g id="country_combobox" transform="..." ...>
- *       &lt;rect x="0" y="-5" rx="5" ry="5" width="90" height="30" fill="none" stroke="rgb(255,165,0)" stroke-width="2" visibility="hidden">
- *           &lt;set attributeName="visibility" attributeType="XML" begin="country_combobox.focusin" fill="freeze" to="visible"/>
- *           &lt;set attributeName="visibility" attributeType="XML" begin="country_combobox.focusout" fill="freeze" to="hidden"/>
+ * &lt;g id="country_combobox" transform="translate(20,180)">
+ *   &lt;metadata> &lt;text>type=combobox&lt;/text> &lt;/metadata>
+ *       &lt;rect x="0" y="-5" rx="5" ry="5" width="90" height="30" fill="none" stroke="rgb(255,165,0)" 
+ *              stroke-width="2" visibility="hidden">
+ *           &lt;set attributeName="visibility" attributeType="XML" begin="country_combobox.focusin" 
+ *               fill="freeze" to="visible"/>
+ *           &lt;set attributeName="visibility" attributeType="XML" begin="country_combobox.focusout" 
+ *               fill="freeze" to="hidden"/>
  *       &lt;/rect>
- *   &lt;rect  x="5.0" y="0.0" width="80" height="20" fill="none" stroke="black" stroke-width="2"/>
- *   &lt;rect id="country_combobox_button" x="66.0" y="1.0" 
- *      width="18" height="18" fill="rgb(220,220,220)" stroke="black" stroke-width="1.5">
- *       &lt;animate id="country_combobox_button_pressed" attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze"
- *               to="rgb(170,170,170)"/>
- *       &lt;animate id="country_combobox_button_released" attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze"
- *               to="rgb(220,220,220)"/>
+ *       &lt;rect  x="5.0" y="0.0" width="80" height="20" fill="none" stroke="black" stroke-width="2"/>
+ *   &lt;rect  x="66.0" y="1.0" width="18" height="18" fill="rgb(220,220,220)" 
+ *                   stroke="black" stroke-width="1.5">
+ *       &lt;metadata> &lt;text>type=button&lt;/text> &lt;/metadata>
+ *       &lt;animate  attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" 
+ *                           fill="freeze" to="rgb(170,170,170)">
+ *           &lt;metadata> &lt;text>type=pressed&lt;/text> &lt;/metadata>
+ *       &lt;/animate>
+ *       &lt;animate  attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" 
+ *                           fill="freeze" to="rgb(220,220,220)">
+ *           &lt;metadata> &lt;text>type=released&lt;/text> &lt;/metadata>
+ *       &lt;/animate>
  *   &lt;/rect>
- *   &lt;polygon transform="translate(73,8)"  points="0,0 4,0 2,4" fill="blue" stroke="black" stroke-width="2"/>
- *   &lt;g id="country_combobox_editor">
- *       &lt;!-- this editor is SVGTextField component -->
+ *   &lt;polygon transform="translate(73,8)"  points="0,0 4,0 2,4" fill="blue" 
+ *                 stroke="black" stroke-width="2"/>
+ *   &lt;g>
+ *       &lt;metadata> &lt;text>type=editor&lt;/text> &lt;/metadata>
+ *       &lt;!-- this editor is SVGTextField component -->*z
  *
  *       &lt;!-- metadata definition-->
- *       &lt;text display="none">readOnly="false" enabled="true"</text>
- *       &lt;text id="country_combobox_editor_text" x="10" y="15" stroke="black" font-size="15" font-family="SunSansSemiBold">Item 1</text>
- *       &lt;rect id="country_combobox_editor_caret" visibility="visible" x="17" y="3" width="2" height="15" fill="black" stroke="black"/>
- *       &lt;!-- The rectangle below is difference between rectangle that bound combobox and combobox button ( the latter 
+ *       &lt;text display="none">readOnly="false" enabled="true"&lt;/text>
+ *       &lt;text  x="10" y="15" stroke="black" font-size="15" font-family="SunSansSemiBold">Item 1
+ *           &lt;metadata> &lt;text>type=text&lt;/text> &lt;/metadata>
+ *       &lt;/text>
+ *       &lt;rect  visibility="visible" x="17" y="3" width="2" height="15" fill="black" stroke="black">
+ *           &lt;metadata> &lt;text>type=caret&lt;/text> &lt;/metadata>
+ *       &lt;/rect>
+ *       &lt;!-- The rectangle below is difference between rectangle that bound 
+ *
+ *               combobox and combobox button ( the latter 
  *       has id = country_combobox_button ). It needed for counting bounds of input text area .
- *       It should be created programatically or SVGTextField should have API for dealing with "width"
+ *       It should be created via source code or SVGTextField should have API for dealing with "width"
  *       of editor not based only on width of text field component.-->
  *       &lt;rect visibility="hidden" x="5.0" y="0" width="60" height="20" />
  *   &lt;/g>
- * &lt;/g>
+ *   &lt;/g>
+ *
  * </pre>
  * 
  * Also the following snippet should be placed at the end of XML document
@@ -119,7 +137,8 @@ import org.w3c.dom.svg.SVGLocatableElement;
  * @author ads
  *
  */
-public class SVGComboBox extends SVGComponent {
+public class SVGComboBox extends SVGComponent implements DataListener
+{
     
     private static final String EDITOR          = "editor";         // NOI18N
     private static final String BUTTON          = "button";         // NOI18N
@@ -143,20 +162,21 @@ public class SVGComboBox extends SVGComponent {
         myList = new SVGList( form , (SVGLocatableElement)listElement );
         
         myInputHandler = new ComboBoxInputHandler();
-        myEditor = new DefaultComboBoxEditor( form , 
-                (SVGLocatableElement)getElementByMeta( getElement(),TYPE, EDITOR));
+        setEditor( new DefaultComboBoxEditor( form , 
+                (SVGLocatableElement)getElementByMeta( getElement(),
+                        TYPE, EDITOR)));
         myRenderer = new SVGDefaultListCellRenderer();
     }
     
     public void focusGained() {
         super.focusGained();
-        getEditor().focusGained();
+        getEditor().getEditorCompoenent().focusGained();
     }
     
     public void focusLost() {
         super.focusLost();
         hideList();
-        getEditor().focusLost();
+        getEditor().getEditorCompoenent().focusLost();
     }
     
     public InputHandler getInputHandler() {
@@ -168,15 +188,19 @@ public class SVGComboBox extends SVGComponent {
     }
     
     public void setModel( ComboBoxModel model ){
+        if ( myModel != null ){
+            myModel.removeDataListener( this );
+        }
         myModel = model;
+        model.addDataListener( this );
         myList.setModel( model );
     }
     
-    public SVGComponent getEditor(){
+    public ComboBoxEditor getEditor(){
         return myEditor;
     }
     
-    public void setEditor( SVGComponent editor ){
+    public void setEditor(  ComboBoxEditor editor ){
         myEditor = editor;
     }
     
@@ -188,24 +212,97 @@ public class SVGComboBox extends SVGComponent {
         myRenderer = renderer;
     }
     
-    public interface ComboBoxModel extends ListModel{
-        int getSelectedIndex();
-        void setSelectedItem( int index );
+    public Object getSelectedItem(){
+        return mySelectedValue;
     }
+    
+    public void setSelectedItem( Object value ){
+        mySelectedValue = value;
+        int size = getModel().getSize();
+        boolean found = false;
+        for ( int i=0; i<size ; i++ ){
+            Object obj = getModel().getElementAt( i );
+            if ( value == null ){
+                if ( obj == null ){
+                    getModel().setSelectedIndex( i );
+                    myIndex = i;
+                    found = true;
+                }
+            }
+            else {
+                if ( value.equals(obj)){
+                    getModel().setSelectedIndex( i );
+                    myIndex = i;
+                    found = true;
+                }
+            }
+        }
+        if ( !found ){
+            myIndex = -1;
+            myList.getSelectionModel().clearSelection();
+            getModel().setSelectedIndex( -1 );
+        }
+        setItem();
+        fireActionPerformed();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.microedition.svg.DataListener#contentsChanged(java.lang.Object)
+     */
+    public void contentsChanged( Object source ) {
+        if (source != getModel()) {
+            return;
+        }
+        synchronized (myUILock) {
+            if (isUIAction) {
+                isUIAction = false;
+            }
+            else {
+                hideList();
+                myList.getSelectionModel().addSelectionInterval(myIndex,
+                        myIndex);
+                mySelectedValue = getModel().getElementAt(myIndex);
+                setItem();
+                fireActionPerformed();
+            }
+        }
+    }
+   
     
     private void showList(){
         isListShown = true;
         myList.focusGained();
         
-        myList.getElement().setTrait("visibility", "visible");
+        myList.getElement().setTrait( TRAIT_VISIBILITY, TR_VALUE_VISIBLE );
         myIndex = getModel().getSelectedIndex();
     }
     
     private void hideList(){
-        isListShown = false;
-        myList.focusLost();
-        
-        myList.getElement().setTrait("visibility", "hidden");
+        if ( isListShown ) {
+            isListShown = false;
+            myList.focusLost();
+            myList.getElement().setTrait( TRAIT_VISIBILITY , TR_VALUE_HIDDEN);
+        }
+    }
+    
+    private void setItem(){
+        int index = getModel().getSelectedIndex();
+        Object selected = index <getModel().getSize() ? 
+                getModel().getElementAt(index) : null ;
+        getEditor().setItem( selected );
+    }
+    
+    public interface ComboBoxModel extends ListModel{
+        int getSelectedIndex();
+        void setSelectedIndex( int index );
+    }
+    
+    public interface ComboBoxEditor  {
+        SVGComponent getEditorCompoenent();
+        Object getItem();
+        void setItem( Object value );
+        void addActionListener(SVGActionListener listener);
+        void removeActionListener(SVGActionListener listener);
     }
     
     public static class DefaultModel extends DefaultListMoldel 
@@ -220,9 +317,9 @@ public class SVGComboBox extends SVGComponent {
             return myCurrentSelectionIndx;
         }
 
-        public void setSelectedItem( int index ) {
-            
+        public void setSelectedIndex( int index ) {
             myCurrentSelectionIndx = index;
+            fireDataChanged();
         }
         
         private int myCurrentSelectionIndx;
@@ -263,8 +360,9 @@ public class SVGComboBox extends SVGComponent {
                     }
                 }
                 else {
-                    return getEditor().getInputHandler().handleKeyPress(getEditor(), 
-                            keyCode);
+                    SVGComponent component = getEditor().getEditorCompoenent();
+                    return component.getInputHandler().
+                            handleKeyPress( component , keyCode);
                 }
             }
             return ret;
@@ -293,14 +391,19 @@ public class SVGComboBox extends SVGComponent {
                 }
                 else if( keyCode == FIRE ){
                     hideList();
-                    getModel().setSelectedItem( myIndex );
+                    synchronized ( myUILock ) {
+                        isUIAction = true;
+                        getModel().setSelectedIndex( myIndex );
+                    }
                     myList.getSelectionModel().addSelectionInterval(
                             myIndex, myIndex);
+                    setItem();
                     fireActionPerformed();
                 }
                 else {
-                    return getEditor().getInputHandler().handleKeyRelease(getEditor(), 
-                            keyCode);
+                    SVGComponent component = getEditor().getEditorCompoenent();
+                    return component.getInputHandler().handleKeyRelease( 
+                            component, keyCode);
                 }
             }
             return ret;
@@ -308,29 +411,53 @@ public class SVGComboBox extends SVGComponent {
         
     }
     
-    private class DefaultComboBoxEditor extends SVGTextField {
+    private class DefaultComboBoxEditor extends SVGTextField implements ComboBoxEditor{
 
         public DefaultComboBoxEditor( SVGForm form , SVGLocatableElement element ) {
             super(form , element );
-            SVGComboBox.this.addActionListener( new SVGActionListener (){
+            /*SVGComboBox.this.addActionListener( new SVGActionListener (){
                 public void actionPerformed( SVGComponent comp ) {
                     if( comp == SVGComboBox.this){
                         int index = getModel().getSelectedIndex();
                         Object selected = index <getModel().getSize() ? 
                                 getModel().getElementAt(index) : null ;
-                                System.out.println("$$$$$$$$$$ " +selected);
                         if ( selected != null ){
                             setText( selected.toString() );
                         }
                     }
                 }
-            });
+            });*/
         }
-        
+
+        /* (non-Javadoc)
+         * @see org.netbeans.microedition.svg.SVGComboBox.ComboBoxEditor#getEditorCompoenent()
+         */
+        public SVGComponent getEditorCompoenent() {
+            return this;
+        }
+
+        /* (non-Javadoc)
+         * @see org.netbeans.microedition.svg.SVGComboBox.ComboBoxEditor#getItem()
+         */
+        public Object getItem() {
+            return getText();
+        }
+
+        /* (non-Javadoc)
+         * @see org.netbeans.microedition.svg.SVGComboBox.ComboBoxEditor#setItem(java.lang.Object)
+         */
+        public void setItem( Object value ) {
+            if ( value != null ){
+                setText( value.toString() );
+            }
+            else {
+                setText( "null" );                           // NOI18N
+            }
+        }
     }
     
     private ComboBoxModel myModel;
-    private SVGComponent myEditor;
+    private ComboBoxEditor myEditor;
     private SVGListCellRenderer myRenderer;
     
     private InputHandler myInputHandler;
@@ -343,5 +470,9 @@ public class SVGComboBox extends SVGComponent {
     private boolean isListShown;
     
     private int myIndex;
+    private Object mySelectedValue;
+    
+    private boolean isUIAction;
+    private Object myUILock = new Object();
 
 }

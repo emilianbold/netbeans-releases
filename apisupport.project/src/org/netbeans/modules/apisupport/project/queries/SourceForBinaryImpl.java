@@ -42,7 +42,6 @@
 package org.netbeans.modules.apisupport.project.queries;
 
 import java.io.File;
-import java.net.URI;
 import java.net.URL;
 import java.util.Map;
 import java.util.HashMap;
@@ -77,9 +76,8 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
         //System.err.println("findSourceRoot: " + binaryRoot);
         SourceForBinaryQuery.Result res = cache.get(binaryRoot);
         if (res == null) {
-            URL binaryJar = FileUtil.getArchiveFile(binaryRoot);
-            if (binaryJar != null) {
-                File binaryJarF = new File(URI.create(binaryJar.toExternalForm()));
+            File binaryJarF = FileUtil.archiveOrDirForURL(binaryRoot);
+            if (binaryJarF != null) {
                 FileObject srcDir = null;
                 if (binaryJarF.getAbsolutePath().endsWith(project.evaluator().getProperty("module.jar").replace('/', File.separatorChar))) {
                     srcDir = project.getSourceDirectory();
