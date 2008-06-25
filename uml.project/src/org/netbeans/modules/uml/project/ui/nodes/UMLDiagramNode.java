@@ -145,6 +145,13 @@ public class UMLDiagramNode extends UMLElementNode
     {
         return true;
     }
+
+    @Override
+    public boolean canCopy()
+    {
+        return false;
+    }
+    
     
     public void destroy() throws IOException
     {
