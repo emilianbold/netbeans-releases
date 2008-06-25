@@ -362,7 +362,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
                 return ;
             }
             Collection nodes = new ArrayList();
-            if (tg == null || !preferences.getBoolean(SHOW_SYSTEM_THREADS, false)) {
+            if (tg == null || !preferences.getBoolean(SHOW_THREAD_GROUPS, false)) {
                 nodes.add(ROOT);
             } else if (tg != null) {
                 do {
@@ -463,6 +463,8 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     
     private class OtherThreadsListener implements PropertyChangeListener {
 
+        // It's necessary to refresh all other threads when one is resumed,
+        // due to invalidation of call stack frames.
         public void propertyChange(PropertyChangeEvent evt) {
             String propertyName = evt.getPropertyName();
             if (ThreadsCollector.PROP_THREAD_RESUMED.equals(propertyName)) {

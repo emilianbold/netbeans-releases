@@ -65,11 +65,14 @@ public class DeleteAllBreakpointsActionTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new DeleteAllBreakpointsActionTest("testPerformPopup"));
         // XXX fails on Mac OS X
         // suite.addTest(new DeleteAllBreakpointsActionTest("testPerformShortcut"));
         return suite;
+         */
+        return createModuleTest(DeleteAllBreakpointsActionTest.class, "testPerformPopup");
     }
     
     /** Use for internal test execution inside IDE

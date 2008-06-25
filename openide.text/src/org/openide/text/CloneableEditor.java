@@ -476,6 +476,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                     caret.setDot(cursorPosition);
                 }
             }
+            //#134910: If editor TopComponent is already activated request focus
+            //to it again to get focus to correct subcomponent eg. QuietEditorPane which
+            //is added above.
+            if (CloneableEditor.this.equals(getRegistry().getActivated())) {
+                requestFocusInWindow();
+            }
             isInInitVisual = false;
         }
         

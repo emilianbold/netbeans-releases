@@ -44,7 +44,7 @@
         public Class getType(String type) throws DataBindingException {
         __stop_guardedblock__
 
-            throw new IllegalStateException("Not implemented yet");
+            throw new DataBindingException("Not implemented yet.");
         __start_guardedblock__
         }
         __stop_guardedblock__
@@ -53,7 +53,7 @@
         public Object getValue(String name) throws DataBindingException {
         __stop_guardedblock__
 
-            throw new IllegalStateException("Not implemented yet");
+            throw new DataBindingException("Not implemented yet.");
         __start_guardedblock__
         }
         __stop_guardedblock__
@@ -80,7 +80,7 @@
         public boolean isReadOnly(String readOnly) throws DataBindingException {
         __stop_guardedblock__
 
-            throw new IllegalStateException("Not implemented yet");
+            throw new DataBindingException("Not implemented yet.");
         __start_guardedblock__
         }
         __stop_guardedblock__

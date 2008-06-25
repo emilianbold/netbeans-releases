@@ -166,14 +166,6 @@ public class DefaultProjectActionHandler implements ActionListener {
             return name;
         }
         
-        private String getTabName(ProjectActionEvent pae) {
-            String projectName = ProjectUtils.getInformation(pae.getProject()).getName();
-            String name = projectName + " ("; // NOI18N
-            name += pae.getActionName();
-            name += ")"; // NOI18N
-            return name;
-        }
-        
         private InputOutput getTab() {
             return ioTab;
         }
@@ -327,6 +319,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                         progressHandle.finish();
                         return;
                     }
+                    CompilerSetManager rcsm = CompilerSetManager.getDefault(user_and_host);
                 }
                 
                 if (pae.getID() == ProjectActionEvent.RUN) {

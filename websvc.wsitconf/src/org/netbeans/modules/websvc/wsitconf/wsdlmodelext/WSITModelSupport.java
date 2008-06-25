@@ -751,7 +751,7 @@ public class WSITModelSupport {
         PolicyModelHelper.getInstance(targetCfgVersion).createPolicy(b, true);
         
         // Then apply them with the new values
-        
+
         // Transport
         TransportModelHelper.enableMtom(b, mtom);
         TransportModelHelper.enableFI(b, fi);

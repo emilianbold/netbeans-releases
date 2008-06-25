@@ -39,9 +39,8 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.windows.awt;
+package org.netbeans.core.javahelp;
 
-import java.io.InputStream;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import org.openide.cookies.InstanceCookie;
@@ -58,6 +57,13 @@ public class ValidateLayerJavaHelpTest extends NbTestCase {
     /** Creates a new instance of ValidateLayerJavaHelpTest */
     public ValidateLayerJavaHelpTest( String name ) {
         super( name );
+    }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(ValidateLayerJavaHelpTest.class)
+                .clusters(".*").enableModules(".*").gui(false)
+        );
     }
 
     //

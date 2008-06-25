@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
@@ -141,10 +142,19 @@ public class TemplateUtils {
                     break;
                 case CPPTokenTypes.ID:
                     // now create parameter
+                    AST fakeAST = null;
                     if (parameterStart == null) {
-                        parameterStart = child;
+                        fakeAST = parameterStart = child;
+                    } else {
+                        // Fix for IZ#138099: unresolved identifier for functions' template parameter.
+                        // The fakeAST is needed to initialize TemplateParameter with correct offsets.
+                        // Without it TemplateParameter would span either "class"/"typename" keyword
+                        // or parameter name, but not both.
+                        fakeAST = new CsmAST();
+                        fakeAST.initialize(parameterStart);
+                        fakeAST.addChild(child);
                     }
-                    res.add(new TemplateParameterImpl(parameterStart, child.getText(), file, (CsmScope)template));
+                    res.add(new TemplateParameterImpl(fakeAST, child.getText(), file, (CsmScope)template));
                     parameterStart = null;
                     break;
                 case CPPTokenTypes.CSM_PARAMETER_DECLARATION:

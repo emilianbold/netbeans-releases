@@ -62,6 +62,7 @@ public class ValidatePathTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
+        clearWorkDir();
         Project prj = new Project();
         prj.setBaseDir(getWorkDir());
         path = new Path(prj);
