@@ -762,7 +762,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
         if (ss != null) {
             isRunning = safeTrueTest(new SafeTrueTest() {
                                          public void run() {
-                                             result = ss.isRunning();
+                                             setResult(ss.isRunning());
                                          }
                                      }, 
                                      RUNNING_CHECK_TIMEOUT);
@@ -778,7 +778,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
         if (ss != null) {
             return safeTrueTest(new SafeTrueTest() {
                                     public void run() {
-                                        result = ss.isDebuggable(target);
+                                        setResult(ss.isDebuggable(target));
                                     }
                                 }, 
                                 DEBUGGING_CHECK_TIMEOUT);
@@ -1581,13 +1581,17 @@ public class ServerInstance implements Node.Cookie, Comparable {
     
     /** Safe true/false test useful. */
     private abstract static class SafeTrueTest implements Runnable {
-        protected boolean result = false;
+        private volatile boolean result = false;
         
         public abstract void run();
         
         public final boolean result() {
             return result;
         }
+        
+        public final void setResult(boolean result) {
+            this.result = result;
+        }        
     };
     
     /** Return the result of the test or false if the given time-out ran out. */
