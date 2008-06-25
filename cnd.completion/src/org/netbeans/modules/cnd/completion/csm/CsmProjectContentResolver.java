@@ -646,7 +646,7 @@ public final class CsmProjectContentResolver {
             }
         }
         if (!first) {
-            Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(file, filter);
+            Iterator<CsmVariable> it = CsmSelect.getDefault().getStaticVariables(file, filter);
             while(it.hasNext()) {
                 CsmOffsetableDeclaration decl = it.next();
                  if (CsmKindUtilities.isFileLocalVariable(decl)) {
