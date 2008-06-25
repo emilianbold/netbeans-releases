@@ -800,8 +800,9 @@ public abstract class UMLNodeWidget extends Widget
             remove();
         }
         
-        scene.validate();
         Util.resizeNodeToContents(this);
+        scene.validate();
+        //Util.resizeNodeToContents(this);
     }
     
     public void remove()
