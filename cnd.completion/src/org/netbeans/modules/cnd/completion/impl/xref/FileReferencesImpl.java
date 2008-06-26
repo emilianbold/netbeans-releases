@@ -41,12 +41,18 @@
 package org.netbeans.modules.cnd.completion.impl.xref;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -125,6 +131,13 @@ public class FileReferencesImpl extends CsmFileReferences  {
                                                         Set<CsmReferenceKind> kinds) {
         List<CsmReference> out = new ArrayList<CsmReference>();
         boolean needAfterDereferenceUsages = kinds.contains(CsmReferenceKind.AFTER_DEREFERENCE_USAGE);
+        boolean skipPreprocDirectives = !kinds.contains(CsmReferenceKind.IN_PREPROCESSOR_DIRECTIVE);
+        Collection<CsmOffsetable> deadBlocks; 
+        if (!kinds.contains(CsmReferenceKind.IN_DEAD_BLOCK)) {
+            deadBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(csmFile);
+        } else {
+            deadBlocks = Collections.<CsmOffsetable>emptyList();
+        }
         List<Token> tokens = TokenUtilities.getTokens(doc, start, end);
         Token lastToken = null;
         for (Token token : tokens) {
@@ -145,6 +158,12 @@ public class FileReferencesImpl extends CsmFileReferences  {
                                 skip = true;
                         }
                     }
+                    if (!skip && skipPreprocDirectives) {
+                        skip = isInPreprocDirective(token.getStartOffset(), doc);
+                    }
+                    if (!skip && !deadBlocks.isEmpty()) {
+                        skip = isInDeadBlock(token.getStartOffset(), deadBlocks);
+                    }
                     if (!skip) {
                         ReferenceImpl ref = ReferencesSupport.createReferenceImpl(csmFile, doc, token.getStartOffset(), token);
                         out.add(ref);
@@ -154,5 +173,27 @@ public class FileReferencesImpl extends CsmFileReferences  {
             lastToken = token;
         }
         return out;
+    }
+
+    private boolean isInPreprocDirective(int startOffset, BaseDocument doc) {
+        TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, startOffset);
+        if (ts != null) {
+            if (ts.moveNext() && ts.token().id().equals(CppTokenId.PREPROCESSOR_DIRECTIVE)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private boolean isInDeadBlock(int startOffset, Collection<CsmOffsetable> deadBlocks) {
+        for (CsmOffsetable csmOffsetable : deadBlocks) {
+            if (csmOffsetable.getStartOffset() > startOffset) {
+                return false;
+            }
+            if (csmOffsetable.getEndOffset() > startOffset) {
+                return true;
+            }
+        }
+        return false;
     }
 }

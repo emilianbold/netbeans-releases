@@ -60,6 +60,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -206,6 +207,11 @@ public final class MimeTypesTracker {
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final FileChangeListener listener;
+    private final RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
+        public void run() {
+            rebuild();
+        }
+    });
     
     private void rebuild() {
         PropertyChangeEvent event = null;
@@ -225,10 +231,12 @@ public final class MimeTypesTracker {
                 LOG.finest("isBaseFolder = '" + isBaseFolder + "'"); //NOI18N
             }
 
+            Map<String, String> newMimeTypes;
+            
             if (isBaseFolder) {
                 // Clear the cache
-                Map<String, String> newMimeTypes = new HashMap<String, String>();
-
+                newMimeTypes = new HashMap<String, String>();
+                
                 // Go through mime type types
                 FileObject [] types = folder.getChildren();
                 for(int i = 0; i < types.length; i++) {
@@ -268,10 +276,13 @@ public final class MimeTypesTracker {
                 }
 
                 newMimeTypes = Collections.unmodifiableMap(newMimeTypes);
-                if (!mimeTypes.equals(newMimeTypes)) {
-                    event = new PropertyChangeEvent(this, PROP_MIME_TYPES, mimeTypes, newMimeTypes);
-                    mimeTypes = newMimeTypes;
-                }
+            } else {
+                newMimeTypes = Collections.<String, String>emptyMap();
+            }
+            
+            if (!mimeTypes.equals(newMimeTypes)) {
+                event = new PropertyChangeEvent(this, PROP_MIME_TYPES, mimeTypes, newMimeTypes);
+                mimeTypes = newMimeTypes;
             }
         }
         
@@ -339,7 +350,7 @@ public final class MimeTypesTracker {
         private void notifyRebuild(FileObject f) {
             String path = f.getPath();
             if (path.startsWith(basePath)) {
-                rebuild();
+                task.schedule(100);
             }
         }
     } // End of Listener class

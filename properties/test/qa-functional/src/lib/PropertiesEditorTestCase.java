@@ -53,6 +53,7 @@
 package lib;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import javax.swing.*;
 import org.netbeans.jellytools.*;
@@ -63,6 +64,7 @@ import org.netbeans.jellytools.properties.*;
 import org.netbeans.jemmy.*;
 import org.netbeans.jemmy.operators.*;
 import org.netbeans.junit.ide.ProjectSupport;
+import org.openide.util.Exceptions;
 
 /** Class implementing all necessary methods for handling Property sheet in Editor window.
  * This class is used for automated tests of properties module.
@@ -144,8 +146,7 @@ public class PropertiesEditorTestCase extends JellyTestCase {
         log("project path = " + projectPath.toString());
 
         /* 1. check if project is open  */
-        ProjectsTabOperator pto = new ProjectsTabOperator();
-        pto.invoke();
+        ProjectsTabOperator pto = ProjectsTabOperator.invoke();
         log("treecount before = " + pto.tree().getChildCount(pto.tree().getRoot()));
         int childCount = pto.tree().getChildCount(pto.tree().getRoot());
         for (int i = 0; i < childCount; i++) {
@@ -156,13 +157,16 @@ public class PropertiesEditorTestCase extends JellyTestCase {
                 return;
             }
         }
-
-        /* 2. open project */
-        Object prj = ProjectSupport.openProject(projectPath);
+        try {
+            /* 2. open project */
+            openDataProjects("projects/" + projectName);
+        } catch (IOException ex) {
+            fail("Project is not open, probably does not exist");
+        }
         log("treecount after  = " + pto.tree().getChildCount(pto.tree().getRoot()));
 
         /* 3. check the project name */
-        pto.invoke();
+        ProjectsTabOperator.invoke();
         childCount = pto.tree().getChildCount(pto.tree().getRoot());
         for (int i = 0; i < childCount; i++) {
             String str = pto.tree().getChild(pto.tree().getRoot(), i).toString();
@@ -180,8 +184,7 @@ public class PropertiesEditorTestCase extends JellyTestCase {
     }
 
     protected Node getDefaultPackageNode() {
-        ProjectsTabOperator pto = new ProjectsTabOperator();
-        pto.invoke();
+        ProjectsTabOperator pto = ProjectsTabOperator.invoke();
         ProjectRootNode prn = pto.getProjectRootNode(projectName);
         prn.select();
         Node node = new Node(prn, defaultPackage);
@@ -1129,4 +1132,3 @@ public class PropertiesEditorTestCase extends JellyTestCase {
         return result;
     }
 }
-

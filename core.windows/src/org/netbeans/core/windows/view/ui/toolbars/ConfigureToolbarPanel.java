@@ -437,6 +437,10 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
                             return false;
                         }
                     }
+                } catch( AssertionError aE ) {
+                    //hack: some action do not allow access outside
+                    //event queue - so let's ignore their assertions
+                    return false;
                 } catch( Throwable e ) {
                     Logger.getLogger(ConfigureToolbarPanel.class.getName()).log(Level.WARNING, null, e);
                 }

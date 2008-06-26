@@ -230,7 +230,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             if (folder == null) return null;
         }
         
-        VersioningSystem owner = folderOwners.get(folder);
+        VersioningSystem owner = getKnownOwner(folder);
         if (owner == NULL_OWNER) return null;
         if (owner != null) return owner;
         
@@ -248,11 +248,33 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         if (owner != null) {
             folderOwners.put(folder, owner);
         } else {
-            folderOwners.put(folder, NULL_OWNER);
+            // nobody owns the folder, all owners must be null
+            while(folder != null) {
+                folderOwners.put(folder, NULL_OWNER);
+                folder = folder.getParentFile();
+            }
         }
         return owner;
     }
 
+    private VersioningSystem getKnownOwner(File folder) {
+        VersioningSystem owner = folderOwners.get(folder);
+        if (owner != null) return owner;
+        
+        File ancestor = null;
+        for (File f : folderOwners.keySet()) {
+            if(folderOwners.get(f) == NULL_OWNER) continue;
+            if(Utils.isAncestorOrEqual(f, folder) && (ancestor == null || Utils.isAncestorOrEqual(ancestor, f))) {
+                ancestor = f;
+            }
+        }
+        if(ancestor == null) {
+            return null;
+        } else {
+            return folderOwners.get(ancestor);
+        }
+    }
+    
     /**
      * Returns local history module that handles the given file.
      * 

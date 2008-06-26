@@ -40,14 +40,13 @@
  */
 package org.openide;
 import java.lang.reflect.InvocationTargetException;
-import org.netbeans.junit.NbTestSuite;
 
 import java.awt.Component;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.JLabel;
 import javax.swing.event.ChangeListener;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.*;
 import org.openide.util.HelpCtx;
 
@@ -75,11 +74,9 @@ public class AsynchronousValidatingPanelTest extends LoggingTestCaseHid {
         //d.show();
         err = ErrorManager.getDefault ().getInstance ("test-" + getName ());
     }
-    
+
+    @RandomlyFails
     public void testAsynchronousLazyValidation () throws Exception {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return;
-        }
         Panel panels[] = new Panel[3];
         
         class MyPanel extends Panel implements WizardDescriptor.AsynchronousValidatingPanel {

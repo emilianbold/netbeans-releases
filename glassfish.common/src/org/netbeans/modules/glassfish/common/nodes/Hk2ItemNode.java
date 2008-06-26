@@ -47,31 +47,28 @@ import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.glassfish.common.CommandRunner;
 import org.netbeans.modules.glassfish.common.nodes.actions.DeployDirectoryCookie;
 import org.netbeans.modules.glassfish.common.nodes.actions.OpenURLAction;
-import org.netbeans.modules.glassfish.common.nodes.actions.OpenURLActionCookie;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesAction;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
 import org.netbeans.modules.glassfish.common.nodes.actions.UndeployModuleAction;
 import org.netbeans.modules.glassfish.common.nodes.actions.UndeployModuleCookie;
-import org.netbeans.modules.glassfish.spi.AppDesc;
+import org.netbeans.modules.glassfish.common.nodes.actions.UnregisterResourceAction;
 import org.netbeans.modules.glassfish.spi.Decorator;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
-import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.WindowManager;
 
@@ -84,12 +81,11 @@ import org.openide.windows.WindowManager;
  */
 public class Hk2ItemNode extends AbstractNode {
     
-    private Decorator decorator;
-    
-    private static final String HTTP_HEADER = "http://"; // NOI18N
+    protected static final String HTTP_HEADER = "http://"; // NOI18N
 
+    protected final Decorator decorator;
     
-    private Hk2ItemNode(Children children, final Lookup lookup, final String name, final Decorator decorator) {
+    protected Hk2ItemNode(Children children, final Lookup lookup, final String name, final Decorator decorator) {
         super(children);
         this.decorator = decorator;
         
@@ -160,36 +156,67 @@ public class Hk2ItemNode extends AbstractNode {
                 
             });
         }
-    }
-    
-    public Hk2ItemNode(final Lookup lookup, final AppDesc app, Decorator decorator) {
-        this(Children.LEAF, lookup, app.getName(), decorator);
-        setDisplayName(app.getName());
-        setShortDescription("<html>name: " + app.getName() + "<br>path: " + app.getPath() + "</html>");
 
-        // !PW FIXME should method of retrieving context root be controlled by decorator?
-        if(decorator.canShowBrowser()) {
-            getCookieSet().add(new OpenURLActionCookie() {
-                public String getWebURL() {
-                    String result = null;
-                    GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
-                    if(commonModule != null) {
-                        Map<String, String> ip = commonModule.getInstanceProperties();
-                        String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
-                        String httpPort = ip.get(GlassfishModule.HTTPPORT_ATTR);
-                        result = HTTP_HEADER + host + ":" + httpPort + "/" + app.getContextRoot() + "/";
-                    }
-                    return result;
-                }
-            });
-        }
+//        if(decorator.canUnregister()) {
+//            getCookieSet().add(new UnregisterResourceCookie() {
+//
+//                private volatile WeakReference<Future<OperationState>> status;
+//
+//                public Future<OperationState> unregister() {
+//                    Future<OperationState> result = null;
+//                    GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
+//                    if(commonModule != null) {
+//                        CommandRunner mgr = new CommandRunner(commonModule.getInstanceProperties());
+//                        result = mgr.unregister(name, suffix);
+//                        status = new WeakReference<Future<OperationState>>(result);
+//                    }
+//                    return result;
+//                }
+//
+//                public boolean isRunning() {
+//                    WeakReference<Future<OperationState>> localref = status;
+//                    if(localref == null) {
+//                        return false;
+//                    }
+//                    Future<OperationState> cmd = localref.get();
+//                    if(cmd == null || cmd.isDone()) {
+//                        return false;
+//                    }
+//                    return true;
+//                }
+//
+//            });
+//        }
     }
     
-    public Hk2ItemNode(Lookup lookup, ResourceDesc resource, Decorator decorator) {
-        this(Children.LEAF, lookup, resource.getName(), decorator);
-        setDisplayName(resource.getName());
-        setShortDescription("<html>name: " + resource.getName() + "</html>");
-    }
+//    public Hk2ItemNode(final Lookup lookup, final AppDesc app, Decorator decorator) {
+//        this(Children.LEAF, lookup, app.getName(), decorator);
+//        setDisplayName(app.getName());
+//        setShortDescription("<html>name: " + app.getName() + "<br>path: " + app.getPath() + "</html>");
+//
+//        // !PW FIXME should method of retrieving context root be controlled by decorator?
+//        if(decorator.canShowBrowser()) {
+//            getCookieSet().add(new OpenURLActionCookie() {
+//                public String getWebURL() {
+//                    String result = null;
+//                    GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
+//                    if(commonModule != null) {
+//                        Map<String, String> ip = commonModule.getInstanceProperties();
+//                        String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
+//                        String httpPort = ip.get(GlassfishModule.HTTPPORT_ATTR);
+//                        result = HTTP_HEADER + host + ":" + httpPort + "/" + app.getContextRoot() + "/";
+//                    }
+//                    return result;
+//                }
+//            });
+//        }
+//    }
+//
+//    public Hk2ItemNode(Lookup lookup, ResourceDesc resource, Decorator decorator) {
+//        this(Children.LEAF, lookup, resource.getName(), decorator);
+//        setDisplayName(resource.getName());
+//        setShortDescription("<html>name: " + resource.getName() + "</html>");
+//    }
     
     public Hk2ItemNode(Lookup lookup, Children children, String name, Decorator type) {
         this(children, lookup, name, type);
@@ -236,6 +263,10 @@ public class Hk2ItemNode extends AbstractNode {
             actions.add(SystemAction.get(UndeployModuleAction.class));
         }
     
+        if(decorator.canUnregister()) {
+            actions.add(SystemAction.get(UnregisterResourceAction.class));
+        }
+
         if(decorator.canShowBrowser()) {
             actions.add(SystemAction.get(OpenURLAction.class));
         }
@@ -266,7 +297,7 @@ public class Hk2ItemNode extends AbstractNode {
         Node folderNode = getIconDelegate();
         Image folder = opened ? folderNode.getOpenedIcon(BeanInfo.ICON_COLOR_16x16) : 
                 folderNode.getIcon(BeanInfo.ICON_COLOR_16x16);
-        return Utilities.mergeImages(folder, badge, 7, 7);
+        return ImageUtilities.mergeImages(folder, badge, 7, 7);
     }
     
     /**
@@ -290,7 +321,7 @@ public class Hk2ItemNode extends AbstractNode {
     
     public static Decorator RESOURCES_FOLDER = new Decorator() {
         @Override public boolean isRefreshable() { return true; }
-        @Override public Image getIcon(int type) { return Utilities.loadImage(RESOURCES_ICON); }
+        @Override public Image getIcon(int type) { return ImageUtilities.loadImage(RESOURCES_ICON); }
         @Override public Image getOpenedIcon(int type) { return getIcon(type); }
     };
     

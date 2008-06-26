@@ -247,6 +247,7 @@ public abstract class Command {
         return new BufferedReader(new InputStreamReader(is, encoding));
     }
 
+    // XXX buffered writer causes that only the last line is red (for errors)
     protected final BufferedWriter outputTabWriter(File scriptFile, boolean error, boolean clearOutput) {
         String outputTitle = getOutputTabTitle(scriptFile);
         OutputWriter outputWriter = getOutputWriter(outputTitle, error, clearOutput);
@@ -262,19 +263,23 @@ public abstract class Command {
         return new BufferedWriter(new OutputStreamWriter(os, encoding));
     }
 
-    protected final void rewriteAndClose(BufferedReader reader, BufferedWriter writer,
-            Command.StringConvertor convertor) throws IOException {
+    protected final void rewriteAndClose(Command.StringConvertor convertor,
+            BufferedReader reader, BufferedWriter... writers) throws IOException {
         String line;
         try {
             while ((line = reader.readLine()) != null) {
                 line = (convertor != null) ? convertor.convert(line) : line;
-                writer.write(line);
-                writer.newLine();
+                for (BufferedWriter writer : writers) {
+                    writer.write(line);
+                    writer.newLine();
+                }
             }
         } finally {
-            writer.flush();
             reader.close();
-            writer.close();
+            for (BufferedWriter writer : writers) {
+                writer.flush();                
+                writer.close();
+            }
         }
     }
 

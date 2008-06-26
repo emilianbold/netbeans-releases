@@ -48,7 +48,6 @@ package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
     public ClassMembersHyperlinkTestCase(String testName) {
         super(testName);
-        System.setProperty("cnd.repository.hardrefs", "true");
     }        
         
     public void testSameName() throws Exception {
@@ -327,8 +326,61 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz136975.cc", 23, 10, "iz136975.cc", 15, 5); // PointerType in PointerType operator->() {
     }
     
+    public void testIZ137483() throws Exception {
+        performTest("main.cc", 75, 39, "main.cc", 75, 34);
+        performTest("main.cc", 75, 24, "main.cc", 75, 15);
+        performTest("main.cc", 76, 15, "main.cc", 75, 34);
+        performTest("main.cc", 77, 18, "main.cc", 75, 15);
+    }
+
+    public void testIZ137798() throws Exception {
+        performTest("IZ137799and137798.h", 2, 15, "IZ137799and137798.h", 2, 1);
+        performTest("IZ137799and137798.h", 19, 15, "IZ137799and137798.h", 2, 1);
+        performTest("IZ137799and137798.h", 3, 15, "IZ137799and137798.h", 3, 1);
+        performTest("IZ137799and137798.h", 16, 25, "IZ137799and137798.h", 3, 1);
+    }
+    
+    public void testIZ137799() throws Exception {
+        performTest("IZ137799and137798.h", 12, 21, "IZ137799and137798.h", 12, 13);
+        performTest("IZ137799and137798.h", 13, 21, "IZ137799and137798.h", 13, 13);
+        performTest("IZ137799and137798.h", 14, 21, "IZ137799and137798.h", 14, 13);
+        performTest("IZ137799and137798.h", 15, 21, "IZ137799and137798.h", 15, 13);
+        performTest("IZ137799and137798.h", 16, 21, "IZ137799and137798.h", 16, 13);
+        performTest("IZ137799and137798.h", 17, 21, "IZ137799and137798.h", 17, 13);
+        performTest("IZ137799and137798.h", 18, 21, "IZ137799and137798.h", 18, 13);
+    }
+
+    public void testNestedStructAndVar() throws Exception {
+        performTest("IZ137799and137798.h", 19, 12, "IZ137799and137798.h", 19, 11);
+        performTest("IZ137799and137798.h", 11, 17, "IZ137799and137798.h", 11, 9);
+    } 
+
+    public void testMethodPrefix() throws Exception {
+        // IZ#125760: Hyperlink works wrongly if user created
+        // method without declaration in class
+        performNullTargetTest("IZ125760.cpp", 6, 10);
+    }
+
+    public void testStaticFields() throws Exception {
+        // IZ114002: Hyperlink does not go from static field definition to its declaration
+
+        // from definition to declaration
+        performTest("ClassA.cc", 4, 30, "ClassA.h", 38, 5); // publicMemberStInt in int ClassA::publicMemberStInt = 1;
+        performTest("ClassA.cc", 5, 30, "ClassA.h", 43, 5); // protectedMemberStInt in int ClassA::protectedMemberStInt = 2;
+        performTest("ClassA.cc", 6, 30, "ClassA.h", 48, 5); // privateMemberStInt in int ClassA::privateMemberStInt = 3;
+
+        // from declaration to definition
+        performTest("ClassA.h", 38, 20, "ClassA.cc", 4, 12); // publicMemberStInt in ClassA
+        performTest("ClassA.h", 43, 20, "ClassA.cc", 5, 12); // protectedMemberStInt in ClassA
+        performTest("ClassA.h", 48, 20, "ClassA.cc", 6, 12); // privateMemberStInt in ClassA
+
+        // from usage to definition
+        performTest("ClassA.cc", 108, 25, "ClassA.cc", 4, 12); // publicMemberStInt in int i = ClassA::publicMemberStInt;
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
         
+        @Override
         protected Class getTestCaseDataClass() {
             return ClassMembersHyperlinkTestCase.class;
         }

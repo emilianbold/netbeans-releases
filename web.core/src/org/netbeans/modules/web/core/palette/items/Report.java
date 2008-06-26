@@ -87,7 +87,7 @@ public class Report implements ActiveEditorDrop {
         } catch (Exception e) {
         }
 
-        stmt = new SQLStmt(variable, scopeIndex, dataSource, query, "ReportStmtCustomizer"); // NOI18N
+        stmt = new SQLStmt(variable, scopeIndex, dataSource, query, "ReportStmtCustomizer", false); // NOI18N
     }
 
     public boolean handleTransfer(JTextComponent targetComponent) {

@@ -41,12 +41,10 @@ package org.netbeans.modules.projectimport.eclipse.web;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -62,7 +60,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -79,7 +77,7 @@ import org.xml.sax.SAXException;
 public class WebProjectFactory implements ProjectTypeUpdater {
 
     private static final String WEB_NATURE = "org.eclipse.wst.common.modulecore.ModuleCoreNature"; // NOI18N
-    private static final Icon WEB_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif")); // NOI18
+    private static final Icon WEB_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif")); // NOI18
     
     // TODO: check this one as well
     private static final String MYECLIPSE_WEB_NATURE = "com.genuitec.eclipse.j2eedt.core.webnature"; // NOI18N
@@ -93,7 +91,7 @@ public class WebProjectFactory implements ProjectTypeUpdater {
 
     public Project createProject(final ProjectImportModel model, final List<String> importProblems) throws IOException {
         // create nb project location
-        File nbProjectDir = FileUtil.normalizeFile(new File(model.getNetBeansProjectLocation())); // NOI18N
+        File nbProjectDir = model.getNetBeansProjectLocation(); // NOI18N
         
         WebContentData webData = parseWebContent(model.getEclipseProjectFolder());
 
@@ -133,10 +131,10 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         WebProject nbProject = (WebProject)ProjectManager.getDefault().findProject(helper.getProjectDirectory());
         
         // set labels for source roots
-//        ProjectFactorySupport.updateSourceRootLabels(model.getEclipseSourceRoots(), nbProject.getSourceRoots());
-//        ProjectFactorySupport.updateSourceRootLabels(model.getEclipseTestSourceRoots(), nbProject.getTestSourceRoots());
+        ProjectFactorySupport.updateSourceRootLabels(model.getEclipseSourceRoots(), nbProject.getSourceRoots());
+        ProjectFactorySupport.updateSourceRootLabels(model.getEclipseTestSourceRoots(), nbProject.getTestSourceRoots());
         
-        // TODO: setup include/exclude here
+        ProjectFactorySupport.setupSourceExcludes(helper, model);
         
         // Make sure PCPM knows who owns this (J2SEProject will do the same later on anyway):
         if (!nbProjectDir.equals(model.getEclipseProjectFolder())) {

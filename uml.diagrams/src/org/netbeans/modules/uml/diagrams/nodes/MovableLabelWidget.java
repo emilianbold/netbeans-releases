@@ -81,6 +81,7 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
     private Color initialBeforeSelectionFG;
     private Integer x0;
     private Integer y0;
+    private boolean diagramLoading = false;
 
     public MovableLabelWidget(Scene scene, Widget nodeWidget, IElement element, String widgetID, String displayName)
     {
@@ -126,7 +127,9 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
 
     public void refresh()
     {
+        //this is called ONLY from diagram loading logic..
         updateLocation = true;
+        diagramLoading = true;
     }
     
     protected void paintWidget()
@@ -148,12 +151,6 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
         updateLabelLocation();
     }
 
-    public void forcePreferredLocation(Point loc)
-    {
-        setPreferredLocation(loc);
-        updateDistance();
-    }
-    
     private void updateLabelLocation()
     {
         Point point = new Point();
@@ -179,7 +176,7 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
             else dy=y0;
 
         }
-        if (getPreferredLocation() != null)
+        if (getPreferredLocation() != null && diagramLoading)
         {
             point = getPreferredLocation();
         }

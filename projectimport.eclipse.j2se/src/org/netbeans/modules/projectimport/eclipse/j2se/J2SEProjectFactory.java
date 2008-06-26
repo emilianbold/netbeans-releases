@@ -41,7 +41,6 @@ package org.netbeans.modules.projectimport.eclipse.j2se;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Icon;
@@ -59,7 +58,7 @@ import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeUpdater;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 import org.w3c.dom.Element;
 
 /**
@@ -68,7 +67,7 @@ import org.w3c.dom.Element;
 public class J2SEProjectFactory implements ProjectTypeUpdater {
 
     private static final String JAVA_NATURE = "org.eclipse.jdt.core.javanature"; // NOI18N
-    private static final Icon J2SE_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png")); // NOI18N
+    private static final Icon J2SE_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png")); // NOI18N
 
     public J2SEProjectFactory() {
     }
@@ -79,7 +78,7 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
 
     public Project createProject(final ProjectImportModel model, final List<String> importProblems) throws IOException {
         // calculate nb project location
-        File nbProjectDir = FileUtil.normalizeFile(new File(model.getNetBeansProjectLocation())); // NOI18N
+        File nbProjectDir = model.getNetBeansProjectLocation(); // NOI18N
         
         // create basic NB project
         final AntProjectHelper helper = J2SEProjectGenerator.createProject(
@@ -95,7 +94,7 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         ProjectFactorySupport.updateSourceRootLabels(model.getEclipseSourceRoots(), nbProject.getSourceRoots());
         ProjectFactorySupport.updateSourceRootLabels(model.getEclipseTestSourceRoots(), nbProject.getTestSourceRoots());
         
-        // TODO: setup include/exclude here
+        ProjectFactorySupport.setupSourceExcludes(helper, model);
         
         // Make sure PCPM knows who owns this (J2SEProject will do the same later on anyway):
         if (!nbProjectDir.equals(model.getEclipseProjectFolder())) {
@@ -122,8 +121,7 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         helper.putPrimaryConfigurationData(pcd, true);
         EditableProperties prop = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String ver = model.getJavaPlatform().getSpecification().getVersion().toString();
-        String normalizedName = (String) model.getJavaPlatform().getProperties().get(
-                    "platform.ant.name"); // NOI18N
+        String normalizedName = model.getJavaPlatform().getProperties().get("platform.ant.name"); // NOI18N
         prop.setProperty(J2SEProjectProperties.JAVAC_SOURCE, ver);
         prop.setProperty(J2SEProjectProperties.JAVAC_TARGET, ver);
         prop.setProperty(J2SEProjectProperties.JAVA_PLATFORM, normalizedName);

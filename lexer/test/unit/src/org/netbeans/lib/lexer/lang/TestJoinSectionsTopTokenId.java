@@ -60,8 +60,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  */
 public enum TestJoinSectionsTopTokenId implements TokenId {
     
-    TEXT(),
-    TAG();
+    TAG(), // Text enclosed in <..> including '<' and '>' - implicit embedding of TestJoinSectionsTextTokenId
+    PARENS(), // Text enclosed in (..) including '(' and ')' - custom embedding may be created/removed
+    TEXT(); // Any text not enclosed in <...>
 
     private TestJoinSectionsTopTokenId() {
     }
@@ -95,7 +96,12 @@ public enum TestJoinSectionsTopTokenId implements TokenId {
             switch (token.id()) {
                 case TEXT:
                     // Create embedding that joins the sections
-                    return LanguageEmbedding.create(TestJoinSectionsTextTokenId.language(), 0, 0, true);
+                    return LanguageEmbedding.create(TestJoinSectionsTextTokenId.textLanguage, 0, 0, true);
+                case TAG:
+                    // Create embedding that joins the sections
+                    return LanguageEmbedding.create(TestJoinSectionsTextTokenId.tagLanguage, 1, 1, true);
+                case PARENS:
+                    return null; // By default no embedding; a custom embedding may be created by tests
             }
             return null; // No embedding
         }

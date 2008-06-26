@@ -58,6 +58,7 @@ import org.netbeans.modules.php.dbgp.UnsufficientValueException;
 import org.netbeans.modules.php.dbgp.breakpoints.Utils;
 import org.netbeans.modules.php.dbgp.packets.EvalCommand;
 import org.netbeans.modules.php.dbgp.packets.Property;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -174,12 +175,12 @@ public class ToolTipAnnotation extends Annotation
         StyledDocument document = editorCookie.getDocument();
         final int offset = NbDocument.findLineOffset(document, 
                 part.getLine().getLineNumber()) + part.getColumn();
-        String selectedText = getSelectedText( editorCookie, offset);
+        JEditorPane ep = EditorContextDispatcher.getDefault().getCurrentEditor();
+        String selectedText = getSelectedText( ep, offset);
         if ( selectedText != null ){
             sendEvalCommand( selectedText );
         } else {
-            JEditorPane ep = Utils.getEditorPane( editorCookie );
-            final String identifier = getIdentifier(document, ep, offset);            
+            final String identifier = ep != null ? getIdentifier(document, ep, offset) : null;            
             if (identifier != null && isDollarMark(identifier.charAt(0))) {
                 Runnable runnable = new Runnable(){
                     public void run() {
@@ -284,9 +285,8 @@ public class ToolTipAnnotation extends Annotation
         session.sendCommandLater(command);
     }
     
-    private String getSelectedText( EditorCookie cookie , int offset ){
-        JEditorPane pane = Utils.getEditorPane( cookie );
-        if ((pane.getSelectionStart() <= offset) && 
+    private String getSelectedText( JEditorPane pane , int offset ){
+        if ((pane != null && pane.getSelectionStart() <= offset) && 
                 (offset <= pane.getSelectionEnd()))
         {
             return pane.getSelectedText();

@@ -136,7 +136,7 @@ public class TermShell {
                 if (mode != Mode.NONE)
                     error("Can only use 'pipe' mode on windows");
                 break;
-            case UNIX:
+            case LINUX:
                 break;
         }
 
@@ -212,10 +212,25 @@ public class TermShell {
                 cmd.add("/a");  // use ANSI
                 break;
 
-            case UNIX:
+            case LINUX:
 //		cmd.add("/usr/bin/strace");
 //		cmd.add("-o");
 //		cmd.add("/tmp/term-cmd.tr");
+                if (shell != null)
+                    cmd.add(shell);
+                else
+                    cmd.add("/bin/bash");
+                break;
+            case SOLARIS:
+//		cmd.add("/usr/bin/truss");
+//		cmd.add("-o");
+//		cmd.add("/tmp/term-cmd.tr");
+                if (shell != null)
+                    cmd.add(shell);
+                else
+                    cmd.add("/bin/bash");
+                break;
+            case MACOS:
                 if (shell != null)
                     cmd.add(shell);
                 else

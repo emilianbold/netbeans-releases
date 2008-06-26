@@ -44,6 +44,7 @@ package org.netbeans.lib.lexer.inc;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.LexerInputOperation;
 import org.netbeans.lib.lexer.TokenList;
+import org.netbeans.lib.lexer.TokenOrEmbedding;
 
 /**
  * Token list that allows mutating by token list mutator.
@@ -61,8 +62,8 @@ public interface MutableTokenList<T extends TokenId> extends TokenList<T> {
      * Also do not perform any checks regarding index validity
      * - only items below {@link #tokenCountCurrent()} will be requested.
      */
-    Object tokenOrEmbeddingContainerUnsync(int index);
-    
+    TokenOrEmbedding<T> tokenOrEmbeddingUnsync(int index);
+
     /**
      * Create lexer input operation used for relexing of the input.
      */
@@ -80,6 +81,6 @@ public interface MutableTokenList<T extends TokenId> extends TokenList<T> {
     /**
      * Update the token list by replacing tokens according to the given change.
      */
-    void replaceTokens(TokenListChange<T> change, int removeTokenCount, int diffLength);
+    void replaceTokens(TokenListChange<T> change, TokenHierarchyEventInfo eventInfo, boolean modInside);
 
 }

@@ -76,6 +76,11 @@ public class StrictWarningTest extends HintTestBase {
         checkHints(this, new StrictWarning(StrictWarning.RESERVED_KEYWORD), "testfiles/reserved.js", null);
     }
 
+    public void testDebuggerKeyword() throws Exception {
+        goldenfileSuffix = "";
+        checkHints(this, new StrictWarning(StrictWarning.RESERVED_KEYWORD), "testfiles/debugger.js", null);
+    }
+
     public void testNoFunctionSideEffects() throws Exception {
         goldenfileSuffix = "";
         checkHints(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/functions-sideeffects.js", null);

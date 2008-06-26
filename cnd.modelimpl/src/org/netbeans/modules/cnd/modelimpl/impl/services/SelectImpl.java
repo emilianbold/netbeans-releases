@@ -39,16 +39,24 @@
 
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -59,10 +67,11 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
  * @author Alexander Simon
  */
 public class SelectImpl extends CsmSelect {
+    private static final FilterBuilder builder = new FilterBuilder();
 
     @Override
     public CsmFilterBuilder getFilterBuilder() {
-        return new FilterBuilder();
+        return builder;
     }
 
     @Override
@@ -72,6 +81,15 @@ public class SelectImpl extends CsmSelect {
         }
         return file.getMacros().iterator();
     }
+
+    @Override
+    public Iterator<CsmInclude> getIncludes(CsmFile file, CsmFilter filter) {
+        if (file instanceof FileImpl){
+            return ((FileImpl)file).getIncludes(filter);
+        }
+        return file.getIncludes().iterator();
+    }
+
 
     @Override
     public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmNamespace namespace, CsmFilter filter) {
@@ -97,9 +115,35 @@ public class SelectImpl extends CsmSelect {
         return file.getDeclarations().iterator();
     }
 
+    @Override
+    public Iterator<CsmVariable> getStaticVariables(CsmFile file, CsmFilter filter) {
+        if (file instanceof FileImpl){
+            return ((FileImpl)file).getStaticVariableDeclarations(filter);
+        }
+        return Collections.<CsmVariable>emptyList().iterator();
+    }
+
+    @Override
+    public Iterator<CsmFunction> getStaticFunctions(CsmFile file, CsmFilter filter) {
+        if (file instanceof FileImpl){
+            return ((FileImpl)file).getStaticFunctionDeclarations(filter);
+        }
+        return Collections.<CsmFunction>emptyList().iterator();
+    }
+
+
+    @Override
+    public Iterator<CsmMember> getClassMembers(CsmClass cls, CsmFilter filter) {
+        if (cls instanceof ClassImpl){
+            return ((ClassImpl)cls).getMembers(filter);
+        }
+        return cls.getMembers().iterator();
+    }
+
     private static interface Filter extends CsmFilter, UIDFilter {
     }
     
+    @SuppressWarnings("unchecked")
     static class FilterBuilder implements CsmFilterBuilder {
         public CsmFilter createKindFilter(final CsmDeclaration.Kind[] kinds) {
             return new Filter(){
@@ -114,9 +158,16 @@ public class SelectImpl extends CsmSelect {
                     }
                     return false;
                 }
+
+                @Override
+                public String toString() {
+                    return Arrays.asList(kinds).toString();
+                }
+                                
             };
         }
 
+        @SuppressWarnings("unchecked")
         public CsmFilter createNameFilter(final String strPrefix, final boolean match, final boolean caseSensitive, final boolean allowEmptyName) {
             return new Filter(){
                 public boolean accept(CsmUID uid) {
@@ -129,6 +180,34 @@ public class SelectImpl extends CsmSelect {
                     }
                     return false;
                 }
+
+                @Override
+                public String toString() {
+                    return "pref=" + strPrefix + "; match=" + match + "; cs=" + caseSensitive + "; allowEmpty=" + allowEmptyName; // NOI18N
+                }
+                                
+            };
+        }
+
+        public CsmFilter createOffsetFilter(final int startOffset, final int endOffset) {
+            return new Filter(){
+                public boolean accept(CsmUID uid) {
+                    int start = UIDUtilities.getStartOffset(uid);
+                    int end = UIDUtilities.getEndOffset(uid);
+                    if (start < 0) {
+                        return true;
+                    }
+                    if (end < startOffset || start >= endOffset) {
+                        return false;
+                    }
+                    return true;
+                }
+
+                @Override
+                public String toString() {
+                    return "start offset=" + startOffset + "; endOffset=" + endOffset; // NOI18N
+                }
+                                
             };
         }
 
@@ -137,9 +216,16 @@ public class SelectImpl extends CsmSelect {
                 public boolean accept(CsmUID uid) {
                     return ((UIDFilter)first).accept(uid) && ((UIDFilter)second).accept(uid);
                 }
+
+                @Override
+                public String toString() {
+                    return "filter [" + first + "][" + second + "]"; // NOI18N
+                }
+                                
             };
         }
 
+        @SuppressWarnings("unchecked")
         public CsmFilter createNameFilter(final NameAcceptor nameAcceptor) {
             return new Filter(){
                 public boolean accept(CsmUID uid) {

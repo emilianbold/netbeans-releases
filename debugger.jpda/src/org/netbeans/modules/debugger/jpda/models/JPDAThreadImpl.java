@@ -100,6 +100,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     private Object              cachedFramesLock = new Object();
     private JPDABreakpoint      currentBreakpoint;
     private PropertyChangeListener threadsResumeListener;
+    private final Object        threadsResumeListenerLock = new Object();
+    private String              threadName;
 
     public JPDAThreadImpl (
         ThreadReference     threadReference,
@@ -107,8 +109,25 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     ) {
         this.threadReference = threadReference;
         this.debugger = debugger;
-        suspended = threadReference.isSuspended();
-        suspendCount = threadReference.suspendCount();
+        try {
+            suspended = threadReference.isSuspended();
+        } catch (IllegalThreadStateException itsex) {
+            suspended = false;
+        }
+        try {
+            suspendCount = threadReference.suspendCount();
+        } catch (IllegalThreadStateException itsex) {
+            suspendCount = 0;
+        }
+        try {
+            threadName = threadReference.name ();
+        } catch (IllegalThreadStateException ex) {
+            threadName = ""; // Thrown when thread has exited
+        } catch (ObjectCollectedException ex) {
+            threadName = "";
+        } catch (VMDisconnectedException ex) {
+            threadName = "";
+        }
     }
 
     /**
@@ -117,15 +136,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      * @return name of thread.
      */
     public String getName () {
-        try {
-            return threadReference.name ();
-        } catch (IllegalThreadStateException ex) {
-            return ""; // Thrown when thread has exited
-        } catch (ObjectCollectedException ex) {
-            return "";
-        } catch (VMDisconnectedException ex) {
-            return "";
-        }
+        return threadName;
     }
     
     /**
@@ -367,7 +378,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      */
     public CallStackFrame[] getCallStack (int from, int to) 
     throws AbsentInformationException {
-        synchronized (this) {
+        synchronized (threadsResumeListenerLock) {
             if (threadsResumeListener == null) {
                 threadsResumeListener = new ThreadsResumeListener();
                 debugger.getThreadsCollector().addPropertyChangeListener(WeakListeners.propertyChange(threadsResumeListener, debugger.getThreadsCollector()));
@@ -525,6 +536,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                     threadReference.suspend ();
                     suspendedToFire = Boolean.TRUE;
                     suspendCount++;
+                    threadName = threadReference.name();
                 }
                 //System.err.println("suspend("+getName()+") suspended = true");
                 suspended = true;
@@ -637,6 +649,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 //System.err.println("  setting suspended = true");
                 suspended = true;
                 suspendedToFire = Boolean.TRUE;
+                threadName = threadReference.name();
             }
         }
         if (suspendedToFire != null) {

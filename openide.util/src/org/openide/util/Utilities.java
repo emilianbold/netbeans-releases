@@ -48,7 +48,6 @@ import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Frame;
-import java.awt.Graphics;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
@@ -61,7 +60,6 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -99,8 +97,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
@@ -2589,7 +2585,7 @@ widthcheck:  {
      * over the first one with its top-left corner at x, y. Images need not be of the same size.
      * New image will have a size of max(second image size + top-left corner, first image size).
      * Method is used mostly when second image contains transparent pixels (e.g. for badging).
-     * If both images are <code>null</code>, it makes default transparent 16x16 image.
+     * <p>Please use {@link ImageUtilities#mergeImages}.
      * @param image1 underlying image
      * @param image2 second image
      * @param x x position of top-left corner
@@ -2597,43 +2593,29 @@ widthcheck:  {
      * @return new merged image
      */
     public static final Image mergeImages(Image image1, Image image2, int x, int y) {
-        if (image1 == null) {
-            throw new NullPointerException();
-        }
-
-        if (image2 == null) {
-            throw new NullPointerException();
-        }
-
-        return IconManager.mergeImages(image1, image2, x, y);
+        return ImageUtilities.mergeImages(image1, image2, x, y);
     }
-
+    
     /**
      * Loads an image from the specified resource ID. The image is loaded using the "system" classloader registered in
      * Lookup.
+     * <p>Please use {@link ImageUtilities#loadImage(java.lang.String)}.
      * @param resourceID resource path of the icon (no initial slash)
      * @return icon's Image, or null, if the icon cannot be loaded.
      */
     public static final Image loadImage(String resourceID) {
-        return IconManager.getIcon(resourceID, false);
+        return ImageUtilities.loadImage(resourceID);
     }
 
     /**
      * Converts given icon to a {@link java.awt.Image}.
+     * <p>Please use {@link ImageUtilities#icon2Image}.
      *
      * @param icon {@link javax.swing.Icon} to be converted.
      * @since 7.3
      */
     public static final Image icon2Image(Icon icon) {
-        if (icon instanceof ImageIcon) {
-            return ((ImageIcon) icon).getImage();
-        } else {
-            BufferedImage bImage = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
-            Graphics g = bImage.getGraphics();
-            icon.paintIcon(new JLabel(), g, 0, 0);
-            g.dispose();
-            return bImage;
-        }
+        return ImageUtilities.icon2Image(icon);
     }
 
     /** Builds a popup menu from actions for provided context specified by
@@ -2818,11 +2800,12 @@ widthcheck:  {
      * or <samp>org/netbeans/modules/foo/resources/foo_mybranding.gif</samp>.
      * 
      * <p>Caching of loaded images can be used internally to improve performance.
+     * <p>Please use {@link ImageUtilities#loadImage(java.lang.String, boolean)}.
      * 
      * @since 3.24
      */
     public static final Image loadImage(String resource, boolean localized) {
-        return IconManager.getIcon(resource, localized);
+        return ImageUtilities.loadImage(resource, localized);
     }
 
     /**
@@ -2889,7 +2872,7 @@ widthcheck:  {
             }
 
             // need to resize the icon
-            Image empty = IconManager.createBufferedImage(d.width, d.height);
+            Image empty = ImageUtilities.createBufferedImage(d.width, d.height);
             i = Utilities.mergeImages(icon, empty, 0, 0);
         }
 
@@ -3062,14 +3045,17 @@ widthcheck:  {
             this.deprecated = deprecated;
         }
 
+        @Override
         public Reference<Object> poll() {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public Reference<Object> remove(long timeout) throws IllegalArgumentException, InterruptedException {
             throw new InterruptedException();
         }
 
+        @Override
         public Reference<Object> remove() throws InterruptedException {
             throw new InterruptedException();
         }

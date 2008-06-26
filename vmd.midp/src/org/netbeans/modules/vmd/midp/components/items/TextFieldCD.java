@@ -119,6 +119,8 @@ public class TextFieldCD extends ComponentDescriptor {
     @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, ScreenDisplayPresenter.class);
+        presenters.addAll(MIDPDatabindingCodeSupport.createDatabindingPresenters(PROP_TEXT, "getString()", MIDPDatabindingCodeSupport.ProviderType.TextField, MIDPDatabindingCodeSupport.FeatureType.TextField_FeatureText));
+        
         super.gatherPresenters(presenters);
     }
 
@@ -127,8 +129,7 @@ public class TextFieldCD extends ComponentDescriptor {
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES).addProperty(NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Maximum_Size"), // NOI18N
                     PropertyEditorNumber.createPositiveIntegerInstance(false, NbBundle.getMessage(TextFieldCD.class, "LBL_TextField_Maximum_Size")), PROP_MAX_SIZE) // NOI18N
                 .addProperty(NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Text"), // NOI18N
-                    PropertyEditorString.createInstanceWithDatabinding(PropertyEditorString.DEPENDENCE_TEXT_FIELD, NbBundle.getMessage(TextFieldCD.class, "LBL_TextField_Text"), 
-                        PROP_TEXT), PROP_TEXT) // NOI18N
+                    PropertyEditorString.createInstanceWithDatabinding(PropertyEditorString.DEPENDENCE_TEXT_FIELD, NbBundle.getMessage(TextFieldCD.class, "LBL_TextField_Text")), PROP_TEXT) // NOI18N
                 .addProperty(NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Initial_Input_Mode"), PropertyEditorInputMode.createInstance(), PROP_INITIAL_INPUT_MODE) // NOI18N
                 .addProperty(NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Input_Constraints"), PropertyEditorConstraints.createInstance(), PROP_CONSTRAINTS); // NOI18N
     }
@@ -145,11 +146,7 @@ public class TextFieldCD extends ComponentDescriptor {
                 // properties
                 createPropertiesPresenter(),
                 // code
-                createDependenciesImportPresenter(),
                 createSetterPresenter(),
-                MIDPDatabindingCodeSupport.createDataBinderRegisterCodePresenter(PROP_TEXT),
-                MIDPDatabindingCodeSupport.createDataBinderBindCodePresenter(PROP_TEXT, MIDPDatabindingCodeSupport.ProviderType.TextField, MIDPDatabindingCodeSupport.FeatureType.TextField_FeatureText),
-                MIDPDatabindingCodeSupport.createEventSourceCodeGenPresenter(PROP_TEXT, "getString()"), //NOI18N
                 // screen
                 new TextFieldDisplayPresenter(),
                 //delete
@@ -221,9 +218,5 @@ public class TextFieldCD extends ComponentDescriptor {
         }
     }
     
-    private Presenter createDependenciesImportPresenter() {
-
-        return MidpCodePresenterSupport.createAddImportDatabindingPresenter(PROP_TEXT, "org.netbeans.microedition.databinding.lcdui.TextFieldBindingProvider");
-        
-    }
+    
 }

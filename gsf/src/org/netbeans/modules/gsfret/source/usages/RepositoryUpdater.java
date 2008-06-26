@@ -1349,7 +1349,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
 
                     CachingIndexer cachingIndexer = CachingIndexer.get(root, toCompile.size());
 
-                    batchCompile(toCompile, rootFo, cpInfo, cachingIndexer, root, dirtyCrossFiles, added, handle, timeStamps);
+                    batchCompile(toCompile, rootFo, cpInfo, cachingIndexer, root, dirtyCrossFiles, added, timeStamps);
 
                     if (cachingIndexer != null) {
                         cachingIndexer.flush();
@@ -1830,7 +1830,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
     
     public static void batchCompile (final List<ParserFile> toCompile, final FileObject rootFo, 
              ClasspathInfo cpInfo, CachingIndexer cachingIndexer, URL root,
-        final Set<URI> dirtyFiles, final Set/*<? super ElementHandle<TypeElement>>*/ added, ProgressHandle handle,
+        final Set<URI> dirtyFiles, final Set/*<? super ElementHandle<TypeElement>>*/ added,
                         Map<Language,Map<String,String>> timeStamps) throws IOException {
         assert toCompile != null;
         assert rootFo != null;
@@ -1847,17 +1847,6 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                 int state = 0; // TODO: Document what these states mean
                 boolean isBigFile = false;
                 final String sourceLevel = SourceLevelQuery.getSourceLevel(rootFo);
-                int fileNumber = 0;
-                int fileCount = toCompile.size();
-if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.batchCompile - fileCount=" + fileCount);
-}
-                if (fileCount > 0) {
-if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.batchCompile - switched handle " + handle + " to indeterminate");
-}
-                    handle.switchToDeterminate(fileCount);
-                }       
           allFiles:
                 while (!toCompile.isEmpty() || !bigFiles.isEmpty() || active != null) {
                     try {
@@ -1894,19 +1883,6 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                             continue;
                         }
                         
-                        if (handle != null && active != null) {
-if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.batchCompile - fileCount=" + fileCount + ", fileNumber=" + fileNumber + ", file=" + active.getNameExt());
-}
-                            if (fileCount > 0 && fileNumber <= fileCount) {
-if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.batchCompile - progressed handle " + handle + " to " + fileNumber);
-}
-                                handle.progress(fileNumber);
-                            }
-                            fileNumber++;
-                        }
-
                         // Change from what's going on in the Retouche updater:
                         // We could have many language implementations that want to index this root;
                         // we need to iterate through them and let each one of them index if they

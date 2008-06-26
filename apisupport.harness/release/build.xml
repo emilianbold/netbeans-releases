@@ -98,12 +98,13 @@ made subject to such option by the copyright holder.
             <testtype name="unit" 
                       folder="test.unit.folder" 
                       runtimecp="test.unit.runtime.cp" 
-                      compilecp="test.unit.compile.cp"/>
+                      compilecp="test.unit.compile.cp"
+                      compiledep="test.unit.testdep"/>
             <testtype name="qa-functional" 
                       folder="test.qa-functional.folder" 
                       runtimecp="test.qa-functional.runtime.cp" 
-                      compilecp="test.qa-functional.compile.cp"/>         
-
+                      compilecp="test.qa-functional.compile.cp"
+                      compiledep="test.qa-functional.testdep"/>
         </parseprojectxml>
         <condition property="is.regular">
             <not>
@@ -143,44 +144,22 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="test-lib-init" depends="init">
-        <!-- Tricky, since who distributes these things? junit & testtools modules only. -->
-        <!-- But those might not be installed anywhere. Not clear what to do. -->
-        <!-- So we try four things in order (!): -->
-        <!-- 1. You can define test.unit.lib.cp yourself if need be. -->
-        <!-- 2. If the platform has some or all of junit & testtools modules, use them. -->
-        <!-- 3. If running from the IDE and the caller IDE has these modules, use them. -->
-        <!-- 4. If the dest dir happens to be nbbuild/netbeans/ in a NB source tree, use xtest sources. -->
-        <!-- Would be nice to have: -->
-        <!-- 5. [not done yet] If ${netbeans.sources} includes a NB source tree, use xtest sources. -->
-        <!-- ...but that would be more difficult to do, since you would need to parse netbeans.sources. -->
-        <!-- 6. If run tests from command-line outside of NB source tree, use libraries from ${xtest.home}. -->
         <path id="test.unit.lib.cp">
             <pathelement path="${test.unit.lib.cp}"/> <!-- for manual override -->
+            <!-- As a fallback for old platforms which do not include the right modules: -->
             <fileset dir="${netbeans.dest.dir}">
                 <include name="*/modules/ext/junit-*.jar"/>
             </fileset>
-            <pathelement location="${netbeans.dest.dir}/testtools/modules/ext/nbjunit.jar"/>
-            <pathelement location="${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit.jar"/> <!-- new for 6.0 -->
-            <pathelement location="${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit-ide.jar"/> <!-- new for 6.0 -->
-            <pathelement location="${netbeans.dest.dir}/testtools/modules/ext/insanelib.jar"/>
             <fileset dir="${netbeans.home}/..">
                 <include name="*/modules/ext/junit-*.jar"/>
             </fileset>
-            <pathelement location="${netbeans.home}/../testtools/modules/ext/nbjunit.jar"/>
-            <pathelement location="${netbeans.home}/../testtools/modules/org-netbeans-modules-nbjunit.jar"/> <!-- new for 6.0 -->
-            <pathelement location="${netbeans.home}/../testtools/modules/org-netbeans-modules-nbjunit-ide.jar"/> <!-- new for 6.0 -->
-            <pathelement location="${netbeans.home}/../testtools/modules/ext/insanelib.jar"/>
-            <pathelement location="${netbeans.user}/modules/ext/nbjunit.jar"/>
-            <pathelement location="${netbeans.user}/modules/ext/insanelib.jar"/>
-            <pathelement location="${netbeans.user}/modules/org-netbeans-modules-nbjunit.jar"/> <!-- new for 6.0 -->
-            <pathelement location="${netbeans.user}/modules/org-netbeans-modules-nbjunit-ide.jar"/> <!-- new for 6.0 -->
-            <pathelement location="${netbeans.dest.dir}/../../xtest/lib/junit.jar"/>
-            <pathelement location="${netbeans.dest.dir}/../../xtest/lib/nbjunit.jar"/>
-            <pathelement location="${netbeans.dest.dir}/../../xtest/lib/insanelib.jar"/>
-            <pathelement location="${xtest.home}/lib/junit.jar"/>
-            <pathelement location="${xtest.home}/lib/nbjunit.jar"/>
-            <pathelement location="${xtest.home}/lib/insanelib.jar"/>
         </path>
+        <!-- NbModuleSuite must be made to ignore disabled.modules during a test; see discussion in #136621: -->
+        <delete>
+            <fileset dir="${suite.dir}">
+                <include name="build/cluster/config/Modules/*.xml_hidden"/>
+            </fileset>
+        </delete>
     </target>
     
     <target name="javahelp" depends="init" if="has.javahelp">
@@ -243,13 +222,5 @@ made subject to such option by the copyright holder.
         <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
         <nbinstaller module="${cluster}/${module.jar}" action="reinstall"/>
     </target>
-    
-     <target name="test-clean" depends="basic-init,files-init">
-         <parseprojectxml project=".">
-             <testtype name="unit"  folder="test.unit.folder" />
-         </parseprojectxml>      
-         <property name="test.unit.out.folder" location="${test.unit.folder}"/>
-         <delete dir="${test.unit.out.folder}"/>    
-     </target>
     
 </project>

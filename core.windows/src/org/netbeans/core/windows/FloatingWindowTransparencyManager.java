@@ -56,7 +56,7 @@ import org.openide.windows.TopComponent;
  * 
  * @author S. Aubrecht
  */
-class FloatingWindowTransparencyManager {
+public class FloatingWindowTransparencyManager {
 
     private static FloatingWindowTransparencyManager theInstance;
     
@@ -79,7 +79,11 @@ class FloatingWindowTransparencyManager {
         if( null == topComponentRegistryListener ) {
             topComponentRegistryListener = new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    toggleFloatingWindowTransparency();
+                    SwingUtilities.invokeLater( new Runnable() {
+                        public void run() {
+                            toggleFloatingWindowTransparency();
+                        }
+                    });
                 }
             };
             TopComponent.getRegistry().addPropertyChangeListener(topComponentRegistryListener);

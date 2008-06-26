@@ -45,6 +45,7 @@ import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
@@ -58,7 +59,8 @@ public class ScheduleForRestartTest extends OperationsTestImpl {
     protected String moduleCodeNameBaseForTest() {
         return "org.yourorghere.engine"; //NOI18N
     }
-    
+
+    @RandomlyFails
     public void testSelf() throws Exception {
         UpdateUnit toInstall = UpdateManagerImpl.getInstance ().getUpdateUnit (moduleCodeNameBaseForTest ());
         assertNotNull(toInstall.getAvailableUpdates ().get (1));

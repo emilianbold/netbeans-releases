@@ -59,7 +59,7 @@ public class RepositoryValidationGoldens extends RepositoryValidationBase {
         setGoldenDirectory(workDir.getAbsolutePath());
         
         PrintStream streamOut = new PrintStream(new File(workDir, nimi + ".out"));
-        PrintStream streamErr = new PrintStream(new File(workDir, nimi + ".err"));
+        PrintStream streamErr = new FilteredPrintStream(new File(workDir, nimi + ".err"));
 
         List<String> args = find();
         assert args.size() > 0;

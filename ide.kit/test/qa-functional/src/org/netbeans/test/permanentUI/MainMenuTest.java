@@ -39,20 +39,17 @@
 package org.netbeans.test.permanentUI;
 
 import java.awt.Component;
-import java.awt.Container;
 import java.util.ArrayList;
-import javax.swing.JComponent;
-import javax.swing.JMenuBar;
 import javax.swing.MenuElement;
 import javax.swing.JMenuItem;
 import javax.swing.JMenu;
 
+import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JMenuOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 import org.netbeans.test.permanentUI.utils.NbMenuItem;
 import org.netbeans.test.permanentUI.utils.Utilities;
@@ -69,11 +66,27 @@ public class MainMenuTest extends JellyTestCase {
         super(name);
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new MainMenuTest("testFileMenuNoSeparators"));
-//        suite.addTest(new MainMenuTest("testMnemonicsCollision"));
-        return suite;
+    public static Test suite() {
+            NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
+            MainMenuTest.class
+        ).clusters(".*").enableModules(".*");
+            
+        conf = conf.addTest("testFileMenu");
+        conf = conf.addTest("testEditMenu");
+        conf = conf.addTest("testViewMenu");
+        conf = conf.addTest("testNavigateMenu");
+        conf = conf.addTest("testSourceMenu");
+        conf = conf.addTest("testRefactorMenu");
+        conf = conf.addTest("testBuildMenu");
+        conf = conf.addTest("testRunMenu");
+        conf = conf.addTest("testFile_ProjectGroupSubMenu");
+        conf = conf.addTest("testMnemonicsCollision");
+        conf = conf.addTest("testNavigate_InspectSubMenu");
+        conf = conf.addTest("testView_CodeFoldsSubMenu");
+        conf = conf.addTest("testView_ToolbarsSubMenu");
+        
+        
+        return NbModuleSuite.create(conf);
     }
 
     /** Use for execution inside IDE */
@@ -96,30 +109,196 @@ public class MainMenuTest extends JellyTestCase {
     public void tearDown() {
     }
 
+    /**
+     * Tests if *File* menu in main menu is same as permanent UI spec  
+     * http://wiki.netbeans.org/MainMenu#section-MainMenu-File
+     */
     public void testFileMenu() {
-        //parseMainMenuItems("View");
-//        MenuChecker.printMenuBarStructure(MainWindowOperator.getDefault().getJMenuBar(), System.out, null, false, false);
-//        Utilities.printMenuStructure(System.out, getMainMenuItem("File"), " ");
-//        Utilities.printMenuStructure(System.out, getMainMenuItem("View"), " ");
+        String testedMenu = "File";
+        String diff = oneMenuTest(testedMenu);
+        assertTrue(diff, diff.length() == 0);  
     }
-
-    public void testFileMenuNoSeparators() {
-        String filename = this.getClass().getResource(getMainMenuGoldenFile("File")).getFile();
-        System.out.println("FILENAME : " + filename);
-        NbMenuItem permanentMenu = Utilities.readMenuStructureFromFile(filename);
-        ArrayList<NbMenuItem> newSubmenu = Utilities.filterOutSeparators(permanentMenu.getSubmenu());
-        permanentMenu.setSubmenu(newSubmenu);
-        System.out.println("===============permanent=====================");
-        Utilities.printMenuStructure(System.out, permanentMenu, "---");
-        
-        NbMenuItem menuItem = getMainMenuItem("File");
-        System.out.println("===============menuItem=====================");
-        Utilities.printMenuStructure(System.out, menuItem, "---");        
-        
-        String diff = Utilities.compareNbMenuItems(menuItem, permanentMenu, 1);
-        assertTrue(diff, diff.length() == 0);
+    /**
+     * Tests if *Edit* menu in main menu is same as permanent UI spec  
+     * http://wiki.netbeans.org/MainMenu#section-MainMenu-Edit
+     */
+    public void testEditMenu() {
+        String testedMenu = "Edit";
+        String diff = oneMenuTest(testedMenu);
+        assertTrue(diff, diff.length() == 0);  
     }
+    /**
+     * Tests if *View* menu in main menu is same as permanent UI spec  
+     * http://wiki.netbeans.org/MainMenu#section-MainMenu-View
+     */
+    public void testViewMenu() {
+        String testedMenu = "View";
+        String diff = oneMenuTest(testedMenu);
+        assertTrue(diff, diff.length() == 0);  
+    }
+    /**
+     * Tests if *Navigate* menu in main menu is same as permanent UI spec  
+     * http://wiki.netbeans.org/MainMenu#section-MainMenu-Navigate
+     */
+    public void testNavigateMenu() {
+        String testedMenu = "Navigate";
+        String diff = oneMenuTest(testedMenu);
+        assertTrue(diff, diff.length() == 0);  
+    }
+    /**
+     * Tests if *Source* menu in main menu is same as permanent UI spec  
+     * http://wiki.netbeans.org/MainMenu#section-MainMenu-Source
+     */
+    public void testSourceMenu() {
+        String testedMenu = "Source";
+        String diff = oneMenuTest(testedMenu);
+        assertTrue(diff, diff.length() == 0);  
+    }
+    /**
+     * Tests if *Refactor* menu in main menu is same as permanent UI spec  
+     * http://wiki.netbeans.org/MainMenu#section-MainMenu-Refactor
+     */
+    public void testRefactorMenu() {
+        String testedMenu = "Refactor";
+        String diff = oneMenuTest(testedMenu);
+        assertTrue(diff, diff.length() == 0);  
+    }
+    /**
+     * Tests if *Build* menu in main menu is same as permanent UI spec  
+     * http://wiki.netbeans.org/MainMenu#section-MainMenu-Build
+     */
+    public void testBuildMenu() {
+        String testedMenu = "Build";
+        String diff = oneMenuTest(testedMenu);
+        assertTrue(diff, diff.length() == 0);  
+    }
+    /**
+     * Tests if *Run* menu in main menu is same as permanent UI spec  
+     * http://wiki.netbeans.org/MainMenu#section-MainMenu-Run
+     */
+    public void testRunMenu() {
+        String testedMenu = "Run";
+        String diff = oneMenuTest(testedMenu);
+        assertTrue(diff, diff.length() == 0);  
+    }
+    /**
+     * Tests if *Run* menu in main menu is same as permanent UI spec  
+     * http://wiki.netbeans.org/MainMenu#section-MainMenu-Run
+     */
+    public void testFile_ProjectGroupSubMenu() {
+        String testedMenu = "File";
+        String testedSubmenu = "Project Group";
+        String goldenFile = getMainMenuGoldenFile("File-Project_Group");
+        String diff = oneSubMenuTest(testedSubmenu, testedMenu, goldenFile);
+        assertTrue(diff, diff.length() == 0);  
+    }
+    
+        /**
+     * Tests if *Run* menu in main menu is same as permanent UI spec  
+     * http://wiki.netbeans.org/MainMenu#section-MainMenu-Run
+     */
+    public void testNavigate_InspectSubMenu() {
+        String testedMenu = "Navigate";
+        String testedSubmenu = "Inspect";
+        String goldenFile = getMainMenuGoldenFile("Navigate-Inspect");
+        String diff = oneSubMenuTest(testedSubmenu, testedMenu, goldenFile);
+        assertTrue(diff, diff.length() == 0);  
+    }
+    
+        /**
+     * Tests if *Run* menu in main menu is same as permanent UI spec  
+     * http://wiki.netbeans.org/MainMenu#section-MainMenu-Run
+     */
+    public void testView_CodeFoldsSubMenu() {
+        String testedMenu = "View";
+        String testedSubmenu = "Code Folds";
+        String goldenFile = getMainMenuGoldenFile("View-Code_Folds");
+        String diff = oneSubMenuTest(testedSubmenu, testedMenu, goldenFile);
+        assertTrue(diff, diff.length() == 0);  
+    }
+    
+        /**
+     * Tests if *Run* menu in main menu is same as permanent UI spec  
+     * http://wiki.netbeans.org/MainMenu#section-MainMenu-Run
+     */
+    public void testView_ToolbarsSubMenu() {
+        String testedMenu = "View";
+        String testedSubmenu = "Toolbars";
+        String goldenFile = getMainMenuGoldenFile("View-Toolbars");
+        String diff = oneSubMenuTest(testedSubmenu, testedMenu, goldenFile);
+        assertTrue(diff, diff.length() == 0);  
+    }
+    
+    
+    /**
+     *  
+     * @param menuName to be tested
+     * @return difference between menuName and golden file with the same name
+     */  
+    private String oneMenuTest(String menuName) {        
+        return oneMenuTest(menuName, getMainMenuGoldenFile(menuName));
+    }
+ 
+    /**
+     *  
+     * @param menuName to be tested
+     * @param goldenFileName to be tested
+     * @return difference between menuName and goldenFileName
+     */ 
+    private String oneMenuTest(String menuName, String goldenFileName) throws IllegalArgumentException {
+        //System.out.println("===============permanent=====================");
+        //System.out.println("===============menuItem=====================");
+//        PrintStream ideFile = null;
+//        PrintStream goldenFile = null;
+//        try {
+//            String WORKDIR = getWorkDirPath();            
+            String filename = this.getClass().getResource(goldenFileName).getFile();
+            NbMenuItem permanentMenu = Utilities.readMenuStructureFromFile(filename);
+            ArrayList<NbMenuItem> newSubmenu = Utilities.filterOutSeparators(permanentMenu.getSubmenu());
+            permanentMenu.setSubmenu(newSubmenu);
+//            goldenFile = new PrintStream(WORKDIR + File.separator + goldenFileName + "_golden");
+//            Utilities.printMenuStructure(goldenFile, permanentMenu, "---");
+            
+            NbMenuItem menuItem = getMainMenuItem(menuName);
+//            ideFile = new PrintStream(WORKDIR + File.separator + goldenFileName + "_ide");
+//            Utilities.printMenuStructure(ideFile, menuItem, "---");
 
+//            compareReferenceFiles(WORKDIR + File.separator + goldenFileName + "_ide", WORKDIR + File.separator + goldenFileName + "_golden", WORKDIR + File.separator + goldenFileName + "_diff");
+            return Utilities.compareNbMenuItems(menuItem, permanentMenu, 1);
+//        } catch (FileNotFoundException ex) {
+//            Exceptions.printStackTrace(ex);
+//        } finally {
+//            ideFile.close();
+//            goldenFile.close();
+//        }
+//        
+//        return "FAILED";
+    }
+    
+//    
+    /**
+     *  
+     * @param submenuName to be tested
+     * @param mainmenuName to be tested
+     * @param goldenFileName to be tested
+     * @return difference between submenuName and goldenFileName
+     */ 
+    private String oneSubMenuTest(String submenuName, String mainmenuName, String goldenFileName) throws IllegalArgumentException {
+        String filename = this.getClass().getResource(goldenFileName).getFile();
+        //System.out.println("FILENAME : " + filename);
+        NbMenuItem permanentMenu = Utilities.readSubmenuStructureFromFile(filename);
+        //Utilities.printMenuStructure(System.out, permanentMenu, "---");
+        ArrayList<NbMenuItem> newSubmenu = Utilities.filterOutSeparators(permanentMenu.getSubmenu()); //TODO: fix the getMainMenuItem(.) to return even separators
+        permanentMenu.setSubmenu(newSubmenu); //TODO: remove when getMainMenuItem(.) fixed
+        //System.out.println("===============permanent=====================");
+        
+//        Utilities.printMenuStructure(System.out, permanentMenu, "---");        
+        NbMenuItem submenuItem = Utilities.getMenuByName(submenuName, getMainMenuItem(mainmenuName));
+        //System.out.println("===============menuItem=====================");
+//        Utilities.printMenuStructure(System.out, submenuItem, "---");        
+        
+        return Utilities.compareNbMenuItems(submenuItem, permanentMenu, 1);
+    }    
 //////////////////////////////////////////////////////////////////////////////////////////        
     public void parseMainMenuItems(String mainMenuItem) {
         ///open menu to let it create sucesfully
@@ -139,8 +318,6 @@ public class MainMenuTest extends JellyTestCase {
         for (int k = 0; k < items.length; k++) {
             items[k].list();
             if (items[k] instanceof JMenuItem) {
-                System.out.println("aaa " + items[k].toString());
-
 //                list.add(NbMenu.getNbMenu((JMenuItem)elements[k]));
 //                JMenuBarOperator menuOp = new JMenuBarOperator(menu);
 //                list.add(getMenuArrayList(menuOp.getMenu(k)));
@@ -165,7 +342,7 @@ public class MainMenuTest extends JellyTestCase {
     
     
     private NbMenuItem getMainMenuItem(String mainMenuItem) {
-        ///open menu to let it create sucesfully
+        ///open menu to let it create sucesfully        
         JMenuBarOperator mainmenuOp = MainWindowOperator.getDefault().menuBar();
 
         mainmenuOp.pushMenu(mainMenuItem);
@@ -182,5 +359,5 @@ public class MainMenuTest extends JellyTestCase {
         theMenu.setSubmenu(MenuChecker.getMenuArrayList(mainmenuOp.getMenu(position)));
 
         return theMenu;
-    }
+    } 
 }

@@ -117,7 +117,7 @@ public class EventListenerPanel extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         listenerClassLabel.setLabelFor(listenerClassTextField);
-        listenerClassLabel.setText(org.openide.util.NbBundle.getMessage(EventListenerPanel.class, "LBL_Listener_Class")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(listenerClassLabel, org.openide.util.NbBundle.getMessage(EventListenerPanel.class, "LBL_Listener_Class")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -125,6 +125,8 @@ public class EventListenerPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(listenerClassLabel, gridBagConstraints);
+        listenerClassLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EventListenerPanel.class, "LBL_Listener_Class")); // NOI18N
+        listenerClassLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EventListenerPanel.class, "LBL_Listener_Class")); // NOI18N
 
         listenerClassTextField.setColumns(20);
         listenerClassTextField.setPreferredSize(new java.awt.Dimension(200, 19));
@@ -137,13 +139,14 @@ public class EventListenerPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(listenerClassTextField, gridBagConstraints);
 
-        browseButton.setText(org.openide.util.NbBundle.getMessage(EventListenerPanel.class, "LBL_Browse")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(EventListenerPanel.class, "LBL_Browse")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(browseButton, gridBagConstraints);
+        browseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EventListenerPanel.class, "LBL_Browse")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;

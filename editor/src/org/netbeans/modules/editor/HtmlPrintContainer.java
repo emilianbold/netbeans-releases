@@ -47,9 +47,11 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.PrintContainer;
-import org.netbeans.editor.SettingsUtil;
+import org.netbeans.modules.editor.lib.ColoringMap;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -112,6 +114,10 @@ public class HtmlPrintContainer implements PrintContainer {
     }
 
     public final void begin (FileObject fo, Font font, Color fgColor, Color bgColor, Color hfgColor, Color hbgColor, Class kitClass, String charset) {
+        begin(fo, font, fgColor, bgColor, hfgColor, hbgColor, MimePath.parse(BaseKit.getKit(kitClass).getContentType()), charset);
+    }
+    
+    /* package */ final void begin (FileObject fo, Font font, Color fgColor, Color bgColor, Color hfgColor, Color hbgColor, MimePath mimePath, String charset) {
         styles = new Styles ();
         buffer = new StringBuffer();
         fileName = FileUtil.getFileDisplayName(fo);
@@ -122,7 +128,7 @@ public class HtmlPrintContainer implements PrintContainer {
         this.defaultFont = font;
         this.headerForegroundColor = hfgColor;
         this.headerBackgroundColor = hbgColor;
-        this.syntaxColoring = SettingsUtil.getColoringMap(kitClass, false, true);
+        this.syntaxColoring = ColoringMap.get(mimePath.getPath()).getMap();
         this.charset = charset;
     }
 
@@ -287,8 +293,8 @@ public class HtmlPrintContainer implements PrintContainer {
                 sb.append (ST_SEPARATOR);
                 sb.append (ST_ITALIC);
             }
-            Font defaultFont = getDefaultFont();
-            if (defaultFont!=null && defaultFont.getSize() != font.getSize()) {
+            Font df = getDefaultFont();
+            if (df != null && df.getSize() != font.getSize()) {
                 sb.append (ST_SEPARATOR);
                 sb.append (ST_SIZE);
                 sb.append (String.valueOf(font.getSize()));
@@ -377,7 +383,7 @@ public class HtmlPrintContainer implements PrintContainer {
             return result.toString();
         }
 
-        public final String toString () {
+        public @Override final String toString () {
             return this.toExternalForm();
         }
 
@@ -402,20 +408,20 @@ public class HtmlPrintContainer implements PrintContainer {
                 return createStyle (null,name,font,fgColor,bgColor,true);
             }
 
-            public final String toString () {
+            public @Override final String toString () {
                 return this.toExternalForm();
             }
 
-            public final boolean equals (Object object) {
+            public @Override final boolean equals (Object object) {
                 if (!(object instanceof StyleDescriptor))
                     return false;
                 StyleDescriptor od = (StyleDescriptor) object;
                 return coloringEquals(new Coloring(font, fgColor, bgColor), od.font, od.fgColor, od.bgColor);
             }
 
-            public final int hashCode () {
+            public @Override final int hashCode () {
                 return this.font.hashCode() ^ this.fgColor.hashCode() ^ this.bgColor.hashCode();
             }
-        }
+        } // End of StyleDescriptor class
     }
 }

@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.php.project.ui.customizer;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -45,10 +47,10 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.php.project.api.PhpOptions;
-import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  * @author  Radek Matous, Tomas Mysik
@@ -59,6 +61,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
     private final JTextField[] textFields;
     private final String[] propertyNames;
     private final String displayName;
+    private final PropertyChangeListener phpInterpreterListener;
     final Category category;
 
     public RunAsScript(ConfigManager manager, Category category) {
@@ -88,6 +91,23 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
             DocumentListener dl = new FieldUpdater(propertyNames[i], labels[i], textFields[i]);
             textFields[i].getDocument().addDocumentListener(dl);
         }
+
+        // php cli
+        loadPhpInterpreter();
+        phpInterpreterListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (PhpOptions.PROP_PHP_INTERPRETER.equals(evt.getPropertyName())) {
+                    loadPhpInterpreter();
+                    composeHint();
+                    validateFields();
+                }
+            }
+        };
+        PhpOptions phpOptions = PhpOptions.getInstance();
+        phpOptions.addPropertyChangeListener(WeakListeners.propertyChange(phpInterpreterListener, phpOptions));
+    }
+
+    void loadPhpInterpreter() {
         interpreterTextField.setText(PhpOptions.getInstance().getPhpInterpreter());
     }
 
@@ -118,20 +138,19 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
     }
 
     protected void validateFields() {
+        String phpInterpreter = interpreterTextField.getText().trim();
         String indexFile = indexFileTextField.getText();
-        String err = null;
-        if (!Utils.isValidFileName(indexFile)) {
-            err = NbBundle.getMessage(RunAsScript.class, "MSG_IllegalIndexName");
-        }
+        String args = argsTextField.getText().trim();
+        String err = RunAsValidator.validateScriptFields(phpInterpreter, indexFile, args);
         category.setErrorMessage(err);
         category.setValid(err == null);
     }
 
-    String composeHint() {
+    void composeHint() {
         String php = interpreterTextField.getText();
         String script = "./" + indexFileTextField.getText(); // NOI18N
         String args = argsTextField.getText();
-        return php + " " + script + " " + args; // NOI18N
+        hintLabel.setText(php + " " + script + " " + args); // NOI18N
     }
 
     private class FieldUpdater extends TextFieldUpdater {
@@ -147,7 +166,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         @Override
         protected void processUpdate() {
             super.processUpdate();
-            hintLabel.setText(composeHint());
+            composeHint();
         }
     }
 

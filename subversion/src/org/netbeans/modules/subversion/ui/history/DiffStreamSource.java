@@ -47,6 +47,7 @@ import org.netbeans.modules.subversion.*;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.versioning.util.Utils;
 import java.io.*;
+import java.util.logging.Level;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.openide.util.*;
@@ -62,7 +63,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author Maros Sandor
  */
-public class DiffStreamSource extends StreamSource {
+public class DiffStreamSource extends StreamSource implements Cancellable {
 
     private final File      baseFile;    
     private final String    revision;
@@ -70,6 +71,7 @@ public class DiffStreamSource extends StreamSource {
     private String          mimeType;
     private SVNUrl          url;
     private SVNUrl          repoUrl;
+    private SvnClient       client;
     
     /**
      * Null is a valid value if base file does not exist in this revision. 
@@ -107,7 +109,8 @@ public class DiffStreamSource extends StreamSource {
         try {
             init();
         } catch (IOException e) {
-            return null; // XXX use error manager HACK null  potentionally kills DiffViewImpl, NPE while constructing EditorKit
+            Subversion.LOG.log(Level.INFO, "DiffStreamSource.getMIMEType() returns null", e);
+            return null; // HACK null cases the file handled as binary
         }
         return mimeType;
     }
@@ -172,7 +175,7 @@ public class DiffStreamSource extends StreamSource {
                 remoteFile = VersionsCache.getInstance().getFileRevision(baseFile, revision);
             } else {               
                 try {                        
-                    SvnClient client = Subversion.getInstance().getClient(repoUrl);        
+                    client = Subversion.getInstance().getClient(repoUrl); 
                     InputStream in = client.getContent(url.appendPath("@" + revision), SvnUtils.toSvnRevision(revision));
                     // keep original extension so MIME can be guessed by the extension
                     File rf = File.createTempFile("nb-svn", baseFile.getName());  // NOI18N
@@ -198,6 +201,13 @@ public class DiffStreamSource extends StreamSource {
             failure.initCause(e);
             throw failure;
         }
+    }
+
+    public boolean cancel() {
+        if(client != null) {
+            client.cancel();
+        }
+        return true;
     }
 
 }

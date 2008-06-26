@@ -66,7 +66,7 @@ public class MissedSemicolonErrorFilter extends BaseParserErrorFilter {
                 int col = e.getColumn();
                 Integer tokenIndex = findTokenIndex(buffer, line, col);
                 if( tokenIndex != null ) {
-                    if (buffer.LA(tokenIndex.intValue() - 1) != Token.EOF_TYPE) {
+                    if (tokenIndex.intValue()>0 && buffer.LA(tokenIndex.intValue() - 1) != Token.EOF_TYPE) {
                         Token t = buffer.LT(tokenIndex.intValue() - 1);
                         line = t.getLine();
                         col = t.getColumn();

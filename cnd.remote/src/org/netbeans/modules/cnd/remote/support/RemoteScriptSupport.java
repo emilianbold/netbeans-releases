@@ -45,7 +45,10 @@ import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
 
 /**
- *
+ * Base class for running a script remotely where the script requires a manager class
+ * to interactively control the script. In cases where a script can be run without
+ * interaction, use RemoteCommandSupport instead. That returns the information in a String.
+ * 
  * @author gordonp
  */
 public class RemoteScriptSupport extends RemoteConnectionSupport {
@@ -61,7 +64,7 @@ public class RemoteScriptSupport extends RemoteConnectionSupport {
 
     @Override
     protected Channel createChannel() throws JSchException {
-        echannel = (ChannelExec) session.openChannel("exec");
+        echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
         return echannel;
     }
     

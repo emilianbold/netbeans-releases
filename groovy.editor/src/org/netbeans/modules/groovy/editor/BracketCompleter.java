@@ -150,14 +150,12 @@ public class BracketCompleter implements KeystrokeHandler {
         TokenId id = token.id();
 
         // Insert an end statement? Insert a } marker?
-        boolean[] insertEndResult = new boolean[1];
         boolean[] insertRBraceResult = new boolean[1];
         int[] indentResult = new int[1];
         boolean insert = insertMatching &&
-            isEndMissing(doc, offset, false, insertEndResult, insertRBraceResult, null, indentResult);
+            isEndMissing(doc, offset, false, insertRBraceResult, null, indentResult);
 
         if (insert) {
-            boolean insertEnd = insertEndResult[0];
             boolean insertRBrace = insertRBraceResult[0];
             int indent = indentResult[0];
 
@@ -179,10 +177,7 @@ public class BracketCompleter implements KeystrokeHandler {
                 doc.remove(offset, restOfLine.length());
             }
             
-            if (insertEnd) {
-                sb.append("end"); // NOI18N
-            } else {
-                assert insertRBrace;
+            if (insertRBrace) {
                 sb.append("}"); // NOI18N
             }
 
@@ -215,20 +210,20 @@ public class BracketCompleter implements KeystrokeHandler {
             }
         }
         
-        if (id == GroovyTokenId.STRING_LITERAL || 
-                (id == GroovyTokenId.STRING_END) && offset < ts.offset()+ts.token().length()) {
-            // Instead of splitting a string "foobar" into "foo"+"bar", just insert a \ instead!
-            //int indent = LexUtilities.getLineIndent(doc, offset);
-            //int delimiterOffset = id == GroovyTokenId.STRING_END ? ts.offset() : ts.offset()-1;
-            //char delimiter = doc.getText(delimiterOffset,1).charAt(0);
-            //doc.insertString(offset, delimiter + " + " + delimiter, null);
-            //caret.setDot(offset+3);
-            //return offset + 5 + indent;
-            String str = (id != GroovyTokenId.STRING_LITERAL || offset > ts.offset()) ? "\\n\\"  : "\\";
-            doc.insertString(offset, str, null);
-            caret.setDot(offset+str.length());
-            return offset + 1 + str.length();
-        }
+//        if (id == GroovyTokenId.STRING_LITERAL ||
+//                (id == GroovyTokenId.STRING_END) && offset < ts.offset()+ts.token().length()) {
+//            // Instead of splitting a string "foobar" into "foo"+"bar", just insert a \ instead!
+//            //int indent = LexUtilities.getLineIndent(doc, offset);
+//            //int delimiterOffset = id == GroovyTokenId.STRING_END ? ts.offset() : ts.offset()-1;
+//            //char delimiter = doc.getText(delimiterOffset,1).charAt(0);
+//            //doc.insertString(offset, delimiter + " + " + delimiter, null);
+//            //caret.setDot(offset+3);
+//            //return offset + 5 + indent;
+//            String str = (id != GroovyTokenId.STRING_LITERAL || offset > ts.offset()) ? "\\n\\"  : "\\";
+//            doc.insertString(offset, str, null);
+//            caret.setDot(offset+str.length());
+//            return offset + 1 + str.length();
+//        }
 
         
 
@@ -444,9 +439,9 @@ public class BracketCompleter implements KeystrokeHandler {
     }
 
     /**
-     * Determine if an "end" or "}" is missing following the caret offset.
+     * Determine if an "}" is missing following the caret offset.
      * The logic used is to check the text on the current line for block initiators
-     * (e.g. "def", "for", "{" etc.) and then see if a corresponding close is
+     * (e.g. "{") and then see if a corresponding close is
      * found after the same indentation level.
      *
      * @param doc The document to be checked
@@ -454,9 +449,6 @@ public class BracketCompleter implements KeystrokeHandler {
      * @param skipJunk If false, only consider the current line (of the offset)
      *   as the possible "block opener"; if true, look backwards across empty
      *   lines and comment lines as well.
-     * @param insertEndResult Null, or a boolean 1-element array whose first
-     *   element will be set to true iff this method determines that "end" should
-     *   be inserted
      * @param insertRBraceResult Null, or a boolean 1-element array whose first
      *   element will be set to true iff this method determines that "}" should
      *   be inserted
@@ -470,7 +462,7 @@ public class BracketCompleter implements KeystrokeHandler {
      *   first elements.
      */
     static boolean isEndMissing(BaseDocument doc, int offset, boolean skipJunk,
-        boolean[] insertEndResult, boolean[] insertRBraceResult, int[] startOffsetResult,
+        boolean[] insertRBraceResult, int[] startOffsetResult,
         int[] indentResult) throws BadLocationException {
         int length = doc.getLength();
 
@@ -496,7 +488,6 @@ public class BracketCompleter implements KeystrokeHandler {
 
             // Look for the next nonempty line, and if its indent is > indent,
             // or if its line balance is -1 (e.g. it's an end) we're done
-            boolean insertEnd = beginEndBalance > 0;
             boolean insertRBrace = braceBalance > 0;
             int next = Utilities.getRowEnd(doc, offset) + 1;
 
@@ -509,38 +500,14 @@ public class BracketCompleter implements KeystrokeHandler {
                 int nextIndent = LexUtilities.getLineIndent(doc, next);
 
                 if (nextIndent > indent) {
-                    insertEnd = false;
                     insertRBrace = false;
                 } else if (nextIndent == indent) {
-                    if (insertEnd) {
-                        if (LexUtilities.getBeginEndLineBalance(doc, next, false) < 0) {
-                            insertEnd = false;
-                        } else {
-                            // See if I have a structure word like "else", "ensure", etc.
-                            // (These are indent words that are not also begin words)
-                            // and if so refrain from inserting the end
-                            int lineBegin = Utilities.getRowFirstNonWhite(doc, next);
-
-                            Token<?extends GroovyTokenId> token =
-                                LexUtilities.getToken(doc, lineBegin);
-
-                            if ((token != null) && LexUtilities.isIndentToken(token.id()) &&
-                                    !LexUtilities.isBeginToken(token.id(), doc, lineBegin)) {
-                                insertEnd = false;
-                            }
-                        }
-                    } else if (insertRBrace &&
-                            (LexUtilities.getLineBalance(doc, next, GroovyTokenId.LBRACE,
-                                GroovyTokenId.RBRACE) < 0)) {
+                    if (insertRBrace && (LexUtilities.getLineBalance(doc, next, GroovyTokenId.LBRACE, GroovyTokenId.RBRACE) < 0)) {
                         insertRBrace = false;
                     }
                 }
 
                 break;
-            }
-
-            if (insertEndResult != null) {
-                insertEndResult[0] = insertEnd;
             }
 
             if (insertRBraceResult != null) {
@@ -551,7 +518,7 @@ public class BracketCompleter implements KeystrokeHandler {
                 indentResult[0] = indent;
             }
 
-            return insertEnd || insertRBrace;
+            return insertRBrace;
         }
 
         return false;

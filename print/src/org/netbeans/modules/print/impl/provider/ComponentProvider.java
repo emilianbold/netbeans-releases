@@ -57,9 +57,9 @@ import org.netbeans.modules.print.impl.util.Percent;
  */
 public class ComponentProvider implements PrintProvider {
 
-  public ComponentProvider(List<JComponent> components, String name, Date modified) {
+  public ComponentProvider(List<JComponent> components, String name, Date lastModified) {
     myName = name;
-    myLastModifiedDate = modified;
+    myLastModified = lastModified;
 
     if (components != null) {
       myComponent = new ComponentPanel(components);
@@ -74,11 +74,13 @@ public class ComponentProvider implements PrintProvider {
     List<ComponentPage> pages = new ArrayList<ComponentPage>();
     JComponent component = getComponent();
 
+    if (component == null) {
+      return new PrintPage [0][0];
+    }
     int componentWidth = component.getWidth();
     int componentHeight = component.getHeight();
 
-    double zoom =
-      getZoom(pageZoom, pageWidth, pageHeight, componentWidth, componentHeight);
+    double zoom = getZoom(pageZoom, pageWidth, pageHeight, componentWidth, componentHeight);
 
     componentWidth = (int) Math.floor(componentWidth * zoom);
     componentHeight = (int) Math.floor(componentHeight * zoom);
@@ -108,7 +110,7 @@ public class ComponentProvider implements PrintProvider {
         ));
       }
     }
-    PrintPage [][] printPages = new PrintPage [row] [column];
+    PrintPage [][] printPages = new PrintPage [row][column];
 
     for (ComponentPage page : pages) {
       printPages [page.getRow()] [page.getColumn()] = page;
@@ -154,11 +156,11 @@ public class ComponentProvider implements PrintProvider {
     return myName;
   }
 
-  public Date getLastModifiedDate() {
-    return myLastModifiedDate;
+  public Date lastModified() {
+    return myLastModified;
   }
 
   private String myName;
+  private Date myLastModified;
   private JComponent myComponent;
-  private Date myLastModifiedDate;
 }
