@@ -48,7 +48,6 @@ package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
     public ClassMembersHyperlinkTestCase(String testName) {
         super(testName);
-        System.setProperty("cnd.repository.hardrefs", "true");
     }        
         
     public void testSameName() throws Exception {
@@ -362,8 +361,26 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performNullTargetTest("IZ125760.cpp", 6, 10);
     }
 
+    public void testStaticFields() throws Exception {
+        // IZ114002: Hyperlink does not go from static field definition to its declaration
+
+        // from definition to declaration
+        performTest("ClassA.cc", 4, 30, "ClassA.h", 38, 5); // publicMemberStInt in int ClassA::publicMemberStInt = 1;
+        performTest("ClassA.cc", 5, 30, "ClassA.h", 43, 5); // protectedMemberStInt in int ClassA::protectedMemberStInt = 2;
+        performTest("ClassA.cc", 6, 30, "ClassA.h", 48, 5); // privateMemberStInt in int ClassA::privateMemberStInt = 3;
+
+        // from declaration to definition
+        performTest("ClassA.h", 38, 20, "ClassA.cc", 4, 12); // publicMemberStInt in ClassA
+        performTest("ClassA.h", 43, 20, "ClassA.cc", 5, 12); // protectedMemberStInt in ClassA
+        performTest("ClassA.h", 48, 20, "ClassA.cc", 6, 12); // privateMemberStInt in ClassA
+
+        // from usage to definition
+        performTest("ClassA.cc", 108, 25, "ClassA.cc", 4, 12); // publicMemberStInt in int i = ClassA::publicMemberStInt;
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
         
+        @Override
         protected Class getTestCaseDataClass() {
             return ClassMembersHyperlinkTestCase.class;
         }
