@@ -667,7 +667,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             return new Context(component, sup, openingSource, endOffset, finder, compResolver, contextElement, sort);
         }
 
-        private CsmClassifier resolveTemplateParameter(CsmClassifier cls, CsmType type) {
+        /*private CsmClassifier resolveTemplateParameter(CsmClassifier cls, CsmType type) {
             if (cls instanceof CsmClassifierBasedTemplateParameter) {
                 CsmClassifierBasedTemplateParameter tp = (CsmClassifierBasedTemplateParameter) cls;
                 String n = tp.getName().toString();
@@ -687,7 +687,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 }
             }
             return cls;
-        }
+        }*/
 
         private CsmType resolveType(CsmCompletionExpression exp) {
             Context ctx = (Context)clone();
@@ -739,7 +739,6 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                     if ((i < parmCnt-1 || lastDot || findType) && lastType != null && lastType.getArrayDepth() == 0 && kind == ExprKind.ARROW) {
                         CsmClassifier cls = getClassifier(lastType, CsmFunction.OperatorKind.ARROW);
                         if (cls != null) {
-                            cls = resolveTemplateParameter(cls, lastType);
                             lastType = CsmCompletion.getType(cls, 0);
                         }
                     }                    
@@ -1327,7 +1326,6 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                     staticOnly = false;
                     CsmClassifier cls = lastType == null ? null : CsmCompletionQuery.getClassifier(lastType, CsmFunction.OperatorKind.POINTER);
                     if (cls != null) {
-                        cls = resolveTemplateParameter(cls, lastType);
                         lastType = CsmCompletion.getType(cls, 0);
                     }
                     // TODO: need to convert lastType into reference based on item token '&' or '*'
