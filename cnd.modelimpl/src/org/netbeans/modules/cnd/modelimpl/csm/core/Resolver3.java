@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -580,9 +581,13 @@ public class Resolver3 implements Resolver {
             if (isRecursionOnResolving(INFINITE_RECURSION)) {
                 return null;
             }
-            return ((InheritanceImpl)inh).getCsmClass(this);
+            CsmClassifier out = ((InheritanceImpl)inh).getCsmClassifier(this);
+            out = CsmBaseUtilities.getOriginalClassifier(out);
+            if (CsmKindUtilities.isClass(out)) {
+                return (CsmClass) out;
+            }
         }
-        return inh.getCsmClass();
+        return CsmInheritanceUtilities.getCsmClass(inh);
     }
     
     private CsmObject resolveInClass(CsmClass cls, CharSequence name) {
