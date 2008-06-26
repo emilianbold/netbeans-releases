@@ -46,9 +46,7 @@ import java.util.List;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 /**
  * Holds FK of a given database table
@@ -67,61 +65,23 @@ public final class DBForeignKey extends DBObject<DBTable> {
     private static final String RS_UPDATE_RULE = "UPDATE_RULE"; // NOI18N
     private static final String RS_DELETE_RULE = "DELETE_RULE"; // NOI18N
     private static final String RS_DEFERRABILITY = "DEFERRABILITY"; // NOI18N
-
-    /*
-     * deferrability cascade rule; holds constant value as defined in
-     * java.sql.DatabaseMetaData
-     */
     private int deferrability;
-
-    /* delete cascade rule; holds constant value as defined in java.sql.DatabaseMetaData */
     private int deleteRule;
-
-    /* List of column names for this foreign key in key sequence order. */
-    private List<String> fkColumnNames = new ArrayList<String>();
-
-    /* Name of this key; may be null */
     private String fkName;
-
-    /* catalog name, if any, of PK table associated with this FK */
     private String pkCatalog;
-
-    /*
-     * List of column names of corresponding primary key columns, in key sequence order.
-     */
-    private List<String> pkColumnNames = new ArrayList<String>();
-
-    /* Name of corresponding primary key; may be null */
     private String pkName;
-
-    /* schema name, if any, of PK table associated with this FK */
     private String pkSchema;
-
-    /* name of PK table associated with this FK */
     private String pkTable;
-
-    /* update cascade rule; holds constant value as defined in java.sql.DatabaseMetaData */
     private int updateRule;
+    private List<String> fkColumnNames = new ArrayList<String>();
+    private List<String> pkColumnNames = new ArrayList<String>();
 
     /**
      * Creates a List of ForeignKeyColumn instances from the given ResultSet.
-     *
-     * @param rs ResultSet containing foreign key metadata as obtained from 
-     * DatabaseMetaData
-     * @return List of ForeignKeyColumn instances based from metadata in rs
-     *
-     * @throws SQLException if SQL error occurs while reading in data from
-     * given ResultSet
      */
-    public static Map<String, DBForeignKey> createForeignKeyColumnMap(DBTable table, ResultSet rs)
-            throws SQLException, DBException {
-        if (rs == null) {
-            Locale locale = Locale.getDefault();
-            ResourceBundle cMessages = ResourceBundle.getBundle("org/netbeans/modules/sql/framework/model/impl/Bundle", locale); // NO i18n
-
-            throw new IllegalArgumentException(
-                    cMessages.getString("ERROR_NULL_RS") + "(ERROR_NULL_RS)");
-        }
+    public static Map<String, DBForeignKey> createForeignKeyColumnMap(
+            DBTable table, ResultSet rs) throws SQLException, DBException {
+        assert rs != null;
 
         Map<String, DBForeignKey> fkColumns = new HashMap<String, DBForeignKey>();
         while (rs.next()) {
@@ -138,14 +98,8 @@ public final class DBForeignKey extends DBObject<DBTable> {
     }
 
     private DBForeignKey(ResultSet rs) throws SQLException {
-        if (rs == null) {
-            Locale locale = Locale.getDefault();
-            ResourceBundle cMessages = ResourceBundle.getBundle("org/netbeans/modules/sql/framework/model/impl/Bundle", locale); // NO i18n            
+        assert rs !=null;
 
-            throw new IllegalArgumentException(
-                    cMessages.getString("ERROR_VALID_RS") + "(ERROR_VALID_RS)");
-        }
-        //parent = fkTable;
         fkName = rs.getString(RS_FK_NAME);
         pkName = rs.getString(RS_PK_NAME);
 
@@ -156,7 +110,6 @@ public final class DBForeignKey extends DBObject<DBTable> {
         addColumnNames(rs);
 
         //rs.getShort(RS_SEQUENCE_NUM)
-
         updateRule = rs.getShort(RS_UPDATE_RULE);
         deleteRule = rs.getShort(RS_DELETE_RULE);
         deferrability = rs.getShort(RS_DEFERRABILITY);
@@ -182,12 +135,6 @@ public final class DBForeignKey extends DBObject<DBTable> {
         return fkColumnNames.contains(fkColumnName);
     }
 
-    /**
-     * Overrides default implementation to return value based on memberwise comparison.
-     * 
-     * @param refObj Object against which we compare this instance
-     * @return true if refObj is functionally identical to this instance; false otherwise
-     */
     @Override
     public boolean equals(Object refObj) {
         if (this == refObj) {
@@ -240,13 +187,6 @@ public final class DBForeignKey extends DBObject<DBTable> {
         return pkTable;
     }
 
-    /**
-     * Overrides default implementation to compute hashCode value for those members used
-     * in equals() for comparison.
-     * 
-     * @return hash code for this object
-     * @see java.lang.Object#hashCode
-     */
     @Override
     public int hashCode() {
         int myHash = (fkName != null) ? fkName.hashCode() : 0;

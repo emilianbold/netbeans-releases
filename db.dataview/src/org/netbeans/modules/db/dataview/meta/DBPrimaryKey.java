@@ -47,25 +47,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Implements PrimaryKey interface.
+ * Holds DB PrimaryKey meta info of a given table.
  *
  * @author Ahimanikya Satapathy
  */
 public final class DBPrimaryKey extends DBObject<DBTable> {
     private static final String RS_COLUMN_NAME = "COLUMN_NAME"; // NOI18N
-    /* List of column names in key sequence order. */
     private List<String> columnNames;
-    /* Name of this key; may be null */
     private String name;
-    /* DBTable to which this PK belongs */
     private DBTable parent;
 
     public DBPrimaryKey(ResultSet rs) throws SQLException {
-        name = null;
+        assert rs != null;
         columnNames = new ArrayList<String>();
-        if (rs == null) {
-            throw new IllegalArgumentException("ResultSet Can't be null"); // NO i18n
-        }
         while (rs.next()) {
             columnNames.add(rs.getString(RS_COLUMN_NAME));
         }
@@ -79,12 +73,6 @@ public final class DBPrimaryKey extends DBObject<DBTable> {
         return columnNames.contains(columnName);
     }
 
-    /**
-     * Overrides default implementation to return value based on memberwise comparison.
-     *
-     * @param refObj Object against which we compare this instance
-     * @return true if refObj is functionally identical to this instance; false otherwise
-     */
     @Override
     public boolean equals(Object refObj) {
         if (this == refObj) {
@@ -116,12 +104,6 @@ public final class DBPrimaryKey extends DBObject<DBTable> {
         return name;
     }
 
-    /**
-     * Overrides default implementation to compute hashCode value for those members used
-     * in equals() for comparison.
-     *
-     * @return hash code for this object
-     */
     @Override
     public int hashCode() {
         int myHash = (getName() != null) ? name.hashCode() : 0;

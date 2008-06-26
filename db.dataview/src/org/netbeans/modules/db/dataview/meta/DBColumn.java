@@ -60,21 +60,10 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
     private boolean generated;
     private int displaySize;
 
-    /**
-     * Constructs a new instance of DBColumn using the given parameters and
-     * assuming that the column is not part of a foreign key or primary key, and that it
-     * accepts null values.
-     * 
-     * @param colName name of this column
-     * @param sqlJdbcType JDBC type of this column
-     * @param colScale scale of this column
-     * @param colPrecision precision of this column
-     * @param isNullable true if nullable, false otherwise
-     * @see java.sql.Types
-     */
-    public DBColumn(String colName, int sqlJdbcType, int colScale, int colPrecision, boolean isNullable, boolean isGenerated) {
+    public DBColumn(DBTable table, String colName, int sqlJdbcType, int colScale, int colPrecision, boolean isNullable, boolean isGenerated) {
         super();
 
+        setParentObject(table);
         columnName = colName;
         jdbcType = sqlJdbcType;
 
@@ -83,17 +72,9 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
 
         nullable = isNullable;
         generated = isGenerated;
+        editable = (!table.getName().equals("") && !isGenerated);
     }
 
-    /**
-     * Compares DBColumn with another object for lexicographical ordering. Null objects
-     * and those DBColumns with null names are placed at the end of any ordered collection
-     * using this method.
-     * 
-     * @param refObj Object to be compared.
-     * @return -1 if the column name is less than obj to be compared. 0 if the column name
-     *         is the same. 1 if the column name is greater than obj to be compared.
-     */
     public int compareTo(Object refObj) {
         if (refObj == null) {
             return -1;
@@ -131,15 +112,6 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
         return (myName != null) ? myName.compareTo(refName) : (refName != null) ? 1 : -1;
     }
 
-    /**
-     * Overrides default implementation to return value based on memberwise comparison.
-     * Concrete implementations should override this method and combine the result of
-     * super.equals(Object) [calling this method] with its own comparison of member
-     * variables declared in its class as its own return value.
-     * 
-     * @param refObj Object against which we compare this instance
-     * @return true if refObj is functionally identical to this instance; false otherwise
-     */
     @Override
     public boolean equals(Object refObj) {
         if (!(refObj instanceof DBColumn)) {
@@ -167,11 +139,6 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
         return this.columnName;
     }
 
-    /**
-     * Gets the Ordinal Position
-     * 
-     * @return cardinalPosition to be used
-     */
     public int getOrdinalPosition() {
         return this.ordinalPosition;
     }
@@ -188,11 +155,6 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
         this.displaySize = displaySize;
     }
 
-    /**
-     * get table qualified name
-     * 
-     * @return qualified column name prefixed with alias
-     */
     public String getQualifiedName() {
         StringBuilder buf = new StringBuilder(50);
         DBTable table = this.getParentObject();
@@ -211,13 +173,6 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
         return scale;
     }
 
-    /**
-     * Gets the hashCode for this object. Concrete implementations should override this
-     * method and combine the result of super.hashCode() [this method] and its own
-     * implementation of hashCode as its own return value.
-     * 
-     * @return the hashCode of this object.
-     */
     @Override
     public int hashCode() {
         int myHash = super.hashCode();
@@ -234,11 +189,6 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
         return myHash;
     }
 
-    /**
-     * check if this column is editable
-     * 
-     * @return isEditable
-     */
     public boolean isEditable() {
         return editable;
     }
@@ -259,49 +209,15 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
         return generated;
     }
 
-    /**
-     * set this column editable property
-     * 
-     * @param editable - editable
-     */
-    void setEditable(boolean editable) {
-        this.editable = editable;
-    }
-
-    /**
-     * Sets whether this column is flagged as part of a foreign key.
-     * 
-     * @param newFlag true if this column is part of a foreign key; false otherwise
-     */
     void setForeignKey(boolean newFlag) {
         foreignKey = newFlag;
     }
 
-    /**
-     * Gets the Ordinal Position
-     * 
-     * @param cardinalPos to be used
-     */
     void setOrdinalPosition(int cardinalPos) {
         this.ordinalPosition = cardinalPos;
     }
 
-    /**
-     * Sets reference to DBTable that owns this DBColumn.
-     * 
-     * @param newParent new parent of this column.
-     */
-    void setParent(DBTable newParent) throws DBException {
-        setParentObject(newParent);
-    }
-
-    /**
-     * Sets whether this column is flagged as part of a primary key.
-     * 
-     * @param newFlag true if this column is part of a primary key; false otherwise
-     */
     void setPrimaryKey(boolean newFlag) {
         primaryKey = newFlag;
     }
 }
-

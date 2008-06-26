@@ -69,52 +69,31 @@ public final class DBMetaDataFactory {
     public static final int SCHEMA = 2;
     public static final int TYPE = 3;
     public static final String DB2 = "DB2"; // NOI18N
-
     public static final String ORACLE = "ORACLE"; // NOI18N
-
     public static final String AXION = "AXION"; // NOI18N
-
     public static final String DERBY = "DERBY"; // NOI18N
-
     public static final String PostgreSQL = "PostgreSQL"; // NOI18N
-
     public static final String MYSQL = "MYSQL"; // NOI18N
-
     public static final String SQLSERVER = "SQLSERVER"; // NOI18N
-
     public static final String SYBASE = "SYBASE"; // NOI18N
-
     public static final String JDBC = "JDBC"; // NOI18N
-
     public static final String VSAM_ADABAS_IAM = "LEGACY"; // NOI18N
-
     public static final String JDBC_ODBC = "JDBC"; // NOI18N
-
     public static final String DB2_TEXT = "DB2"; // NOI18N
-
     public static final String ORACLE_TEXT = "ORACLE"; // NOI18N
-
     public static final String AXION_TEXT = "AXION"; // NOI18N
-
     public static final String DERBY_TEXT = "DERBY"; // NOI18N
-
     public static final String MYSQL_TEXT = "MYSQL"; // NOI18N
-
     public static final String PostgreSQL_TEXT = "PostgreSQL"; // NOI18N
-
     public static final String SQLSERVER_TEXT = "SQL SERVER"; // NOI18N
-
     public static final String JDBC_TEXT = "JDBC"; // NOI18N
-
     public static final String VSAM_ADABAS_IAM_TEXT = "VSAM/ADABAS/IAM"; // NOI18N
-
     /** List of database type display descriptions */
     public static final String[] DBTYPES = {
         DB2_TEXT, ORACLE_TEXT, SQLSERVER_TEXT,
         JDBC_TEXT, VSAM_ADABAS_IAM_TEXT, PostgreSQL_TEXT,
         MYSQL_TEXT, DERBY_TEXT, MYSQL_TEXT, AXION_TEXT
     };
-
     private Connection dbconn; // db connection
     private int dbType;
     private DatabaseMetaData dbmeta; // db metadata
@@ -135,17 +114,11 @@ public final class DBMetaDataFactory {
             throw new DBException(e);
         }
     }
-    
+
     public String getEscapeString() throws SQLException {
         return dbmeta.getIdentifierQuoteString();
     }
 
-    /**
-     * Returns the database product name
-     *
-     * @return String database product name
-     * @throws Exception 
-     */
     public String getDBName() throws Exception {
         String dbname = "";
         // get the database product name
@@ -157,13 +130,7 @@ public final class DBMetaDataFactory {
         }
         return dbname;
     }
-    
-    /**
-     * Returns the database Database type.
-     *
-     * @return String Database Database type
-     * @throws Exception 
-     */
+
     public String getDBType() throws Exception {
         // get the database type based on the product name converted to lowercase
         if (dbmeta.getURL() != null) {
@@ -178,49 +145,30 @@ public final class DBMetaDataFactory {
         // get the database type based on the product name converted to lowercase
         url = url.toLowerCase();
         if (url.indexOf("sybase") > -1) {
-            // sybase
             dbtype = SYBASE;
         } else if (url.equals("microsoft sql server") || (url.equals("sql server"))) {
-            // Microsoft SQL Server
             dbtype = SQLSERVER;
         } else if ((url.indexOf("db2") > -1) || (url.equals("as"))) {
-            // DB2
             dbtype = DB2;
         } else if ((url.equals("exadas")) || (url.equals("attunity connect driver"))) {
-            // VSAM
             dbtype = VSAM_ADABAS_IAM;
         } else if (url.indexOf("orac") > -1) {
-            // Oracle
             dbtype = ORACLE;
         } else if (url.indexOf("axion") > -1) {
-            // Axion
             dbtype = AXION;
         } else if (url.indexOf("derby") > -1) {
-            // Derby
             dbtype = DERBY;
         } else if (url.indexOf("postgre") > -1) {
-            // PostgreSQL
             dbtype = PostgreSQL;
         } else if (url.indexOf("mysql") > -1) {
-            // MySQL
             dbtype = MYSQL;
         } else {
-            // other type, default to JDBC-ODBC
             dbtype = JDBC;
         }
 
         return dbtype;
     }
 
-    /**
-     * Returns a list of primary keys for a table.
-     *
-     * @param tcatalog Catalog name
-     * @param tschema Schema name
-     * @param tname Table name
-     * @return List List of primary keys
-     * @throws Exception 
-     */
     private DBPrimaryKey getPrimaryKeys(String tcatalog, String tschema, String tname) throws Exception {
         ResultSet rs = null;
         try {
@@ -234,15 +182,6 @@ public final class DBMetaDataFactory {
         }
     }
 
-    /**
-     * Returns a list of foreign keys for a table.
-     *
-     * @param tcatalog Catalog name
-     * @param tschema Schema name
-     * @param tname Table name
-     * @return List List of foreign keys
-     * @throws Exception 
-     */
     public Map<String, DBForeignKey> getForeignKeys(DBTable table) throws Exception {
         Map<String, DBForeignKey> fkList = Collections.emptyMap();
         ResultSet rs = null;
@@ -259,7 +198,7 @@ public final class DBMetaDataFactory {
         return fkList;
     }
 
-    public synchronized  Collection<DBTable> generateDBTables(ResultSet rs) throws DBException {
+    public synchronized Collection<DBTable> generateDBTables(ResultSet rs) throws DBException {
         Map<String, DBTable> tables = new HashMap<String, DBTable>();
         String noTableName = "UNKNOWN";
         try {
@@ -269,16 +208,16 @@ public final class DBMetaDataFactory {
                 String tableName = rsMeta.getTableName(i);
                 String schemaName = rsMeta.getSchemaName(i);
                 String catalogName = rsMeta.getCatalogName(i);
-                String key = catalogName+schemaName+tableName;
-                if(key.equals("")){
+                String key = catalogName + schemaName + tableName;
+                if (key.equals("")) {
                     key = noTableName;
                 }
                 DBTable table = tables.get(key);
-                if(table == null){
+                if (table == null) {
                     table = new DBTable(tableName, schemaName, catalogName);
                     tables.put(key, table);
                 }
-                        
+
                 int sqlTypeCode = rsMeta.getColumnType(i);
                 if (sqlTypeCode == java.sql.Types.OTHER && dbType == 1) {
                     String sqlTypeStr = rsMeta.getColumnTypeName(i);
@@ -294,7 +233,7 @@ public final class DBMetaDataFactory {
                         sqlTypeCode = java.sql.Types.CLOB;
                     }
                 }
-                
+
                 String colName = rsMeta.getColumnName(i);
                 int position = i;
                 int scale = rsMeta.getScale(i);
@@ -306,36 +245,26 @@ public final class DBMetaDataFactory {
                 boolean autoIncrement = rsMeta.isAutoIncrement(i);
 
                 // create a table column and add it to the vector
-                DBColumn col = new DBColumn(colName, sqlTypeCode, scale, precision, isNullable, autoIncrement);
-                col.setParent(table);
+                DBColumn col = new DBColumn(table, colName, sqlTypeCode, scale, precision, isNullable, autoIncrement);
                 col.setOrdinalPosition(position);
                 col.setDisplayName(displayName);
-                col.setEditable(!tableName.equals("") && !autoIncrement);
                 col.setDisplaySize(displaySize);
-
                 table.addColumn(col);
                 table.setEscapeString(getEscapeString());
             }
-            
-            for(DBTable table: tables.values()){
+
+            for (DBTable table : tables.values()) {
                 checkPrimaryKeys(table);
                 checkForeignKeys(table);
             }
-     
+
         } catch (Exception e) {
             mLogger.severe(DBException.getMessage(e));
             throw new DBException(e);
-        } 
+        }
         return tables.values();
     }
-    
-    
-    /**
-     * Gets the primary keys for a table.
-     *
-     * @param newTable Table to get the primary key(s) for
-     * @throws Exception 
-     */
+
     private void checkPrimaryKeys(DBTable newTable) throws Exception {
         try {
             DBPrimaryKey keys = getPrimaryKeys(newTable.getCatalog(), newTable.getSchema(), newTable.getName());
@@ -359,12 +288,6 @@ public final class DBMetaDataFactory {
         }
     }
 
-    /**
-     * Gets the foreign keys for a table.
-     *
-     * @param newTable Table to get the foreign key(s) for
-     * @throws Exception 
-     */
     private void checkForeignKeys(DBTable newTable) throws Exception {
         try {
             // get the foreing keys
@@ -398,11 +321,11 @@ public final class DBMetaDataFactory {
             throw e;
         }
     }
-    
-    private int getDBTypeCode(String name){
+
+    private int getDBTypeCode(String name) {
         for (int i = 0; i < DBTYPES.length; i++) {
             String dbName = DBTYPES[i];
-            if(dbName.equals(name)){
+            if (dbName.equals(name)) {
                 return i;
             }
         }

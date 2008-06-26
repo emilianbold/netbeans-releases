@@ -51,21 +51,16 @@ import org.openide.util.Mutex;
 
 /**
  * DBConnectionFactory is used to serve out DB Session The actual physical
- * connection handling is implemented by classes that extend this class. This
- * class is a singleton.
+ * connection handling is implemented by classes implements DBConnectionProvider.
+ *
+ * If No DBConnectionProvider found, then it uses DBExplorer connection
  * 
  * @author Ahimanikya Satapathy
  */
-public class DBConnectionFactory {
+public final class DBConnectionFactory {
 
     private static volatile DBConnectionFactory INSTANCE = null;
 
-    /**
-     * Serves out service handles using the Singleton pattern. Enforces only one
-     * instance of this class in the system.
-     * 
-     * @return a service handle
-     */
     public static DBConnectionFactory getInstance() {
         synchronized (DBConnectionFactory.class) {
             if (INSTANCE == null) {
@@ -77,18 +72,9 @@ public class DBConnectionFactory {
         return INSTANCE;
     }
 
-    /**
-     * Constructor, keep it protected. the package.
-     */
-    protected DBConnectionFactory() {
+    private DBConnectionFactory() {
     }
 
-    /**
-     * Releases the given connection
-     * 
-     * @param connectionName name of connection
-     * @param con Connection to be released
-     */
     public void closeConnection(Connection con) {
         DBConnectionProvider connectionProvider = findDBConnectionProvider();
         if (connectionProvider != null) {
@@ -96,15 +82,6 @@ public class DBConnectionFactory {
         }
     }
 
-    /**
-     * Gets a new Connection using the given DBConnectionParameters for
-     * configuration data.
-     * 
-     * @param conDef DBConnectionParameter containing connection config
-     * @param cl ClassLoader to use to load JDBC driver
-     * @return new Connection instance
-     * @throws DBException if error occurs while constructing connection
-     */
     public Connection getConnection(DatabaseConnection dbConn) {
         DBConnectionProvider connectionProvider = findDBConnectionProvider();
         if (connectionProvider != null) {
@@ -116,6 +93,7 @@ public class DBConnectionFactory {
 
     private Connection showConnectionDialog(final DatabaseConnection dbConn) {
         Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
+
             public Void run() {
                 ConnectionManager.getDefault().showConnectionDialog(dbConn);
                 return null;
@@ -129,7 +107,7 @@ public class DBConnectionFactory {
         }
         return null;
     }
-    
+
     private DBConnectionProvider findDBConnectionProvider() {
         Iterator<DBConnectionProvider> it = ServiceRegistry.lookupProviders(DBConnectionProvider.class);
         if (it.hasNext()) {
@@ -144,17 +122,7 @@ public class DBConnectionFactory {
          * META-INF/services/org.netbeans.modules.db.model.spi.DBConnectionProvider
          */
         ClassLoader loader = DBConnectionFactory.class.getClassLoader();
-        /*
-         * the default class loader used by the
-         * ServiceRegistry.lookupProviders() is the current thread Context
-         * ClassLoader, however this cause problem when we try to get the
-         * DBConnectionProvider from within a JBI component. For jbi component
-         * when the service request is handled,the class loader happens to be
-         * webAppClassloader (i.e.Thread.currentThread().getContextClassLoader()
-         * is webAppClassloader ) . This result in a failure of locating the SPI
-         * DBConnectionProvider. So in order to avoid using the
-         * webAppClassloader the above mechanism has been used
-         */
+
         it = ServiceRegistry.lookupProviders(DBConnectionProvider.class, loader);
         if (it.hasNext()) {
             return it.next();

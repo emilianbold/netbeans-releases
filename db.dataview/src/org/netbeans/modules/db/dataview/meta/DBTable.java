@@ -57,15 +57,6 @@ import java.util.LinkedHashMap;
  */
 public final class DBTable extends DBObject<DBModel> {
 
-    public static class StringComparator implements Comparator {
-
-        public int compare(Object o1, Object o2) {
-            if (o1 instanceof String && o2 instanceof String) {
-                return ((String) o1).compareTo((String) o2);
-            }
-            throw new ClassCastException("StringComparator cannot compare non-String objects.");
-        }
-    }
     private static final String FQ_TBL_NAME_SEPARATOR = ".";
     private String catalog;
     private Map<String, DBColumn> columns;
@@ -75,13 +66,6 @@ public final class DBTable extends DBObject<DBModel> {
     private String schema;
     private String escapeString;
 
-    /**
-     * Creates a new instance of DBTable with the given name.
-     * 
-     * @param aName name of new DBTable instance
-     * @param aSchema schema of new DBTable instance; may be null
-     * @param aCatalog catalog of new DBTable instance; may be null
-     */
     public DBTable(String aName, String aSchema, String aCatalog) {
         columns = new LinkedHashMap<String, DBColumn>();
         foreignKeys = new HashMap<String, DBForeignKey>();
@@ -91,31 +75,15 @@ public final class DBTable extends DBObject<DBModel> {
         catalog = (aCatalog != null) ? aCatalog.trim() : null;
     }
 
-    /**
-     * Adds an AbstractDBColumn instance to this table.
-     * 
-     * @param theColumn column to be added.
-     * @return true if successful. false if failed.
-     */
     public synchronized boolean addColumn(DBColumn theColumn) throws DBException {
         if (theColumn != null) {
-            theColumn.setParent(this);
+            theColumn.setParentObject(this);
             columns.put(theColumn.getName(), theColumn);
             return true;
         }
-
         return false;
     }
 
-    /**
-     * Compares DBTable with another object for lexicographical ordering. Null objects and
-     * those DBTables with null names are placed at the end of any ordered collection
-     * using this method.
-     * 
-     * @param refObj Object to be compared.
-     * @return -1 if the column name is less than obj to be compared. 0 if the column name
-     *         is the same. 1 if the column name is greater than obj to be compared.
-     */
     public int compareTo(Object refObj) {
         if (refObj == null) {
             return -1;
@@ -131,13 +99,6 @@ public final class DBTable extends DBObject<DBModel> {
         return (myName != null) ? myName.compareTo(refName) : (refName != null) ? 1 : -1;
     }
 
-    /**
-     * Overrides default implementation to return value based on memberwise comparison.
-     * 
-     * @param obj Object against which we compare this instance
-     * @return true if obj is functionally identical to this SQLTable instance; false
-     *         otherwise
-     */
     @Override
     public boolean equals(Object obj) {
         boolean result = false;
@@ -165,7 +126,6 @@ public final class DBTable extends DBObject<DBModel> {
             List<DBForeignKey> aTableFKs = aTable.getForeignKeys();
 
             result &= (aTableName != null && name != null && name.equals(aTableName));
-
             if (columns != null && aTableColumns != null) {
                 Set<String> objCols = aTableColumns.keySet();
                 Set<String> myCols = columns.keySet();
@@ -177,7 +137,6 @@ public final class DBTable extends DBObject<DBModel> {
             }
 
             result &= (primaryKey != null) ? primaryKey.equals(aTablePK) : aTablePK == null;
-
             if (foreignKeys != null && aTableFKs != null) {
                 Collection<DBForeignKey> myFKs = foreignKeys.values();
                 // Must be identical (no subsetting), hence the pair of tests.
@@ -212,11 +171,6 @@ public final class DBTable extends DBObject<DBModel> {
         return columns;
     }
 
-    /**
-     * Get display name
-     * 
-     * @return display name
-     */
     @Override
     public String getDisplayName() {
         return this.getFullyQualifiedName();
@@ -226,21 +180,10 @@ public final class DBTable extends DBObject<DBModel> {
         return new ArrayList<DBForeignKey>(foreignKeys.values());
     }
 
-    /**
-     * get table fully qualified name including schema , catalog info
-     * 
-     * @return fully qualified table name prefixed with alias
-     */
     public String getFullyQualifiedName() {
-
         String tblName = getName();
         String schName = getSchema();
         String catName = getCatalog();
-
-        if (tblName == null) {
-            throw new IllegalArgumentException("can not construct fully qualified table name, table name is null.");
-        }
-
         StringBuilder buf = new StringBuilder(50);
 
         if (catName != null && catName.trim().length() != 0) {
@@ -252,9 +195,7 @@ public final class DBTable extends DBObject<DBModel> {
             buf.append(escapeString).append(schName.trim()).append(escapeString);
             buf.append(FQ_TBL_NAME_SEPARATOR);
         }
-
         buf.append(escapeString).append(tblName.trim()).append(escapeString);
-
         return buf.toString();
     }
 
@@ -270,13 +211,6 @@ public final class DBTable extends DBObject<DBModel> {
         return schema;
     }
 
-    /**
-     * Overrides default implementation to compute hashCode value for those members used
-     * in equals() for comparison.
-     * 
-     * @return hash code for this object
-     * @see java.lang.Object#hashCode
-     */
     @Override
     public int hashCode() {
         int myHash = super.hashCode();
@@ -298,16 +232,9 @@ public final class DBTable extends DBObject<DBModel> {
         }
 
         myHash += (displayName != null) ? displayName.hashCode() : 0;
-
         return myHash;
     }
 
-    /**
-     * Sets PrimaryKey instance for this DBTable to the given instance.
-     * 
-     * @param newPk new PrimaryKey instance to be associated
-     * @return true if association succeeded, false otherwise
-     */
     boolean setPrimaryKey(DBPrimaryKey newPk) {
         if (newPk != null) {
             newPk.setParentObject(this);
@@ -321,27 +248,14 @@ public final class DBTable extends DBObject<DBModel> {
         foreignKeys = fkMap;
     }
 
-    /**
-     * Overrides default implementation to return appropriate display name of this DBTable
-     * 
-     * @return qualified table name.
-     */
     @Override
     public String toString() {
         return getFullyQualifiedName();
     }
 
-    /**
-     * ColumnOrderComparator
-     *
-     */
     final class ColumnOrderComparator implements Comparator<DBColumn> {
 
-        /*
-         * Private constructor - to get an instance, use static method getInstance().
-         *
-         */
-        public ColumnOrderComparator() {
+        private ColumnOrderComparator() {
         }
 
         public int compare(DBColumn col1, DBColumn col2) {

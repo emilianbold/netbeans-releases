@@ -58,23 +58,9 @@ public final class DBModel extends DBObject<Object> {
         tables = new HashMap<String, DBTable>();
     }
 
-    /**
-     * Adds table to this instance.
-     *
-     * @param table
-     *            new table to add
-     * @throws IllegalStateException
-     *             if unable to add table
-     */
     public synchronized void addTable(DBTable table) throws IllegalStateException {
         if (table != null) {
-
-            // if table already exists then we should throw exception
             String fqName = getFullyQualifiedTableName(table);
-            if (this.getTable(fqName) != null) {
-                //throw new IllegalStateException("Cannot add table " + fqName + ", it already exist!");
-            }
-
             table.setParentObject(this);
             tables.put(fqName, table);
         }
@@ -102,21 +88,14 @@ public final class DBModel extends DBObject<Object> {
                 result &= tblCheck;
             }
         }
-
         return result;
     }
 
     public String getFullyQualifiedTableName(DBTable tbl) {
-
         if (tbl != null) {
             String tblName = tbl.getName();
             String schName = tbl.getSchema();
             String catName = tbl.getCatalog();
-
-            if (tblName == null) {
-                throw new IllegalArgumentException(
-                        "Cannot construct fully qualified table name, table name is null.");
-            }
 
             StringBuilder buf = new StringBuilder(50);
 
@@ -131,7 +110,6 @@ public final class DBModel extends DBObject<Object> {
             }
 
             buf.append(tblName.trim());
-
             return buf.toString();
         }
 
@@ -142,13 +120,6 @@ public final class DBModel extends DBObject<Object> {
         return (DBTable) this.tables.get(fqTableName);
     }
 
-    /**
-     * Overrides default implementation to compute hashCode value for those
-     * members used in equals() for comparison.
-     *
-     * @return hash code for this object
-     * @see java.lang.Object#hashCode
-     */
     @Override
     public int hashCode() {
         int myHash = 0;
@@ -158,11 +129,6 @@ public final class DBModel extends DBObject<Object> {
         return myHash;
     }
 
-    /**
-     * Overrides default implementation to return name of this DatabaseModel.
-     *
-     * @return model name.
-     */
     @Override
     public String toString() {
         return this.getDisplayName();

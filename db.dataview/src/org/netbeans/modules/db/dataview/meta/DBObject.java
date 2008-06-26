@@ -41,46 +41,12 @@
 package org.netbeans.modules.db.dataview.meta;
 
 /**
- * This basic class provides sql framework functionality to all DBObjects
- * 
  * @author Ahimanikya Satapathy
  */
-public abstract class DBObject <Parent> {
+public abstract class DBObject<Parent> {
 
     protected transient String displayName;
     protected transient Parent parentObject;
-
-    /** Creates a new instance of DBObject */
-    public DBObject () {
-    }
-
-    /**
-     * Overrides default implementation to compute hashcode based on any associated
-     * attributes as well as values of non-transient member variables.
-     * 
-     * @param o Object to test for equality with this
-     * @return hashcode for this instance
-     */
-    @Override
-    public boolean equals(Object o) {
-        if (o == null) {
-            return false;
-        } else if (o == this) {
-            return true;
-        }
-
-        boolean response = false;
-
-        if (o instanceof DBObject) {
-            DBObject target = (DBObject) o;
-
-            // check for display name
-            response &= (this.getDisplayName() != null) ? this.getDisplayName().equals(target.getDisplayName()) : (target.getDisplayName() == null);
-
-        }
-
-        return response;
-    }
 
     public String getDisplayName() {
         return this.displayName;
@@ -98,12 +64,6 @@ public abstract class DBObject <Parent> {
         this.parentObject = newParent;
     }
 
-    /**
-     * Indicates whether a string is null or empty.
-     *
-     * @param str string to chec for null.
-     * @return true if string is null or blank, else false.
-     */
     static boolean isNullString(String str) {
         return (str == null || str.trim().length() == 0);
     }

@@ -43,43 +43,18 @@ package org.netbeans.modules.db.dataview.meta;
 import java.sql.SQLException;
 
 /**
- * Super class for all application exceptions. All SQL specific Exceptions will Extends
- * this Exception This Exception class will contain More methods and functionalities in
- * future.
- * 
- * @author Sudhi Seshachala
  * @author Ahimanikya Satapathy
  */
 public final class DBException extends Exception {
 
-    /**
-     * Should not be called in program, just for loading purpose
-     */
-    public DBException() {
-    }
-
-    /**
-     * Creates a new instance of DataViewException
-     * 
-     * @param message Message for this exception
-     */
     public DBException(String message) {
         super(message);
     }
 
-    /**
-     * @param message message identifying this exception.
-     * @param cause cause identifying this exception.
-     */
     public DBException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    /**
-     * Constructor for DataViewException
-     * 
-     * @param cause of this exception.
-     */
     public DBException(Throwable cause) {
         super(cause);
     }
