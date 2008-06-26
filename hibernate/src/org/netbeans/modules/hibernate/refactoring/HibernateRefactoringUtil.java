@@ -634,7 +634,7 @@ public class HibernateRefactoringUtil {
         Project proj = org.netbeans.api.project.FileOwnerQuery.getOwner(fo);
         HibernateEnvironment env = proj.getLookup().lookup(HibernateEnvironment.class);
         if (env == null) {
-            ErrorManager.getDefault().log(org.openide.ErrorManager.INFORMATIONAL, "No HibernateEnviroment found"); // NOI18N
+            // The project does not support Hibernate framework
             return false;
         }
         List<FileObject> mFileObjs = env.getAllHibernateMappingFileObjects();
@@ -703,7 +703,7 @@ public class HibernateRefactoringUtil {
     public static boolean nameNotUnique(String name, Project project) {
         HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
         if (hibernateEnv == null) {
-            ErrorManager.getDefault().log(org.openide.ErrorManager.INFORMATIONAL, "No HibernateEnviroment found"); // NOI18N
+            // The project does not support Hibernate framework
             return false;
         }
         List<String> mappingFiles = hibernateEnv.getAllHibernateMappings();
