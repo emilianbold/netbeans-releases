@@ -281,8 +281,16 @@ public class CompletionUtil {
             ((Datatype)type).getEnumerations() == null)
             return null;
         for(Object value: ((Datatype)type).getEnumerations()) {
-            ValueResultItem item = new ValueResultItem(element, (String)value, context);
-            result.add(item);
+            if(context.getTypedChars() == null || context.getTypedChars().equals("")) {
+                ValueResultItem item = new ValueResultItem(element, (String)value, context);
+                result.add(item);
+                continue;
+            }
+            String str = (String)value;
+            if(str.startsWith(context.getTypedChars())) {
+                ValueResultItem item = new ValueResultItem(element, (String)value, context);
+                result.add(item);
+            }
         }
         return result;
     }    
@@ -309,8 +317,16 @@ public class CompletionUtil {
             return null;                
         Datatype dataType = (Datatype)type;
         for(Object value: dataType.getEnumerations()) {
-            ValueResultItem item = new ValueResultItem(attr, (String)value, context);
-            result.add(item);
+            if(context.getTypedChars() == null || context.getTypedChars().equals("")) {
+                ValueResultItem item = new ValueResultItem(attr, (String)value, context);
+                result.add(item);
+                continue;
+            }
+            String str = (String)value;
+            if(str.startsWith(context.getTypedChars())) {
+                ValueResultItem item = new ValueResultItem(attr, (String)value, context);
+                result.add(item);
+            }
         }
         return result;
     }    

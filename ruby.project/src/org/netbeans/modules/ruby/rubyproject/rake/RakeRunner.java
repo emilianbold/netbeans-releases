@@ -41,6 +41,9 @@ package org.netbeans.modules.ruby.rubyproject.rake;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -55,13 +58,17 @@ import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.rubyproject.RubyFileLocator;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.TestNotifier;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Task;
 import org.openide.util.Utilities;
 
 /**
@@ -142,7 +149,7 @@ public final class RakeRunner {
         if (!RubyPlatform.hasValidRake(project, showWarnings)) {
             return;
         }
-
+        
         RakeTask[] rakeTasks = new RakeTask[tasksNames.length];
         for (int i = 0; i < tasksNames.length; i++) {
             RakeTask rakeTask = RakeSupport.getRakeTask(project, tasksNames[i]);
@@ -156,7 +163,7 @@ public final class RakeRunner {
         }
         run(rakeTasks);
     }
-
+    
     private void run(final RakeTask... tasks) {
         assert tasks.length > 0 : "must pass at least on task";
         
@@ -166,6 +173,15 @@ public final class RakeRunner {
 
         // Save all files first
         LifecycleManager.getDefault().saveAll();
+
+        TestTaskRunner testTaskRunner = new TestTaskRunner(project, debug);
+        List<RakeTask> tasksToRun = testTaskRunner.filter(Arrays.asList(tasks));
+        // check whether there was only one task that got already
+        // handled by the test handler hook
+        if (tasksToRun.isEmpty()) {
+            testTaskRunner.postRun();
+            return;
+        }
 
         // EMPTY CONTEXT??
         if (fileLocator == null) {
@@ -183,12 +199,12 @@ public final class RakeRunner {
             pwd = FileUtil.toFile(rakeFile.getParent());
         }
 
-        if (tasks.length == 1) { // test?
-            String taskName = tasks[0].getTask();
+        if (tasksToRun.size() == 1) { // test?
+            String taskName = tasksToRun.get(0).getTask();
             setTest(taskName != null && (taskName.equals("test") || taskName.startsWith("test:"))); // NOI18N
         }
         
-        computeAndSetDisplayName(tasks);
+        computeAndSetDisplayName(tasksToRun);
 
         List<String> additionalArgs = new ArrayList<String>();
 
@@ -197,7 +213,7 @@ public final class RakeRunner {
             additionalArgs.add(FileUtil.toFile(rakeFile).getAbsolutePath());
         }
         
-        for (RakeTask task : tasks) {
+        for (RakeTask task : tasksToRun) {
             additionalArgs.add(task.getTask());
         }
 
@@ -256,22 +272,45 @@ public final class RakeRunner {
         
         desc.addOutputRecognizer(new RakeErrorRecognizer(desc, charsetName)).debug(debug);
 
-        new RubyExecution(desc, charsetName).run();
+        Task task = new RubyExecution(desc, charsetName).run();
+        // check whether there are testing tasks the need to be run still
+        if (testTaskRunner.needsPostRun()) {
+            // must wait for the task to finish since in case of testing 
+            // tasks the run task is typically db:test:prepare which needs to 
+            // be finished before running the tests
+            try {
+                task.waitFinished(4000); 
+            } catch (InterruptedException ex) {
+                // ignore
+            }
+            testTaskRunner.postRun();
+        }
     }
 
-    private void computeAndSetDisplayName(final RakeTask[] tasks) {
+    private void computeAndSetDisplayName(final List<RakeTask> tasks) {
         ProjectInformation info = ProjectUtils.getInformation(project);
         String baseDisplayName = info == null ? NbBundle.getMessage(RakeRunnerAction.class, "RakeRunnerAction.Rake") : info.getDisplayName();
         StringBuilder displayNameSB = new StringBuilder(baseDisplayName).append(" ("); // NOI18N
-        for (int i = 0; i < tasks.length; i++) {
-            displayNameSB.append(tasks[i].getTask());
-            if (i != tasks.length - 1) {
+        for (int i = 0; i < tasks.size(); i++) {
+            displayNameSB.append(tasks.get(i).getTask());
+            if (i != tasks.size() - 1) {
                 displayNameSB.append(", "); // NOI18N
             }
         }
         displayNameSB.append(')');
         setDisplayName(displayNameSB.toString()); // NOI18N
     }
+    
+    private static TestRunner getTestRunner(TestRunner.TestType testType) {
+        Collection<? extends TestRunner> testRunners = Lookup.getDefault().lookupAll(TestRunner.class);
+        for (TestRunner each : testRunners) {
+            if (each.supports(testType)) {
+                return each;
+            }
+        }
+        return null;
+    }
+
 
     private class RakeErrorRecognizer extends OutputRecognizer implements Runnable {
 

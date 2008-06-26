@@ -490,6 +490,16 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
     }
 
     @Override
+    public int hashCode() {
+        return System.identityHashCode(this); // Was overriden by AbstractList
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return (this == o); // Was overriden by AbstractList
+    }
+
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(256);
         dumpInfo(sb);

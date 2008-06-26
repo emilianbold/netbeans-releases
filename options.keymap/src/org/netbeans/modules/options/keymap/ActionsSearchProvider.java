@@ -42,7 +42,10 @@ package org.netbeans.modules.options.keymap;
 
 import java.awt.event.ActionEvent;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
@@ -57,14 +60,15 @@ import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
 import org.openide.cookies.EditorCookie;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
+
+    
 /**
  * SearchProvider for all actions. 
- * @author  Jan Becicka
+ * @author  Jan Becicka, Dafe Simonek
  */
 public class ActionsSearchProvider implements SearchProvider {
 
@@ -74,39 +78,68 @@ public class ActionsSearchProvider implements SearchProvider {
      * and can be run meaningfully on current actions context.
      */
     public void evaluate(SearchRequest request, SearchResponse response) {
+        List<Object[]> possibleResults = new ArrayList<Object[]>(7);
+        Map<ShortcutAction, Set<String>> curKeymap;
         // iterate over all found KeymapManagers
         for (KeymapManager m : Lookup.getDefault().lookupAll(KeymapManager.class)) {
+            curKeymap = m.getKeymap(m.getCurrentProfile());
             for (Entry<String, Set<ShortcutAction>> entry : m.getActions().entrySet()) {
                 for (ShortcutAction sa : entry.getValue()) {
                     // check action and obtain only meaningful ones
-                    Object[] actAndEvent = getActionAndEvent(sa);
+                    Object[] actAndEvent = getActionInfo(sa, curKeymap.get(sa));
                     if (actAndEvent == null) {
                         continue;
                     }
-                    if (sa.getDisplayName().toLowerCase().indexOf(request.getText().toLowerCase()) != -1) {
-                        Object shortcut = ((Action)actAndEvent[0]).getValue(Action.ACCELERATOR_KEY);
-                        KeyStroke stroke = null;
-                        if (shortcut instanceof KeyStroke) {
-                            stroke = (KeyStroke)shortcut;
-                        }
-                        Object desc = ((Action)actAndEvent[0]).getValue(Action.SHORT_DESCRIPTION);
-                        String sDesc = null;
-                        if (sDesc instanceof String) {
-                            sDesc = (String)desc;
-                        }
-                        if (!response.addResult(
-                                new ActionResult((Action)actAndEvent[0], (ActionEvent)actAndEvent[1]),
-                                sa.getDisplayName(), sDesc, Collections.singletonList(stroke))) {
-                            // return immediatelly if no further result is needed
+                    int index = sa.getDisplayName().toLowerCase().indexOf(request.getText().toLowerCase());
+                    if (index == 0) {
+                        // typed text is prefix of action name, return these actions first
+                        if (!addAction(actAndEvent, response)) {
                             return;
                         }
+                    } else if (index != -1) {
+                        // typed text is contained in action name, but not as prefix,
+                        // store such actions if there are not enough "prefix" actions
+                        possibleResults.add(actAndEvent);
                     }
                 }
             }
         }
+        
+        // add results stored above, actions that contain typed text, but not as prefix
+        for (Object[] actAndEvent : possibleResults) {
+            if (!addAction(actAndEvent, response)) {
+                return;
+            }
+        }
+    }
+
+    private boolean addAction(Object[] actAndEvent, SearchResponse response) {
+        KeyStroke stroke = null;
+        // obtaining shortcut, first try Keymaps
+        Set<String> shortcuts = (Set<String>)actAndEvent[3];
+        if (shortcuts != null && shortcuts.size() > 0) {
+            String shortcut = shortcuts.iterator().next();
+            stroke = Utilities.stringToKey(shortcut);
+        }
+        // try accelerator key property if Keymaps returned no shortcut
+        if (stroke == null) {
+            Object shortcut = ((Action) actAndEvent[0]).getValue(Action.ACCELERATOR_KEY);
+            if (shortcut instanceof KeyStroke) {
+                stroke = (KeyStroke)shortcut;
+            }
+        }
+        
+        /* uncomment if needed
+         Object desc = ((Action) actAndEvent[0]).getValue(Action.SHORT_DESCRIPTION);
+        String sDesc = null;
+        if (sDesc instanceof String) {
+            sDesc = (String) desc;
+        }*/
+        return response.addResult(new ActionResult((Action) actAndEvent[0], (ActionEvent) actAndEvent[1]),
+                ((ShortcutAction)actAndEvent[2]).getDisplayName(), null, Collections.singletonList(stroke));
     }
     
-    private Object[] getActionAndEvent(ShortcutAction sa) {
+    private Object[] getActionInfo(ShortcutAction sa, Set<String> shortcuts) {
         Class clazz = sa.getClass();
         Field f = null;
         try {
@@ -141,7 +174,8 @@ public class ActionsSearchProvider implements SearchProvider {
                 evSource = TopComponent.getRegistry().getActivated();
             }
             
-            return new Object[] {action, new ActionEvent(evSource, evId, null)};
+            return new Object[] {action, new ActionEvent(evSource, evId, null),
+                                sa, shortcuts};
             
         } catch (Throwable thr) {
             if (thr instanceof ThreadDeath) {
