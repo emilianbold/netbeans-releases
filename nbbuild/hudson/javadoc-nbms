@@ -16,9 +16,7 @@ mydir=`cd $(dirname $0); pwd`
 keystore=$mydir/../../../../NBstore
 storepass=`cat $mydir/../../../../storepass`
 ant -emacs -Dbuildnum=$BUILD_TAG -Dcluster.config=experimental -Dmoduleconfig=daily-alpha-nbms -Dkeystore=$keystore -Dstorepass=$storepass build-nozip build-nbms || exit
-ant -f o.n.core/build.xml test-build
-ant -f o.n.core/test/build.xml -Dxtest.attribs=commit cleanresults runtests || exit
-ant -Dtest.dir=`pwd`/o.n.core/test commit-validation-junit-format || exit
+ant commit-validation
 ant -v -f $mydir/build-update-descriptor.xml || exit
 ant -Djnlp.codebase=http://deadlock.netbeans.org/hudson/job/javadoc-nbms/lastSuccessfulBuild/artifact/nbbuild/build/jnlp/ -Djnlp.signjar.keystore=$keystore -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$storepass build-jnlp || exit
 ant index-layer-paths
