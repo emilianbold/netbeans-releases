@@ -76,6 +76,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElem
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.TSDiagramDetails;
+import org.netbeans.modules.uml.core.metamodel.dynamics.CombinedFragment;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ICombinedFragment;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IInteractionOperand;
 import org.netbeans.modules.uml.core.metamodel.dynamics.Lifeline;
@@ -325,9 +326,10 @@ public class TSDiagramConverter
                 {
                     if(w instanceof ContainerNode && w instanceof UMLNodeWidget)
                     {
-                         UMLNodeWidget cont=(UMLNodeWidget) w;
-                         cont.getResizeStrategyProvider().resizingStarted(cont);
-                         cont.getResizeStrategyProvider().resizingFinished(cont);
+                         ContainerNode cont=(ContainerNode) w;
+                         cont.getContainer().calculateChildren(false);
+                         //cont.getResizeStrategyProvider().resizingStarted(cont);
+                         //cont.getResizeStrategyProvider().resizingFinished(cont);
                     }
                 }
                 scene.validate();
@@ -469,29 +471,8 @@ public class TSDiagramConverter
                         if(nodeInfo.getModelElement() instanceof ICombinedFragment)
                         {
                             ICombinedFragment cfE=(ICombinedFragment) nodeInfo.getModelElement();
-                            for(int i=0;i<cfE.getOperands().size();i++)
-                            {
-                                IInteractionOperand ioE=cfE.getOperands().get(i);
-                                NodeInfo ioI=new NodeInfo();
-                                ioI.setModelElement(ioE);
-                                if(i==0)ioI.setPosition(new Point(0,0));
-                                else ioI.setPosition(new Point(0,Integer.parseInt(nodeInfo.getDevidersOffests().get(i-1))-10));//deviders to operands position convertion
-                                for(NodeLabel nL:nodeInfo.getLabels())
-                                {
-                                    if(nL.getElement().equals(ioE.getGuard().getSpecification()))
-                                    {
-                                        ioI.addNodeLabel(nL);
-                                    }
-                                }
-                                ((UMLNodeWidget) widget).load(ioI);
-                                //we have one cf per diagram
-                                IPresentationElement ioPE=ioE.getPresentationElements().get(0);
-                                Widget ioW=scene.findWidget(ioPE);
-                                if(ioW instanceof DiagramNodeReader)
-                                {
-                                    ((DiagramNodeReader) ioW).loadDependencies(ioI);
-                                }
-                            }
+                            //new AfterValidationExecutor(new LoadInteractionOperandsProvider((UMLNodeWidget) widget,cfE, nodeInfo.getLabels(), nodeInfo.getDevidersOffests()), scene);
+                            new LoadInteractionOperandsProvider((UMLNodeWidget) widget,cfE, nodeInfo.getLabels(), nodeInfo.getDevidersOffests()).perfomeAction();
                         }
                         else if(nodeInfo.getModelElement() instanceof IActivityPartition)
                         {

@@ -326,36 +326,6 @@ public class InteractionOperandWidget extends Widget implements DiagramNodeWrite
         PersistenceUtil.populateProperties(nodeWriter, widget);
     }
     
-    @Override
-    protected void notifyAdded () 
-    {
-        // this is invoked when this widget or its parent gets added, only need to
-        // process the case when this widget is changed, same for notifyRemoved to 
-        // avoid concurrent modification to children list
-        new AfterValidationExecutor(new ActionProvider() {
-            public void perfomeAction() {
-                MovableLabelWidget labelWidget=getLabel();
-                if (labelWidget == null || getParentWidget() == null)
-                {
-                    return;
-                }
-               Widget cf=Util.getParentByClass(InteractionOperandWidget.this, CombinedFragmentWidget.class);
-               if(cf.getParentWidget()==labelWidget.getParentWidget())return;
-
-               labelWidget.removeFromParent();
-                int index = cf.getParentWidget().getChildren().indexOf(cf);
-                cf.getParentWidget().addChild(index + 1, labelWidget);
-                new AfterValidationExecutor(new ActionProvider() {
-                    public void perfomeAction() {
-                        revalidate();
-                        getScene().validate();
-                    }
-                }, getScene());
-                getScene().validate();
-            }
-        }, getScene());
-        getScene().validate();
-    }
     
     @Override
     protected void notifyRemoved()

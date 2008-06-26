@@ -1173,7 +1173,7 @@ class DiagramLoader
         }
         //now get the list of all edgeReaders and sort them based on y-axis
         Collections.sort(edgeInfoList, Y_AXIS_COMPARATOR);
-        System.out.println("  AFTER SORT !!!!!"+edgeInfoList);
+        //System.out.println("  AFTER SORT !!!!!"+edgeInfoList);
         
         //now for each message in the edgeInfoList, find it in the messageList,
         // and create it.. since sequence of creation is very important.
@@ -1181,7 +1181,7 @@ class DiagramLoader
         
         for (Iterator<EdgeInfo> it = edgeInfoList.iterator(); it.hasNext();) {
             EdgeInfo edgeInfo = it.next();
-            System.out.println("  !!!  edgeInfo = "+edgeInfo);
+//            System.out.println("  !!!  edgeInfo = "+edgeInfo);
             Widget sourceWidget = scene.findWidget(edgeInfo.getSourcePE());
             Widget targetWidget = scene.findWidget(edgeInfo.getTargetPE());
             Point startingPoint = (Point) edgeInfo.getWayPoints().get(0);
