@@ -48,12 +48,16 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
 public final class InputOutputManager {
+
+    private static final Logger LOGGER = Logger.getLogger(InputOutputManager.class.getName());
 
     /**
      * All tabs which were used for some process which has now ended.
@@ -116,13 +120,15 @@ public final class InputOutputManager {
                         candidates.add(data);
                     } // continue to remove all closed tabs
                 }
-            }
-        }
 
-        if (!candidates.isEmpty()) {
-            result = candidates.first();
-            AVAILABLE.remove(result.inputOutput);
-            ACTIVE_DISPLAY_NAMES.add(result.displayName);
+                LOGGER.log(Level.FINEST, "InputOutputManager pool: {0}", data.getDisplayName());
+            }
+
+            if (!candidates.isEmpty()) {
+                result = candidates.first();
+                AVAILABLE.remove(result.inputOutput);
+                ACTIVE_DISPLAY_NAMES.add(result.displayName);
+            }
         }
         return result;
     }
@@ -147,6 +153,7 @@ public final class InputOutputManager {
                     ACTIVE_DISPLAY_NAMES.add(result.displayName);
                     it.remove();
                 }
+                LOGGER.log(Level.FINEST, "InputOutputManager pool: {0}", data.getDisplayName());
             }
         }
         return result;
@@ -156,7 +163,7 @@ public final class InputOutputManager {
         synchronized (InputOutputManager.class) {
             String displayName = getNonActiveDisplayName(originalDisplayName);
 
-            InputOutput io = null;
+            InputOutput io;
             StopAction stopAction = null;
             RerunAction rerunAction = null;
 

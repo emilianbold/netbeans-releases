@@ -71,7 +71,8 @@ public class ExecutionServiceTest extends NbTestCase {
 
     public void testSimpleRun() throws InvocationTargetException, InterruptedException {
         TestProcess process = new TestProcess(0);
-        TestCallable callable = new TestCallable(process);
+        TestCallable callable = new TestCallable();
+        callable.setProcess(process);
 
         ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
         ExecutionService service = ExecutionService.newService(
@@ -113,7 +114,8 @@ public class ExecutionServiceTest extends NbTestCase {
 
     public void testHooks() throws InterruptedException, ExecutionException {
         TestProcess process = new TestProcess(0);
-        TestCallable callable = new TestCallable(process);
+        TestCallable callable = new TestCallable();
+        callable.setProcess(process);
 
         class TestRunnable implements Runnable {
 
@@ -149,7 +151,8 @@ public class ExecutionServiceTest extends NbTestCase {
 
     public void testIOHandling() throws InterruptedException, InvocationTargetException, ExecutionException {
         TestProcess process = new TestProcess(0);
-        TestCallable callable = new TestCallable(process);
+        TestCallable callable = new TestCallable();
+        callable.setProcess(process);
 
         ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
         ExecutionService service = ExecutionService.newService(
@@ -187,7 +190,9 @@ public class ExecutionServiceTest extends NbTestCase {
 
         TestProcess process1 = new TestProcess(0);
         TestProcess process2 = new TestProcess(0);
-        TestCallable callable = new TestCallable(process1);
+        TestCallable callable = new TestCallable();
+
+        callable.setProcess(process1);
 
         ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
         ExecutionService service = ExecutionService.newService(
@@ -228,7 +233,8 @@ public class ExecutionServiceTest extends NbTestCase {
     public void testInvocationThread() {
         try {
             TestProcess process = new TestProcess(0);
-            TestCallable callable = new TestCallable(process);
+            TestCallable callable = new TestCallable();
+            callable.setProcess(process);
 
             ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
             ExecutionService service = ExecutionService.newService(callable, builder.create(), "Test");
@@ -279,8 +285,8 @@ public class ExecutionServiceTest extends NbTestCase {
 
         private TestProcess process;
 
-        public TestCallable(TestProcess process) {
-            this.process = process;
+        public TestCallable() {
+            super();
         }
 
         public synchronized void setProcess(TestProcess process) {
