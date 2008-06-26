@@ -83,15 +83,18 @@ public class SQLCompletionQueryTest extends NbTestCase {
         suite.addTest(new SQLCompletionQueryTest("selectNoSchemas"));
         suite.addTest(new SQLCompletionQueryTest("selectSimple"));
         suite.addTest(new SQLCompletionQueryTest("selectSchema"));
+        suite.addTest(new SQLCompletionQueryTest("selectSchemaTable"));
         suite.addTest(new SQLCompletionQueryTest("selectTableInDefaultSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectTableInNonDefaultSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectColumn"));
+
         suite.addTest(new SQLCompletionQueryTest("selectEmptyFromClause"));
         suite.addTest(new SQLCompletionQueryTest("selectAllFrom"));
         suite.addTest(new SQLCompletionQueryTest("selectSimpleFrom"));
         suite.addTest(new SQLCompletionQueryTest("selectFromQualTableInDefaultSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectFromUnqualTableInDefaultSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectFromSchema"));
+        suite.addTest(new SQLCompletionQueryTest("selectFromSchemaTableNotInFromClause"));
 
         suite.addTest(new SQLCompletionQueryTest("fromAll"));
         suite.addTest(new SQLCompletionQueryTest("fromSimple"));
@@ -100,6 +103,7 @@ public class SQLCompletionQueryTest extends NbTestCase {
         suite.addTest(new SQLCompletionQueryTest("whereAll"));
         suite.addTest(new SQLCompletionQueryTest("whereSimple"));
         suite.addTest(new SQLCompletionQueryTest("whereSchema"));
+        suite.addTest(new SQLCompletionQueryTest("whereSchemaTable"));
 
         // Does not work yet.
         // suite.addTest(new SQLCompletionQueryTest("selectFromTableInNonDefaultSchema", true));

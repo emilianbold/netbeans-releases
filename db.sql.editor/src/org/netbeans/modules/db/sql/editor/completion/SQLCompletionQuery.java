@@ -298,7 +298,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     private void completeDoubleQualIdentBasedOnFromTables(QualIdent fullyTypedIdent, String lastPrefix) {
         FromTables fromTables = analyzer.getFromTables();
         assert fromTables != null;
-        if (!fromTables.unaliasedTableNameExists(fullyTypedIdent)) {
+        if (fromTables.unaliasedTableNameExists(fullyTypedIdent)) {
             MetadataModelUtilities.addColumnItems(items, model, fullyTypedIdent, lastPrefix, anchorOffset);
         }
     }
