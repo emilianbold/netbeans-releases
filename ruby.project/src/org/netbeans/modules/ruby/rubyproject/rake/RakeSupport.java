@@ -298,10 +298,10 @@ public final class RakeSupport {
             exitCode = process.waitFor();
 
             if (exitCode != 0) {
-                LOGGER.severe("rake process failed (stdout):\n\n" + stdout); // NOI18N
-                LOGGER.severe("rake process failed (stderr):\n\n" + stderr); // NOI18N
+                LOGGER.severe("rake process failed (workdir: " + pwd + "):\nstdout:\n\n" + stdout + // NOI18N
+                        "stderr:\n" + stderr); // NOI18N
                 Util.notifyLocalized(RakeSupport.class, "RakeSupport.rake.task.fetching.fails", // NOI18N
-                        NotifyDescriptor.ERROR_MESSAGE, stderr);
+                        NotifyDescriptor.ERROR_MESSAGE, pwd, stderr);
                 return null;
             }
             if (stderr.length() > 0) {
