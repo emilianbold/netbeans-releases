@@ -58,6 +58,7 @@ import org.netbeans.api.java.source.BuildArtifactMapper;
 import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -508,28 +509,27 @@ public final class Deployment {
     public static interface Logger {
         public void log(String message);
     }
-    
+
     private static void startListeningOnCos(J2eeModuleProvider j2eeProvider) {
         List<J2eeModuleProvider> providers = new ArrayList<J2eeModuleProvider>(4);
         providers.add(j2eeProvider);
-        
+
         if (j2eeProvider instanceof J2eeApplicationProvider) {
             Collections.addAll(providers, ((J2eeApplicationProvider) j2eeProvider).getChildModuleProviders());
         }
-        
+
         List<URL> urls = new ArrayList<URL>();
         for (J2eeModuleProvider provider : providers) {
-            for (FileObject file : provider.getSourceFileMap().getSourceRoots()) {         
+            for (FileObject file : provider.getSourceFileMap().getSourceRoots()) {
                 try {
                     URL[] binaries = BinaryForSourceQuery.findBinaryRoots(file.getURL()).getRoots();
                     for (URL binary : binaries) {
                         FileObject object = URLMapper.findFileObject(binary);
                         if (object != null) {
-                            URL url = URLMapper.findURL(file, URLMapper.EXTERNAL); 
+                            URL url = URLMapper.findURL(file, URLMapper.EXTERNAL);
                             if (url != null) {
                                 urls.add(url);
                             }
-                            //BuildArtifactMapper.addArtifactsUpdatedListener(file.getURL(), new ArtifactsUpdatedListenerImpl(j2eeProvider));
                         }
                     }
                 } catch (IOException ex) {
@@ -537,24 +537,30 @@ public final class Deployment {
                 }
             }
         }
-        
+
         ArtifactsUpdatedListenerImpl listener = new ArtifactsUpdatedListenerImpl(j2eeProvider, urls);
         for (URL url :urls) {
             BuildArtifactMapper.addArtifactsUpdatedListener(url, listener);
         }
+
+        // XXX
+        J2eeModuleProvider.DeployOnSaveSupport support = j2eeProvider.getDeployOnSaveSupport();
+        if (support != null) {
+            support.addArtifactListener(listener);
+        }
     }
-    
-    private static final class ArtifactsUpdatedListenerImpl implements ArtifactsUpdated {
+
+    private static final class ArtifactsUpdatedListenerImpl implements ArtifactsUpdated, ArtifactListener {
 
         private final J2eeModuleProvider provider;
 
         private final List<URL> registered;
-        
+
         public ArtifactsUpdatedListenerImpl(J2eeModuleProvider provider, List<URL> registered) {
             this.provider = provider;
             this.registered = registered;
         }
-        
+
         public void artifactsUpdated(Iterable<File> artifacts) {
             if (LOGGER.isLoggable(Level.FINEST)) {
                 StringBuilder builder = new StringBuilder("Artifacts updated: [");
@@ -565,7 +571,7 @@ public final class Deployment {
                 builder.append("]");
                 LOGGER.log(Level.FINEST, builder.toString());
             }
-            
+
             DeploymentTargetImpl deploymentTarget = new DeploymentTargetImpl(provider, null);
             TargetServer server = new TargetServer(deploymentTarget);
             boolean keep = server.notifyArtifactsUpdated(artifacts);
@@ -573,8 +579,12 @@ public final class Deployment {
                 for (URL url : registered) {
                     BuildArtifactMapper.removeArtifactsUpdatedListener(url, this);
                 }
+
+                J2eeModuleProvider.DeployOnSaveSupport support = provider.getDeployOnSaveSupport();
+                if (support != null) {
+                    support.removeArtifactListener(this);
+                }
             }
         }
-        
-    }    
+    }
 }

@@ -300,6 +300,11 @@ public final class ProjectWebModule extends J2eeModuleProvider
         return this;
     }
 
+    @Override
+    public DeployOnSaveSupport getDeployOnSaveSupport() {
+        return project.getDeployOnSaveSupport();
+    }
+    
     public File getDeploymentConfigurationFile(String name) {
         assert name != null : "File name of the deployement configuration file can't be null"; //NOI18N
         
