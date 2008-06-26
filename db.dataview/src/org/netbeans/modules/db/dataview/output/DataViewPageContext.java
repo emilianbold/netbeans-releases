@@ -137,7 +137,7 @@ class DataViewPageContext {
         this.pageSize = pageSize;
     }
 
-    synchronized void setTotalRows(int totalCount) {
+    void setTotalRows(int totalCount) {
         this.totalRows = totalCount;
     }
 
@@ -154,7 +154,9 @@ class DataViewPageContext {
         }
     }
 
-    synchronized void setCurrentRows(List<Object[]> rows) {
-        this.rows = rows;
+    void setCurrentRows(List<Object[]> rows) {
+        synchronized(rows) {
+            this.rows = rows;
+        }
     }
 }

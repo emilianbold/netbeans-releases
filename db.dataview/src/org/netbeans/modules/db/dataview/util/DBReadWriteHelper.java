@@ -52,16 +52,11 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
-import java.util.TreeMap;
 import java.util.logging.Logger;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
@@ -340,7 +335,7 @@ public class DBReadWriteHelper {
 
     }
 
-    public static boolean validate (Object valueObj, DBColumn col) throws DBException {
+    public static boolean validate(Object valueObj, DBColumn col) throws DBException {
         int jdbcType = col.getJdbcType();
         try {
             if (valueObj == null) {
@@ -374,10 +369,10 @@ public class DBReadWriteHelper {
                 case Types.TIME:
                     DBReadWriteHelper.convertFromIso8601(valueObj.toString());
                     break;
-                    
+
                 case Types.CHAR:
                 case Types.VARCHAR:
-                    if(valueObj.toString().length() > col.getPrecision()){
+                    if (valueObj.toString().length() > col.getPrecision()) {
                         String colName = col.getQualifiedName();
                         String errMsg = "Too large data \'" + valueObj + "\' for column " + colName;
                         throw new DBException(errMsg);
@@ -392,75 +387,12 @@ public class DBReadWriteHelper {
         }
     }
 
-    
-    /**
-     * Indicates whether a string is null or empty.
-     *
-     * @param str string to chec for null.
-     * @return true if string is null or blank, else false.
-     */
     public static boolean isNullString(String str) {
         return (str == null || str.trim().length() == 0);
     }
 
-    /**
-     * convertFromIso8601
-     * 
-     * @param isoDateTime - ISO datetime
-     * @return a long value
-     */
     public static long convertFromIso8601(String isoDateTime) throws DBException {
         return getCalendar(isoDateTime).getTimeInMillis();
-    }
-
-    /**
-     * Create a SQL String to be used with java.sql.PreparedStatement by substituting
-     * symbols beginning "$" with "?". Binding variable order is preserved.
-     *
-     * @pre rawSql may contain any "?"
-     * @post processedSql has all the "$attributeName" in the rawSql is replaced with "?"
-     *       where "attributeName" is name/key in attrMap
-     * @param rawSql
-     * @param symbols list of Source column names and runtime input (prefixed $).
-     * @param paramList ordered list of above appearing in the statement
-     * @return preparedStatement string with binding parameter (?) for each occurence of the symbols.
-     */
-    public static String createPreparedStatement(String rawSql, final List symbols, List<String> orderedSymbols) {
-        String symbol = null;
-        boolean noMore = false;
-        Iterator iter = symbols.iterator();
-        if (!iter.hasNext()) {
-            return rawSql;
-        }
-
-        if (orderedSymbols != null) {
-            List<String> orderedSymbolList = DBReadWriteHelper.getOrderedSymbolList(rawSql, symbols);
-            orderedSymbols.clear();
-            orderedSymbols.addAll(orderedSymbolList);
-        }
-        String processedSql = rawSql;
-
-        do {
-            symbol = (String) iter.next();
-            if ((symbol != null) && (symbol.startsWith("$"))) {
-                symbol = "\\" + symbol;
-            }
-
-            noMore = false;
-            do {
-                processedSql = processedSql.replaceFirst("?", symbol);
-                if (!rawSql.equals(processedSql)) {
-                    noMore = true;
-                } else {
-                    noMore = false;
-                }
-
-                rawSql = processedSql;
-            } while (noMore);
-        } while (iter.hasNext());
-
-        mLogger.info("EDIT092: >>> Generated PreparedStatement: \n" + processedSql);
-        return processedSql;
     }
 
     /**
@@ -655,42 +587,5 @@ public class DBReadWriteHelper {
         } catch (NoSuchElementException ex) {
             return false;
         }
-    }
-
-    /**
-     * Returns the list of the Sumbol Names in "attrMap" available in "rawSql" in the
-     * order of appearance.
-     *
-     * @param rawSql
-     * @param attrMap
-     * @return
-     */
-    private static List<String> getOrderedSymbolList(String rawSql, final List symbolList) {
-        Map<Integer, String> map = new TreeMap<Integer, String>();
-        String symbolName = null;
-
-        if ((rawSql != null) && (symbolList != null)) {
-            Iterator iter = symbolList.iterator();
-
-            int pos = -1;
-            int indexFrom = 0;
-
-            while (iter.hasNext()) {
-                symbolName = (String) iter.next();
-                indexFrom = 0;
-                boolean morePresent = true;
-                while (morePresent) {
-                    pos = rawSql.indexOf(symbolName, indexFrom);
-                    if (pos >= 0) {
-                        map.put(new Integer(pos), symbolName);
-                        indexFrom = pos + symbolName.length();
-                    } else {
-                        morePresent = false;
-                    }
-                }
-            }
-        }
-
-        return new ArrayList<String>(map.values());
     }
 }

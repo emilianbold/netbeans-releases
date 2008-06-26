@@ -45,9 +45,7 @@ public class BinaryToStringConverter {
     static class ConversionConstants {
 
         int radix; // the base radix
-
         int width; // number of chars used to represent byte
-
 
         ConversionConstants(int w, int r) {
             width = w;
@@ -132,9 +130,6 @@ public class BinaryToStringConverter {
         return buf.toString();
     }
 
-    /**
-     * Get the constants to use for the given base.
-     */
     private static ConversionConstants getConstants(int base) {
         switch (base) {
             case DECIMAL:
@@ -150,9 +145,6 @@ public class BinaryToStringConverter {
         }
     }
 
-    /**
-     * Do not allow any instances to be created.
-     */
     private BinaryToStringConverter() {
     }
 }

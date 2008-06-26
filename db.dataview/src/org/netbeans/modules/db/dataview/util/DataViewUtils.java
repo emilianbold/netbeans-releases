@@ -45,7 +45,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -65,7 +64,7 @@ public class DataViewUtils {
     private static HashMap<Integer, Integer> dataTypePrecedenceMap = new HashMap<Integer, Integer>();
     private static Map<String, String> JDBC_SQL_MAP = new HashMap<String, String>();
     private static Map<String, String> SQL_JDBC_MAP = new HashMap<String, String>();
-    
+
 
     static {
         SQL_JDBC_MAP.put("array", String.valueOf(Types.ARRAY));
@@ -123,7 +122,7 @@ public class DataViewUtils {
     /**
      * Data types in decreasing order of precedence 1 is hightest
      */
-    
+
 
     static {
         dataTypePrecedenceMap.put(new Integer(Types.DOUBLE), new Integer(1));
@@ -144,120 +143,12 @@ public class DataViewUtils {
         dataTypePrecedenceMap.put(new Integer(Types.BINARY), new Integer(16));
     }
 
-    /**
-     * Gets datatype resulting from the combination of the given datatypes. When two
-     * expressions that have different data types are combined by an operator: The data
-     * type of the resulting value is determined by applying the rules of data type
-     * precedence to the data types of the input expressions.
-     * 
-     * @param dataType1 first datatype to evaluate
-     * @param dataType2 second datatype to evaluate
-     * @return resulting datatype
-     */
-    public static int getResultantDataType(int dataType1, int dataType2) {
-
-        Integer dPrecedence1 = dataTypePrecedenceMap.get(new Integer(dataType1));
-        Integer dPrecedence2 = dataTypePrecedenceMap.get(new Integer(dataType1));
-
-        int retDataType;
-
-        if (dPrecedence1 != null && dPrecedence2 != null) {
-            retDataType = dPrecedence1.intValue() > dPrecedence2.intValue() ? dataType1 : dataType2;
-        } else if (dPrecedence1 != null) {
-            retDataType = dataType1;
-        } else if (dPrecedence2 != null) {
-            retDataType = dataType2;
-        } else {
-            retDataType = dataType1;
-        }
-
-        return retDataType;
-    }
-
-    /**
-     * Gets JDBC int type, if any, corresponding to the given SQL datatype string.
-     * 
-     * @param dataType SQL datatype whose equivalent JDBC int type is sought
-     * @return java.sql.Types value equivalent to dataType
-     * @exception IllegalArgumentException if dataType is empty, null, or does not
-     *            correspond to a valid value of java.sql.Types
-     */
-    public static int getStdJdbcType(String dataType) throws IllegalArgumentException {
-        if (DataViewUtils.isNullString(dataType)) {
-            throw new IllegalArgumentException("Must supply non-empty String value for dataType.");
-        }
-
-        Object intStr = SQL_JDBC_MAP.get(dataType.toLowerCase().trim());
-        if (intStr instanceof String) {
-            return Integer.parseInt((String) intStr);
-        }
-        return JDBCSQL_TYPE_UNDEFINED;
-    }
-
-    /**
-     * Gets SQL datatype string, if any, corresponding to the given JDBC int value.
-     * 
-     * @param dataType SQL datatype whose corresopnding JDBC int type is sought
-     * @return SQL datatype string corresponding to dataType
-     * @exception IllegalArgumentException if dataType does not correspond to a known SQL
-     *            datatype string
-     */
     public static String getStdSqlType(int dataType) throws IllegalArgumentException {
         Object o = JDBC_SQL_MAP.get(String.valueOf(dataType));
         if (o instanceof String) {
             return (String) o;
         }
         return null;
-    }
-
-    /**
-     * Gets List of Strings representing standard SQL datatypes.
-     * 
-     * @return List of standard SQL datatypes.
-     */
-    public static List<String> getStdSqlTypes() {
-        return new ArrayList<String>(JDBC_SQL_MAP.keySet());
-    }
-
-    /**
-     * Gets the stdJdbcType attribute of the Database class
-     * 
-     * @param jdbcType instance of Types
-     * @return The stdJdbcType value
-     */
-    public static synchronized boolean isStdJdbcType(int jdbcType) {
-        return SQL_JDBC_MAP.containsValue(String.valueOf(jdbcType));
-    }
-
-    public static boolean isPrecisionRequired(int jdbcType) {
-        switch (jdbcType) {
-            case Types.BIT:
-            case Types.BIGINT:
-            case Types.BOOLEAN:
-            case Types.INTEGER:
-            case Types.SMALLINT:
-            case Types.TINYINT:
-            case Types.FLOAT:
-            case Types.REAL:
-            case Types.DOUBLE:
-            case Types.DATE:
-            case Types.TIME:
-            case Types.TIMESTAMP:
-            case Types.JAVA_OBJECT:
-            case Types.LONGVARCHAR:
-            case Types.LONGVARBINARY:
-            case Types.BLOB:
-            case Types.CLOB:
-            case Types.ARRAY:
-            case Types.STRUCT:
-            case Types.DISTINCT:
-            case Types.REF:
-            case Types.DATALINK:
-                return false;
-
-            default:
-                return true;
-        }
     }
 
     public static boolean isNumeric(int jdbcType) {
@@ -278,33 +169,6 @@ public class DataViewUtils {
         }
     }
 
-    public static boolean isScaleRequired(int type) {
-        switch (type) {
-            case java.sql.Types.DECIMAL:
-            case java.sql.Types.NUMERIC:
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    public static boolean isBinary(int jdbcType) {
-        switch (jdbcType) {
-            case Types.BINARY:
-            case Types.VARBINARY:
-            case Types.LONGVARBINARY:
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    /**
-     * Indicates whether a string is null or empty.
-     *
-     * @param str string to chec for null.
-     * @return true if string is null or blank, else false.
-     */
     public static boolean isNullString(String str) {
         return (str == null || str.trim().length() == 0);
     }

@@ -131,11 +131,6 @@ class DataViewTablePanel extends JPanel {
         return dataViewUI.isCommitEnabled();
     }
 
-    /**
-     * Updates this view's data model to display the contents of the given ResultSet.
-     *
-     * @param rsMap new ResultSet to be displayed.
-     */
     public void createTableModel(List<Object[]> rows) {
         assert rows != null : "Must supply non-null TableModel";
 
@@ -186,12 +181,6 @@ class DataViewTablePanel extends JPanel {
         return colWidthList;
     }
 
-    /**
-     * create a table model
-     *
-     * @param rs resultset
-     * @return TableModel
-     */
     private TableModel createModelFrom(List<Object[]> rows) {
         DataViewTableModel dtm = new DataViewTableModel();
         DataViewTableSorter sorter = new DataViewTableSorter(dtm);
@@ -225,14 +214,6 @@ class DataViewTablePanel extends JPanel {
 
     class DataViewTableModel extends DefaultTableModel {
 
-        /**
-         * Returns true regardless of parameter values.
-         *
-         * @param row the row whose value is to be queried
-         * @param column the column whose value is to be queried
-         * @return true
-         * @see #setValueAt
-         */
         @Override
         public boolean isCellEditable(int row, int column) {
             if (!isEditable) {

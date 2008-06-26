@@ -78,9 +78,6 @@ public class InsertRecordDialog extends javax.swing.JDialog {
         initComponents();
         addInputFields();
 
-        executeBtn.setMnemonic('E');
-        previewBtn.setMnemonic('S');
-        clearBtn.setMnemonic('C');
         colValueTextField[0].requestFocus();
         
         jSplitPane1.setBottomComponent(null);
@@ -143,6 +140,7 @@ public class InsertRecordDialog extends javax.swing.JDialog {
 
         jPanel4.setPreferredSize(new java.awt.Dimension(520, 33));
 
+        executeBtn.setMnemonic('E');
         executeBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.executeBtn.text")); // NOI18N
         executeBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -151,6 +149,7 @@ public class InsertRecordDialog extends javax.swing.JDialog {
         });
         jPanel4.add(executeBtn);
 
+        previewBtn.setMnemonic('S');
         previewBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.previewBtn.text")); // NOI18N
         previewBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -159,6 +158,7 @@ public class InsertRecordDialog extends javax.swing.JDialog {
         });
         jPanel4.add(previewBtn);
 
+        clearBtn.setMnemonic('C');
         clearBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.clearBtn.text")); // NOI18N
         clearBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -230,13 +230,13 @@ public class InsertRecordDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
 private void cancelBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelBtnActionPerformed
-    dispose();//GEN-LAST:event_cancelBtnActionPerformed
-}                                         
+    dispose();//GEN-HEADEREND:event_cancelBtnActionPerformed
+}//GEN-LAST:event_cancelBtnActionPerformed
 
 private void executeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeBtnActionPerformed
     String[] insertSQL = null;
     try {
-        Object[] insertedRow = getInsertValues();
+        Object[] insertedRow = getInsertValues();//GEN-HEADEREND:event_executeBtnActionPerformed
         
         SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();
         insertSQL = stmtBldr.generateInsertStatement(insertedRow);
@@ -254,13 +254,13 @@ private void executeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         return;
     }
     dispose();
-}//GEN-LAST:event_executeBtnActionPerformed
+}                                          
 
-private void clearBtnActionPerformed(java.awt.event.ActionEvent evt) {                                          
+private void clearBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-LAST:event_executeBtnActionPerformed
     int rows = dataView.getDataViewDBTable().getColumnCount();                                          
     for (int i = 0; i < rows; i++) {//GEN-FIRST:event_clearBtnActionPerformed
-        if (dataView.getDataViewDBTable().getColumn(i).isGenerated()) {//GEN-HEADEREND:event_clearBtnActionPerformed
-            colValueTextField[i].setText("<GENERATED>");
+        if (dataView.getDataViewDBTable().getColumn(i).isGenerated()) {                                             
+            colValueTextField[i].setText("<GENERATED>");//GEN-HEADEREND:event_clearBtnActionPerformed
             colValueTextField[i].setEditable(false);
         } else {
             colValueTextField[i].setText("");
@@ -268,15 +268,15 @@ private void clearBtnActionPerformed(java.awt.event.ActionEvent evt) {
         }
     }
     refreshSQL();
-}//GEN-LAST:event_clearBtnActionPerformed
+}                                        
 
-private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {                                        
+private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-LAST:event_clearBtnActionPerformed
     if (evt.getActionCommand().equalsIgnoreCase("Show SQL")) {                                        
         jSplitPane1.setDividerLocation(250);//GEN-FIRST:event_previewBtnActionPerformed
         jSplitPane1.setBottomComponent(jScrollPane2);
-        refreshSQL();//GEN-HEADEREND:event_previewBtnActionPerformed
+        refreshSQL();                                               
         previewBtn.setText("Hide SQL");
-    } else {
+    } else {//GEN-HEADEREND:event_previewBtnActionPerformed
         jSplitPane1.setBottomComponent(null);
         previewBtn.setText("Show SQL");
     }
