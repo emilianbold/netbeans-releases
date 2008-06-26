@@ -866,7 +866,11 @@ class DiagramLoader
             //there is nothing to add.. so return..
             return null;
         }
-        pE = Util.createNodePresentationElement();
+        pE = elt.getPresentationElementById(edgeReader.getPEID());
+        if (pE == null)
+        {
+            pE = Util.createNodePresentationElement();
+        } 
 //            pE.setXMIID(PEID);
         pE.addSubject(elt);
 
