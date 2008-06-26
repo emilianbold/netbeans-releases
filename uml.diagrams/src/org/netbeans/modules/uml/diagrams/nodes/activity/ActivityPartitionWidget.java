@@ -62,6 +62,7 @@ import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivity
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityNode;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityPartition;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
@@ -471,7 +472,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget
         }   
         if (elt != null && elt instanceof IActivityPartition)
         {
-            if (elt.getOwner() instanceof IActivity)
+            if (elt.getOwner() instanceof IActivity || elt.getOwner() instanceof IPackage)
             {
                 String or = nodeReader.getProperties().get("Orientation").toString();
                 this.setOrientation(SeparatorWidget.Orientation.valueOf(or));

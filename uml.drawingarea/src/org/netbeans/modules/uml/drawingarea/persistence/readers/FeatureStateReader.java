@@ -39,69 +39,60 @@
 
 package org.netbeans.modules.uml.drawingarea.persistence.readers;
 
-import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityPartition;
-import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IRegion;
-import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IState;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.core.metamodel.dynamics.ICombinedFragment;
-import org.netbeans.modules.uml.core.metamodel.dynamics.IInteractionOperand;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
-import org.netbeans.modules.uml.core.metamodel.structure.IProject;
+import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
 import org.netbeans.modules.uml.drawingarea.persistence.api.GraphNodeReader;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author jyothi
  */
-public class GraphNodeReaderFactory {
+class FeatureStateReader implements GraphNodeReader {
 
-    public static GraphNodeReader getReader(NodeInfo nodeInfo)
+    DesignerScene scene;
+    private IElementLocator locator = new ElementLocator();
+    private NodeInfo nodeInfo;
+
+    FeatureStateReader(NodeInfo nodeInfo)
     {
-        GraphNodeReader retVal = null;
-        
-        //try to get the IElement based on nodeInfo
-        //Figure out what reader should be initalized from the layer file
-        IProject project = nodeInfo.getProject();
-        String meid = nodeInfo.getMEID();
-        IElementLocator locator = new ElementLocator();
-        IElement elt = locator.findByID(project, meid);
-        if (elt != null)
-        {
-            //create appropriate Reader..
-            if (elt instanceof IActivityPartition)
-            {
-                retVal = new ActivityPartitionReader(nodeInfo);
-            }
-            else if (elt instanceof ICombinedFragment || elt instanceof IInteractionOperand)
-            {
-                retVal = new CombinedFragmentReader(nodeInfo);
-            }
-            // we don't need special handling for packages
-//            else if (elt instanceof IPackage)
-//            {
-//                retVal = new PackageReader(nodeInfo);
-//            }
-            else if (elt instanceof IState || elt instanceof IRegion)
-            {
-                retVal = new CompositeStateReader(nodeInfo);
-            }
-//            else if (elt instanceof IOperation || elt instanceof IAttribute)
-//            {
-//                retVal = new FeatureStateReader(nodeInfo);
-//            }
-            else
-            {
-                retVal = new DefaultReader(nodeInfo);
-            }
-            
-        }
-        
-        
-        
-        return retVal;
+        this.nodeInfo = nodeInfo;
     }
+
+    public GraphNodeReader initializeReader(Scene scene, NodeInfo nodeInfo)
+    {
+        this.scene = (DesignerScene) scene;
+        return this;
+
+    }
+
+    public void finalizeReader()
+    {
+        try
+        {
+            this.finalize();
+        } catch (Throwable ex)
+        {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    public void processGraphNode(GraphNodeReader peek, NodeInfo nodeInfo)
+    {
+        //TODO
+    }
+
+    public NodeInfo getNodeInfo()
+    {
+        return nodeInfo;
+    }
+
+    public void processDependencies()
+    {
+        //TODO
+    }
+
 }
