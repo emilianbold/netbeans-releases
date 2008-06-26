@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
@@ -143,7 +144,7 @@ public class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
             Collection<CsmInheritance> list = cls.getBaseClasses();
             if (list != null && list.size() >0){
                 for(CsmInheritance inh : list){
-                    CsmClass c = inh.getCsmClass();
+                    CsmClass c = CsmInheritanceUtilities.getCsmClass(inh);
                     if (c != null) {
                         back.add(c);
                         buildSuperHierarchy(c, map);
@@ -175,7 +176,7 @@ public class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
             Collection<CsmInheritance> list = cls.getBaseClasses();
             if (list != null && list.size() >0){
                 for(CsmInheritance inh : list){
-                    CsmClass c = inh.getCsmClass();
+                    CsmClass c = CsmInheritanceUtilities.getCsmClass(inh);
                     if (c != null) {
                         Set<CsmClass> back = map.get(c);
                         if (back == null){
