@@ -164,6 +164,10 @@ public class SQLCompletionEnv {
                     context = Context.SELECT;
                     contextOffset = seq.offset();
                     return;
+                } else if (StringUtils.textEqualsIgnoreCase("WHERE", keyword)) { // NOI18N
+                    context = Context.WHERE;
+                    contextOffset = seq.offset();
+                    return;
                 }
             }
         }

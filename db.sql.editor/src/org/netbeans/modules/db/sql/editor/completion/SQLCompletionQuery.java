@@ -63,6 +63,7 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
  */
 public class SQLCompletionQuery extends AsyncCompletionQuery {
 
+    // XXX refactor to get rid of the one-line methods.
     // XXX quoted identifiers.
 
     private final MetadataModel model;
@@ -109,6 +110,10 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             case FROM:
                 insideFrom();
                 break;
+            case WHERE:
+                if (analyzer.getFromTables() != null) {
+                    insideWhere();
+                }
         }
     }
 
@@ -140,45 +145,24 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
+    private void insideWhere() {
+        Identifier ident = findIdentifier();
+        if (ident == null) {
+            return;
+        }
+        anchorOffset = ident.anchorOffset;
+        if (ident.fullyTypedIdent.isEmpty()) {
+            completeWhereSimpleIdent(ident.lastPrefix);
+        } else if (ident.fullyTypedIdent.isSimple()) {
+            completeWhereSingleQualIdent(ident.fullyTypedIdent, ident.lastPrefix);
+        } else if (ident.fullyTypedIdent.isSingleQualified()) {
+            completeWhereDoubleQualIdent(ident.fullyTypedIdent, ident.lastPrefix);
+        }
+    }
+
     private void completeSelectSimpleIdent(String typedPrefix) {
-        FromTables fromTables = analyzer.getFromTables();
-        if (fromTables != null) {
-            // Columns from tables and aliases.
-            Set<QualIdent> tableNames = fromTables.getUnaliasedTableNames();
-            Set<QualIdent> allTableNames = new TreeSet<QualIdent>(tableNames);
-            Map<String, QualIdent> aliases = fromTables.getAliases();
-            for (Entry<String, QualIdent> entry : aliases.entrySet()) {
-                allTableNames.add(entry.getValue());
-            }
-            for (QualIdent tableName : allTableNames) {
-                MetadataModelUtilities.addColumnItems(items, model, tableName, typedPrefix, anchorOffset);
-            }
-            // Tables from default schema.
-            String defaultSchemaName = model.getDefaultSchemaName();
-            Set<String> simpleTableNames = new HashSet<String>();
-            for (QualIdent tableName : tableNames) {
-                String simpleTableName = tableName.getSimpleName();
-                if (tableName.isSimple()) {
-                    simpleTableNames.add(simpleTableName);
-                } else if (tableName.isSingleQualified()) {
-                    if (defaultSchemaName.equals(tableName.getFirstQualifier())) {
-                        simpleTableNames.add(simpleTableName);
-                    }
-                }
-            }
-            MetadataModelUtilities.addTableItems(items, model, new QualIdent(defaultSchemaName), simpleTableNames, typedPrefix, anchorOffset);
-            // Aliases.
-            List<String> sortedAliases = new ArrayList<String>(aliases.keySet());
-            Collections.sort(sortedAliases);
-            MetadataModelUtilities.addAliasItems(items, sortedAliases, typedPrefix, anchorOffset);
-            // Schemas based on qualified tables.
-            Set<String> schemaNames = new HashSet<String>();
-            for (QualIdent tableName : tableNames) {
-                if (!tableName.isSimple()) {
-                    schemaNames.add(tableName.getFirstQualifier());
-                }
-            }
-            MetadataModelUtilities.addSchemaItems(items, model, schemaNames, typedPrefix, anchorOffset);
+        if (analyzer.getFromTables() != null) {
+            completeSimpleIdentBasedOnFromTables(typedPrefix);
         } else {
             String defaultSchemaName = model.getDefaultSchemaName();
             List<String> defaultSchemaTableNames = model.getTableNames(defaultSchemaName);
@@ -197,51 +181,21 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     }
 
     private void completeSelectSingleQualIdent(QualIdent fullyTypedIdent, String lastPrefix) {
-        FromTables fromTables = analyzer.getFromTables();
-        // Assume table name.
-        QualIdent tableName = fullyTypedIdent;
-        if (fromTables != null) {
-            // The table name must be a simple name in or qualifed by the default schema.
-            String defaultSchemaName = model.getDefaultSchemaName();
-            boolean found = false;
-            for (QualIdent unaliasedTableName : fromTables.getUnaliasedTableNames()) {
-                if (unaliasedTableName.equals(tableName) || unaliasedTableName.equals(new QualIdent(defaultSchemaName, tableName))) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                String alias = fullyTypedIdent.getFirstQualifier();
-                tableName = fromTables.getTableNameByAlias(alias);
-            }
+        if (analyzer.getFromTables() != null) {
+            completeSingleQualIdentBasedOnFromTables(fullyTypedIdent, lastPrefix);
+        } else {
+            // All columns in the typed table.
+            MetadataModelUtilities.addColumnItems(items, model, fullyTypedIdent, lastPrefix, anchorOffset);
+            // All tables in the typed schema.
+            MetadataModelUtilities.addTableItems(items, model, fullyTypedIdent, null, lastPrefix, anchorOffset);
         }
-        if (tableName != null) {
-            MetadataModelUtilities.addColumnItems(items, model, tableName, lastPrefix, anchorOffset);
-        }
-        // Now assume schema name.
-        QualIdent schemaName = fullyTypedIdent;
-        Set<String> tableNames = null;
-        if (fromTables != null) {
-            tableNames = new HashSet<String>();
-            for (QualIdent unaliasedTableName : fromTables.getUnaliasedTableNames()) {
-                if (unaliasedTableName.isSingleQualified() && unaliasedTableName.getPrefix().equals(schemaName)) {
-                    tableNames.add(unaliasedTableName.getSimpleName());
-                }
-            }
-        }
-        MetadataModelUtilities.addTableItems(items, model, schemaName, tableNames, lastPrefix, anchorOffset);
     }
 
     private void completeSelectDoubleQualIdent(QualIdent fullyTypedIdent, String lastPrefix) {
-        FromTables fromTables = analyzer.getFromTables();
-        QualIdent tableName = fullyTypedIdent;
-        if (fromTables != null) {
-            if (!fromTables.unaliasedTableNameExists(tableName)) {
-                tableName = null;
-            }
-        }
-        if (tableName != null) {
-            MetadataModelUtilities.addColumnItems(items, model, tableName, lastPrefix, anchorOffset);
+        if (analyzer.getFromTables() != null) {
+            completeDoubleQualIdentBasedOnFromTables(fullyTypedIdent, lastPrefix);
+        } else {
+            MetadataModelUtilities.addColumnItems(items, model, fullyTypedIdent, lastPrefix, anchorOffset);
         }
     }
 
@@ -255,6 +209,98 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     private void completeFromSingleQualIdent(QualIdent fullyTypedIdent, String lastPrefix) {
         MetadataModelUtilities.addTableItems(items, model, fullyTypedIdent, null, lastPrefix, anchorOffset);
+    }
+
+    private void completeWhereSimpleIdent(String typedPrefix) {
+        completeSimpleIdentBasedOnFromTables(typedPrefix);
+    }
+
+    private void completeWhereSingleQualIdent(QualIdent fullyTypedIdent, String lastPrefix) {
+        completeSingleQualIdentBasedOnFromTables(fullyTypedIdent, lastPrefix);
+    }
+
+    private void completeWhereDoubleQualIdent(QualIdent fullyTypedIdent, String lastPrefix) {
+        completeDoubleQualIdentBasedOnFromTables(fullyTypedIdent, lastPrefix);
+    }
+
+    private void completeSimpleIdentBasedOnFromTables(String typedPrefix) {
+        FromTables fromTables = analyzer.getFromTables();
+        assert fromTables != null;
+        // Columns from tables and aliases.
+        Set<QualIdent> tableNames = fromTables.getUnaliasedTableNames();
+        Set<QualIdent> allTableNames = new TreeSet<QualIdent>(tableNames);
+        Map<String, QualIdent> aliases = fromTables.getAliases();
+        for (Entry<String, QualIdent> entry : aliases.entrySet()) {
+            allTableNames.add(entry.getValue());
+        }
+        for (QualIdent tableName : allTableNames) {
+            MetadataModelUtilities.addColumnItems(items, model, tableName, typedPrefix, anchorOffset);
+        }
+        // Tables from default schema.
+        String defaultSchemaName = model.getDefaultSchemaName();
+        Set<String> simpleTableNames = new HashSet<String>();
+        for (QualIdent tableName : tableNames) {
+            String simpleTableName = tableName.getSimpleName();
+            if (tableName.isSimple()) {
+                simpleTableNames.add(simpleTableName);
+            } else if (tableName.isSingleQualified()) {
+                if (defaultSchemaName.equals(tableName.getFirstQualifier())) {
+                    simpleTableNames.add(simpleTableName);
+                }
+            }
+        }
+        MetadataModelUtilities.addTableItems(items, model, new QualIdent(defaultSchemaName), simpleTableNames, typedPrefix, anchorOffset);
+        // Aliases.
+        List<String> sortedAliases = new ArrayList<String>(aliases.keySet());
+        Collections.sort(sortedAliases);
+        MetadataModelUtilities.addAliasItems(items, sortedAliases, typedPrefix, anchorOffset);
+        // Schemas based on qualified tables.
+        Set<String> schemaNames = new HashSet<String>();
+        for (QualIdent tableName : tableNames) {
+            if (!tableName.isSimple()) {
+                schemaNames.add(tableName.getFirstQualifier());
+            }
+        }
+        MetadataModelUtilities.addSchemaItems(items, model, schemaNames, typedPrefix, anchorOffset);
+    }
+
+    private void completeSingleQualIdentBasedOnFromTables(QualIdent fullyTypedIdent, String lastPrefix) {
+        FromTables fromTables = analyzer.getFromTables();
+        assert fromTables != null;
+        // Assume table name. It must be a simple name in or qualifed by the default schema.
+        QualIdent tableName = fullyTypedIdent;
+        String defaultSchemaName = model.getDefaultSchemaName();
+        boolean found = false;
+        for (QualIdent unaliasedTableName : fromTables.getUnaliasedTableNames()) {
+            if (unaliasedTableName.equals(tableName) || unaliasedTableName.equals(new QualIdent(defaultSchemaName, tableName))) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            String alias = fullyTypedIdent.getFirstQualifier();
+            tableName = fromTables.getTableNameByAlias(alias);
+        }
+        if (tableName != null) {
+            MetadataModelUtilities.addColumnItems(items, model, tableName, lastPrefix, anchorOffset);
+        }
+        // Now assume schema name.
+        Set<String> tableNames = null;
+        tableNames = new HashSet<String>();
+        for (QualIdent unaliasedTableName : fromTables.getUnaliasedTableNames()) {
+            if (unaliasedTableName.isSingleQualified() && unaliasedTableName.getPrefix().equals(fullyTypedIdent)) {
+                tableNames.add(unaliasedTableName.getSimpleName());
+            }
+        }
+        MetadataModelUtilities.addTableItems(items, model, fullyTypedIdent, tableNames, lastPrefix, anchorOffset);
+    }
+
+    private void completeDoubleQualIdentBasedOnFromTables(QualIdent fullyTypedIdent, String lastPrefix) {
+        FromTables fromTables = analyzer.getFromTables();
+        assert fromTables != null;
+        if (!fromTables.unaliasedTableNameExists(fullyTypedIdent)) {
+            MetadataModelUtilities.addColumnItems(items, model, fullyTypedIdent, lastPrefix, anchorOffset);
+        }
     }
 
     private Identifier findIdentifier() {
