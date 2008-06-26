@@ -100,7 +100,7 @@ public class SVGSlider extends SVGComponent {
     
     public void setValue( int value ){
         if ( myValue > myMax || myValue < myMin ){
-            throw new IllegalArgumentException( value +" is out of range");
+            throw new IllegalArgumentException( value +" is out of range"); // NOI18N
         }
         myValue = value;
         SVGRect rect = myRuleElement.getBBox();

@@ -151,6 +151,10 @@ abstract class PHPCompletionItem implements CompletionProposal {
             return formatter.getText();
         } else if (element instanceof IndexedElement) {
             IndexedElement ie = (IndexedElement) element;
+            if (ie.getFile().isPlatform()){
+                return NbBundle.getMessage(PHPCompletionItem.class, "PHPPlatform");
+            }
+            
             String filename = ie.getFilenameUrl();
             if (filename != null) {
                 int index = filename.lastIndexOf('/');

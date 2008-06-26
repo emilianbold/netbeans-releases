@@ -1010,17 +1010,11 @@ public final class ParseProjectXml extends Task {
         ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnb);
         if (!cnbs.isEmpty() && entry != null) {
             // check if is tests are already built
-            for (TestDep td : dependencies) {
-                if (cnb.equals(td.cnb)) {
-                    // don't compile already compiled tests dependencies
-                    String p = td.getTestJarPath(false);
-                    if (p != null && new File(p).exists()) {
-                        return;
-                    }
-                    p = td.getTestJarPath(true);
-                    if (p != null && new File(p).exists()) {
-                        return;
-                    }
+            for (String othertesttype : new String[] {"unit", "qa-functional"}) {
+                // don't compile already compiled tests dependencies
+                String p = testJarPath(entry, othertesttype);
+                if (p != null && new File(p).exists()) {
+                    return;
                 }
             }
             if (sb.length() > 0) {
@@ -1034,12 +1028,14 @@ public final class ParseProjectXml extends Task {
         }
         cnbs.add(cnb);
         if (entry != null) {
-            String testDeps[] = entry.getTestDependencies().get(testtype);
-            if (testDeps != null) {
-                for (String cnb2 : testDeps) {
-                    computeCompileDep(cnb2,cnbs,sb);
+            for (String othertesttype : new String[] {"unit", "qa-functional"}) {
+                String testDeps[] = entry.getTestDependencies().get(othertesttype);
+                if (testDeps != null) {
+                    for (String cnb2 : testDeps) {
+                        computeCompileDep(cnb2,cnbs,sb);
+                    }
                 }
-            } 
+            }
         }
     }
     
@@ -1158,16 +1154,11 @@ public final class ParseProjectXml extends Task {
         * @param useUnit if true, try unit tests, even if this is of another type (so we can use unit test utils in any kind of tests)
         */
        public String getTestJarPath(boolean useUnit) {
-           String sep = File.separator;
            ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnb);
            if (entry == null) {
                testDeps.addMissingEntry(cnb);
                return null;
            } else {
-               String cluster = entry.getClusterName();
-               if (cluster == null) {
-                   cluster = "cluster";
-               }
                String type = testDeps.testtype;
                if (useUnit) {
                    if (type.equals("unit")) {
@@ -1176,10 +1167,20 @@ public final class ParseProjectXml extends Task {
                        type = "unit";
                    }
                }
-               return ParseProjectXml.cachedTestDistLocation + sep + type + sep + cluster + sep + cnb.replace('.', '-') + sep + "tests.jar";
+               return testJarPath(entry, type);
            }
        }
-   } 
+   }
+
+    private static String testJarPath(ModuleListParser.Entry entry, String testType) {
+        String sep = File.separator;
+        String cluster = entry.getClusterName();
+        if (cluster == null) {
+            cluster = "cluster";
+        }
+        return ParseProjectXml.cachedTestDistLocation + sep + testType + sep + cluster + sep + entry.getCnb().replace('.', '-') + sep + "tests.jar";
+    }
+
     private String computeClassPathExtensions(Document pDoc) {
         Element data = getConfig(pDoc);
         StringBuffer list = null;

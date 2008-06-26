@@ -36,44 +36,53 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor;
 
-package org.netbeans.modules.cnd.remote.support;
-
-import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
-import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 
 /**
- * A common base class for remote "unit" tests
- * @author Sergey Grinev
+ *
+ * @author tomslot
  */
-public abstract class RemoteTestBase extends BaseTestCase {
+public class CodeUtils {
 
-    protected RemoteTestBase(String testName) {
-        super(testName);
-    }
-    
-    protected String getUserName() {
-        String userName = System.getProperty("cnd.remote.user.name");
-        if( userName == null ) {
-            userName = System.getenv("CND_REMOTE_USER_NAME");
-        }
-        if( userName == null ) {
-            userName = System.getProperty("user.name");
-        }
-        assertNotNull(userName);
-        return userName;
+    private CodeUtils() {
     }
 
-    protected String getHostName() throws Exception {
-        String hostName = System.getProperty("cnd.remote.host.name");
-        if( hostName == null ) {
-            hostName = System.getenv("CND_REMOTE_HOST_NAME");
+    public static String extractVariableName(Variable var) {
+        if (var.getName() instanceof Identifier) {
+            Identifier id = (Identifier) var.getName();
+            return "$" + id.getName(); //NOI18N
         }
-        if( hostName == null ) {
-            hostName = "eaglet-sr";
-        }
-        assertNotNull(hostName);
-        return hostName;
+
+        return null;
     }
 
+    public static String extractVariableTypeFromAssignment(Assignment assignment) {
+        Expression rightSideExpression = assignment.getRightHandSide();
+
+        if (rightSideExpression instanceof Assignment) {
+            // handle nested assignments, e.g. $l = $m = new ObjectName;
+            return extractVariableTypeFromAssignment((Assignment) assignment.getRightHandSide());
+        }
+
+        if (rightSideExpression instanceof ClassInstanceCreation) {
+            ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) rightSideExpression;
+            Expression className = classInstanceCreation.getClassName().getName();
+
+            if (className instanceof Identifier) {
+                Identifier identifier = (Identifier) className;
+                return identifier.getName();
+            }
+        } else if (rightSideExpression instanceof ArrayCreation) {
+            return "array"; //NOI18N
+        }
+
+        return null;
+    }
 }
