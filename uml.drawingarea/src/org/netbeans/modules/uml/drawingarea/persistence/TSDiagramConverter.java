@@ -1300,13 +1300,13 @@ public class TSDiagramConverter
                     break;
                 case 16:
                     //pre consition(state)
-                    endLabel=true;
+                    //endLabel=true;
                     typeInfo=AbstractLabelManager.PRECONDITION;
                     type=LabelManager.LabelType.SOURCE;
                     break;
                 case 17:
                     //post condition(state)
-                    endLabel=true;
+                    //endLabel=true;
                     typeInfo=AbstractLabelManager.POSTCONDITION;
                     type=LabelManager.LabelType.TARGET;
                     break;
@@ -1374,6 +1374,10 @@ public class TSDiagramConverter
                 EdgeInfo.EdgeLabel label=edgeInfo.new EdgeLabel();
                 label.setLabel(typeInfo);
                 label.setSize(size);
+                if(type!=null)
+                {
+                    label.getLabelProperties().put(UMLEdgeWidget.LABEL_TYPE, typeInfo+"_"+type);
+                }
                 //label.setPosition(null);
                 edgeInfo.getLabels().add(label);
             }

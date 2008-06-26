@@ -73,7 +73,7 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
     protected static final String TAGGEDVALUE = "TaggedValue"; //NOI18N
     protected static final String OPERATION = "Operation"; //NOI18N
     public final static AnchorShape ARROW_END = AnchorShapeFactory.createArrowAnchorShape(50, 10);
-    protected static final String LABEL_TYPE = "LABEL_TYPE"; //NOI18N
+    public static final String LABEL_TYPE = "LABEL_TYPE"; //NOI18N
 
     public UMLEdgeWidget(Scene scene)
     {
