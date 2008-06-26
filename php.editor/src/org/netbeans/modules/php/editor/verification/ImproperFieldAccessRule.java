@@ -44,11 +44,12 @@ import java.util.List;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.HintSeverity;
 import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression.OperatorType;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.openide.util.NbBundle;
@@ -68,6 +69,23 @@ public class ImproperFieldAccessRule extends PHPRule {
         return "improper.field.access"; //NOI18N
     }
 
+    @Override
+    public void visit(InfixExpression infixExpression) {
+        OperatorType operator = infixExpression.getOperator();        
+        if (operator.equals(OperatorType.MINUS) || operator.equals(OperatorType.LGREATER)) {
+            Expression left = infixExpression.getLeft();
+            if (left instanceof Variable) {
+                Variable var = (Variable)left;
+                if (var.isDollared() && "this".equals(extractVariableName(var))) {//NOI18N
+                    addHint(var);
+                }
+            }
+        }
+        super.visit(infixExpression);
+    }
+
+    
+    
     @Override
     public void visit(Program program) {
         fieldNames = new ArrayList<String>();
@@ -89,21 +107,16 @@ public class ImproperFieldAccessRule extends PHPRule {
         super.visit(fieldAccess);
         Variable field = fieldAccess.getField();
         if (field.isDollared()) {
-            boolean addHint = false;
+            boolean showHint = false;
             if (fieldNames.contains(extractVariableName(field))) {
-                addHint = true;
+                showHint = true;
             } else if (context.variableStack.isVariableDefined(extractVariableName(field))) {
-                addHint = false;
+                showHint = false;
             } else {
-                addHint = true;
+                showHint = true;
             }
-            if (addHint) {
-                OffsetRange range = new OffsetRange(field.getStartOffset(), field.getEndOffset());
-
-                Hint hint = new Hint(ImproperFieldAccessRule.this, getDescription(),
-                        context.compilationInfo.getFileObject(), range, null, 500);
-
-                addResult(hint);
+            if (showHint) {
+                addHint(field);
             }
         }
         super.visit(fieldAccess);
@@ -124,10 +137,16 @@ public class ImproperFieldAccessRule extends PHPRule {
     }
 
     public String getDescription() {
-        return NbBundle.getMessage(ImproperFieldAccessRule.class, "ImproperFieldAccessDesc");
+        return NbBundle.getMessage(ImproperFieldAccessRule.class, "ImproperFieldAccessDesc");//NOI18N
     }
 
     public String getDisplayName() {
         return getDescription();
+    }
+
+    private void addHint(Variable field) {
+        OffsetRange range = new OffsetRange(field.getStartOffset(), field.getEndOffset());
+        Hint hint = new Hint(ImproperFieldAccessRule.this, getDescription(), context.compilationInfo.getFileObject(), range, null, 500);
+        addResult(hint);
     }
 }
