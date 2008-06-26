@@ -55,7 +55,7 @@ public class StatementAnalyzer {
 
     private final List<List<String>> selectValues = new ArrayList<List<String>>();
     private final List<FromTable> fromTableList = new ArrayList<FromTable>();
-    private final FromTables fromTables;
+    private final FromClause fromClause;
 
     private State state = State.START;
 
@@ -63,15 +63,15 @@ public class StatementAnalyzer {
         this.seq = seq;
         seq.moveStart();
         parse();
-        fromTables = state.ordinal() >= State.FROM.ordinal() ? new FromTables(fromTableList) : null;
+        fromClause = state.ordinal() >= State.FROM.ordinal() ? new FromClause(fromTableList) : null;
     }
 
     public List<List<String>> getSelectValues() {
         return selectValues;
     }
 
-    public FromTables getFromTables() {
-        return fromTables;
+    public FromClause getFromClause() {
+        return fromClause;
     }
 
     private void parse() {
