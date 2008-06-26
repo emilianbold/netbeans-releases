@@ -41,6 +41,9 @@
 package org.netbeans.microedition.svg;
 
 
+import java.util.Enumeration;
+import java.util.Vector;
+
 import org.netbeans.microedition.svg.input.InputHandler;
 import org.netbeans.microedition.svg.input.NumPadInputHandler;
 import org.w3c.dom.svg.SVGAnimationElement;
@@ -99,7 +102,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
  * @author ads
  *
  */
-public class SVGSpinner extends SVGComponent {
+public class SVGSpinner extends SVGComponent implements DataListener {
     
     private static final String UP              = "up_button";      // NOI18N
     private static final String DOWN            = "down_button";    // NOI18N
@@ -109,6 +112,9 @@ public class SVGSpinner extends SVGComponent {
     
     public SVGSpinner( SVGForm form, String elemId ) {
         super(form, elemId);
+        
+        myUILock = new Object();
+        
         myUpButton = getElementByMeta( getElement(), TYPE, UP);
         myDownButton = getElementByMeta( getElement(), TYPE , DOWN);
         
@@ -127,7 +133,7 @@ public class SVGSpinner extends SVGComponent {
         setModel( new DefaultModel() );
         setEditor( new DefaultSpinnerEditor( form , 
                 (SVGLocatableElement)getElementByMeta( getElement(), TYPE, 
-                        EDITOR) ) ); 
+                        EDITOR)  , myUILock )); 
     }
     
     public void focusGained() {
@@ -141,7 +147,11 @@ public class SVGSpinner extends SVGComponent {
     }
     
     public void setModel( SVGSpinnerModel model ){
+        if ( myModel != null ){
+            myModel.removeDataListener( this );
+        }
         myModel = model;
+        myModel.addDataListener( this );
     }
     
     public SVGSpinnerModel getModel( ){
@@ -153,40 +163,13 @@ public class SVGSpinner extends SVGComponent {
     }
     
     public void setEditor( SVGComponent editor ){
-        myEditor = editor;
+        myEditor = editor;;
     }
     
     public SVGComponent getEditor(){
         return myEditor;
     }
     
-    public void pressUpButton() { 
-        if (myUpPressedAnimation != null) {
-            myUpPressedAnimation.beginElementAt(0);
-        }
-        form.activate(this);
-    }
-    
-    public void releaseUpButton() {
-        if (myUpReleasedAnimation != null) {
-            myUpReleasedAnimation.beginElementAt(0);
-        }
-        getModel().setValue( getModel().getNextValue() );
-    }
-    
-    public void pressDownButton() { 
-        if (myDownPressedAnimation != null) {
-            myDownPressedAnimation.beginElementAt(0);
-        }
-        form.activate(this);
-    }
-    
-    public void releaseDownButton() {
-        if (myDownReleasedAnimation != null) {
-            myDownReleasedAnimation.beginElementAt(0);
-        }
-        getModel().setValue( getModel().getPreviousValue() );
-    }
     
     /* (non-Javadoc)
      * @see org.netbeans.microedition.svg.SVGComponent#getInputHandler()
@@ -195,11 +178,56 @@ public class SVGSpinner extends SVGComponent {
         return myInputHandler;
     }
     
+    /* (non-Javadoc)
+     * @see org.netbeans.microedition.svg.DataListener#contentsChanged(java.lang.Object)
+     */
+    public void contentsChanged( Object source ) {
+        if ( source == getModel() ){
+            synchronized (myUILock) {
+                if ( !isUIAction ){
+                    isInternallyEdited = true;
+                    fireActionPerformed();
+                    isInternallyEdited = false;
+                }
+            }
+        }
+    }
+    
+    private void releaseUpButton() {
+        if (myUpReleasedAnimation != null) {
+            myUpReleasedAnimation.beginElementAt(0);
+        }
+        getModel().setValue( getModel().getNextValue() );
+    }
+    
+    private void pressDownButton() { 
+        if (myDownPressedAnimation != null) {
+            myDownPressedAnimation.beginElementAt(0);
+        }
+        form.activate(this);
+    }
+    
+    private  void pressUpButton() { 
+        if (myUpPressedAnimation != null) {
+            myUpPressedAnimation.beginElementAt(0);
+        }
+        form.activate(this);
+    }
+    
+    private void releaseDownButton() {
+        if (myDownReleasedAnimation != null) {
+            myDownReleasedAnimation.beginElementAt(0);
+        }
+        getModel().setValue( getModel().getPreviousValue() );
+    }
+    
     public static interface SVGSpinnerModel {
         Object getValue();
         Object getNextValue();
         Object getPreviousValue();
         void setValue( Object value );
+        void addDataListener( DataListener listener );
+        void removeDataListener( DataListener listener );
     }
     
     private class SpinnerInputHandler extends NumPadInputHandler {
@@ -232,12 +260,24 @@ public class SVGSpinner extends SVGComponent {
             if ( comp instanceof SVGSpinner ){
                 if ( keyCode == LEFT ){
                     releaseDownButton();
-                    fireActionPerformed();
+                    synchronized ( myUILock) {
+                        isUIAction = true;
+                        isInternallyEdited = true;
+                        fireActionPerformed();
+                        isUIAction = false;
+                        isInternallyEdited = false;
+                    }
                     ret = true;
                 }
                 else if ( keyCode == RIGHT ){
                     releaseUpButton();
-                    fireActionPerformed();
+                    synchronized ( myUILock) {
+                        isUIAction = true;
+                        isInternallyEdited = true;
+                        fireActionPerformed();
+                        isUIAction = false;
+                        isInternallyEdited = false;
+                    }
                     ret = true;
                 }
                 else {
@@ -252,23 +292,47 @@ public class SVGSpinner extends SVGComponent {
     
     private class DefaultSpinnerEditor extends SVGTextField {
 
-        public DefaultSpinnerEditor( SVGForm form , SVGLocatableElement element  ) {
-            super(form , element );
-            SVGSpinner.this.addActionListener( new SVGActionListener (){
+        DefaultSpinnerEditor( SVGForm form, SVGLocatableElement element ,
+                Object lock )
+        {
+            super(form, element);
+            myLock = lock;
+            SVGSpinner.this.addActionListener(new SVGActionListener() {
 
                 public void actionPerformed( SVGComponent comp ) {
-                    if( comp == SVGSpinner.this){
-                        if ( getValue() != null ){
-                            setText( getValue().toString() );
+                    if (comp == SVGSpinner.this && isInternallyEdited) {
+                        if (getValue() != null) {
+                            setText(getValue().toString());
                         }
                     }
                 }
             });
+
         }
         
+        /* (non-Javadoc)
+         * @see org.netbeans.microedition.svg.SVGTextField#setText(java.lang.String)
+         */
+        public void setText( String text ) {
+            super.setText(text);
+            if ( myLock == null ){
+                return;
+            }
+            synchronized (myLock) {
+                if (!isInternallyEdited) {
+                    getModel().setValue(text);
+                }
+            }
+        }
+        
+        private Object myLock;
     }
     
     private class DefaultModel implements SVGSpinnerModel {
+        
+        DefaultModel(){
+            myListeners = new Vector( 1 );
+        }
 
         public Object getNextValue() {
             return new Integer( myValue.intValue()+1 );
@@ -281,16 +345,40 @@ public class SVGSpinner extends SVGComponent {
         public Object getValue() {
             return myValue;
         }
+        
+        public void addDataListener( DataListener listener ) {
+            synchronized( myListeners ){
+                myListeners.addElement( listener );
+            }
+        }
+
+        public void removeDataListener( DataListener listener ) {
+            synchronized( myListeners ){
+                myListeners.addElement( listener );
+            }            
+        }
 
         public void setValue( Object value ) {
-            if ( ! (value instanceof Integer) ){
-                throw new IllegalArgumentException( value +" is not " +
-                		"allowed argument");              // NOI18N
+            String strValue = value.toString();
+            Integer result = Integer.valueOf( strValue );
+            myValue = result;
+            fireDataChange();
+        }
+        
+        protected void fireDataChange(){
+            synchronized( myListeners ){
+                Enumeration en = myListeners.elements();
+                while ( en.hasMoreElements() ){
+                    DataListener listener = (DataListener)en.nextElement();
+                    listener.contentsChanged( this );
+                }
             }
-            myValue = (Integer) value;
         }
         
         private Integer myValue = new Integer(0);
+        
+        private Vector myListeners;
+
     }
         
 
@@ -307,4 +395,9 @@ public class SVGSpinner extends SVGComponent {
     private final SVGAnimationElement myUpReleasedAnimation;
     private final SVGAnimationElement myDownPressedAnimation;
     private final SVGAnimationElement myDownReleasedAnimation;
+    
+    private boolean isUIAction;
+    private boolean isInternallyEdited;
+    private Object myUILock;
+
 }

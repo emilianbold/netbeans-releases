@@ -73,10 +73,14 @@ public class PHPHintsProvider implements HintsProvider {
             
             hints.addAll(visitor.getResult());
         }
-//        The UnusedVariableRule is disabled until we provide an UI for switching it on/off      
-//        assert allHints.get(SECOND_PASS_HINTS).size() == 1;
-//        UnusedVariableRule unusedVariableRule = (UnusedVariableRule) allHints.get(SECOND_PASS_HINTS).get(0);
-//        unusedVariableRule.check((PHPRuleContext) context, hints);
+        
+        List secondPass = allHints.get(SECOND_PASS_HINTS);
+        
+        if (secondPass.size() > 0){
+            assert secondPass.size() == 1;
+            UnusedVariableRule unusedVariableRule = (UnusedVariableRule) secondPass.get(0);
+            unusedVariableRule.check((PHPRuleContext) context, hints);
+        }
     }
 
     public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {

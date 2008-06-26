@@ -71,6 +71,7 @@ public abstract class HyperlinkBaseTestCase extends ProjectBasedTestCase {
     private static boolean GENERATE_GOLDEN_DATA = false;
     public HyperlinkBaseTestCase(String testName) {
         super(testName);
+        //System.setProperty("cnd.repository.hardrefs", "true");
     }
 
     public HyperlinkBaseTestCase(String testName, boolean performInWorkDir) {

@@ -303,15 +303,17 @@ public class PersistentUtils {
             stream.writeInt(AbstractObjectFactory.NULL_POINTER);
         } else if (type instanceof NoType) {
             stream.writeInt(NO_TYPE);
-        } else if (type instanceof TypeFunPtrImpl) {
-            stream.writeInt(TYPE_FUN_PTR_IMPL);
-            ((TypeFunPtrImpl)type).write(stream);
         } else if (type instanceof TypeImpl) {
-            stream.writeInt(TYPE_IMPL);
-            ((TypeImpl)type).write(stream);
-        } else if (type instanceof NestedType) {
-            stream.writeInt(NESTED_TYPE);
-            ((NestedType)type).write(stream);
+            if (type instanceof TypeFunPtrImpl) {
+                stream.writeInt(TYPE_FUN_PTR_IMPL);
+                ((TypeFunPtrImpl)type).write(stream);
+            } else if (type instanceof NestedType) {
+                stream.writeInt(NESTED_TYPE);
+                ((NestedType)type).write(stream);
+            } else {
+                stream.writeInt(TYPE_IMPL);
+                ((TypeImpl)type).write(stream);
+            }
         } else if (type instanceof TemplateParameterTypeImpl) {
             stream.writeInt(TEMPLATE_PARAM_TYPE);
             ((TemplateParameterTypeImpl)type).write(stream);
