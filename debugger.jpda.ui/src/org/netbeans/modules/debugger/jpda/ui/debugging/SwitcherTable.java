@@ -162,7 +162,7 @@ public class SwitcherTable extends JTable {
         ren.setText(selected || item.isActive() ? stripHtml( item.getHtmlName() ) : item.getHtmlName());
         ren.setIcon(icon);
         ren.setBorder(rendererBorder);
-        ren.setIconTextGap(26 - icon.getIconWidth());
+        ren.setIconTextGap(10);
         
         if (item.isActive()) {
             // don't use deriveFont() - see #49973 for details
