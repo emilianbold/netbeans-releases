@@ -4,56 +4,47 @@
 <!-- If you delete this file and reopen the project it will be recreated. -->
 <project name="org.netbeans.performance.enterprise" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.performance.enterprise</description>
+    <property name="test.timeout" value="2000000"/>
     <target name="test" description="Uses test-single to run each suite in different VM">
         <antcall target="test-single">         
             <param name="test.includes" value="**\MeasureEnterpriseSetupTest*"/>
             <param name="test.type" value="qa-functional"/>
-            <param name="test.timeout" value="2000000"/>
         </antcall>
-<!--        <antcall target="test-single">         
+        <antcall target="test-single">         
             <param name="test.includes" value="**\MeasureEnterpriseActions1Test*"/>
             <param name="test.type" value="qa-functional"/>
-            <param name="test.timeout" value="2000000"/>
         </antcall>
         <antcall target="test-single">         
             <param name="test.includes" value="**\MeasureEnterpriseActions2Test*"/>
             <param name="test.type" value="qa-functional"/>
-            <param name="test.timeout" value="2000000"/>
-        </antcall>-->
+        </antcall>
         <antcall target="test-single">         
             <param name="test.includes" value="**\MeasureEnterpriseActions3Test*"/>
             <param name="test.type" value="qa-functional"/>
-            <param name="test.timeout" value="2000000"/>
         </antcall>
         <antcall target="test-single">         
             <param name="test.includes" value="**\MeasureEnterpriseActions4Test*"/>
             <param name="test.type" value="qa-functional"/>
-            <param name="test.timeout" value="2000000"/>
         </antcall>
         <antcall target="test-single">         
             <param name="test.includes" value="**\MeasureEnterpriseActions5Test*"/>
             <param name="test.type" value="qa-functional"/>
-            <param name="test.timeout" value="2000000"/>
         </antcall>
         <antcall target="test-single">         
             <param name="test.includes" value="**\MeasureEnterpriseActions6Test*"/>
             <param name="test.type" value="qa-functional"/>
-            <param name="test.timeout" value="2000000"/>
         </antcall>
         <antcall target="test-single">         
             <param name="test.includes" value="**\MeasureEnterpriseActions7Test*"/>
             <param name="test.type" value="qa-functional"/>
-            <param name="test.timeout" value="2000000"/>
         </antcall>
         <antcall target="test-single">         
             <param name="test.includes" value="**\MeasureEnterpriseActions8Test*"/>
             <param name="test.type" value="qa-functional"/>
-            <param name="test.timeout" value="2000000"/>
         </antcall>
         <antcall target="test-single">         
             <param name="test.includes" value="**\*"/>
             <param name="test.type" value="unit"/>
-            <param name="test.timeout" value="2000000"/>
         </antcall>
     </target>
     <import file="nbproject/build-impl.xml"/>
