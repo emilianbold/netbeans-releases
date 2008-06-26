@@ -46,60 +46,88 @@ import org.openide.util.Lookup;
  *
  * @author gordonp
  */
-public class DevelopmentHostConfiguration extends IntConfiguration {
+public class DevelopmentHostConfiguration {
+    
+    private int def;
+    private int value;
+    private String[] names;
+    private boolean modified;
+    private boolean dirty = false;
     
     private static ServerList serverList = null;
     
-    private StringConfiguration developmentHostName;
-
     public DevelopmentHostConfiguration() {
-        super((IntConfiguration) null, _getDefaultServerIndex(), _getServerNames(), null);
-        developmentHostName = new StringConfiguration(null, _getServerNames()[_getDefaultServerIndex()]);
+        names = getServerNames();
+        value = 0;
+        def = 0; // localost is always defined and should be considered the default
     }
     
-    // developmentHostName
-    public StringConfiguration getDevelopmentHostName() {
-        return developmentHostName;
-    }
-    
-    public void setDevelopmentHostName(StringConfiguration developmentHostName) {
-        this.developmentHostName = developmentHostName;
-    }
-    
-    public String[] getServerNames() {
-        return _getServerNames();
-    }
-    
-    public int getDefaultServerIndex() {
-        return _getDefaultServerIndex();
+    public String getName() {
+        return names[value];
     }
     
     public String getDisplayName() {
-        return developmentHostName.getValue();
+        return names[value];
+    }
+
+    public int getValue() {
+        return value;
     }
     
-    @Override
     public void setValue(String v) {
-        super.setValue(v);
+        for (int i = 0; i < names.length; i++) {
+            if (v.equals(names[i])) {
+                value = i;
+                return;
+            }
+        }
+        throw new IllegalStateException();
+    }
+
+    public void reset() {
+        names = getServerNames();
+        value = def;
+    }
+
+    public boolean getModified() {
+        return modified;
     }
     
-    private static int _getDefaultServerIndex() {
-        if (getServerList() != null) {
-            return serverList.getDefaultServerIndex();
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
+    }
+    
+    public boolean getDirty() {
+        return dirty;
+    }
+
+    void assign(DevelopmentHostConfiguration conf) {
+        boolean dirty2 = false;
+        String oldName = getName();
+        String newName = conf.getName();
+        
+        if (names.length != conf.names.length) {
+            names = getServerNames();
+            dirty2 = true;
         }
-        return 0;
+        if (!newName.equals(oldName)) {
+            dirty2 = true;
+        }
+        setDirty(dirty2);
+        setValue(newName);
     }
     
     @Override
     public Object clone() {
         DevelopmentHostConfiguration clone = new DevelopmentHostConfiguration();
-        clone.setDevelopmentHostName((StringConfiguration) getDevelopmentHostName().clone());
+        clone.setValue(getName());
         return clone;
     }
     
-    private static String[] _getServerNames() {
+    public String[] getServerNames() {
         if (getServerList() != null) {
-            return serverList.getServerNames();
+            String[] nu = serverList.getServerNames();
+            return nu;
         }
         return new String[] { "localhost" }; // NOI18N
     }
