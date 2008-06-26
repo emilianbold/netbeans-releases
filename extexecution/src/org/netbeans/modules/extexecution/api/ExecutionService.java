@@ -283,19 +283,48 @@ public final class ExecutionService {
 
         current = new FutureTask<Integer>(callable) {
 
+
+            @Override
+            public boolean cancel(boolean mayInterruptIfRunning) {
+                boolean ret = super.cancel(mayInterruptIfRunning);
+                if (!executed[0]) {
+                    Runnable ui = new Runnable() {
+                        public void run() {
+                            if (ioData.getStopAction() != null) {
+                                ioData.getStopAction().setEnabled(false);
+                            }
+                            if (ioData.getRerunAction() != null) {
+                                ioData.getRerunAction().setEnabled(true);
+                            }
+                            if (handle != null) {
+                                handle.finish();
+                            }
+                        }
+                    };
+
+                    if (SwingUtilities.isEventDispatchThread()) {
+                        ui.run();
+                    } else {
+                        SwingUtilities.invokeLater(ui);
+                    }
+
+                    synchronized (InputOutputManager.class) {
+                        if (ioData.getInputOutput() != descriptor.getInputOutput()) {
+                            InputOutputManager.addInputOutput(ioData);
+                        }
+                    }
+                } else {
 // uncomment this if state after cancel should be the same as when completed normally
-//            @Override
-//            public boolean cancel(boolean mayInterruptIfRunning) {
-//                boolean ret = super.cancel(mayInterruptIfRunning);
-//                if (ret && mayInterruptIfRunning && executed[0]) {
-//                    try {
-//                        latch.await();
-//                    } catch (InterruptedException ex) {
-//                        Thread.currentThread().interrupt();
+//                    if (ret && mayInterruptIfRunning && executed[0]) {
+//                        try {
+//                            latch.await();
+//                        } catch (InterruptedException ex) {
+//                            Thread.currentThread().interrupt();
+//                        }
 //                    }
-//                }
-//                return ret;
-//            }
+                }
+                return ret;
+            }
         };
 
         if (workingStopAction != null) {
