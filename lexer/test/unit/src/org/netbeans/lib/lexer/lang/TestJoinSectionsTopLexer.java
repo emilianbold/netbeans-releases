@@ -87,6 +87,20 @@ final class TestJoinSectionsTopLexer implements Lexer<TestJoinSectionsTopTokenId
                 }
                 // break;
 
+            case '(':
+                if (input.readLength() > 1) {
+                    input.backup(1);
+                    return token(TestJoinSectionsTopTokenId.TEXT);
+                }
+                while (true) {
+                    switch ((c = input.read())) {
+                        case ')':
+                        case EOF:
+                            return token(TestJoinSectionsTopTokenId.PARENS);
+                    }
+                }
+                // break;
+
             case EOF: // no more chars on the input
                 return null; // the only legal situation when null can be returned
 

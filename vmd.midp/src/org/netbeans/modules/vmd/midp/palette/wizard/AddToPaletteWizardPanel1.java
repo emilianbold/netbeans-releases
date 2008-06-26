@@ -49,11 +49,14 @@ import java.awt.*;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import org.openide.util.NbBundle;
 
 /**
  * @author David Kaspar
  */
 public class AddToPaletteWizardPanel1 implements WizardDescriptor.Panel {
+
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 
     private AddToPaletteVisualPanel1 component;
 
@@ -69,10 +72,14 @@ public class AddToPaletteWizardPanel1 implements WizardDescriptor.Panel {
     }
 
     public boolean isValid() {
-        return component.getActiveProject () != null;
+        if (!isProjectsListValid()){
+            return false;
+        }
+        if (component.getActiveProject () == null){
+            return false;
+        }
+        return true;
     }
-
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
@@ -106,4 +113,9 @@ public class AddToPaletteWizardPanel1 implements WizardDescriptor.Panel {
         ((WizardDescriptor) settings).putProperty (AddToPaletteWizardAction.PROPERTY_PROJECT, project);
     }
 
+    private boolean isProjectsListValid(){
+        boolean valid = component.getProjectsCount() == 0 ? false : true;
+        return valid;
+    }
+    
 }

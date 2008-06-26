@@ -41,11 +41,9 @@
 
 package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
-import java.awt.Dimension;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.ui.WatchPanel;

@@ -51,8 +51,9 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.ListModel;
 import javax.swing.tree.TreePath;
+import junit.framework.Test;
 import junit.textui.TestRunner;
-import lib.EditorTestCase.ValueResolver;
+import org.netbeans.test.editor.lib.EditorTestCase.ValueResolver;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.HelpOperator;
@@ -66,6 +67,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 
 
@@ -224,7 +226,7 @@ public class KeyMapTest extends JellyTestCase{
         try {
             kmo = KeyMapOperator.invoke();
             closed = false;
-            kmo.selectProfile("NetBeans55");
+            kmo.selectProfile("NetBeans 5.5");
             JTreeOperator tree =kmo.actions();
             exceptions = exceptionsNetBeans55;
             dump("",tree,kmo);
@@ -723,5 +725,10 @@ public class KeyMapTest extends JellyTestCase{
     public static void main(String[] args) {               
         TestRunner.run(new NbTestSuite(KeyMapTest.class));
     }
+    
+    public static Test suite() {
+      return NbModuleSuite.create(
+              NbModuleSuite.createConfiguration(KeyMapTest.class).enableModules(".*").clusters(".*"));
+   }
     
 }

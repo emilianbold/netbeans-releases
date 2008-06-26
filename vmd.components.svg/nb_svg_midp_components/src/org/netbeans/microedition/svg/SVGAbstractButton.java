@@ -21,22 +21,35 @@ package org.netbeans.microedition.svg;
 
 import org.netbeans.microedition.svg.input.InputHandler;
 import org.w3c.dom.svg.SVGAnimationElement;
+import org.w3c.dom.svg.SVGLocatableElement;
 
 /**
- *
+ * 
  * @author Pavel Benes
+ * @author ads 
  */
 public abstract class SVGAbstractButton extends SVGComponent {
-    protected static final String BUTTONPRESSED_ELEM_SUFFIX  = "_pressed";
-    protected static final String BUTTONRELEASED_ELEM_SUFFIX = "_released";
+    protected static final String PRESSED  = "pressed";         // NOI18N
+    protected static final String RELEASED = "released";        // NOI18N
+    private static final String   BODY     = "body";            // NOI18N
     
     protected final SVGAnimationElement pressedAnimation;
     protected final SVGAnimationElement releasedAnimation;
     
     public SVGAbstractButton( SVGForm form, String elemId) {
         super(form, elemId);
-        pressedAnimation = (SVGAnimationElement) getElementById(wrapperElement, elemId + BUTTONPRESSED_ELEM_SUFFIX);
-        releasedAnimation = (SVGAnimationElement) getElementById(wrapperElement, elemId + BUTTONRELEASED_ELEM_SUFFIX);
+        myBodyElement = (SVGLocatableElement) getElementByMeta( getElement(), 
+                TYPE, BODY );
+        if ( myBodyElement != null ){
+            pressedAnimation = (SVGAnimationElement) getElementByMeta(myBodyElement, 
+                    TYPE, PRESSED );
+            releasedAnimation = (SVGAnimationElement) getElementByMeta( myBodyElement, 
+                    TYPE, RELEASED);
+        }
+        else {
+            pressedAnimation = null;
+            releasedAnimation = null;
+        }
     }
     
     public InputHandler getInputHandler() {
@@ -59,4 +72,10 @@ public abstract class SVGAbstractButton extends SVGComponent {
     public abstract boolean isSelected();
     
     public abstract void setSelected( boolean isSelected);
+    
+    protected SVGLocatableElement getBodyElement(){
+        return myBodyElement;
+    }
+    
+    private final SVGLocatableElement myBodyElement;
 }

@@ -477,6 +477,7 @@ made subject to such option by the copyright holder.
                 <project>../../spi.editor.hints</project>
                 <project>../../spi.navigator</project>
                 <project>../../spi.palette</project>
+                <project>../../spi.quicksearch</project>
                 <project>../../spi.tasklist</project>
                 <project>../../spi.viewmodel</project>
                 <project>../../spring.beans</project>

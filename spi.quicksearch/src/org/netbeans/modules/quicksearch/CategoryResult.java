@@ -52,7 +52,7 @@ import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
  */
 public final class CategoryResult implements Runnable {
     
-    private static final int MAX_RESULTS = 7;
+    static final int MAX_RESULTS = 7;
     
     private final Object LOCK = new Object();
     

@@ -117,10 +117,43 @@ public class QuickSearchPopup extends javax.swing.JPanel implements ListDataList
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
         jList1.setFocusable(false);
+        jList1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jList1MouseClicked(evt);
+            }
+        });
+        jList1.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseMoved(java.awt.event.MouseEvent evt) {
+                jList1MouseMoved(evt);
+            }
+        });
         jScrollPane1.setViewportView(jList1);
 
         add(jScrollPane1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
+
+private void jList1MouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jList1MouseMoved
+    // selection follows mouse move
+    Point loc = evt.getPoint();
+    int index = jList1.locationToIndex(loc);
+    if (index == -1) {
+        return;
+    }
+    Rectangle rect = jList1.getCellBounds(index, index);
+    if (rect != null && rect.contains(loc)) {
+        jList1.setSelectedIndex(index);
+    }
+    
+}//GEN-LAST:event_jList1MouseMoved
+
+private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jList1MouseClicked
+    if (!SwingUtilities.isLeftMouseButton(evt)) {
+        return;
+    }
+    // mouse left button click works the same as pressing Enter key
+    comboBar.invokeSelectedItem();
+    
+}//GEN-LAST:event_jList1MouseClicked
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

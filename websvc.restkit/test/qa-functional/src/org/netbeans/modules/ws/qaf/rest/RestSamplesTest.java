@@ -41,10 +41,9 @@ package org.netbeans.modules.ws.qaf.rest;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.xml.sax.SAXException;
 
 /**
@@ -118,19 +117,27 @@ public class RestSamplesTest extends RestTestBase {
     /**
      * Creates suite from particular test cases. You can define order of testcases here.
      */
-    public static TestSuite suite() {
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new RestSamplesTest("testHelloWorldSample")); //NOI18N
-        suite.addTest(new RestSamplesTest("testCustomerDBSample")); //NOI18N
-        suite.addTest(new RestSamplesTest("testCustomerDBClientSample")); //NOI18N
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(RestSamplesTest.class),
+                "testHelloWorldSample",
+                "testCustomerDBSample",
+                "testCustomerDBClientSample"
+                ).enableModules(".*").clusters(".*"));
     }
-
-    /**
-     * Method allowing test execution directly from the IDE.
-     */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        TestRunner.run(suite());
-    }
+    
+//    public static TestSuite suite() {
+//        TestSuite suite = new NbTestSuite();
+//        suite.addTest(new RestSamplesTest("testHelloWorldSample")); //NOI18N
+//        suite.addTest(new RestSamplesTest("testCustomerDBSample")); //NOI18N
+//        suite.addTest(new RestSamplesTest("testCustomerDBClientSample")); //NOI18N
+//        return suite;
+//    }
+//
+//    /**
+//     * Method allowing test execution directly from the IDE.
+//     */
+//    public static void main(java.lang.String[] args) {
+//        // run whole suite
+//        TestRunner.run(suite());
+//    }
 }

@@ -66,7 +66,7 @@ class NbTestMediator
           add_to_suites arg
         # directory
         when "-d"
-          Rake::FileList["#{arg}/test/**/*.rb"].each { |file| add_to_suites(file) }
+          Rake::FileList["#{arg}/**/*.rb"].each { |file| add_to_suites(file) }
         # single test method
         when "-m"
           if "-m" != ""

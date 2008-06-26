@@ -924,11 +924,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
 
-    public VirtualMachine getVirtualMachine () {
+    public synchronized VirtualMachine getVirtualMachine () {
         return virtualMachine;
     }
 
-    public Operator getOperator () {
+    public synchronized Operator getOperator () {
         return operator;
     }
 
@@ -950,6 +950,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
         synchronized (this) {
             virtualMachine = vm;
+            operator = o;
         }
         synchronized (canBeModifiedLock) {
             canBeModified = null; // Reset the can be modified flag
@@ -958,9 +959,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         initGenericsSupport ();
         EditorContextBridge.getContext().createTimeStamp(this);
 
-        
-        operator = o;
-        
+                
 //        Iterator i = getVirtualMachine ().allThreads ().iterator ();
 //        while (i.hasNext ()) {
 //            ThreadReference tr = (ThreadReference) i.next ();

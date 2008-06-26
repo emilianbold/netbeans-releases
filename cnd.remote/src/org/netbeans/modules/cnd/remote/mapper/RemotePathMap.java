@@ -40,44 +40,82 @@
 package org.netbeans.modules.cnd.remote.mapper;
 
 import java.util.HashMap;
+import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.openide.util.Utilities;
 
 /**
- *
+ * An implementation of PathMap which returns remote path information.
+ * 
  * @author gordonp
  */
-public class RemotePathMap extends HashMap<String, String> {
+public class RemotePathMap extends HashMap<String, String> implements PathMap {
     
     private static HashMap<String, RemotePathMap> pmtable = new HashMap<String, RemotePathMap>();
     
-    private String host;
     private String user;
+    private String host;
 
-    public static RemotePathMap getMapper(String host, String user) {
-        RemotePathMap pathmap = pmtable.get(makeKey(host, user));
+    public static RemotePathMap getMapper(String user, String host) {
+        RemotePathMap pathmap = pmtable.get(makeKey(user, host));
         
         if (pathmap == null) {
-            pathmap = new RemotePathMap(host, user);
-            pmtable.put(makeKey(host, user), pathmap);
+            pathmap = new RemotePathMap(user, host);
+            pmtable.put(makeKey(user, host), pathmap);
         }
         return pathmap;
     }
     
-    private static String makeKey(String host, String user) {
-        return host + ' ' + user;
+    private static String makeKey(String user, String host) {
+        return user + ' ' + host;
     }
     
-    private RemotePathMap(String host, String user) {
-        this.host = host;
+    private RemotePathMap(String user, String host) {
         this.user = user;
+        this.host = host;
     }
     
-    public String getPath(String lpath) {
+    public String getRemotePath(String lpath) {
         String rpath = get(lpath);
         
         if (rpath == null) {
             rpath = initializePath(lpath);
         }
         return rpath;
+    }
+    
+    public String getLocalPath(String rpath) {
+//        String rpath = get(lpath);
+//        
+//        if (rpath == null) {
+//            rpath = initializePath(lpath);
+//        }
+        return rpath;
+    }
+    
+    /**
+     * See if a path is local or remote. The main use of this call is to verify a project's
+     * Development Host setting. If the project's sources are local then you should not be
+     * able to set a remote development host.
+     * 
+     * @param path The path to check
+     * @return true if path is remote, false otherwise
+     */
+    public boolean isRemote(String path) {
+        if (Boolean.getBoolean("cnd.remote.enable")) { // Debug
+            String ch = path.substring(0, 2).toLowerCase();
+            if (user.equals("gordonp")) { // Debug
+                if (ch.equals("z:") || ch.equals("x:")) { // Debug
+                    return true; // Debug
+                } else if (ch.equals("c:") || ch.equals("d:")) { // Debug
+                    return false; // Debug
+                } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+                    return true; // for me, all relevant Solaris paths are remotely visible...
+                }
+            } else if (user.equals("sg155630")) { // Debug
+                // fill in your debugging pathmaps if you want...
+            }
+        }
+        return false;
     }
     
     /** 
@@ -106,6 +144,11 @@ public class RemotePathMap extends HashMap<String, String> {
                 }
             } else if (user.equals("sg155630")) { // Debug
                 // fill in your debugging pathmaps if you want...
+                if (lpath.toLowerCase().startsWith("z:")) { // Debug
+                    rpath = "/home/sg155630/" + lpath.substring(2); // Debug
+                } else {
+                    rpath = lpath;
+                }
             }
         }
         

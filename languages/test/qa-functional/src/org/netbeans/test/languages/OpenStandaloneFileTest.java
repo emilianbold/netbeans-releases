@@ -19,6 +19,8 @@
 
 package org.netbeans.test.languages;
 
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.lib.BasicOpenFileTest;
 
 /**
@@ -29,6 +31,10 @@ public class OpenStandaloneFileTest extends BasicOpenFileTest {
 
     public OpenStandaloneFileTest(String str) {
         super(str);
+    }
+
+    public static Test suite(){
+        return NbModuleSuite.allModules(OpenStandaloneFileTest.class);
     }
 
     public void testBAT()throws Exception{

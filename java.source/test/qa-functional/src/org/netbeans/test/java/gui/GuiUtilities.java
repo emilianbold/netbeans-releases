@@ -54,8 +54,6 @@ import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.test.java.Utilities;
 
-//import org.netbeans.junit.ide.ProjectSupport;
-
 /**
  * Common utilities for GUI tests.
  * @author Roman Strobl
