@@ -58,6 +58,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
@@ -134,6 +135,19 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
         super.visit(node);
     }
 
+    @Override
+    public void visit(InfixExpression node) {
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
+        }        
+        
+        super.visit(node);
+    }
+
+    
     @Override
     public void visit(FieldAccess node) {
         for (PHPRule rule : rules){
