@@ -235,6 +235,10 @@ public class PathConverter {
         //
         if (varRefExpr != null) {
             XPathVariable var = varRefExpr.getVariable();
+            if (var == null) {
+                // the variable isn't specified or wrong
+                return null;
+            }
             assert var instanceof XPathBpelVariable;
             XPathBpelVariable bpelVar = (XPathBpelVariable)var;
             //
