@@ -4071,19 +4071,36 @@ public class JavaCompletionProvider implements CompletionProvider {
             Set<TypeMirror> ret = new HashSet<TypeMirror>();
             for (Element e : elements) {
                 if ((e.getKind() == CONSTRUCTOR || e.getKind() == METHOD) && name.contentEquals(e.getSimpleName())) {
-                    int i = 0;
-                    Collection<? extends VariableElement> params = ((ExecutableElement)e).getParameters();
-                    if (params.size() <= argTypes.length)
+                    List<? extends VariableElement> params = ((ExecutableElement)e).getParameters();
+                    int parSize = params.size();
+                    boolean varArgs = ((ExecutableElement)e).isVarArgs();
+                    if (!varArgs && (parSize <= argTypes.length))
                         continue;
                     ExecutableType meth = (ExecutableType)asMemberOf(e, type, types);
-                    for (TypeMirror param : meth.getParameterTypes()) {
+                    Iterator<? extends TypeMirror> parIt = meth.getParameterTypes().iterator();
+                    TypeMirror param = null;
+                    for (int i = 0; i <= argTypes.length; i++) {
+                        if (parIt.hasNext())
+                            param = parIt.next();
+                        else if (!varArgs)
+                            break;
                         if (i == argTypes.length) {
                             if (typeArgTypes != null && param.getKind() == TypeKind.DECLARED && typeArgTypes.length == meth.getTypeVariables().size())
                                 param = tu.substitute(param, meth.getTypeVariables(), Arrays.asList(typeArgTypes));
-                            ret.add(param);
+                            if (i < parSize)
+                                ret.add(param);
+                            if (varArgs && !parIt.hasNext() && param.getKind() == TypeKind.ARRAY)
+                                ret.add(((ArrayType)param).getComponentType());
                             break;
                         }
-                        if (argTypes[i] == null || !types.isAssignable(argTypes[i++], param))
+                        if (argTypes[i] == null)
+                            break;
+                        if (varArgs && !parIt.hasNext() && param.getKind() == TypeKind.ARRAY) {
+                            if (types.isAssignable(argTypes[i], param))
+                                varArgs = false;
+                            else if (!types.isAssignable(argTypes[i], ((ArrayType)param).getComponentType()))
+                                break;
+                        } else if (!types.isAssignable(argTypes[i], param))
                             break;
                     }
                 }
