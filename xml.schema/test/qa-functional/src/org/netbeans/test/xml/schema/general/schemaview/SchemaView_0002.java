@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.xml.schema.general.retriver;
+package org.netbeans.test.xml.schema.general.schemaview;
 
 import java.awt.Point;
 import java.util.zip.CRC32;
@@ -59,7 +59,9 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.operators.JListOperator;
+import java.awt.event.InputEvent;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
@@ -100,27 +102,52 @@ import junit.framework.Test;
  * @author michaelnazarov@netbeans.org
  */
 
-public class Retriver_0005 extends Retriver {
+public class SchemaView_0002 extends SchemaView {
     
-    static final String TEST_BPEL_APP_NAME = "TravelReservationService_retriver_0005";
-    static final String TEST_BPEL_MODULE_NAME = "BpelModule_retriver_0005";
-    static final String SCHEMA_NAME = "OTA_TravelItinerary.xsd";
+    static final String TEST_JAVA_APP_NAME = "java4schemaview_0002";
+
+    static final String SCHEMA_SHORT_NAME_1 = "newXmlSchema1";
+    static final String SCHEMA_SHORT_NAME_2 = "newXmlSchema2";
+    static final String SCHEMA_SHORT_NAME_3 = "newXmlSchema3";
+    static final String SCHEMA_SHORT_NAME_4 = "newXmlSchema4";
+    static final String SCHEMA_SHORT_NAME_5 = "newXmlSchema5";
+    static final String SCHEMA_SHORT_NAME_6 = "newXmlSchema6";
+    static final String SCHEMA_SHORT_NAME_7 = "newXmlSchema7";
+    static final String SCHEMA_SHORT_NAME_8 = "newXmlSchema8";
+    static final String SCHEMA_SHORT_NAME_9 = "newXmlSchema9";
+
+    static final String SCHEMA_EXTENSION = ".xsd";
+
+    static final String SCHEMA_NAME_1 = SCHEMA_SHORT_NAME_1 + SCHEMA_EXTENSION;
+    static final String SCHEMA_NAME_2 = SCHEMA_SHORT_NAME_2 + SCHEMA_EXTENSION;
+    static final String SCHEMA_NAME_3 = SCHEMA_SHORT_NAME_3 + SCHEMA_EXTENSION;
+    static final String SCHEMA_NAME_4 = SCHEMA_SHORT_NAME_4 + SCHEMA_EXTENSION;
+    static final String SCHEMA_NAME_5 = SCHEMA_SHORT_NAME_5 + SCHEMA_EXTENSION;
+    static final String SCHEMA_NAME_6 = SCHEMA_SHORT_NAME_6 + SCHEMA_EXTENSION;
+    static final String SCHEMA_NAME_7 = SCHEMA_SHORT_NAME_7 + SCHEMA_EXTENSION;
+    static final String SCHEMA_NAME_8 = SCHEMA_SHORT_NAME_8 + SCHEMA_EXTENSION;
+    static final String SCHEMA_NAME_9 = SCHEMA_SHORT_NAME_9 + SCHEMA_EXTENSION;
+
+    static final String SAMPLE_SCHEMA_NAME = "newLoanApplication.xsd";
 
     static final String [] m_aTestMethods = {
-        "CreateBPELs",
-        "CreateSchema",
+      "CreateJavaApplication",
+      "AddSchema",
+      "InvokeSearch",
+      "SearchForComponentName",
+      "NavigateResults",
     };
 
-    public Retriver_0005(String arg0) {
+    public SchemaView_0002(String arg0) {
         super(arg0);
     }
 
     /*    
     public static TestSuite suite() {
-        TestSuite testSuite = new TestSuite(Retriver_0005.class.getName());
+        TestSuite testSuite = new TestSuite(SchemaView_0002.class.getName());
         
         for (String strMethodName : m_aTestMethods) {
-            testSuite.addTest(new Retriver_0005(strMethodName));
+            testSuite.addTest(new SchemaView_0002(strMethodName));
         }
         
         return testSuite;
@@ -130,9 +157,12 @@ public class Retriver_0005 extends Retriver {
     public static Test suite( )
     {
       return NbModuleSuite.create(
-          NbModuleSuite.createConfiguration( Retriver_0005.class ).addTest(
-              "CreateBPELs",
-              "CreateSchema"
+          NbModuleSuite.createConfiguration( SchemaView_0002.class ).addTest(
+              "CreateJavaApplication",
+              "AddSchema",
+              "InvokeSearch",
+              "SearchForComponentName",
+              "NavigateResults"
            )
            .enableModules( ".*" )
            .clusters( ".*" )
@@ -140,102 +170,110 @@ public class Retriver_0005 extends Retriver {
         );
     }
 
-    public void CreateBPELs( )
+    public void CreateJavaApplication( )
     {
       startTest( );
 
-      CreateSimpleProjectInternal(
-          "Samples|SOA",
-          "Travel Reservation Service",
-          TEST_BPEL_APP_NAME
-        );
+      CreateJavaApplicationInternal( TEST_JAVA_APP_NAME );
 
-      CreateSimpleProjectInternal(
-          "SOA",
-          "BPEL Module",
-          TEST_BPEL_MODULE_NAME
+      endTest( );
+    }
+
+    public void AddSchema( )
+    {
+      startTest( );
+
+      AddLoanApplicationSchemaInternal(
+          TEST_JAVA_APP_NAME,
+          TEST_JAVA_APP_NAME
         );
 
       endTest( );
     }
 
-    public void CreateSchema( )
+  protected boolean CheckFindBar( TopComponentOperator top, boolean bPresent )
+  {
+    String[] asButtons = { "Find Next", "Find Previous", "Clear" };
+    for( String s : asButtons )
     {
-      startTest( );
-
-      ProjectsTabOperator pto = new ProjectsTabOperator( );
-      ProjectRootNode prn = pto.getProjectRootNode( TEST_BPEL_MODULE_NAME );
-      prn.select( );
-      
-      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenuNoBlock("File|New File...");
-
-      // JDialogOperator jdNew = new JDialogOperator( "New File" );
-      NewFileWizardOperator fwNew = new NewFileWizardOperator( "New File" );
-      fwNew.selectCategory( "XML" );
-      fwNew.selectFileType( "External XML Schema Document(s)" );
-      fwNew.next( );
-
-      JDialogOperator jnew = new JDialogOperator( "New File" );
-      JRadioButtonOperator jrbLocal = new JRadioButtonOperator( jnew, "From Local File System" );
-      jrbLocal.setSelected( true );
-      jrbLocal.clickMouse( );
-
-      JButtonOperator jbBrowse = new JButtonOperator( jnew, "Browse" );
-      jbBrowse.pushNoBlock( );
-
-      JFileChooserOperator opFileChooser = new JFileChooserOperator( );
-
-      String sPathSrc = GetWorkDir( )
-          + File.separator + TEST_BPEL_APP_NAME
-          + File.separator + TEST_BPEL_APP_NAME
-          + File.separator + "src";
-
-      String sPathDst = GetWorkDir( )
-          + File.separator + TEST_BPEL_MODULE_NAME;
-
-      opFileChooser.setCurrentDirectory( new File( sPathSrc ) );
-      opFileChooser.chooseFile( SCHEMA_NAME );
-
-      // Select different location
-      jbBrowse = new JButtonOperator( jnew, "Browse", 1 );
-      jbBrowse.pushNoBlock( );
-
-      JDialogOperator jdBrowse = new JDialogOperator( "Choose a Target Folder" );
-      JTreeOperator jtTree = new JTreeOperator( jdBrowse, 0 );
-      TreePath path = jtTree.findPath( TEST_BPEL_MODULE_NAME );
-      jtTree.selectPath( path );
-
-      JButtonOperator jbOk = new JButtonOperator( jdBrowse, "OK" );
-      jbOk.push( );
-      jdBrowse.waitClosed( );
-
-      fwNew.finish( );
-
-      // Check tree
-      FilesTabOperator fto = FilesTabOperator.invoke( );
-      JTreeOperator files = fto.tree( );
-      path = files.findPath( TEST_BPEL_MODULE_NAME + "|" + SCHEMA_NAME );
-      files.selectPath( path );
-
-      // Check outpupt
-      OutputOperator out = OutputOperator.invoke( );
-      String sText = out.getText( );
-
-      String[] asIdeal =
+      try
       {
-        "List of files retrieved :",
-        "From: " + sPathSrc + File.separator + SCHEMA_NAME,
-        "Copied To: " + sPathDst + File.separator + SCHEMA_NAME 
-      };
-
-      for( String sIdeal : asIdeal )
-        if( -1 == sText.indexOf( sIdeal ) )
-          fail( "Unable to check retriver output: \"" + sIdeal + "\". Output: \"" + sText + "\"" );
-
-      out.close( );
-
-      ProjectsTabOperator.invoke( );
-
-      endTest( );
+        JButtonOperator but = new JButtonOperator( top, s );
+        if( !bPresent )
+          return false;
+      }
+      catch( JemmyException ex )
+      {
+        if( bPresent )
+          return false;
+      }
     }
+    return true;
+  }
+
+  public void InvokeSearch( )
+  {
+    startTest( );
+
+    TopComponentOperator top = new TopComponentOperator( SAMPLE_SCHEMA_NAME );
+    // Check there is no find bar
+    if( !CheckFindBar( top, false ) )
+      fail( "First find check failed." );
+    // Invioke menu
+    new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Edit|Find...");
+    // Check there is find bar
+    if( !CheckFindBar( top, true ) )
+      fail( "First find check failed." );
+    // Press Escape
+    top.pushKey( KeyEvent.VK_ESCAPE );
+    // Check there is no find bar
+    if( !CheckFindBar( top, false ) )
+      fail( "First find check failed." );
+    // Preff Ctrl+F
+    top.pushKey( KeyEvent.VK_F, InputEvent.CTRL_MASK );
+    // Check there is find bar
+    if( !CheckFindBar( top, true ) )
+      fail( "First find check failed." );
+    // Press Escape
+    top.pushKey( KeyEvent.VK_ESCAPE );
+    // Check there is no find bar
+    if( !CheckFindBar( top, false ) )
+      fail( "First find check failed." );
+
+    endTest( );
+  }
+
+  public void SearchForComponentName( )
+  {
+    startTest( );
+
+    new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Edit|Find...");
+    TopComponentOperator top = new TopComponentOperator( SAMPLE_SCHEMA_NAME );
+    JTextComponentOperator text = new JTextComponentOperator( top, 0 );
+    text.setText( "Address" );
+    text.pushKey( KeyEvent.VK_ENTER );
+
+    // Check label
+    JLabelOperator label = new JLabelOperator( top, "Found 6 occurrences." );
+
+    // Check view
+    SchemaMultiView xml = new SchemaMultiView( SAMPLE_SCHEMA_NAME );
+    JListOperator list = xml.getColumnListOperator( 3 );
+    String sSelected = list.getSelectedValue( ).toString( );
+    if( !sSelected.equals( "emailAddress" ) )
+        fail( "Wrong line selected from find: \"" + sSelected + "\"" );
+
+    xml.switchToSchemaTree( );
+    text.pushKey( KeyEvent.VK_ENTER );
+    label = new JLabelOperator( top, "Found 6 occurrences." );
+
+    top = new TopComponentOperator( SAMPLE_SCHEMA_NAME );
+    JTreeOperator tree = new JTreeOperator( top, 0 );
+    TreePath path = tree.getSelectionPath( );
+    Object[] oo = path.getPath( );
+    for( Object o : oo )
+      System.out.println( o );
+
+    endTest( );
+  }
 }
