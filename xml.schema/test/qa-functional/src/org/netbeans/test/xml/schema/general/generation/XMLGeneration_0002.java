@@ -83,6 +83,9 @@ import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.test.xml.schema.lib.SchemaMultiView;
 import java.util.List;
 
+import org.netbeans.junit.NbModuleSuite;
+import junit.framework.Test;
+
 /**
  *
  * @author michaelnazarov@netbeans.org
@@ -105,7 +108,8 @@ public class XMLGeneration_0002 extends XMLGeneration {
     public XMLGeneration_0002(String arg0) {
         super(arg0);
     }
-    
+
+    /*    
     public static TestSuite suite() {
         TestSuite testSuite = new TestSuite(XMLGeneration_0002.class.getName());
         
@@ -114,6 +118,22 @@ public class XMLGeneration_0002 extends XMLGeneration {
         }
         
         return testSuite;
+    }
+    */
+
+    public static Test suite( )
+    {
+      return NbModuleSuite.create(
+          NbModuleSuite.createConfiguration( XMLGeneration_0002.class ).addTest(
+              "CreateJavaApplication",
+              "CreateSampleSchema",
+              "CreateConstrained",
+              "CheckAndValidate"
+           )
+           .enableModules( ".*" )
+           .clusters( ".*" )
+           //.gui( true )
+        );
     }
 
     public void CreateJavaApplication( )

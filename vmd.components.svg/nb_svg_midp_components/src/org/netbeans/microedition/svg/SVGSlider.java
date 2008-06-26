@@ -42,6 +42,7 @@ package org.netbeans.microedition.svg;
 
 import org.netbeans.microedition.svg.input.InputHandler;
 import org.w3c.dom.svg.SVGLocatableElement;
+import org.w3c.dom.svg.SVGMatrix;
 import org.w3c.dom.svg.SVGRect;
 
 
@@ -83,7 +84,7 @@ public class SVGSlider extends SVGComponent {
         myRuleElement = (SVGLocatableElement) getElementByMeta( getElement(), 
                 TYPE, RULE );
         myInputHandler = new SliderInputHandler();
-        
+        setValue( myMin );
     }
     
     public SVGSlider( int min, int max, SVGForm form, String elemId ) {
@@ -102,11 +103,13 @@ public class SVGSlider extends SVGComponent {
         if ( myValue > myMax || myValue < myMin ){
             throw new IllegalArgumentException( value +" is out of range"); // NOI18N
         }
-        myValue = value;
+        
         SVGRect rect = myRuleElement.getBBox();
         float width = rect.getWidth();
-        myKnobElement.setTrait("transform", "translate("+ 
-                myValue*width/(myMax - myMin)+",0)");
+        SVGMatrix matrix = myKnobElement.getMatrixTrait( "transform" );
+        matrix.mTranslate( (value -myValue )*width/(myMax - myMin), 0);
+        myValue = value;
+        myKnobElement.setMatrixTrait("transform", matrix);
     }
     
     private class SliderInputHandler extends InputHandler {

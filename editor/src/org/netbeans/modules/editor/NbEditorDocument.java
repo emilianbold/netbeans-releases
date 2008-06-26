@@ -62,8 +62,6 @@ import java.util.Dictionary;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.JToolBar;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.editor.BaseDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -136,9 +134,6 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
                 return ComplexValueSettingsFactory.getIndentEngine(mimePath);
             }
         });
-
-        // XXX: workaround for #137528, touches project settings
-        IndentUtils.indentLevelSize(this);
     }
 
     public @Override int getShiftWidth() {
@@ -272,31 +267,20 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
         return annoMap;
     }
 
-    void addStreamDescriptionChangeListener(ChangeListener l) {
-        listenerList.add(ChangeListener.class, l);
-    }
-    
-    void removeStreamDescriptionChangeListener(ChangeListener l) {
-        listenerList.remove(ChangeListener.class, l);
-    }
-    
-    private void fireStreamDescriptionChange() {
-        ChangeEvent evt = new ChangeEvent(this);
-        Object[] listeners = listenerList.getListenerList();
-        for (int i = listeners.length - 2; i >= 0; i -= 2) {
-            if (listeners[i] == ChangeListener.class) {
-                ((ChangeListener)listeners[i + 1]).stateChanged(evt);
-            }
-        }
-    }
-
     protected @Override Dictionary createDocumentProperties(Dictionary origDocumentProperties) {
         return new LazyPropertyMap(origDocumentProperties) {
             public @Override Object put(Object key, Object value) {
                 Object origValue = super.put(key, value);
                 if (Document.StreamDescriptionProperty.equals(key)) {
-                    if (origValue == null || !origValue.equals(value)) {
-                        fireStreamDescriptionChange();
+                    assert value != null;
+                    
+                    if (origValue == null) {
+                        // XXX: workaround for #137528, touches project settings
+                        IndentUtils.indentLevelSize(NbEditorDocument.this);
+                    } else {
+                        // this property should only ever be set once. even if it
+                        // is set more times it must never be set to a different value
+                        assert origValue.equals(value);
                     }
                 }
                 

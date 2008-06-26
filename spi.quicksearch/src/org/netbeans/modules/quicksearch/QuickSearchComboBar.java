@@ -89,7 +89,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
             
             private void textChanged () {
                 if (command.isFocusOwner()) {
-                    displayer.update(command.getText());
+                    displayer.maybeEvaluate(command.getText());
                 }
             }
             

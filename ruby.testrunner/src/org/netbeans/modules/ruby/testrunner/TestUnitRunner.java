@@ -84,7 +84,16 @@ public final class TestUnitRunner implements TestRunner {
     }
 
     public void runTest(FileObject testFile, boolean debug) {
-        run(FileOwnerQuery.getOwner(testFile), getTestFileArgs(testFile), testFile.getName(), debug);
+        Project project = FileOwnerQuery.getOwner(testFile);
+        if (!testFile.isFolder()) {
+            run(project, getTestFileArgs(testFile), testFile.getName(), debug);
+        } else {
+            List<String> additionalArgs = new ArrayList<String>();
+            additionalArgs.add("-d"); //NOI18N
+            additionalArgs.add(FileUtil.toFile(testFile).getAbsolutePath());
+            String name = ProjectUtils.getInformation(project).getDisplayName();
+            run(project, additionalArgs, name, debug);
+        }
     }
 
     private List<String> getTestFileArgs(FileObject testFile) {
@@ -110,7 +119,8 @@ public final class TestUnitRunner implements TestRunner {
     public void runAllTests(Project project, boolean debug) {
         List<String> additionalArgs = new ArrayList<String>();
         additionalArgs.add("-d"); //NOI18N
-        additionalArgs.add(FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath());
+        FileObject testFolder = project.getProjectDirectory().getFileObject("test/"); //NOI18N
+        additionalArgs.add(FileUtil.toFile(testFolder).getAbsolutePath());
         
         String name = ProjectUtils.getInformation(project).getDisplayName();
         

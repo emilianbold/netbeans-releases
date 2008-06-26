@@ -39,25 +39,46 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.nbbuild;
+package org.netbeans.xtest.usertasks;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.FileSet;
 import org.w3c.dom.CDATASection;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
+import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Translates XTest test results into the de facto standard XML report format used by JUnit.
@@ -90,13 +111,13 @@ public class XTest2JUnitResultFormatter extends Task {
             for (String incl : ds.getIncludedFiles()) {
                 File infile = new File(base, incl);
                 try {
-                    Document in = XMLUtil.parse(new InputSource(infile.toURI().toString()), false, false, null, null);
+                    Document in = parse(new InputSource(infile.toURI().toString()), false, false, null, null);
                     Document out = translate(in);
                     File outfile = new File(outputDir, infile.getName());
                     log("Writing: " + outfile);
                     OutputStream os = new FileOutputStream(outfile);
                     try {
-                        XMLUtil.write(out, os);
+                        write(out, os);
                     } finally {
                         os.close();
                     }
@@ -108,7 +129,7 @@ public class XTest2JUnitResultFormatter extends Task {
     }
 
     private static Document translate(Document in) {
-        Document out = XMLUtil.createDocument("testsuite");
+        Document out = createDocument("testsuite");
         Element testsuite = out.getDocumentElement();
         Element unitTestSuite = in.getDocumentElement();
         testsuite.setAttribute("name", unitTestSuite.getAttribute("name"));
@@ -119,7 +140,7 @@ public class XTest2JUnitResultFormatter extends Task {
         /* Forget timestamp; anyway XTest seems to use localtime whereas JUnit uses UTC:
         testsuite.setAttribute("timestamp", unitTestSuite.getAttribute("timeStamp".replaceFirst("(\\d{4}-\\d{2}-\\d{2}) (\\d{2}:\\d{2}:\\d{2})\\.\\d{3}", "$1T$2")));
          */
-        for (Element unitTestCase : XMLUtil.findSubElements(unitTestSuite)) {
+        for (Element unitTestCase : findSubElements(unitTestSuite)) {
             if (!unitTestCase.getTagName().equals("UnitTestCase")) {
                 continue;
             }
@@ -159,6 +180,130 @@ public class XTest2JUnitResultFormatter extends Task {
         }
         // skip <system-out>, <system-err>, <properties>
         return out;
+    }
+
+    // The following copied from org.netbeans.nbbuild.XMLUtil:
+
+    @SuppressWarnings("unchecked")
+    private static final ThreadLocal<DocumentBuilder>[] builderTL = new ThreadLocal[4];
+    static {
+        for (int i = 0; i < 4; i++) {
+            builderTL[i] = new ThreadLocal<DocumentBuilder>();
+        }
+    }
+    private static Document parse (
+            InputSource input,
+            boolean validate,
+            boolean namespaceAware,
+            ErrorHandler errorHandler,
+            EntityResolver entityResolver
+        ) throws IOException, SAXException {
+
+        int index = (validate ? 0 : 1) + (namespaceAware ? 0 : 2);
+        DocumentBuilder builder = builderTL[index].get();
+        if (builder == null) {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setValidating(validate);
+            factory.setNamespaceAware(namespaceAware);
+
+            try {
+                builder = factory.newDocumentBuilder();
+            } catch (ParserConfigurationException ex) {
+                throw new SAXException(ex);
+            }
+            builderTL[index].set(builder);
+        }
+
+        if (errorHandler != null) {
+            builder.setErrorHandler(errorHandler);
+        }
+
+        if (entityResolver != null) {
+            builder.setEntityResolver(entityResolver);
+        }
+
+        return builder.parse(input);
+    }
+
+    private static Document createDocument(String rootQName) throws DOMException {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        try {
+            return factory.newDocumentBuilder().getDOMImplementation().createDocument(null, rootQName, null);
+        } catch (ParserConfigurationException ex) {
+            throw (DOMException)new DOMException(DOMException.NOT_SUPPORTED_ERR, "Cannot create parser").initCause(ex); // NOI18N
+        }
+    }
+
+    private static DOMImplementation getDOMImplementation() throws DOMException { //can be made public
+
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+
+        try {
+            return factory.newDocumentBuilder().getDOMImplementation();
+        } catch (ParserConfigurationException ex) {
+            throw (DOMException)new DOMException(DOMException.NOT_SUPPORTED_ERR, "Cannot create parser").initCause(ex); // NOI18N
+        }
+    }
+
+    // Cf. org.openide.xml.XMLUtil.
+    private static final String IDENTITY_XSLT_WITH_INDENT =
+            "<xsl:stylesheet version='1.0' " + // NOI18N
+            "xmlns:xsl='http://www.w3.org/1999/XSL/Transform' " + // NOI18N
+            "xmlns:xalan='http://xml.apache.org/xslt' " + // NOI18N
+            "exclude-result-prefixes='xalan'>" + // NOI18N
+            "<xsl:output method='xml' indent='yes' xalan:indent-amount='4'/>" + // NOI18N
+            "<xsl:template match='@*|node()'>" + // NOI18N
+            "<xsl:copy>" + // NOI18N
+            "<xsl:apply-templates select='@*|node()'/>" + // NOI18N
+            "</xsl:copy>" + // NOI18N
+            "</xsl:template>" + // NOI18N
+            "</xsl:stylesheet>"; // NOI18N
+
+    private static void write(Document doc, OutputStream out) throws IOException {
+        // XXX note that this may fail to write out namespaces correctly if the document
+        // is created with namespaces and no explicit prefixes; however no code in
+        // this package is likely to be doing so
+        try {
+            Transformer t = TransformerFactory.newInstance().newTransformer(
+                    new StreamSource(new StringReader(IDENTITY_XSLT_WITH_INDENT)));
+            DocumentType dt = doc.getDoctype();
+            if (dt != null) {
+                String pub = dt.getPublicId();
+                if (pub != null) {
+                    t.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, pub);
+                }
+                t.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, dt.getSystemId());
+            }
+            t.setOutputProperty(OutputKeys.ENCODING, "UTF-8"); // NOI18N
+            Source source = new DOMSource(doc);
+            Result result = new StreamResult(out);
+            t.transform(source, result);
+        } catch (Exception e) {
+            throw (IOException)new IOException(e.toString()).initCause(e);
+        } catch (TransformerFactoryConfigurationError e) {
+            throw (IOException)new IOException(e.toString()).initCause(e);
+        }
+    }
+
+    private static List<Element> findSubElements(Element parent) throws IllegalArgumentException {
+        NodeList l = parent.getChildNodes();
+        List<Element> elements = new ArrayList<Element>(l.getLength());
+        for (int i = 0; i < l.getLength(); i++) {
+            Node n = l.item(i);
+            if (n.getNodeType() == Node.ELEMENT_NODE) {
+                elements.add((Element)n);
+            } else if (n.getNodeType() == Node.TEXT_NODE) {
+                String text = ((Text)n).getNodeValue();
+                if (text.trim().length() > 0) {
+                    throw new IllegalArgumentException("non-ws text encountered in " + parent + ": " + text); // NOI18N
+                }
+            } else if (n.getNodeType() == Node.COMMENT_NODE) {
+                // OK, ignore
+            } else {
+                throw new IllegalArgumentException("unexpected non-element child of " + parent + ": " + n); // NOI18N
+            }
+        }
+        return elements;
     }
 
 }

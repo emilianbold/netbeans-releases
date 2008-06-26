@@ -111,7 +111,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                         templateParams = TemplateUtils.getTemplateParameters(token, ClassImpl.this.getContainingFile(), ClassImpl.this);
                         break;
                     case CPPTokenTypes.CSM_BASE_SPECIFIER:
-                        inheritances.add(new InheritanceImpl(token, getContainingFile()));
+                        inheritances.add(new InheritanceImpl(token, getContainingFile(), ClassImpl.this));
                         break;
                     // class / struct / union
                     case CPPTokenTypes.LITERAL_class:

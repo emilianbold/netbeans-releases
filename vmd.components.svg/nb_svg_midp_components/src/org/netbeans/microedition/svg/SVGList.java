@@ -88,7 +88,7 @@ public class SVGList extends SVGComponent implements DataListener {
         
         SVGLocatableElement hiddenText = (SVGLocatableElement)getElementByMeta( 
                 getElement(), TYPE , SVGDefaultListCellRenderer.HIDDEN_TEXT );
-        SVGRect rect = hiddenText.getBBox();
+        SVGRect rect = hiddenText.getScreenBBox();
         float height = rect.getHeight();
         
         rect = ((SVGLocatableElement)SVGComponent.getElementByMeta( getElement(), 

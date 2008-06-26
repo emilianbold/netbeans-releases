@@ -84,6 +84,9 @@ import org.netbeans.test.xml.schema.lib.SchemaMultiView;
 import java.util.List;
 import org.netbeans.jellytools.OutputTabOperator;
 
+import org.netbeans.junit.NbModuleSuite;
+import junit.framework.Test;
+
 /**
  *
  * @author michaelnazarov@netbeans.org
@@ -109,7 +112,8 @@ public class DTDActions_0001 extends DTDActions {
     public DTDActions_0001(String arg0) {
         super(arg0);
     }
-    
+
+    /*    
     public static TestSuite suite() {
         TestSuite testSuite = new TestSuite(DTDActions_0001.class.getName());
         
@@ -118,6 +122,28 @@ public class DTDActions_0001 extends DTDActions {
         }
         
         return testSuite;
+    }
+    */
+
+    public static Test suite( )
+    {
+      return NbModuleSuite.create(
+          NbModuleSuite.createConfiguration( DTDActions_0001.class ).addTest(
+              "CreateJavaApplication",
+              "CreateSampleSchema",
+              "GenerateConstrained",
+              "GenerateDTD",
+              "GenerateCSS",
+              "CheckDTD",
+              "GenerateDocumentation",
+              "GenerateDOMTS",
+              "GenerateSAXSimple",
+              "GenerateSAXDetailed"
+           )
+           .enableModules( ".*" )
+           .clusters( ".*" )
+           //.gui( true )
+        );
     }
 
     public void CreateJavaApplication( )
