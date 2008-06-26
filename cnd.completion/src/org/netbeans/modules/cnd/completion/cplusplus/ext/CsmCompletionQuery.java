@@ -42,6 +42,8 @@
 package org.netbeans.modules.cnd.completion.cplusplus.ext;
 import java.text.MessageFormat;
 import java.util.Collections;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -65,6 +67,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.SyntaxSupport;
@@ -73,11 +77,8 @@ import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtSettingsDefaults;
 import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmClassifierBasedTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateParameterResultItem;
@@ -113,7 +114,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         return baseDocument;
     }
     
-    abstract protected  CompletionResolver getCompletionResolver(boolean openingSource, boolean sort);
+    abstract protected  CompletionResolver getCompletionResolver(boolean openingSource, boolean sort,boolean inIncludeDirective);
 
     abstract protected CsmFinder getFinder();
 
@@ -227,7 +228,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 if (TRACE_COMPLETION) {
                     System.err.println("expression " + exp);
                 }
-                ret = getResult(component, sup, openingSource, offset, exp, sort);
+                ret = getResult(component, sup, openingSource, offset, exp, sort, isInIncludeDirective(doc, offset));
             } else if (TRACE_COMPLETION) {
                 System.err.println("Error expression " + tp.getResultExp());
             }
@@ -240,8 +241,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
     abstract protected boolean isProjectBeeingParsed(boolean openingSource);
         
-    protected CompletionQuery.Result getResult(JTextComponent component, CsmSyntaxSupport sup, boolean openingSource, int offset, CsmCompletionExpression exp, boolean sort) {
-	CompletionResolver resolver = getCompletionResolver(openingSource, sort);
+    protected CompletionQuery.Result getResult(JTextComponent component, CsmSyntaxSupport sup, boolean openingSource, int offset, CsmCompletionExpression exp, boolean sort, boolean inIncludeDirective) {
+        CompletionResolver resolver = getCompletionResolver(openingSource, sort, inIncludeDirective);
         if (resolver != null) {
             CsmOffsetableDeclaration context = sup.getDefinition(offset);
             Context ctx = new Context(component, sup, openingSource, offset, getFinder(), resolver, context, sort);
@@ -570,7 +571,41 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             }
         }
         return cls;
-    }       
+    }
+
+    private boolean isInIncludeDirective(BaseDocument doc, int offset) {
+        if (true) {
+            return false;
+        }
+        if (doc == null) {
+            return false;
+        }
+        TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, offset);
+        if (cppTokenSequence == null) {
+            return false;
+        }
+        boolean inIncludeDirective = false;
+        Token<CppTokenId> token = null;
+        if (cppTokenSequence.move(offset) > 0) {
+            if (cppTokenSequence.moveNext()) {
+                token = cppTokenSequence.token();
+            }
+        } else {
+            if (cppTokenSequence.movePrevious()) {
+                token = cppTokenSequence.token();
+            }
+        }
+        if (token != null && token.id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
+            TokenSequence<?> embedded = cppTokenSequence.embedded();
+            if (embedded != null && embedded.moveNext() && embedded.moveNext()) {
+                if (embedded.token().id() == CppTokenId.PREPROCESSOR_INCLUDE ||
+                    embedded.token().id() == CppTokenId.PREPROCESSOR_INCLUDE_NEXT) {
+                    inIncludeDirective = true;
+                }
+            }
+        }
+        return inIncludeDirective;
+    }
 
     class Context {
 
