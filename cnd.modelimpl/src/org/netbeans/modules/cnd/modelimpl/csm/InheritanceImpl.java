@@ -70,6 +70,8 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
     private CsmUID<CsmClassifier> classifierCacheUID;
     
     private CharSequence ancestorName;
+
+    private boolean lastResolveFalure;
     
     public InheritanceImpl(AST ast, CsmFile file) {
         super(ast, file);
@@ -109,10 +111,14 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
     
     public CsmClassifier getCsmClassifier(Resolver parent) {
         CsmClassifier classifierCache = _getClassifierCache();
-        if (classifierCache == null || 
-                ((classifierCache instanceof CsmValidable) && !((CsmValidable)classifierCache).isValid())) {
-            classifierCache = renderClassifier(ancestorName, parent);
-            _setClassifierCache(classifierCache);
+        if (!lastResolveFalure) {
+            if (classifierCache == null || 
+                    ((classifierCache instanceof CsmValidable) && !((CsmValidable)classifierCache).isValid())) {
+                classifierCache = renderClassifier(ancestorName, parent);
+                _setClassifierCache(classifierCache);
+            }
+            lastResolveFalure = classifierCache == null || 
+                    ((classifierCache instanceof CsmValidable) && !((CsmValidable)classifierCache).isValid());
         }
         return classifierCache;        
     }
@@ -209,6 +215,7 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public InheritanceImpl(DataInput input) throws IOException {
         super(input);
         this.visibility = PersistentUtils.readVisibility(input);
