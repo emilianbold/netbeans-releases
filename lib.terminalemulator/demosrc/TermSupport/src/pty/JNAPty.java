@@ -124,7 +124,7 @@ public class JNAPty extends Pty {
 	    //	getpt()/grantpt()/unlockpt()/pts_name(),
 	    // is supported on Solaris and linux, except that Solaris doesn't
 	    // define getpt(). So we do our own:
-	    if (OS.get() == OS.SOLARIS) {
+	    if (OS.get() == OS.SOLARIS || OS.get() == OS.MACOS) {
 		mfd = PtyLibrary.INSTANCE.open("/dev/ptmx", PtyLibrary.O_RDWR);
 		if (mfd == -1)
 		    throw new PtyException("open(\"/dev/ptmx\") failed -- " + strerror(Native.getLastError()));

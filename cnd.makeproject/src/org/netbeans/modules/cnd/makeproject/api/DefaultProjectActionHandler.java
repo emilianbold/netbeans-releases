@@ -308,18 +308,18 @@ public class DefaultProjectActionHandler implements ActionListener {
                 String args = pae.getProfile().getArgsFlat();
                 String[] env = pae.getProfile().getEnvironment().getenv();
                 boolean showInput = pae.getID() == ProjectActionEvent.RUN;
-                String user_and_host = ((MakeConfiguration) pae.getConfiguration()).getDevelopmentHost().getName();
+                String key = ((MakeConfiguration) pae.getConfiguration()).getDevelopmentHost().getDisplayName();
                 
-                if (user_and_host != null && !user_and_host.equals("localhost")) { // NOI18N
+                if (key != null && !key.equals("localhost")) { // NOI18N
                     // Make sure the project root is visible remotely
                     String basedir = pae.getProfile().getBaseDir();
-                    if (!NativePathMap.isRemote(user_and_host, basedir)) {
+                    if (!NativePathMap.isRemote(key, basedir)) {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                                 NbBundle.getMessage(DefaultProjectActionHandler.class, "Err_CannotRunLocalProjectRemotely")));
                         progressHandle.finish();
                         return;
                     }
-                    CompilerSetManager rcsm = CompilerSetManager.getDefault(user_and_host);
+                    CompilerSetManager rcsm = CompilerSetManager.getDefault(key);
                 }
                 
                 if (pae.getID() == ProjectActionEvent.RUN) {
@@ -426,7 +426,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                     env = env1;
                 }
                 projectExecutor =  new NativeExecutor(
-                        user_and_host,
+                        key,
                         pae.getProfile().getRunDirectory(),
                         exe, args, env,
                         pae.getTabName(),
