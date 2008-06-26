@@ -42,12 +42,12 @@
 package org.netbeans.lib.lexer.inc;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.EmbeddedJoinInfo;
 import org.netbeans.lib.lexer.EmbeddedTokenList;
 import org.netbeans.lib.lexer.JoinLexerInputOperation;
-import org.netbeans.lib.lexer.TokenOrEmbedding;
 import org.netbeans.lib.lexer.token.AbstractToken;
 import org.netbeans.lib.lexer.token.JoinToken;
 import org.netbeans.lib.lexer.token.PartToken;
@@ -101,6 +101,11 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
         firstChange.setOffset(relexOffset);
         firstChange.setMatchOffset(relexOffset); // Due to removeLastAddedToken() and etc.
         relexChanges.add(firstChange);
+    }
+
+    public void setNoRelexStartInfo() {
+        this.startRelexTokenListIndex = tokenListListUpdate.modTokenListIndex;
+        this.relexChanges = Collections.emptyList();
     }
 
     @Override
@@ -191,8 +196,7 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
         // Move gap after last ETL that was relexed (obsolete ETLs still not removed)
         jtl.moveIndexGap(tokenListListUpdate.modTokenListIndex + tokenListListUpdate.removedTokenListCount);
         // Do physical ETLs replace
-        jtl.tokenListList().replace(jtl.tokenListStartIndex() + tokenListListUpdate.modTokenListIndex,
-                tokenListListUpdate.removedTokenListCount, tokenListListUpdate.addedTokenLists);
+        tokenListListUpdate.replaceTokenLists(jtl.tokenListStartIndex());
         jtl.base().tokenListModNotify(tokenListListUpdate.tokenListCountDiff());
     }
     
@@ -302,6 +306,31 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
         //   an obsolete ETL as activeTokenList
 //        jtl.resetActiveAfterUpdate();
 //        assert (jtl.checkConsistency() == null) : jtl.checkConsistency();
+    }
+
+    void collectAddedRemovedEmbeddings(TokenHierarchyUpdate.UpdateItem<T> updateItem) {
+        // Collecting of removed embeddings must be done in the following order:
+        // 1) Removed embeddings from relexChanges located below modTokenListIndex
+        // 2) All removed ETLs in TokenListListUpdate
+        // 3) embeddings from relexChanges located above modTokenListIndex
+        int modIndexInRelexChanges = tokenListListUpdate.modTokenListIndex - startRelexTokenListIndex;
+        int i;
+        for (i = 0; i < modIndexInRelexChanges; i++) {
+            RelexTokenListChange change = relexChanges.get(i);
+            updateItem.collectRemovedEmbeddings(change);
+        }
+        tokenListListUpdate.collectRemovedEmbeddings(updateItem);
+        for (; i < relexChanges.size(); i++) {
+            RelexTokenListChange change = relexChanges.get(i);
+            updateItem.collectRemovedEmbeddings(change);
+        }
+
+        // All added embeddings from relexChanges will be added one by one
+        // since relexChanges contain a change for added ETLs.
+        for (i = 0; i < relexChanges.size(); i++) {
+            RelexTokenListChange change = relexChanges.get(i);
+            updateItem.collectAddedEmbeddings(change);
+        }
     }
 
     @Override
