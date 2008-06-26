@@ -449,7 +449,9 @@ public class ProjectFactorySupport {
                 return "${"+e.getKey()+"}";
             }
         }
+        /* XXX can get here if user just deleted an unimported lib, e.g. ${var.APPLICATION_HOME_DIR}/lib/javaee.jar from JSPWiki:
         assert false : value + " " +helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+         */
         return value;
     }
     
