@@ -154,6 +154,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.gsf.tools</friend>
                 <friend>org.netbeans.modules.javascript.libraries</friend>
                 <friend>org.netbeans.modules.javascript.refactoring</friend>
+                <friend>org.netbeans.modules.maven.gsf</friend>
                 <friend>org.netbeans.modules.php.editor</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.php.refactoring</friend>
