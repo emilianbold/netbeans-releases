@@ -488,9 +488,10 @@ public class UIDiagram extends Diagram {
      * is associated with the presentation element.
      * 
      * @param presentation The presentation element that needs to be refreshed.
+     * @param resizetocontent resize elements to content after update
      * @return true if the presenation element was found and refreshed.
      */
-    public boolean refresh(IPresentationElement presentation)
+    public boolean refresh(IPresentationElement presentation,boolean resizetocontent)
     {
         boolean retVal = false;
         
@@ -498,13 +499,13 @@ public class UIDiagram extends Diagram {
         if (widget instanceof UMLNodeWidget)
         {
             UMLNodeWidget node = (UMLNodeWidget) widget;
-            node.refresh();
+            node.refresh(resizetocontent);
             retVal = true;
         }
         else if (widget instanceof UMLEdgeWidget)
         {
             UMLEdgeWidget edge = (UMLEdgeWidget) widget;
-            edge.refresh();;
+            edge.refresh(resizetocontent);
             retVal = true;
         }
         

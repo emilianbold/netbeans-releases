@@ -107,7 +107,7 @@ public class UMLMultilineLabelWidget extends MultilineLabelWidget
         super.removeFromParent();
     }
 
-    public void refresh() {}
+    public void refresh(boolean resizetocontent) {}
 
 
     public String getDisplayName()

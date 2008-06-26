@@ -39,6 +39,8 @@
 package org.netbeans.modules.uml.diagrams.nodes;
 
 import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.api.visual.border.Border;
@@ -71,7 +73,7 @@ public class CommentWidget extends UMLNodeWidget implements PropertyChangeListen
         super(scene);
         addToLookup(initializeContextPalette());
         addToLookup(new DefaultWidgetContext("Comment"));
-        setMinimumSize(new Dimension(100, 60));
+        setPreferredBounds(new Rectangle(new Point(0,0),new Dimension(100, 60)));
     }
 
     public CommentWidget(Scene scene, IPresentationElement element)
@@ -106,6 +108,13 @@ public class CommentWidget extends UMLNodeWidget implements PropertyChangeListen
         
         bodyLabel.setLabel(comment.getBody());
     }
+
+    @Override
+    public Dimension getDefaultMinimumSize() {
+        return new Dimension(100, 60);
+    }
+    
+    
 
     private DefaultContextPaletteModel initializeContextPalette()
     {

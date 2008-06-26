@@ -314,11 +314,7 @@ public class InteractionOperandWidget extends Widget implements DiagramNodeWrite
                 {
                     label.setPreferredLocation(nodeLabel.getPosition());
                 }
-//                if (nodeLabel.getSize() != null)
-//                {
-//                    label.setPreferredSize(nodeLabel.getSize());
-//                }
-                label.refresh();
+                label.refresh(false);
             }
         }
         System.out.println(" NodeLabels = " + nodeLabels.toString());

@@ -72,7 +72,7 @@ public interface IDiagram extends IPresentationElement
          * @param presentation The presentation element that needs to be refreshed.
          * @return true if the presenation element was found and refreshed.
          */
-        public boolean refresh(IPresentationElement presentation);
+        public boolean refresh(IPresentationElement presentation,boolean resizetocontent);
       
 	/**
 	 * Saves the diagram.

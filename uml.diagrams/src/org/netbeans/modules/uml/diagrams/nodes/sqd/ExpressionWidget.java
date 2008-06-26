@@ -105,7 +105,7 @@ public class ExpressionWidget extends FeatureWidget implements PropertyChangeLis
     }
 
     @Override
-    public void refresh()
+    public void refresh(boolean resizetocontent)
     {
         updateUI();
     }

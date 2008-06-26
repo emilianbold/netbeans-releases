@@ -123,7 +123,7 @@ public class UMLLabelWidget extends LabelWidget implements DiagramEdgeWriter, Di
         ResourceValue.initResources(id, this);
     }
     
-    public void refresh() {}
+    public void refresh(boolean resizetocontent) {}
 
     public String getDisplayName()
     {

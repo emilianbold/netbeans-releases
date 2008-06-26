@@ -283,7 +283,7 @@ public abstract class FeatureWidget extends CustomizableWidget
             pe.delete();
     }
 
-    public void refresh() 
+    public void refresh(boolean resizetocontent) 
     {
     }
 

@@ -497,7 +497,7 @@ public class LifelineWidget extends UMLNodeWidget implements PropertyChangeListe
     }
 
     @Override
-    public void refresh()
+    public void refresh(boolean resizetocontent)
     {
         IPresentationElement pe = getObject();
         if (pe != null && pe.getFirstSubject() != null && !pe.getFirstSubject().isDeleted())
