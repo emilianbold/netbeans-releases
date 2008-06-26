@@ -121,7 +121,7 @@ public class HibernateMovePlugin implements RefactoringPlugin {
             // Find the mapping files in this project
             HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
             if(env == null) {
-                ErrorManager.getDefault().log(org.openide.ErrorManager.INFORMATIONAL, "No HibernateEnviroment found"); // NOI18N
+                // The project does not support Hibernate framework
                 return null;
             }
             List<FileObject> mappingFileObjs = env.getAllHibernateMappingFileObjects();
