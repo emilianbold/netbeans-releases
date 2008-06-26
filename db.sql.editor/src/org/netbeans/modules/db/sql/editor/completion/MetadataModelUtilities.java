@@ -52,10 +52,6 @@ public class MetadataModelUtilities {
 
     private MetadataModelUtilities() {}
 
-    public static boolean schemaExists(MetadataModel model, String schemaName, String prefix) {
-        return model.getSchemaNames().contains(schemaName);
-    }
-
     public static Set<String> addSchemaItems(final List<SQLCompletionItem> items, MetadataModel model, Set<String> restrict, String prefix, final int substitutionOffset) {
         Set<String> result = new TreeSet<String>();
         filter(model.getSchemaNames(), restrict, prefix, new Handler() {
