@@ -162,7 +162,7 @@ public class SwitcherTable extends JTable {
         ren.setText(selected || item.isActive() ? stripHtml( item.getHtmlName() ) : item.getHtmlName());
         ren.setIcon(icon);
         ren.setBorder(rendererBorder);
-        ren.setIconTextGap(10);
+        ren.setIconTextGap(42 - icon.getIconWidth());
         
         if (item.isActive()) {
             // don't use deriveFont() - see #49973 for details
@@ -267,14 +267,14 @@ public class SwitcherTable extends JTable {
             int columnWidth = 0;
             for (int i = 0; i < cols; i++) {
                 for (int j = 0; j < rows; j++) {
-                    TableCellRenderer ren = getCellRenderer(j,i);
+                    TableCellRenderer ren = getCellRenderer(j, i);
                     Component c = prepareRenderer(ren, j, i);
                     // sometime adding of one pixel is needed to prevent "..." truncating
                     columnWidth = Math.max(
                             c.getPreferredSize().width + 1, columnWidth);
                 }
             }
-            columnWidth = Math.min(columnWidth, 250);
+            columnWidth = Math.min(columnWidth, 400);
             // Set the same (maximum) widht to all columns
             for (int i = 0; i < cols; i++) {
                 getColumnModel().getColumn(i).setPreferredWidth(columnWidth);
