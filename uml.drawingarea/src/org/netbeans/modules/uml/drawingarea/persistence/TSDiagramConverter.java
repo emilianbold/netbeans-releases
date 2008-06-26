@@ -60,6 +60,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
 
@@ -326,6 +327,9 @@ public class TSDiagramConverter
                 {
                     if(w instanceof ContainerNode && w instanceof UMLNodeWidget)
                     {
+                        ObjectScene scene=(ObjectScene) w.getScene();
+                        IPresentationElement pe=(IPresentationElement) scene.findObject(w);
+                        if(pe.getFirstSubject() instanceof ICombinedFragment)continue;
                          ContainerNode cont=(ContainerNode) w;
                          cont.getContainer().calculateChildren(false);
                          //cont.getResizeStrategyProvider().resizingStarted(cont);
