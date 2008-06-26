@@ -179,7 +179,7 @@ public final class TokenListUpdater {
                 change.setOffset(relexOffset);
                 change.setMatchIndex(matchIndex); // matchIndex == relexIndex
                 change.setMatchOffset(matchOffset); // matchOffset == relexOffset
-                tokenList.replaceTokens(change, eventInfo.diffLength());
+                tokenList.replaceTokens(change, eventInfo, true);
                 return; // not affected at all
             } // change.setIndex() will be performed later in relex()
 
@@ -266,7 +266,7 @@ public final class TokenListUpdater {
             relex(change, lexerInputOperation, tokenCount);
         }
 
-        tokenList.replaceTokens(change, eventInfo.diffLength());
+        tokenList.replaceTokens(change, eventInfo, true);
         if (loggable) {
             LOG.log(Level.FINE, "TLU.updateRegular() FINISHED: change:" + change + "\nMods:" + change.toStringMods(4));
         }
@@ -431,9 +431,14 @@ public final class TokenListUpdater {
             }
         } else { // Relexing at token count
             if (jtl.tokenListCount() > 0) {
-                jtl.setActiveTokenListIndex(jtl.tokenListCount() - 1);
-                relexLocalIndex = jtl.activeTokenList().tokenCountCurrent();
-                relexOffset = jtl.activeTokenList().endOffset();
+                if (tokenCount > 0) {
+                    jtl.setActiveTokenListIndex(jtl.tokenListCount() - 1);
+                    relexLocalIndex = jtl.activeTokenList().tokenCountCurrent();
+                    relexOffset = jtl.activeTokenList().endOffset();
+                } else {
+                    relexLocalIndex = 0;
+                    relexOffset = tokenListListUpdate.afterUpdateTokenList(jtl, tokenListListUpdate.modTokenListIndex).startOffset();
+                }
             } else { // No token lists => the TLLUpdate should add some
                 relexLocalIndex = 0;
                 relexOffset = tokenListListUpdate.addedTokenLists.get(0).startOffset();
@@ -564,7 +569,7 @@ public final class TokenListUpdater {
             change.setNoRelexStartInfo();
         }
         // addedEndOffset set in relex()
-        jtl.replaceTokens(change, eventInfo.diffLength());
+        jtl.replaceTokens(change, eventInfo, true);
         if (loggable) {
             LOG.log(Level.FINE, "TLU.updateJoined() FINISHED: change:" + change + // NOI18N
                     "\nMods:" + change.toStringMods(4)); // NOI18N
@@ -597,7 +602,7 @@ public final class TokenListUpdater {
         int relexOffset = lexerInputOperation.lastTokenEndOffset();
         while ((token = lexerInputOperation.nextToken()) != null) {
             // Get lookahead and state; Will certainly use them both since updater runs for inc token lists only
-                int lookahead = lexerInputOperation.lookahead();
+            int lookahead = lexerInputOperation.lookahead();
             Object state = lexerInputOperation.lexerState();
             if (loggable) {
                 StringBuilder sb = new StringBuilder(100);

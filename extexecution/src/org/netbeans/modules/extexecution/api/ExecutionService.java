@@ -173,9 +173,9 @@ public final class ExecutionService {
     }
 
     private synchronized Future<Integer> run(InputOutput required) {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            throw new IllegalStateException("Method must be invoked from EDT");
-        }
+//        if (!SwingUtilities.isEventDispatchThread()) {
+//            throw new IllegalStateException("Method must be invoked from EDT");
+//        }
 
         final InputOutputManager.InputOutputData ioData = getInputOutput(required);
 

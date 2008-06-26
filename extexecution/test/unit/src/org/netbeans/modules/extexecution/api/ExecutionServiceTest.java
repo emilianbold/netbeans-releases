@@ -230,22 +230,22 @@ public class ExecutionServiceTest extends NbTestCase {
         assertNotNull(getInputOutput("Test #2", false));
     }
 
-    public void testInvocationThread() {
-        try {
-            TestProcess process = new TestProcess(0);
-            TestCallable callable = new TestCallable();
-            callable.setProcess(process);
-
-            ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
-            ExecutionService service = ExecutionService.newService(callable, builder.create(), "Test");
-
-            Future<Integer> task = service.run();
-
-            fail("Allows invocation outside of EDT");
-        } catch (IllegalStateException ex) {
-            // expected
-        }
-    }
+//    public void testInvocationThread() {
+//        try {
+//            TestProcess process = new TestProcess(0);
+//            TestCallable callable = new TestCallable();
+//            callable.setProcess(process);
+//
+//            ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
+//            ExecutionService service = ExecutionService.newService(callable, builder.create(), "Test");
+//
+//            Future<Integer> task = service.run();
+//
+//            fail("Allows invocation outside of EDT");
+//        } catch (IllegalStateException ex) {
+//            // expected
+//        }
+//    }
 
     private static InputOutputManager.InputOutputData getInputOutput(String name, boolean actions) {
         synchronized (InputOutputManager.class) {
