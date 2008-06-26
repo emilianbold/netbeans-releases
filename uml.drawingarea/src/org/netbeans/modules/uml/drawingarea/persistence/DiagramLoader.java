@@ -558,8 +558,11 @@ class DiagramLoader
                         //get the  xmi.idref
                         nodeInfo.setMEID(reader.getAttributeValue(null, "xmi.idref"));
                         //Based on the meid, decide which reader should be initialized..
-                        gnReader = GraphNodeReaderFactory.getReader(nodeInfo);                        
-                        gnReader.initializeReader(scene,nodeInfo);
+                        gnReader = GraphNodeReaderFactory.getReader(nodeInfo);    
+                        if (gnReader != null)
+                        {
+                            gnReader.initializeReader(scene,nodeInfo);
+                        }
 
                     } //if we encounter contained.. we should exit this method and let others handle the rest
                     else if (reader.getName().getLocalPart().equalsIgnoreCase("GraphElement.contained"))
