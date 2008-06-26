@@ -201,24 +201,24 @@ public class LogCommand extends SvnCommand {
     
     private class XmlEntriesHandler extends DefaultHandler {
 
-        //			<logentry revision="5">
-        //				<author>Jesper</author>
-        //				<date>2005-06-18T10:42:52.338920Z</date>
-        //				<paths>
-        //					<path action="A">/trunk/Subclipse-test/org</path>
-        //					<path action="A">/trunk/Subclipse-test/org/tigris</path>
-        //				</paths>
-        //				<msg>This one is really really cool, too!</msg>
+        //<logentry revision="6">
+        //  <author>geronimo</author>
+        //      <date>2008-06-26T20:00:28.132008Z</date>
+        //          <paths>
+        //              <path action="A">foo</path>
+        //              <path action="A">bar</path>
+        //          </paths>
+        //				<msg>whatever</msg>
         //			</logentry>
                 
-        //private static final String PATHS_ELEMENT_NAME      = "paths";  // NOI18N
-        private static final String PATH_ELEMENT_NAME       = "path";  // NOI18N
+        //private static final String PATHS_ELEMENT_NAME      = "paths";    // NOI18N
+        private static final String PATH_ELEMENT_NAME       = "path";       // NOI18N
         private static final String ENTRY_ELEMENT_NAME      = "logentry";   // NOI18N
-        private static final String MSG_ELEMENT_NAME        = "msg"; // NOI18N
-        private static final String AUTHOR_ELEMENT_NAME     = "author"; // NOI18N        
-        private static final String DATE_ELEMENT_NAME       = "date";   // NOI18N        
+        private static final String MSG_ELEMENT_NAME        = "msg";        // NOI18N
+        private static final String AUTHOR_ELEMENT_NAME     = "author";     // NOI18N
+        private static final String DATE_ELEMENT_NAME       = "date";       // NOI18N
         
-        private static final String ACTION_ATTRIBUTE        = "action";   // NOI18N                
+        private static final String ACTION_ATTRIBUTE        = "action";     // NOI18N                
         private static final String REVISION_ATTRIBUTE      = "revision";   // NOI18N
         
         private List<ISVNLogMessage> logs = new ArrayList<ISVNLogMessage>();        
