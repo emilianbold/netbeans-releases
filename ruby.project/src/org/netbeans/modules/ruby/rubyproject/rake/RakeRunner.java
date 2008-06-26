@@ -65,8 +65,10 @@ import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Task;
 import org.openide.util.Utilities;
 
 /**
@@ -162,26 +164,6 @@ public final class RakeRunner {
         run(rakeTasks);
     }
     
-    /**
-     * Hooks in the UI test runner for running <code>test</code> and
-     * <code>spec</code> tasks.
-     * 
-     * @param taskName
-     * @return true if the given task was handled.
-     */
-    private boolean handleTestingTasks(String taskName) {
-        // TODO: handle also test:integration, test:functional etc.
-        if ("test".equals(taskName) || "spec".equals(taskName)) { //NOI18N
-            TestRunner runner = getTestRunner("test".equals(taskName) ? TestType.TEST_UNIT : TestType.RSPEC);//NOI18N
-            if (runner != null) {
-                runner.runAllTests(project, debug);
-                return true;
-            }
-        }
-        
-        return false;
-    }
-
     private void run(final RakeTask... tasks) {
         assert tasks.length > 0 : "must pass at least on task";
         
@@ -192,16 +174,12 @@ public final class RakeRunner {
         // Save all files first
         LifecycleManager.getDefault().saveAll();
 
-        List<RakeTask> tasksToRun = new ArrayList<RakeTask>(Arrays.asList(tasks));
-        for (Iterator<RakeTask> it = tasksToRun.iterator(); it.hasNext();) {
-            if (handleTestingTasks(it.next().getTask())) {
-                it.remove();
-            }
-        }
-        
+        TestTaskRunner testTaskRunner = new TestTaskRunner(project, debug);
+        List<RakeTask> tasksToRun = testTaskRunner.filter(Arrays.asList(tasks));
         // check whether there was only one task that got already
         // handled by the test handler hook
         if (tasksToRun.isEmpty()) {
+            testTaskRunner.postRun();
             return;
         }
 
@@ -294,7 +272,19 @@ public final class RakeRunner {
         
         desc.addOutputRecognizer(new RakeErrorRecognizer(desc, charsetName)).debug(debug);
 
-        new RubyExecution(desc, charsetName).run();
+        Task task = new RubyExecution(desc, charsetName).run();
+        // check whether there are testing tasks the need to be run still
+        if (testTaskRunner.needsPostRun()) {
+            // must wait for the task to finish since in case of testing 
+            // tasks the run task is typically db:test:prepare which needs to 
+            // be finished before running the tests
+            try {
+                task.waitFinished(4000); 
+            } catch (InterruptedException ex) {
+                // ignore
+            }
+            testTaskRunner.postRun();
+        }
     }
 
     private void computeAndSetDisplayName(final List<RakeTask> tasks) {
