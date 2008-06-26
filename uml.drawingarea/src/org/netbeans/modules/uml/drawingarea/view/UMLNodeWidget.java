@@ -629,7 +629,7 @@ public abstract class UMLNodeWidget extends Widget
 //                }
                     if (label instanceof UMLWidget)
                     {
-                        ((UMLWidget) label).refresh();
+                        ((UMLWidget) label).refresh(false);
                     }
                 }
             }
@@ -787,7 +787,7 @@ public abstract class UMLNodeWidget extends Widget
     }
 
     
-    public void refresh()
+    public void refresh(boolean resizetocontent)
     {
         IPresentationElement pe = getObject();
         if (pe != null && pe.getFirstSubject() != null && !pe.getFirstSubject().isDeleted())
@@ -800,7 +800,7 @@ public abstract class UMLNodeWidget extends Widget
             remove();
         }
         
-        Util.resizeNodeToContents(this);
+        if(resizetocontent)Util.resizeNodeToContents(this);
         scene.validate();
         //Util.resizeNodeToContents(this);
     }

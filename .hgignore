@@ -333,3 +333,5 @@ derby\.log
 \.orig\..*$
 \.chg\..*$
 \.conflict\~$
+^uml/javahelp/org/netbeans/modules/uml/docs/images/resources/images/fit-to-window.png$
+^uml/javahelp/org/netbeans/modules/uml/docs/images/resources/images/selection-arrow.png$

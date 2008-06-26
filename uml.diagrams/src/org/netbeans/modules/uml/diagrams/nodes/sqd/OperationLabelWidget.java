@@ -99,7 +99,7 @@ public class OperationLabelWidget extends FeatureWidget implements PropertyChang
     }
 
     @Override
-    public void refresh()
+    public void refresh(boolean resizetocontent)
     {
         updateUI();
     }

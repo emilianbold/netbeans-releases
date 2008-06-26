@@ -438,7 +438,8 @@ public abstract class SwitchableWidget extends UMLNodeWidget
         
     }
     
-    public void refresh()
+    @Override
+    public void refresh(boolean resizetocontent)
     {
         String oldViewName = viewName;
         
@@ -450,6 +451,6 @@ public abstract class SwitchableWidget extends UMLNodeWidget
         switchTo(oldViewName);
         setPreferredBounds(bounds);
         scene.validate();
-        Util.resizeNodeToContents(this);
+        if(resizetocontent)Util.resizeNodeToContents(this);
     }
 }

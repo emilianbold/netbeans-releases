@@ -220,7 +220,7 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
         scene.removeEdge(getObject());
     }
 
-    public void refresh()
+    public void refresh(boolean resizetocontent)
     {
         IPresentationElement pe = getObject();
         if (pe == null || pe.getFirstSubject() == null)

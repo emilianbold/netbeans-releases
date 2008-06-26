@@ -501,7 +501,7 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
     }
     
     @Override
-    public void refresh()
+    public void refresh(boolean resizetocontent)
     {
         IPresentationElement pe = getObject();
         if (pe != null && pe.getFirstSubject() != null && !pe.getFirstSubject().isDeleted())

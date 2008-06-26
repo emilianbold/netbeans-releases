@@ -171,7 +171,7 @@ public class ElementListWidget extends ListWidget implements DiagramNodeWriter, 
         super.removeFromParent();
     }
 
-    public void refresh()
+    public void refresh(boolean resizetocontent)
     {
     }
 }
