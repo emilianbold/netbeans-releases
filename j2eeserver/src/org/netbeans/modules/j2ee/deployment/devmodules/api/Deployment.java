@@ -41,18 +41,25 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.api.java.queries.BinaryForSourceQuery;
+import org.netbeans.api.java.source.BuildArtifactMapper;
+import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ProgressObjectUtil;
 import org.netbeans.modules.j2ee.deployment.impl.Server;
@@ -67,6 +74,9 @@ import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -76,6 +86,8 @@ import org.openide.util.Parameters;
  */
 public final class Deployment {
 
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(Deployment.class.getName());
+            
     private static boolean alsoStartTargets = true;    //TODO - make it a property? is it really needed?
     
     private static Deployment instance = null;
@@ -160,6 +172,7 @@ public final class Deployment {
             // inform the plugin about the deploy action, even if there was
             // really nothing needed to be deployed
             targetserver.notifyIncrementalDeployment(modules);
+            startListeningOnCos(jmp);
             
             if (modules != null && modules.length > 0) {
                 deploymentTarget.setTargetModules(modules);
@@ -495,4 +508,73 @@ public final class Deployment {
     public static interface Logger {
         public void log(String message);
     }
+    
+    private static void startListeningOnCos(J2eeModuleProvider j2eeProvider) {
+        List<J2eeModuleProvider> providers = new ArrayList<J2eeModuleProvider>(4);
+        providers.add(j2eeProvider);
+        
+        if (j2eeProvider instanceof J2eeApplicationProvider) {
+            Collections.addAll(providers, ((J2eeApplicationProvider) j2eeProvider).getChildModuleProviders());
+        }
+        
+        List<URL> urls = new ArrayList<URL>();
+        for (J2eeModuleProvider provider : providers) {
+            for (FileObject file : provider.getSourceFileMap().getSourceRoots()) {         
+                try {
+                    URL[] binaries = BinaryForSourceQuery.findBinaryRoots(file.getURL()).getRoots();
+                    for (URL binary : binaries) {
+                        FileObject object = URLMapper.findFileObject(binary);
+                        if (object != null) {
+                            URL url = URLMapper.findURL(file, URLMapper.EXTERNAL); 
+                            if (url != null) {
+                                urls.add(url);
+                            }
+                            //BuildArtifactMapper.addArtifactsUpdatedListener(file.getURL(), new ArtifactsUpdatedListenerImpl(j2eeProvider));
+                        }
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        
+        ArtifactsUpdatedListenerImpl listener = new ArtifactsUpdatedListenerImpl(j2eeProvider, urls);
+        for (URL url :urls) {
+            BuildArtifactMapper.addArtifactsUpdatedListener(url, listener);
+        }
+    }
+    
+    private static final class ArtifactsUpdatedListenerImpl implements ArtifactsUpdated {
+
+        private final J2eeModuleProvider provider;
+
+        private final List<URL> registered;
+        
+        public ArtifactsUpdatedListenerImpl(J2eeModuleProvider provider, List<URL> registered) {
+            this.provider = provider;
+            this.registered = registered;
+        }
+        
+        public void artifactsUpdated(Iterable<File> artifacts) {
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                StringBuilder builder = new StringBuilder("Artifacts updated: [");
+                for (File file : artifacts) {
+                    builder.append(file.getAbsolutePath()).append(",");
+                }
+                builder.setLength(builder.length() - 1);
+                builder.append("]");
+                LOGGER.log(Level.FINEST, builder.toString());
+            }
+            
+            DeploymentTargetImpl deploymentTarget = new DeploymentTargetImpl(provider, null);
+            TargetServer server = new TargetServer(deploymentTarget);
+            boolean keep = server.notifyArtifactsUpdated(artifacts);
+            if (!keep) {
+                for (URL url : registered) {
+                    BuildArtifactMapper.removeArtifactsUpdatedListener(url, this);
+                }
+            }
+        }
+        
+    }    
 }

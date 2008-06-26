@@ -230,4 +230,12 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    
+    <folder name="executor-snippets">
+        <file name="run.xml" url="run-snippet.xml" />
+        <file name="debug.xml" url="debug-snippet.xml" />
+        <file name="junit.xml" url="junit-snippet.xml" />
+        <file name="junit-debug.xml" url="junit-debug-snippet.xml" />
+    </folder>
+    
 </filesystem>

@@ -62,6 +62,7 @@ import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.ViewLogAction;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
+import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
 import org.netbeans.modules.j2ee.sun.api.ServerInterface;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
@@ -197,7 +198,11 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
         
         return ((IncrementalDeployment)inner).incrementalDeploy(module, changes);
     }
-    
+
+    @Override
+    public ProgressObject reloadArtifacts(TargetModuleID module, DeploymentChangeDescriptor desc) {
+        return incrementalDeploy(module, desc);
+    }
     
     
     public File getDirectoryForNewApplication(String deploymentName, Target target, DeploymentConfiguration configuration){

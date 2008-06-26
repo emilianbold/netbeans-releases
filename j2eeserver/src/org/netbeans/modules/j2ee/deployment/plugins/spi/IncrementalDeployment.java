@@ -53,6 +53,7 @@ import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import java.io.File;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 
 /**
@@ -174,5 +175,18 @@ public abstract class IncrementalDeployment {
      */
     public void notifyDeployment(TargetModuleID module) {
         //do nothing, override if needed
+    }
+    
+    /**
+     * Performs reload of the artifacts. Return object tracking the realod
+     * or <code>null</code> if the reload is instant or noop.
+     * 
+     * @param module module owning the artifacts
+     * @param desc description of changes
+     * @return object tracking the realod or <code>null</code> if the reload is instant or noop
+     * @since 1.47
+     */
+    public ProgressObject reloadArtifacts(TargetModuleID module, DeploymentChangeDescriptor desc) {
+        return null;
     }
 }
