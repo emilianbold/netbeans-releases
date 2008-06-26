@@ -227,7 +227,11 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         }
 
         public Collection<CsmInheritance> getBaseClasses() {
-            return ((CsmClass)declaration).getBaseClasses();
+            Collection<CsmInheritance> res = new ArrayList<CsmInheritance>();
+            for (CsmInheritance inh : ((CsmClass)declaration).getBaseClasses()) {
+                res.add(new Inheritance(inh, this));
+            }
+            return res;
         }
 
         @Override
@@ -253,6 +257,56 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
 
         public List<CsmTemplateParameter> getTemplateParameters() {
             return ((CsmTemplate)declaration).getTemplateParameters();
+        }
+    }
+
+    private static class Inheritance implements CsmInheritance {
+        private final CsmInheritance inheritance;
+        private final CsmType type;
+
+        public Inheritance(CsmInheritance inheritance, Instantiation instantiation) {
+            this.inheritance = inheritance;
+            this.type = createType(inheritance.getAncestorType(), instantiation);
+        }
+
+        public CsmType getAncestorType() {
+            return type;
+        }
+
+        public CharSequence getText() {
+            return inheritance.getText();
+        }
+
+        public Position getStartPosition() {
+            return inheritance.getStartPosition();
+        }
+
+        public int getStartOffset() {
+            return inheritance.getStartOffset();
+        }
+
+        public Position getEndPosition() {
+            return inheritance.getEndPosition();
+        }
+
+        public int getEndOffset() {
+            return inheritance.getEndOffset();
+        }
+
+        public CsmFile getContainingFile() {
+            return inheritance.getContainingFile();
+        }
+
+        public boolean isVirtual() {
+            return inheritance.isVirtual();
+        }
+
+        public CsmVisibility getVisibility() {
+            return inheritance.getVisibility();
+        }
+
+        public CsmClassifier getCsmClassifier() {
+            return getAncestorType().getClassifier();
         }
     }
     

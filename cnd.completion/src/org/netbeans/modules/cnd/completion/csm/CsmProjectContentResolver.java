@@ -950,7 +950,7 @@ public final class CsmProjectContentResolver {
                 // handle base classes in context of original class/function
                 for (Iterator<CsmInheritance> it2 = csmClass.getBaseClasses().iterator(); it2.hasNext();) {
                     CsmInheritance inherit = it2.next();
-                    CsmClass baseClass = inherit.getCsmClass();
+                    CsmClass baseClass = CsmInheritanceUtilities.getCsmClass(inherit);
                     if (baseClass != null) {
                         CsmVisibility nextMinVisibility;
                         int nextInheritanceLevel = inheritanceLevel;
