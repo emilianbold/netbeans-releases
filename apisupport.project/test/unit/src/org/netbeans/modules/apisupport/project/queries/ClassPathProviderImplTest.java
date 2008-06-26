@@ -120,9 +120,7 @@ public class ClassPathProviderImplTest extends TestBase {
     }
     
     private static final Set<String> TESTLIBS = new HashSet<String>(Arrays.asList(
-        "junit.jar", "nbjunit.jar", "nbjunit-ide.jar", "insanelib.jar",
-        "org-netbeans-modules-nbjunit.jar",
-        "org-netbeans-modules-nbjunit-ide.jar"));
+        "junit.jar", "org-netbeans-modules-nbjunit.jar", "org-netbeans-insane.jar"));
     
     private Set<String> urlsOfCp4Tests(ClassPath cp) {
         Set<String> s = new TreeSet<String>();

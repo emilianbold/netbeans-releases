@@ -249,11 +249,13 @@ public class Commands {
     public static final class ListResourcesCommand extends ServerCommand {
 
         private final String command;
+        private final String cmdSuffix;
         private Manifest list;
         private List<ResourceDesc> resList;
 
         public ListResourcesCommand(String resourceCommandSuffix) {
             command = "list-" + resourceCommandSuffix + "s"; // NOI18N
+            cmdSuffix = resourceCommandSuffix;
         }
         
         public List<ResourceDesc> getResourceList() {
@@ -302,7 +304,7 @@ public class Commands {
                             resList = new ArrayList<ResourceDesc>();
                         }
 
-                        resList.add(new ResourceDesc(name));
+                        resList.add(new ResourceDesc(name, cmdSuffix));
                     }
                 } else {
                     Logger.getLogger("glassfish").log(Level.FINE, "No resource attributes returned for " + r);

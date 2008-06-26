@@ -46,11 +46,12 @@ import org.w3c.dom.svg.SVGRect;
  * @author ads
  */
 public class SVGTextField extends SVGComponent {
-    private static final String TEXTELEM          = "text";
-    private static final String CARETELEM         = "caret";
-    private static final String TITLEELEM_SUFFIX  = "_title";
-    private static final String TRAIT_TEXT        = "#text";
-    private static final String TRAIT_FONT_SIZE   = "font-size";
+
+    protected static final String TRAIT_FONT_FAMILY = "font-family";      // NOI18N
+    protected static final String TEXT              = "text";             // NOI18N
+    private static final String CARETELEM           = "caret";            // NOI18N
+    private static final String TITLEELEM_SUFFIX    = "_title";           // NOI18N
+    protected static final String TRAIT_FONT_SIZE   = "font-size";        // NOI18N
     
     private final SVGLocatableElement textElement;
     private final SVGLocatableElement caretElement;
@@ -66,7 +67,7 @@ public class SVGTextField extends SVGComponent {
     public SVGTextField( SVGForm form, SVGLocatableElement element ) {
         super(form, element );
         textElement  = (SVGLocatableElement) getElementByMeta(getElement(), 
-                TYPE , TEXTELEM );
+                TYPE , TEXT );
         caretElement = (SVGLocatableElement) getElementByMeta(getElement(), 
                 TYPE , CARETELEM );
 
@@ -80,12 +81,17 @@ public class SVGTextField extends SVGComponent {
             elemWidth = 0;
         }
 
-        hiddenTextElement = (SVGLocatableElement) form.getDocument().createElementNS( SVG_NS, "text");
-        hiddenTextElement.setFloatTrait( TRAIT_X, textElement.getFloatTrait(TRAIT_X));
-        hiddenTextElement.setFloatTrait( TRAIT_Y, textElement.getFloatTrait(TRAIT_Y));
-        hiddenTextElement.setFloatTrait( TRAIT_FONT_SIZE, textElement.getFloatTrait(TRAIT_FONT_SIZE));
-        hiddenTextElement.setTrait( "font-family", "SunSansSemiBold");
-        hiddenTextElement.setTrait( TRAIT_VISIBILITY, "hidden");
+        hiddenTextElement = (SVGLocatableElement) form.getDocument().
+                createElementNS( SVG_NS, TEXT);
+        hiddenTextElement.setFloatTrait( TRAIT_X, 
+                textElement.getFloatTrait(TRAIT_X));
+        hiddenTextElement.setFloatTrait( TRAIT_Y, 
+                textElement.getFloatTrait(TRAIT_Y));
+        hiddenTextElement.setFloatTrait( TRAIT_FONT_SIZE, 
+                textElement.getFloatTrait(TRAIT_FONT_SIZE));
+        hiddenTextElement.setTrait( TRAIT_FONT_FAMILY, 
+                textElement.getTrait( TRAIT_FONT_FAMILY));
+        hiddenTextElement.setTrait( TRAIT_VISIBILITY, TR_VALUE_HIDDEN);
         wrapperElement.appendChild(hiddenTextElement);
         
         if (caretElement != null) {
@@ -176,7 +182,8 @@ public class SVGTextField extends SVGComponent {
         if ( caretElement != null) {
             form.invokeAndWaitSafely(new Runnable() {
                public void run() {
-                    caretElement.setTrait(TRAIT_VISIBILITY, showCaret ? "visible" : "hidden");
+                    caretElement.setTrait(TRAIT_VISIBILITY, 
+                            showCaret ? TR_VALUE_VISIBLE : TR_VALUE_HIDDEN);
                }
             });
         }

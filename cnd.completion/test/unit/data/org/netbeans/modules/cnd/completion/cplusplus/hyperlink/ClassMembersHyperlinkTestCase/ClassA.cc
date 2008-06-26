@@ -105,5 +105,5 @@ ostream& operator <<(ostream& output, const ClassA& item) {
 }
 
 void friendFoo() {
-
+    int i = ClassA::publicMemberStInt;
 }

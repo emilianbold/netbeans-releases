@@ -44,6 +44,7 @@ package org.netbeans.api.debugger;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -222,6 +223,7 @@ abstract class Lookup implements ContextProvider {
         private Map<ModuleInfo, ModuleChangeListener> disabledModuleChangeListeners
                 = new HashMap<ModuleInfo, ModuleChangeListener>();
         private Set<MetaInfLookupList> lookupLists = new WeakSet<MetaInfLookupList>();
+        private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
         
         MetaInf (String rootFolder) {
@@ -438,6 +440,18 @@ abstract class Lookup implements ContextProvider {
             }
         }
 
+        // used by ActionsManager to listen on clearCache events
+        void addClearCacheListener(PropertyChangeListener listener) {
+            pcs.addPropertyChangeListener(listener);
+        }
+        
+        private void clearCaches() {
+            synchronized (registrationCache) {
+                registrationCache.clear();
+            }
+            pcs.firePropertyChange("PROP_CACHE", null, null); // NOI18N
+        }
+        
         private final class ModuleChangeListener implements PropertyChangeListener, org.openide.util.LookupListener {
 
             private ClassLoader cl;
@@ -507,12 +521,9 @@ abstract class Lookup implements ContextProvider {
                 refreshLists(true);
                 listenOnDisabledModules();
             }
-            
+
             private void clearCaches(ClassLoader cl) {
-                //System.err.println("clearCaches("+cl+")");
-                synchronized(registrationCache) {
-                    registrationCache.clear();
-                }
+                MetaInf.this.clearCaches();
                 if (cl != null) {
                     // Release the appropriate instances from the instance cache
                     synchronized(instanceCache) {

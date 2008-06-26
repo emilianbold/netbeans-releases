@@ -83,6 +83,9 @@ import org.netbeans.jemmy.operators.*;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.test.xml.schema.lib.SchemaMultiView;
 
+import org.netbeans.junit.NbModuleSuite;
+import junit.framework.Test;
+
 /**
  *
  * @author michaelnazarov@netbeans.org
@@ -139,7 +142,8 @@ public class ElementComponent_0001 extends ElementComponent {
     public ElementComponent_0001(String arg0) {
         super(arg0);
     }
-    
+
+    /*    
     public static TestSuite suite() {
         TestSuite testSuite = new TestSuite(ElementComponent_0001.class.getName());
         
@@ -149,7 +153,29 @@ public class ElementComponent_0001 extends ElementComponent {
         
         return testSuite;
     }
+    */
 
+    public static Test suite( )
+    {
+      return NbModuleSuite.create(
+          NbModuleSuite.createConfiguration( ElementComponent_0001.class ).addTest(
+              "OpenSchema",
+              "CheckProperties",
+              "CheckingIDProperty",
+              "CheckingNameProperty",
+              "CheckingAbstractProperty",
+              "CheckingNillableProperty",
+              "CheckingFixedProperty",
+              "CheckingDefaultProperty",
+              "CheckingDerivationsProperty",
+              "CheckingSubstitutionsProperty",
+              "CheckingSubstitutionGroupProperty"
+           )
+           .enableModules( ".*" )
+           .clusters( ".*" )
+           //.gui( true )
+        );
+    }
 
     public void OpenSchema( )
     {
@@ -391,7 +417,7 @@ public class ElementComponent_0001 extends ElementComponent {
 
       String[] data =
       {
-        "<xsd:element name=\"Element-1\">~<xsd:element name=\"Element-1\" substitutionGroup=\"IncludedElement\">~" + sPathInTree + "~Substitution Group|IncludedElement",
+        "<xsd:element name=\"Element-1\">~<xsd:element name=\"Element-1\" substitutionGroup=\"tns:sub\">~" + sPathInTree + "~Substitution Group|IncludedElement",
       };
       CheckProperty( data );
 

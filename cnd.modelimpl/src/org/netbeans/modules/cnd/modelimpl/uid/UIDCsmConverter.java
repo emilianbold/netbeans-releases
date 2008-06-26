@@ -154,6 +154,10 @@ public class UIDCsmConverter {
         Collection<T> out = UIDsToList(uids, false);
         return out;
     }
+
+    public static <T extends CsmInclude> Iterator<T> UIDsToIncludes(Collection<CsmUID<T>> uids, CsmFilter filter) {
+        return new LazyCsmCollection<T, T>(new ArrayList<CsmUID<T>>(uids), true).iterator(filter);
+    }
     
     private static <T extends CsmIdentifiable> Collection<T> UIDsToList(Collection<CsmUID<T>> uids, boolean allowNullsAndSkip) {
         allowNullsAndSkip |= TraceFlags.SAFE_UID_ACCESS;
@@ -193,10 +197,12 @@ public class UIDCsmConverter {
         return project == null ? null : project.getUID();
     }  
 
+    @SuppressWarnings("unchecked")
     public static <T extends CsmDeclaration> CsmUID<T> declarationToUID(T decl) {
         return decl == null ? null : decl.getUID();
     }
 
+    @SuppressWarnings("unchecked")
     public static CsmUID<CsmScope> scopeToUID(CsmScope scope) {
         return scope == null ? null : ((CsmIdentifiable)scope).getUID();
     }

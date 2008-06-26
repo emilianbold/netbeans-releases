@@ -290,6 +290,17 @@ public class ResourceSupport {
                                                   getStringValue(property, value),
                                                   getSourceFile());
             }
+            if ((newPrEd == null) && !(property.getCurrentEditor() instanceof ResourceWrapperEditor)) {
+                PropertyEditor propEd = property.getPropertyEditor();
+                if (propEd instanceof FormPropertyEditor) {
+                    FormPropertyEditor formPropEd = (FormPropertyEditor)propEd;
+                    for (PropertyEditor newPropEd : formPropEd.getAllEditors()) {
+                        if (newPropEd instanceof ResourceWrapperEditor) {
+                            return new FormProperty.ValueWithEditor(resValue, newPropEd);
+                        }
+                    }
+                }
+            }
             newValue = newPrEd != null ? new FormProperty.ValueWithEditor(resValue, newPrEd) : resValue;
         }
 

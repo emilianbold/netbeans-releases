@@ -219,7 +219,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             }
         }
         //long timeStart = System.nanoTime();
-        resolveContext(prj, resImpl, fun, context, offset, strPrefix, match);
+        resolveContext(prj, resImpl, fun, context, offset, strPrefix, match);    
         result = buildResult(context, resImpl);
         if (key != null){
             cache.put(key, result);
@@ -561,6 +561,18 @@ public class CompletionResolverImpl implements CompletionResolver {
                 if (CsmSortUtilities.matchName(elem.getName(), strPrefix, match, caseSensitive)) {
                     templateParameters.add(elem);
                 }
+            }
+        }
+        if (fun == null && CsmKindUtilities.isTemplateParameter(context.getLastObject())) {
+            // Fix for IZ#138099: unresolved identifier for functions' template parameter.
+            // We've hit a parameter of function template. Current context does
+            // not contain function itself because template parameters go before function.
+            CsmTemplateParameter elem = (CsmTemplateParameter) context.getLastObject();
+            if (CsmSortUtilities.matchName(elem.getName(), strPrefix, match, caseSensitive)) {
+                if (templateParameters == null) {
+                    templateParameters = new ArrayList<CsmTemplateParameter>();
+                }
+                templateParameters.add(elem);
             }
         }
         return templateParameters;
