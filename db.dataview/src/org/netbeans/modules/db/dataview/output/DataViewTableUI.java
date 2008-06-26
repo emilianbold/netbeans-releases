@@ -270,7 +270,7 @@ class DataViewTableUI extends JTable {
             public void actionPerformed(ActionEvent e) {
                 String rawUpdateStmt = "";
                 UpdatedRowContext tblContext = dataView.getUpdatedRowContext();
-                if(tblContext.getUpdateKeys().isEmpty()){
+                if (tblContext.getUpdateKeys().isEmpty()) {
                     return;
                 }
                 for (String key : tblContext.getUpdateKeys()) {

@@ -40,9 +40,6 @@
  */
 package org.netbeans.modules.db.dataview.meta;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * This basic class provides sql framework functionality to all DBObjects
  * 
@@ -50,9 +47,7 @@ import java.util.List;
  */
 public abstract class DBObject <Parent> {
 
-    /** User-modifiable display name for this object */
     protected transient String displayName;
-    /** Object instance that "owns" this DBObject instance. */
     protected transient Parent parentObject;
 
     /** Creates a new instance of DBObject */
@@ -87,15 +82,6 @@ public abstract class DBObject <Parent> {
         return response;
     }
 
-    /**
-     * Gets List of child DBObjects belonging to this instance.
-     * 
-     * @return List of child DBObjects
-     */
-    public List getChildDBObjects() {
-        return new ArrayList(1);
-    }
-
     public String getDisplayName() {
         return this.displayName;
     }
@@ -108,10 +94,7 @@ public abstract class DBObject <Parent> {
         displayName = (newName != null) ? newName.trim() : "";
     }
 
-    public void setParentObject(Parent newParent) throws DBException {
-        if (newParent == null) {
-            throw new DBException("Must supply non-null Object ref for newParent.");
-        }
+    public void setParentObject(Parent newParent) {
         this.parentObject = newParent;
     }
 

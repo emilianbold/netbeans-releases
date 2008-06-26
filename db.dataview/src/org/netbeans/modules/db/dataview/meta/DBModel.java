@@ -40,12 +40,7 @@
  */
 package org.netbeans.modules.db.dataview.meta;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -80,65 +75,9 @@ public final class DBModel extends DBObject<Object> {
                 //throw new IllegalStateException("Cannot add table " + fqName + ", it already exist!");
             }
 
-            table.setParent(this);
+            table.setParentObject(this);
             tables.put(fqName, table);
         }
-    }
-
-    /**
-     * check if a table exists This will check if a table is in database model,
-     */
-    public boolean containsTable(DBTable table) {
-        if (this.getTable(this.getFullyQualifiedTableName(table)) != null) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Create DBTable instance with the given table, schema, and catalog names.
-     *
-     * @param tableName  table name of new table
-     * @param schemaName schema name of new table
-     * @param catalogName catalog name of new table
-     * @return an instance of SQLTable if successful, null if failed.
-     */
-    public DBTable createTable(String tableName, String schemaName, String catalogName) {
-        DBTable table = null;
-
-        if (tableName == null || tableName.length() == 0) {
-            throw new IllegalArgumentException("tableName cannot be null");
-        }
-
-        table = new DBTable(tableName, schemaName, catalogName);
-        addTable(table);
-        return table;
-    }
-
-    /**
-     * Deletes all tables associated with this data source.
-     *
-     * @return true if all tables were deleted successfully, false otherwise.
-     */
-    public boolean deleteAllTables() {
-        this.tables.clear();
-        return true;
-    }
-
-    /**
-     * Delete table from the SQLDataSource
-     *
-     * @param fqTableName
-     *            fully qualified name of table to be deleted.
-     * @return true if successful. false if failed.
-     */
-    public boolean deleteTable(String fqTableName) {
-        if (fqTableName != null && fqTableName.trim().length() != 0) {
-            this.tables.remove(fqTableName);
-            return true;
-        }
-        return false;
     }
 
     @Override
@@ -165,50 +104,6 @@ public final class DBModel extends DBObject<Object> {
         }
 
         return result;
-    }
-
-    /**
-     * Gets the allTables attribute of the SQLDataSource object
-     *
-     * @return The allTables value
-     */
-    public Map getAllDBTables() {
-        return tables;
-    }
-
-    /**
-     * get a list of tables based on table name, schema name and catalog name
-     * since we allow duplicate tables this will return a list of tables
-     */
-    public List getAllTables(String tableName, String schemaName, String catalogName) {
-        List<DBTable> tbls = new ArrayList<DBTable>();
-        for (DBTable table : tbls) {
-            String tName = table.getName();
-            String tSchemaName = table.getSchema();
-            String tCatalogName = table.getCatalog();
-
-            boolean found = true;
-            found = tName != null ? tName.equals(tableName) : tableName == null;
-            found &= tSchemaName != null ? tSchemaName.equals(schemaName) : schemaName == null;
-            found &= tCatalogName != null ? tCatalogName.equals(catalogName)
-                    : (catalogName == null || catalogName.trim().equals(""));
-
-            if (found) {
-                tbls.add(table);
-            }
-        }
-
-        return tbls;
-    }
-
-    /**
-     * Gets List of child SQLObjects belonging to this instance.
-     *
-     * @return List of child SQLObjects
-     */
-    @Override
-    public List<DBTable> getChildDBObjects() {
-        return this.getTables();
     }
 
     public String getFullyQualifiedTableName(DBTable tbl) {
@@ -245,59 +140,6 @@ public final class DBModel extends DBObject<Object> {
 
     public DBTable getTable(String fqTableName) {
         return (DBTable) this.tables.get(fqTableName);
-    }
-
-    /**
-     * NOTE: This method will return first matching table, since now we allow
-     * duplicate tables, so if you want to get specific table use
-     * getFullyQualifiedTableName(DBTable tbl) to generate a qualified name
-     * which includes object id then call getTable(fqName)
-     *
-     * @see org.netbeans.modules.model.database.DatabaseModel#getTable(java.lang.String,
-     *      java.lang.String, java.lang.String)
-     */
-    public DBTable getTable(String tableName, String schemaName, String catalogName) {
-        Iterator it = this.tables.values().iterator();
-        while (it.hasNext()) {
-            DBTable table = (DBTable) it.next();
-            String tName = table.getName();
-            String tSchemaName = table.getSchema();
-            String tCatalogName = table.getCatalog();
-
-            boolean found = true;
-            found = tName != null ? tName.equals(tableName) : tableName == null;
-            found &= tSchemaName != null ? tSchemaName.equals(schemaName) : schemaName == null;
-            found &= tCatalogName != null ? tCatalogName.equals(catalogName)
-                    : (catalogName == null || catalogName.trim().equals(""));
-
-            if (found) {
-                return table;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Gets a read-only Map of table names to available DBTable instances in
-     * this model.
-     *
-     * @return readonly Map of table names to DBTable instances
-     */
-    public Map getTableMap() {
-        return Collections.unmodifiableMap(tables);
-    }
-
-    public List<DBTable> getTables() {
-        List<DBTable> list = Collections.emptyList();
-        Collection<DBTable> tableColl = tables.values();
-
-        if (tableColl.size() != 0) {
-            list = new ArrayList<DBTable>(tableColl.size());
-            list.addAll(tableColl);
-        }
-
-        return Collections.unmodifiableList(list);
     }
 
     /**
