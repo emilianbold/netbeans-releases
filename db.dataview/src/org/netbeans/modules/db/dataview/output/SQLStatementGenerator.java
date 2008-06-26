@@ -73,22 +73,20 @@ class SQLStatementGenerator {
         boolean comma = false;
         for (int i = 0; i < insertedRow.length; i++) {
             DBColumn dbcol = tblMeta.getColumn(i);
-            if (insertedRow[i] != null) {
-                if (comma) {
-                    values += commaStr;
-                    rawvalues += commaStr;
-                    colNames += commaStr;
-                } else {
-                    comma = true;
-                }
-                values += "?";
-                rawvalues += getQualifiedValue(dbcol.getJdbcType(), insertedRow[i]);
-                colNames += dbcol.getQualifiedName();
-            } else {
-                if (!dbcol.isNullable()) {
-                    throw new DBException("Please enter valid values for not nullable columns");
-                }
+            if (insertedRow[i] == null && !dbcol.isNullable() && !dbcol.isGenerated()) {
+                throw new DBException("Please enter valid values for not nullable columns");
             }
+            if (comma) {
+                values += commaStr;
+                rawvalues += commaStr;
+                colNames += commaStr;
+            } else {
+                comma = true;
+            }
+
+            values += insertedRow[i] == null ? " NULL " : "?";
+            rawvalues += getQualifiedValue(dbcol.getJdbcType(), insertedRow[i]);
+            colNames += dbcol.getQualifiedName();
         }
 
         colNames += ") ";
@@ -191,6 +189,9 @@ class SQLStatementGenerator {
     }
 
     private Object getQualifiedValue(int type, Object val) {
+        if(val == null) {
+            return "NULL";
+        }
         if (DataViewUtils.isNumeric(type)) {
             return val;
         } else {
