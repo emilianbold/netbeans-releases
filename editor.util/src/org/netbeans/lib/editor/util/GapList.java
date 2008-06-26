@@ -214,7 +214,7 @@ implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
             int elementDataLength = elementData.length;
             while (i < elementDataLength) {
                 if (elementData[i] == null) {
-                    return i;
+                    return i - gapLength;
                 }
                 i++;
             }
@@ -231,7 +231,7 @@ implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
             int elementDataLength = elementData.length;
             while (i < elementDataLength) {
                 if (elem.equals(elementData[i])) {
-                    return i;
+                    return i - gapLength;
                 }
                 i++;
             }
@@ -254,7 +254,7 @@ implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
             int gapEnd = gapStart + gapLength;
             while (i >= gapEnd) {
                 if (elementData[i] == null) {
-                    return i;
+                    return i - gapLength;
                 }
                 i--;
             }
@@ -271,7 +271,7 @@ implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
             int gapEnd = gapStart + gapLength;
             while (i >= gapEnd) {
                 if (elem.equals(elementData[i])) {
-                    return i;
+                    return i - gapLength;
                 }
                 i--;
             }
