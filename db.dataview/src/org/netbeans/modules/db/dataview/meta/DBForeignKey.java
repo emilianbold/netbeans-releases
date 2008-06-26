@@ -43,7 +43,6 @@ package org.netbeans.modules.db.dataview.meta;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.ListIterator;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -59,23 +58,14 @@ import java.util.ResourceBundle;
 public final class DBForeignKey extends DBObject<DBTable> {
 
     private static final String RS_PK_NAME = "PK_NAME"; // NOI18N
-
     private static final String RS_PKCATALOG_NAME = "PKTABLE_CAT"; // NOI18N
-
     private static final String RS_PKSCHEMA_NAME = "PKTABLE_SCHEM"; // NOI18N
-
     private static final String RS_PKTABLE_NAME = "PKTABLE_NAME"; // NOI18N
-
     private static final String RS_PKCOLUMN_NAME = "PKCOLUMN_NAME"; // NOI18N
-
     private static final String RS_FK_NAME = "FK_NAME"; // NOI18N
-
     private static final String RS_FKCOLUMN_NAME = "FKCOLUMN_NAME"; // NOI18N
-
     private static final String RS_UPDATE_RULE = "UPDATE_RULE"; // NOI18N
-
     private static final String RS_DELETE_RULE = "DELETE_RULE"; // NOI18N
-
     private static final String RS_DEFERRABILITY = "DEFERRABILITY"; // NOI18N
 
     /*
@@ -222,36 +212,8 @@ public final class DBForeignKey extends DBObject<DBTable> {
         return result;
     }
 
-    public int getColumnCount() {
-        return fkColumnNames.size();
-    }
-
-    public String getColumnName(int iColumn) {
-        return fkColumnNames.get(iColumn);
-    }
-
     public List<String> getColumnNames() {
         return Collections.unmodifiableList(fkColumnNames);
-    }
-
-    public int getDeferrability() {
-        return deferrability;
-    }
-
-    public int getDeleteRule() {
-        return deleteRule;
-    }
-
-    public String getMatchingPKColumn(String fkColumnName) {
-        ListIterator it = fkColumnNames.listIterator();
-        while (it.hasNext()) {
-            String colName = (String) it.next();
-            if (colName.equals(fkColumnName.trim())) {
-                return pkColumnNames.get(it.previousIndex());
-            }
-        }
-
-        return null;
     }
 
     public String getName() {
@@ -278,18 +240,6 @@ public final class DBForeignKey extends DBObject<DBTable> {
         return pkTable;
     }
 
-    public int getSequence(DBColumn col) {
-        if (col == null || col.getName() == null) {
-            return -1;
-        }
-
-        return fkColumnNames.indexOf(col.getName().trim());
-    }
-
-    public int getUpdateRule() {
-        return updateRule;
-    }
-
     /**
      * Overrides default implementation to compute hashCode value for those members used
      * in equals() for comparison.
@@ -312,22 +262,22 @@ public final class DBForeignKey extends DBObject<DBTable> {
         return myHash;
     }
 
-    public boolean references(DBTable aTable) {
-        return (aTable != null) ? references(aTable.getName(), aTable.getSchema(), aTable.getCatalog()) : false;
-    }
-
     public boolean references(DBPrimaryKey pk) {
         if (pk == null) {
             return false;
         }
 
         List<String> targetColNames = pk.getColumnNames();
-        DBTable targetTable = pk.getParent();
+        DBTable targetTable = pk.getParentObject();
 
         return references(targetTable) && targetColNames.containsAll(pkColumnNames) && pkColumnNames.containsAll(targetColNames);
     }
 
-    public boolean references(String pkTableName, String pkSchemaName, String pkCatalogName) {
+    private boolean references(DBTable aTable) {
+        return (aTable != null) ? references(aTable.getName(), aTable.getSchema(), aTable.getCatalog()) : false;
+    }
+
+    private boolean references(String pkTableName, String pkSchemaName, String pkCatalogName) {
         if (pkCatalogName.equals("")) {
             pkCatalogName = null;
         }

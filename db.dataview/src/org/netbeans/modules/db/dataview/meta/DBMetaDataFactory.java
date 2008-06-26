@@ -276,9 +276,6 @@ public final class DBMetaDataFactory {
                 DBTable table = tables.get(key);
                 if(table == null){
                     table = new DBTable(tableName, schemaName, catalogName);
-                    if (tableName.equals("")){
-                        table.setEditable(false);
-                    }
                     tables.put(key, table);
                 }
                         
@@ -309,17 +306,10 @@ public final class DBMetaDataFactory {
                 boolean autoIncrement = rsMeta.isAutoIncrement(i);
 
                 // create a table column and add it to the vector
-                DBColumn col = createColumn(table);
-                col.setName(colName);
-                col.setJdbcType(sqlTypeCode);
-                col.setNullable(isNullable);
-                col.setPrimaryKey(false);
-                col.setForeignKey(false);
+                DBColumn col = new DBColumn(colName, sqlTypeCode, scale, precision, isNullable, autoIncrement);
+                col.setParent(table);
                 col.setOrdinalPosition(position);
-                col.setPrecision(precision);
-                col.setScale(scale);
                 col.setDisplayName(displayName);
-                col.setGenerated(autoIncrement);
                 col.setEditable(!tableName.equals("") && !autoIncrement);
                 col.setDisplaySize(displaySize);
 
@@ -331,7 +321,6 @@ public final class DBMetaDataFactory {
                 checkPrimaryKeys(table);
                 checkForeignKeys(table);
             }
-            // TODO Also load Index info
      
         } catch (Exception e) {
             mLogger.severe(DBException.getMessage(e));
@@ -408,12 +397,6 @@ public final class DBMetaDataFactory {
             mLogger.severe(DBException.getMessage(e));
             throw e;
         }
-    }
-    
-    private DBColumn createColumn(DBTable table) throws DBException {
-        DBColumn col = new DBColumn();
-        col.setParent(table);
-        return col;
     }
     
     private int getDBTypeCode(String name){

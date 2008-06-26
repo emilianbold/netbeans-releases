@@ -51,15 +51,8 @@ import java.sql.SQLException;
  *
  * @author Ahimanikya Satapathy
  */
-public final class DBPrimaryKey extends DBObject {
-
-    /**DatabaseMetaData ResultSet column name used to decode name of associated primary key     */
-    //private static final String RS_KEY_NAME = "PK_NAME"; // NOI18N
-
+public final class DBPrimaryKey extends DBObject<DBTable> {
     private static final String RS_COLUMN_NAME = "COLUMN_NAME"; // NOI18N
-
-    /** DatabaseMetaData ResultSet column name used to decode key sequence number*/
-    //private static final String RS_SEQUENCE_NUM = "KEY_SEQ";
     /* List of column names in key sequence order. */
     private List<String> columnNames;
     /* Name of this key; may be null */
@@ -68,36 +61,14 @@ public final class DBPrimaryKey extends DBObject {
     private DBTable parent;
 
     public DBPrimaryKey(ResultSet rs) throws SQLException {
-        this();
+        name = null;
+        columnNames = new ArrayList<String>();
         if (rs == null) {
             throw new IllegalArgumentException("ResultSet Can't be null"); // NO i18n
-
         }
         while (rs.next()) {
             columnNames.add(rs.getString(RS_COLUMN_NAME));
         }
-    }
-
-    /**
-     * Creates a new instance of PrimaryKey with the given key name and referencing the
-     * column names in the given List.
-     *
-     * @param keyName name, if any, of this PrimaryKey
-     * @param keyColumnNames List of Column objects, or column names in key sequence
-     *        order, depending on state of isStringList
-     * @param isStringList true if keyColumnName contains column names in key sequence
-     *        order, false if it contains Column objects which need to be sorted in key
-     *        sequence order.
-     */
-    public DBPrimaryKey(String keyName, List<String> keyColumnNames) {
-        this();
-        name = keyName;
-        columnNames.addAll(keyColumnNames);
-    }
-
-    private DBPrimaryKey() {
-        name = null;
-        columnNames = new ArrayList<String>();
     }
 
     public boolean contains(DBColumn col) {
@@ -138,31 +109,11 @@ public final class DBPrimaryKey extends DBObject {
         return Collections.unmodifiableList(columnNames);
     }
 
-    public String getDBColumnName(int iColumn) {
-        return columnNames.get(iColumn);
-    }
-
     public String getName() {
         if (name == null && parent != null) {
             name = "PK_" + parent.getName();
         }
         return name;
-    }
-
-    public DBTable getParent() {
-        return parent;
-    }
-
-    public int getSequence(DBColumn col) {
-        if (col == null || col.getName() == null) {
-            return -1;
-        }
-
-        return getSequence(col.getName().trim());
-    }
-
-    public int getSequence(String columnName) {
-        return columnNames.indexOf(columnName);
     }
 
     /**
@@ -179,10 +130,6 @@ public final class DBPrimaryKey extends DBObject {
         return myHash;
     }
 
-    public boolean isReferencedBy(DBForeignKey fk) {
-        return (fk != null) ? fk.references(this) : false;
-    }
-
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder(100);
@@ -193,31 +140,5 @@ public final class DBPrimaryKey extends DBObject {
             buf.append((columnNames.get(i)).trim());
         }
         return buf.toString();
-    }
-
-    /**
-     * Replaces the current List of column names with the contents of the given String
-     * array.
-     *
-     * @param newColNames array of names to supplant current list of column names
-     */
-    void setColumnNames(String[] newColNames) {
-        if (newColNames == null) {
-            throw new IllegalArgumentException("Must supply non-null String[] for param newColNames.");
-        }
-
-        columnNames.clear();
-        for (int i = 0; i < newColNames.length; i++) {
-            columnNames.add(newColNames[i]);
-        }
-    }
-
-    /**
-     * Sets reference to DBTable that owns this primary key.
-     *
-     * @param newParent new parent of this primary key.
-     */
-    void setParent(DBTable newParent) {
-        parent = newParent;
     }
 }

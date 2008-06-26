@@ -45,8 +45,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -69,23 +67,13 @@ public final class DBTable extends DBObject<DBModel> {
         }
     }
     private static final String FQ_TBL_NAME_SEPARATOR = ".";
-    private String alias;
     private String catalog;
     private Map<String, DBColumn> columns;
-    private String description;
-    private boolean editable = true;
     private Map<String, DBForeignKey> foreignKeys;
     private String name;
-    private DBModel parentDBModel;
     private DBPrimaryKey primaryKey;
     private String schema;
     private String escapeString;
-
-    /** No-arg constructor; initializes Collections-related member variables. */
-    DBTable() {
-        columns = new LinkedHashMap<String, DBColumn>();
-        foreignKeys = new HashMap<String, DBForeignKey>();
-    }
 
     /**
      * Creates a new instance of DBTable with the given name.
@@ -95,7 +83,8 @@ public final class DBTable extends DBObject<DBModel> {
      * @param aCatalog catalog of new DBTable instance; may be null
      */
     public DBTable(String aName, String aSchema, String aCatalog) {
-        this();
+        columns = new LinkedHashMap<String, DBColumn>();
+        foreignKeys = new HashMap<String, DBForeignKey>();
 
         name = (aName != null) ? aName.trim() : null;
         schema = (aSchema != null) ? aSchema.trim() : null;
@@ -119,21 +108,6 @@ public final class DBTable extends DBObject<DBModel> {
     }
 
     /**
-     * Adds the given ForeignKeyImpl, associating it with this DBTable instance.
-     * 
-     * @param newFk new ForeignKeyImpl instance to be added
-     * @return return true if addition succeeded, false otherwise
-     */
-    public synchronized boolean addForeignKey(DBForeignKey newFk) throws DBException {
-        if (newFk != null) {
-            newFk.setParentObject(this);
-            foreignKeys.put(newFk.getName(), newFk);
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * Compares DBTable with another object for lexicographical ordering. Null objects and
      * those DBTables with null names are placed at the end of any ordered collection
      * using this method.
@@ -151,10 +125,9 @@ public final class DBTable extends DBObject<DBModel> {
             return 0;
         }
 
+        DBModel parentDBModel = getParentObject();
         String refName = (parentDBModel != null) ? parentDBModel.getFullyQualifiedTableName((DBTable) refObj) : ((DBTable) refObj).getName();
-
         String myName = (parentDBModel != null) ? parentDBModel.getFullyQualifiedTableName(this) : name;
-
         return (myName != null) ? myName.compareTo(refName) : (refName != null) ? 1 : -1;
     }
 
@@ -187,12 +160,11 @@ public final class DBTable extends DBObject<DBModel> {
         if (obj instanceof DBTable) {
             DBTable aTable = (DBTable) obj;
             String aTableName = aTable.getName();
-            DBModel aTableParent = aTable.getParent();
             Map<String, DBColumn> aTableColumns = aTable.getColumns();
-            DBPrimaryKey aTablePK = aTable.getPrimaryKey();
+            DBPrimaryKey aTablePK = aTable.primaryKey;
             List<DBForeignKey> aTableFKs = aTable.getForeignKeys();
 
-            result &= (aTableName != null && name != null && name.equals(aTableName)) && (parentDBModel != null && aTableParent != null && parentDBModel.equals(aTableParent));
+            result &= (aTableName != null && name != null && name.equals(aTableName));
 
             if (columns != null && aTableColumns != null) {
                 Set<String> objCols = aTableColumns.keySet();
@@ -217,40 +189,16 @@ public final class DBTable extends DBObject<DBModel> {
         return result;
     }
 
-    public String getAliasName() {
-        return alias;
-    }
-
     public String getCatalog() {
         return catalog;
     }
-    
+
     public String getEscapeString() {
         return escapeString;
     }
 
     void setEscapeString(String escapeString) {
         this.escapeString = escapeString;
-    }    
-
-    /**
-     * Gets List of child SQLObjects belonging to this instance.
-     * 
-     * @return List of child SQLObjects
-     */
-    @Override
-    public List<DBColumn> getChildDBObjects() {
-        return this.getColumnList();
-    }
-
-    /**
-     * Gets the DBColumn, if any, associated with the given name
-     * 
-     * @param columnName column name
-     * @return DBColumn associated with columnName, or null if none exists
-     */
-    public DBColumn getColumn(String columnName) {
-        return columns.get(columnName);
     }
 
     public List<DBColumn> getColumnList() {
@@ -264,10 +212,6 @@ public final class DBTable extends DBObject<DBModel> {
         return columns;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
     /**
      * Get display name
      * 
@@ -275,11 +219,7 @@ public final class DBTable extends DBObject<DBModel> {
      */
     @Override
     public String getDisplayName() {
-        return this.getQualifiedName();
-    }
-
-    public DBForeignKey getForeignKey(String fkName) {
-        return foreignKeys.get(fkName);
+        return this.getFullyQualifiedName();
     }
 
     public List<DBForeignKey> getForeignKeys() {
@@ -322,76 +262,8 @@ public final class DBTable extends DBObject<DBModel> {
         return name;
     }
 
-    public DBModel getParent() {
-        return parentDBModel;
-    }
-
     public DBPrimaryKey getPrimaryKey() {
         return primaryKey;
-    }
-
-    /**
-     * get table qualified name
-     * 
-     * @return qualified table name prefixed with alias
-     */
-    public String getQualifiedName() {
-        StringBuilder buf = new StringBuilder(50);
-        String aName = this.getAliasName();
-        if (aName != null && !aName.trim().equals("")) {
-            buf.append("(");
-            buf.append(aName);
-            buf.append(") ");
-            buf.append(this.getName());
-        } else {
-            buf.append(this.getFullyQualifiedName());
-        }
-
-        return buf.toString();
-    }
-
-    public Set getReferencedTables() {
-        List keys = getForeignKeys();
-        Set<DBTable> tables = new HashSet<DBTable>(keys.size());
-
-        if (keys.size() != 0) {
-            Iterator iter = keys.iterator();
-            while (iter.hasNext()) {
-                DBForeignKey fk = (DBForeignKey) iter.next();
-                DBTable pkTable = parentDBModel.getTable(fk.getPKTable(), fk.getPKSchema(), fk.getPKCatalog());
-                if (pkTable != null && fk.references(pkTable.getPrimaryKey())) {
-                    tables.add(pkTable);
-                }
-            }
-
-            if (tables.size() == 0) {
-                tables.clear();
-                tables = Collections.emptySet();
-            }
-        }
-
-        return tables;
-    }
-
-    public DBForeignKey getReferenceFor(DBTable target) {
-        if (target == null) {
-            return null;
-        }
-
-        DBPrimaryKey targetPK = target.getPrimaryKey();
-        if (targetPK == null) {
-            return null;
-        }
-
-        Iterator iter = foreignKeys.values().iterator();
-        while (iter.hasNext()) {
-            DBForeignKey myFK = (DBForeignKey) iter.next();
-            if (myFK.references(targetPK)) {
-                return myFK;
-            }
-        }
-
-        return null;
     }
 
     public String getSchema() {
@@ -409,7 +281,6 @@ public final class DBTable extends DBObject<DBModel> {
     public int hashCode() {
         int myHash = super.hashCode();
         myHash = (name != null) ? name.hashCode() : 0;
-        myHash += (parentDBModel != null) ? parentDBModel.hashCode() : 0;
         myHash += (schema != null) ? schema.hashCode() : 0;
         myHash += (catalog != null) ? catalog.hashCode() : 0;
 
@@ -432,93 +303,6 @@ public final class DBTable extends DBObject<DBModel> {
     }
 
     /**
-     * Get editable
-     * 
-     * @return true/false
-     */
-    public boolean isEditable() {
-        return this.editable;
-    }
-
-    public boolean references(DBTable pkTarget) {
-        return (getReferenceFor(pkTarget) != null);
-    }
-
-    /**
-     * set the alias name for this table
-     * 
-     * @param aName alias name
-     */
-    void setAliasName(String aName) {
-        this.alias = aName;
-    }
-
-    /**
-     * Clones contents of the given Map to this table's internal column map, overwriting
-     * any previous mappings.
-     * 
-     * @param theColumns Map of columns to be substituted
-     * @return true if successful. false if failed.
-     */
-    boolean setAllColumns(Map<String, DBColumn> theColumns) {
-        columns.clear();
-        if (theColumns != null) {
-            columns.putAll(theColumns);
-        }
-        return true;
-    }
-
-    /**
-     * Sets catalog name to new value.
-     * 
-     * @param newCatalog new value for catalog name
-     */
-    void setCatalog(String newCatalog) {
-        catalog = newCatalog;
-    }
-
-    /**
-     * Sets description text for this instance.
-     * 
-     * @param newDesc new descriptive text
-     */
-    void setDescription(String newDesc) {
-        description = newDesc;
-    }
-
-    /**
-     * Set editable
-     * 
-     * @param edit - editable
-     */
-    public synchronized void setEditable(boolean edit) {
-        this.editable = edit;
-    }
-
-    /**
-     * Sets table name to new value.
-     * 
-     * @param newName new value for table name
-     */
-    void setName(String newName) {
-        name = newName;
-    }
-
-    /**
-     * Sets parentDBModel DatabaseModel to the given reference.
-     * 
-     * @param newParent new DatabaseModel parentDBModel
-     */
-    void setParent(DBModel newParent) {
-        parentDBModel = newParent;
-        try {
-            setParentObject(newParent);
-        } catch (DBException ex) {
-            // do nothing
-        }
-    }
-
-    /**
      * Sets PrimaryKey instance for this DBTable to the given instance.
      * 
      * @param newPk new PrimaryKey instance to be associated
@@ -526,7 +310,7 @@ public final class DBTable extends DBObject<DBModel> {
      */
     boolean setPrimaryKey(DBPrimaryKey newPk) {
         if (newPk != null) {
-            newPk.setParent(this);
+            newPk.setParentObject(this);
         }
 
         primaryKey = newPk;
@@ -538,22 +322,13 @@ public final class DBTable extends DBObject<DBModel> {
     }
 
     /**
-     * Sets schema name to new value.
-     * 
-     * @param newSchema new value for schema name
-     */
-    void setSchema(String newSchema) {
-        schema = newSchema;
-    }
-
-    /**
      * Overrides default implementation to return appropriate display name of this DBTable
      * 
      * @return qualified table name.
      */
     @Override
     public String toString() {
-        return getQualifiedName();
+        return getFullyQualifiedName();
     }
 
     /**

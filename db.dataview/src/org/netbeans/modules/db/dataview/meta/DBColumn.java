@@ -60,11 +60,6 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
     private boolean generated;
     private int displaySize;
 
-    /** Constructs default instance of DBColumn. */
-    public DBColumn() {
-        super();
-    }
-
     /**
      * Constructs a new instance of DBColumn using the given parameters and
      * assuming that the column is not part of a foreign key or primary key, and that it
@@ -77,8 +72,8 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
      * @param isNullable true if nullable, false otherwise
      * @see java.sql.Types
      */
-    public DBColumn(String colName, int sqlJdbcType, int colScale, int colPrecision, boolean isNullable) {
-        this();
+    public DBColumn(String colName, int sqlJdbcType, int colScale, int colPrecision, boolean isNullable, boolean isGenerated) {
+        super();
 
         columnName = colName;
         jdbcType = sqlJdbcType;
@@ -87,28 +82,7 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
         scale = colScale;
 
         nullable = isNullable;
-    }
-
-    /**
-     * Constructs a new instance of DBColumn using the given parameters.
-     * 
-     * @param colName name of this column
-     * @param sqlJdbcType JDBC type of this column
-     * @param colScale scale of this column
-     * @param colPrecision precision of this column
-     * @param isPrimaryKey true if part of a primary key, false otherwise
-     * @param isForeignKey true if part of a foreign key, false otherwise
-     * @param isIndexed true if indexed, false otherwise
-     * @param isNullable true if nullable, false otherwise
-     * @see java.sql.Types
-     */
-    public DBColumn(String colName, int sqlJdbcType, int colScale, int colPrecision, boolean isPrimaryKey, boolean isForeignKey,
-            boolean isNullable, boolean isGenerated) {
-        this(colName, sqlJdbcType, colScale, colPrecision, isNullable);
-
-        this.primaryKey = isPrimaryKey;
-        this.foreignKey = isForeignKey;
-        this.generated = isGenerated;
+        generated = isGenerated;
     }
 
     /**
@@ -174,9 +148,7 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
 
         DBColumn refMeta = (DBColumn) refObj;
         boolean result = super.equals(refObj);
-
         result &= (columnName != null) ? columnName.equals(refMeta.getName()) : (refMeta.getName() == null);
-
         result &= (jdbcType == refMeta.getJdbcType()) && (primaryKey == refMeta.isPrimaryKey()) && (foreignKey == refMeta.isForeignKey()) && (nullable == refMeta.isNullable()) && (scale == refMeta.getScale()) && (precision == refMeta.getPrecision()) && (ordinalPosition == refMeta.getOrdinalPosition());
 
         return result;
@@ -207,7 +179,7 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
     public int getPrecision() {
         return precision;
     }
-    
+
     public int getDisplaySize() {
         return displaySize;
     }
@@ -223,7 +195,7 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
      */
     public String getQualifiedName() {
         StringBuilder buf = new StringBuilder(50);
-        DBTable table =  this.getParentObject();
+        DBTable table = this.getParentObject();
         if (table != null) {
             buf.append(table.getFullyQualifiedName());
             buf.append(".");
@@ -282,13 +254,9 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
     public boolean isPrimaryKey() {
         return primaryKey;
     }
-    
+
     public boolean isGenerated() {
         return generated;
-    }
-
-    void setGenerated(boolean generated) {
-        this.generated = generated;
     }
 
     /**
@@ -310,33 +278,6 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
     }
 
     /**
-     * Sets JDBC type of this column
-     * 
-     * @param newType new JDBC type value
-     */
-    void setJdbcType(int newType) {
-        jdbcType = newType;
-    }
-
-    /**
-     * Set name
-     * 
-     * @param name - name
-     */
-    void setName(String theName) {
-        this.columnName = theName;
-    }
-
-    /**
-     * Sets whether this column is flagged as nullable.
-     * 
-     * @param newFlag true if this column is nullable; false otherwise
-     */
-    void setNullable(boolean newFlag) {
-        nullable = newFlag;
-    }
-
-    /**
      * Gets the Ordinal Position
      * 
      * @param cardinalPos to be used
@@ -355,30 +296,12 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
     }
 
     /**
-     * Set precision
-     * 
-     * @param precision - precision
-     */
-    void setPrecision(int thePrecision) {
-        this.precision = thePrecision;
-    }
-
-    /**
      * Sets whether this column is flagged as part of a primary key.
      * 
      * @param newFlag true if this column is part of a primary key; false otherwise
      */
     void setPrimaryKey(boolean newFlag) {
         primaryKey = newFlag;
-    }
-
-    /**
-     * Set scale
-     * 
-     * @param scale - scale
-     */
-    void setScale(int theScale) {
-        this.scale = theScale;
     }
 }
 

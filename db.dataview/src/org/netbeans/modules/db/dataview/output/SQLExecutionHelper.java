@@ -99,13 +99,7 @@ class SQLExecutionHelper {
                 resultSet = stmt.getResultSet();
                 DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
                 Collection<DBTable> tables = dbMeta.generateDBTables(resultSet);
-
                 dv.setDataViewDBTable(new DataViewDBTable(tables));
-                if (!tables.isEmpty()) {
-                    for (DBTable tbl : tables) {
-                        tbl.setEditable(tables.size() == 1 && !tbl.getName().equals(""));
-                    }
-                }
                 execHelper.loadDataFrom(resultSet);
             } finally {
                 DataViewUtils.closeResources(resultSet);
