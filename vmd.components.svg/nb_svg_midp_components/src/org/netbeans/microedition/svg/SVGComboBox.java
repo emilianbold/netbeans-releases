@@ -171,13 +171,13 @@ public class SVGComboBox extends SVGComponent implements
     
     public void focusGained() {
         super.focusGained();
-        getEditor().getEditorCompoenent().focusGained();
+        getEditor().getEditorComponent().focusGained();
     }
     
     public void focusLost() {
         super.focusLost();
         hideList();
-        getEditor().getEditorCompoenent().focusLost();
+        getEditor().getEditorComponent().focusLost();
     }
     
     public InputHandler getInputHandler() {
@@ -314,7 +314,7 @@ public class SVGComboBox extends SVGComponent implements
     }
     
     public interface ComboBoxEditor  {
-        SVGComponent getEditorCompoenent();
+        SVGComponent getEditorComponent();
         Object getItem();
         void setItem( Object value );
         void addActionListener(SVGActionListener listener);
@@ -376,7 +376,7 @@ public class SVGComboBox extends SVGComponent implements
                     }
                 }
                 else {
-                    SVGComponent component = getEditor().getEditorCompoenent();
+                    SVGComponent component = getEditor().getEditorComponent();
                     return component.getInputHandler().
                             handleKeyPress( component , keyCode);
                 }
@@ -417,7 +417,7 @@ public class SVGComboBox extends SVGComponent implements
                     fireActionPerformed();
                 }
                 else {
-                    SVGComponent component = getEditor().getEditorCompoenent();
+                    SVGComponent component = getEditor().getEditorComponent();
                     return component.getInputHandler().handleKeyRelease( 
                             component, keyCode);
                 }
@@ -448,7 +448,7 @@ public class SVGComboBox extends SVGComponent implements
         /* (non-Javadoc)
          * @see org.netbeans.microedition.svg.SVGComboBox.ComboBoxEditor#getEditorCompoenent()
          */
-        public SVGComponent getEditorCompoenent() {
+        public SVGComponent getEditorComponent() {
             return this;
         }
 
