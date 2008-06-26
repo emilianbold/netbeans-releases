@@ -461,6 +461,11 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
         this.cachedModCount = LexerUtilsConstants.MOD_COUNT_REMOVED;
     }
     
+    public void markRemoved(int branchTokenStartOffset) {
+        this.branchTokenStartOffset = branchTokenStartOffset;
+        markRemoved();
+    }
+    
     void markChildrenRemovedDeep() { // Used by custom embedding removal
         EmbeddedTokenList etl = firstEmbeddedTokenList;
         while (etl != null && etl != EmbeddedTokenList.NO_DEFAULT_EMBEDDING) {
@@ -569,11 +574,6 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
     public boolean isRemoved() {
 //        checkStatusUpdated();
         return (cachedModCount == LexerUtilsConstants.MOD_COUNT_REMOVED);
-    }
-    
-    public void updateStatusUnsyncAndMarkRemoved() {
-        updateStatusUnsync();
-        markRemoved();
     }
     
     /**

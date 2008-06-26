@@ -292,6 +292,8 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             IncTokenList<T> incTokenList = (IncTokenList<T>)rootTokenList;
             boolean doFire = (listenerList.getListenerCount() > 0);
             TokenListChange<T> change;
+            TokenHierarchyEventInfo eventInfo = new TokenHierarchyEventInfo(
+                    this, TokenHierarchyEventType.ACTIVITY, 0, 0, "", 0);
             if (active) { // Wishing to be active
                 if (incTokenList.updateLanguagePath()) {
                     incTokenList.reinit(); // Initialize lazy lexing
@@ -301,7 +303,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                 }
             } else { // Wishing to be inactive
                 change = TokenListChange.createRebuildChange(incTokenList);
-                incTokenList.replaceTokens(change, 0);
+                incTokenList.replaceTokens(change, eventInfo, true);
                 incTokenList.setLanguagePath(null);
                 incTokenList.reinit();
             }
@@ -314,8 +316,6 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine("Firing ACTIVITY change to " + listenerList.getListenerCount() + " listeners: " + activity); // NOI18N
                 }
-                TokenHierarchyEventInfo eventInfo = new TokenHierarchyEventInfo(
-                        this, TokenHierarchyEventType.ACTIVITY, 0, 0, "", 0);
                 CharSequence text = LexerSpiPackageAccessor.get().text(mutableTextInput);
                 eventInfo.setMaxAffectedEndOffset(text.length());
                 if (activity == Activity.INACTIVE) { // Notify the tokens being removed
@@ -470,7 +470,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                 TokenHierarchyEventInfo eventInfo = new TokenHierarchyEventInfo(
                     this, TokenHierarchyEventType.REBUILD, 0, 0, "", 0);
                 TokenListChange<T> change = TokenListChange.createRebuildChange(incTokenList);
-                incTokenList.replaceTokens(change, 0);
+                incTokenList.replaceTokens(change, eventInfo, true);
                 incTokenList.reinit(); // Will relex tokens lazily
 
                 eventInfo.setTokenChangeInfo(change.tokenChangeInfo());
