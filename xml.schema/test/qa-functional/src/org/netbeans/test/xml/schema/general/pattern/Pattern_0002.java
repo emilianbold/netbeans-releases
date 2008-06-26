@@ -93,6 +93,9 @@ import org.netbeans.jellytools.TopComponentOperator;
 import javax.swing.JPopupMenu;
 import org.netbeans.jellytools.modules.web.NavigatorOperator;
 
+import org.netbeans.junit.NbModuleSuite;
+import junit.framework.Test;
+
 /**
  *
  * @author michaelnazarov@netbeans.org
@@ -114,7 +117,8 @@ public class Pattern_0002 extends Pattern {
     public Pattern_0002(String arg0) {
         super(arg0);
     }
-    
+
+    /*    
     public static TestSuite suite() {
         TestSuite testSuite = new TestSuite(Pattern_0002.class.getName());
         
@@ -123,6 +127,21 @@ public class Pattern_0002 extends Pattern {
         }
         
         return testSuite;
+    }
+    */
+
+    public static Test suite( )
+    {
+      return NbModuleSuite.create(
+          NbModuleSuite.createConfiguration( Pattern_0002.class ).addTest(
+              "CreateJavaApplication",
+              "CreateSchema",
+              "ApplyPattern"
+           )
+           .enableModules( ".*" )
+           .clusters( ".*" )
+           //.gui( true )
+        );
     }
 
     public void CreateJavaApplication( )

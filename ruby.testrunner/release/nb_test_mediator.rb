@@ -71,10 +71,14 @@ class NbTestMediator
         when "-m"
           if "-m" != ""
             @suites.each do |s| 
+              tests_to_delete = []
               s.tests.each do |t|
                 unless t.method_name == arg 
-                  s.delete(t)
+                  tests_to_delete << t
                 end
+              end
+              tests_to_delete.each do |t|
+                s.delete(t)
               end
             end
           end

@@ -337,21 +337,14 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
             actionMap.put("reverseKeyReleased", previous2Action);
             
             shown = true;
-            
             popup = (JDialog)DialogDisplayer.getDefault().createDialog(descr);
-            Dimension dim = popup.getPreferredSize();
-            popup.setPreferredSize(new Dimension((int)dim.getWidth() + 37, (int)dim.getHeight())); // [TODO] width
-            popup.pack();
-            
             SwingUtilities.invokeLater(new Runnable() {
                 public void run () {
                     //WindowManager.getDefault().getMainWindow().addWindowFocusListener(KeyboardPopupSwitcher.this);
                     popup.addWindowFocusListener(KeyboardPopupSwitcher.this);
                 }
             });
-            
             popup.setVisible(true);
-            
             shown = false;
 
             /*

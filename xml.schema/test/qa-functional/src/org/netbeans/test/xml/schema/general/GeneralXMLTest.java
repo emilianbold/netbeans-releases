@@ -183,7 +183,7 @@ public class GeneralXMLTest extends JellyTestCase {
           sName
         );
 
-        org.netbeans.junit.ide.ProjectSupport.waitScanFinished( );
+        //org.netbeans.junit.ide.ProjectSupport.waitScanFinished( );
     }
 
     protected void AddSampleSchemaInternal(
@@ -558,7 +558,7 @@ public class GeneralXMLTest extends JellyTestCase {
 
   protected String GetWorkDir( )
   {
-    return System.getProperty( "xtest.workdir" ); // XTest
-    // return System.getProperty( "nbjunit.workdir" ); // SimpleTest
+    // return System.getProperty( "xtest.workdir" ); // XTest
+    return System.getProperty( "nbjunit.workdir" ); // SimpleTest
   }
 }
