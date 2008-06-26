@@ -39,16 +39,26 @@
 
 package org.netbeans.modules.php.project.api;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.php.project.classpath.CommonPhpSourcePath;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 
 /**
  * @author Tomas Mysik
- * @since 1.2
+ * @since 2.0
  */
-public interface PhpSourcePath {
-    String  MIME_TYPE = "text/x-php5"; // NOI18N
-    String  DEBUG_SESSION =  "netbeans-xdebug"; // NOI18N
+public final class PhpSourcePath {
+    public static final String  MIME_TYPE = "text/x-php5"; // NOI18N
+    public static final String  DEBUG_SESSION =  "netbeans-xdebug"; // NOI18N
+
+    private static final DefaultPhpSourcePath DEFAULT_PHP_SOURCE_PATH = new DefaultPhpSourcePath();
 
     /**
      * Possible types of a file.
@@ -64,19 +74,41 @@ public interface PhpSourcePath {
         UNKNOWN,
     }
 
+    private PhpSourcePath() {
+    }
+
     /**
      * Get the file type for the given file object.
      * @param file the input file.
      * @return the file type for the given file object.
      * @see FileType
      */
-    FileType getFileType(FileObject file);
+    public static FileType getFileType(FileObject file) {
+        Parameters.notNull("file", file);
+
+        Project project = FileOwnerQuery.getOwner(file);
+        if (project != null) {
+            return getPhpOptionsFromLookup(project).getFileType(file);
+        }
+        return DEFAULT_PHP_SOURCE_PATH.getFileType(file);
+    }
 
     /**
-     * Get all the possible path roots from PHP include path.
+     * Get all the possible path roots from PHP include path for the given file. If the file equals <code>null</code> then
+     * just global PHP include path is returned.
+     * @param file a file which could belong to a project or <code>null</code> for gettting global PHP include path.
      * @return all the possible path roots from PHP include path.
      */
-    List<FileObject> getIncludePath();
+    public static List<FileObject> getIncludePath(FileObject file) {
+        if (file == null) {
+            return DEFAULT_PHP_SOURCE_PATH.getIncludePath();
+        }
+        Project project = FileOwnerQuery.getOwner(file);
+        if (project != null) {
+            return getPhpOptionsFromLookup(project).getIncludePath();
+        }
+        return DEFAULT_PHP_SOURCE_PATH.getIncludePath();
+    }
 
     /**
      * Resolve absolute path for the given file name. The order is the given directory then PHP include path.
@@ -85,5 +117,74 @@ public interface PhpSourcePath {
      * @param fileName a file name or a relative path delimited by '/'.
      * @return resolved file path or <code>null</code> if the given file is not found.
      */
-    FileObject resolveFile(FileObject directory, String fileName);
+    public static FileObject resolveFile(FileObject directory, String fileName) {
+        Parameters.notNull("directory", directory);
+        Parameters.notNull("fileName", fileName);
+        if (!directory.isFolder()) {
+            throw new IllegalArgumentException("valid directory needed");
+        }
+
+        Project project = FileOwnerQuery.getOwner(directory);
+        if (project != null) {
+            return getPhpOptionsFromLookup(project).resolveFile(directory, fileName);
+        }
+        return DEFAULT_PHP_SOURCE_PATH.resolveFile(directory, fileName);
+    }
+
+    private static org.netbeans.modules.php.project.classpath.PhpSourcePath getPhpOptionsFromLookup(Project project) {
+        org.netbeans.modules.php.project.classpath.PhpSourcePath phpSourcePath =
+                project.getLookup().lookup(org.netbeans.modules.php.project.classpath.PhpSourcePath.class);
+        assert phpSourcePath != null : "Not PHP project! [" + project + "]";
+        return phpSourcePath;
+    }
+
+    // PhpSourcePath implementation for file which does not belong to any project
+    private static class DefaultPhpSourcePath implements org.netbeans.modules.php.project.classpath.PhpSourcePath {
+
+        public FileType getFileType(FileObject file) {
+            FileObject path = CommonPhpSourcePath.getInternalPath();
+            if (path.equals(file) || FileUtil.isParentOf(path, file)) {
+                return FileType.INTERNAL;
+            }
+            for (FileObject dir : getPlatformPath()) {
+                if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {
+                    return FileType.INCLUDE;
+                }
+            }
+            return FileType.UNKNOWN;
+        }
+
+        public List<FileObject> getIncludePath() {
+            return new ArrayList<FileObject>(getPlatformPath());
+        }
+
+        public FileObject resolveFile(FileObject directory, String fileName) {
+            FileObject resolved = directory.getFileObject(fileName);
+            if (resolved != null) {
+                return resolved;
+            }
+            for (FileObject dir : getPlatformPath()) {
+                resolved = dir.getFileObject(fileName);
+                if (resolved != null) {
+                    return resolved;
+                }
+            }
+            return null;
+        }
+
+        // XXX cache?
+        private List<FileObject> getPlatformPath() {
+            String phpGlobalIncludePath = PhpOptions.getInstance().getPhpGlobalIncludePath();
+            assert phpGlobalIncludePath != null;
+            String[] paths = PropertyUtils.tokenizePath(phpGlobalIncludePath);
+            List<FileObject> dirs = new ArrayList<FileObject>(paths.length);
+            for (String path : paths) {
+                FileObject resolvedFile = FileUtil.toFileObject(new File(path));
+                if (resolvedFile != null) { // XXX check isValid() as well?
+                    dirs.add(resolvedFile);
+                }
+            }
+            return dirs;
+        }
+    }
 }
