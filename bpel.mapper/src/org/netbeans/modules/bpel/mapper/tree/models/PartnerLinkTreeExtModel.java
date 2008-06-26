@@ -195,7 +195,7 @@ public class PartnerLinkTreeExtModel implements SoaTreeExtensionModel,
                         "</font></b>";
             }
             if (pLink.getDocumentation() != null) {
-                result = result + "<hr>" + pLink.getDocumentation();
+                result = result + "<hr><p width = 486>" + pLink.getDocumentation() + "</p>";
             }
             if (pLink.getMyRole() != null) {
                 result = result + "<hr><p><b><font color =#000099> myRole= </font></b>" 
