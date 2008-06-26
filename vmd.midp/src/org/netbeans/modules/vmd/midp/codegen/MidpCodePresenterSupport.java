@@ -53,9 +53,7 @@ import org.netbeans.modules.vmd.api.model.Presenter;
 import org.openide.util.Exceptions;
 import javax.swing.text.StyledDocument;
 import java.io.IOException;
-import java.util.Map;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSupport;
 
 /**
@@ -67,10 +65,9 @@ public class MidpCodePresenterSupport {
         return new CodePresenterSupport(fullyNames);
     }
 
-
-    public static Presenter createAddImportDatabindingPresenter(String bindedProperty, String... fullyNames) {
+    public static Presenter createAddImportDatabindingPresenter(String bindedProperty, String[] fullyNames) {
         assert bindedProperty != null;
-        return new CodePresenterSupport(fullyNames, bindedProperty);
+        return new CodePresenterSupport(bindedProperty, fullyNames);
     }
 
     private static class CodePresenterSupport extends CodeGlobalLevelPresenter {
@@ -79,12 +76,12 @@ public class MidpCodePresenterSupport {
        
         final private String bindedProperty;
 
-        private CodePresenterSupport(String[] fullyNames) {
+        private CodePresenterSupport(String... fullyNames) {
             this.fullyNamesList = new ArrayList(Arrays.asList(fullyNames));
             this.bindedProperty = null;
         }
 
-        private CodePresenterSupport(String[] fullyNames, String bindedProperty) {
+        private CodePresenterSupport(String bindedProperty,String... fullyNames) {
             this.fullyNamesList = new ArrayList<String>(Arrays.asList(fullyNames));
             this.bindedProperty = bindedProperty;
         }

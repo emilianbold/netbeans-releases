@@ -219,7 +219,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             }
         }
         //long timeStart = System.nanoTime();
-        resolveContext(prj, resImpl, fun, context, offset, strPrefix, match);
+        resolveContext(prj, resImpl, fun, context, offset, strPrefix, match);    
         result = buildResult(context, resImpl);
         if (key != null){
             cache.put(key, result);
@@ -563,6 +563,18 @@ public class CompletionResolverImpl implements CompletionResolver {
                 }
             }
         }
+        if (fun == null && CsmKindUtilities.isTemplateParameter(context.getLastObject())) {
+            // Fix for IZ#138099: unresolved identifier for functions' template parameter.
+            // We've hit a parameter of function template. Current context does
+            // not contain function itself because template parameters go before function.
+            CsmTemplateParameter elem = (CsmTemplateParameter) context.getLastObject();
+            if (CsmSortUtilities.matchName(elem.getName(), strPrefix, match, caseSensitive)) {
+                if (templateParameters == null) {
+                    templateParameters = new ArrayList<CsmTemplateParameter>();
+                }
+                templateParameters.add(elem);
+            }
+        }
         return templateParameters;
     }
 
@@ -580,6 +592,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
         CsmDeclaration.Kind kinds[] =	{
             CsmDeclaration.Kind.CLASS,
+            CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION,
             CsmDeclaration.Kind.STRUCT,
             CsmDeclaration.Kind.UNION,
             CsmDeclaration.Kind.ENUM,
@@ -1301,6 +1314,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             resolveTypes |= RESOLVE_LIB_CLASSES;
             resolveTypes |= RESOLVE_LIB_NAMESPACES;
             resolveTypes |= RESOLVE_CLASS_NESTED_CLASSIFIERS;        
+            resolveTypes |= RESOLVE_FILE_LOCAL_VARIABLES;
             
             assert (context != null);
             if (CsmContextUtilities.isInFunction(context, offset)) {
@@ -1318,7 +1332,6 @@ public class CompletionResolverImpl implements CompletionResolver {
                 resolveTypes |= RESOLVE_GLOB_ENUMERATORS;
                 resolveTypes |= RESOLVE_GLOB_FUNCTIONS;
                 resolveTypes |= RESOLVE_FILE_LOCAL_FUNCTIONS;
-                resolveTypes |= RESOLVE_FILE_LOCAL_VARIABLES;
                 resolveTypes |= RESOLVE_GLOB_NAMESPACES;
                 resolveTypes |= RESOLVE_LIB_CLASSES;
                 resolveTypes |= RESOLVE_LIB_VARIABLES;

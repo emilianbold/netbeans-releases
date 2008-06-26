@@ -82,6 +82,7 @@ import org.netbeans.modules.autoupdate.ui.wizards.LazyInstallUnitWizardIterator.
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -500,7 +501,7 @@ public class AutoupdateCheckScheduler {
                         "AutoupdateCheckScheduler_UpdateFound_ToolTip", updateCount) : // NOI18N
                     NbBundle.getMessage(AutoupdateCheckScheduler.class,
                         "AutoupdateCheckScheduler_UpdatesFound_ToolTip", updateCount)); // NOI18N
-        top.setIcon( new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/autoupdate/ui/resources/info_icon.png")) ); //NOI18N
+        top.setIcon( new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/autoupdate/ui/resources/info_icon.png")) ); //NOI18N
         top.setIconTextGap(10);
         panel.add( top, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.NORTHWEST,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
         

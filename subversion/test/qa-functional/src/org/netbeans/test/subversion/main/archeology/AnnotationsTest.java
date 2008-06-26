@@ -11,25 +11,22 @@ package org.netbeans.test.subversion.main.archeology;
 
 import java.io.File;
 import java.io.PrintStream;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
 import org.netbeans.test.subversion.operators.WorkDirStepOperator;
 import org.netbeans.test.subversion.utils.RepositoryMaintenance;
 import org.netbeans.test.subversion.utils.TestKit;
-import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
@@ -52,6 +49,7 @@ public class AnnotationsTest extends JellyTestCase {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
@@ -67,16 +65,15 @@ public class AnnotationsTest extends JellyTestCase {
         return unix;
     }
     
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new AnnotationsTest("testShowAnnotations"));
-        return suite;
-    }
+    public static Test suite() {
+         return NbModuleSuite.create(
+                 NbModuleSuite.createConfiguration(AnnotationsTest.class).addTest(
+                    "testShowAnnotations"
+                 )
+                 .enableModules(".*")
+                 .clusters(".*")
+        );
+     }
     
     public void testShowAnnotations() throws Exception {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);

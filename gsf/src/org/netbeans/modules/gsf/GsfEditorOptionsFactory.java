@@ -27,14 +27,11 @@
  */
 package org.netbeans.modules.gsf;
 
+import java.util.prefs.Preferences;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.gsf.api.EditorOptions;
 import org.netbeans.modules.gsf.api.EditorOptionsFactory;
-import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.ext.ExtSettingsNames;
-import org.netbeans.modules.editor.options.BaseOptions;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -47,60 +44,33 @@ public class GsfEditorOptionsFactory implements EditorOptionsFactory {
         return new GsfEditorOptions(mimeType);
     }
 
-    private class GsfEditorOptions extends EditorOptions {
-        private String mimeType;
-        private BaseOptions options;
+    private final class GsfEditorOptions extends EditorOptions {
+        private final String mimeType;
+        private final Preferences prefs;
         
         GsfEditorOptions(String mimeType) {
             this.mimeType = mimeType;
-            Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimeType));
-            options = lookup.lookup(BaseOptions.class);
+            this.prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
         }
 
         public int getTabSize() {
-            Object o = options.getSettingValue(SettingsNames.TAB_SIZE);
-            if (o instanceof Integer) {
-                return ((Integer)o).intValue();
-            }
-            return 8;
+            return prefs.getInt(SimpleValueNames.TAB_SIZE, 8);
         }
 
         public boolean getExpandTabs() {
-            Object o = options.getSettingValue(SettingsNames.EXPAND_TABS);
-            if (o instanceof Boolean) {
-                return ((Boolean)o).booleanValue();
-            }
-            return true;
+            return prefs.getBoolean(SimpleValueNames.EXPAND_TABS, true);
         }
 
         public int getSpacesPerTab() {
-            if (options != null) {
-                Object o = options.getSettingValue(SettingsNames.SPACES_PER_TAB);
-                if (o instanceof Integer) {
-                    return ((Integer)o).intValue();
-                }
-            }
-            return 2;
+            return prefs.getInt(SimpleValueNames.SPACES_PER_TAB, 2);
         }
 
         public boolean getMatchBrackets() {
-            if (options != null) {
-                Object o = options.getSettingValue(ExtSettingsNames.PAIR_CHARACTERS_COMPLETION);
-                if (o instanceof Boolean) {
-                    return ((Boolean)o).booleanValue();
-                }
-            }
-            return true;
+            return prefs.getBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, true);
         }
 
         public int getRightMargin() {
-            if (options != null) {
-                Object o = options.getSettingValue(SettingsNames.TEXT_LIMIT_WIDTH);
-                if (o instanceof Integer) {
-                    return ((Integer)o).intValue();
-                }
-            }
-            return 80;
+            return prefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80);
         }
     }
 }

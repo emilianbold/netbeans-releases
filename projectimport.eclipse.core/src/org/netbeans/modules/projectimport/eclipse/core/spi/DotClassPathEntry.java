@@ -54,6 +54,11 @@ public final class DotClassPathEntry {
 
     public static final String ATTRIBUTE_KIND = "kind";
     public static final String ATTRIBUTE_PATH = "path";
+    public static final String ATTRIBUTE_EXPORTED = "exported";
+    public static final String ATTRIBUTE_SOURCEPATH = "sourcepath";
+    public static final String ATTRIBUTE_JAVADOC = "javadoc_location";
+    public static final String ATTRIBUTE_SOURCE_EXCLUDES = "excluding";
+    public static final String ATTRIBUTE_SOURCE_INCLUDES = "including";
 
     public static enum Kind {
         CONTAINER,
@@ -129,6 +134,10 @@ public final class DotClassPathEntry {
     /*public*/ String getLinkName() {
         return linkName;
     }
+
+    public boolean isExported() {
+        return Boolean.parseBoolean(getProperty(ATTRIBUTE_EXPORTED));
+    }
     
     /**
      * Despite being public this method should not be called outside of 
@@ -184,6 +193,22 @@ public final class DotClassPathEntry {
      */
     public void updateVariableValue(String value) {
         this.properties.put(ATTRIBUTE_PATH, value);
+    }
+    
+    /**
+     * Despite being public this method should not be called outside of 
+     * eclipse.core module.
+     */
+    public void updateSourcePath(String value) {
+        this.properties.put(ATTRIBUTE_SOURCEPATH, value);
+    }
+    
+    /**
+     * Despite being public this method should not be called outside of 
+     * eclipse.core module.
+     */
+    public void updateJavadoc(String value) {
+        this.properties.put(ATTRIBUTE_JAVADOC, value);
     }
     
 }

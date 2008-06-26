@@ -73,6 +73,10 @@ public abstract class HyperlinkBaseTestCase extends ProjectBasedTestCase {
         super(testName);
     }
 
+    public HyperlinkBaseTestCase(String testName, boolean performInWorkDir) {
+        super(testName, performInWorkDir);
+    }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();    
@@ -88,6 +92,26 @@ public abstract class HyperlinkBaseTestCase extends ProjectBasedTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+    }
+
+    /**
+     * A test that expects hyperlink target to be null.
+     * 
+     * @param source
+     * @param lineIndex
+     * @param colIndex
+     * @throws java.lang.Exception
+     */
+    protected void performNullTargetTest(String source, int lineIndex, int colIndex) throws Exception {
+        File testSourceFile = getDataFile(source);
+        BaseDocument doc = getBaseDocument(testSourceFile);
+        int offset = CndCoreTestUtils.getDocumentOffset(doc, lineIndex, colIndex);
+        Token jumpToken = getJumpToken(doc, offset);
+        assertNotNull("Hyperlink not found token in file " + testSourceFile + " on position (" + lineIndex + ", " + colIndex + ")", // NOI18N
+                        jumpToken);
+        CsmOffsetable targetObject = findTargetObject(doc, offset, jumpToken);
+        assertNull("Hyperlink target is unexpectedly found for " + jumpToken.getText() + //NOI18N
+                " in file " + testSourceFile + " on position (" + lineIndex + ", " + colIndex + ")", targetObject);//NOI18N
     }
     
     /**

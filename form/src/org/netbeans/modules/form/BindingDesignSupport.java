@@ -1343,7 +1343,7 @@ public class BindingDesignSupport {
             FormProperty nullProp = prop.getNullValueProperty();
             try {
                 Object value = nullProp.getRealValue();
-                if (value != null) {
+                if ((value != null) && (value != FormDesignValue.IGNORED_VALUE)) {
                     binding.setSourceNullValue(value);
                 }
             } catch (IllegalAccessException iaex) {
@@ -1357,7 +1357,7 @@ public class BindingDesignSupport {
             FormProperty incompleteProp = prop.getIncompleteValueProperty();
             try {
                 Object value = incompleteProp.getRealValue();
-                if (value != null) {
+                if ((value != null) && (value != FormDesignValue.IGNORED_VALUE)) {
                     binding.setSourceUnreadableValue(value);
                 }
             } catch (IllegalAccessException iaex) {

@@ -218,8 +218,7 @@ public class Util {
     }
 
     public static boolean isJava(DataObject d) {
-        if (d != null && "java".equals(d.getPrimaryFile().getExt()) 
-                && !isServlet(d)) //NOI18N
+        if (d != null && "java".equals(d.getPrimaryFile().getExt())) //NOI18N
         {
             return true;
         }
@@ -458,10 +457,25 @@ public class Util {
         return sourceGroups;
     }
     private static Map<String, Class> primitiveTypes;
+    private static Map<String, Class> primitiveClassTypes;
+    
     private static HashSet<String> keywords;
 
     public static Class getType(Project project, String typeName) {
         List<ClassPath> classPaths = SourceGroupSupport.gerClassPath(project);
+        
+        //hack for PHP
+        if(classPaths.size() == 0){
+            try {
+                Class ret = getPrimitiveClassType(typeName);
+                if(ret != null){
+                    return ret;
+                }
+                return Class.forName(typeName);
+            } catch (ClassNotFoundException ex) {
+                return java.lang.Object.class;
+            }
+        }
 
         for (ClassPath cp : classPaths) {
             try {
@@ -482,6 +496,22 @@ public class Util {
             }
         }
         return null;
+    }
+    
+    
+    public static Class getPrimitiveClassType(String type) {
+        if (primitiveClassTypes == null) {
+            primitiveClassTypes = new HashMap<String, Class>();
+            primitiveClassTypes.put("int", Integer.TYPE);
+            primitiveClassTypes.put("boolean", Boolean.TYPE);
+            primitiveClassTypes.put("byte", Byte.TYPE);
+            primitiveClassTypes.put("char", Character.TYPE);
+            primitiveClassTypes.put("double", Double.TYPE);
+            primitiveClassTypes.put("float", Float.TYPE);
+            primitiveClassTypes.put("long", Long.TYPE);
+            primitiveClassTypes.put("short", Short.TYPE);
+        }
+        return primitiveClassTypes.get(type);
     }
 
     public static Class getPrimitiveType(String typeName) {
@@ -1072,7 +1102,7 @@ public class Util {
     }
 
     public static String getHeaderOrParameterDefinition(List<ParameterInfo> params, String varName, boolean evaluate, HttpMethodType httpMethod) {
-        String part = getHeaderOrParameterDefinitionPart(params, varName, evaluate);
+        String part = getHeaderOrParameterDefinitionPart(params, evaluate);
         if (httpMethod == HttpMethodType.PUT ||
                 httpMethod == HttpMethodType.POST) {
             if (!Util.isContains(params, new ParameterInfo(Constants.CONTENT_TYPE, String.class))) {
@@ -1089,12 +1119,12 @@ public class Util {
     public static String getHeaderOrParameterDefinition(List<ParameterInfo> params, String varName, boolean evaluate) {
         String paramCode = "";
         paramCode += "             String[][] " + varName + " = new String[][]{\n";
-        paramCode += "                 " + getHeaderOrParameterDefinitionPart(params, varName, evaluate) + "\n";
+        paramCode += "                 " + getHeaderOrParameterDefinitionPart(params, evaluate) + "\n";
         paramCode += "             };\n";
         return paramCode;
     }
 
-    public static String getHeaderOrParameterDefinitionPart(List<ParameterInfo> params, String varName, boolean evaluate) {
+    public static String getHeaderOrParameterDefinitionPart(List<ParameterInfo> params, boolean evaluate) {
         String paramsStr = null;
         StringBuffer sb = new StringBuffer();
         for (ParameterInfo param : params) {

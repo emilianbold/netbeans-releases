@@ -1,8 +1,10 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.glf;
 
+import java.util.regex.Pattern;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 
@@ -14,6 +16,8 @@ public final class GLFTemplateVisualPanel2 extends JPanel {
     public GLFTemplateVisualPanel2 (GLFTemplateWizardPanel2 wizardPanel) {
         this.wizardPanel = wizardPanel;
         initComponents ();
+        wizardPanel.getIterator().getWizardDescriptor().putProperty("NewFileWizard_Title",  // NOI18N
+                NbBundle.getMessage(GLFTemplateVisualPanel2.class, "LBL_GLFWizardTitle"));
         DocumentListener documentListener = new DocumentListener () {
             public void insertUpdate (DocumentEvent e) {
                 update ();
@@ -33,22 +37,27 @@ public final class GLFTemplateVisualPanel2 extends JPanel {
         update ();
     }
     
+    private static final Pattern MIME_PATTERN = Pattern.compile("[\\w+-.]+/[\\w+-.]+");  // NOI18N
+    private static final Pattern EXT_PATTERN = Pattern.compile("(\\w+\\s*)+");  // NOI18N
+    
     private void update () {
-        if (getMimeType ().trim ().length () < 1) {
-            wizardPanel.getIterator ().getWizardDescriptor ().putProperty (
+        final WizardDescriptor wd = wizardPanel.getIterator().getWizardDescriptor();
+        // reasonable mime type check
+        if (! MIME_PATTERN.matcher(getMimeType().trim()).matches()) {
+            wd.putProperty (
                 "WizardPanel_errorMessage",  // NOI18N
                 NbBundle.getMessage(GLFTemplateVisualPanel2.class, "CTL_Invalid_Mime_Type"));
             wizardPanel.setValid (false);
             return;
         }
-        if (getExtensions ().trim ().length () < 1) {
-            wizardPanel.getIterator ().getWizardDescriptor ().putProperty (
+        if (! EXT_PATTERN.matcher(getExtensions ().trim ()).matches()) {
+            wd.putProperty (
                 "WizardPanel_errorMessage",  // NOI18N
                 NbBundle.getMessage(GLFTemplateVisualPanel2.class, "CTL_Invalid_Extensions"));
             wizardPanel.setValid (false);
             return;
         }
-        wizardPanel.getIterator ().getWizardDescriptor ().putProperty (
+        wd.putProperty (
             "WizardPanel_errorMessage",  // NOI18N
             null
         );

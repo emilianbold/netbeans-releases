@@ -30,6 +30,8 @@ package org.netbeans.lib.uihandlerserver;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -48,14 +50,17 @@ public class ProjectOpTest extends NbTestCase {
         super(testName);
     }
     
+    @Override
     protected Level logLevel() {
-        return Level.FINEST;
+        return null;//Level.FINEST;
     }
 
+    @Override
     protected void setUp() throws Exception {
         LOG = Logger.getLogger("TEST-" + getName());
     }
 
+    @Override
     protected void tearDown() throws Exception {
     }
 
@@ -117,7 +122,7 @@ public class ProjectOpTest extends NbTestCase {
         assertNotNull("This record is project operation", op);
         assertEquals("org.netbeans.modules.apisupport.project.NbModuleProject", op.getProjectType());
         assertEquals(-1, op.getDelta());
-        assertEquals("NbModuleProject", op.getProjectDisplayName());
+        assertEquals("NbModule", op.getProjectDisplayName());
         
         
         op = ProjectOp.valueOf(rec2);
@@ -127,7 +132,7 @@ public class ProjectOpTest extends NbTestCase {
         assertNotNull("This record is project operation", op);
         assertEquals("org.netbeans.modules.apisupport.project.NbModuleProject", op.getProjectType());
         assertEquals("One project added", 1, op.getDelta());
-        assertEquals("NbModuleProject", op.getProjectDisplayName());
+        assertEquals("NbModule", op.getProjectDisplayName());
 
     }
 
@@ -157,7 +162,7 @@ public class ProjectOpTest extends NbTestCase {
         ProjectOp op = ProjectOp.valueOf(rec);
         assertEquals("One change", 1, op.getDelta());
         assertEquals("org.netbeans.modules.ant.freeform.FreeformProject", op.getProjectType());
-        assertEquals("FreeformProject", op.getProjectDisplayName());
+        assertEquals("Freeform", op.getProjectDisplayName());
     }
 
     public void testProjectOpError() throws Exception {
@@ -169,6 +174,45 @@ public class ProjectOpTest extends NbTestCase {
         
         ProjectOp op = ProjectOp.valueOf(rec);
         assertNull("Not recognized log", op);
+    }
+
+    public void testDoesItHandleInitAsWell() throws Exception {
+        TestHandler handler = new TestHandler(ProjectOpTest.class.getResourceAsStream("two-debugs-on-j2se.log"));
+        List<ProjectOp> arr = new ArrayList<ProjectOp>();
+        for (;;) {
+            LogRecord rec = handler.read();
+            if (rec == null) {
+                break;
+            }
+            ProjectOp op = ProjectOp.valueOf(rec);
+            if (op != null) {
+                arr.add(op);
+            }
+        }
+        
+        assertEquals("Three project changes: " + arr, 3, arr.size());
+
+        {
+            ProjectOp init = arr.get(0);
+            assertEquals("One open", 1, init.getDelta());
+            assertEquals("On statup", true, init.isStartup());
+            assertEquals("Type", "Web", init.getProjectDisplayName());
+        }
+
+        {
+            ProjectOp close = arr.get(1);
+            assertEquals("One closed", -1, close.getDelta());
+            assertEquals("No statup", false, close.isStartup());
+            assertEquals("Type", "Web", close.getProjectDisplayName());
+        }
+
+        {
+            ProjectOp open = arr.get(2);
+            assertEquals("One opened", 1, open.getDelta());
+            assertEquals("No statup", false, open.isStartup());
+            assertEquals("Type", "J2SE", open.getProjectDisplayName());
+        }
+        
     }
 }
 

@@ -50,7 +50,7 @@
 --OWNER:
     STMT EXPRESSION text='moduleList.push_back(module)'
 --RESOLVED TO:
-    VARIABLE moduleList [64:5/2507-64:33/2535] ReferencesTestCase/system.h  TYPE: $unresolved$::vector TEXT=vector < Module * >  [64:5/2507-64:21/2523]  INIT: null  SCOPE: System 
+    VARIABLE moduleList [64:5/2507-64:33/2535] ReferencesTestCase/system.h  TYPE: $unresolved$::vector TEXT=vector<Module*>  [64:5/2507-64:21/2523]  INIT: null  SCOPE: System 
 ==============================================================
 'push_back', tokenID=identifier, offset=2328 [53:16/2328-53:25/2337]
 --OWNER:
@@ -128,7 +128,7 @@
 --OWNER:
     STMT EXPRESSION text='assert(i >= 0 && (unsigned)i < moduleList.size())'
 --RESOLVED TO:
-    VARIABLE moduleList [64:5/2507-64:33/2535] ReferencesTestCase/system.h  TYPE: $unresolved$::vector TEXT=vector < Module * >  [64:5/2507-64:21/2523]  INIT: null  SCOPE: System 
+    VARIABLE moduleList [64:5/2507-64:33/2535] ReferencesTestCase/system.h  TYPE: $unresolved$::vector TEXT=vector<Module*>  [64:5/2507-64:21/2523]  INIT: null  SCOPE: System 
 ==============================================================
 'size', tokenID=identifier, offset=2486 [58:47/2486-58:51/2490]
 --OWNER:
@@ -140,7 +140,7 @@
 --OWNER:
     STMT RETURN text='return (*moduleList[i]);'
 --RESOLVED TO:
-    VARIABLE moduleList [64:5/2507-64:33/2535] ReferencesTestCase/system.h  TYPE: $unresolved$::vector TEXT=vector < Module * >  [64:5/2507-64:21/2523]  INIT: null  SCOPE: System 
+    VARIABLE moduleList [64:5/2507-64:33/2535] ReferencesTestCase/system.h  TYPE: $unresolved$::vector TEXT=vector<Module*>  [64:5/2507-64:21/2523]  INIT: null  SCOPE: System 
 ==============================================================
 'i', tokenID=identifier, offset=2524 [60:25/2524-60:26/2525]
 --OWNER:
@@ -164,7 +164,7 @@
 --OWNER:
     STMT RETURN text='return moduleList.size();'
 --RESOLVED TO:
-    VARIABLE moduleList [64:5/2507-64:33/2535] ReferencesTestCase/system.h  TYPE: $unresolved$::vector TEXT=vector < Module * >  [64:5/2507-64:21/2523]  INIT: null  SCOPE: System 
+    VARIABLE moduleList [64:5/2507-64:33/2535] ReferencesTestCase/system.h  TYPE: $unresolved$::vector TEXT=vector<Module*>  [64:5/2507-64:21/2523]  INIT: null  SCOPE: System 
 ==============================================================
 'size', tokenID=identifier, offset=2591 [64:23/2591-64:27/2595]
 --OWNER:

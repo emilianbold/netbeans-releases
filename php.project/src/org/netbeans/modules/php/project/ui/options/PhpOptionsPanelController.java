@@ -96,7 +96,8 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
 
     @Override
     public boolean isChanged() {
-        if (!getPhpOptions().getPhpInterpreter().equals(phpOptionsPanel.getPhpInterpreter())) {
+        if (getPhpOptions().getPhpInterpreter() != null
+                && !getPhpOptions().getPhpInterpreter().equals(phpOptionsPanel.getPhpInterpreter())) {
             return true;
         }
         if (getPhpOptions().isOpenResultInOutputWindow() != phpOptionsPanel.isOpenResultInOutputWindow()) {

@@ -61,7 +61,7 @@ public final class AntBuildExtenderFactory {
      * to be included in project's lookup.
      * @param implementation project type's spi implementation
      * @return resulting <code>AntBuildExtender</code> instance
-     * @deprecated Use {@link createAntExtender(AntBuildExtenderImplementation, ReferenceHelper)} instead
+     * @deprecated Use {@link #createAntExtender(AntBuildExtenderImplementation, ReferenceHelper)} instead
      */
     @Deprecated
     public static AntBuildExtender createAntExtender(AntBuildExtenderImplementation implementation) {

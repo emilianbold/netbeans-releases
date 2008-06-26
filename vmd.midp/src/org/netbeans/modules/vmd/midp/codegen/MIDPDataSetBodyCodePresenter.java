@@ -90,7 +90,6 @@ public final class MIDPDataSetBodyCodePresenter {
                 }
 
                 createBodyCode(section);
-                //section.getWriter().commit();
 
                 section.switchToEditable(getComponent().getComponentID() + "-postInit"); // NOI18N
                 section.getWriter().write(" // write post-init user code here\n").commit(); // NOI18N

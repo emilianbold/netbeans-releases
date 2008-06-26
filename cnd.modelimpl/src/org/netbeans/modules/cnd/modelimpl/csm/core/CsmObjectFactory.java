@@ -145,7 +145,11 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
         } else if (object instanceof UsingDirectiveImpl) {
             aHandler = USING_DIRECTIVE_IMPL;
         } else if (object instanceof ClassForwardDeclarationImpl) {
-            aHandler = CLASS_FORWARD_DECLARATION_IMPL;
+            if (object instanceof ClassImpl.ClassMemberForwardDeclaration) {
+                aHandler = CLASS_MEMBER_FORWARD_DECLARATION;
+            } else {
+                aHandler = CLASS_FORWARD_DECLARATION_IMPL;
+            }
         } else if (object instanceof FunctionImpl) {
             // we have several FunctionImpl subclasses
             if (object instanceof FunctionImplEx) {
@@ -298,6 +302,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             case CLASS_FORWARD_DECLARATION_IMPL:
                 obj = new ClassForwardDeclarationImpl(stream);
                 break;
+
+            case CLASS_MEMBER_FORWARD_DECLARATION:
+                obj = new ClassImpl.ClassMemberForwardDeclaration(stream);
+                break;
                 
             case FUNCTION_IMPL:
                 obj = new FunctionImpl(stream);
@@ -441,7 +449,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int USING_DECLARATION_IMPL         = NAMESPACE_ALIAS_IMPL + 1;
     private static final int USING_DIRECTIVE_IMPL           = USING_DECLARATION_IMPL + 1;
     private static final int CLASS_FORWARD_DECLARATION_IMPL = USING_DIRECTIVE_IMPL + 1;   
-    private static final int FRIEND_CLASS_IMPL              = CLASS_FORWARD_DECLARATION_IMPL + 1;   
+    private static final int CLASS_MEMBER_FORWARD_DECLARATION = CLASS_FORWARD_DECLARATION_IMPL + 1;   
+    private static final int FRIEND_CLASS_IMPL              = CLASS_MEMBER_FORWARD_DECLARATION + 1;   
                 
     // functions
     private static final int FUNCTION_IMPL                  = FRIEND_CLASS_IMPL + 1;

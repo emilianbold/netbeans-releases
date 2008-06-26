@@ -40,6 +40,8 @@
 package org.netbeans.modules.db.sql.editor.ui.actions;
 
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
 
 /**
@@ -47,6 +49,12 @@ import org.openide.util.NbBundle;
  * @author test
  */
 public class SQLHistoryAction extends SQLExecutionBaseAction {
+    private static final String ICON_PATH = "org/netbeans/modules/db/sql/editor/resources/sql_history_16.png"; // NOI18N
+    public static final String SQL_HISTORY_FOLDER = "Databases/SQLHISTORY"; // NOI18N
+
+    protected String getIconBase() {
+        return ICON_PATH;
+    }
 
     protected String getDisplayName(SQLExecution sqlExecution) { 
         return NbBundle.getMessage(SQLHistoryAction.class, "LBL_SQLHistoryAction");
@@ -54,7 +62,12 @@ public class SQLHistoryAction extends SQLExecutionBaseAction {
 
     @Override
     protected boolean enable(SQLExecution sqlExecution) {
-        return true;
+        FileObject databaseDir = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER);
+        if (databaseDir == null) {    
+            return false;
+        } else {
+            return true;
+        }
     }
 
     protected void actionPerformed(SQLExecution sqlExecution) {

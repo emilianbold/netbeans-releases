@@ -57,6 +57,10 @@
                     <tocitem text="About Options Panels" target="apisupport_about_options_panels" />
                     <tocitem text="Creating an Options Panel" target="apisupport_create_options_panels" />
                 </tocitem>
+                <tocitem text="Quick Search Providers" >
+                    <tocitem text="About Quick Search Providers" target="apisupport_about_quick_search_providers" />
+                    <tocitem text="Creating a Quick Search Provider" target="apisupport_create_quick_search_providers" />
+                </tocitem>
                 <tocitem text="Window Components" >
                     <tocitem text="About Window Components" target="apisupport_about_window_components" />
                     <tocitem text="Creating a Window Component" target="apisupport_create_window_component" />
@@ -106,11 +110,14 @@
             <tocitem text="Bundling an Update Center's URL" target="apisupport_create_update_center_declaration" />
             <tocitem text="Manually Registering an Update Center URL" target="apisupport_create_uc_manually" />
         </tocitem>
-        <tocitem text="Distributing Rich-Client Applications" >
-            <tocitem text="About Distributing Rich-Client Applications" target="apisupport_distributing_rich" />
-            <tocitem text="Branding a Rich-Client Application" target="apisupport_branding_plugins" />
+        <tocitem text="Branding Rich-Client Applications" >
+            <tocitem text="About Branding a Rich-Client Application" target="apisupport_branding_plugins" />
+            <tocitem text="Branding the Window System" target="apisupport_branding_window_system" />
             <tocitem text="Adding a Splash Screen" target="apisupport_creating_splash_screen" />
             <tocitem text="Removing Unwanted Modules" target="apisupport_remove_unwanted_modules" />
+        </tocitem>
+        <tocitem text="Distributing Rich-Client Applications" >
+            <tocitem text="About Distributing Rich-Client Applications" target="apisupport_distributing_rich" />
             <tocitem text="Building a ZIP Distribution" target="apisupport_building_zip" />
             <tocitem text="Building a JNLP Application" target="apisupport_building_jnlp" />
             <tocitem text="Running a Rich-Client Application" target="apisupport_run_rich_client" />

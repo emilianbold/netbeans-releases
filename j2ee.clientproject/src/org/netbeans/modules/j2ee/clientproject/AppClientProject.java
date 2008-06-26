@@ -53,7 +53,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -75,7 +74,6 @@ import org.netbeans.modules.j2ee.clientproject.ui.AppClientLogicalViewProvider;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectJAXWSClientSupport;
-import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectJAXWSVersionProvider;
 import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectWebServicesClientSupport;
 import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectWebServicesSupportProvider;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathExtender;
@@ -304,6 +302,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             new Info(),
             aux,
             helper.createCacheDirectoryProvider(),
+            helper.createAuxiliaryProperties(),
             spp,
             new AppClientActionProvider( this, helper, this.updateHelper ),
             new AppClientLogicalViewProvider(this, this.updateHelper, evaluator(), refHelper),
@@ -334,7 +333,6 @@ public final class AppClientProject implements Project, AntProjectListener, File
             new ProjectAppClientProvider(this),
             appClient,
             new AppClientPersistenceProvider(this, evaluator(), cpProvider),
-            new AppClientProjectJAXWSVersionProvider(helper),
             enterpriseResourceSupport,
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
@@ -790,10 +788,12 @@ public final class AppClientProject implements Project, AntProjectListener, File
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             ArrayList<ClassPathSupport.Item> l = new ArrayList<ClassPathSupport.Item>();
             l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(ProjectProperties.JAVAC_CLASSPATH), ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES));
-            ProjectProperties.storeLibrariesLocations(helper, l.iterator(), props);
+            ProjectProperties.storeLibrariesLocations(helper, l.iterator(), helper.isSharableProject() ? props : ep);
             
             // #129316
-            ProjectProperties.removeObsoleteLibraryLocations(ep);
+            if (helper.isSharableProject()) {
+                ProjectProperties.removeObsoleteLibraryLocations(ep);
+            }
             ProjectProperties.refreshLibraryTotals(props, cpMod.getClassPathSupport(), ProjectProperties.JAVAC_CLASSPATH,  ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
             updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
             

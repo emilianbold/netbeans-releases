@@ -41,12 +41,16 @@
 
 package org.netbeans.modules.extexecution;
 
-import java.io.IOException;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.WeakHashMap;
-import org.openide.util.Exceptions;
+import javax.swing.Action;
+import org.openide.util.NbBundle;
+import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
 public final class InputOutputManager {
@@ -57,36 +61,28 @@ public final class InputOutputManager {
      * Map from tab to tab display name.
      * @see "#43001"
      */
-    private static final Map<InputOutput, Data> FREE_IOS =
-            new WeakHashMap<InputOutput, Data>();
+    private static final Map<InputOutput, InputOutputData> AVAILABLE =
+            new WeakHashMap<InputOutput, InputOutputData>();
 
-    private final InputOutput io;
-    private final Data data;
+    private static final Set<String> ACTIVE_DISPLAY_NAMES = new HashSet<String>();
 
-    private InputOutputManager(final InputOutput io, final Data data) {
-        this.io = io;
-        this.data = data;
+    private InputOutputManager() {
+        super();
     }
 
-    public InputOutput getIO() {
-        return io;
+    public static void addInputOutput(InputOutput io, String displayName,
+            StopAction stopAction, RerunAction rerunAction) {
+
+        synchronized (InputOutputManager.class) {
+            AVAILABLE.put(io, new InputOutputData(io, displayName, stopAction, rerunAction));
+            ACTIVE_DISPLAY_NAMES.remove(displayName);
+        }
     }
 
-    public String getDisplayName() {
-        return data.displayName;
-    }
-
-    public StopAction getStopAction() {
-        return data.stopAction;
-    }
-
-    public RerunAction getRerunAction() {
-        return data.rerunAction;
-    }
-
-    public static void addFreeIO(InputOutput io, String displayName, StopAction stopAction, RerunAction rerunAction) {
-        synchronized (FREE_IOS) {
-            FREE_IOS.put(io, new Data(displayName, stopAction, rerunAction));
+    public static void addInputOutput(InputOutputData data) {
+        synchronized (InputOutputManager.class) {
+            AVAILABLE.put(data.inputOutput, data);
+            ACTIVE_DISPLAY_NAMES.remove(data.displayName);
         }
     }
 
@@ -96,39 +92,95 @@ public final class InputOutputManager {
      * @param name the name of the free tab. Other free tabs are ignored.
      * @return free tab and its current display name or <tt>null</tt>
      */
-    public static InputOutputManager findFreeIO(final String name, boolean actions) {
-        InputOutputManager result = null;
-        synchronized (FREE_IOS) {
-            for (Iterator<Entry<InputOutput, Data>> it = FREE_IOS.entrySet().iterator(); it.hasNext();) {
-                Entry<InputOutput, Data> entry = it.next();
-                final InputOutput freeIO = entry.getKey();
-                final Data data = entry.getValue();
-                if (freeIO.isClosed()) {
+    public static InputOutputData getInputOutput(String name, boolean actions) {
+        InputOutputData result = null;
+
+        TreeSet<InputOutputData> candidates = new TreeSet<InputOutputData>();
+
+        synchronized (InputOutputManager.class) {
+            for (Iterator<Entry<InputOutput, InputOutputData>> it = AVAILABLE.entrySet().iterator(); it.hasNext();) {
+                Entry<InputOutput, InputOutputData> entry = it.next();
+
+                final InputOutput free = entry.getKey();
+                final InputOutputData data = entry.getValue();
+
+                if (free.isClosed()) {
                     it.remove();
                     continue;
                 }
 
-                if (result == null && isAppropriateName(name, data.displayName)) {
+                if (isAppropriateName(name, data.displayName)) {
                     if ((actions && data.rerunAction != null && data.stopAction != null)
                             || !actions && data.rerunAction == null && data.stopAction == null) {
                         // Reuse it.
-                        result = new InputOutputManager(freeIO, data);
-                        try {
-                            freeIO.getOut().reset();
-                        } catch (IOException ioe) {
-                            Exceptions.printStackTrace(ioe);
-                        }
-                        it.remove();
-                    }
-                    // continue to remove all closed tabs
-                }// else {
-            // if ('auto close tabs' options implemented and checked) { // see #47753
-            //   free.io.closeInputOutput();
-            // }
-            //}
+                        candidates.add(data);
+                    } // continue to remove all closed tabs
+                }
+            }
+        }
+
+        if (!candidates.isEmpty()) {
+            result = candidates.first();
+            AVAILABLE.remove(result.inputOutput);
+            ACTIVE_DISPLAY_NAMES.add(result.displayName);
+        }
+        return result;
+    }
+
+    public static InputOutputData getInputOutput(InputOutput inputOutput) {
+        InputOutputData result = null;
+
+        synchronized (InputOutputManager.class) {
+            for (Iterator<Entry<InputOutput, InputOutputData>> it = AVAILABLE.entrySet().iterator(); it.hasNext();) {
+                Entry<InputOutput, InputOutputData> entry = it.next();
+
+                final InputOutput free = entry.getKey();
+                final InputOutputData data = entry.getValue();
+
+                if (free.isClosed()) {
+                    it.remove();
+                    continue;
+                }
+
+                if (free.equals(inputOutput)) {
+                    result = data;
+                    ACTIVE_DISPLAY_NAMES.add(result.displayName);
+                    it.remove();
+                }
             }
         }
         return result;
+    }
+
+    public static InputOutputData createInputOutput(String originalDisplayName, boolean actions) {
+        synchronized (InputOutputManager.class) {
+            String displayName = getNonActiveDisplayName(originalDisplayName);
+
+            InputOutput io = null;
+            StopAction stopAction = null;
+            RerunAction rerunAction = null;
+
+            if (actions) {
+                stopAction = new StopAction();
+                rerunAction = new RerunAction();
+
+                io = IOProvider.getDefault().getIO(displayName,
+                        new Action[] {rerunAction, stopAction});
+                rerunAction.setParent(io);
+            } else {
+                io = IOProvider.getDefault().getIO(displayName, true);
+            }
+            ACTIVE_DISPLAY_NAMES.add(displayName);
+            return new InputOutputData(io, displayName, stopAction, rerunAction);
+        }
+    }
+
+    // unit test only
+    public static void clear() {
+        synchronized (InputOutputManager.class) {
+            AVAILABLE.clear();
+            ACTIVE_DISPLAY_NAMES.clear();
+        }
     }
 
     private static boolean isAppropriateName(String base, String toMatch) {
@@ -138,16 +190,60 @@ public final class InputOutputManager {
         return toMatch.substring(base.length()).matches("^(\\ #[0-9]+)?$"); // NOI18N
     }
 
-    private static class Data {
+    private static String getNonActiveDisplayName(String displayNameBase) {
+        String nonActiveDN = displayNameBase;
+        if (ACTIVE_DISPLAY_NAMES.contains(nonActiveDN)) {
+            // Uniquify: "prj (targ) #2", "prj (targ) #3", etc.
+            int i = 2;
+            String testdn;
 
-        final String displayName;
-        final StopAction stopAction;
-        final RerunAction rerunAction;
+            do {
+                testdn = NbBundle.getMessage(InputOutputManager.class, "Uniquified", nonActiveDN, i++);
+            } while (ACTIVE_DISPLAY_NAMES.contains(testdn));
 
-        Data(final String displayName, final StopAction stopAction, final RerunAction rerunAction) {
+            nonActiveDN = testdn;
+        }
+        assert !ACTIVE_DISPLAY_NAMES.contains(nonActiveDN);
+        return nonActiveDN;
+    }
+
+    public static final class InputOutputData implements Comparable<InputOutputData> {
+
+        private final InputOutput inputOutput;
+
+        private final String displayName;
+
+        private final StopAction stopAction;
+
+        private final RerunAction rerunAction;
+
+        public InputOutputData(InputOutput inputOutput, String displayName,
+                StopAction stopAction, RerunAction rerunAction) {
             this.displayName = displayName;
             this.stopAction = stopAction;
             this.rerunAction = rerunAction;
+            this.inputOutput = inputOutput;
         }
+
+        public InputOutput getInputOutput() {
+            return inputOutput;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public RerunAction getRerunAction() {
+            return rerunAction;
+        }
+
+        public StopAction getStopAction() {
+            return stopAction;
+        }
+
+        public int compareTo(InputOutputData o) {
+            return displayName.compareTo(o.displayName);
+        }
+
     }
 }

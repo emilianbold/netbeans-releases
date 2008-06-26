@@ -68,9 +68,9 @@ import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -86,13 +86,12 @@ public class PhpProject implements Project, AntProjectListener {
     public static final String UI_LOGGER_NAME = "org.netbeans.ui.php.project"; //NOI18N
 
     private static final Icon PROJECT_ICON = new ImageIcon(
-            Utilities.loadImage("org/netbeans/modules/php/project/ui/resources/phpProject.png")); // NOI18N
+            ImageUtilities.loadImage("org/netbeans/modules/php/project/ui/resources/phpProject.png")); // NOI18N
 
     private final AntProjectHelper helper;
     private final ReferenceHelper refHelper;
     private Lookup lookup;
-    private final PropertyEvaluator eval;    
-    
+    private final PropertyEvaluator eval;
 
     PhpProject(AntProjectHelper helper) {
         assert helper != null;
@@ -112,7 +111,7 @@ public class PhpProject implements Project, AntProjectListener {
     public PropertyEvaluator getEvaluator() {
         return eval;
     }
-    
+
     private PropertyEvaluator createEvaluator() {
         // It is currently safe to not use the UpdateHelper for PropertyEvaluator; UH.getProperties() delegates to APH
         // Adapted from APH.getStandardPropertyEvaluator (delegates to ProjectProperties):
@@ -132,8 +131,8 @@ public class PhpProject implements Project, AntProjectListener {
                     "user.properties.file", FileUtil.toFile(getProjectDirectory())), // NOI18N
                 new ConfigPropertyProvider(baseEval1, "nbproject/configs", helper), // NOI18N
                 helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
-    }    
-     
+    }
+
     public FileObject getProjectDirectory() {
         return getHelper().getProjectDirectory();
     }
@@ -222,7 +221,8 @@ public class PhpProject implements Project, AntProjectListener {
                 new PhpOpenedHook(),
                 new PhpActionProvider(this),
                 new PhpConfigurationProvider(this),
-                getHelper().createCacheDirectoryProvider(), // XXX needed?
+                helper.createCacheDirectoryProvider(),
+                helper.createAuxiliaryProperties(),
                 new ClassPathProviderImpl(getHelper(), getEvaluator(), phpSources),
                 new PhpLogicalViewProvider(this),
                 new CustomizerProviderImpl(this),
@@ -297,7 +297,7 @@ public class PhpProject implements Project, AntProjectListener {
             }
         }
     }
-    
+
     private static final class ConfigPropertyProvider extends FilterPropertyProvider implements PropertyChangeListener {
         private final PropertyEvaluator baseEval;
         private final String prefix;
@@ -318,9 +318,8 @@ public class PhpProject implements Project, AntProjectListener {
             String config = baseEval.getProperty(PhpConfigurationProvider.PROP_CONFIG);
             if (config != null) {
                 return helper.getPropertyProvider(prefix + "/" + config + ".properties"); // NOI18N
-            } else {
-                return PropertyUtils.fixedPropertyProvider(Collections.<String,String>emptyMap());
             }
+            return PropertyUtils.fixedPropertyProvider(Collections.<String, String>emptyMap());
         }
-    }    
+    }
 }

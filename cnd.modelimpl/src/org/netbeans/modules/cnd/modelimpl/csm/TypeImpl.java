@@ -71,18 +71,17 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     private final boolean reference;
     private final byte arrayDepth;
     private final boolean _const;
-    private final CharSequence classifierText;
-    
-    private final List<CsmType> instantiationParams = new ArrayList();
-    
+    CharSequence classifierText;
+
+    final List<CsmType> instantiationParams = new ArrayList();
+
     // FIX for lazy resolver calls
-    private CharSequence[] qname = null;
-    private int firstOffset;
+    CharSequence[] qname = null;
     private CsmUID<CsmClassifier> classifierUID;
-    
+
     // package-local - for facory only
-    TypeImpl(CsmClassifier classifier, int pointerDepth, boolean reference, int arrayDepth, AST ast, CsmFile file) {
-        super(ast, file);
+    TypeImpl(CsmClassifier classifier, int pointerDepth, boolean reference, int arrayDepth, AST ast, CsmFile file, CsmOffsetable offset) {
+        super(file, offset == null ? getStartOffset(ast) : offset.getStartOffset(), offset == null ? getEndOffset(ast) : offset.getEndOffset());
         this._setClassifier(classifier);
         this.pointerDepth = (byte) pointerDepth;
         this.reference = reference;
@@ -102,52 +101,31 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     }
 
     // package-local - for facory only
-    TypeImpl(CsmClassifier classifier, int pointerDepth, boolean reference, int arrayDepth, AST ast, CsmFile file, CsmOffsetable offset) {
-        super(file, offset);
-        this._setClassifier(classifier);
+    TypeImpl(CsmFile file, int pointerDepth, boolean reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
+        super(file, startOffset, endOffset);
         this.pointerDepth = (byte) pointerDepth;
         this.reference = reference;
         this.arrayDepth = (byte) arrayDepth;
-        _const = initIsConst(ast);
-        if (classifier == null) {
-            this._setClassifier(initClassifier(ast));
-            this.classifierText = initClassifierText(ast);
-        } else {
-            CharSequence typeName = classifier.getName();
-            if (typeName == null || typeName.length()==0){
-                this.classifierText = initClassifierText(ast);
-            } else {
-                this.classifierText = typeName;
-            }
-        }
+        this._const = _const;
     }
-    
-    // package-local - for facory only
-    TypeImpl(AST classifier, CsmFile file, int pointerDepth, boolean reference, int arrayDepth) {
-        super(classifier, file);
-        //setAst(classifier);
-        this.pointerDepth = (byte) pointerDepth;
-        this.reference = reference;
-        this.arrayDepth = (byte) arrayDepth;
-        _const = initIsConst(classifier);
-        this._setClassifier(initClassifier(classifier));
-        this.classifierText = initClassifierText(classifier);
-    }
-    
-    @Override
-    protected CsmAST getEndAst(AST node) {
+
+     /*TypeImpl(AST ast, CsmFile file, int pointerDepth, boolean reference, int arrayDepth) {
+        this(null, pointerDepth, reference, arrayDepth, ast, file, null);
+     }*/
+
+    public static int getEndOffset(AST node) {
         AST ast = node;
         if( ast == null ) {
-            return null;
+            return 0;
         }
         ast = getLastNode(ast);
         if( ast instanceof CsmAST ) {
-            return (CsmAST) ast;
+            return ((CsmAST) ast).getEndOffset();
         }
-        return super.getEndAst(node);
+        return OffsetableBase.getEndOffset(node);
     }
-    
-    private AST getLastNode(AST first) {
+
+    private static AST getLastNode(AST first) {
         AST last = first;
         for( AST token = last; token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
@@ -161,7 +139,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
         }
         return null;
     }
-    
+
     public boolean isReference() {
         return reference;
     }
@@ -177,42 +155,40 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     public boolean isInstantiation() {
         return !instantiationParams.isEmpty();
     }
-    
-    private static boolean initIsConst(AST node) {
+
+    public static boolean initIsConst(AST node) {
         if( node != null ) {
             for( AST token = node; token != null; token = token.getNextSibling() ) {
-		switch( token.getType() ) {
-		    case CPPTokenTypes.LITERAL_const:
-                    case CPPTokenTypes.LITERAL___const:
-                    case CPPTokenTypes.LITERAL___const__:
-			return true;
-		    case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
-		    case CPPTokenTypes.CSM_QUALIFIED_ID:
-			return false;
-		}
+                int tokenType = token.getType();
+                if (AstRenderer.isConstQualifier(tokenType)) {
+                    return true;
+                } else if (tokenType == CPPTokenTypes.CSM_VARIABLE_DECLARATION ||
+                               tokenType == CPPTokenTypes.CSM_QUALIFIED_ID) {
+                    return false;
+                }
             }
         }
         return false;
     }
-    
+
     public boolean isConst() {
         return _const;
     }
 
     public String getCanonicalText() {
-	return decorateText(classifierText, this, true, null).toString();
+	return decorateText(getClassifierText(), this, true, null).toString();
     }
-    
+
     @Override
     public CharSequence getText() {
 	// TODO: resolve typedefs
-	return decorateText(classifierText, this, false, null).toString();
+	return decorateText(getClassifierText().toString() + getInstantiationText(this), this, false, null).toString();
     }
-    
+
     protected StringBuilder getText(boolean canonical, CharSequence variableNameToInsert) {
-        return decorateText(classifierText, this, canonical, variableNameToInsert);
+        return decorateText(getClassifierText().toString()  + getInstantiationText(this), this, canonical, variableNameToInsert);
     }
-    
+
     public StringBuilder decorateText(CharSequence classifierText, CsmType decorator, boolean canonical, CharSequence variableNameToInsert) {
 	StringBuilder sb = new StringBuilder();
 	if( decorator.isConst() ) {
@@ -234,8 +210,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
 	}
 	return sb;
     }
-    
-    private CharSequence initClassifierText(AST node) {
+
+    CharSequence initClassifierText(AST node) {
         if( node == null ) {
             CsmClassifier classifier = _getClassifier();
             return classifier == null ? "" : classifier.getName();
@@ -247,7 +223,10 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
 //            return sb.toString();
         }
     }
-    
+
+    /*
+     * Add text without instantiation params
+     */
     private static void addText(StringBuilder sb, AST ast) {
         if( ! (ast instanceof FakeAST) ) {
             if( sb.length() > 0 ) {
@@ -255,8 +234,18 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
             }
             sb.append(ast.getText());
         }
+        int curDepth = 0;
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
-            addText(sb,  token);
+            if (token.getType() == CPPTokenTypes.LESSTHAN) {
+                curDepth++;
+                continue;
+            } else if (token.getType() == CPPTokenTypes.GREATERTHAN) {
+                curDepth--;
+                continue;
+            }
+            if (curDepth == 0) {
+                addText(sb,  token);
+            }
         }
     }
 
@@ -264,10 +253,28 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
         return getClassifier(null);
     }
 
-    public CharSequence getClassifierText() {
-	return classifierText;
+    public static CharSequence getInstantiationText(CsmType type) {
+        StringBuilder sb = new StringBuilder();
+        if (!type.getInstantiationParams().isEmpty()) {
+            sb.append('<');
+            boolean first = true;
+            for (CsmType param : type.getInstantiationParams()) {
+                if (first) {
+                    first = false;
+                } else {
+                    sb.append(',');
+                }
+                sb.append(param.getText());
+            }
+            sb.append('>');
+        }
+	return sb;
     }
-    
+
+    public CharSequence getClassifierText() {
+        return classifierText;
+    }
+
     public CsmClassifier getClassifier(Resolver parent) {
         CsmClassifier classifier = _getClassifier();
         if (classifier != null && (!(classifier instanceof CsmValidable) || (((CsmValidable)classifier).isValid()))) {
@@ -286,24 +293,24 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
         }
         return classifier;
     }
-    
-    private CsmClassifier renderClassifier(CharSequence[] qname, Resolver parent) {
+
+    protected CsmClassifier renderClassifier(CharSequence[] qname, Resolver parent) {
         CsmClassifier result = null;
-        Resolver resolver = ResolverFactory.createResolver(getContainingFile(), firstOffset, parent);
+        Resolver resolver = ResolverFactory.createResolver(getContainingFile(), getStartOffset(), parent);
         CsmObject o = resolver.resolve(qname, Resolver.CLASSIFIER);
         if( CsmKindUtilities.isClassifier(o) ) {
             result = (CsmClassifier) o;
         }
         if( result == null ) {
-            result = ((ProjectBase) getContainingFile().getProject()).getDummyForUnresolved(qname, getContainingFile(), firstOffset);
+            result = ((ProjectBase) getContainingFile().getProject()).getDummyForUnresolved(qname, getContainingFile(), getStartOffset());
         }
         return result;
     }
-        
+
     private CsmClassifier initClassifier(AST node) {
         AST tokType = AstRenderer.getFirstSiblingSkipQualifiers(node);
-        if( tokType == null ||  
-            (tokType.getType() != CPPTokenTypes.CSM_TYPE_BUILTIN && 
+        if( tokType == null ||
+            (tokType.getType() != CPPTokenTypes.CSM_TYPE_BUILTIN &&
             tokType.getType() != CPPTokenTypes.CSM_TYPE_COMPOUND) &&
             tokType.getType() != CPPTokenTypes.CSM_QUALIFIED_ID ) {
             return null;
@@ -319,12 +326,11 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
 		    // this is unnormal; but we should be able to work even on incorrect AST
 		    return null;
 		}
-                        
-                firstOffset = tokFirstId.getOffset();
+
                 //Resolver resolver = ResolverFactory.createResolver(getContainingFile(), firstOffset);
-                // gather name components into string array 
+                // gather name components into string array
                 // for example, for std::vector new String[] { "std", "vector" }
-                
+
                 //TODO: we have AstRenderer.getNameTokens, it is better to use it here
                 List l = new ArrayList();
 		int templateDepth = 0;
@@ -390,18 +396,18 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     public int getArrayDepth() {
         return arrayDepth;
     }
-    
+
     public int getPointerDepth() {
         return pointerDepth;
     }
 
-    private CsmClassifier _getClassifier() {
+    protected CsmClassifier _getClassifier() {
         CsmClassifier classifier = UIDCsmConverter.UIDtoDeclaration(classifierUID);
-        // can be null if cached one was removed 
+        // can be null if cached one was removed
         return classifier;
     }
 
-    private void _setClassifier(CsmClassifier classifier) {
+    void _setClassifier(CsmClassifier classifier) {
         this.classifierUID = UIDCsmConverter.declarationToUID(classifier);
         assert (classifierUID != null || classifier == null);
     }
@@ -418,25 +424,25 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
         }
         return CsmKindUtilities.isBuiltIn(classifier);
     }
-    
+
 
     @Override
     public String toString() {
         return "TYPE " + getText()  + getOffsetString(); // NOI18N
-    }    
-    
+    }
+
     //package-local
     /**
      * Return display text for a variable of this type
      * (we actually need this for function pointers, where simple typeName+' '+variableName does not work.
      */
     String getVariableDisplayName(String variableName) {
-	return decorateText(classifierText, this, false, variableName).toString();
+	return decorateText(getClassifierText(), this, false, variableName).toString();
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
-    
+
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
@@ -446,9 +452,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
         output.writeBoolean(_const);
         assert this.classifierText != null;
         output.writeUTF(classifierText.toString());
-        
+
         PersistentUtils.writeStrings(qname, output);
-        output.writeInt(firstOffset);
         PersistentUtils.writeTypes(instantiationParams, output);
         UIDObjectFactory.getDefaultFactory().writeUID(classifierUID, output);
     }
@@ -461,9 +466,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
         this._const = input.readBoolean();
         this.classifierText = NameCache.getManager().getString(input.readUTF());
         assert this.classifierText != null;
-        
+
         this.qname = PersistentUtils.readStrings(input, NameCache.getManager());
-        this.firstOffset = input.readInt();
         PersistentUtils.readTypes(this.instantiationParams, input);
         this.classifierUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }

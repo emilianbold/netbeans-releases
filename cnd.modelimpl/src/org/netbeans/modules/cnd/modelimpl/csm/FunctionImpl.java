@@ -51,6 +51,8 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -436,7 +438,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
      */
     public CsmFunctionDefinition getDefinition() {
         if( isCStyleStatic() ) {
-            for( CsmDeclaration decl : getContainingFile().getDeclarations() ) {
+            CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(
+                               getName().toString(), true, true, false);
+            Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(getContainingFile(), filter);
+            while(it.hasNext()){
+                CsmDeclaration decl = it.next();
                 if( CsmKindUtilities.isFunctionDefinition(decl) ) {
                     if( getName().equals(decl.getName()) ) {
                         CsmFunctionDefinition fun = (CsmFunctionDefinition) decl;
@@ -655,21 +661,17 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
     
     private static boolean initConst(AST node) {
-        boolean ret = false;
         AST token = node.getFirstChild();
         while( token != null &&  token.getType() != CPPTokenTypes.CSM_QUALIFIED_ID) {
             token = token.getNextSibling();
         }
         while( token != null ) {
-            if( token.getType() == CPPTokenTypes.LITERAL_const ||
-                token.getType() == CPPTokenTypes.LITERAL___const ||
-                token.getType() == CPPTokenTypes.LITERAL___const__) {
-                ret = true;
-                break;
+            if (AstRenderer.isConstQualifier(token.getType())) {
+                return true;
             }
             token = token.getNextSibling();
         }
-        return ret;
+        return false;
     }
     
     /**
@@ -691,9 +693,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return scope;
     }
     
-    private Collection _getParameters() {
+    private Collection<CsmParameter> _getParameters() {
         if (this.parameters == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.<CsmParameter>emptyList();
         } else {
             Collection<CsmParameter> out = UIDCsmConverter.UIDsToDeclarations(parameters);
             return out;
@@ -732,6 +734,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         PersistentUtils.writeTemplateParameters(templateParams, output);
     }
 
+    @SuppressWarnings("unchecked")
     public FunctionImpl(DataInput input) throws IOException {
         super(input);
         this.name = QualifiedNameCache.getManager().getString(input.readUTF());

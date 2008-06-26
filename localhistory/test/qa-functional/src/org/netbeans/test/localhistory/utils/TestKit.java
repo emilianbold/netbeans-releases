@@ -67,7 +67,6 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
@@ -94,7 +93,7 @@ public final class TestKit {
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(project_name);
         
         // wait classpath scanning finished
-        ProjectSupport.waitScanFinished();
+//        ProjectSupport.waitScanFinished();
         //new QueueTool().waitEmpty(1000);
         //ProjectSupport.waitScanFinished();
         

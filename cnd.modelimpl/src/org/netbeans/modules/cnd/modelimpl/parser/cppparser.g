@@ -363,6 +363,7 @@ tokens {
 	protected static final int tsCLASS     = 0x2000;
 	protected static final int tsWCHAR_T   = 0x4000;
 	protected static final int tsBOOL      = 0x8000;
+	protected static final int tsCOMPLEX   = 0x16000;
 
 	public static class TypeQualifier extends Enum { public TypeQualifier(String id) { super(id); } }
 
@@ -759,18 +760,6 @@ external_declaration_template { K_and_R = false; boolean ctrName=false;}
 			declaration
 			{ #external_declaration_template = #(#[CSM_TEMPLATE_CLASS_DECLARATION, "CSM_TEMPLATE_CLASS_DECLARATION"], #external_declaration_template); }
 		|
-			// templated forward class decl, init/decl of static member in template
-			(declaration_specifiers
-				(init_declarator_list)? SEMICOLON! /*{end_of_stmt();}*/)=>
-			//{beginTemplateDeclaration();}
-			{ if (statementTrace>=1) 
-				printf("external_declaration_template_10[%d]: Class template declaration\n",
-					LT(1).getLine());
-			}
-			declaration_specifiers
-				(init_declarator_list)? SEMICOLON! //{end_of_stmt();}
-			{/*endTemplateDeclaration();*/ #external_declaration_template = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #external_declaration_template);}
-		|  
 		// Templated FUNCTIONS and CONSTRUCTORS matched here.
                        // Templated CONSTRUCTOR declaration
                         (	(template_head)?   // :)
@@ -840,6 +829,23 @@ external_declaration_template { K_and_R = false; boolean ctrName=false;}
 			}
 			dtor_head[true] dtor_body
 			{ #external_declaration_template = #(#[CSM_DTOR_TEMPLATE_DEFINITION, "CSM_DTOR_TEMPLATE_DEFINITION"], #external_declaration_template); }
+		|  
+			// templated forward class decl, init/decl of static member in template
+                        // Changed alternative order as a fix for IZ#138099:
+                        // unresolved identifier for functions' template parameter.
+                        // If this alternative is before function declaration
+                        // then code like "template<T> int foo(T);" incorrectly
+                        // becomes a CSM_TEMPL_FWD_CL_OR_STAT_MEM.
+			(declaration_specifiers
+				(init_declarator_list)? SEMICOLON! /*{end_of_stmt();}*/)=>
+			//{beginTemplateDeclaration();}
+			{ if (statementTrace>=1) 
+				printf("external_declaration_template_10[%d]: Class template declaration\n",
+					LT(1).getLine());
+			}
+			declaration_specifiers
+				(init_declarator_list)? SEMICOLON! //{end_of_stmt();}
+			{/*endTemplateDeclaration();*/ #external_declaration_template = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #external_declaration_template);}
 		)
     		{endTemplateDefinition();}
 	;
@@ -880,7 +886,13 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 	// to say "typedef template..."
 	 	// Class definition
                 // we need "static" here for the case "static struct XX {...} myVar; - see issue #106652
-		((LITERAL_typedef | LITERAL_static)? class_head)=>
+
+//		((LITERAL_typedef | LITERAL_static)? class_head)=>
+                ((  storage_class_specifier
+		|   cv_qualifier 
+		|   LITERAL_typedef
+		)* class_head) =>
+
 		{if (statementTrace>=1) 
 			printf("external_declaration_1a[%d]: Class definition\n",
 				LT(1).getLine());
@@ -1164,7 +1176,13 @@ member_declaration
 		// would look for "class A { ... } f() {...}" which is
 		// an unacceptable level of backtracking.
                 // we need "static" here for the case "static struct XX {...} myVar; - see issue #135149
-		( (LITERAL_typedef | LITERAL_static)? class_head) => 
+
+//		((LITERAL_typedef | LITERAL_static)? class_head)=>
+                ((  storage_class_specifier
+		|   cv_qualifier 
+		|   LITERAL_typedef
+		)* class_head) =>
+
 		{if (statementTrace>=1) 
 			printf("member_declaration_1[%d]: Class definition\n",
 				LT(1).getLine());
@@ -1569,6 +1587,7 @@ simple_type_specifier returns [/*TypeSpecifier*/int ts = tsInvalid]
 			|	LITERAL_float		{ts |= tsFLOAT;}
 			|	LITERAL_double	{ts |= tsDOUBLE;}
 			|	LITERAL_void		{ts |= tsVOID;}
+                        |       literal_complex         {ts |= tsCOMPLEX;}
 			)+
 			{ #simple_type_specifier = #([CSM_TYPE_BUILTIN, "CSM_TYPE_BUILTIN"], #simple_type_specifier); }
 		|
@@ -1788,7 +1807,12 @@ cv_qualifier_seq
 
 declarator
 	:
-		//{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
+                // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
+                // This rule adds support for declarations like
+                // void (__attribute__((noreturn)) ****f) (void);
+                (attribute_specification)=> attribute_specification!
+                declarator
+	|       //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
                 // VV: 23/05/06 added support for __restrict after pointers
                 //i.e. void foo (char **__restrict a)
 		(ptr_operator)=> ptr_operator // AMPERSAND or STAR
@@ -1799,7 +1823,12 @@ declarator
 
 restrict_declarator
         :
-		//{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
+                // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
+                // This rule adds support for declarations like
+                // char *__attribute__((aligned(8))) *f;
+                (attribute_specification)=> attribute_specification!
+                restrict_declarator
+        |       //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
 		(ptr_operator)=> ptr_operator // AMPERSAND or STAR
 		restrict_declarator
 	|	
@@ -2512,7 +2541,7 @@ statement
                 asm_block
 //	|	preprocDirective
 //        |       member_declaration
-	)
+)
 	;
 
 labeled_statement
@@ -3078,6 +3107,10 @@ unary_expression
                         //{!(LA(1)==TILDE && LA(2)==ID) || 
 			//	    qualifiedItemIsOneOf(qiVar | qiFun | qiDtor | qiCtor)}?
                         postfix_expression
+
+                |
+                        // IZ 137118 : GTK_WIDGET_SET_FLAGS macros problem
+                        LITERAL___extension__ LPAREN statement RPAREN
 		)
 	;
 
@@ -3191,6 +3224,8 @@ post_postfix_expression
                     LSQUARE expression RSQUARE
                     |	LPAREN (expression_list)? RPAREN 
                     |	DOT id_expression
+                    // IZ 137531 : IDE highlights db.template cursor<T> line as error
+                    |	DOT LITERAL_template id_expression
                     |	POINTERTO id_expression
                     |	PLUSPLUS 
                     |	MINUSMINUS
@@ -3205,11 +3240,22 @@ primary_expression
 	;
 
 id_expression 
-	{String s;}
+	{String s;
+         TypeQualifier tq;
+	 /*TypeSpecifier*/int ts;}
 	:
 		s = scope_override
 		(	ID 
-		|	LITERAL_OPERATOR optor
+		|	LITERAL_OPERATOR
+                        (       optor
+                        |       // Fix for IZ 137468: grammar does not support
+                                // conversion operator invocation.
+                                // Code adopted from cast_expression_type_specifier.
+                                (tq = cv_qualifier)? 
+                                (LITERAL_struct|LITERAL_union|LITERAL_class|LITERAL_enum)? 
+                                ts = simple_type_specifier 
+                                (options{greedy=true;} : ptr_operator)*
+                        )
 		|	TILDE (STAR)? ID	// DW 29/07/03 STAR included to allow 
 						// for *_S = ~*_S; seen in vector
 		)
@@ -3467,3 +3513,6 @@ literal_typeof : LITERAL_typeof | LITERAL___typeof | LITERAL___typeof__ ;
 
 protected
 literal_restrict : LITERAL_restrict | LITERAL___restrict;
+
+protected
+literal_complex : LITERAL__Complex | LITERAL___complex__;

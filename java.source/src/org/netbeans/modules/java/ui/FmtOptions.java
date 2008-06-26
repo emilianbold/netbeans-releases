@@ -61,8 +61,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.EditorKit;
-
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
@@ -70,9 +68,6 @@ import org.netbeans.api.java.source.CodeStyle;
 import static org.netbeans.api.java.source.CodeStyle.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.editor.Formatter;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -238,7 +233,8 @@ public class FmtOptions {
     static final String PROJECT_PROFILE = "project"; // NOI18N
     static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
     static final String usedProfile = "usedProfile"; // NOI18N
-    private static Class<? extends EditorKit> kitClass;
+    
+    private static final String JAVA = "text/x-java"; //NOI18N
     
     private FmtOptions() {}
 
@@ -255,35 +251,23 @@ public class FmtOptions {
     }
     
     public static boolean getGlobalExpandTabToSpaces() {
-        Formatter f = (Formatter)Settings.getValue(getKitClass(), "formatter");
-        if (f != null)
-            return f.expandTabs();
-        return getDefaultAsBoolean(expandTabToSpaces);
+        Preferences prefs = MimeLookup.getLookup(JAVA).lookup(Preferences.class);
+        return prefs.getBoolean(SimpleValueNames.EXPAND_TABS, getDefaultAsBoolean(expandTabToSpaces));
     }
     
     public static int getGlobalTabSize() {
-        Integer i = (Integer)Settings.getValue(getKitClass(), SettingsNames.TAB_SIZE);
-        return i != null ? i.intValue() : getDefaultAsInt(tabSize);
+        Preferences prefs = MimeLookup.getLookup(JAVA).lookup(Preferences.class);
+        return prefs.getInt(SimpleValueNames.TAB_SIZE, getDefaultAsInt(tabSize));
     }
     
     public static int getGlobalIndentSize() {
-        Formatter f = (Formatter)Settings.getValue(getKitClass(), "formatter");
-        if (f != null)
-            return f.getShiftWidth();
-        return getDefaultAsInt(indentSize);
+        Preferences prefs = MimeLookup.getLookup(JAVA).lookup(Preferences.class);
+        return prefs.getInt(SimpleValueNames.SPACES_PER_TAB, getDefaultAsInt(indentSize));
     }
     
     public static int getGlobalRightMargin() {
-        Integer i = (Integer)Settings.getValue(getKitClass(), SettingsNames.TEXT_LIMIT_WIDTH);
-        return i != null ? i.intValue() : getDefaultAsInt(rightMargin);
-    }
-    
-    public static Class<? extends EditorKit> getKitClass() {
-        if (kitClass == null) {
-            EditorKit kit = MimeLookup.getLookup(MimePath.get(JAVA_MIME_TYPE)).lookup(EditorKit.class);
-            kitClass = kit != null ? kit.getClass() : EditorKit.class;
-        }
-        return kitClass;
+        Preferences prefs = MimeLookup.getLookup(JAVA).lookup(Preferences.class);
+        return prefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, getDefaultAsInt(rightMargin));
     }
     
     public static boolean isInteger(String optionID) {

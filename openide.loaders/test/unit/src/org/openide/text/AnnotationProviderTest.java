@@ -48,6 +48,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
@@ -153,11 +154,8 @@ public class AnnotationProviderTest extends NbTestCase {
         assertEquals("Exactly one annotation attached after reopen", 1, ces.getLineSet().getCurrent(0).getAnnotationCount());
     }
 
+    @RandomlyFails
     public void testContextLookupIsConsistentAfterMove() throws Exception {              
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return;
-        }
-
         ConsistencyCheckProvider.setCalled(0);
         // Prepare the data object (to initialize the lookup)
         FileObject fo = fs.getRoot().createData("test2", "txt");
@@ -180,12 +178,9 @@ public class AnnotationProviderTest extends NbTestCase {
             System.gc ();
         }
     }
-    
-    public void testContextLookupFiresDuringMove() throws Exception {              
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return;
-        }
 
+    @RandomlyFails
+    public void testContextLookupFiresDuringMove() throws Exception {              
         // Prepare the data object (to initialize the lookup)
         FileObject fo = fs.getRoot().createData("test3", "txt");
         DataObject data = DataObject.find(fo);

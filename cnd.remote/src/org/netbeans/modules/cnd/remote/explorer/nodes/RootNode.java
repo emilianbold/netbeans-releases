@@ -39,19 +39,29 @@
 
 package org.netbeans.modules.cnd.remote.explorer.nodes;
 
-import java.beans.PropertyChangeEvent;
+import java.util.List;
 import javax.swing.Action;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.remote.actions.AddNewServerAction;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author gordonp
  */
-public class RootNode extends RemoteServicesNode {
+public class RootNode extends AbstractNode {
     
     private static RootNode rootNode = null;
+    private static final String SERVERS_ICON = "org/netbeans/modules/cnd/remote/resources/servers.png"; // NOI18N
+    private Action[] actions = null;
     
     public static RootNode getInstance() {
         if (rootNode == null) {
@@ -61,24 +71,56 @@ public class RootNode extends RemoteServicesNode {
     }
     
     private RootNode() {
-        String name = NbBundle.getMessage(RootNode.class, "RootNode_Name");
-        
-        setDisplayName(name);
-        setName(name);
+        super(Children.create(new RemoteServicesChildFactory(), true));
+        setDisplayName(NbBundle.getMessage(RootNode.class, "RootNode_Name"));
+        setIconBaseWithExtension(SERVERS_ICON);
     }
     
     @Override
     public Action[] getActions(boolean context) {
-        Action[] actions = { new AddNewServerAction() };
-        return actions;
-    }
+        if (Boolean.getBoolean("cnd.remote.enable")) { // DEBUG
+            if (actions == null) {
+                actions = new Action[1];
+                actions[0] = new AddNewServerAction();
+            }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        String prop = evt.getPropertyName();
+            return actions;
+        } else {
+            return super.getActions(context);
+        }
+    }
+    
+    private static class RemoteServicesChildFactory extends ChildFactory<RemoteServerRecord> 
+                    implements ChangeListener {
         
-        if (prop == RemoteServerList.PROP_ADD) {
-            
-        } else if (prop == RemoteServerList.PROP_REMOVE) {
+        public RemoteServicesChildFactory() {
+            super();
+            RemoteServerList registry = RemoteServerList.getInstance();
+            registry.addChangeListener(WeakListeners.create(ChangeListener.class, this, registry));
+            stateChanged(new ChangeEvent(registry));
+        }
+
+        @Override
+        protected boolean createKeys(List<RemoteServerRecord> toPopulate) {
+            try {
+                toPopulate.addAll(RemoteServerList.getInstance());
+            } catch (Exception ie) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected Node createNodeForKey(RemoteServerRecord record) {
+            if (record.isRemote()) {
+                return new RemoteServerNode(record);
+            } else {
+                return new LocalhostNode(record);
+            }
+        }
+
+        public synchronized void stateChanged(ChangeEvent e) {
+            refresh(false);
         }
     }
 }

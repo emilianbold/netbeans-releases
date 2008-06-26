@@ -308,6 +308,65 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.mobility.project</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.core.startup</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.util</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.masterfs</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.mobility.project</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.projectui</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.websvc.jaxws21</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.io</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.api.progress</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.bootstrap</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.core.multiview</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.junit</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.awt</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.options</code-name-base>
+                    </test-dependency>
+                </test-type>
+            </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.deployment.deviceanywhere</friend>
                 <friend>org.netbeans.modules.j2me.cdc.platform.nokias80</friend>
@@ -317,6 +376,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.j2me.cdc.project.ricoh</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project.savaje</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project.semc</friend>
+                <friend>org.netbeans.modules.j2me.cdc.project.bdj</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project.ui.wizards</friend>
                 <friend>org.netbeans.modules.mobility.deployment.ricoh</friend>
                 <friend>org.netbeans.modules.mobility.editor</friend>

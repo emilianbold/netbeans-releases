@@ -43,8 +43,6 @@ import java.io.File;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.php.editor.parser.ParserTestBase;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -66,33 +64,7 @@ public class PHPLexerTestBase extends ParserTestBase {
     protected void tearDown() throws Exception {
         super.tearDown();
     }
-    
-    void performFileLexerTest (String filename) throws Exception {
-        String content = PHPLexerUtils.getFileContent(new File(getDataDir(), "testfiles/" + filename + ".php"));
-        TokenSequence<?> ts = PHPLexerUtils.seqForText(content, PHPTokenId.language());
-        String result = createResult(ts);
-        
-        String fullClassName = this.getClass().getName();
-        String goldenFileDir = fullClassName.replace('.', '/');
-        
-        
-        // try to find golden file
-        String goldenFolder = getDataSourceDir().getAbsolutePath() + "/goldenfiles/" + goldenFileDir + "/";
-        File goldenFile = new File(goldenFolder + filename + ".pass");
-        if (!goldenFile.exists()) {
-            // if doesn't exist, create it
-            FileObject goldenFO = touch(goldenFolder, filename + ".pass");
-            copyStringToFileObject(goldenFO, result);
-        }
-        else {
-            // if exist, compare it. 
-            goldenFile = getGoldenFile(filename + ".pass");
-            FileObject resultFO = touch(getWorkDir(), filename + ".result");
-            copyStringToFileObject(resultFO, result);
-            assertFile(FileUtil.toFile(resultFO), goldenFile, getWorkDir());
-        }
-    }
-    
+      
     private String createResult (TokenSequence<?> ts) throws Exception {
         StringBuffer result = new StringBuffer ();
         
@@ -108,5 +80,12 @@ public class PHPLexerTestBase extends ParserTestBase {
             result.append("\n");
         }
         return result.toString();
+    }
+
+    @Override
+    protected String getTestResult(String filename) throws Exception {
+        String content = PHPLexerUtils.getFileContent(new File(getDataDir(), "testfiles/" + filename + ".php"));
+        TokenSequence<?> ts = PHPLexerUtils.seqForText(content, PHPTokenId.language());
+        return createResult(ts);
     }
 }

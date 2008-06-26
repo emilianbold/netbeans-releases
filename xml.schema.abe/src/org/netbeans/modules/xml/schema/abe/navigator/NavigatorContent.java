@@ -42,12 +42,10 @@
 package org.netbeans.modules.xml.schema.abe.navigator;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import org.openide.util.RequestProcessor;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIModel;
 import org.netbeans.modules.xml.axi.AXIModelFactory;
@@ -59,7 +57,6 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.netbeans.modules.xml.text.navigator.base.AbstractXMLNavigatorContent;
 
@@ -85,16 +82,25 @@ public class NavigatorContent extends AbstractXMLNavigatorContent {
     
     public void navigate(final DataObject dobj) {
         showWaitPanel();
-        SwingUtilities.invokeLater(new Runnable() {
+        
+        //get the model and create the new UI on background
+        RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                AXIModel model = getAXIModel(dobj);
-                if (model == null || model.getState() != Model.State.VALID) {
-                    showError(AbstractXMLNavigatorContent.ERROR_NO_DATA_AVAILABLE);
-                } else {
-                    show(model.getRoot());
-                }
+                //find the model in RPT.
+                final AXIModel model = getAXIModel(dobj);
+                //and then update the UI in EDT.
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        AXIModel model = getAXIModel(dobj);
+                        if (model == null || model.getState() != Model.State.VALID) {
+                            showError(AbstractXMLNavigatorContent.ERROR_NO_DATA_AVAILABLE);
+                        } else {
+                            show(model.getRoot());
+                        }
+                    }
+                });                
             }
-        });
+        });        
     }
     
     private void redraw() {

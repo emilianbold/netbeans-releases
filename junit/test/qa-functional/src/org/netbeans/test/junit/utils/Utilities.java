@@ -68,9 +68,9 @@ public class Utilities {
     public static final String TEST_CLASS_NAME = "TestClass";
     
     /** label when deleting object */
-    public static final String CONFIRM_OBJECT_DELETION =
-            Bundle.getString("org.openide.explorer.Bundle",
-            "MSG_ConfirmDeleteObjectTitle");
+    public static final String CONFIRM_OBJECT_DELETION = "Safe Delete";
+//            Bundle.getString("org.openide.explorer.Bundle",
+//            "MSG_ConfirmDeleteObjectTitle");
     
     /** default path to bundle file */
     public static final String JUNIT_BUNDLE = "org.netbeans.modules.junit.Bundle";

@@ -125,3 +125,5 @@ include Services/Collaboration/.*
 
 include Keymaps/.*
 include Shortcuts/.*
+
+exclude Services/org-netbeans-modules-beans-beans.settings

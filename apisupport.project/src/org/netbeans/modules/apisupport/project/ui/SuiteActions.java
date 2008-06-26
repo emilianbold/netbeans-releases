@@ -167,11 +167,17 @@ public final class SuiteActions implements ActionProvider {
     
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
         if (ActionProvider.COMMAND_DELETE.equals(command)) {
-            DefaultProjectOperations.performDefaultDeleteOperation(project);
+            if (SuiteOperations.canRun(project)) {
+                DefaultProjectOperations.performDefaultDeleteOperation(project);
+            }
         } else if (ActionProvider.COMMAND_RENAME.equals(command)) {
-            DefaultProjectOperations.performDefaultRenameOperation(project, null);
+            if (SuiteOperations.canRun(project)) {
+                DefaultProjectOperations.performDefaultRenameOperation(project, null);
+            }
         } else if (ActionProvider.COMMAND_MOVE.equals(command)) {
-            DefaultProjectOperations.performDefaultMoveOperation(project);
+            if (SuiteOperations.canRun(project)) {
+                DefaultProjectOperations.performDefaultMoveOperation(project);
+            }
         } else {
             NbPlatform plaf = project.getPlatform(false);
             if (plaf != null) {
@@ -205,8 +211,16 @@ public final class SuiteActions implements ActionProvider {
         } else if (command.equals(ActionProvider.COMMAND_REBUILD)) {
             targetNames = new String[] {"clean", "build"}; // NOI18N
         } else if (command.equals(ActionProvider.COMMAND_RUN)) {
+            if (project.getTestUserDirLockFile().isFile()) {
+                ModuleActions.notifyCannotReRun();
+                return null;
+            }
             targetNames = new String[] {"run"}; // NOI18N
         } else if (command.equals(ActionProvider.COMMAND_DEBUG)) {
+            if (project.getTestUserDirLockFile().isFile()) {
+                ModuleActions.notifyCannotReRun();
+                return null;
+            }
             targetNames = new String[] {"debug"}; // NOI18N
         } else if (command.equals(ActionProvider.COMMAND_TEST)) {
             targetNames = new String[] {"test"}; // NOI18N

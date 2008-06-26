@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmFinder;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.ClassResultItem;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateParameterResultItem;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
@@ -63,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -202,6 +204,9 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
         public CsmResultItem.ClassResultItem createClassResultItem(CsmClass cls, int classDisplayOffset, boolean displayFQN){
             return new NbCsmResultItem.NbClassResultItem(cls, classDisplayOffset, displayFQN, CLASS_PRIORITY);
         }
+        public CsmResultItem.ForwardClassResultItem createForwardClassResultItem(CsmClassForwardDeclaration cls, int classDisplayOffset, boolean displayFQN){
+            return new NbCsmResultItem.NbForwardClassResultItem(cls, classDisplayOffset, displayFQN, CLASS_PRIORITY);
+        }
         public CsmResultItem.EnumResultItem createEnumResultItem(CsmEnum enm, int enumDisplayOffset, boolean displayFQN) {
             return new NbCsmResultItem.NbEnumResultItem(enm, enumDisplayOffset, displayFQN, ENUM_PRIORITY);  
         }  
@@ -291,12 +296,13 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
             return new NbCsmResultItem.NbNamespaceAliasResultItem(alias, displayFullNamespacePath, LIB_NAMESPACE_ALIAS_PRIORITY);
         }
 
-        public TemplateParameterResultItem createTemplateParameterResultItem(CsmTemplateParameter par) {
-            return new NbCsmResultItem.TemplateParameterResultItem(par, CLASS_ENUMERATOR_PRIORITY);
+        public CsmResultItem.TemplateParameterResultItem createTemplateParameterResultItem(CsmTemplateParameter par) {
+            return new NbCsmResultItem.NbTemplateParameterResultItem(par, CLASS_ENUMERATOR_PRIORITY);
         }
 
         public CsmResultItem createLabelResultItem(CsmLabel csmStatement) {
             return new NbCsmResultItem.LabelResultItem(csmStatement, LOCAL_VAR_PRIORITY);
         }
+
     }
 }

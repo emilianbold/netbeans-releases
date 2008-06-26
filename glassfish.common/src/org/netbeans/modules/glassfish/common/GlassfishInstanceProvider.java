@@ -1,3 +1,4 @@
+// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
@@ -36,6 +37,7 @@
  * 
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
+// </editor-fold>
 package org.netbeans.modules.glassfish.common;
 
 import java.io.File;
@@ -58,7 +60,9 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 
 /**
@@ -69,6 +73,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
 
     static final String DIR_GLASSFISH_INSTANCES = "/GlassFish/Instances"; //NOI18N
     static final String INSTANCE_FO_ATTR = "InstanceFOPath"; // NOI18N
+    static final String PROP_FIRST_RUN = "first_run";
     
     private static final GlassfishInstanceProvider singleton = new GlassfishInstanceProvider();
     
@@ -78,6 +83,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
 
     private GlassfishInstanceProvider() {
         try {
+            registerDefaultInstance();
             loadServerInstances();
         } catch(Exception ex) {
             Logger.getLogger("glassfish").log(Level.INFO, null, ex);
@@ -119,6 +125,17 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         }
 
         return result;
+    }
+    
+    public Lookup getLookupFor(ServerInstance instance) {
+        synchronized (instanceMap) {
+            for (GlassfishInstance gfInstance : instanceMap.values()) {
+                if (gfInstance.getCommonInstance().equals(instance)) {
+                    return gfInstance.getLookup();
+                }
+            }
+            return null;
+        }
     }
     
     public ServerInstanceImplementation getInternalInstance(String uri) {
@@ -363,4 +380,68 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         return result;
     }
     
+    private void registerDefaultInstance() {
+        final boolean needToRegisterDefaultServer =
+                !NbPreferences.forModule(this.getClass()).getBoolean(PROP_FIRST_RUN, false);
+
+        if (needToRegisterDefaultServer) {
+            try {
+                final String INSTALL_ROOT_PROP_NAME = "org.glassfish.v3.installRoot";
+                String candidate = System.getProperty(INSTALL_ROOT_PROP_NAME); //NOI18N
+
+                if (null != candidate) {
+                    File f = new File(candidate);
+                    if (isValidHomeFolder(candidate) && f.exists()) {
+                        Map<String, String> ip = new HashMap<String, String>();
+                        ip.put(GlassfishModule.INSTALL_FOLDER_ATTR,
+                                f.getCanonicalPath());
+                        ip.put(GlassfishModule.GLASSFISH_FOLDER_ATTR,
+                                f.getCanonicalPath() + File.separator + "glassfish");
+                        if (f.canWrite()) {
+                            ip.put(GlassfishModule.DISPLAY_NAME_ATTR,
+                                NbBundle.getMessage(this.getClass(), "DEFAULT_DOMAIN_NAME"));
+                            ip.put(GlassfishModule.HTTPPORT_ATTR,
+                                    Integer.toString(8080));
+                            ip.put(GlassfishModule.ADMINPORT_ATTR,
+                                    Integer.toString(4848));
+                            GlassfishInstance gi = GlassfishInstance.create(ip);
+                            addServerInstance(gi);
+                            NbPreferences.forModule(this.getClass()).putBoolean(PROP_FIRST_RUN, true);
+                        } else {
+                            Map<String, String> createProps = new HashMap<String, String>();
+                            ip.put(GlassfishModule.DISPLAY_NAME_ATTR,
+                                NbBundle.getMessage(this.getClass(), "PERSONAL_DOMAIN_NAME")); // NOI18N
+                            String domainsFolderValue = System.getProperty("netbeans.user"); // NOI18N
+                            String domainNameValue = "GlassfishV3Domain";    // NOI18N
+                            ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsFolderValue);
+                            ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainNameValue);
+                            createProps.putAll(ip);
+                            // compute ports
+                            computePorts(ip,createProps);
+                            // Now add the other values that the create domain process needs
+                            
+                            CreateDomain cd = new CreateDomain("admin", "adminadmin", new File(f,"glassfish"), createProps, ip);
+                            cd.start();
+                        }
+                    }
+                }
+            } catch (IOException ioe) {
+            }
+        }
+    }
+
+    private void computePorts(Map<String, String> ip, Map<String, String> createProps) {
+        int portBase = 8900;
+        int kicker = ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR).hashCode() % 50000;
+        kicker = kicker < 0 ? -kicker : kicker;
+        
+        int httpPort = portBase + kicker + 80;
+        int adminPort = portBase + kicker + 48;
+        ip.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(httpPort));
+        ip.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(adminPort));
+        createProps.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(httpPort));
+        createProps.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(adminPort));
+        createProps.put(CreateDomain.PORTBASE, Integer.toString(portBase+kicker));
+    }
+
 }

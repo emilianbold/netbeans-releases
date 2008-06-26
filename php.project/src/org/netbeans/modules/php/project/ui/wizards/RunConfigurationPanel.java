@@ -40,7 +40,10 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.Component;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +51,7 @@ import java.util.regex.Pattern;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.RemoteConfiguration;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
@@ -64,6 +68,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  * @author Tomas Mysik
@@ -84,8 +89,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     static final String[] CFG_PROPS = new String[] {
         RUN_AS,
         URL,
-        COPY_SRC_FILES,
-        COPY_SRC_TARGET,
         REMOTE_CONNECTION,
         REMOTE_DIRECTORY,
         REMOTE_UPLOAD,
@@ -96,6 +99,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
 
     private final SourcesFolderNameProvider sourcesFolderNameProvider;
     private WizardDescriptor descriptor = null;
+    private PropertyChangeListener phpInterpreterListener;
 
     private ConfigManager.ConfigProvider configProvider;
     private ConfigManager configManager;
@@ -130,6 +134,17 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                 runAsScript,
             };
             runConfigurationPanelVisual = new RunConfigurationPanelVisual(this, sourcesFolderNameProvider, configManager, insidePanels);
+
+            // listen to the changes in php interpreter
+            phpInterpreterListener = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (PhpOptions.PROP_PHP_INTERPRETER.equals(evt.getPropertyName())) {
+                        runAsScript.loadPhpInterpreter();
+                    }
+                }
+            };
+            PhpOptions phpOptions = PhpOptions.getInstance();
+            phpOptions.addPropertyChangeListener(WeakListeners.propertyChange(phpInterpreterListener, phpOptions));
         }
         return runConfigurationPanelVisual;
     }
@@ -147,6 +162,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
 
         adjustUrl();
         runAsLocalWeb.setLocalServerModel(getLocalServerModel());
+        runAsLocalWeb.setCopyFiles(getCopyFiles());
 
         // register back to receive events
         addListeners();
@@ -162,6 +178,10 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         // and put only the valid ones
         RunAsType runAs = getRunAsType();
         settings.putProperty(RUN_AS, runAs);
+        settings.putProperty(COPY_SRC_FILES, runAsLocalWeb.isCopyFiles());
+        settings.putProperty(COPY_SRC_TARGET, runAsLocalWeb.getLocalServer());
+        settings.putProperty(COPY_SRC_TARGETS, runAsLocalWeb.getLocalServerModel());
+
         switch (runAs) {
             case LOCAL:
                 storeRunAsLocalWeb(settings);
@@ -183,22 +203,29 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         if (model != null) {
             return model;
         }
-        model = new LocalServer.ComboBoxModel();
 
         List<DocumentRoot> copyToFolderRoots = PhpEnvironment.get().getDocumentRoots();
+        int size = copyToFolderRoots.size();
+        List<LocalServer> localServers = new ArrayList<LocalServer>(size);
         for (DocumentRoot root : copyToFolderRoots) {
             String srcRoot = new File(root.getDocumentRoot(), sourcesFolderNameProvider.getSourcesFolderName()).getAbsolutePath();
             LocalServer ls = new LocalServer(null, root.getUrl(), root.getDocumentRoot(), srcRoot, true);
-            model.addElement(ls);
+            localServers.add(ls);
         }
-        return model;
+
+        return new LocalServer.ComboBoxModel(localServers.toArray(new LocalServer[size]));
+    }
+
+    private boolean getCopyFiles() {
+        Boolean copyFiles = (Boolean) descriptor.getProperty(COPY_SRC_FILES);
+        if (copyFiles != null) {
+            return copyFiles;
+        }
+        return false;
     }
 
     private void storeRunAsLocalWeb(WizardDescriptor settings) {
         settings.putProperty(URL, runAsLocalWeb.getUrl());
-        settings.putProperty(COPY_SRC_FILES, runAsLocalWeb.isCopyFiles());
-        settings.putProperty(COPY_SRC_TARGET, runAsLocalWeb.getLocalServer());
-        settings.putProperty(COPY_SRC_TARGETS, runAsLocalWeb.getLocalServerModel());
     }
 
     private void storeRunAsRemoteWeb(WizardDescriptor settings) {
@@ -220,7 +247,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                 error = validateRunAsRemoteWeb();
                 break;
             case SCRIPT:
-                // nothing to validate
+                error = validateRunAsScript();
                 break;
             default:
                 assert false : "Unhandled RunAsType type: " + getRunAsType();
@@ -271,8 +298,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             String documentRoot = ls.getDocumentRoot();
             assert documentRoot != null;
             String srcRoot = ls.getSrcRoot();
-            int idx = documentRoot.length();
-            assert idx > 0;
             String urlSuffix = getUrlSuffix(documentRoot, srcRoot);
             if (urlSuffix == null) {
                 // user changed path to a different place => use the name of the directory
@@ -385,6 +410,10 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             return NbBundle.getMessage(RunAsRemoteWeb.class, "MSG_NoConfigurationSelected");
         }
         return null;
+    }
+
+    private String validateRunAsScript() {
+        return RunAsValidator.validateScriptFields(runAsScript.getPhpInterpreter(), null, null);
     }
 
     private String validateServerLocation() {

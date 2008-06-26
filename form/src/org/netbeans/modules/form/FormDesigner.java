@@ -323,7 +323,19 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         getMenuEditLayer();
 
         // vlv: print
-        designPanel.putClientProperty(java.awt.print.Printable.class, ""); // NOI18N
+        designPanel.putClientProperty("print.printable", Boolean.TRUE); // NOI18N
+
+        // Issue 137741
+        RADComponent topMetacomp = formModel.getTopRADComponent();
+        if (topMetacomp == null) {
+            ComponentInspector inspector = ComponentInspector.getInstance();
+            inspector.focusForm(formEditor);
+            try {
+                inspector.setSelectedNodes(new Node[] {formEditor.getFormRootNode()}, formEditor);
+            } catch (PropertyVetoException pvex) {}
+        } else {
+            setSelectedComponent(topMetacomp);
+        }
     }
 
     void reset(FormEditor formEditor) {

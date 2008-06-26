@@ -46,7 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.db.sql.execute.SQLHistory;
+import org.netbeans.modules.db.sql.history.SQLHistory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;

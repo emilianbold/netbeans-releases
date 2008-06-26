@@ -45,9 +45,9 @@ package projects.apitest;
 
 import java.io.File;
 import java.io.IOException;
-import junit.framework.*;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 
 public class CreateProjectTest extends JellyTestCase {
@@ -56,15 +56,17 @@ public class CreateProjectTest extends JellyTestCase {
         super(testName);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
     public static Test suite() {
-        TestSuite suite = new NbTestSuite(CreateProjectTest.class);
-        return suite;
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(CreateProjectTest.class).
+                addTest("testCreateAndOpenProject_API_1", 
+                        "testReopenAndCloseProject_API_1",
+                        "testCreateAndOpenProject_API_2",
+                        "testCloseProject_API_2",
+                        "testReopenAndCloseProject_API_2").
+                enableModules(".*").clusters(".*"));
     }
-    
+  
     @Override
     public void setUp() {
         System.out.println("########  " + getName() + "  #######"); // NOI18N

@@ -939,7 +939,7 @@ public class TraceModel extends TraceModelBase {
     private void testAPT(NativeFileItem item) throws FileNotFoundException, RecognitionException, TokenStreamException, IOException, ClassNotFoundException {
 	File file = item.getFile();
 	FileBuffer buffer = new FileBufferFile(file);
-	print("Testing APT:" + file); // NOI18N
+	print("Testing APT: " + file.getName()); // NOI18N
 	long minLexer = Long.MAX_VALUE;
 	long maxLexer = Long.MIN_VALUE;
 	long minAPTLexer = Long.MAX_VALUE;

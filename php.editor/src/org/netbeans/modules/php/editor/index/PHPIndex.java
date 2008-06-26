@@ -413,6 +413,49 @@ public class PHPIndex {
         return functions;
     }
     
+    public Collection<IndexedConstant> getTopLevelVariables(PHPParseResult context, String name, NameKind kind) {
+        final Set<SearchResult> result = new HashSet<SearchResult>();
+        Collection<IndexedConstant> vars = new ArrayList<IndexedConstant>();
+        search(PHPIndexer.FIELD_VAR, name.toLowerCase(), NameKind.PREFIX, result, ALL_SCOPE, TERMS_CONST);
+
+        for (SearchResult map : result) {
+            if (map.getPersistentUrl() != null) {
+                String[] signatures = map.getValues(PHPIndexer.FIELD_VAR);
+
+                if (signatures == null) {
+                    continue;
+                }
+
+                for (String signature : signatures) {
+                    Signature sig = Signature.get(signature);
+                    //sig.string(0) is the case insensitive search key
+                    String constName = sig.string(1);
+
+                    if (kind == NameKind.PREFIX) {
+                        //case sensitive
+                        if (!constName.startsWith(name)) {
+                            continue;
+                        }
+                    }
+
+                    String typeName = sig.string(2);
+                    
+                    typeName = typeName.length() == 0 ? null : typeName;
+                    int offset = sig.integer(3);
+
+                    IndexedConstant var = new IndexedConstant(constName, null,
+                            this, map.getPersistentUrl(), offset, 0, typeName);
+
+                    var.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
+                    vars.add(var);
+                }
+            }
+        }
+
+        return vars;
+    }
+    
+    
     /** returns GLOBAL constants. */
     public Collection<IndexedConstant> getConstants(PHPParseResult context, String name, NameKind kind) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
@@ -451,6 +494,16 @@ public class PHPIndex {
         }
         
         return constants;
+    }
+    
+    public Set<FileObject> filesWithIdentifiers(String identifierName) {
+        final Set<FileObject> result = new HashSet<FileObject>();
+        final Set<SearchResult> idSearchResult = new HashSet<SearchResult>();
+        search(PHPIndexer.FIELD_IDENTIFIER, identifierName.toLowerCase(), NameKind.PREFIX, idSearchResult, ALL_SCOPE, TERMS_BASE);
+        for (SearchResult searchResult : idSearchResult) {
+            result.add(FileUtil.toFileObject(new File(URI.create(searchResult.getPersistentUrl()))));
+        }
+        return result;
     }
     
     public Collection<IndexedClass> getClasses(PHPParseResult context, String name, NameKind kind) {

@@ -39,27 +39,42 @@
 
 package org.netbeans.modules.projectimport.eclipse.core.spi;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.projectimport.eclipse.core.ClassPathContainerResolver;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  * Data about Eclipse project to import.
  */
 public final class ProjectImportModel {
 
+    private static final Logger LOG =
+            Logger.getLogger(ProjectImportModel.class.getName());
+    
     private EclipseProject project;
-    private String projectLocation;
+    private File projectLocation;
     private JavaPlatform platform;
     private List<Project> alreadyImportedProjects;
 
-    public ProjectImportModel(EclipseProject project, String projectLocation, JavaPlatform platform, List<Project> alreadyImportedProjects) {
+    public ProjectImportModel(EclipseProject project, File projectLocation, JavaPlatform platform, List<Project> alreadyImportedProjects) {
         this.project = project;
+        assert projectLocation == null || projectLocation.equals(FileUtil.normalizeFile(projectLocation));
         this.projectLocation = projectLocation;
         this.platform = platform;
         this.alreadyImportedProjects = alreadyImportedProjects;
@@ -81,7 +96,7 @@ public final class ProjectImportModel {
      * Folder in which to create NetBeans project. In case NetBeans projects are
      * imported into the same location as Eclipse one the folder will already exist.
      */
-    public String getNetBeansProjectLocation() {
+    public File getNetBeansProjectLocation() {
         return projectLocation;
     }
     
@@ -94,8 +109,7 @@ public final class ProjectImportModel {
     }
     
     public List<DotClassPathEntry> getEclipseSourceRoots() {
-        // TODO: see getEclipseTestSourceRoots()
-        return project.getSourceRoots();
+        return filterSourceRootsForTests(false);
     }
     
     public File[] getEclipseSourceRootsAsFileArray() {
@@ -103,13 +117,101 @@ public final class ProjectImportModel {
     }
     
     public List<DotClassPathEntry> getEclipseTestSourceRoots() {
-        // TODO: either ask user in wizard or preferably just
-        // grep sources for "junit" or something else.
-        return Collections.<DotClassPathEntry>emptyList();
+        return filterSourceRootsForTests(true);
     }
     
     public File[] getEclipseTestSourceRootsAsFileArray() {
         return convertToFileArray(getEclipseTestSourceRoots());
+    }
+
+    private final Map<File,Boolean> looksLikeTests = new HashMap<File,Boolean>();
+    private List<DotClassPathEntry> filterSourceRootsForTests(boolean test) {
+        List<DotClassPathEntry> all = project.getSourceRoots();
+        // if project has just one source root then keep it as sources:
+        if (!hasJUnitOnClassPath() || all.size() <= 1) {
+            if (test) {
+                return Collections.emptyList();
+            } else {
+                return all;
+            }
+        }
+        List<DotClassPathEntry> result = new ArrayList<DotClassPathEntry>(all.size());
+        for (DotClassPathEntry entry : all) {
+            File r = new File(entry.getAbsolutePath());
+            Boolean isTest;
+            synchronized (looksLikeTests) {
+                isTest = looksLikeTests.get(r);
+                if (isTest == null) {
+                    isTest = hasTests(r);
+                    looksLikeTests.put(r, isTest);
+                }
+            }
+            if (!test ^ isTest) {
+                result.add(entry);
+            }
+        }
+        return result;
+    }
+
+    private boolean hasJUnitOnClassPath() {
+        for (DotClassPathEntry entry : getEclipseClassPathEntries()) {
+            if (ClassPathContainerResolver.isJUnit(entry)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Crude heuristic to see if a source root contains some sort of JUnit tests. */
+    private boolean hasTests(File fileOrDir) {
+        if (fileOrDir.isDirectory()) {
+            File[] kids = fileOrDir.listFiles();
+            if (kids != null) {
+                for (File kid : kids) {
+                    if (hasTests(kid)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } else {
+            return isJUnitFile(fileOrDir);
+        }
+    }
+    
+    private boolean isJUnitFile(File f) {
+        if (!(f.getName().endsWith("Test.java") || // NOI18N
+                f.getName().endsWith("Case.java") || // NOI18N
+                f.getName().endsWith("Suite.java"))) { // NOI18N
+            return false;
+        }
+        FileObject fo = FileUtil.toFileObject(f);
+        try {
+            return readJUnitFileHeader(fo);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return false;
+        }
+    }
+        
+    private boolean readJUnitFileHeader(FileObject fo) throws IOException {
+        InputStream is = fo.getInputStream();
+        try {
+            BufferedReader input = new BufferedReader(new InputStreamReader(is, "ISO-8859-1")); // NOI18N
+            String line;
+            int maxLines = 100;
+            while (null != (line = input.readLine()) && maxLines > 0) {
+                maxLines--;
+                if (line.contains("junit.framework.Test") || // NOI18N
+                    line.contains("org.junit.Test")) { // NOI18N
+                    return true;
+                }
+                    
+            }
+        } finally {
+            is.close();
+        }
+        return false;
     }
 
     public JavaPlatform getJavaPlatform() {
@@ -121,7 +223,7 @@ public final class ProjectImportModel {
         return null;
     }
 
-    public DotClassPathEntry getOuput() {
+    public DotClassPathEntry getOutput() {
         return project.getOutput();
     }
 

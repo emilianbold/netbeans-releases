@@ -127,7 +127,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.De
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.web.project.classpath.WebProjectLibrariesModifierImpl;
-import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSVersionProvider;
+//import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSVersionProvider;
 import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilter;
 import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilterProvider;
 import org.netbeans.modules.web.project.ui.customizer.CustomizerProviderImpl;
@@ -438,6 +438,7 @@ public final class WebProject implements Project, AntProjectListener {
             new Info(),
             aux,
             helper.createCacheDirectoryProvider(),
+            helper.createAuxiliaryProperties(),
             spp,
             new ProjectWebModuleProvider (),
             new ProjectWebServicesSupportProvider(),
@@ -471,7 +472,6 @@ public final class WebProject implements Project, AntProjectListener {
             new WebJPADataSourceSupport(this), 
             new WebServerStatusProvider(this),
             new WebJPAModuleInfo(this),
-            new WebProjectJAXWSVersionProvider(helper, this),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),

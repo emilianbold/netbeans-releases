@@ -974,6 +974,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                     <arg value="-die1"/>
                     <arg value="-compilerSourceVM ${{javac.source}}"/>
                     <arg value="-compilerTargetVM ${{javac.target}}"/>
+                    <arg value="-javaEncoding ${{source.encoding}}"/> <!-- #72175 -->
                     <classpath path="${{java.home}}/../lib/tools.jar:${{copyfiles.classpath}}:${{jspcompilation.classpath}}"/>
                 </java>
                 <mkdir dir="${{build.generated.dir}}/classes"/>
@@ -1003,6 +1004,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                     <arg path="${{jsp.includes}}"/>
                     <arg value="-compilerSourceVM ${{javac.source}}"/>
                     <arg value="-compilerTargetVM ${{javac.target}}"/>
+                    <arg value="-javaEncoding ${{source.encoding}}"/> <!-- #72175 -->
                     <classpath path="${{java.home}}/../lib/tools.jar:${{copyfiles.classpath}}:${{jspcompilation.classpath}}"/>
                 </java>
                 <mkdir dir="${{build.generated.dir}}/classes"/>

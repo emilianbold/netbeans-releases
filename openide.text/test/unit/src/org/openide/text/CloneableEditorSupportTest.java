@@ -72,7 +72,8 @@ implements CloneableEditorSupport.Env {
     /** the content of lookup of support */
     private InstanceContent ic;
 
-    public void testDocumentBeGarbageCollectedWhenNotModifiedButOpened () throws Exception {
+    @RandomlyFails
+    public void testDocCanBeGCdWhenNotModifiedButOpened() throws Exception {
         content = "Ahoj\nMyDoc";
         javax.swing.text.Document doc = support.openDocument ();
         assertNotNull (doc);
@@ -309,6 +310,22 @@ implements CloneableEditorSupport.Env {
         assertTrue("Same bytes as would result from the string: " + s, Arrays.equals(b1, b2));
     }
     
+    public void testDocumentBeforeSaveRunnableProcessed() throws Exception {
+        content = "Ahoj\nMyDoc";
+        javax.swing.text.Document doc = support.openDocument ();
+        assertNotNull (doc);
+        final boolean[] processed = { false };
+        doc.putProperty("beforeSaveRunnable", new Runnable() {
+            public void run() {
+                processed[0] = true;
+            }
+        });
+        doc.insertString(0, "Nazdar", null); // Modify doc to allow save
+        support.saveDocument();
+        assertTrue("CES.saveDocument() did not execute a runnable in \"beforeSaveRunnable\" document property",
+                processed[0]);
+    }
+
     //
     // Implementation of the CloneableEditorSupport.Env
     //

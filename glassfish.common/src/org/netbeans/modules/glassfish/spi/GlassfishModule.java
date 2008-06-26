@@ -1,3 +1,4 @@
+// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
@@ -36,6 +37,7 @@
  * 
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
+// </editor-fold>
 
 package org.netbeans.modules.glassfish.spi;
 
@@ -46,7 +48,7 @@ import javax.swing.event.ChangeListener;
 
 
 /**
- * Interface implemented by common serve support.  Always available in server
+ * Interface implemented by common server support.  Always available in server
  * instance lookup.
  *
  * @author Peter Williams
@@ -64,6 +66,8 @@ public interface GlassfishModule {
     public static final String HTTPPORT_ATTR = "httpportnumber"; // NOI18N
     public static final String HOSTNAME_ATTR = "host"; // NOI18N
     public static final String JRUBY_HOME = "jruby.home"; // NOI18N
+    public static final String DOMAINS_FOLDER_ATTR = "domainsfolder"; // NOI18N
+    public static final String DOMAIN_NAME_ATTR = "domainname";
     
     public static final String DEBUG_PORT = "debugPort"; // NOI18N
     public static final String JVM_MODE = "jvmMode"; // NOI18N
@@ -138,7 +142,7 @@ public interface GlassfishModule {
     /**
      * Stop the server.
      *
-     * @todo returned Future instance shouldn't "finish" until server vm has
+     * XXX returned Future instance shouldn't "finish" until server vm has
      *   terminated (or been killed if it hangs).
      * 
      * @param stateListener listener to listen message describing the shutdown 

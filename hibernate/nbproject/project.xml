@@ -74,11 +74,12 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.api.web.webmodule</code-name-base>
+                    <code-name-base>org.netbeans.api.progress</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.11</specification-version>
+                        <release-version>1</release-version>
+                        <specification-version>1.12</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -124,14 +125,14 @@ made subject to such option by the copyright holder.
                         <release-version>1</release-version>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
-                </dependency>                
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.editor</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>3</release-version>
-                        <specification-version>1.36</specification-version>
+                        <specification-version>1.41</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -149,7 +150,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.21</specification-version>
+                        <specification-version>1.27</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -282,7 +283,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>1.14</specification-version>
+                        <specification-version>1.16</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -372,7 +373,7 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.web.project</code-name-base>
-                         <recursive/>
+                        <recursive/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.websvc.clientapi</code-name-base>
@@ -382,9 +383,9 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.websvc.websvcapi</code-name-base>
-                     </test-dependency>
-                     <test-dependency>
-                         <code-name-base>org.openide.execution</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.execution</code-name-base>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.openide.options</code-name-base>
@@ -397,7 +398,14 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.hibernateweb</friend>
+                <package>org.netbeans.modules.hibernate.cfg.model</package>
+                <package>org.netbeans.modules.hibernate.loaders.cfg</package>
+                <package>org.netbeans.modules.hibernate.service.api</package>
+                <package>org.netbeans.modules.hibernate.spi.hibernate</package>
+                <package>org.netbeans.modules.hibernate.wizards</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

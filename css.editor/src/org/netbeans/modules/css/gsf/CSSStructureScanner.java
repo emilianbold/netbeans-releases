@@ -110,7 +110,11 @@ public class CSSStructureScanner implements StructureScanner {
                         int documentEO = AstUtils.documentPosition(node.endOffset(), source);
                         String nodeName = info.getText().substring(documentSO, documentEO);
 
-                        items.add(new CssRuleStructureItem(nodeName, CssAstElement.getElement(info, ruleNode)));
+                        //filter out inlined style definitions - they have just virtual selector which
+                        //is mapped to empty string
+                        if(nodeName.length() > 0) {
+                            items.add(new CssRuleStructureItem(nodeName, CssAstElement.getElement(info, ruleNode)));
+                        }
                     }
                 }
             }

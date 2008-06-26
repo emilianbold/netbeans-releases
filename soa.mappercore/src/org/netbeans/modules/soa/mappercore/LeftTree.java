@@ -84,8 +84,8 @@ public class LeftTree extends JTree implements
         this.mapper = mapper;
 
         // vlv: print
-        putClientProperty(java.awt.print.Printable.class, ""); // NOI18N
-        putClientProperty(java.lang.Integer.class, new Integer(0));
+        putClientProperty("print.printable", Boolean.TRUE); // NOI18N
+        putClientProperty("print.weight", new Integer(0)); // NOI18N
 
         scrollPane = new JScrollPane(this,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,

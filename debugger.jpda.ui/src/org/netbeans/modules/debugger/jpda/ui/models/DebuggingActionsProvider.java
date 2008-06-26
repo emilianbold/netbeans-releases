@@ -41,8 +41,16 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import com.sun.jdi.AbsentInformationException;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.Action;
 
+import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -56,6 +64,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -96,6 +105,34 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
     
     );
 
+    private final Action COPY_TO_CLBD_ACTION = Models.createAction (
+        NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_CallstackAction_Copy2CLBD_Label"),
+        new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                return true;
+            }
+            public void perform (Object[] nodes) {
+                List<JPDAThread> threads = new ArrayList<JPDAThread>(nodes.length);
+                for (Object node : nodes) {
+                    if (node instanceof JPDAThread) {
+                        threads.add((JPDAThread) node);
+                    }
+                    if (node instanceof CallStackFrame) {
+                        JPDAThread t = ((CallStackFrame) node).getThread();
+                        if (!threads.contains(t)) {
+                            threads.add(t);
+                        }
+                    }
+                }
+                if (threads.isEmpty()) {
+                    threads.add(debugger.getCurrentThread());
+                }
+                stackToCLBD (threads);
+            }
+        },
+        Models.MULTISELECTION_TYPE_ANY
+    );
+
     private static Action GO_TO_SOURCE_ACTION = Models.createAction (
         NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_ThreadAction_GoToSource_Label"),
         new Models.ActionPerformer () {
@@ -112,6 +149,26 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         },
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
     
+    );
+
+    private static final Action POP_TO_HERE_ACTION = Models.createAction (
+        NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_CallstackAction_PopToHere_Label"),
+        new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                // TODO: Check whether this frame is deeper then the top-most
+                return true;
+            }
+            public void perform (final Object[] nodes) {
+                // Do not do expensive actions in AWT,
+                // It can also block if it can not procceed for some reason
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        popToHere ((CallStackFrame) nodes [0]);
+                    }
+                });
+            }
+        },
+        Models.MULTISELECTION_TYPE_EXACTLY_ONE
     );
 
     private Action SUSPEND_ACTION = Models.createAction (
@@ -232,11 +289,21 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
             };
         } else
         if (node instanceof CallStackFrame) {
-            CallStackFrame t = (CallStackFrame) node;
-            return new Action [] {
-                MAKE_CURRENT_ACTION,
-                GO_TO_SOURCE_ACTION,
-            };
+            boolean popToHere = debugger.canPopFrames ();
+            if (popToHere) {
+                return new Action [] {
+                    MAKE_CURRENT_ACTION,
+                    POP_TO_HERE_ACTION,
+                    GO_TO_SOURCE_ACTION,
+                    COPY_TO_CLBD_ACTION,
+                };
+            } else {
+                return new Action [] {
+                    MAKE_CURRENT_ACTION,
+                    GO_TO_SOURCE_ACTION,
+                    COPY_TO_CLBD_ACTION,
+                };
+            }
         } else
         throw new UnknownTypeException (node);
     }
@@ -253,6 +320,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
             CallStackFrame f = (CallStackFrame) node;
             f.getThread().makeCurrent();
             f.makeCurrent();
+            goToSource(f);
         }
         throw new UnknownTypeException (node);
     }
@@ -271,6 +339,80 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
     public void removeModelListener (ModelListener l) {
     }
 
+    private static void popToHere (final CallStackFrame frame) {
+        try {
+            JPDAThread t = frame.getThread ();
+            CallStackFrame[] stack = t.getCallStack ();
+            int i, k = stack.length;
+            if (k < 2) return ;
+            for (i = 0; i < k; i++)
+                if (stack [i].equals (frame)) {
+                    if (i > 0) {
+                        stack [i - 1].popFrame ();
+                    }
+                    return;
+                }
+        } catch (AbsentInformationException ex) {
+        }
+    }
+
+    private void stackToCLBD(List<JPDAThread> threads) {
+        StringBuffer frameStr = new StringBuffer(512);
+        for (JPDAThread t : threads) {
+            if (frameStr.length() > 0) {
+                frameStr.append('\n');
+            }
+            frameStr.append("\"");
+            frameStr.append(t.getName());
+            frameStr.append("\"\n");
+            CallStackFrame[] stack;
+            try {
+                stack = t.getCallStack ();
+            } catch (AbsentInformationException ex) {
+                frameStr.append(NbBundle.getMessage(CallStackActionsProvider.class, "MSG_NoSourceInfo"));
+                stack = null;
+            }
+            if (stack != null) {
+                int i, k = stack.length;
+
+                for (i = 0; i < k; i++) {
+                    frameStr.append(stack[i].getClassName());
+                    frameStr.append(".");
+                    frameStr.append(stack[i].getMethodName());
+                    try {
+                        String sourceName = stack[i].getSourceName(null);
+                        frameStr.append("(");
+                        frameStr.append(sourceName);
+                        int line = stack[i].getLineNumber(null);
+                        if (line > 0) {
+                            frameStr.append(":");
+                            frameStr.append(line);
+                        }
+                        frameStr.append(")");
+                    } catch (AbsentInformationException ex) {
+                        //frameStr.append(NbBundle.getMessage(CallStackActionsProvider.class, "MSG_NoSourceInfo"));
+                        // Ignore, do not provide source name.
+                    }
+                    if (i != k - 1) frameStr.append('\n');
+                }
+            }
+        }
+        Clipboard systemClipboard = getClipboard();
+        Transferable transferableText =
+                new StringSelection(frameStr.toString());
+        systemClipboard.setContents(
+                transferableText,
+                null);
+    }
+
+    private static Clipboard getClipboard() {
+        Clipboard clipboard = org.openide.util.Lookup.getDefault().lookup(Clipboard.class);
+        if (clipboard == null) {
+            clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        }
+        return clipboard;
+    }
+
     private static boolean isGoToSourceSupported (CallStackFrame f) {
         String language = DebuggerManager.getDebuggerManager ().
             getCurrentSession ().getCurrentLanguage ();
@@ -278,17 +420,26 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         return sp.sourceAvailable (f, language);
     }
     
-    private static void goToSource(CallStackFrame frame) {
-        String language = DebuggerManager.getDebuggerManager ().
-            getCurrentSession ().getCurrentLanguage ();
-        SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
-        sp.showSource (frame, language);
+    private static void goToSource(final CallStackFrame frame) {
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                String language = DebuggerManager.getDebuggerManager ().
+                    getCurrentSession ().getCurrentLanguage ();
+                SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
+                sp.showSource (frame, language);
+            }
+        });
     }
     
-    private static void goToSource(JPDAThread thread) {
-        String language = DebuggerManager.getDebuggerManager ().
-            getCurrentSession ().getCurrentLanguage ();
-        SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
-        sp.showSource (thread, language);
+    private static void goToSource(final JPDAThread thread) {
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                String language = DebuggerManager.getDebuggerManager ().
+                    getCurrentSession ().getCurrentLanguage ();
+                SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
+                sp.showSource (thread, language);
+            }
+        });
     }
+
 }

@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.remote.server;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 
 /**
@@ -46,25 +48,31 @@ import org.netbeans.modules.cnd.api.remote.ServerRecord;
  * 
  * @author gordonp
  */
-public class RemoteServerRecord implements ServerRecord {
+public class RemoteServerRecord implements ServerRecord, PropertyChangeListener  {
     
-    private String name;
     private String user;
+    private String server;
+    private String name;
     private boolean editable;
     private boolean active;
     
-    protected RemoteServerRecord(String name, String user, boolean active) {
-        this.name = name;
+    protected RemoteServerRecord(String user, String server, boolean active) {
         this.user = user;
-        this.active = active;
+        this.server = server;
+        name = user + '@' + server;
         editable = true;
+        if (active) {
+            RemoteServerList list = RemoteServerList.getInstance();
+            if (list != null) {
+                setActive(true);
+            }
+        }
     }
     
-    protected RemoteServerRecord() {
-        name = "localhost"; // NOI18N
-        user = null;
+    protected RemoteServerRecord(String name, boolean active) {
+        this.name = name;
+        this.active = active;
         editable = false;
-        active = true;
     }
     
     public boolean isEditable() {
@@ -80,14 +88,28 @@ public class RemoteServerRecord implements ServerRecord {
     }
     
     public void setActive(boolean active) {
-        this.active = active;
+        if (this.active != active) {
+            RemoteServerList.getInstance().firePropertyChange(RemoteServerList.PROP_SET_AS_ACTIVE, this);
+            RemoteServerList.getInstance().refresh();
+        }
+    }
+
+    public String getName() {
+        return name;
     }
 
     public String getServerName() {
-        return name;
+        return server;
     }
 
     public String getUserName() {
         return user;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(RemoteServerList.PROP_SET_AS_ACTIVE)) {
+            Object n = evt.getNewValue();
+            active = n == this;
+        }
     }
 }

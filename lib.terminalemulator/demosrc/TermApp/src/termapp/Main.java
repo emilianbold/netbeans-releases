@@ -44,6 +44,8 @@ package termapp;
 import java.awt.Color;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
 import org.netbeans.lib.terminalemulator.StreamTerm;
 import org.netbeans.lib.terminalemulator.Term;
@@ -153,7 +155,10 @@ public class Main extends JFrame {
         main.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                termShell.hangup();
+		try {
+		    termShell.hangup();
+		} catch (IllegalStateException x) {
+		}
             }
         } );
         main.setVisible(true);

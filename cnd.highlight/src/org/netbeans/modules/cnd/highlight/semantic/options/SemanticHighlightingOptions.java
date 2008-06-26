@@ -64,7 +64,6 @@ public class SemanticHighlightingOptions {
 
     private static final String ENABLE_MARK_OCCURRENCES = "EnableMarkOccurrences"; // NOI18N
     private static final String KEEP_MARKS = "KeepMarks"; // NOI18N
-    private static final String DIFFER_SYSTEM_MACROS = "SysMacros"; // NOI18N
 
     public static final boolean SEMANTIC_ADVANCED = Boolean.getBoolean("cnd.semantic.advanced"); // NOI18N
     
@@ -98,13 +97,5 @@ public class SemanticHighlightingOptions {
 
     public void setKeepMarks(boolean value) {
         setOption(KEEP_MARKS, value);
-    }
-
-    public boolean getDifferSystemMacros() {
-        return getOption(DIFFER_SYSTEM_MACROS, true);
-    }
-
-    public void setDifferSystemMacros(boolean value) {
-        setOption(DIFFER_SYSTEM_MACROS, value);
     }
 }

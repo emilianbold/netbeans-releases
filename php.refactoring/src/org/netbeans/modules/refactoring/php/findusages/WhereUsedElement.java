@@ -51,6 +51,7 @@ import org.netbeans.napi.gsfret.source.UiUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
@@ -132,44 +133,47 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
     }
     
     private static OffsetRange getRange(ASTNode node, String name) {        
-        ASTNode rangeNode = null;
-        if (node instanceof ClassDeclaration) {
-            rangeNode = ((ClassDeclaration) node).getName();
-        } else if (node instanceof FunctionDeclaration) {
-            rangeNode = ((FunctionDeclaration) node).getFunctionName();            
-        } else if (node instanceof FunctionInvocation) {
-            rangeNode = ((FunctionInvocation) node).getFunctionName();
-        } else if (node instanceof ClassConstantDeclaration) {
-            final List<Identifier> names = ((ClassConstantDeclaration) node).getNames();
-            for (Identifier id : names) {
-                if (name.equals(id.getName())) {
-                    rangeNode = id;
-                    break;                    
+        ASTNode rangeNode = node;
+        while(true) {
+            if (rangeNode instanceof ClassDeclaration) {
+                rangeNode = ((ClassDeclaration) rangeNode).getName();
+            } else if (rangeNode instanceof FunctionDeclaration) {
+                rangeNode = ((FunctionDeclaration) rangeNode).getFunctionName();
+            } else if (rangeNode instanceof FunctionInvocation) {
+                rangeNode = ((FunctionInvocation) rangeNode).getFunctionName();
+            } else if (rangeNode instanceof ClassConstantDeclaration) {
+                final List<Identifier> names = ((ClassConstantDeclaration) rangeNode).getNames();
+                for (Identifier id : names) {
+                    if (name.equals(id.getName())) {
+                        rangeNode = id;
+                        break;
+                    }
                 }
-            }
-            rangeNode = names.get(0);
-        } else if (node instanceof StaticConstantAccess) {
-            rangeNode = ((StaticConstantAccess) node).getConstant();
-        } else if (node instanceof MethodDeclaration) {
-            rangeNode = ((MethodDeclaration) node).getFunction().getFunctionName();
-        }  else if (node instanceof FieldAccess) {
-            rangeNode = ((FieldAccess) node).getField();
-        } else if (node instanceof FieldsDeclaration) {
-            final List<SingleFieldDeclaration> fields = ((FieldsDeclaration) node).getFields();
-            for (SingleFieldDeclaration fDeclaration : fields) {
-                if (name.equals(extractVariableName(fDeclaration.getName()))) {
-                    rangeNode = fDeclaration;
-                    break;
+                rangeNode = names.get(0);
+            } else if (rangeNode instanceof StaticConstantAccess) {
+                rangeNode = ((StaticConstantAccess) rangeNode).getConstant();
+            } else if (rangeNode instanceof MethodDeclaration) {
+                rangeNode = ((MethodDeclaration) rangeNode).getFunction().getFunctionName();
+            } else if (rangeNode instanceof FieldAccess) {
+                rangeNode = ((FieldAccess) rangeNode).getField();
+            } else if (rangeNode instanceof FieldsDeclaration) {
+                final List<SingleFieldDeclaration> fields = ((FieldsDeclaration) rangeNode).getFields();
+                for (SingleFieldDeclaration fDeclaration : fields) {
+                    if (name.equals(extractVariableName(fDeclaration.getName()))) {
+                        rangeNode = fDeclaration;
+                        break;
+                    }
                 }
+                rangeNode = fields.get(0).getName();
+            } else if (rangeNode instanceof ClassInstanceCreation) {
+                rangeNode = ((ClassInstanceCreation) rangeNode).getClassName();
+            } else if (rangeNode instanceof StaticFieldAccess) {
+                rangeNode = ((StaticFieldAccess) rangeNode).getField();
+            } else if (rangeNode instanceof ArrayAccess) {
+                rangeNode = ((ArrayAccess) rangeNode).getName();
+            } else {
+                break;
             }
-            rangeNode = fields.get(0).getName();
-        } else if (node instanceof ClassInstanceCreation) {
-            rangeNode = ((ClassInstanceCreation) node).getClassName();
-        } else if (node instanceof StaticFieldAccess) {
-            rangeNode = ((StaticFieldAccess) node).getField();
-        } 
-        if (rangeNode == null) {
-            rangeNode = node;
         }
         return new OffsetRange(rangeNode.getStartOffset(), rangeNode.getEndOffset());
     }

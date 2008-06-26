@@ -44,26 +44,14 @@ package org.netbeans.modules.projectimport.eclipse.core;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvertor;
-import org.netbeans.modules.java.j2seplatform.wizard.NewJ2SEPlatform;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeUpdater;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -168,6 +156,9 @@ final class Importer {
         assert eclProject != null : "Eclipse project cannot be null"; // NOI18N
 
         List<String> projectImportProblems = new ArrayList<String>();
+
+        // add problems which appeared during project opening/parsing
+        projectImportProblems.addAll(eclProject.getImportProblems());
         
         // evaluate classpath containers
         eclProject.evaluateContainers(projectImportProblems);
@@ -182,16 +173,15 @@ final class Importer {
         progressInfo = NbBundle.getMessage(Importer.class,
                 "MSG_Progress_ProcessingProject", eclProject.getName()); // NOI18N
         
-        String dest;
+        File dest;
         Project alreadyImported = null;
         if (destination == null) {
-            dest = eclProject.getDirectory().getAbsolutePath();
-            File f = new File(dest);
-            if (f.exists()) {
-                alreadyImported = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
+            dest = eclProject.getDirectory();
+            if (dest.exists()) {
+                alreadyImported = ProjectManager.getDefault().findProject(FileUtil.toFileObject(dest));
             }
         } else {
-            dest = FileUtil.normalizeFile(new File(destination+File.separator+eclProject.getDirectory().getName())).getAbsolutePath();
+            dest = FileUtil.normalizeFile(new File(destination, eclProject.getDirectory().getName()));
         }
         ProjectImportModel model = new ProjectImportModel(eclProject, dest, 
                 JavaPlatformSupport.getJavaPlatformSupport().getJavaPlatform(eclProject, projectImportProblems), nbProjects);
@@ -211,8 +201,9 @@ final class Importer {
                 String key = updater.calculateKey(model);
                 EclipseProjectReference ref = new EclipseProjectReference(p, 
                         eclProject.getDirectory().getAbsolutePath(), 
-                        eclProject.getWorkspace() != null ? eclProject.getWorkspace().getDirectory().getAbsolutePath() : null, "0", key);
+                        eclProject.getWorkspace() != null ? eclProject.getWorkspace().getDirectory().getAbsolutePath() : null, 0, key);
                 EclipseProjectReference.write(p, ref);
+                ProjectManager.getDefault().saveProject(p);
             }
         }
         if (projectImportProblems.size() > 0) {

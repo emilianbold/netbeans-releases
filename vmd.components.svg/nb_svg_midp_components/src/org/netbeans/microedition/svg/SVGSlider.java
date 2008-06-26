@@ -46,26 +46,44 @@ import org.w3c.dom.svg.SVGRect;
 
 
 /**
+ * Suggested svg snippet:
+ * <pre>
+ * &lt;g id="size_slider" transform="translate(20,110)">
+ *       &lt;metadata> &lt;text>type=slider&lt;/text> &lt;/metadata>
+ *       &lt;rect x="0" y="-10" rx="5" ry="5" width="200" height="30" fill="none" stroke="rgb(255,165,0)" stroke-width="2" visibility="hidden">
+ *           &lt;set attributeName="visibility" attributeType="XML" begin="size_slider.focusin" fill="freeze" to="visible"/>
+ *           &lt;set attributeName="visibility" attributeType="XML" begin="size_slider.focusout" fill="freeze" to="hidden"/>
+ *       &lt;/rect>
+ *       &lt;rect  x="10.0" y="1.0" width="180" height="4" fill="rgb(240,240,255)" stroke="black" stroke-width="1" >
+ *       &lt;metadata> &lt;text>type=rule&lt;/text> &lt;/metadata>
+ *   &lt;/rect>
+ *       &lt;g transform="translate(0,0)" >
+ *       &lt;metadata> &lt;text>type=knob&lt;/text> &lt;/metadata>
+ *           &lt;polygon transform="matrix(0.24708326,6.6591885E-5,-6.6591885E-5,0.24708326,-0.35019112,-7.751526)"  points="20,10 80,10 80,40 50,70 20,40" 
+ *              fill="rgb(220,220,255)" stroke="black" stroke-width="1"/>
+ *       &lt;/g>
+ *   &lt;/g>
+ * </pre>
  * @author ads
  *
  */
 public class SVGSlider extends SVGComponent {
     
-    private static final String KNOB_SUFFIX = "_knob";
-    
-    private static final String RULE_SUFFIX = "_rule";
-    
     private static final int DEFAULT_MAX = 10;
+    
+    private static final String KNOB    = "knob";           // NOI18N
+    private static final String RULE    = "rule";           // NOI18N
     
     public SVGSlider( SVGForm form, String elemId ) {
         super(form, elemId);
         myStep = 1;
         myMax = DEFAULT_MAX;
-        myKnobElement = (SVGLocatableElement) getElementById( wrapperElement, 
-                elemId + KNOB_SUFFIX);
-        myRuleElement = (SVGLocatableElement) getElementById( wrapperElement, 
-                elemId + RULE_SUFFIX);
+        myKnobElement = (SVGLocatableElement)getElementByMeta( getElement(), 
+                TYPE, KNOB );
+        myRuleElement = (SVGLocatableElement) getElementByMeta( getElement(), 
+                TYPE, RULE );
         myInputHandler = new SliderInputHandler();
+        
     }
     
     public SVGSlider( int min, int max, SVGForm form, String elemId ) {
@@ -82,7 +100,7 @@ public class SVGSlider extends SVGComponent {
     
     public void setValue( int value ){
         if ( myValue > myMax || myValue < myMin ){
-            throw new IllegalArgumentException( value +" is out of range");
+            throw new IllegalArgumentException( value +" is out of range"); // NOI18N
         }
         myValue = value;
         SVGRect rect = myRuleElement.getBBox();

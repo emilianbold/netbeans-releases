@@ -52,6 +52,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectType;
 import org.netbeans.modules.php.project.connections.RemoteConfiguration;
@@ -89,25 +90,6 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     public void uninitialize(WizardDescriptor wizard) {
-        wizard.putProperty(ConfigureProjectPanel.PROJECT_NAME, null);
-        wizard.putProperty(ConfigureProjectPanel.PROJECT_DIR, null);
-        //wizard.putProperty(ConfigureProjectPanel.SET_AS_MAIN, null); // "setAsMain" has to remain!
-        wizard.putProperty(ConfigureProjectPanel.SOURCES_FOLDER, null);
-        wizard.putProperty(ConfigureProjectPanel.LOCAL_SERVERS, null);
-        wizard.putProperty(ConfigureProjectPanel.CREATE_INDEX_FILE, null);
-        wizard.putProperty(ConfigureProjectPanel.INDEX_FILE, null);
-        wizard.putProperty(ConfigureProjectPanel.ENCODING, null);
-        wizard.putProperty(ConfigureProjectPanel.ROOTS, null);
-
-        wizard.putProperty(RunConfigurationPanel.RUN_AS, null);
-        wizard.putProperty(RunConfigurationPanel.URL, null);
-        wizard.putProperty(RunConfigurationPanel.COPY_SRC_FILES, null);
-        wizard.putProperty(RunConfigurationPanel.COPY_SRC_TARGET, null);
-        wizard.putProperty(RunConfigurationPanel.COPY_SRC_TARGETS, null);
-        wizard.putProperty(RunConfigurationPanel.REMOTE_CONNECTION, null);
-        wizard.putProperty(RunConfigurationPanel.REMOTE_DIRECTORY, null);
-        wizard.putProperty(RunConfigurationPanel.REMOTE_UPLOAD, null);
-
         panels = null;
         descriptor = null;
     }
@@ -140,8 +122,15 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         logUI(helper.getProjectDirectory(), sourceDir, getRunAsType(), isCopyFiles());
 
         // index file
-        Boolean createIndexFile = (Boolean) descriptor.getProperty(ConfigureProjectPanel.CREATE_INDEX_FILE);
-        if (createIndexFile != null && createIndexFile) {
+        if (sourceDir.getChildren(false).hasMoreElements()) {
+            // sources directory is not empty => try to find index file and open it
+            String indexName = (String) descriptor.getProperty(ConfigureProjectPanel.INDEX_FILE);
+            FileObject indexFile = sourceDir.getFileObject(indexName);
+            if (indexFile != null && indexFile.isValid()) {
+                resultSet.add(indexFile);
+            }
+        } else {
+            // sources directory is empty
             msg = NbBundle.getMessage(
                     NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_CreatingIndexFile");
             handle.progress(msg, 4);
@@ -256,6 +245,17 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             srcPath = srcDir.getAbsolutePath();
         }
         properties.setProperty(PhpProjectProperties.SRC_DIR, srcPath);
+        properties.put(PhpProjectProperties.COPY_SRC_FILES, String.valueOf(isCopyFiles()));
+        properties.put(PhpProjectProperties.COPY_SRC_TARGET, getCopySrcTarget());
+    }
+
+    private String getCopySrcTarget() {
+        String copyTargetString = ""; // NOI18N
+        LocalServer localServer = (LocalServer) descriptor.getProperty(RunConfigurationPanel.COPY_SRC_TARGET);
+        if (localServer.getSrcRoot().length() > 0) {
+            copyTargetString = FileUtil.normalizeFile(new File(localServer.getSrcRoot())).getAbsolutePath();
+        }
+        return copyTargetString;
     }
 
     private void configureIndexFile(EditableProperties properties) {
@@ -266,6 +266,8 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     private void configureEncoding(EditableProperties properties) {
         Charset charset = (Charset) descriptor.getProperty(ConfigureProjectPanel.ENCODING);
         properties.setProperty(PhpProjectProperties.SOURCE_ENCODING, charset.name());
+        // #136917
+        FileEncodingQuery.setDefaultEncoding(charset);
     }
 
     private void configureIncludePath(EditableProperties properties) {
@@ -299,17 +301,6 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         String url = (String) descriptor.getProperty(RunConfigurationPanel.URL);
 
         properties.put(PhpProjectProperties.URL, url);
-        properties.put(PhpProjectProperties.COPY_SRC_FILES, String.valueOf(isCopyFiles()));
-        properties.put(PhpProjectProperties.COPY_SRC_TARGET, getCopySrcTarget());
-    }
-
-    private String getCopySrcTarget() {
-        String copyTargetString = ""; // NOI18N
-        LocalServer localServer = (LocalServer) descriptor.getProperty(RunConfigurationPanel.COPY_SRC_TARGET);
-        if (localServer.getSrcRoot().length() > 0) {
-            copyTargetString = FileUtil.normalizeFile(new File(localServer.getSrcRoot())).getAbsolutePath();
-        }
-        return copyTargetString;
     }
 
     private void configureRunAsRemoteWeb(EditableProperties properties) {
