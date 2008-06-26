@@ -237,11 +237,15 @@ public class JoinRandomTest extends NbTestCase {
         FixedTextDescriptor[] fixedTexts = new FixedTextDescriptor[] {
             FixedTextDescriptor.create("<a>", 0.2),
             FixedTextDescriptor.create("{x}", 0.2),
+            FixedTextDescriptor.create("<>", 0.2),
+            FixedTextDescriptor.create("()", 0.2),
+            FixedTextDescriptor.create("<{>", 0.2),
+            FixedTextDescriptor.create("<}>", 0.2),
         };
         
         RandomCharDescriptor[] regularChars = new RandomCharDescriptor[] {
             RandomCharDescriptor.letter(0.3),
-            RandomCharDescriptor.chars(new char[] { '<', '>', '{', '}'}, 0.3),
+            RandomCharDescriptor.chars(new char[] { '<', '>', '{', '}', '(', ')' }, 0.3),
         };
 
         RandomTextProvider textProvider = new RandomTextProvider(regularChars, fixedTexts);
