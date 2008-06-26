@@ -49,8 +49,6 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmFinder;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.ClassResultItem;
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateParameterResultItem;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolverImpl;
@@ -107,17 +105,18 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
         return this.queryScope;
     }
     
-    protected CompletionResolver getCompletionResolver(boolean openingSource, boolean sort) {
-	return getCompletionResolver(getBaseDocument(), getCsmFile(), openingSource, sort, queryScope);
+    protected CompletionResolver getCompletionResolver(boolean openingSource, boolean sort,boolean inIncludeDirective) {
+	return getCompletionResolver(getBaseDocument(), getCsmFile(), openingSource, sort, queryScope, inIncludeDirective);
     }
 
     private static CompletionResolver getCompletionResolver(BaseDocument bDoc, CsmFile csmFile, 
-            boolean openingSource, boolean sort, QueryScope queryScope) {
+            boolean openingSource, boolean sort, QueryScope queryScope, boolean inIncludeDirective) {
 	CompletionResolver resolver = null; 
         if (csmFile != null) {
             Class kit = bDoc.getKitClass();
             resolver = new CompletionResolverImpl(csmFile, openingSource || isCaseSensitive(kit), sort, isNaturalSort(kit));
             ((CompletionResolverImpl)resolver).setResolveScope(queryScope);
+            ((CompletionResolverImpl)resolver).setInIncludeDirective(inIncludeDirective);
         }
         return resolver;
     }    
