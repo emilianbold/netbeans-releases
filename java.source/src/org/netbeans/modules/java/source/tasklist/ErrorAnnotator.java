@@ -69,7 +69,11 @@ import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
+
+import static org.openide.util.ImageUtilities.assignToolTipToImage;
+import static org.openide.util.ImageUtilities.loadImage;
+import static org.openide.util.ImageUtilities.mergeImages;
+import static org.openide.util.NbBundle.getMessage;
 
 /**
  *
@@ -77,13 +81,20 @@ import org.openide.util.Utilities;
  */
 public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusListener*/ {
     
+    private static final Image ERROR_BADGE;
+    
+    static {
+        String errorBadgeTP = getMessage(ErrorAnnotator.class, "TP_ErrorBadge");
+        ERROR_BADGE = assignToolTipToImage(loadImage("org/netbeans/modules/java/source/resources/icons/error-badge.gif"), errorBadgeTP); // NOI18N
+    }
+    
     public ErrorAnnotator() {
     }
 
     public String annotateName(String name, Set files) {
         return null;
     }
-
+    
     @Override
     public Image annotateIcon(Image icon, int iconType, Set files) {
         if (!TasklistSettings.isTasklistEnabled() || !TasklistSettings.isBadgesEnabled())
@@ -121,7 +132,7 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
         
         if (inError) {
             //badge:
-            Image i = Utilities.mergeImages(icon, Utilities.loadImage("org/netbeans/modules/java/source/resources/icons/error-badge.gif"), 0, 8);
+            Image i = mergeImages(icon, ERROR_BADGE, 0, 8);
             Iterator<? extends AnnotationProvider> it = Lookup.getDefault().lookupAll(AnnotationProvider.class).iterator();
             boolean found = false;
             
