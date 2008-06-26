@@ -96,17 +96,15 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
                 		"doesn't contain hidden text for access to font" +
                 		"characteristics. Unable render any value.");         // NOI18N
             }
-            SVGRect rect = hiddenText.getBBox();
-            myX = rect.getX();
-            myY = rect.getY() ;
-            myHeight = rect.getHeight();
+            myX = hiddenText.getFloatTrait( SVGComponent.TRAIT_X );
+            myY = hiddenText.getFloatTrait( SVGComponent.TRAIT_Y );
+            myHeight = hiddenText.getScreenBBox().getHeight();
             lastText = hiddenText;
             
         SVGLocatableElement textElement = (SVGLocatableElement) list.getForm().
             getDocument().createElementNS( SVGComponent.SVG_NS, SVGTextField.TEXT);
         textElement.setFloatTrait( SVGComponent.TRAIT_X, myX );
-        textElement.setFloatTrait( SVGComponent.TRAIT_Y, myY + 
-                (index+1)*myHeight ) ;
+        textElement.setFloatTrait( SVGComponent.TRAIT_Y, myY + index*myHeight ) ;
         textElement.setFloatTrait( SVGTextField.TRAIT_FONT_SIZE, 
                 lastText.getFloatTrait(SVGTextField.TRAIT_FONT_SIZE));
         textElement.setTrait( SVGTextField.TRAIT_FONT_FAMILY, 
@@ -142,7 +140,7 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
         SVGLocatableElement selection = 
             (SVGLocatableElement)SVGComponent.getElementByMeta(xmlElement,
                 SVGList.TYPE,  SELECTION );
-        selection.setFloatTrait(SVGComponent.TRAIT_Y, myY + index*myHeight 
+        selection.setFloatTrait(SVGComponent.TRAIT_Y, myY + (index-1)*myHeight 
                 -ASCENT_SELECTION);
         selection.setFloatTrait( "height", myHeight +DESCENT_SELECTION);
     }

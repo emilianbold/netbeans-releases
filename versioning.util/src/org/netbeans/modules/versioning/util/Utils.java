@@ -153,7 +153,14 @@ public final class Utils {
     public static boolean isAncestorOrEqual(File ancestor, File file) {
         if (VersioningSupport.isFlat(ancestor)) {
             return ancestor.equals(file) || ancestor.equals(file.getParentFile()) && !file.isDirectory();
+        } 
+        if(!ancestor.getAbsolutePath().startsWith(file.getAbsolutePath())) {
+            return false;
         }
+        
+        // get sure as it still could be something like:
+        // ancestor: /home/dil
+        // file:     /home/dil1/dil2
         for (; file != null; file = file.getParentFile()) {
             if (file.equals(ancestor)) return true;
         }
