@@ -61,6 +61,7 @@ import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -191,7 +192,7 @@ public final class NewFileWizard extends TemplateWizard {
      */
     private final class DefaultIteratorExt implements Iterator {
 
-        private WizardDescriptor.Panel<WizardDescriptor> pageLayoutChooserPanel = new PageLayoutChooserPanel(getTemplate().getPrimaryFile());
+        private PageLayoutChooserPanel pageLayoutChooserPanel = new PageLayoutChooserPanel(getTemplate().getPrimaryFile());
         private WizardDescriptor.Panel<WizardDescriptor> targetChooserPanel = targetChooser();
         private transient WizardDescriptor.Panel<WizardDescriptor>[] panels;
         private int index;
@@ -216,14 +217,17 @@ public final class NewFileWizard extends TemplateWizard {
             String n = wiz.getTargetName();
             DataFolder folder = wiz.getTargetFolder();
             DataObject template = wiz.getTemplate();
-            if (panels[index] == pageLayoutChooserPanel) {
-                PageLayoutData selectedPageLayout = ((PageLayoutChooserPanel) pageLayoutChooserPanel).getSelectedPageLayout();
-                selectedPageLayout.copyResources(folder.getPrimaryFile());
-                template = DataObject.find(selectedPageLayout.getFileObject());
-            }
+           
             Map<String, Object> wizardProps = new HashMap<String, Object>();
             for (Map.Entry<String, ? extends Object> entry : wiz.getProperties().entrySet()) {
                 wizardProps.put("wizard." + entry.getKey(), entry.getValue()); // NOI18N
+            }
+            if (panels[index] == pageLayoutChooserPanel) {
+                PageLayoutData selectedPageLayout = pageLayoutChooserPanel.getSelectedPageLayout();
+                FileObject resourceFolder = FileUtil.createFolder(folder.getPrimaryFile(), pageLayoutChooserPanel.getResourceFolder()); 
+                selectedPageLayout.copyResources(resourceFolder, pageLayoutChooserPanel.canOverwrite());
+                template = DataObject.find(selectedPageLayout.getFileObject());
+                wizardProps.put("folder", pageLayoutChooserPanel.getResourceFolder());
             }
 
             DataObject obj = template.createFromTemplate(folder, n, wizardProps);

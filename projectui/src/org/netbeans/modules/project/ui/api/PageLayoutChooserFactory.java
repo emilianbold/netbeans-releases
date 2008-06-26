@@ -59,8 +59,17 @@ public final class PageLayoutChooserFactory {
         if (panel instanceof PageLayoutChooserPanel){
             PageLayoutChooserPanel pageLayoutChooserPanel = (PageLayoutChooserPanel) panel;
             PageLayoutData selectedPageLayout = pageLayoutChooserPanel.getSelectedPageLayout();
-            selectedPageLayout.copyResources(parentFolder);
+            selectedPageLayout.copyResources(parentFolder, pageLayoutChooserPanel.canOverwrite());
         }
+    }
+
+    public static String getResourceFolder(Panel panel) {
+        String resourceFolder = "";
+        if (panel instanceof PageLayoutChooserPanel){
+           PageLayoutChooserPanel pageLayoutChooserPanel = (PageLayoutChooserPanel) panel;
+           resourceFolder = pageLayoutChooserPanel.getResourceFolder();
+        }
+        return resourceFolder;
     }
 
     public static FileObject getSelectedTemplate(WizardDescriptor.Panel<WizardDescriptor> panel) {

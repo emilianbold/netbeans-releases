@@ -41,6 +41,8 @@ package org.netbeans.modules.php.project.ui.wizards;
 import java.awt.Component;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -56,6 +58,7 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -75,15 +78,30 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
         FileObject dir = Templates.getTargetFolder(wizard);
         FileObject template = Templates.getTemplate(wizard);
 
+        Map<String, Object> wizardProps = new HashMap<String, Object>();
+        
         // If the finishing panel is PageLayoutChooserPanel, then use the selected Template
         if (PageLayoutChooserFactory.isPageLayoutChooserPanel(wizardPanels[index])) {
-            template = PageLayoutChooserFactory.getSelectedTemplate(wizardPanels[index]);
-            PageLayoutChooserFactory.copyResources(wizardPanels[index], dir);
-        }
+                template = PageLayoutChooserFactory.getSelectedTemplate(wizardPanels[index]);
+                // TODO: If resource folder starts with "/" then create it in the web root folder
+                String resourceFolderName = PageLayoutChooserFactory.getResourceFolder(wizardPanels[index]);
+                FileObject resourceFolder = null;
+                // TODO: What is the WebModule.getDocumentBase() equivalent in PHP project
+//                if (resourceFolderName.startsWith("/")) {
+//                    Project project = Templates.getProject(wiz);
+//                    WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+//                    resourceFolder = FileUtil.createFolder(wm.getDocumentBase(), resourceFolderName);
+//                    wizardProps.put("folder", wm.getContextPath() + resourceFolderName);
+//                } else {
+                     resourceFolder = FileUtil.createFolder(dir, resourceFolderName);
+                     wizardProps.put("folder", resourceFolderName);
+//                }
+                PageLayoutChooserFactory.copyResources(wizardPanels[index], resourceFolder);
+            }
         
         DataFolder dataFolder = DataFolder.findFolder(dir);
         DataObject dataTemplate = DataObject.find(template);
-        DataObject createdFile = dataTemplate.createFromTemplate(dataFolder, Templates.getTargetName(wizard));
+        DataObject createdFile = dataTemplate.createFromTemplate(dataFolder, Templates.getTargetName(wizard), wizardProps);
 
         return Collections.<FileObject>singleton(createdFile.getPrimaryFile());
     }

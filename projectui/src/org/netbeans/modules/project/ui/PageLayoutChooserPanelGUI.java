@@ -16,9 +16,9 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-200? Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.project.ui;
 
+import java.awt.Color;
 import java.awt.Component;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -46,12 +46,23 @@ public class PageLayoutChooserPanelGUI extends javax.swing.JPanel implements Hel
         templatesList.setCellRenderer(new CustomCellRenderer());
         wizardPanel.setSelectedPageLayout(wizardPanel.getPageLayoutList().get(0));
         templatesList.setSelectedIndex(0);
-        descriptionArea.setBackground(previewPanel.getBackground());
     }
-    
+
     @Override
     public String getName() {
         return NbBundle.getMessage(PageLayoutChooserPanelGUI.class, "LBL_PageLayoutsPanel_Name");
+    }
+
+    /**
+     * Get the specified Resource folder name
+     * @return 
+     */
+    String getResourceFolder() {
+        String resourceFolder = "";
+        if (resourceFolderField.getText() != null){
+           resourceFolder =  resourceFolderField.getText();
+        }
+        return resourceFolder;
     }
 
     /** This method is called from within the constructor to
@@ -61,23 +72,24 @@ public class PageLayoutChooserPanelGUI extends javax.swing.JPanel implements Hel
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
-        templatesListPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         templatesList = new javax.swing.JList();
-        previewPanel = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        jPanel1 = new javax.swing.JPanel();
-        previewIcon = new javax.swing.JLabel();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        descriptionArea = new javax.swing.JTextArea();
+        jLabel1 = new javax.swing.JLabel();
+        resourceFolderField = new javax.swing.JTextField();
+        jButton1 = new javax.swing.JButton();
+        overwriteCheckbox = new javax.swing.JCheckBox();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        resourceList = new javax.swing.JList();
 
         templatesList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
+        templatesList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        templatesList.setLayoutOrientation(javax.swing.JList.HORIZONTAL_WRAP);
+        templatesList.setVisibleRowCount(-1);
         templatesList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 templatesListValueChanged(evt);
@@ -85,65 +97,19 @@ public class PageLayoutChooserPanelGUI extends javax.swing.JPanel implements Hel
         });
         jScrollPane1.setViewportView(templatesList);
 
-        org.jdesktop.layout.GroupLayout templatesListPanelLayout = new org.jdesktop.layout.GroupLayout(templatesListPanel);
-        templatesListPanel.setLayout(templatesListPanelLayout);
-        templatesListPanelLayout.setHorizontalGroup(
-            templatesListPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(templatesListPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE))
-        );
-        templatesListPanelLayout.setVerticalGroup(
-            templatesListPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, templatesListPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
-                .addContainerGap())
-        );
+        jLabel1.setText("Resource Folder");
 
-        jScrollPane2.setBorder(null);
+        jButton1.setText(org.openide.util.NbBundle.getMessage(PageLayoutChooserPanelGUI.class, "LBL_BROWSE_BUTTON")); // NOI18N
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(PageLayoutChooserPanelGUI.class, "PREVIEW_TITLE"))); // NOI18N
-        jPanel1.setLayout(new java.awt.GridBagLayout());
+        overwriteCheckbox.setSelected(true);
+        overwriteCheckbox.setText(org.openide.util.NbBundle.getMessage(PageLayoutChooserPanelGUI.class, "LABEL_RESOURCE_OVER_WRITE")); // NOI18N
 
-        previewIcon.setText(org.openide.util.NbBundle.getMessage(PageLayoutChooserPanelGUI.class, "NO_PREVIEW_TEXT")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        jPanel1.add(previewIcon, gridBagConstraints);
-
-        jScrollPane2.setViewportView(jPanel1);
-
-        jScrollPane3.setBorder(null);
-
-        descriptionArea.setColumns(15);
-        descriptionArea.setEditable(false);
-        descriptionArea.setLineWrap(true);
-        descriptionArea.setRows(5);
-        descriptionArea.setText(org.openide.util.NbBundle.getMessage(PageLayoutChooserPanelGUI.class, "NO_DESCRIPTION_TEXT")); // NOI18N
-        descriptionArea.setBorder(null);
-        jScrollPane3.setViewportView(descriptionArea);
-
-        org.jdesktop.layout.GroupLayout previewPanelLayout = new org.jdesktop.layout.GroupLayout(previewPanel);
-        previewPanel.setLayout(previewPanelLayout);
-        previewPanelLayout.setHorizontalGroup(
-            previewPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(previewPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(previewPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane3, 0, 0, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        previewPanelLayout.setVerticalGroup(
-            previewPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, previewPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 205, Short.MAX_VALUE)
-                .add(18, 18, 18)
-                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
+        resourceList.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "Item 1", "Item 2", "Item 3" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        jScrollPane4.setViewportView(resourceList);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -151,17 +117,38 @@ public class PageLayoutChooserPanelGUI extends javax.swing.JPanel implements Hel
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(templatesListPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(18, 18, 18)
-                .add(previewPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 483, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel1)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(resourceFolderField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jButton1))
+                            .add(jScrollPane4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
+                            .add(overwriteCheckbox))))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(templatesListPanel, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(20, 20, 20)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jButton1)
+                    .add(resourceFolderField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel1))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jScrollPane4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 61, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(overwriteCheckbox)
+                .add(17, 17, 17))
         );
     }// </editor-fold>//GEN-END:initComponents
-        java.awt.GridBagConstraints gridBagConstraints;
+    java.awt.GridBagConstraints gridBagConstraints;
 
     private void templatesListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_templatesListValueChanged
         // When the user release the mouse button and completes the selection,
@@ -170,28 +157,20 @@ public class PageLayoutChooserPanelGUI extends javax.swing.JPanel implements Hel
             JList list = (JList) evt.getSource();
             PageLayoutData pageLayout = (PageLayoutData) list.getSelectedValue();
             wizardPanel.setSelectedPageLayout(pageLayout);
-            if (pageLayout.getPreviewImage() != null) {
-                previewIcon.setIcon(new ImageIcon(pageLayout.getPreviewImage()));
-                previewIcon.setText("");
-            } else {
-                previewIcon.setIcon(null);
-                previewIcon.setText(NbBundle.getMessage(PageLayoutChooserPanelGUI.class, "NO_PREVIEW_TEXT"));
-            }
-            descriptionArea.setText(pageLayout.getDescription());                                 
+            resourceFolderField.setText(pageLayout.getDefaultResourceFolder());
+            resourceList.setListData(pageLayout.getResourceNames());
         }
     }//GEN-LAST:event_templatesListValueChanged
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextArea descriptionArea;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JLabel previewIcon;
-    private javax.swing.JPanel previewPanel;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JCheckBox overwriteCheckbox;
+    private javax.swing.JTextField resourceFolderField;
+    private javax.swing.JList resourceList;
     private javax.swing.JList templatesList;
-    private javax.swing.JPanel templatesListPanel;
     // End of variables declaration//GEN-END:variables
-
     public HelpCtx getHelpCtx() {
         return new HelpCtx(PageLayoutChooserPanelGUI.class);
     }
@@ -199,29 +178,39 @@ public class PageLayoutChooserPanelGUI extends javax.swing.JPanel implements Hel
     class CustomCellRenderer extends JLabel implements ListCellRenderer {
 
         CustomCellRenderer() {
-            setBorder(BorderFactory.createEmptyBorder(1, 5, 1, 5));
         }
 
         public Component getListCellRendererComponent(JList list, Object value, // value to display
-        int index, // cell index
-        boolean isSelected, // is the cell selected
-        boolean cellHasFocus) {
+                int index, // cell index
+                boolean isSelected, // is the cell selected
+                boolean cellHasFocus) {
             PageLayoutData pageLayout = (PageLayoutData) value;
-            setText(pageLayout.getName());
+            setToolTipText(pageLayout.getDescription());
             if (pageLayout.getIcon() != null) {
-                setIcon(new ImageIcon(pageLayout.getIcon()));
+                setIcon(new ImageIcon(pageLayout.getPreviewImage()));
             }
+            Color boderColor = list.getSelectionBackground();
             if (isSelected) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());
+                highlightBorder(boderColor.brighter(), 4);
             } else {
                 setBackground(list.getBackground());
-                setForeground(list.getForeground());
+                highlightBorder(boderColor, 1);
             }
             setEnabled(list.isEnabled());
             setFont(list.getFont());
             setOpaque(true);
             return this;
         }
+
+        private void highlightBorder(Color color, int width) {
+            setBorder(BorderFactory.createCompoundBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createEmptyBorder(10 - width, 10 - width, 10 - width, 10 - width),
+                    new javax.swing.border.LineBorder(color, width, true)), javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        }
+    }
+
+    public boolean canOverwrite() {
+        return overwriteCheckbox.isSelected();
+
     }
 }

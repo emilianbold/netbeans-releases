@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.pagelayouts
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/pagelayouts/Bundle.properties
-OpenIDE-Module-Layer: org/netbeans/modules/pagelayouts/layer.xml
-OpenIDE-Module-Specification-Version: 1.0
-

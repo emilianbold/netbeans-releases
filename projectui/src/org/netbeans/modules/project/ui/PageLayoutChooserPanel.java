@@ -55,6 +55,10 @@ public class PageLayoutChooserPanel implements WizardDescriptor.Panel<WizardDesc
         }
     }
 
+    public String getResourceFolder() {
+        return component.getResourceFolder();
+    }
+
     void setSelectedPageLayout(PageLayoutData selPageLayoutdata) {
         selectedPageLayoutData = selPageLayoutdata;
     }
@@ -127,7 +131,10 @@ public class PageLayoutChooserPanel implements WizardDescriptor.Panel<WizardDesc
     public boolean isFinishPanel() {
         return true;
     }
-
+    public boolean canOverwrite(){
+        return component.canOverwrite();
+        
+    }
 
     public boolean isValid() {
         return true;

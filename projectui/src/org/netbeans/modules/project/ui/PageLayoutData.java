@@ -26,11 +26,14 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -39,19 +42,19 @@ import org.openide.util.NbBundle;
  */
 public class PageLayoutData {
 
-    FileObject pageLayoutFileObject;
+    private FileObject pageLayoutFileObject;
 
     public PageLayoutData(FileObject fileObject) {
         pageLayoutFileObject = fileObject;
     }
 
     public String getName() {
-        return (String) pageLayoutFileObject.getAttribute("name");
+        return (String) pageLayoutFileObject.getAttribute("name"); //NOI18N
     }
 
     public String getDisplayName() {
-        String bundleName = (String) pageLayoutFileObject.getAttribute("SystemFileSystem.localizingBundle");
-        String nameKey = (String) pageLayoutFileObject.getAttribute("name");
+        String bundleName = (String) pageLayoutFileObject.getAttribute("SystemFileSystem.localizingBundle"); //NOI18N
+        String nameKey = (String) pageLayoutFileObject.getAttribute("name"); //NOI18N
         if (nameKey != null) {
             try {
                 return NbBundle.getBundle(bundleName).getString(nameKey);
@@ -65,8 +68,16 @@ public class PageLayoutData {
         }
     }
 
+    public String getDefaultResourceFolder() {
+        String defaultResourceFolder = (String) pageLayoutFileObject.getAttribute("defaultResourceFolder"); //NOI18N
+        if (defaultResourceFolder == null) {
+            defaultResourceFolder = NbBundle.getBundle(PageLayoutData.class).getString("DEFAULT_RESOURCE_FOLDER"); //NOI18N
+        }
+        return defaultResourceFolder;
+    }
+
     public int getPosition() {
-        return (Integer) pageLayoutFileObject.getAttribute("position");
+        return (Integer) pageLayoutFileObject.getAttribute("position"); //NOI18N
     }
 
     public FileObject getFileObject() {
@@ -74,16 +85,16 @@ public class PageLayoutData {
     }
 
     public Image getIcon() {
-        return loadImage("icon");
+        return loadImage("icon"); //NOI18N
     }
 
     public Image getPreviewImage() {
-        return loadImage("previewImage");
+        return loadImage("previewImage"); //NOI18N
     }
 
     public String getDescription() {
-        String bundleName = (String) pageLayoutFileObject.getAttribute("SystemFileSystem.localizingBundle");
-        String descriptionKey = (String) pageLayoutFileObject.getAttribute("description");
+        String bundleName = (String) pageLayoutFileObject.getAttribute("SystemFileSystem.localizingBundle"); //NOI18N
+        String descriptionKey = (String) pageLayoutFileObject.getAttribute("description"); //NOI18N
         if (descriptionKey != null) {
             try {
                 return NbBundle.getBundle(bundleName).getString(descriptionKey);
@@ -93,13 +104,13 @@ public class PageLayoutData {
                 return descriptionKey;
             }
         } else {
-            return NbBundle.getMessage(PageLayoutData.class, "NO_PREVIEW_TEXT");
+            return NbBundle.getMessage(PageLayoutData.class, "NO_PREVIEW_TEXT"); //NOI18N
         }
     }
 
     public boolean isPageLayout() {
-        if (pageLayoutFileObject.getAttribute("pageLayout") != null) {
-            return (Boolean) pageLayoutFileObject.getAttribute("pageLayout");
+        if (pageLayoutFileObject.getAttribute("pageLayout") != null) { //NOI18N
+            return (Boolean) pageLayoutFileObject.getAttribute("pageLayout"); //NOI18N
         } else {
             return false;
         }
@@ -120,20 +131,48 @@ public class PageLayoutData {
         return null;
     }
 
-    public void copyResources(FileObject resourceRoot) throws IOException {
-        if (pageLayoutFileObject.getAttribute("resources") != null) {
-            URL resourceZipUrl = (URL) pageLayoutFileObject.getAttribute("resources");
-            unzip(resourceRoot, resourceZipUrl);
+    /**
+     * Get the list of resource naames available
+     * @return
+     */
+    public String[] getResourceNames() {
+        if (pageLayoutFileObject.getAttribute("resources") != null) { //NOI18N
+            try {
+                //NOI18N
+                URL resourceZipUrl = (URL) pageLayoutFileObject.getAttribute("resources"); //NOI18N
+                ZipInputStream zipInputStream = new ZipInputStream(resourceZipUrl.openConnection().getInputStream());
+                List<String> entryNames = new ArrayList<String>();
+                ZipEntry zipEntry;
+                while ((zipEntry = zipInputStream.getNextEntry()) != null) {
+                    String entryName = zipEntry.getName();
+                    if (entryName.startsWith("__MACOSX") || entryName.contains("DS_Store") ||
+                            zipEntry.isDirectory()) { //NOI18N
+                        continue;
+                    }
+                    entryNames.add(entryName);
+                }
+                return entryNames.toArray(new String[entryNames.size()]);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return new String[0];
+    }
+
+    public void copyResources(FileObject resourceRoot, boolean overwrite) throws IOException {
+        if (pageLayoutFileObject.getAttribute("resources") != null) { //NOI18N
+            URL resourceZipUrl = (URL) pageLayoutFileObject.getAttribute("resources"); //NOI18N
+            unzip(resourceRoot, resourceZipUrl, overwrite);
         }
     }
-    
+
     /**
      * Unzip the zip from the URL in to the resource root folder
      * @param resourceRoot
      * @param resourceZipUrl
      * @throws java.io.IOException
      */
-    private void unzip(FileObject resourceRoot, URL resourceZipUrl) throws IOException {
+    private void unzip(FileObject resourceRoot, URL resourceZipUrl, boolean overwrite) throws IOException {
         //URL resourceZipUrl = zipFile.getURL();
         ZipInputStream zipInputStream = null;
         try {
@@ -141,14 +180,17 @@ public class PageLayoutData {
             ZipEntry zipEntry;
             while ((zipEntry = zipInputStream.getNextEntry()) != null) {
                 String entryName = zipEntry.getName();
-                if (entryName.startsWith("__MACOSX") || entryName.contains("DS_Store")) {
+                if (entryName.startsWith("__MACOSX") || entryName.contains("DS_Store")) { //NOI18N
                     continue;
                 }
                 if (zipEntry.isDirectory()) {
                     FileUtil.createFolder(resourceRoot, entryName);
                 } else {
                     File file = new File(FileUtil.toFile(resourceRoot), entryName);
-                    FileChannel channel = new RandomAccessFile(file, "rw").getChannel();
+                    if (file.exists() && !overwrite){
+                        continue;
+                    }
+                    FileChannel channel = new RandomAccessFile(file, "rw").getChannel(); //NOI18N
                     FileLock lock = channel.lock();
                     OutputStream out = Channels.newOutputStream(channel);
                     FileUtil.copy(zipInputStream, out);
