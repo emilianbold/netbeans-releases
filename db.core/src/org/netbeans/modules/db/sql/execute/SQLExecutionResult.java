@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.db.sql.execute;
 
+import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.modules.db.dataview.output.DataView;
 
@@ -87,7 +88,7 @@ public class SQLExecutionResult {
         return dataView.getUpdateCount();
     }
     
-    public Iterator<Throwable> getExceptions() {
+    public Collection<Throwable> getExceptions() {
         return dataView.getExceptions();
     }
     

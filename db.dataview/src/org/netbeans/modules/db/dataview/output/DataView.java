@@ -41,13 +41,15 @@
 package org.netbeans.modules.db.dataview.output;
 
 import java.awt.Component;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.JButton;
-import java.util.Iterator;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.awt.StatusDisplayer;
 
 /**
@@ -73,6 +75,7 @@ public class DataView {
     private boolean hasResultSet = false;
     private int updateCount;
     private long executionTime;
+    private boolean supportsLimit = false;
 
     /**
      * Create and populate a DataView Object. Populates 1st data page of default size.
@@ -153,13 +156,13 @@ public class DataView {
     }
 
     /**
-     * Returns iterator of a error messages of String type, if there were any 
+     * Returns Collection of a error messages of Throwable type, if there were any 
      * expection in the last database call, empty otherwise
      * 
-     * @return Iterator<String>
+     * @return Collection<Throwable>
      */
-    public Iterator<Throwable> getExceptions() {
-        return errMessages.iterator();
+    public Collection<Throwable> getExceptions() {
+        return Collections.unmodifiableCollection(errMessages);
     }
 
     /**
@@ -221,6 +224,10 @@ public class DataView {
         return dataViewUI.isEditable();
     }
 
+    boolean isLimitSupported() {
+        return supportsLimit;
+    }
+
     void disableButtons() {
         assert dataViewUI != null : "Should have called createComponent()";
         if (dataViewUI != null) {
@@ -242,6 +249,11 @@ public class DataView {
 
     void setErrorStatusText(Throwable ex) {
         if (ex != null) {
+            if(ex instanceof DBException) {
+                if(ex.getCause() instanceof SQLException) {
+                    errMessages.add(ex.getCause());
+                }
+            }
             errMessages.add(ex);
             StatusDisplayer.getDefault().setStatusText("ERROR: " + ex.getMessage());
             mLogger.severe(ex.getMessage());
@@ -255,6 +267,10 @@ public class DataView {
     void resetToolbar(boolean wasError) {
         assert dataViewUI != null : "Should have called createComponent()";
         dataViewUI.resetToolbar(wasError);
+    }
+
+    void setLimitSupported(boolean supportsLimit) {
+        this.supportsLimit = supportsLimit;
     }
 
     void setRowsInTableModel() {

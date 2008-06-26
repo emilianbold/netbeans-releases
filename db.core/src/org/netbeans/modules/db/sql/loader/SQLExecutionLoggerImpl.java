@@ -44,7 +44,6 @@ package org.netbeans.modules.db.sql.loader;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.NumberFormat;
-import java.util.Iterator;
 import org.netbeans.modules.db.sql.execute.SQLExecutionLogger;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResult;
 import org.netbeans.modules.db.sql.execute.StatementInfo;
@@ -56,7 +55,6 @@ import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
-import org.openide.windows.OutputWriter;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -114,9 +112,7 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
 
         OutputWriter writer = inputOutput.getErr();
 
-        Iterator<Throwable> exceptionIterator = result.getExceptions();
-        while (exceptionIterator.hasNext()) {
-            Throwable e = exceptionIterator.next();
+        for(Throwable e: result.getExceptions()) {
             if (e instanceof SQLException) {
                 writeSQLException((SQLException)e, writer);
             } else {

@@ -83,6 +83,9 @@ class SQLExecutionHelper {
 
         try {
             Connection conn = DBConnectionFactory.getInstance().getConnection(dbConn);
+            DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
+            dv.setLimitSupported(dbMeta.supportsLimit());
+
             String sql = dv.getSQLString();
             stmt = execHelper.prepareSQLStatement(conn, sql);
             execHelper.executeSQLStatement(stmt, sql);
@@ -97,7 +100,6 @@ class SQLExecutionHelper {
             ResultSet resultSet = null;
             try {
                 resultSet = stmt.getResultSet();
-                DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
                 Collection<DBTable> tables = dbMeta.generateDBTables(resultSet);
                 dv.setDataViewDBTable(new DataViewDBTable(tables));
                 execHelper.loadDataFrom(resultSet);
@@ -399,15 +401,15 @@ class SQLExecutionHelper {
         }
 
         int pageSize = dataView.getDataViewPageContext().getPageSize();
-        int maxRows = dataView.getDataViewPageContext().getCurrentPos() + pageSize;
-        int startFrom = dataView.getDataViewPageContext().getCurrentPos() - 1;
+        int startFrom = 0;
+        if(!dataView.isLimitSupported()) {
+            startFrom = dataView.getDataViewPageContext().getCurrentPos() - 1;
+        }
+        
         DataViewDBTable tblMeta = dataView.getDataViewDBTable();
-
         List<Object[]> rows = new ArrayList<Object[]>();
         int colCnt = tblMeta.getColumnCount();
         try {
-            rs.setFetchSize(pageSize > maxRows ? maxRows : pageSize);
-
             // Skip till current position
             boolean lastRowPicked = rs.next();
             while (lastRowPicked && rs.getRow() < (startFrom + 1)) {
@@ -453,21 +455,32 @@ class SQLExecutionHelper {
 
     private Statement prepareSQLStatement(Connection conn, String sql) throws SQLException {
         Statement stmt = null;
+        boolean select = false;
         if (sql.startsWith("{")) { // NOI18N
             stmt = conn.prepareCall(sql);
         } else if (isSelectStatement(sql)) {
             stmt = conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            select = true;
         } else {
             stmt = conn.createStatement();
         }
         int pageSize = dataView.getDataViewPageContext().getPageSize();
         stmt.setFetchSize(pageSize);
-        stmt.setMaxRows(dataView.getDataViewPageContext().getCurrentPos() + pageSize);
+
+        if(dataView.isLimitSupported() && select){
+            stmt.setMaxRows(pageSize);
+        } else {
+            stmt.setMaxRows(dataView.getDataViewPageContext().getCurrentPos() + pageSize);
+        }
         return stmt;
     }
 
     private void executeSQLStatement(Statement stmt, String sql) throws SQLException {
         sql = sql.replaceAll("\\n", "").replaceAll("\\t", "");
+        if (dataView.isLimitSupported() && isSelectStatement(sql)) {
+            sql += " LIMIT " + dataView.getDataViewPageContext().getPageSize(); // NOI18N
+            sql += " OFFSET " + dataView.getDataViewPageContext().getCurrentPos(); // NOI18N
+        }
         mLogger.info("Executing Statement: " + sql);
         dataView.setInfoStatusText("Executing Statement: " + sql);
 

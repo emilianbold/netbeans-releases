@@ -73,6 +73,7 @@ import org.netbeans.modules.db.sql.execute.ui.SQLHistoryPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.MouseUtils;
+import org.openide.awt.TabbedPaneFactory;
 import org.openide.text.CloneableEditor;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -166,7 +167,7 @@ public class SQLCloneableEditor extends CloneableEditor {
             return;
         }
         
-        resultComponent = new JTabbedPane();
+        resultComponent = TabbedPaneFactory.createCloseButtonTabbedPane();
         createResultPopupMenu();
 
         editor = container.getComponent(0);
@@ -265,6 +266,19 @@ public class SQLCloneableEditor extends CloneableEditor {
                 enableTabActions();
             }
 
+        });
+
+        resultComponent.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName())) {
+                    resultComponent.remove(resultComponent.getSelectedComponent());
+                    enableTabActions();
+                    if (resultComponent.getTabCount() == 0) {
+                        hideResultComponent();
+                    }
+                    revalidate();
+                }
+            }
         });
     }
 

@@ -68,17 +68,18 @@ public final class DBMetaDataFactory {
     public static final int CATALOG = 1;
     public static final int SCHEMA = 2;
     public static final int TYPE = 3;
-    public static final String DB2 = "DB2"; // NOI18N
-    public static final String ORACLE = "ORACLE"; // NOI18N
-    public static final String AXION = "AXION"; // NOI18N
-    public static final String DERBY = "DERBY"; // NOI18N
-    public static final String PostgreSQL = "PostgreSQL"; // NOI18N
-    public static final String MYSQL = "MYSQL"; // NOI18N
-    public static final String SQLSERVER = "SQLSERVER"; // NOI18N
-    public static final String SYBASE = "SYBASE"; // NOI18N
-    public static final String JDBC = "JDBC"; // NOI18N
-    public static final String VSAM_ADABAS_IAM = "LEGACY"; // NOI18N
-    public static final String JDBC_ODBC = "JDBC"; // NOI18N
+    public static final int DB2 = 0;
+    public static final int  ORACLE = 1;
+    
+    public static final int  SQLSERVER = 2;
+    public static final int  JDBC = 3;
+    public static final int  VSAM_ADABAS_IAM = 4;
+    public static final int  PostgreSQL = 5;
+    public static final int  MYSQL = 6;
+    public static final int  DERBY = 7;
+    public static final int  SYBASE = 8;
+    public static final int  AXION = 9;
+    
     public static final String DB2_TEXT = "DB2"; // NOI18N
     public static final String ORACLE_TEXT = "ORACLE"; // NOI18N
     public static final String AXION_TEXT = "AXION"; // NOI18N
@@ -86,13 +87,14 @@ public final class DBMetaDataFactory {
     public static final String MYSQL_TEXT = "MYSQL"; // NOI18N
     public static final String PostgreSQL_TEXT = "PostgreSQL"; // NOI18N
     public static final String SQLSERVER_TEXT = "SQL SERVER"; // NOI18N
+    public static final String SYBASE_TEXT = "SYBASE"; // NOI18N
     public static final String JDBC_TEXT = "JDBC"; // NOI18N
     public static final String VSAM_ADABAS_IAM_TEXT = "VSAM/ADABAS/IAM"; // NOI18N
     /** List of database type display descriptions */
     public static final String[] DBTYPES = {
         DB2_TEXT, ORACLE_TEXT, SQLSERVER_TEXT,
         JDBC_TEXT, VSAM_ADABAS_IAM_TEXT, PostgreSQL_TEXT,
-        MYSQL_TEXT, DERBY_TEXT, MYSQL_TEXT, AXION_TEXT
+        MYSQL_TEXT, DERBY_TEXT, SYBASE_TEXT, AXION_TEXT
     };
     private Connection dbconn; // db connection
     private int dbType;
@@ -108,10 +110,20 @@ public final class DBMetaDataFactory {
         // get the metadata
         try {
             dbmeta = dbconn.getMetaData();
-            dbType = getDBTypeCode(getDBName());
+            dbType = getDBType();
         } catch (Exception e) {
             mLogger.severe(DBException.getMessage(e));
             throw new DBException(e);
+        }
+    }
+
+    public boolean supportsLimit() {
+        switch (dbType) {
+            case MYSQL:
+            case PostgreSQL:     
+                return true;
+            default:
+                return false;
         }
     }
 
@@ -131,7 +143,7 @@ public final class DBMetaDataFactory {
         return dbname;
     }
 
-    public String getDBType() throws Exception {
+    public int getDBType() throws Exception {
         // get the database type based on the product name converted to lowercase
         if (dbmeta.getURL() != null) {
             return getDBTypeFromURL(dbmeta.getURL());
@@ -139,8 +151,8 @@ public final class DBMetaDataFactory {
         return getDBTypeFromURL(getDBName());
     }
 
-    public static String getDBTypeFromURL(String url) {
-        String dbtype = "";
+    public static int getDBTypeFromURL(String url) {
+        int dbtype = -1;
 
         // get the database type based on the product name converted to lowercase
         url = url.toLowerCase();
@@ -219,7 +231,7 @@ public final class DBMetaDataFactory {
                 }
 
                 int sqlTypeCode = rsMeta.getColumnType(i);
-                if (sqlTypeCode == java.sql.Types.OTHER && dbType == 1) {
+                if (sqlTypeCode == java.sql.Types.OTHER && dbType == ORACLE) {
                     String sqlTypeStr = rsMeta.getColumnTypeName(i);
                     if (sqlTypeStr.startsWith("TIMESTAMP")) {
                         sqlTypeCode = java.sql.Types.TIMESTAMP;

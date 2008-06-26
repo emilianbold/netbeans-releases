@@ -228,8 +228,13 @@ class DataViewTableUI extends JTable {
 
             public void actionPerformed(ActionEvent e) {
                 try {
-                    Object[] insertRow = dataView.getDataViewPageContext().getCurrentRows().get(getSelectedRow());
-                    String insertSQL = dataView.getSQLStatementGenerator().generateInsertStatement(insertRow)[1];
+                    int[] rows = getSelectedRows();
+                    String insertSQL = "";
+                    for (int j = 0; j < rows.length; j++) {
+                        Object[] insertRow = dataView.getDataViewPageContext().getCurrentRows().get(rows[j]);
+                        String sql = dataView.getSQLStatementGenerator().generateInsertStatement(insertRow)[1];
+                        insertSQL += sql.replaceAll("\n", "").replaceAll("\t", "") + "\n";
+                    }
                     ShowSQLDialog dialog = new ShowSQLDialog();
                     dialog.setLocationRelativeTo(DataViewTableUI.this);
                     dialog.setText(insertSQL);
