@@ -100,7 +100,7 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
     public CsmNamespace getReferencedNamespace() {
 //        if (!Boolean.getBoolean("cnd.modelimpl.resolver2"))
         //assert ResolverFactory.resolver != 2;
-        return getContainingFile().getProject().findNamespace(namespace);
+        return ((ProjectBase)(getContainingFile().getProject())).findNamespace(namespace, true);
     }
 
     public CsmDeclaration.Kind getKind() {

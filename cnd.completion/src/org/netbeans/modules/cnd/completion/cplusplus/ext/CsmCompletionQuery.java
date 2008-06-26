@@ -1571,17 +1571,18 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
     
         private CsmNamespace findExactNamespace(final String var, final int varPos) {
             CsmNamespace ns = null;
-            compResolver.setResolveTypes(CompletionResolver.RESOLVE_GLOB_NAMESPACES);      
+            compResolver.setResolveTypes(CompletionResolver.RESOLVE_GLOB_NAMESPACES | CompletionResolver.RESOLVE_LIB_NAMESPACES);
             if (compResolver.refresh() && compResolver.resolve(varPos, var, true)) {
                 CompletionResolver.Result res = compResolver.getResult();
-                Iterator it = res.getGlobalProjectNamespaces().iterator();
-                ns = it.hasNext() ? (CsmNamespace) it.next()  : null;
-                if (ns == null) {
-                    // try namespace aliases
-                    it = res.getProjectNamespaceAliases().iterator();
-                    CsmNamespaceAlias alias = it.hasNext() ? (CsmNamespaceAlias) it.next() : null;
-                    if (alias != null) {
-                        ns = alias.getReferencedNamespace();
+                Collection<? extends CsmObject> addResulItemsToCol = res.addResulItemsToCol(new ArrayList<CsmObject>());
+                for (CsmObject csmObject : addResulItemsToCol) {
+                    if (CsmKindUtilities.isNamespace(csmObject)) {
+                        return (CsmNamespace)csmObject;
+                    } else if (CsmKindUtilities.isNamespaceAlias(csmObject)) {
+                        ns = ((CsmNamespaceAlias)csmObject).getReferencedNamespace();
+                        if (ns != null) {
+                            return ns;
+                        }
                     }
                 }
             }                            
