@@ -154,9 +154,7 @@ public class TomcatIncrementalDeployment extends IncrementalDeployment {
 
     @Override
     public ProgressObject reloadArtifacts(TargetModuleID module, DeploymentChangeDescriptor desc) {
-        TomcatManagerImpl tmi = new TomcatManagerImpl (tm);
-        tmi.reload((TomcatModule) module);
-        return tmi;
+        return incrementalDeploy(module, desc);
     }
 
     private static class P implements ProgressObject {
