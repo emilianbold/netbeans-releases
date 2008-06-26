@@ -164,7 +164,6 @@
 	<mapID target="uml_diagrams_labeling_class_diagram_elements_ww_association_end_names" url="diagrams/labeling_class_diagram_elements_ww_association_end_names.html"/>
 	<mapID target="uml_diagrams_labeling_class_diagram_elements_ww_association_multiplicity" url="diagrams/labeling_class_diagram_elements_ww_association_multiplicity.html"/>
 	<mapID target="uml_diagrams_labeling_class_diagram_elements_ww_association_names" url="diagrams/labeling_class_diagram_elements_ww_association_names.html"/>
-	<mapID target="uml_diagrams_locking_diagram_elements" url="diagrams/locking_diagram_elements.html"/>
 	<mapID target="uml_diagrams_opening_closing" url="diagrams/opening_closing.html"/>
 	<mapID target="uml_diagrams_sequence_creating_interaction_occ_to_nest_diagrams" url="diagrams/sequence_creating_interaction_occ_to_nest_diagrams.html"/>
 	<mapID target="uml_diagrams_sequence_creating_populating_combined_fragments" url="diagrams/sequence_creating_populating_combined_fragments.html"/>
