@@ -69,6 +69,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
     private final CharSequence[] rawName;
     // TODO: don't store declaration here since the instance might change
     private CsmUID<CsmDeclaration> referencedDeclarationUID = null;
+    private boolean lastResolveFalure;
     
     public UsingDeclarationImpl(AST ast, CsmFile file) {
         super(ast, file);
@@ -87,7 +88,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         // TODO: process non-class elements
 //        if (!Boolean.getBoolean("cnd.modelimpl.resolver"))
         CsmDeclaration referencedDeclaration = _getReferencedDeclaration();
-        if (referencedDeclaration == null) {
+        if (referencedDeclaration == null && ! lastResolveFalure) {
             _setReferencedDeclaration(null);
             if (rawName != null) {
                 ProjectBase prjBase = (ProjectBase)getProject();
@@ -105,7 +106,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
                 if (namespace != null) {
                     CharSequence lastName = rawName[rawName.length - 1];
                     CsmDeclaration bestChoice = null;
-                    CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(lastName.toString(), true, false, false);
+                    CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(lastName.toString(), true, true, false);
                     Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(namespace, filter);
                     while (it.hasNext()) {
                         CsmDeclaration elem = it.next();
@@ -122,6 +123,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
                 }
             }
             _setReferencedDeclaration(referencedDeclaration);
+            lastResolveFalure = referencedDeclaration == null;
         }
         return referencedDeclaration;
     }
@@ -178,6 +180,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         UIDObjectFactory.getDefaultFactory().writeUID(this.referencedDeclarationUID, output);
     }
     
+    @SuppressWarnings("unchecked")
     public UsingDeclarationImpl(DataInput input) throws IOException {
         super(input);
         this.name = NameCache.getManager().getString(input.readUTF());
