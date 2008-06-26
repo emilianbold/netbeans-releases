@@ -593,15 +593,61 @@ public class Resolver3 implements Resolver {
             if (isRecursionOnResolving(INFINITE_RECURSION)) {
                 return null;
             }
-            CsmClassifier out = ((InheritanceImpl)inh).getCsmClassifier(this);
+            CsmClassifier out = ((InheritanceImpl)inh).getClassifier(this);
             out = CsmBaseUtilities.getOriginalClassifier(out);
             if (CsmKindUtilities.isClass(out)) {
                 return (CsmClass) out;
             }
         }
-        return CsmInheritanceUtilities.getCsmClass(inh);
+        return getCsmClass(inh);
     }
-    
+
+    private CsmClass getCsmClass(CsmInheritance inh) {
+        CsmClassifier classifier;
+        if (inh instanceof Resolver.SafeClassifierProvider) {
+            classifier = ((Resolver.SafeClassifierProvider)inh).getClassifier(this);
+        } else {
+            classifier = inh.getClassifier();
+        }
+        classifier = getOriginalClassifier(classifier);
+        if (CsmKindUtilities.isClass(classifier)) {
+            return (CsmClass)classifier;
+        }
+        return null;
+    }
+
+    private CsmClassifier getOriginalClassifier(CsmClassifier orig) {
+        if (CsmKindUtilities.isClassForwardDeclaration(orig)){
+            CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) orig;
+            if (fd.getCsmClass()!= null){
+                return fd.getCsmClass();
+            }
+        }
+        CsmClassifier out = orig;
+        Set<CsmClassifier> set = new HashSet<CsmClassifier>(100);
+        set.add(orig);
+        while (CsmKindUtilities.isTypedef(out)) {
+            CsmType t = ((CsmTypedef)out).getType();
+            if (t instanceof Resolver.SafeClassifierProvider) {
+                orig = ((Resolver.SafeClassifierProvider)t).getClassifier(this);
+            } else {
+                orig = t.getClassifier();
+            }
+            if (orig == null) {
+                break;
+            }
+            if (set.contains(orig)) {
+                // try to recover from this error
+                CsmClassifier cls = CsmBaseUtilities.findOtherClassifier(out);
+                out = cls == null ? out : cls;
+                break;
+            }
+            set.add(orig);
+            out = orig;
+        }
+        return out;
+    }     
+
     private CsmObject resolveInClass(CsmClass cls, CharSequence name) {
         if( cls != null && cls.isValid()) {
             String fqn = cls.getQualifiedName() + "::" + name; // NOI18N

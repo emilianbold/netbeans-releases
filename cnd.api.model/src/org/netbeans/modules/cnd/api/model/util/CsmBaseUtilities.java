@@ -359,7 +359,7 @@ public class CsmBaseUtilities {
     }     
 
 
-    private static CsmClassifier findOtherClassifier(CsmClassifier out) {
+    public static CsmClassifier findOtherClassifier(CsmClassifier out) {
         CsmNamespace ns = getClassNamespace(out);
         CsmClassifier cls = null;
         if (ns != null) {
