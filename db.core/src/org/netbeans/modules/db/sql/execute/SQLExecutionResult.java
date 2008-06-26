@@ -80,7 +80,7 @@ public class SQLExecutionResult {
     }
 
     public boolean hasExceptions() {
-        return dataView.hasException();
+        return dataView.hasExceptions();
     }
     
     public int getUpdateCount() {

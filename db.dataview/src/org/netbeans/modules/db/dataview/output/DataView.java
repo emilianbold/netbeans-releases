@@ -118,7 +118,7 @@ public class DataView {
             this.dataViewUI = new DataViewUI(this, toolbarType);
             setRowsInTableModel();
             dataViewUI.setEditable(tblMeta.hasOneTable());
-            resetToolbar(hasException());
+            resetToolbar(hasExceptions());
         }
         results = new ArrayList<Component>();
         results.add(dataViewUI);
@@ -139,7 +139,7 @@ public class DataView {
      * 
      * @return true if error occurred in last database call, false otherwise.
      */
-    public boolean hasException() {
+    public boolean hasExceptions() {
         return !errMessages.isEmpty();
     }
 
