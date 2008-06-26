@@ -188,11 +188,18 @@ public class AstUtilities {
     }
     
     public static OffsetRange getRange(ASTNode node, BaseDocument doc) {
+        
+        // Warning! The implicit class and some other nodes has line/column numbers below 1
+        // if line is wrong, let's invalidate also column and vice versa
+        int lineNumber = node.getLineNumber();
+        int columnNumber = node.getColumnNumber();
+        if (lineNumber < 1 || columnNumber < 1) {
+            lineNumber = 1;
+            columnNumber = 1;
+        }
+
         if (node instanceof FieldNode) {
-            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
-            if (start < 0) {
-                start = 0;
-            }
+            int start = getOffset(doc, lineNumber, columnNumber);
             FieldNode fieldNode = (FieldNode) node;
             return new OffsetRange(start, start + fieldNode.getName().length());
         } else if (node instanceof ClassNode) {
@@ -200,19 +207,6 @@ public class AstUtilities {
             // after the "class" keyword, plus an indefinite nuber of spaces
             // FIXME: have to check what happens with other whitespaces between
             // the keyword and the identifier (like newline)
-            
-            // Warning! The implicit class has line/column numbers below 1
-            
-            int lineNumber = node.getLineNumber();
-            int columnNumber = node.getColumnNumber();
-
-            if (lineNumber < 1) {
-                lineNumber = 1;
-            }
-
-            if (columnNumber < 1) {
-                columnNumber = 1;
-            }
             
             // happens in some cases when groovy source uses some non-imported java class
             if (doc != null) {
@@ -250,30 +244,21 @@ public class AstUtilities {
                 return new OffsetRange(start, end);
             }
         } else if (node instanceof ConstructorNode) {
-            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
-            if (start < 0) {
-                start = 0;
-            }
+            int start = getOffset(doc, lineNumber, columnNumber);
             ConstructorNode constructorNode = (ConstructorNode) node;
             return new OffsetRange(start, start + constructorNode.getDeclaringClass().getNameWithoutPackage().length());
         } else if (node instanceof MethodNode) {
-            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
-            if (start < 0) {
-                start = 0;
-            }
+            int start = getOffset(doc, lineNumber, columnNumber);
             MethodNode methodNode = (MethodNode) node;
             return new OffsetRange(start, start + methodNode.getName().length());
         } else if (node instanceof VariableExpression) {
-            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
-            if (start < 0) {
-                start = 0;
-            }
+            int start = getOffset(doc, lineNumber, columnNumber);
             // In case of variable in GString: "Hello, ${name}", node coordinates 
             // are suggesting '{' (it means begin and end colum info is wrong).
             // Pick up what we really want from this.
             try {
-                if (node.getLineNumber() == node.getLastLineNumber() &&
-                        (node.getLastColumnNumber() - node.getColumnNumber() == 1) &&
+                if (lineNumber == node.getLastLineNumber() &&
+                        (node.getLastColumnNumber() - columnNumber == 1) &&
                         "{".equals(doc.getText(start, 1))) {
                     start++;
                 }
@@ -293,16 +278,18 @@ public class AstUtilities {
         } else if (node instanceof MethodCallExpression) {
             MethodCallExpression methodCall = (MethodCallExpression) node;
             Expression method = methodCall.getMethod();
-            int start = getOffset(doc, method.getLineNumber(), method.getColumnNumber());
-            if (start >= 0) {
-                return new OffsetRange(start, start + methodCall.getMethodAsString().length());
+            lineNumber = method.getLineNumber();
+            columnNumber = method.getColumnNumber();
+            if (lineNumber < 1 || columnNumber < 1) {
+                lineNumber = 1;
+                columnNumber = 1;
             }
+            int start = getOffset(doc, lineNumber, columnNumber);
+            return new OffsetRange(start, start + methodCall.getMethodAsString().length());
         } else if (node instanceof ClassExpression) {
             ClassExpression clazz = (ClassExpression) node;
-            int start = getOffset(doc, clazz.getLineNumber(), clazz.getColumnNumber());
-            if (start >= 0) {
-                return new OffsetRange(start, start + clazz.getText().length());
-            }
+            int start = getOffset(doc, lineNumber, columnNumber);
+            return new OffsetRange(start, start + clazz.getText().length());
         }
         return OffsetRange.NONE;
     }
@@ -373,6 +360,7 @@ public class AstUtilities {
     
     /**
      * Find offset in text for given line and column
+     * Never returns negative number
      */
     public static int getOffset(BaseDocument doc, int lineNumber, int columnNumber) {
         assert lineNumber > 0 : "Line number must be at least 1 and was: " + lineNumber;
