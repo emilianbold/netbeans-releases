@@ -1,0 +1,35 @@
+[<jsp:|, < jsp:text >, <jsp:text, 145]
+< jsp:attribute >
+< jsp:body >
+< jsp:element >
+< jsp:expression >
+< jsp:fallback >
+< jsp:forward >
+< jsp:getProperty />
+< jsp:include >
+< jsp:param />
+< jsp:params >
+< jsp:plugin >
+< jsp:setProperty />
+< jsp:text >
+< jsp:useBean >
+End cursor position = 155
+[<jsp:include page="testJS|", testJSPElements.jsp, <jsp:include page="testJSPElements.jsp", 290]
+testJSF.jsp
+testJSPDocumentBasic.jspx
+testJSPDocumentHTML.jspx
+testJSPElements.jsp
+End cursor position = 329
+[<jsp:useBean id="myBean" scope="request" class="java.lang.S|", String, <jsp:useBean id="myBean" scope="request" class="java.lang.String", 474]
+SecurityException
+SecurityManager
+Short
+StackOverflowError
+StackTraceElement
+StrictMath
+String
+StringBuffer
+StringBuilder
+StringIndexOutOfBoundsException
+System
+End cursor position = 539

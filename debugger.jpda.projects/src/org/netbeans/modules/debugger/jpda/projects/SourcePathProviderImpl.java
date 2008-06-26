@@ -350,18 +350,18 @@ public class SourcePathProviderImpl extends SourcePathProvider {
     public synchronized String getSourceRoot(String url) {
         FileObject fo;
         try {
-            java.io.File file = new java.io.File(new java.net.URL(url).toURI());
-            fo = FileUtil.toFileObject(file);
-        } catch (java.net.URISyntaxException ex) {
-            fo = null;
+            fo = URLMapper.findFileObject(new java.net.URL(url));
         } catch (java.net.MalformedURLException ex) {
             fo = null;
         }
-        FileObject[] roots;
+        FileObject[] roots = null;
         if (fo != null) {
             ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-            roots = cp.getRoots();
-        } else {
+            if (cp != null) {
+                roots = cp.getRoots();
+            }
+        }
+        if (roots == null) {
             roots = originalSourcePath.getRoots();
         }
         for (FileObject fileObject : roots) {

@@ -1,6 +1,5 @@
 Manifest-Version: 1.0
-OpenIDE-Module: langpackperftests
-OpenIDE-Module-Layer: langpackperftests/layer.xml
-OpenIDE-Module-Localizing-Bundle: langpackperftests/Bundle.properties
+OpenIDE-Module: org.netbeans.performance.languages
+OpenIDE-Module-Localizing-Bundle: org/netbeans/performance/languages/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
 

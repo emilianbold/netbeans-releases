@@ -69,9 +69,9 @@ import org.w3c.dom.svg.SVGRect;
  */
 public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
     
-    static final String HIDDEN_TEXT         = "hidden_text";
-    static final String BOUNDS              = "bound";
-    private static final String SELECTION   = "selection";
+    static final String HIDDEN_TEXT         = "hidden_text";        // NOI18N
+    static final String BOUNDS              = "bound";              // NOi18N
+    private static final String SELECTION   = "selection";          // NOI18N
     
     
     private static final float ASCENT_SELECTION   = 1;
@@ -94,27 +94,28 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
             if ( hiddenText == null ){
                 throw new IllegalArgumentException("List argument " +
                 		"doesn't contain hidden text for access to font" +
-                		"characteristics. Unable render any value.");
+                		"characteristics. Unable render any value.");         // NOI18N
             }
-            SVGRect rect = hiddenText.getBBox();
-            myX = rect.getX();
-            myY = rect.getY() ;
-            myHeight = rect.getHeight();
+            myX = hiddenText.getFloatTrait( SVGComponent.TRAIT_X );
+            myY = hiddenText.getFloatTrait( SVGComponent.TRAIT_Y );
+            myHeight = hiddenText.getScreenBBox().getHeight();
             lastText = hiddenText;
             
         SVGLocatableElement textElement = (SVGLocatableElement) list.getForm().
-            getDocument().createElementNS( SVGComponent.SVG_NS, "text");
+            getDocument().createElementNS( SVGComponent.SVG_NS, SVGTextField.TEXT);
         textElement.setFloatTrait( SVGComponent.TRAIT_X, myX );
-        textElement.setFloatTrait( SVGComponent.TRAIT_Y, myY + 
-                (index+1)*myHeight ) ;
-        textElement.setFloatTrait( "font-size", lastText.getFloatTrait("font-size"));
-        textElement.setTrait( "font-family", lastText.getTrait("font-family"));
-        textElement.setTrait( SVGComponent.TRAIT_VISIBILITY, "inherit");
+        textElement.setFloatTrait( SVGComponent.TRAIT_Y, myY + index*myHeight ) ;
+        textElement.setFloatTrait( SVGTextField.TRAIT_FONT_SIZE, 
+                lastText.getFloatTrait(SVGTextField.TRAIT_FONT_SIZE));
+        textElement.setTrait( SVGTextField.TRAIT_FONT_FAMILY, 
+                lastText.getTrait(SVGTextField.TRAIT_FONT_FAMILY));
+        textElement.setTrait( SVGComponent.TRAIT_VISIBILITY, 
+                SVGComponent.TR_VALUE_INHERIT);
         if ( value == null ){
-            textElement.setTrait( "#text","");
+            textElement.setTrait( SVGComponent.TRAIT_TEXT,"");
         }
         else {
-            textElement.setTrait("#text",  value.toString());
+            textElement.setTrait(SVGComponent.TRAIT_TEXT,  value.toString());
         }
         content.appendChild(textElement);
         
@@ -139,7 +140,7 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
         SVGLocatableElement selection = 
             (SVGLocatableElement)SVGComponent.getElementByMeta(xmlElement,
                 SVGList.TYPE,  SELECTION );
-        selection.setFloatTrait(SVGComponent.TRAIT_Y, myY + index*myHeight 
+        selection.setFloatTrait(SVGComponent.TRAIT_Y, myY + (index-1)*myHeight 
                 -ASCENT_SELECTION);
         selection.setFloatTrait( "height", myHeight +DESCENT_SELECTION);
     }

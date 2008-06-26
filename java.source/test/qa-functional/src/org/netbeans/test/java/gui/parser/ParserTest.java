@@ -53,10 +53,12 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.Element;
+import junit.framework.Test;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.test.java.JavaTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -64,7 +66,7 @@ import org.openide.filesystems.FileUtil;
  * Tests Java Parser.
  * @author Roman Strobl, Jiri Prox
  */
-public class ParserTest extends JellyTestCase {
+public class ParserTest extends JavaTestCase {
     
     /** Switch to generate golden files */
     private boolean generateGoledenFiles = false;
@@ -89,23 +91,7 @@ public class ParserTest extends JellyTestCase {
     private FileObject artefact;
     
     private FileObject testFileObject;
-    
-    /**
-     * Adds tests into the test suite.
-     * @return suite
-     */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ParserTest("testCreateInnerClass"));
-        suite.addTest(new ParserTest("testCreateInnerInterface"));
-        suite.addTest(new ParserTest("testCreateConstructor"));
-        suite.addTest(new ParserTest("testCreateField"));
-        suite.addTest(new ParserTest("testCreateMethod"));
-        suite.addTest(new ParserTest("testCreateOuterClass"));
-        suite.addTest(new ParserTest("testCreateOuterInterface"));
-        return suite;
-    }
-    
+        
     /**
      * Main method for standalone execution.
      * @param args the command line arguments
@@ -376,5 +362,8 @@ public class ParserTest extends JellyTestCase {
         
     }
     
-    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(ParserTest.class).enableModules(".*").clusters(".*"));
+    }
 }

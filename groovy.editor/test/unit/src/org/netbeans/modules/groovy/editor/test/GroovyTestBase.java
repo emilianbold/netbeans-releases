@@ -50,6 +50,7 @@ import org.netbeans.modules.gsf.GsfTestBase;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MIMEResolver;
 
 /**
  *
@@ -70,6 +71,7 @@ public class GroovyTestBase extends GsfTestBase {
         GroovyIndex.setClusterUrl("file:/bogus"); // No translation
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
         testFO = workDir.createData("Test.groovy");
+        FileUtil.setMIMEType("groovy", GroovyTokenId.GROOVY_MIME_TYPE);
     }
 
     @Override

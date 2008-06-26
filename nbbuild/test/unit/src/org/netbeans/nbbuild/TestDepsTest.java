@@ -57,16 +57,12 @@ public class TestDepsTest extends NbTestCase {
     public TestDepsTest(java.lang.String testName) {
         super(testName);
     }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
     }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(TestDepsTest.class);
-        return suite;
-    }
-    
     
     public void testDepsTest () throws Exception {
       // create test

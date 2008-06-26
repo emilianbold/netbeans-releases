@@ -99,6 +99,7 @@ public class CompletionResolverImpl implements CompletionResolver {
     private boolean naturalSort = false;
     private boolean sort = false;
     private QueryScope queryScope = QueryScope.GLOBAL_QUERY;
+    private boolean inIncludeDirective = false;
 
     public boolean isSortNeeded() {
         return sort;
@@ -112,6 +113,10 @@ public class CompletionResolverImpl implements CompletionResolver {
         this.queryScope = queryScope;
     }
     
+    public void setInIncludeDirective(boolean inIncludeDirective) {
+        this.inIncludeDirective = inIncludeDirective;
+    }
+
     public boolean isCaseSensitive() {
         return caseSensitive;
     }
@@ -170,7 +175,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         context  = CsmOffsetResolver.findContext(file, offset);
         if (DEBUG) System.out.println("context for offset " + offset + " :\n" + context); //NOI18N
         initResolveMask(context, offset, strPrefix, match);
-        this.hideTypes = initHideMask(context, offset, this.resolveTypes, this.queryScope, strPrefix);
+        this.hideTypes = initHideMask(context, offset, this.resolveTypes, this.queryScope, strPrefix, this.inIncludeDirective);
         resolveContext(context, offset, strPrefix, match);
         return file != null;
     }
@@ -219,7 +224,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             }
         }
         //long timeStart = System.nanoTime();
-        resolveContext(prj, resImpl, fun, context, offset, strPrefix, match);
+        resolveContext(prj, resImpl, fun, context, offset, strPrefix, match);    
         result = buildResult(context, resImpl);
         if (key != null){
             cache.put(key, result);
@@ -427,8 +432,9 @@ public class CompletionResolverImpl implements CompletionResolver {
         return false;
     }
 
-    private static int initHideMask(final CsmContext context, final int offset, final int resolveTypes, final QueryScope queryScope, final String strPrefix) {
-        int hideTypes = ~RESOLVE_NONE;
+    private static int initHideMask(final CsmContext context, final int offset, final int resolveTypes, 
+            final QueryScope queryScope, final String strPrefix, boolean inIncludeDirective) {
+        int hideTypes = inIncludeDirective ? RESOLVE_MACROS : ~RESOLVE_NONE;
         // do not provide libraries data and global data when just resolve context with empty prefix
         if ((resolveTypes & RESOLVE_CONTEXT) == RESOLVE_CONTEXT && strPrefix.length() == 0) {
             hideTypes &= ~RESOLVE_LIB_ELEMENTS;            
@@ -561,6 +567,18 @@ public class CompletionResolverImpl implements CompletionResolver {
                 if (CsmSortUtilities.matchName(elem.getName(), strPrefix, match, caseSensitive)) {
                     templateParameters.add(elem);
                 }
+            }
+        }
+        if (fun == null && CsmKindUtilities.isTemplateParameter(context.getLastObject())) {
+            // Fix for IZ#138099: unresolved identifier for functions' template parameter.
+            // We've hit a parameter of function template. Current context does
+            // not contain function itself because template parameters go before function.
+            CsmTemplateParameter elem = (CsmTemplateParameter) context.getLastObject();
+            if (CsmSortUtilities.matchName(elem.getName(), strPrefix, match, caseSensitive)) {
+                if (templateParameters == null) {
+                    templateParameters = new ArrayList<CsmTemplateParameter>();
+                }
+                templateParameters.add(elem);
             }
         }
         return templateParameters;

@@ -40,6 +40,7 @@
  */
 package org.netbeans.jellytools.actions;
 
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -54,7 +55,6 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 
 /** Test org.netbeans.jellytools.actions.ExploreFromHereAction
  *
@@ -71,6 +71,7 @@ public class ExploreFromHereActionTest extends JellyTestCase {
     
     /** method used for explicit testsuite definition */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new ExploreFromHereActionTest("testInit"));
         // Explore from here is used on web services node but to create such
@@ -78,6 +79,8 @@ public class ExploreFromHereActionTest extends JellyTestCase {
         //suite.addTest(new ExploreFromHereActionTest("testPerformPopup"));
         //suite.addTest(new ExploreFromHereActionTest("testPerformAPI"));
         return suite;
+         */
+        return createModuleTest(ExploreFromHereActionTest.class, "testInit");
     }
     
     /** Use for internal test execution inside IDE
@@ -98,9 +101,16 @@ public class ExploreFromHereActionTest extends JellyTestCase {
     public void testInit() {
         new ExploreFromHereAction();
     }
+
+    @Override
+    protected void setUp() throws IOException {
+        openDataProjects("SampleProject");
+    }
+    
+    
     
     /** Test performPopup */
-    public void testPerformPopup() {
+    public void testPerformPopup() throws Exception {
         // create new web application project
         
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
@@ -120,7 +130,12 @@ public class ExploreFromHereActionTest extends JellyTestCase {
         // wait index.jsp is opened in editor
         EditorOperator editor = new EditorOperator("index.jsp"); // NOI18N
         // wait classpath scanning finished
-        ProjectSupport.waitScanFinished();
+        try {
+            Class.forName("org.netbeans.api.java.source.SourceUtils", true, Thread.currentThread().getContextClassLoader()).
+                    getMethod("waitScanFinished").invoke(null);
+        } catch (ClassNotFoundException x) {
+            System.err.println("Warning: org.netbeans.api.java.source.SourceUtils could not be found, will not wait for scan to finish");
+        }
         
         // create a web service
 

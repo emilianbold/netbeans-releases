@@ -40,6 +40,8 @@
  */
 package org.netbeans.test.syntax;
 
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.lib.BasicTokensTest;
 
 /**
@@ -55,6 +57,10 @@ public class TokensTest extends BasicTokensTest {
     protected boolean generateGoldenFiles() {
         return false;
     }
+    
+    public static Test suite(){
+        return NbModuleSuite.allModules(TokensTest.class);
+    }    
     
     public void testHTML() {
         testRun("tokensHTML.html");
