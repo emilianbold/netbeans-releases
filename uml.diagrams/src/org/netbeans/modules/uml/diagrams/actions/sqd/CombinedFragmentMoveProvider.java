@@ -256,18 +256,23 @@ public class CombinedFragmentMoveProvider  implements MoveProvider {
                                                 if(finalcontainer!=null)new AfterValidationExecutor(new ActionProvider(){
                                                     public void perfomeAction() {
                                                         finalcontainer.calculateChildren(true);
+                                                        widget.revalidate();
                                                         widget.getScene().validate();
                                                     }
                                                 },widget.getScene());
+                                                widget.revalidate();
                                                 widget.getScene().validate();
                                            }
                                         },widget.getScene());
+                                        widget.revalidate();
                                         widget.getScene().validate();
                                     }
                                 },widget.getScene());
+                                widget.revalidate();
                                 widget.getScene().validate();
                             }
                         },widget.getScene());
+                        widget.revalidate();
                         widget.getScene().validate();
                 }
 

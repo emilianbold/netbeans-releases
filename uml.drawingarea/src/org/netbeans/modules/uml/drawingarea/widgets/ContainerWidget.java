@@ -196,10 +196,8 @@ public class ContainerWidget extends Widget
         return true;
     }
 
-    private boolean addChildLifeline(ICombinedFragment namespace, Object nodeData, Widget node)
+    private boolean addChildToCombinedFragment(ICombinedFragment namespace, Object nodeData, Widget node)
     {
-        if(((IPresentationElement)nodeData).getFirstSubject() instanceof ILifeline)
-        {
             Widget parent = node.getParentWidget();
             Point sceneLocation = node.getPreferredLocation();
             if(parent != null)
@@ -211,15 +209,13 @@ public class ContainerWidget extends Widget
             addChild(node);
             node.setPreferredLocation(convertSceneToLocal(sceneLocation));
 
+        if(((IPresentationElement)nodeData).getFirstSubject() instanceof ILifeline)
+        {
             ILifeline element = (ILifeline) ((IPresentationElement)nodeData).getFirstSubject();
             if(namespace!=null)namespace.addCoveredLifeline(element);//combined fragment isn't a namespace but support graphical containment
             //TBD is it necessary to add element to an interaction?
-            return true;
         }
-        else
-        {
-            return false;
-        }
+        return true;
     }
     
     
@@ -277,7 +273,7 @@ public class ContainerWidget extends Widget
                         }
                         else if(contElement instanceof ICombinedFragment) {
                             //combined fragment can contain lifelines for example (cover) and is not a namespace
-                            changed =addChildLifeline((ICombinedFragment) contElement,nodeData, node);
+                            changed =addChildToCombinedFragment((ICombinedFragment) contElement,nodeData, node);
                         }
                     }
                 }
