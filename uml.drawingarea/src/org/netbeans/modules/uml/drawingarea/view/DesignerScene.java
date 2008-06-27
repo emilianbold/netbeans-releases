@@ -613,6 +613,8 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
             }
             
             Widget widget = findWidget(object);
+            
+            if(widget==null)continue;
 
             if (((isNode == true) && (entirely == true)) || 
                 ((isEdge == true) && (intersectEdges == false)))
