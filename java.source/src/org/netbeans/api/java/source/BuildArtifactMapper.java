@@ -41,23 +41,53 @@ package org.netbeans.api.java.source;
 
 import java.io.File;
 import java.net.URL;
+import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
 
 /**
- *
- * @author lahvac
+ * @since 0.37
+ * 
+ * @author Jan Lahoda
  */
 public class BuildArtifactMapper {
 
+    /**
+     * Add an {@link ArtifactsUpdated} listener. The method {@link ArtifactsUpdated#artifactsUpdated(java.lang.Iterable)}
+     * will be called each time the files inside the output folder are updated.
+     * The output folder computed for the source root using the {@link BinaryForSourceQuery}.
+     * The files in the output folder are updated only if file <code>.netbeans_automatic_build</code>
+     * exists inside the output folder.
+     * 
+     * @param sourceRoot the listener will be assigned to this source root
+     * @param listener listener to add
+     * @since 0.37
+     */
     public static void addArtifactsUpdatedListener(URL sourceRoot, ArtifactsUpdated listener) {
         BuildArtifactMapperImpl.addArtifactsUpdatedListener(sourceRoot, listener);
     }
     
+    /**
+     * Remove an {@link ArtifactsUpdated} listener.
+     *
+     * @param sourceRoot the listener will be assigned to this source root
+     * @param listener listener to add
+     * @since 0.37
+     */
     public static void removeArtifactsUpdatedListener(URL sourceRoot, ArtifactsUpdated listener) {
         BuildArtifactMapperImpl.removeArtifactsUpdatedListener(sourceRoot, listener);
     }
-    
+
+    /**
+     * Notify that the files in the output directory has been updated.
+     * @since 0.37
+     */
     public static interface ArtifactsUpdated {
+        /**
+         * Notify that the files in the output directory has been updated.
+         *
+         * @param artifacts the updated files
+         * @since 0.37
+         */
         public void artifactsUpdated(Iterable<File> artifacts);
     }
     
