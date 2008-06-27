@@ -84,6 +84,9 @@ import org.netbeans.jemmy.operators.*;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.test.xml.schema.lib.SchemaMultiView;
 
+import org.netbeans.junit.NbModuleSuite;
+import junit.framework.Test;
+
 /**
  *
  * @author michaelnazarov@netbeans.org
@@ -134,7 +137,8 @@ public class ComplexComponent_0001 extends ComplexComponent {
     public ComplexComponent_0001(String arg0) {
         super(arg0);
     }
-    
+
+    /*    
     public static TestSuite suite() {
         TestSuite testSuite = new TestSuite(ComplexComponent_0001.class.getName());
         
@@ -144,7 +148,26 @@ public class ComplexComponent_0001 extends ComplexComponent {
         
         return testSuite;
     }
+    */
 
+    public static Test suite( )
+    {
+      return NbModuleSuite.create(
+          NbModuleSuite.createConfiguration( ComplexComponent_0001.class ).addTest(
+              "OpenSchema",
+              "CheckProperties",
+              "CheckingIDProperty",
+              "CheckingNameProperty",
+              "CheckingAbstractProperty",
+              "CheckingMixedContentProperty",
+              "CheckingDerivationsProperty",
+              "CheckingSubstitutionsProperty"
+           )
+           .enableModules( ".*" )
+           .clusters( ".*" )
+           //.gui( true )
+        );
+    }
 
     public void OpenSchema( )
     {

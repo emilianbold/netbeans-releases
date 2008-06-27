@@ -230,6 +230,12 @@ public class TermShell {
                 else
                     cmd.add("/bin/bash");
                 break;
+            case MACOS:
+                if (shell != null)
+                    cmd.add(shell);
+                else
+                    cmd.add("/bin/bash");
+                break;
             default:
                 error("Unsupported os '%s'", os);
                 break;

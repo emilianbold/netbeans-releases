@@ -70,152 +70,119 @@ public class ExecutionServiceTest extends NbTestCase {
 
 
     public void testSimpleRun() throws InvocationTargetException, InterruptedException {
-        SwingUtilities.invokeAndWait(new Runnable() {
+        TestProcess process = new TestProcess(0);
+        TestCallable callable = new TestCallable();
+        callable.setProcess(process);
 
-            public void run() {
-                try {
-                    TestProcess process = new TestProcess(0);
-                    TestCallable callable = new TestCallable(process);
+        ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
+        ExecutionService service = ExecutionService.newService(
+                callable, builder.create(), "Test");
 
-                    ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
-                    ExecutionService service = ExecutionService.newService(
-                            callable, builder.create(), "Test");
+        TestExecution execution = new TestExecution(service);
+        SwingUtilities.invokeLater(execution);
+        Future<Integer> task = execution.getTask();
+        assertNotNull(task);
+        assertFalse(process.isFinished());
 
-                    Future<Integer> task = service.run();
-                    assertNotNull(task);
-                    assertFalse(process.isFinished());
+        task.cancel(true);
+        assertTrue(task.isCancelled());
 
-                    task.cancel(true);
-                    assertTrue(task.isCancelled());
+        // maybe it didn't get to execution
+        if (process.isStarted()) {
+            process.waitFor();
+            assertTrue(process.isFinished());
+            assertEquals(0, process.exitValue());
+        }
 
-                    // maybe it didn't get to execution
-                    if (process.isStarted()) {
-                        process.waitFor();
-                        assertTrue(process.isFinished());
-                        assertEquals(0, process.exitValue());
-                    }
+        process = new TestProcess(1);
+        callable.setProcess(process);
 
-                    process = new TestProcess(1);
-                    callable.setProcess(process);
+        execution = new TestExecution(service);
+        SwingUtilities.invokeLater(execution);
+        task = execution.getTask();
+        assertNotNull(task);
+        assertFalse(process.isFinished());
 
-                    task = service.run();
-                    assertNotNull(task);
-                    assertFalse(process.isFinished());
-
-                    // we want to test real started process
-                    process.waitStarted();
-                    task.cancel(true);
-                    assertTrue(task.isCancelled());
-                    process.waitFor();
-                    assertTrue(process.isFinished());
-                    assertEquals(1, process.exitValue());
-                } catch (InterruptedException ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
-        });
-
-
+        // we want to test real started process
+        process.waitStarted();
+        task.cancel(true);
+        assertTrue(task.isCancelled());
+        process.waitFor();
+        assertTrue(process.isFinished());
+        assertEquals(1, process.exitValue());
     }
 
-    public void testHooks() throws InvocationTargetException, InterruptedException {
-        SwingUtilities.invokeAndWait(new Runnable() {
+    public void testHooks() throws InterruptedException, ExecutionException {
+        TestProcess process = new TestProcess(0);
+        TestCallable callable = new TestCallable();
+        callable.setProcess(process);
+
+        class TestRunnable implements Runnable {
+
+            public volatile boolean executed;
 
             public void run() {
-                try {
-                    TestProcess process = new TestProcess(0);
-                    TestCallable callable = new TestCallable(process);
-                    TestRunnable preRunnable = new TestRunnable();
-                    TestRunnable postRunnable = new TestRunnable();
-
-                    ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
-                    builder.preExecution(preRunnable);
-                    builder.postExecution(postRunnable);
-
-                    ExecutionService service = ExecutionService.newService(
-                            callable, builder.create(), "Test");
-
-                    Future<Integer> task = service.run();
-                    assertNotNull(task);
-
-                    process.waitStarted();
-                    assertTrue(preRunnable.isExecuted());
-
-                    process.destroy();
-                    assertEquals(0, task.get().intValue());
-                    assertTrue(postRunnable.isExecuted());
-                } catch (InterruptedException ex) {
-                    throw new RuntimeException(ex);
-                } catch (ExecutionException ex) {
-                    fail("Execution failed");
-                }
+                executed = true;
             }
-        });
+        }
+
+        TestRunnable preRunnable = new TestRunnable();
+        TestRunnable postRunnable = new TestRunnable();
+
+        ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
+        builder.preExecution(preRunnable);
+        builder.postExecution(postRunnable);
+
+        ExecutionService service = ExecutionService.newService(
+                callable, builder.create(), "Test");
+
+        TestExecution execution = new TestExecution(service);
+        SwingUtilities.invokeLater(execution);
+        Future<Integer> task = execution.getTask();
+        assertNotNull(task);
+
+        process.waitStarted();
+        assertTrue(preRunnable.executed);
+
+        process.destroy();
+        assertEquals(0, task.get().intValue());
+        assertTrue(postRunnable.executed);
     }
 
     public void testIOHandling() throws InterruptedException, InvocationTargetException, ExecutionException {
         TestProcess process = new TestProcess(0);
-        TestCallable callable = new TestCallable(process);
+        TestCallable callable = new TestCallable();
+        callable.setProcess(process);
 
         ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
-        builder.postExecution(new Runnable() {
-            public void run() {
-                try {
-                    if (!SwingUtilities.isEventDispatchThread()) {
-                        SwingUtilities.invokeAndWait(this);
-                        return;
-                    }
-                    assertNotNull(getInputOutput("Test", false));
-                } catch (InterruptedException ex) {
-                    fail("Unexpected interruption");
-                } catch (InvocationTargetException ex) {
-                    fail("Unexpected invocation exception");
-                }
-            }
-        });
-
-        final ExecutionService service = ExecutionService.newService(
+        ExecutionService service = ExecutionService.newService(
                 callable, builder.create(), "Test");
 
-        class TaskHolder {
-            public Future<Integer> task;
-        }
-
-        final TaskHolder holder = new TaskHolder();
-        SwingUtilities.invokeAndWait(new Runnable() {
-            public void run() {
-                holder.task = service.run();
-            }
-        });
+        TestExecution execution = new TestExecution(service);
+        SwingUtilities.invokeLater(execution);
+        Future<Integer> task = execution.getTask();
+        assertNotNull(task);
 
         assertNull(getInputOutput("Test", false));
         process.destroy();
-        holder.task.get();
+        assertEquals(0, task.get().intValue());
 
-        SwingUtilities.invokeAndWait(new Runnable() {
-            public void run() {
-                assertNotNull(getInputOutput("Test", false));
-            }
-        });
+        assertNotNull(getInputOutput("Test", false));
 
         // rerun once again
         process = new TestProcess(0);
         callable.setProcess(process);
-        SwingUtilities.invokeAndWait(new Runnable() {
-            public void run() {
-                holder.task = service.run();
-            }
-        });
+
+        execution = new TestExecution(service);
+        SwingUtilities.invokeLater(execution);
+        task = execution.getTask();
+        assertNotNull(task);
 
         assertNull(getInputOutput("Test", false));
         process.destroy();
-        holder.task.get();
+        task.get();
 
-        SwingUtilities.invokeAndWait(new Runnable() {
-            public void run() {
-                assertNotNull(getInputOutput("Test", false));
-            }
-        });
+        assertNotNull(getInputOutput("Test", false));
     }
 
     public void testIOHandlingMulti() throws InterruptedException, InvocationTargetException,
@@ -223,100 +190,103 @@ public class ExecutionServiceTest extends NbTestCase {
 
         TestProcess process1 = new TestProcess(0);
         TestProcess process2 = new TestProcess(0);
-        TestCallable callable = new TestCallable(process1);
+        TestCallable callable = new TestCallable();
+
+        callable.setProcess(process1);
 
         ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
-
-        final ExecutionService service = ExecutionService.newService(
+        ExecutionService service = ExecutionService.newService(
                 callable, builder.create(), "Test");
 
-        class TaskHolder {
-            public Future<Integer> task;
-        }
-
-        final TaskHolder holder1 = new TaskHolder();
-        SwingUtilities.invokeAndWait(new Runnable() {
-            public void run() {
-                holder1.task = service.run();
-            }
-        });
+        TestExecution execution1 = new TestExecution(service);
+        SwingUtilities.invokeLater(execution1);
+        Future<Integer> task1 = execution1.getTask();
+        assertNotNull(task1);
 
         assertNull(getInputOutput("Test", false));
-        assertNull(getInputOutput("Test #1", false));
+        assertNull(getInputOutput("Test #2", false));
 
         process1.waitStarted();
+
         callable.setProcess(process2);
 
-        final TaskHolder holder2 = new TaskHolder();
-        SwingUtilities.invokeAndWait(new Runnable() {
-            public void run() {
-                holder2.task = service.run();
-            }
-        });
+        TestExecution execution2 = new TestExecution(service);
+        SwingUtilities.invokeLater(execution2);
+        Future<Integer> task2 = execution2.getTask();
+        assertNotNull(task2);
 
         assertNull(getInputOutput("Test", false));
-        assertNull(getInputOutput("Test #1", false));
+        assertNull(getInputOutput("Test #2", false));
+
+        process2.waitStarted();
 
         process1.destroy();
         process2.destroy();
 
-        holder1.task.get();
-        holder2.task.get();
+        assertEquals(0, task1.get().intValue());
+        assertEquals(0, task2.get().intValue());
 
-        SwingUtilities.invokeAndWait(new Runnable() {
-            public void run() {
-                assertNotNull(getInputOutput("Test", false));
-                assertNotNull(getInputOutput("Test #2", false));
-            }
-        });
+        assertNotNull(getInputOutput("Test", false));
+        assertNotNull(getInputOutput("Test #2", false));
     }
 
-    public void testInvocationThread() {
-        try {
-            TestProcess process = new TestProcess(0);
-            TestCallable callable = new TestCallable(process);
-
-            ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
-            ExecutionService service = ExecutionService.newService(callable, builder.create(), "Test");
-
-            Future<Integer> task = service.run();
-
-            fail("Allows invocation outside of EDT");
-        } catch (IllegalStateException ex) {
-            // expected
-        }
-    }
+//    public void testInvocationThread() {
+//        try {
+//            TestProcess process = new TestProcess(0);
+//            TestCallable callable = new TestCallable();
+//            callable.setProcess(process);
+//
+//            ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
+//            ExecutionService service = ExecutionService.newService(callable, builder.create(), "Test");
+//
+//            Future<Integer> task = service.run();
+//
+//            fail("Allows invocation outside of EDT");
+//        } catch (IllegalStateException ex) {
+//            // expected
+//        }
+//    }
 
     private static InputOutputManager.InputOutputData getInputOutput(String name, boolean actions) {
-        InputOutputManager.InputOutputData data = InputOutputManager.getInputOutput(name, actions);
-        // put it back
-        if (data != null) {
-            InputOutputManager.addInputOutput(data.getInputOutput(), data.getDisplayName(),
-                    data.getStopAction(), data.getRerunAction());
+        synchronized (InputOutputManager.class) {
+            InputOutputManager.InputOutputData data = InputOutputManager.getInputOutput(name, actions);
+            // put it back
+            if (data != null) {
+                InputOutputManager.addInputOutput(data);
+            }
+            return data;
         }
-        return data;
     }
 
-    private static class TestRunnable implements Runnable {
+    private static class TestExecution implements Runnable {
 
-        private volatile boolean executed;
+        private final ExecutionService service;
 
-        public void run() {
-            executed = true;
+        private Future<Integer> task;
+
+        public TestExecution(ExecutionService service) {
+            this.service = service;
         }
 
-        public boolean isExecuted() {
-            return executed;
+        public synchronized void run() {
+            task = service.run();
+            notifyAll();
         }
 
+        public synchronized Future<Integer> getTask() throws InterruptedException {
+            while (task == null) {
+                wait();
+            }
+            return task;
+        }
     }
 
     private static class TestCallable implements Callable<Process> {
 
         private TestProcess process;
 
-        public TestCallable(TestProcess process) {
-            this.process = process;
+        public TestCallable() {
+            super();
         }
 
         public synchronized void setProcess(TestProcess process) {
