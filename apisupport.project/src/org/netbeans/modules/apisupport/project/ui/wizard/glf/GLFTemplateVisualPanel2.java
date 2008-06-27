@@ -1,73 +1,142 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.glf;
 
+import java.awt.EventQueue;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
-
+import org.openide.util.RequestProcessor;
 
 public final class GLFTemplateVisualPanel2 extends JPanel {
 
     private GLFTemplateWizardPanel2 wizardPanel;
-    
+    private CreatedModifiedFiles cmf;
+    private boolean initialized;
+
     /** Creates new form GLFTemplateVisualPanel2 */
-    public GLFTemplateVisualPanel2 (GLFTemplateWizardPanel2 wizardPanel) {
+    public GLFTemplateVisualPanel2(final GLFTemplateWizardPanel2 wizardPanel) {
         this.wizardPanel = wizardPanel;
-        initComponents ();
-        wizardPanel.getIterator().getWizardDescriptor().putProperty("NewFileWizard_Title",  // NOI18N
+        initComponents();
+        wizardPanel.getIterator().getWizardDescriptor().putProperty("NewFileWizard_Title", // NOI18N
                 NbBundle.getMessage(GLFTemplateVisualPanel2.class, "LBL_GLFWizardTitle"));
-        DocumentListener documentListener = new DocumentListener () {
-            public void insertUpdate (DocumentEvent e) {
-                update ();
+
+        // Creating 1st entry takes couple of seconds, we better do it in background
+        String msg = NbBundle.getMessage(GLFTemplateVisualPanel2.class, "LBL_PleaseWait");
+        createdFiles.setText(msg);
+        modifiedFiles.setText(msg);
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            public void run() {
+                try {
+                    cmf = new CreatedModifiedFiles(wizardPanel.getIterator().getProject());
+                    cmf.add(cmf.createLayerEntry(
+                            "Editors/x1/x2/language.nbs", // NOI18N
+                            CreatedModifiedFiles.getTemplate("NBSTemplate.nbs"), Collections.<String, String>emptyMap(), null, null));
+                } finally {
+                    EventQueue.invokeLater(new Runnable() {
+
+                        public void run() {
+                            initialized = true;
+                            createdFiles.setText("");
+                            modifiedFiles.setText("");
+                            update();
+                        }
+                    });
+                }
+            }
+        });
+
+        DocumentListener documentListener = new DocumentListener() {
+
+            public void insertUpdate(DocumentEvent e) {
+                update();
             }
 
-            public void removeUpdate (DocumentEvent e) {
-                update ();
+            public void removeUpdate(DocumentEvent e) {
+                update();
             }
 
-            public void changedUpdate (DocumentEvent e) {
-                update ();
+            public void changedUpdate(DocumentEvent e) {
+                update();
             }
-            
         };
-        tfExtensions.getDocument ().addDocumentListener (documentListener);
-        tfMimeType.getDocument ().addDocumentListener (documentListener);
-        update ();
+        tfExtensions.getDocument().addDocumentListener(documentListener);
+        tfMimeType.getDocument().addDocumentListener(documentListener);
+        update();
     }
-    
     private static final Pattern MIME_PATTERN = Pattern.compile("[\\w+-.]+/[\\w+-.]+");  // NOI18N
     private static final Pattern EXT_PATTERN = Pattern.compile("(\\w+\\s*)+");  // NOI18N
-    
-    private void update () {
+
+    void update() {
         final WizardDescriptor wd = wizardPanel.getIterator().getWizardDescriptor();
         // reasonable mime type check
-        if (! MIME_PATTERN.matcher(getMimeType().trim()).matches()) {
-            wd.putProperty (
-                "WizardPanel_errorMessage",  // NOI18N
-                NbBundle.getMessage(GLFTemplateVisualPanel2.class, "CTL_Invalid_Mime_Type"));
-            wizardPanel.setValid (false);
+        if (!MIME_PATTERN.matcher(getMimeType().trim()).matches()) {
+            wd.putProperty(
+                    "WizardPanel_errorMessage", // NOI18N
+                    NbBundle.getMessage(GLFTemplateVisualPanel2.class, "CTL_Invalid_Mime_Type"));
+            wizardPanel.setValid(false);
             return;
         }
-        if (! EXT_PATTERN.matcher(getExtensions ().trim ()).matches()) {
-            wd.putProperty (
-                "WizardPanel_errorMessage",  // NOI18N
-                NbBundle.getMessage(GLFTemplateVisualPanel2.class, "CTL_Invalid_Extensions"));
-            wizardPanel.setValid (false);
+        if (!EXT_PATTERN.matcher(getExtensions().trim()).matches()) {
+            wd.putProperty(
+                    "WizardPanel_errorMessage", // NOI18N
+                    NbBundle.getMessage(GLFTemplateVisualPanel2.class, "CTL_Invalid_Extensions"));
+            wizardPanel.setValid(false);
             return;
         }
-        wd.putProperty (
-            "WizardPanel_errorMessage",  // NOI18N
-            null
-        );
-        wizardPanel.setValid (true);
+        wd.putProperty(
+                "WizardPanel_errorMessage", // NOI18N
+                null);
+        if (!initialized)
+            return;
+        
+        wizardPanel.setValid(true);
+
+        String mimeType = getMimeType();
+        String extensions = getExtensions();
+
+        int i = mimeType.indexOf('/');
+        String mimeType1 = mimeType.substring(0, i);
+        String mimeType2 = mimeType.substring(i + 1);
+
+        cmf = new CreatedModifiedFiles(wizardPanel.getIterator().getProject());
+
+        cmf.add(cmf.createLayerEntry(
+                "Editors/" + mimeType1 + "/" + mimeType2 + "/" + "language.nbs", // NOI18N
+                CreatedModifiedFiles.getTemplate("NBSTemplate.nbs"), Collections.<String, String>emptyMap(), null, null));
+
+        cmf.add(cmf.createLayerEntry(
+                "Navigator/Panels/" + mimeType1 + "/" + mimeType2 + "/" + "org-netbeans-modules-languages-features-LanguagesNavigator.instance", // NOI18N
+                null, null, null, null));
+
+        Map<String, String> toks = new HashMap<String, String>();
+        toks.put("mime", mimeType);
+        StringBuilder b = new StringBuilder();
+        for (String ext : extensions.split(" ")) {
+            b.append("        <ext name=\"").append(ext).append("\"/>\n");
+        }
+        toks.put("extensions", b.toString());
+        cmf.add(cmf.createLayerEntry(
+                "Services/MIMEResolver/" + mimeType1 + "-" + mimeType2 + "-mime-resolver.xml", // NOI18N
+                CreatedModifiedFiles.getTemplate("nbsresolver.xml"), toks, null, null));
+
+        createdFiles.setText(UIUtil.generateTextAreaContent(cmf.getCreatedPaths()));
+        modifiedFiles.setText(UIUtil.generateTextAreaContent(cmf.getModifiedPaths()));
     }
-    
-    public @Override String getName () {
+
+    public 
+    @Override
+    String getName() {
         return NbBundle.getMessage(GLFTemplateVisualPanel2.class, "CTL_Step2");
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -94,8 +163,6 @@ public final class GLFTemplateVisualPanel2 extends JPanel {
 
         lMimeType.setLabelFor(tfMimeType);
         org.openide.awt.Mnemonics.setLocalizedText(lMimeType, org.openide.util.NbBundle.getMessage(GLFTemplateVisualPanel2.class, "CTL_Mime_Type")); // NOI18N
-
-        tfMimeType.setNextFocusableComponent(tfExtensions);
 
         lExtensions.setLabelFor(tfExtensions);
         org.openide.awt.Mnemonics.setLocalizedText(lExtensions, org.openide.util.NbBundle.getMessage(GLFTemplateVisualPanel2.class, "CTL_Extensions")); // NOI18N
@@ -130,11 +197,13 @@ public final class GLFTemplateVisualPanel2 extends JPanel {
                     .add(org.jdesktop.layout.GroupLayout.LEADING, extensionsHint)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, createdFiles, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, tfMimeType, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, tfExtensions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, tfExtensions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lMimeType)
                     .add(tfMimeType, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -151,7 +220,8 @@ public final class GLFTemplateVisualPanel2 extends JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(modifiedFiles, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)
-                    .add(jLabel2)))
+                    .add(jLabel2))
+                .addContainerGap())
         );
 
         modifiedFiles.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GLFTemplateVisualPanel2.class, "GLFTemplateVisualPanel2.modifiedFiles.AccessibleContext.accessibleDescription")); // NOI18N
@@ -161,8 +231,6 @@ public final class GLFTemplateVisualPanel2 extends JPanel {
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GLFTemplateVisualPanel2.class, "GLFTemplateVisualPanel2.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea createdFiles;
     private javax.swing.JLabel extensionsHint;
@@ -174,13 +242,16 @@ public final class GLFTemplateVisualPanel2 extends JPanel {
     private javax.swing.JTextField tfExtensions;
     private javax.swing.JTextField tfMimeType;
     // End of variables declaration//GEN-END:variables
-    
-    String getMimeType () {
-        return tfMimeType.getText ();
+    String getMimeType() {
+        return tfMimeType.getText();
     }
-    
-    String getExtensions () {
-        return tfExtensions.getText ();
+
+    String getExtensions() {
+        return tfExtensions.getText();
+    }
+
+    public CreatedModifiedFiles getCreatedModifiedFiles() {
+        return wizardPanel.isValid() ? cmf : null;  // so that dummy entry is not returned
     }
 }
 
