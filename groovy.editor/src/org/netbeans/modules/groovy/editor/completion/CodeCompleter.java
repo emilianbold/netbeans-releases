@@ -175,20 +175,6 @@ public class CodeCompleter implements CodeCompletionHandler {
         }
     }
 
-    private void populateProposal(Class clz, Object method, CompletionRequest request, List<CompletionProposal> proposals, boolean isGDK) {
-        if (method != null && (method instanceof MetaMethod)) {
-            MetaMethod mm = (MetaMethod) method;
-
-            LOG.log(Level.FINEST, "populateProposal - MetaMethod : {0}", mm.getName());
-
-            if (mm.getName().startsWith(request.prefix)) {
-                MethodItem item = new MethodItem(clz, mm, anchor, request, isGDK);
-                proposals.add(item);
-            }
-
-        }
-    }
-
     private void printASTNodeInformation(ASTNode node) {
 
         LOG.log(Level.FINEST, "--------------------------------------------------------");
@@ -1488,6 +1474,21 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         ClassNode declClass = null;
 
+        /* -------------------------------------------
+
+         Here are some testpatterns:
+
+        new String().
+        new String().toS
+        " ddd ".
+        " ddd ".toS
+        s.
+        s.spli
+        l.
+        l.M
+        // ------------------------------------------- */
+
+
         // Loop the path till we find something usefull.
         
         for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
@@ -1557,19 +1558,71 @@ public class CodeCompleter implements CodeCompletionHandler {
             MetaClass metaClz = GroovySystem.getMetaClassRegistry().getMetaClass(clz);
 
             if (metaClz != null) {
+
+                List<MethodItem> result = new ArrayList<MethodItem>();
+
                 LOG.log(Level.FINEST, "Adding groovy methods --------------------------"); // NOI18N
                 for (Object method : metaClz.getMetaMethods()) {
-                    populateProposal(clz, method, request, proposals, true);
+                    populateProposal(clz, method, request, result, true);
                 }
                 LOG.log(Level.FINEST, "Adding JDK methods --------------------------"); // NOI18N
                 for (Object method : metaClz.getMethods()) {
-                    populateProposal(clz, method, request, proposals, false);
+                    populateProposal(clz, method, request, result, false);
                 }
+
+                for (MethodItem methodItem : result) {
+                    proposals.add(methodItem);
+                }
+
             }
         }
 
         return true;
     }
+
+    private void populateProposal(Class clz, Object method, CompletionRequest request, List<MethodItem> methodList, boolean isGDK) {
+        if (method != null && (method instanceof MetaMethod)) {
+            MetaMethod mm = (MetaMethod) method;
+
+            if (mm.getName().startsWith(request.prefix)) {
+//                LOG.log(Level.FINEST, "populateProposal -------------------------------------");
+//                LOG.log(Level.FINEST, "MetaMethod Name : {0}", mm.getName());
+//                LOG.log(Level.FINEST, "MetaMethod Decl : {0}", mm.getDeclaringClass());
+//                LOG.log(Level.FINEST, "MetaMethod Dist : {0}", mm.getDeclaringClass().getSuperClassDistance());
+//                LOG.log(Level.FINEST, "MetaMethod Sign : {0}", mm.getSignature());
+
+                MethodItem item = new MethodItem(clz, mm, anchor, request, isGDK);
+                addOrReplaceItem(methodList, item);
+            }
+
+        }
+    }
+
+    private void addOrReplaceItem(List<MethodItem> methodItemList, MethodItem itemToStore){
+
+        // if we have a method in-store which has the same name and same signature
+        // then replace it if we have a method with a higher distance to the super-class.
+        // For example: toString() is defined in java.lang.Object and java.lang.String
+        // therefore take the one from String.
+
+        MetaMethod methodToStore = itemToStore.getMethod();
+        int toStoreDistance = methodToStore.getDeclaringClass().getSuperClassDistance();
+
+        for (MethodItem methodItem : methodItemList) {
+            MetaMethod listMethod = methodItem.getMethod();
+
+            if (listMethod.getName().equals(methodToStore.getName()) &&
+                    listMethod.getSignature().equals(methodToStore.getSignature()) &&
+                    listMethod.getDeclaringClass().getSuperClassDistance() < toStoreDistance) {
+                    LOG.log(Level.FINEST, "Remove existing method: {0}", methodToStore.getName()); // NOI18N
+                    methodItemList.remove(methodItem);
+                    break; // it's unlikely that we have more then one Method with a smaller distance
+            }
+        }
+
+        methodItemList.add(itemToStore);
+    }
+
 
     public CodeCompletionResult complete(CodeCompletionContext context) {
         CompilationInfo info = context.getInfo();
@@ -2071,6 +2124,10 @@ public class CodeCompleter implements CodeCompletionHandler {
             methodElement = new AstMethodElement(new ASTNode(), clz, method, isGDK);
         }
 
+        public MetaMethod getMethod() {
+            return method;
+        }
+        
         @Override
         public String getName() {
             return method.getName() + "()";
