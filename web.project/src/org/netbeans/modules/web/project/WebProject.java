@@ -91,6 +91,7 @@ import org.netbeans.modules.web.project.ui.WebLogicalViewProvider;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathExtender;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifierSupport;
@@ -115,7 +116,6 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.common.project.classpath.LibrariesLocationUpdater;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
@@ -124,7 +124,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.web.project.classpath.WebProjectLibrariesModifierImpl;
-//import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSVersionProvider;
 import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilter;
 import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilterProvider;
 import org.netbeans.modules.web.project.ui.customizer.CustomizerProviderImpl;
@@ -181,7 +180,6 @@ public final class WebProject implements Project, AntProjectListener {
     private final ClassPathModifier cpMod;
     private final WebProjectLibrariesModifierImpl libMod;
     private final ClassPathProviderImpl cpProvider;
-    private LibrariesLocationUpdater librariesLocationUpdater;
     private ClassPathUiSupport.Callback classPathUiSupportCallback;
     
     private AntBuildExtender buildExtender;
@@ -324,9 +322,6 @@ public final class WebProject implements Project, AntProjectListener {
                                     new String[]{ProjectProperties.JAVAC_CLASSPATH, WebProjectProperties.WAR_CONTENT_ADDITIONAL});
         libMod = new WebProjectLibrariesModifierImpl(this, this.updateHelper, eval, refHelper);
         classPathExtender = new ClassPathExtender(cpMod, ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES);
-        librariesLocationUpdater = new LibrariesLocationUpdater(this, updateHelper, eval, cpMod.getClassPathSupport(),
-                ProjectProperties.JAVAC_CLASSPATH, WebProjectProperties.TAG_WEB_MODULE_LIBRARIES, 
-                WebProjectProperties.WAR_CONTENT_ADDITIONAL, WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
         lookup = createLookup(aux, cpProvider);
         helper.addAntProjectListener(this);
         css = new CopyOnSaveSupport();
@@ -505,10 +500,6 @@ public final class WebProject implements Project, AntProjectListener {
     String getBuildXmlName () {
         String storedName = helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.BUILD_FILE);
         return storedName == null ? GeneratedFilesHelper.BUILD_XML_PATH : storedName;
-    }
-    
-    public void refreshLibraryProperties() {
-        librariesLocationUpdater.storeLibLocations();
     }
     
     // Package private methods -------------------------------------------------
@@ -909,18 +900,16 @@ public final class WebProject implements Project, AntProjectListener {
 
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
 
-            //update lib references in project properties
-            ArrayList<ClassPathSupport.Item> l = new ArrayList<ClassPathSupport.Item>();
-            l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(ProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
-            l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
-            ProjectProperties.storeLibrariesLocations(helper, l.iterator(), helper.isSharableProject() ? props : ep);
-            
-            // #129316
-            if (helper.isSharableProject()) {
-                ProjectProperties.removeObsoleteLibraryLocations(ep);
+            // #134642 - use Ant task from copylibs library
+            if (helper.isSharableProject() && refHelper.getProjectLibraryManager().getLibrary("CopyLibs") == null) { // NOI18N
+                try {
+                    refHelper.copyLibrary(LibraryManager.getDefault().getLibrary("CopyLibs")); // NOI18N
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
-            ProjectProperties.refreshLibraryTotals(props, cpMod.getClassPathSupport(), ProjectProperties.JAVAC_CLASSPATH,  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES);
-            ProjectProperties.refreshLibraryTotals(props, cpMod.getClassPathSupport(), WebProjectProperties.WAR_CONTENT_ADDITIONAL,  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
+            ProjectProperties.removeObsoleteLibraryLocations(ep);
+            ProjectProperties.removeObsoleteLibraryLocations(props);
 
             //add webinf.dir required by 6.0 projects
             if (props.getProperty(WebProjectProperties.WEBINF_DIR) == null) {
@@ -1039,11 +1028,6 @@ public final class WebProject implements Project, AntProjectListener {
                 unregisterJ2eePlatformListener(platform);
             }
             
-            // unregister the property change listener on the prop evaluator
-            if (librariesLocationUpdater != null) {
-                librariesLocationUpdater.destroy();
-            }
-
             // remove ServiceListener from jaxWsModel            
             //if (jaxWsModel!=null) jaxWsModel.removeServiceListener(jaxWsServiceListener);
 

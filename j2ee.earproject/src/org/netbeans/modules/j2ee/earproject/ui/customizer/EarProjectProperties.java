@@ -354,10 +354,6 @@ public final class EarProjectProperties {
                     project, projectProperties, privateProperties);
         }
         
-        ArrayList libs = new ArrayList ();
-        libs.addAll(ClassPathUiSupport.getList(EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel()));
-        ProjectProperties.storeLibrariesLocations (antProjectHelper, libs.iterator(), antProjectHelper.isSharableProject() ? projectProperties : privateProperties);
-        
         CLIENT_MODULE_MODEL.storeSelectedItem(projectProperties);
         
         // Store the property changes into the project

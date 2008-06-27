@@ -213,9 +213,7 @@ public class ClassPathModifierSupport {
             cpUiSupportCallback.initItem(item);
             items.add(item);
         }
-        boolean res = handleLibraryClassPathItems(project, helper, cs, items, classPathProperty, projectXMLElementName, operation, true);
-        ProjectProperties.storeLibrariesLocations(project, helper, cs, libUpdaterProperties, null, false);
-        return res;
+        return handleLibraryClassPathItems(project, helper, cs, items, classPathProperty, projectXMLElementName, operation, true);
     }
     
     private static Library checkLibrarySharability(Project project, AntProjectHelper antHelper, ReferenceHelper refHelper, Library lib) throws IOException {

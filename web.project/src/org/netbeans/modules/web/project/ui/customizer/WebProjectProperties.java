@@ -607,13 +607,6 @@ public class WebProjectProperties {
 
         storeAdditionalProperties(projectProperties);
         
-        List<ClassPathSupport.Item> libs = new ArrayList<ClassPathSupport.Item>();
-        libs.addAll(ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel()));
-        libs.addAll(ClassPathUiSupport.getList(WAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel()));
-        
-        ProjectProperties.storeLibrariesLocations (project.getAntProjectHelper(), libs.iterator(), 
-                project.getAntProjectHelper().isSharableProject() ? projectProperties : privateProperties);
-        
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );

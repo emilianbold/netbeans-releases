@@ -166,7 +166,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.24</specification-version>
+                        <specification-version>1.26</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -522,7 +522,7 @@ made subject to such option by the copyright holder.
                 <package-root>antsrc</package-root>
                 <classpath>${module.classpath}:${antsrc.cp.extra}</classpath>
                 <built-to>build/antclasses</built-to>
-                <built-to>${cluster}/ant/extra/copyfiles.jar</built-to>
+                <built-to>${cluster}/ant/extra/jspcompile.jar</built-to>
             </extra-compilation-unit>
         </data>
     </configuration>

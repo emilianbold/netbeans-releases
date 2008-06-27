@@ -223,7 +223,6 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         }
         jTabbedPane1.repaint();
         testBroken();
-        uiProperties.getProject().refreshLibraryProperties();
     }
     
     private void cleanupOldLibraryReferences() {
@@ -769,6 +768,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
             collectLibs(uiProperties.JAVAC_TEST_CLASSPATH_MODEL, libs, jars);
             collectLibs(uiProperties.RUN_TEST_CLASSPATH_MODEL, libs, jars);
             collectLibs(uiProperties.WAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel(), libs, jars);
+            libs.add("CopyLibs"); // NOI18N
             boolean result = SharableLibrariesUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), uiProperties.getProject().getReferenceHelper(), libs, jars);
             if (result) {
                 isSharable = true;
