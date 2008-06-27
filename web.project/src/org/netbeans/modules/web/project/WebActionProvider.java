@@ -92,7 +92,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarter;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.netbeans.modules.web.project.ui.ServletUriPanel;
@@ -713,10 +713,8 @@ class WebActionProvider implements ActionProvider {
         return targetNames;
     }
 
-    private void setJavaScriptDebuggerProperties(Properties p) {
-        boolean isDebuggerAvailable = Lookup.getDefault().lookup(WebClientToolsSessionStarter.class) != null;
-        
-        if (!isDebuggerAvailable) {
+    private void setJavaScriptDebuggerProperties(Properties p) {       
+        if (!WebClientToolsSessionStarterService.isAvailable()) {
             // If JavaScript debugger is not available, set to server debugging only
             p.setProperty("debug.client", "false"); // NOI18N
             p.setProperty("debug.server", "true"); // NOI18N

@@ -40,15 +40,16 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.web.client.javascript.debugger.ant</friend>
-                <friend>org.netbeans.modules.web.client.javascript.debugger.api</friend>
-                <friend>org.netbeans.modules.web.client.javascript.debugger.js.api</friend>
-                <friend>org.netbeans.modules.web.client.javascript.debugger.firefox</friend>
-                <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>
+                <friend>org.netbeans.modules.web.client.javascript.debugger.ant</friend>
+                <friend>org.netbeans.modules.web.client.javascript.debugger.api</friend>
+                <friend>org.netbeans.modules.web.client.javascript.debugger.firefox</friend>
+                <friend>org.netbeans.modules.web.client.javascript.debugger.js.api</friend>
                 <friend>org.netbeans.modules.web.client.tools.impl</friend>
+                <friend>org.netbeans.modules.web.project</friend>
                 <package>org.netbeans.modules.web.client.tools.api</package>
+                <package>org.netbeans.modules.web.client.tools.spi</package>
             </friend-packages>
         </data>
     </configuration>

@@ -94,7 +94,7 @@ import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
 import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionException;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarter;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -463,8 +463,7 @@ public final class RailsServerManager {
                     HtmlBrowser.URLDisplayer.getDefault().showURL(url);
                     return;
                 }
-                
-                WebClientToolsSessionStarter debugger = Lookup.getDefault().lookup(WebClientToolsSessionStarter.class);
+                                 
                 LocationMappersFactory mapperFactory = Lookup.getDefault().lookup(LocationMappersFactory.class);
 
                 Lookup debuggerLookup = null;
@@ -480,7 +479,7 @@ public final class RailsServerManager {
                     debuggerLookup = Lookups.fixed(project);
                 }
                 
-                debugger.startSession(url.toURI(), browser, debuggerLookup);
+                WebClientToolsSessionStarterService.startSession(url.toURI(), browser, debuggerLookup);
             }
         } catch (MalformedURLException ex) {
             ErrorManager.getDefault().notify(ex);

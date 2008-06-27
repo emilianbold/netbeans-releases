@@ -81,7 +81,7 @@ import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarter;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.ErrorManager;
@@ -830,8 +830,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             boolean serverDebug;
             boolean clientDebug;
             
-            WebClientToolsSessionStarter clientDebugger = Lookup.getDefault().lookup(WebClientToolsSessionStarter.class);
-            if (clientDebugger == null) {
+            if (WebClientToolsSessionStarterService.isAvailable()) {
                 // Ignore the debugging options if no Javascript debugger is present
                 clientDebug = false;
                 serverDebug = true;

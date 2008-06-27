@@ -36,14 +36,16 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.client.tools.api;
+
+package org.netbeans.modules.web.client.tools.spi;
 
 import java.net.URI;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionException;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Lookup;
 
 /**
- * This defines an interface to the service used to start the tools such as
+ * This SPI is used to start the tools such as
  * JavaScript Debugger, Client side HTTP monitor and DOM/CSS inspector. The
  * singleton service implementation should be registered using the standard
  * META-INF/services and is discovred using the default lookup.
@@ -51,6 +53,5 @@ import org.openide.util.Lookup;
  * @author Sandip V. Chitale <sandipchitale@netbeans.org>
  */
 public interface WebClientToolsSessionStarter {
-
     void startSession(URI uri, HtmlBrowser.Factory browser, Lookup lookup) throws WebClientToolsSessionException;
 }

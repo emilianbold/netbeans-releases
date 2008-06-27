@@ -55,7 +55,7 @@ import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
 import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarter;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -115,11 +115,7 @@ public class NbJsDebugStart extends Task {
 
             String serverPrefix = getWebBaseUrl();
             
-            WebClientToolsSessionStarter debugger = Lookup.getDefault().lookup(WebClientToolsSessionStarter.class);
             LocationMappersFactory mapperFactory = Lookup.getDefault().lookup(LocationMappersFactory.class);
-            if (debugger == null) {
-                throw new BuildException("A JavaScript debugger is not installed"); // NOI18N
-            }
             
             Lookup debuggerLookup = null;
             if (mapperFactory != null) {
@@ -153,7 +149,7 @@ public class NbJsDebugStart extends Task {
                 throw new BuildException("The configured debugging browser could not be found"); // NOI18N
             }
             
-            debugger.startSession(clientUrl, browser, debuggerLookup);
+            WebClientToolsSessionStarterService.startSession(clientUrl, browser, debuggerLookup);
         }catch (Exception ex) {
             throw new BuildException(ex);
         }
