@@ -211,21 +211,14 @@ public class NavUtils {
     }
     
     private static FileObject resolveRelativeFile(CompilationInfo info, String name) {
-        PhpSourcePath psp = null;
-        Project p = FileOwnerQuery.getOwner(info.getFileObject());
-
-        if (p != null) {
-            psp = p.getLookup().lookup(PhpSourcePath.class);
-        }
-        
         while (true) {
             FileObject result;
             
-            if (psp != null) {
-                result = psp.resolveFile(info.getFileObject().getParent(), name);
-            } else {
-                result = info.getFileObject().getParent().getFileObject(name);
-            }
+//            if (psp != null) {
+                result = PhpSourcePath.resolveFile(info.getFileObject().getParent(), name);
+//            } else {
+//                result = info.getFileObject().getParent().getFileObject(name);
+//            }
             
             if (result != null) {
                 return result;
