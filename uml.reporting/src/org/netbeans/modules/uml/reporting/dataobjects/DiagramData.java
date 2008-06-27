@@ -42,21 +42,24 @@
 
 package org.netbeans.modules.uml.reporting.dataobjects;
 
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
+import org.netbeans.modules.uml.core.metamodel.diagrams.EdgeMapLocation;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
-import org.netbeans.modules.uml.core.metamodel.diagrams.IEdgeMapLocation;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IGraphicExportDetails;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IGraphicMapLocation;
 import org.netbeans.modules.uml.core.metamodel.diagrams.ILabelMapLocation;
-import org.netbeans.modules.uml.core.metamodel.diagrams.INodeMapLocation;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
+import org.netbeans.modules.uml.core.metamodel.diagrams.NodeMapLocation;
 import org.netbeans.modules.uml.core.support.umlsupport.IETPoint;
 import org.netbeans.modules.uml.core.support.umlsupport.IETRect;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
@@ -146,14 +149,8 @@ public class DiagramData extends ElementDataObject
             
             IETRect pMainRect = pDetails.getGraphicBoundingRect();
             if (pMainRect != null)
-            {
-                int nMainRectLeft = pMainRect.getLeft();
-                int nMainRectBottom = pMainRect.getTop(); // The y axis is opposite of the TS coordinates
-                int nMainRectTop = pMainRect.getBottom();
-                int nMainRectRight = pMainRect.getRight();
-                
-                str = "<IMG SRC=\"" + jpg + "\" USEMAP=\"#MAP0-0\" BORDER=0 COORDS=\"" +  // NOI18N
-                        nMainRectLeft + nMainRectTop + nMainRectRight + nMainRectBottom + "\">"; // NOI18N
+            {          
+                str = "<IMG SRC=\"" + jpg + "\" USEMAP=\"#MAP0-0\" BORDER=0>"; // NOI18N
                 
                 page.append(str);
                 page.append("<MAP NAME=\"MAP0-0\">"); // NOI18N
@@ -181,18 +178,18 @@ public class DiagramData extends ElementDataObject
                             if (pGMLoc != null)
                             {
                                 // see if we have a node or a label
-                                if (pGMLoc instanceof INodeMapLocation)
+                                if (pGMLoc instanceof NodeMapLocation)
                                 {
-                                    INodeMapLocation pLoc = (INodeMapLocation) pGMLoc;
+                                    NodeMapLocation pLoc = (NodeMapLocation) pGMLoc;
                                     // create the line in the jpg map for this node
-                                    String str2 = createLineForNode(pDiagram, nMainRectBottom, pLoc);
+                                    String str2 = createLineForNode(pDiagram, pLoc);
                                     page.append(str2);
                                 }
                                 else if (pGMLoc instanceof ILabelMapLocation)
                                 {
                                     ILabelMapLocation pLabel = (ILabelMapLocation) pGMLoc;
                                     // create the line in the jpg map for this label
-                                    String str2 = createLineForLabel(nMainRectBottom, pLabel);
+                                    String str2 = createLineForLabel(pLabel);
                                     page.append(str2);
                                 }
                             }
@@ -205,11 +202,11 @@ public class DiagramData extends ElementDataObject
                             if (pGMLoc != null)
                             {
                                 // is it an edge
-                                if (pGMLoc instanceof IEdgeMapLocation)
+                                if (pGMLoc instanceof EdgeMapLocation)
                                 {
-                                    IEdgeMapLocation pEdgeLoc = (IEdgeMapLocation) pGMLoc;
+                                    EdgeMapLocation pEdgeLoc = (EdgeMapLocation) pGMLoc;
                                     // create the line in the jpg map for the link
-                                    String str2 = createLineForLink(nMainRectBottom, pEdgeLoc);
+                                    String str2 = createLineForLink(pEdgeLoc);
                                     page.append(str2);
                                 }
                             }
@@ -239,26 +236,22 @@ public class DiagramData extends ElementDataObject
      * @return CComBSTR			The string representing the HTML
      *
      */
-    private String createLineForNode(IDiagram diagram, int nMainRectBottom, INodeMapLocation pLoc)
+    private String createLineForNode(IDiagram diagram, NodeMapLocation pLoc)
     {
         String str = "";
-        if (nMainRectBottom > 0 && pLoc != null)
+        if (pLoc != null)
         {
             // Get the basic graphic map information
             String name = pLoc.getName();
             
             // Get the node specific stuff
-            IETRect pRect = pLoc.getLocation();
+            Rectangle pRect = pLoc.getLocation();
             if (pRect != null)
             {
-                int nRectLeft = pRect.getLeft();
-                int nRectTop = pRect.getTop(); // Y coordinates are flipped
-                int nRectBottom = pRect.getBottom();
-                int nRectRight = pRect.getRight();
-                long nTempRectLeft = nRectLeft;
-                long nTempRectTop = nRectTop;
-                long nTempRectRight = nRectRight;
-                long nTempRectBottom = nRectBottom;
+                int nTempRectLeft = pRect.x;
+                int nTempRectTop = pRect.y;
+                int nTempRectRight = pRect.x + pRect.width;
+                int nTempRectBottom = pRect.y + pRect.height;
                 
                 if (displayLink(pLoc.getElement()))
                 {
@@ -287,10 +280,10 @@ public class DiagramData extends ElementDataObject
      * @return CComBSTR			The string representing the HTML
      *
      */
-    private String createLineForLabel(int nMainRectBottom, ILabelMapLocation pLoc)
+    private String createLineForLabel(ILabelMapLocation pLoc)
     {
         String str = "";
-        if (nMainRectBottom > 0 && pLoc != null)
+        if (pLoc != null)
         {
             // Get the basic graphic map information
             String name = pLoc.getName();
@@ -336,18 +329,16 @@ public class DiagramData extends ElementDataObject
      * @return CComBSTR			The string representing the HTML
      *
      */
-    private String createLineForLink(int nMainRectBottom, IEdgeMapLocation pEdgeLoc)
+    private String createLineForLink(EdgeMapLocation pEdgeLoc)
     {
         String str = ""; // NOI18N
-        if (nMainRectBottom > 0 && pEdgeLoc != null)
+        if (pEdgeLoc != null)
         {
-            // Get the basic graphic map information
             String name = pEdgeLoc.getName();
             
             if (displayLink(pEdgeLoc.getElement()))
             {
-                // Get the node specific stuff
-                ETList < IETPoint > pPointsList = pEdgeLoc.getPoints();
+                List < Point > pPointsList = pEdgeLoc.getPoints();
                 if (pPointsList != null && pPointsList.size() > 0)
                 {
                     str = "<AREA SHAPE=\"POLY\" COORDS=\""; // NOI18N
@@ -355,11 +346,9 @@ public class DiagramData extends ElementDataObject
                     
                     for (int i = 0; i < ptCount; i++)
                     {
-                        IETPoint pPoint = pPointsList.item(i);
-                        Integer x = new Integer(pPoint.getX());
-                        Integer y = new Integer(pPoint.getY());
-                        str += x.toString() + ","; // NOI18N
-                        str += y.toString();
+                        Point point = pPointsList.get(i);
+                        str += point.x + ","; // NOI18N
+                        str += point.y;
                         
                         if (i + 1 != ptCount)
                             str += ","; // NOI18N
@@ -481,7 +470,7 @@ public class DiagramData extends ElementDataObject
         body = body.replaceAll("SCRIPT_PATH", scriptPath); // NOI18N
         body = body.replaceAll("%DIAGRAM_NAME%", getDiagram().getDiagramKindAsString() + " " + diagramName); // NOI18N
         
-        body = body.replaceAll("%DIAGRAM_DOC%", getDiagram().getDocumentation()); // NOI18N
+        body = body.replaceAll("%DIAGRAM_DOC%", getDiagram().getDocumentation() == null? "": getDiagram().getDocumentation()); // NOI18N
         
         body = body.replaceAll("FULL_DIAGRAM_HTML", fileName); // NOI18N
         body = body.replace("%BRAND%", NbBundle.getMessage(DiagramData.class, "brand")); // NOI18N

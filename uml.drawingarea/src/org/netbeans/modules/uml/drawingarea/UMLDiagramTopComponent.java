@@ -236,8 +236,20 @@ public class UMLDiagramTopComponent extends TopComponent
         cutActionPerformer.setEnabled(false);
         pasteActionPerformer.setEnabled(false);
         deleteActionPerformer.setEnabled(false);
-               
-        setToolTipText(NbBundle.getMessage(UMLDiagramTopComponent.class, "HINT_UMLDiagramTopComponent"));
+         
+        if (java.awt.EventQueue.isDispatchThread())
+        {
+            setToolTipText(NbBundle.getMessage(UMLDiagramTopComponent.class, "HINT_UMLDiagramTopComponent"));
+        } else
+        {
+            java.awt.EventQueue.invokeLater(new Runnable()
+            {
+                public void run()
+                {
+                    setToolTipText(NbBundle.getMessage(UMLDiagramTopComponent.class, "HINT_UMLDiagramTopComponent"));
+                }
+            });
+        }
     }
 
 
@@ -264,9 +276,7 @@ public class UMLDiagramTopComponent extends TopComponent
         if ( uiDiagram != null) {
             uiDiagram.setDataObject(diagramDO);
         }
-        initUI();
-        setName();
-        setIcon();
+        initInAWTThread();
 
         editorToolbar = new Toolbar("Diagram Toolbar", false);
         add(editorToolbar, BorderLayout.NORTH);
@@ -297,9 +307,7 @@ public class UMLDiagramTopComponent extends TopComponent
         
         IDiagram diagram = initNewDiagram(owner, name, kind);
 
-        initUI();
-        setName();
-        setIcon();      
+       initInAWTThread();
         
         editorToolbar = new Toolbar("Diagram Toolbar", false);
         add(editorToolbar, BorderLayout.NORTH);
@@ -338,6 +346,31 @@ public class UMLDiagramTopComponent extends TopComponent
         getExplorerManager().setRootContext(node);
     }
 
+    private void init()
+    {
+        initUI();
+        setName();
+        setIcon();
+    }
+    
+    
+    private void initInAWTThread()
+    {
+        if (java.awt.EventQueue.isDispatchThread())
+        {
+            init();
+        } else
+        {
+            java.awt.EventQueue.invokeLater(new Runnable()
+            {
+                public void run()
+                {
+                    init();
+                }
+            });
+        }
+    }
+    
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
@@ -629,8 +662,20 @@ public class UMLDiagramTopComponent extends TopComponent
         CommonResourceManager resource = CommonResourceManager.instance();
 
         String kind = getAssociatedDiagram().getDiagramKindAsString();
-        String details = resource.getIconDetailsForElementType(kind);
-        setIcon(Utilities.loadImage(details, true));
+        final String details = resource.getIconDetailsForElementType(kind);
+        if (java.awt.EventQueue.isDispatchThread())
+        {
+            setIcon(Utilities.loadImage(details, true));
+        } else
+        {
+            java.awt.EventQueue.invokeLater(new Runnable()
+            {
+                public void run()
+                {
+                    setIcon(Utilities.loadImage(details, true));
+                }
+            });
+        }
     }
 
     protected void setName()
