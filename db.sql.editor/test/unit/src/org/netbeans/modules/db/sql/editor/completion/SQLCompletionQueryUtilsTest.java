@@ -39,34 +39,26 @@
 
 package org.netbeans.modules.db.sql.editor.completion;
 
-import java.util.List;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author Andrei Badea
  */
-public interface MetadataModel {
+public class SQLCompletionQueryUtilsTest extends NbTestCase {
 
-    public static final String NO_SCHEMA_NAME = "";
+    public SQLCompletionQueryUtilsTest(String name) {
+        super(name);
+    }
 
-    /**
-     * Doesn't necessarily have to exist.
-     *
-     * @return
-     */
-    String getDefaultSchemaName();
-
-    List<String> getSchemaNames();
-
-    List<String> getTableNames(String schema);
-
-    List<String> getColumnNames(String schema, String table);
-
-    // XXX split these methods out to a separate interface once a proper
-    // model is introduced.
-
-    /**
-     * @return null if quoting is not supported.
-     */
-    String getIdentifierQuoteString();
+    public void testUnquote() {
+        assertEquals("id", SQLCompletionQuery.unquote("id", null));
+        assertEquals("id", SQLCompletionQuery.unquote("id", "`"));
+        assertEquals("id", SQLCompletionQuery.unquote("id", "`"));
+        assertEquals("id", SQLCompletionQuery.unquote("id", "`"));
+        assertEquals("id", SQLCompletionQuery.unquote("id", "`"));
+        assertEquals("id", SQLCompletionQuery.unquote("id", "`"));
+        assertNull(SQLCompletionQuery.unquote("``", "`"));
+        assertNull(SQLCompletionQuery.unquote("```", "`"));
+    }
 }
