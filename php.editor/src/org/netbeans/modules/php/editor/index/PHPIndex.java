@@ -137,7 +137,7 @@ public class PHPIndex {
 
             }
 
-            return URLMapper.findFileObject(new URL(url));
+            return URLMapper.findFileObject(new URL(new URL(url).toExternalForm()));
         } catch (MalformedURLException mue) {
             Exceptions.printStackTrace(mue);
         }
