@@ -55,7 +55,7 @@ import org.netbeans.modules.versioning.spi.VersioningSystem;
  * 
  * @author Maros Sandor
  */
-public class MercurialVCS extends VersioningSystem implements PropertyChangeListener, CollocationQueryImplementation {
+public class MercurialVCS extends VersioningSystem implements PropertyChangeListener {
 
     public MercurialVCS() {
         putProperty(PROP_DISPLAY_NAME, org.openide.util.NbBundle.getMessage(MercurialVCS.class, "CTL_Mercurial_DisplayName")); // NOI18N
@@ -65,19 +65,27 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
         Mercurial.getInstance().getFileStatusCache().addPropertyChangeListener(this);
     }
 
-    public boolean areCollocated(File a, File b) {
-        File fra = getTopmostManagedAncestor(a);
-        File frb = getTopmostManagedAncestor(b);
-
-        if (fra == null || !fra.equals(frb)) return false;
-
-        return true;
+    @Override
+    public CollocationQueryImplementation getCollocationQueryImplementation() {
+        return collocationQueryImplementation;
     }
 
-    public File findRoot(File file) {
-        return getTopmostManagedAncestor(file);
-    }
+    private final CollocationQueryImplementation collocationQueryImplementation = new CollocationQueryImplementation() {
+        public boolean areCollocated(File a, File b) {
+            File fra = getTopmostManagedAncestor(a);
+            File frb = getTopmostManagedAncestor(b);
 
+            if (fra == null || !fra.equals(frb)) return false;
+
+            return true;
+        }
+
+        public File findRoot(File file) {
+            // TODO: we should probably return the closest common ancestor
+            return getTopmostManagedAncestor(file);
+        }
+    };
+            
     /**
      * Tests whether the file is managed by this versioning system. If it is, 
      * the method should return the topmost 

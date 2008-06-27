@@ -72,6 +72,9 @@ public final class RakeTaskChooser extends JPanel {
     
     private final static Object NO_TASK_ITEM = getMessage("RakeTaskChooser.no.matching.task");
 
+    /** Remember checkbox state per IDE sessions. */
+    private static boolean debug;
+
     private final RubyBaseProject project;
     private final List<RakeTask> allTasks;
 
@@ -125,7 +128,8 @@ public final class RakeTaskChooser extends JPanel {
         
         if (descriptor.getValue() == runButton) {
             RakeTask task = (RakeTask) chooserPanel.matchingTaskList.getSelectedValue();
-            return new TaskDescriptor(task, chooserPanel.debugCheckbox.isSelected());
+            RakeTaskChooser.debug = chooserPanel.debugCheckbox.isSelected();
+            return new TaskDescriptor(task, RakeTaskChooser.debug);
         }
         return null;
     }
@@ -158,6 +162,7 @@ public final class RakeTaskChooser extends JPanel {
         this.allTasks = new ArrayList<RakeTask>();
         this.project = project;
         initComponents();
+        debugCheckbox.setSelected(debug);
         reloadAllTasks();
         refreshTaskList();
         matchingTaskList.setCellRenderer(new RakeTaskChooser.RakeTaskRenderer());
@@ -326,11 +331,11 @@ public final class RakeTaskChooser extends JPanel {
         }
 
         if (isListScrollAction) {
-            Action action = matchingTaskList.getActionMap().get(actionKey);
+            Action action = matchingTaskList.getActionMap().get(actionKey);//GEN-LAST:event_rakeTaskFieldKeyPressed
             action.actionPerformed(new ActionEvent(matchingTaskList, 0, (String) actionKey));
             evt.consume();
         }
-    }//GEN-LAST:event_rakeTaskFieldKeyPressed
+    }                                        
 
     private static class RakeTaskRenderer extends JLabel implements ListCellRenderer {
 

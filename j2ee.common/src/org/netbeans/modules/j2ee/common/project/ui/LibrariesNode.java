@@ -135,10 +135,9 @@ public final class LibrariesNode extends AbstractNode {
      */
     public LibrariesNode (String displayName, Project project, PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
                    String classPathProperty, String[] classPathIgnoreRef, String platformProperty, String j2eePlatformProperty,
-                   String j2eeClassPathProperty, Action[] librariesNodeActions, String webModuleElementName, ClassPathSupport cs,
-                   String[] libUpdaterProperties) {
+                   String j2eeClassPathProperty, Action[] librariesNodeActions, String webModuleElementName, ClassPathSupport cs) {
         super (new LibrariesChildren (eval, helper, refHelper, classPathProperty,
-                classPathIgnoreRef, platformProperty, j2eePlatformProperty, j2eeClassPathProperty, webModuleElementName, cs, libUpdaterProperties), Lookups.singleton(project));
+                classPathIgnoreRef, platformProperty, j2eePlatformProperty, j2eeClassPathProperty, webModuleElementName, cs), Lookups.singleton(project));
         this.displayName = displayName;
         this.librariesNodeActions = librariesNodeActions;
     }
@@ -251,7 +250,6 @@ public final class LibrariesNode extends AbstractNode {
         private final Set classPathIgnoreRef;
         private final String webModuleElementName;
         private final ClassPathSupport cs;
-        private final String[] libUpdaterProperties;
 
         //XXX: Workaround: classpath is used only to listen on non existent files.
         // This should be removed when there will be API for it
@@ -262,7 +260,7 @@ public final class LibrariesNode extends AbstractNode {
         LibrariesChildren (PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
                            String classPathProperty, String[] classPathIgnoreRef, String platformProperty, 
                            String j2eePlatformProperty, String j2eeClassPathProperty, String webModuleElementName, 
-                           ClassPathSupport cs, String[] libUpdaterProperties) {
+                           ClassPathSupport cs) {
             this.eval = eval;
             this.helper = helper;
             this.refHelper = refHelper;
@@ -273,7 +271,6 @@ public final class LibrariesNode extends AbstractNode {
             this.j2eeClassPathProperty = j2eeClassPathProperty;
             this.webModuleElementName = webModuleElementName;
             this.cs = cs;
-            this.libUpdaterProperties = libUpdaterProperties;
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
@@ -332,11 +329,11 @@ public final class LibrariesNode extends AbstractNode {
                         break;
                     case Key.TYPE_PROJECT:
                         result = new Node[] {new ProjectNode(key.getProject(), key.getArtifactLocation(), helper, key.getClassPathId(),
-                            key.getEntryId(), webModuleElementName, cs, libUpdaterProperties, refHelper)};
+                            key.getEntryId(), webModuleElementName, cs, refHelper)};
                         break;
                     case Key.TYPE_LIBRARY:
                         result = new Node[] {ActionFilterNode.create(PackageView.createPackageView(key.getSourceGroup()),
-                            helper, key.getClassPathId(), key.getEntryId(), webModuleElementName, cs, libUpdaterProperties, refHelper)};
+                            helper, key.getClassPathId(), key.getEntryId(), webModuleElementName, cs, refHelper)};
                         break;
                 }
             }

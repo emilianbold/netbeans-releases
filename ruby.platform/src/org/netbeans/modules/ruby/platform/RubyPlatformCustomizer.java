@@ -112,7 +112,7 @@ public class RubyPlatformCustomizer extends JPanel {
         });
 
         // run platform detection is this is the first time
-        if (Util.isFirstPlatformTouch()) {
+        if (RubyPreferences.isFirstPlatformTouch()) {
             performPlatformDetection();
         } else {
             setAutoDetecting(false);
@@ -542,7 +542,7 @@ public class RubyPlatformCustomizer extends JPanel {
     }
 
     private void addButtonaddPlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonaddPlatform
-        JFileChooser chooser = new JFileChooser(Util.getPreferences().get(LAST_PLATFORM_DIRECTORY, ""));
+        JFileChooser chooser = new JFileChooser(RubyPreferences.getPreferences().get(LAST_PLATFORM_DIRECTORY, ""));
         chooser.setAcceptAllFileFilterUsed(false);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setFileFilter(new FileFilter() {
@@ -556,7 +556,7 @@ public class RubyPlatformCustomizer extends JPanel {
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
             final File intepreter = FileUtil.normalizeFile(chooser.getSelectedFile());
-            Util.getPreferences().put(LAST_PLATFORM_DIRECTORY, intepreter.getParentFile().getAbsolutePath());
+            RubyPreferences.getPreferences().put(LAST_PLATFORM_DIRECTORY, intepreter.getParentFile().getAbsolutePath());
             setAutoDetecting(true);
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
@@ -572,10 +572,10 @@ public class RubyPlatformCustomizer extends JPanel {
                             setAutoDetecting(false);
                         }
                     });
-                }
+                }//GEN-LAST:event_addButtonaddPlatform
             });
         }
-    }//GEN-LAST:event_addButtonaddPlatform
+    }                                     
 
     private boolean isRuby(final File f) {
         String fName = f.getName().toLowerCase(Locale.US);
@@ -587,13 +587,13 @@ public class RubyPlatformCustomizer extends JPanel {
         if (plaf != null) {
             getPlafListModel().removePlatform(plaf);
             platformsList.setSelectedValue(RubyPlatformManager.getDefaultPlatform(), true);
-            refreshPlatform();
+            refreshPlatform();//GEN-LAST:event_removeButtonremovePlatform
         }
-    }//GEN-LAST:event_removeButtonremovePlatform
+    }                                           
 
     private void autoDetectButtonremovePlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoDetectButtonremovePlatform
-        performPlatformDetection();
-    }//GEN-LAST:event_autoDetectButtonremovePlatform
+        performPlatformDetection();//GEN-LAST:event_autoDetectButtonremovePlatform
+    }                                               
 
     private void installFastDebuggerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installFastDebuggerActionPerformed
         if (getSelectedPlatform().isJRuby()) {
@@ -602,16 +602,16 @@ public class RubyPlatformCustomizer extends JPanel {
                     "RubyPlatformCustomizer.instructionsToInstallJRubyDebugger",
                     getSelectedPlatform().getFastDebuggerProblemsInHTML());
         } else if (getSelectedPlatform().installFastDebugger()) {
-            refreshDebugger();
+            refreshDebugger();//GEN-LAST:event_installFastDebuggerActionPerformed
         }
-    }//GEN-LAST:event_installFastDebuggerActionPerformed
+    }                                                   
 
     private void browseGemHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseGemHomeActionPerformed
         boolean changed = GemPanel.chooseAndSetGemHome(this, getSelectedPlatform());
         if (changed) {
-            refreshPlatform();
+            refreshPlatform();//GEN-LAST:event_browseGemHomeActionPerformed
         }
-    }//GEN-LAST:event_browseGemHomeActionPerformed
+    }                                             
 
     private void addGemPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addGemPathActionPerformed
         File repo = GemPanel.chooseGemRepository(this);
@@ -621,10 +621,10 @@ public class RubyPlatformCustomizer extends JPanel {
                 getGemPathListModel().addPath(repo);
                 refreshPlatform();
                 gemPathList.requestFocus();
-                gemPathList.setSelectedValue(absPath, true);
+                gemPathList.setSelectedValue(absPath, true);//GEN-LAST:event_addGemPathActionPerformed
             }
         }
-}//GEN-LAST:event_addGemPathActionPerformed
+}                                          
 
     private void removeGemPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeGemPathActionPerformed
         getGemPathListModel().removePath((File) gemPathList.getSelectedValue());
@@ -632,8 +632,8 @@ public class RubyPlatformCustomizer extends JPanel {
         if (getGemPathListModel().getSize() > 0) {
             gemPathList.setSelectedIndex(0);
         }
-        gemPathList.requestFocus();
-}//GEN-LAST:event_removeGemPathActionPerformed
+        gemPathList.requestFocus();//GEN-LAST:event_removeGemPathActionPerformed
+}                                             
 
     private void refreshDebugger() {
         RubyPlatform platform = getSelectedPlatform();

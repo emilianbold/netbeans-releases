@@ -41,6 +41,7 @@
 package org.netbeans.modules.versioning.spi;
 
 import org.netbeans.modules.versioning.VersioningManager;
+import org.netbeans.spi.queries.CollocationQueryImplementation;
 
 import java.io.File;
 import java.beans.PropertyChangeListener;
@@ -169,6 +170,16 @@ public abstract class VersioningSystem {
     public void getOriginalFile(File workingCopy, File originalFile) {
         // default implementation does nothing
     }
+
+    /**
+     * Retrieves a CollocationQueryImplementation if this versioning system provides one.
+     * 
+     * @return CollocationQueryImplementation a CollocationQueryImplementation instance or null if the system does not provide the service
+     * @since 1.8
+     */
+    public CollocationQueryImplementation getCollocationQueryImplementation() {
+        return null;
+    }    
 
     /**
      * Adds a listener for change events.

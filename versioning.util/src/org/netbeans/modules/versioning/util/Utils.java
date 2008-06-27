@@ -154,8 +154,19 @@ public final class Utils {
         if (VersioningSupport.isFlat(ancestor)) {
             return ancestor.equals(file) || ancestor.equals(file.getParentFile()) && !file.isDirectory();
         }
-        if(!file.getAbsolutePath().startsWith(ancestor.getAbsolutePath())) {
-            return false;
+        
+        String filePath = file.getAbsolutePath();
+        String ancestorPath = ancestor.getAbsolutePath();
+        if(Utilities.isWindows()) {
+            if(filePath.indexOf("~") < 0 && ancestorPath.indexOf("~") < 0) {
+                if(!filePath.toUpperCase().startsWith(ancestorPath.toUpperCase())) {
+                    return false;
+                }
+            }
+        } else {
+            if(!filePath.startsWith(ancestorPath)) {
+                return false;
+            }
         }
 
         // get sure as it still could be something like:

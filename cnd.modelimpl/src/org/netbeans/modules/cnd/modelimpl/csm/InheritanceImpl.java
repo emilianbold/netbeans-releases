@@ -85,7 +85,7 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance, R
                     break;
                 case CPPTokenTypes.ID:
                     this.ancestorType = TemplateUtils.checkTemplateType(TypeFactory.createType(token, getContainingFile(), null, 0), scope);
-                    break; // it's definitely the last!; besides otherwise we get NPE in for
+                    return; // it's definitely the last!; besides otherwise we get NPE in for
             }
         }
     }

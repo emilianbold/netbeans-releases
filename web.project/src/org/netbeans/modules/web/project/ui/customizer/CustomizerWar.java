@@ -41,18 +41,31 @@
 
 package org.netbeans.modules.web.project.ui.customizer;
 
-import java.awt.Component;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport.Item;
+import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.EditMediator;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /** Customizer for WAR packaging.
  */
-public class CustomizerWar extends JPanel implements HelpCtx.Provider {
+public class CustomizerWar extends JPanel implements HelpCtx.Provider, TableModelListener {
     
     WebProjectProperties uiProperties;
     
@@ -66,39 +79,44 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider {
         jTextFieldExContent.setDocument( uiProperties.BUILD_CLASSES_EXCLUDES_MODEL );
         uiProperties.WAR_COMPRESS_MODEL.setMnemonic( jCheckBoxCompress.getMnemonic() );
         jCheckBoxCompress.setModel( uiProperties.WAR_COMPRESS_MODEL );
+        ClassPathUiSupport.Callback callback = new ClassPathUiSupport.Callback() {
+            public void initItem(Item item) {
+                if (item.getType() != ClassPathSupport.Item.TYPE_LIBRARY || !item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
+                    item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, "/"); //NOI18N
+                }
+            }
+        };
         
+        jTableAddContent.setModel( uiProperties.WAR_CONTENT_ADDITIONAL_MODEL);
+        jTableAddContent.setDefaultRenderer(ClassPathSupport.Item.class, uiProperties.CLASS_PATH_TABLE_ITEM_RENDERER);
         initTableVisualProperties(jTableAddContent);
         
-        WarIncludesUi.EditMediator.register( uiProperties.getProject(),
-                jTableAddContent,
+        EditMediator.register( uiProperties.getProject(),
+                uiProperties.getProject().getAntProjectHelper(),
+                uiProperties.getProject().getReferenceHelper(),
+                EditMediator.createListComponent(jTableAddContent, uiProperties.WAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel()) , 
                 jButtonAddJar.getModel(),
                 jButtonAddLib.getModel(),
                 jButtonAddProject.getModel(),
                 jButtonRemove.getModel(),
-                uiProperties.SHARED_LIBRARIES_MODEL);
+                (new JButton()).getModel(), // no button in UI
+                (new JButton()).getModel(), // no button in UI
+                (new JButton()).getModel(), // no button in UI
+                uiProperties.SHARED_LIBRARIES_MODEL,
+                callback,
+                new String[]{EjbProjectConstants.ARTIFACT_TYPE_J2EE_MODULE_IN_EAR_ARCHIVE, JavaProjectConstants.ARTIFACT_TYPE_JAR},
+                null, JFileChooser.FILES_AND_DIRECTORIES);
+        uiProperties.WAR_CONTENT_ADDITIONAL_MODEL.addTableModelListener(this);
     }
     
     private void initTableVisualProperties(JTable table) {
-        WarIncludesUiSupport.ClasspathTableModel model = uiProperties.WAR_CONTENT_ADDITIONAL_MODEL;
-        table.setModel(model);
-        
-        table.getColumnModel().getColumn(0).setHeaderValue(NbBundle.getMessage(CustomizerWar.class, "TXT_WAR_Item"));
-        table.getColumnModel().getColumn(1).setHeaderValue(NbBundle.getMessage(CustomizerWar.class, "TXT_WAR_PathInWAR"));
-        table.getColumnModel().getColumn(0).setCellRenderer(new WarIncludesUi.ClassPathCellRenderer());
-        table.getColumnModel().getColumn(1).setCellRenderer(new DefaultTableCellRenderer() {
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                if (value != null) {
-                    setToolTipText(value.toString());
-                }
-                return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            }
-        });
-        
         table.setRowHeight(jTableAddContent.getRowHeight() + 4);
         table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         table.setIntercellSpacing(new java.awt.Dimension(0, 0));
         // set the color of the table's JViewport
         table.getParent().setBackground(table.getBackground());
+        table.setShowHorizontalLines(false);
+        table.setShowVerticalLines(false);
         
         //#88174 - Need horizontal scrollbar for library names
         //ugly but I didn't find a better way how to do it
@@ -307,6 +325,33 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider {
      */
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CustomizerWar.class);
+    }
+
+    public void tableChanged(TableModelEvent e) {
+        if (e.getColumn() != 1) {
+            return;
+        }
+        TableModel listModel = uiProperties.WAR_CONTENT_ADDITIONAL_MODEL;
+        ClassPathSupport.Item cpItem = (ClassPathSupport.Item) listModel.getValueAt(e.getFirstRow(), 0);
+        String newPathInWar = (String) listModel.getValueAt(e.getFirstRow(), 1);
+        String message = null;
+        if (cpItem.getType() == ClassPathSupport.Item.TYPE_JAR && newPathInWar.startsWith("WEB-INF")) { //NOI18N
+            if (newPathInWar.equals("WEB-INF\\lib") || newPathInWar.equals("WEB-INF/lib")) { //NOI18N
+                if (cpItem.getResolvedFile().isDirectory()) {
+                    message = NbBundle.getMessage(CustomizerWar.class,
+                        "MSG_NO_FOLDER_IN_WEBINF_LIB", newPathInWar); // NOI18N
+                } else {
+                    message = NbBundle.getMessage(CustomizerWar.class,
+                        "MSG_NO_FILE_IN_WEBINF_LIB", newPathInWar); // NOI18N
+                }
+            } else if (newPathInWar.equals("WEB-INF\\classes") || newPathInWar.equals("WEB-INF/classes")) { //NOI18N
+                    message = NbBundle.getMessage(CustomizerWar.class,
+                        "MSG_NO_FOLDER_IN_WEBINF_CLASSES", newPathInWar); // NOI18N
+            }
+        }
+        if (message != null) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message (message, NotifyDescriptor.WARNING_MESSAGE));
+        }
     }
     
 }
