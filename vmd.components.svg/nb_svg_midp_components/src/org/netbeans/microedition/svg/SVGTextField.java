@@ -73,6 +73,7 @@ public class SVGTextField extends SVGComponent {
 
         SVGRect outlineBox = wrapperElement.getBBox();
         SVGRect textBox    = textElement.getBBox();
+        
 
         if (textBox != null) {
             System.out.println("Text width: " + textBox.getWidth());

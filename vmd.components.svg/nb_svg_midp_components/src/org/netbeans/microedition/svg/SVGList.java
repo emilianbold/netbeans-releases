@@ -80,27 +80,29 @@ import org.w3c.dom.svg.SVGRect;
  */
 public class SVGList extends SVGComponent implements DataListener {
     
-    static final String CONTENT= "content";     // NOI18N
+    static final String         CONTENT= "content";     // NOI18N
 
 
     public SVGList( SVGForm form, SVGLocatableElement element) {
         super(form, element);
         
-        SVGLocatableElement hiddenText = (SVGLocatableElement)getElementByMeta( 
-                getElement(), TYPE , SVGDefaultListCellRenderer.HIDDEN_TEXT );
-        SVGRect rect = hiddenText.getScreenBBox();
-        float height = rect.getHeight();
+        SVGLocatableElement hiddenText = (SVGLocatableElement)getElementByMeta(
+                getElement(), TYPE, SVGDefaultListCellRenderer.HIDDEN_TEXT) ;
+        float height = hiddenText.getFloatTrait( SVGTextField.TRAIT_FONT_SIZE );
+        SVGLocatableElement bounds = (SVGLocatableElement)getElementByMeta(
+                getElement(), TYPE, SVGDefaultListCellRenderer.BOUNDS) ;
         
-        rect = ((SVGLocatableElement)SVGComponent.getElementByMeta( getElement(), 
-                TYPE, SVGDefaultListCellRenderer.BOUNDS)).getBBox();
         
-        myCount = (int)(rect.getHeight()/height);
+        hiddenText.setTrait( TRAIT_VISIBILITY, TR_VALUE_HIDDEN);
         
-        myRenderer = new SVGDefaultListCellRenderer();
+        myCount = (int)(bounds.getBBox().getHeight()/height);
+        
+        myRenderer = new SVGDefaultListCellRenderer( height );
         mySelectionModel = new DefaultSelectionModel();
         myHandler = new ListHandler();
     }
     
+
     public SVGList( SVGForm form, String elemId ){
         this( form , (SVGLocatableElement)
                 form.getDocument().getElementById( elemId ));
@@ -174,13 +176,13 @@ public class SVGList extends SVGComponent implements DataListener {
         ListModel model = getModel();
         int size = model.getSize();
         SVGListCellRenderer renderer = getRenderer();
-        for( int i = myTopIndex ; i<Math.min( myTopIndex + myCount,size) ; i++ ){
+        for ( int i=myTopIndex ; i< Math.min( myTopIndex + myCount,size) ; i++ ){
             renderer.getCellRendererComponent( this , model.getElementAt(i), 
                     i-myTopIndex, getSelectionModel().isSelectedIndex(i));
         }
+        
     }
-    
-    
+
     private void removeContent() {
         SVGLocatableElement content = (SVGLocatableElement)
         SVGComponent.getElementByMeta(getElement(), TYPE, SVGList.CONTENT );    
@@ -363,7 +365,7 @@ public class SVGList extends SVGComponent implements DataListener {
     private int myTopIndex ;
     private int myCurrentIndex;
     
-    private int myCount;
+    private int myCount=-1;
     
     private boolean isUIAction;
     private Object myUILock = new Object();
