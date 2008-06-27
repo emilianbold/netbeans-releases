@@ -92,6 +92,7 @@ import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.reflection.CachedClass;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -506,55 +507,6 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         
     /**
-     * Get the closest ASTNode related to this request. 
-     * This is used to complete methods and fields for classes.
-     *
-     * Here are some sample paths:
-     *
-     * new String().
-     * [ModuleNode:ConstructorCallExpression:ExpressionStatement:ConstructorCallExpression:]
-     *
-     * s.
-     * [ModuleNode:VariableExpression:ExpressionStatement:VariableExpression:]
-     *
-     * s.spli
-     * [ModuleNode:PropertyExpression:ConstantExpression:ExpressionStatement:PropertyExpression:ConstantExpression:]
-     *
-     * Long-file l.
-     * [ModuleNode:ClassNode:MethodNode:ExpressionStatement:VariableExpression:]
-     *
-     * l.ab
-     *[ModuleNode:ClassNode:MethodNode:ExpressionStatement:PropertyExpression:ConstantExpression:]
-     *
-     * @param request
-     * @return a valid ASTNode or null
-     */
-    ASTNode getClosestNode(CompletionRequest request) {
-
-        AstPath path = getPathFromRequest(request);
-
-        if (path == null) {
-            LOG.log(Level.FINEST, "path == null"); // NOI18N
-            return null;
-        }
-
-        ASTNode closest;
-
-        if (request.prefix.equals("")) {
-            closest = path.leaf();
-        } else {
-            closest = path.leafGrandParent();
-        }
-
-        LOG.log(Level.FINEST, "getClosestNode() ----------------------------------------");
-        LOG.log(Level.FINEST, "Path : {0}", path);
-        LOG.log(Level.FINEST, "node : ");
-        printASTNodeInformation(closest);
-
-        return closest;
-    }
-
-    /**
      * returns the next enclosing MethodNode for the given request
      * @param request completion request which includes position information
      * @return the next surrouning MethodNode
@@ -868,9 +820,19 @@ public class CodeCompleter implements CodeCompletionHandler {
             return false;
         }
 
+        boolean behindDot = false;
+
+        if (request == null || request.ctx == null || request.ctx.before1 == null) {
+            behindDot = false;
+        } else {
+            if (request.ctx.before1.text().equals(".")) {
+                behindDot = true;
+            }
+        }
+
         ClassNode requestedClass;
 
-        if (request.behindDot) {
+        if (behindDot) {
             LOG.log(Level.FINEST, "We are invoked right behind a dot."); // NOI18N
 
             requestedClass = getDeclaringClass(request);
@@ -898,7 +860,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             
             String fieldTypeAsString = field.getType().getNameWithoutPackage();
 
-            if (request.behindDot == true) {
+            if (behindDot) {
                 Class clz = null;
 
                 try {
@@ -928,15 +890,11 @@ public class CodeCompleter implements CodeCompletionHandler {
             if (field.getName().startsWith("__timeStamp")) { // NOI18N
                 continue;
             }
-            
-            if (request.prefix.length() < 1) {
+ 
+            if (field.getName().startsWith(request.prefix)) {
                 proposals.add(new FieldItem(field.getName(), anchor, request, javax.lang.model.element.ElementKind.FIELD, fieldTypeAsString));
-            } else {
-                String fieldName = field.getName();
-                if (fieldName.compareTo(request.prefix) != 0 && fieldName.startsWith(request.prefix)) {
-                    proposals.add(new FieldItem(field.getName(), anchor, request, javax.lang.model.element.ElementKind.FIELD, fieldTypeAsString));
-                }
             }
+            
         }
 
         return true;
@@ -1477,8 +1435,51 @@ public class CodeCompleter implements CodeCompletionHandler {
         return false;
     }
 
+
+    /**
+     * Get the ClassNode this request operates on.
+     * This is used to complete methods and fields for classes.
+     *
+     * Here are some sample paths:
+     *
+     * new String().
+     * [ModuleNode:ConstructorCallExpression:ExpressionStatement:ConstructorCallExpression:]
+     *
+     * s.
+     * [ModuleNode:VariableExpression:ExpressionStatement:VariableExpression:]
+     *
+     * s.spli
+     * [ModuleNode:PropertyExpression:ConstantExpression:ExpressionStatement:PropertyExpression:ConstantExpression:]
+     *
+     * l.
+     * [ModuleNode:ClassNode:MethodNode:ExpressionStatement:VariableExpression:]
+     *
+     * l.ab
+     * [ModuleNode:ClassNode:MethodNode:ExpressionStatement:PropertyExpression:ConstantExpression:]
+     *
+     * l.M
+     * [ModuleNode:ClassNode:MethodNode:ExpressionStatement:PropertyExpression:VariableExpression:ConstantExpression:]
+     *
+     * @param request
+     * @return a valid ASTNode or null
+     */
+
     private ClassNode getDeclaringClass(CompletionRequest request) {
-        ASTNode closest = getClosestNode(request);
+
+        AstPath path = getPathFromRequest(request);
+
+        if (path == null) {
+            LOG.log(Level.FINEST, "path == null"); // NOI18N
+            return null;
+        }
+
+        ASTNode closest = path.leaf();
+
+        LOG.log(Level.FINEST, "getClosestNode() ----------------------------------------");
+        LOG.log(Level.FINEST, "Path : {0}", path);
+        LOG.log(Level.FINEST, "node : ");
+        printASTNodeInformation(closest);
+
 
         if(closest == null){
             LOG.log(Level.FINEST, "closest == null"); // NOI18N
@@ -1487,32 +1488,24 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         ClassNode declClass = null;
 
-        if (closest instanceof AnnotatedNode) {
-            LOG.log(Level.FINEST, "closest: AnnotatedNode"); // NOI18N
-
-            // if this AnnotetedNode happens to be a ClassNode then 
-            // just cast it. Otherwise try to find declaring class
-
-            if (closest instanceof ClassNode) {
-                declClass = (ClassNode) closest;
-
-            } else {
-                declClass = ((AnnotatedNode) closest).getDeclaringClass();
+        // Loop the path till we find something usefull.
+        
+        for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
+            ASTNode current = it.next();
+            if (current instanceof VariableExpression) {
+                LOG.log(Level.FINEST, "* VariableExpression"); // NOI18N
+                declClass = ((VariableExpression) current).getType();
+                break;
+            } else if (current instanceof ExpressionStatement) {
+                LOG.log(Level.FINEST, "* ExpressionStatement"); // NOI18N
+                Expression expr = ((ExpressionStatement) current).getExpression();
+                declClass = expr.getType();
+                break;
+            } else if (current instanceof PropertyExpression) {
+                LOG.log(Level.FINEST, "* PropertyExpression"); // NOI18N
+                declClass = ((PropertyExpression) current).getObjectExpression().getType();
+                break;
             }
-        } else if (closest instanceof Expression) {
-            LOG.log(Level.FINEST, "closest: Expression"); // NOI18N
-            declClass = ((Expression) closest).getType();
-        } else if (closest instanceof ExpressionStatement) {
-            LOG.log(Level.FINEST, "closest: ExpressionStatement"); // NOI18N
-            Expression expr = ((ExpressionStatement) closest).getExpression();
-            if (expr instanceof PropertyExpression) {
-                declClass = ((PropertyExpression) expr).getObjectExpression().getType();
-            } else {
-                return null;
-            }
-        } else {
-            LOG.log(Level.FINEST, "Found nothing to work on"); // NOI18N
-            return null;
         }
 
         return declClass;
