@@ -46,6 +46,9 @@ import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executor;
 import java.util.logging.*;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -277,10 +280,35 @@ public class FolderLookup extends FolderInstance {
         exception(e);
     }
 
+    static final class Dispatch implements Executor, Runnable {
+        private static final RequestProcessor DISPATCH = new RequestProcessor("Lookup Dispatch Thread"); // NOI18N
+        
+        private final Queue<Runnable> queue = new ConcurrentLinkedQueue<Runnable>();
+        private final RequestProcessor.Task task = DISPATCH.create(this, true);
+
+        public void execute(Runnable command) {
+            queue.add(command);
+            task.schedule(0);
+        }
+        
+        public void waitFinished() {
+            task.waitFinished();
+        }
+        
+        public void run() {
+            for (;;) {
+                Runnable r = queue.poll();
+                if (r == null) {
+                    return;
+                }
+                r.run();
+            }
+        }
+    }
     
     /** <code>ProxyLookup</code> delegate so we can change the lookups on fly. */
     static final class ProxyLkp extends ProxyLookup implements Serializable {
-        static final RequestProcessor DISPATCH = new RequestProcessor("Lookup Dispatch Thread"); // NOI18N
+        static final Dispatch DISPATCH = new Dispatch();
         
         private static final long serialVersionUID = 1L;
 
@@ -380,6 +408,7 @@ public class FolderLookup extends FolderInstance {
             ) {
                 if (!DataObjectPool.isConstructorAllowed()) {
                     fl.waitFinished();
+                    DISPATCH.waitFinished();
                 } else {
                     try {
                         // try a bit but prevent deadlock from CanYouQueryFolderLookupFromHandleFindTest
