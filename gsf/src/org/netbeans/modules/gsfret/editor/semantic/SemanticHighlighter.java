@@ -41,6 +41,9 @@
 package org.netbeans.modules.gsfret.editor.semantic;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -54,7 +57,9 @@ import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.api.ColoringAttributes;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.modules.gsf.api.ColoringAttributes.Coloring;
+import org.netbeans.modules.gsf.api.EditHistory;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -127,7 +132,107 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         
         long start = System.currentTimeMillis();        
         Set<String> mimeTypes = info.getEmbeddedMimeTypes();
+
+        // Attempt to do less work in embedded scenarios: Only recompute hints for regions
+        // that have changed
         LanguageRegistry registry = LanguageRegistry.getInstance();
+        SortedSet<SequenceElement> colorings = GsfSemanticLayer.getLayer(SemanticHighlighter.class, doc).getColorings();
+        if (mimeTypes.size() > 1 && info.hasUnchangedResults() && colorings.size() > 0) {
+
+            // Sort elements into buckets per language
+            Map<Language,List<SequenceElement>> elements = new HashMap<Language,List<SequenceElement>>();
+            List<SequenceElement> prevList = null;
+            Language prevLanguage = null;
+            for (SequenceElement element : colorings) {
+                List<SequenceElement> list;
+                if (element.language == prevLanguage) {
+                    list = prevList;
+                } else {
+                    list = elements.get(element.language);
+                    if (list == null) {
+                        list = new ArrayList<SequenceElement>();
+                        elements.put(element.language, list);
+                        prevLanguage = element.language;
+                        prevList = list;
+                    }
+                }
+                list.add(element);
+            }
+
+            // Recompute lists for languages that have changed
+            EditHistory history = info.getHistory();
+            int offset = history.getStart();
+            for (String mimeType : mimeTypes) {
+                if (isCancelled()) {
+                    return true;
+                }
+                Language language = registry.getLanguageByMimeType(mimeType);
+                if (language == null) {
+                    continue;
+                }
+
+                // Unchanged result?
+                ParserResult result = info.getEmbeddedResult(mimeType, 0);
+                if (result != null && result.getUpdateState().isUnchanged()) {
+
+                    // This section was not edited in the last parse tree,
+                    // so just grab the previous elements, and use them
+                    // (after tweaking the offsets)
+                    List<SequenceElement> list = elements.get(language);
+
+                    if (list != null) {
+                        for (SequenceElement element : list) {
+                            if (element.language == language) {
+                                OffsetRange range = element.range;
+                                if (range.getStart() > offset) {
+                                    element.range = new OffsetRange(history.convertOldToNew(range.getStart()),
+                                            history.convertOldToNew(range.getEnd()));
+                                }
+                                newColoring.add(element);
+                            }
+                        }
+                    }
+
+                    continue;
+                } else {
+                    // We need to recompute the semantic highlights for this language
+                    ColoringManager manager = language.getColoringManager();
+                    SemanticAnalyzer task = language.getSemanticAnalyzer();
+                    if (task != null) {
+                        // Allow language plugins to do their own analysis too
+                        try {
+                            task.run(info);
+                        } catch (Exception ex) {
+                            ErrorManager.getDefault().notify(ex);
+                        }
+
+                        if (isCancelled()) {
+                            task.cancel();
+                            return true;
+                        }
+
+                        Map<OffsetRange,Set<ColoringAttributes>> highlights = task.getHighlights();
+                        if (highlights != null) {
+                            for (OffsetRange range : highlights.keySet()) {
+
+                                Set<ColoringAttributes> colors = highlights.get(range);
+                                if (colors == null) {
+                                    continue;
+                                }
+
+                                Coloring c = manager.getColoring(colors);
+
+                                //newColoring.put(range, c);
+                                newColoring.add(new SequenceElement(language, range, c));
+                            }
+                        }
+                    }
+                }
+            }
+                
+            GsfSemanticLayer.getLayer(SemanticHighlighter.class, doc).setColorings(newColoring/*, addedTokens, removedTokens*/);
+            return true;
+        }
         
         for (String mimeType : mimeTypes) {
             if (isCancelled()) {

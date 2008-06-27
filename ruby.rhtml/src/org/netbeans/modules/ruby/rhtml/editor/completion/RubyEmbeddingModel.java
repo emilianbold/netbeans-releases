@@ -43,7 +43,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.EmbeddingModel;
+import org.netbeans.modules.gsf.api.EditHistory;
+import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
@@ -52,7 +53,7 @@ import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
  *
  * @author Tor Norbye
  */
-public class RubyEmbeddingModel implements EmbeddingModel {
+public class RubyEmbeddingModel implements IncrementalEmbeddingModel {
     final Set<String> sourceMimeTypes = Collections.singleton(RhtmlTokenId.MIME_TYPE);
 
     public RubyEmbeddingModel() {
@@ -70,5 +71,9 @@ public class RubyEmbeddingModel implements EmbeddingModel {
         // This will cache
         RhtmlModel model = RhtmlModel.get(doc);
         return Collections.singletonList(new RubyTranslatedSource(this, model));
+    }
+
+    public IncrementalEmbeddingModel.UpdateState update(EditHistory history, Collection<? extends TranslatedSource> previousTranslation) {
+        return ((RubyTranslatedSource)previousTranslation.iterator().next()).incrementalUpdate(history);
     }
 }

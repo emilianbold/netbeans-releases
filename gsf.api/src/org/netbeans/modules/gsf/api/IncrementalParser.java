@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,28 +31,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.gsfret.hints;
+
+package org.netbeans.modules.gsf.api;
+
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 /**
+ * An incremental parser can be called to parse a file, and is
+ * handed one of its own previous ParserResults along with an EditHistory
+ * with information on edits since the previous parse.
+ * It should use this information to more quickly produce an updated
+ * ParserResult. It can also indicate to feature clients whether there
+ * were any semantic changes in the AST. When there aren't any semantic
+ * differences, clients can more cheaply update themselves (for example,
+ * the navigator doesn't have to be updated, and semantic highlighting
+ * only has to adjust offsets to accommodate the edits.)
  *
- * @author Jan Lahoda
+ * @author Tor Norbye
  */
-public final class Pair<A, B> {
-
-    private A a;
-    private B b;
-
-    public Pair(A a, B b) {
-        this.a = a;
-        this.b = b;
-    }
-
-    public A getA() {
-        return a;
-    }
-
-    public B getB() {
-        return b;
-    }
+public interface IncrementalParser extends Parser {
+    /**
+     * Details about the state should be in the {@link ParserResult#getUpdateState} method!
+     */
+    @CheckForNull
+    public ParserResult parse(
+        @NonNull ParserFile file,
+        @NonNull SourceFileReader reader,
+        @CheckForNull TranslatedSource translatedSource,
+        @NonNull EditHistory history,
+        @NonNull ParserResult previousResult);
 }

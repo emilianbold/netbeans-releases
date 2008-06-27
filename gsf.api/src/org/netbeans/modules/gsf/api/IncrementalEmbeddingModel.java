@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,57 +31,56 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.gsf.api;
 
-package org.netbeans.modules.html.editor.gsf.embedding;
-
-import org.netbeans.modules.gsf.api.EditHistory;
-import org.netbeans.modules.gsf.api.EmbeddingModel;
-import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
-import org.netbeans.modules.gsf.api.TranslatedSource;
+import java.util.Collection;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 /**
+ * Implementations of this interface are EmbeddingModels that support
+ * incremental updates. When it does, then the GSF infrastructure will keep its
+ * most recent TranslatedSource collection and will pass it along with
+ * an editing history object to perform incremental updates.
  *
  * @author Tor Norbye
  */
-public class HtmlTranslatedSource implements TranslatedSource {
-    private HtmlModel model;
-    private HtmlEmbeddingModel embeddingModel;
+public interface IncrementalEmbeddingModel extends EmbeddingModel {
 
-    public HtmlTranslatedSource(HtmlEmbeddingModel embeddingModel, HtmlModel model) {
-        this.embeddingModel = embeddingModel;
-        this.model = model;
-    }
+    public enum UpdateState {
 
-    public int getAstOffset(int lexicalOffset) {
-        return model.sourceToGeneratedPos(lexicalOffset);
-    }
+        /**
+         * Updating the virtual source failed for some reason or other.
+         * The infrastructure should generate a new virtual source instead.
+         */
+        FAILED,
 
-    public int getLexicalOffset(int astOffset) {
-        return model.generatedToSourcePos(astOffset);
-    }
+        /**
+         * The update succeeded, and the virtual source was not affected by
+         * the change. This means that the parse tree for the virtual source does
+         * not have to be regenerated (or the results analyzed again).
+         * (The offset mapping for the translated source source-to-generated
+         * conversion functions have been updated.)
+         */
+        COMPLETED,
 
-    public String getSource() {
-        return model.getHtmlCode();
-    }
+        /**
+         * The update succeeded, and the virtual source code generated was affected
+         * by the edits. The virtual source should be regenerated.
+         * (The offset mapping for the translated source source-to-generated
+         * conversion functions have been updated.)
+         */
+        UPDATED
+    };
 
-    public EmbeddingModel getModel() {
-        return embeddingModel;
-    }
-
-    public int getSourceStartOffset() {
-        return 0;
-    }
-
-    public int getSourceEndOffset() {
-        return model.getHtmlCode().length();
-    }
-
-    IncrementalEmbeddingModel.UpdateState incrementalUpdate(EditHistory history) {
-        return model.incrementalUpdate(history);
-    }
+    /**
+     * Update the collection of {@link TranslatedSource} objects given a series of edits.
+     * The objects in the collection are allowed to change.
+     */
+    @NonNull
+    UpdateState update(@NonNull EditHistory history, @NonNull Collection<? extends TranslatedSource> previousTranslation);
 }
