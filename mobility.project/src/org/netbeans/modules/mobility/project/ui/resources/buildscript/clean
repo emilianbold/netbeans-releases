@@ -21,10 +21,10 @@
         <replaceregexp file="${{tmp.exclude}}" match="(.)(,|$)" replace="\1/**\2" flags="g"/>
         <loadfile srcfile="${{tmp.exclude}}" property="exclude.pattern"/>
         <delete file="${{tmp.exclude}}"/>
-        <delete>
+        <delete quiet="true">
             <fileset dir="${{build.dir}}" excludes="${{exclude.pattern}}"/>
         </delete>
-        <delete>
+        <delete quiet="true">
             <fileset dir="${{dist.dir}}" excludes="${{exclude.pattern}}"/>
         </delete>
     </target>
