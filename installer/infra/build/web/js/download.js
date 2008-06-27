@@ -520,12 +520,18 @@ function update() {
     
     if ( platform == "zip" ) {
         error_message = NOTE_ZIP;    
+	error_message += " " + NOTE_UML;
     } else if(platform.indexOf("macosx")!=-1) {
 	error_message = NOTE_MACOSX;
+	error_message += "<br>" + NOTE_UML;
     } else if(platform.indexOf("solaris")!=-1) {
 	error_message = NOTE_SOLARIS;
+	error_message += "<br>" + NOTE_UML;
+    } else {
+	error_message = "Note: " + NOTE_UML;
     }
 
+    error_message += NOTE_UML;
 
     document.getElementById("error_message").innerHTML = error_message;
     
