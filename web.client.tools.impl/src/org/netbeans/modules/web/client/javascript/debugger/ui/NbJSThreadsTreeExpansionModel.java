@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.web.client.javascript.debugger.ui;
 
-import org.netbeans.modules.web.client.javascript.debugger.js.api.JSWindow;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSWindow;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 

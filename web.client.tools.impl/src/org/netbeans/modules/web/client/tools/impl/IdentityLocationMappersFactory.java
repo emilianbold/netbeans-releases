@@ -45,7 +45,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Map;
 import org.netbeans.modules.web.client.javascript.debugger.api.NbJSFileObjectLocation;
-import org.netbeans.modules.web.client.javascript.debugger.js.api.JSURILocation;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSURILocation;
 import org.netbeans.modules.web.client.tools.api.JSLocation;
 import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;

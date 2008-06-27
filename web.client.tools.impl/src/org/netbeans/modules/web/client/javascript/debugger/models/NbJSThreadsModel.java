@@ -52,12 +52,12 @@ import javax.swing.Action;
 
 import org.netbeans.modules.web.client.javascript.debugger.api.NbJSContextProviderWrapper;
 import org.netbeans.modules.web.client.javascript.debugger.api.NbJSDebugger;
-import org.netbeans.modules.web.client.javascript.debugger.js.api.JSDebuggerEvent;
-import org.netbeans.modules.web.client.javascript.debugger.js.api.JSDebuggerEventListener;
-import org.netbeans.modules.web.client.javascript.debugger.js.api.JSDebuggerState;
-import org.netbeans.modules.web.client.javascript.debugger.js.api.JSSource;
-import org.netbeans.modules.web.client.javascript.debugger.js.api.JSWindow;
-import org.netbeans.modules.web.client.javascript.debugger.js.impl.JSFactory;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerEvent;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerEventListener;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerState;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSSource;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSWindow;
+import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSFactory;
 import org.netbeans.modules.web.client.javascript.debugger.ui.NbJSEditorUtil;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ModelEvent;

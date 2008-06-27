@@ -52,7 +52,7 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.web.client.javascript.debugger.api.NbJSDebugger;
-import org.netbeans.modules.web.client.javascript.debugger.js.impl.JSFactory;
+import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSFactory;
 import org.netbeans.modules.web.client.javascript.debugger.ui.NbJSEditorUtil;
 import org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints.NbJSBreakpoint;
 import org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints.NbJSBreakpointManager;

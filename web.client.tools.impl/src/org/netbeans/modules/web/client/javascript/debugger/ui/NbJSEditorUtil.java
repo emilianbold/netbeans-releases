@@ -54,10 +54,10 @@ import javax.swing.text.StyledDocument;
 
 import org.netbeans.modules.web.client.javascript.debugger.api.NbJSDebugger;
 import org.netbeans.modules.web.client.javascript.debugger.filesystem.URLFileObject;
-import org.netbeans.modules.web.client.javascript.debugger.js.api.JSCallStackFrame;
-import org.netbeans.modules.web.client.javascript.debugger.js.api.JSSource;
-import org.netbeans.modules.web.client.javascript.debugger.js.api.JSWindow;
-import org.netbeans.modules.web.client.javascript.debugger.js.impl.JSFactory;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSCallStackFrame;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSSource;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSWindow;
+import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSFactory;
 import org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints.NbJSBreakpoint;
 import org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints.NbJSBreakpointNodeActions;
 import org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints.NbJSURIBreakpoint;
