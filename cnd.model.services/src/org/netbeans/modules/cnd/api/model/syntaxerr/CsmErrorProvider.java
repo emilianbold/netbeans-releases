@@ -51,6 +51,8 @@ import org.netbeans.editor.BaseDocument;
  */
 public abstract class CsmErrorProvider {
 
+    private static final boolean ENABLE = getBoolean("cnd.csm.errors", true);
+
     private static class Merger extends CsmErrorProvider {
         
         private final Lookup.Result<CsmErrorProvider> res;
@@ -62,8 +64,10 @@ public abstract class CsmErrorProvider {
         @Override
         public Collection<CsmErrorInfo> getErrors(BaseDocument doc, CsmFile file) {
             Collection<CsmErrorInfo> result = new ArrayList<CsmErrorInfo>();
-            for( CsmErrorProvider provider : res.allInstances() ) {
-                result.addAll(provider.getErrors(doc, file));
+            if (ENABLE) {
+                for( CsmErrorProvider provider : res.allInstances() ) {
+                    result.addAll(provider.getErrors(doc, file));
+                }
             }
             return result;
         }
@@ -77,5 +81,12 @@ public abstract class CsmErrorProvider {
     }
 
     public abstract Collection<CsmErrorInfo> getErrors(BaseDocument doc, CsmFile file);
-    
+
+    private static boolean getBoolean(String name, boolean result) {
+        String value = System.getProperty(name);
+        if (value != null) {
+            result = Boolean.parseBoolean(value);
+        }
+        return result;
+    }
 }

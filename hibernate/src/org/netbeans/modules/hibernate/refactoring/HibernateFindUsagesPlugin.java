@@ -114,7 +114,7 @@ public class HibernateFindUsagesPlugin implements RefactoringPlugin {
             Project proj = org.netbeans.api.project.FileOwnerQuery.getOwner(fo);
             HibernateEnvironment env = proj.getLookup().lookup(HibernateEnvironment.class);
             if(env == null) {
-                ErrorManager.getDefault().log(org.openide.ErrorManager.INFORMATIONAL, "No HibernateEnviroment found"); // NOI18N
+                // The project does not have Hibernate framework support
                 return null;
             }
             mappingFileObjs = env.getAllHibernateMappingFileObjects();

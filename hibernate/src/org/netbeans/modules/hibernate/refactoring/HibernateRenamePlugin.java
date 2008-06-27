@@ -124,7 +124,7 @@ public class HibernateRenamePlugin implements RefactoringPlugin {
         Project proj = org.netbeans.api.project.FileOwnerQuery.getOwner(fo);
         HibernateEnvironment env = proj.getLookup().lookup(HibernateEnvironment.class);
         if (env == null) {
-            ErrorManager.getDefault().log(org.openide.ErrorManager.INFORMATIONAL, "No HibernateEnviroment found"); // NOI18N
+            // The project does not support Hibernate framework
             return null;
         }
         mFileObjs = env.getAllHibernateMappingFileObjects();
@@ -272,7 +272,7 @@ public class HibernateRenamePlugin implements RefactoringPlugin {
         Project proj = FileOwnerQuery.getOwner(fo);
         HibernateEnvironment env = proj.getLookup().lookup(HibernateEnvironment.class);
         if (env == null) {
-            ErrorManager.getDefault().log(org.openide.ErrorManager.INFORMATIONAL, "No HibernateEnviroment found"); // NOI18N
+            // The project does not support Hibernate framework
             return;
         }
         List<FileObject> configFiles = env.getAllHibernateConfigFileObjects();

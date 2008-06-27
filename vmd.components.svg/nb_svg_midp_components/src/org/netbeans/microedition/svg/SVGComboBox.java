@@ -166,7 +166,6 @@ public class SVGComboBox extends SVGComponent implements
         setEditor( new DefaultComboBoxEditor( form , 
                 (SVGLocatableElement)getElementByMeta( getElement(),
                         TYPE, EDITOR)));
-        myRenderer = new SVGDefaultListCellRenderer();
     }
     
     public void focusGained() {
@@ -210,11 +209,11 @@ public class SVGComboBox extends SVGComponent implements
     }
     
     public SVGListCellRenderer getRenderer(){
-        return myRenderer;
+        return getList().getRenderer();
     }
     
     public void setRenderer( SVGListCellRenderer renderer ){
-        myRenderer = renderer;
+        getList().setRenderer(renderer);
     }
     
     public Object getSelectedItem(){
@@ -306,6 +305,10 @@ public class SVGComboBox extends SVGComponent implements
         Object selected = index <getModel().getSize() ? 
                 getModel().getElementAt(index) : null ;
         getEditor().setItem( selected );
+    }
+    
+    private SVGList getList(){
+        return myList;
     }
     
     public interface ComboBoxModel extends ListModel{
@@ -475,7 +478,6 @@ public class SVGComboBox extends SVGComponent implements
     
     private ComboBoxModel myModel;
     private ComboBoxEditor myEditor;
-    private SVGListCellRenderer myRenderer;
     
     private InputHandler myInputHandler;
     private final SVGElement myButton;
