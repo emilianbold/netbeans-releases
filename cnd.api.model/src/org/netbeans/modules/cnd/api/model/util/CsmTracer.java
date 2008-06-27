@@ -212,7 +212,7 @@ public class CsmTracer {
 	StringBuilder sb = new StringBuilder();
 	
 	sb.append("CLASS="); // NOI18N
-	CsmClassifier cls = inh.getCsmClassifier();
+	CsmClassifier cls = inh.getClassifier();
 	//sb.append(isDummyUnresolved(cls) ? "<unresolved>" : cls.getQualifiedName());
 	sb.append(cls == null ? NULL_TEXT : cls.getQualifiedName()); // NOI18N
 	

@@ -166,7 +166,7 @@ public class JoinSectionsMod1Test extends NbTestCase {
         
         // Get embedded tokens within TEXT tokens. There should be "a" then BRACES start "{b" then BRACES end "e}|" then "f"
         LanguagePath innerLP = LanguagePath.get(TestJoinSectionsTopTokenId.language()).
-                embedded(TestJoinSectionsTextTokenId.language());
+                embedded(TestJoinSectionsTextTokenId.textLanguage);
         List<TokenSequence<?>> tsList = hi.tokenSequenceList(innerLP, 0, Integer.MAX_VALUE);
         checkInitialTokens(tsList);
         

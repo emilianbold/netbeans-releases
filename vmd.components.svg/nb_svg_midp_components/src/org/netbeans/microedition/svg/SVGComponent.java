@@ -115,7 +115,6 @@ public abstract class SVGComponent implements SVGForm.FocusListener {
         }
     }
     
-
     protected static final SVGElement getElementById( SVGElement parent, String childId) {
         Element elem = parent.getFirstElementChild();
         while( elem != null && elem instanceof SVGElement) {

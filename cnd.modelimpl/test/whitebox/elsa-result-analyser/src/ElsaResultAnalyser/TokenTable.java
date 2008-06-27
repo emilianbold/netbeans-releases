@@ -439,7 +439,7 @@ public class TokenTable {
 
             String fileName = var.namePos.file.substring(workDir.length() + 1) + ":" + var.namePos.line + ":" + var.namePos.row + " " + var.name;
 
-            fileName = fileName.replaceAll("/", ".");
+            fileName = fileName.replaceAll("/", "^");
             fileName = fileName.replaceAll("\"", "");
 
             File f = new File(dir + "/" + fileName);
@@ -475,7 +475,7 @@ public class TokenTable {
 
             String fileName = var.namePos.file.substring(workDir.length() + 1) + ":" + var.namePos.line + ":" + var.namePos.row + " " + var.name;
 
-            fileName = fileName.replaceAll("/", ".");
+            fileName = fileName.replaceAll("/", "^");
             fileName = fileName.replaceAll("\"", "");
 
             File f = new File(dir + "/" + fileName);
@@ -572,7 +572,7 @@ public class TokenTable {
             fileName = fileName.replace("|", " or");
             fileName = fileName.replace("?", " q");
 
-            fileName = fileName.replaceAll("/", ".");
+            fileName = fileName.replaceAll("/", "^");
             fileName = fileName.replaceAll("\"", "");
 
             File f = new File(dir + "/" + fileName);
@@ -613,7 +613,7 @@ public class TokenTable {
             fileName = fileName.replace("|", " or");
             fileName = fileName.replace("?", " q");
 
-            fileName = fileName.replaceAll("/", ".");
+            fileName = fileName.replaceAll("/", "^");
             fileName = fileName.replaceAll("\"", "");
 
             File f = new File(dir + "/" + fileName);

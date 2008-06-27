@@ -82,6 +82,8 @@ import org.netbeans.jemmy.operators.*;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.test.xml.schema.lib.SchemaMultiView;
 import java.util.List;
+import org.netbeans.junit.NbModuleSuite;
+import junit.framework.Test;
 
 /**
  *
@@ -105,7 +107,8 @@ public class XMLGeneration_0001 extends XMLGeneration {
     public XMLGeneration_0001(String arg0) {
         super(arg0);
     }
-    
+
+    /*    
     public static TestSuite suite() {
         TestSuite testSuite = new TestSuite(XMLGeneration_0001.class.getName());
         
@@ -114,6 +117,22 @@ public class XMLGeneration_0001 extends XMLGeneration {
         }
         
         return testSuite;
+    }
+    */
+
+    public static Test suite( )
+    {
+      return NbModuleSuite.create(
+          NbModuleSuite.createConfiguration( XMLGeneration_0001.class ).addTest(
+              "CreateJavaApplication",
+              "CreateSampleSchema",
+              "GenerateSampleXML",
+              "CheckAndValidate"
+           )
+           .enableModules( ".*" )
+           .clusters( ".*" )
+           //.gui( true )
+        );
     }
 
     public void CreateJavaApplication( )

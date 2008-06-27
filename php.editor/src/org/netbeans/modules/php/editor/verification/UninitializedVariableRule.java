@@ -39,9 +39,13 @@
 
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.Collection;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.php.editor.index.IndexedConstant;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
@@ -104,6 +108,16 @@ public class UninitializedVariableRule  extends PHPRule {
             String varName = identifier.getName();
             
             if (varName != null && !context.variableStack.isVariableDefined(varName)) {
+                // check the globals from included files
+                Collection<IndexedConstant> topLevelVars = context.index.getTopLevelVariables((PHPParseResult) context.parserResult,
+                        "$" + varName, NameKind.EXACT_NAME); //NOI18N
+                
+                for (IndexedConstant topLevelVar : topLevelVars) {
+                    if (topLevelVar.isResolved()){
+                        return;
+                    }
+                }
+                
                 OffsetRange range = new OffsetRange(var.getStartOffset(), var.getEndOffset());
 
                 Hint hint = new Hint(UninitializedVariableRule.this, getDescription(),

@@ -84,7 +84,7 @@ public class CreateMobilityProject extends PerformanceTestCase {
 
     public void testCreateMobilityProject() {
         category = "Mobility"; // NOI18N
-        project = "MIDP Application"; // NOI18N
+        project = "Mobile Application"; // NOI18N
         project_type = "MobileApp";
         index = 1;
         doMeasurement();

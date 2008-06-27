@@ -428,7 +428,12 @@ public abstract class RestSupport {
         if (swdpLibrary == null) {
             return;
         }
-
+        
+        Library restapiLibrary = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
+        if (restapiLibrary == null) {
+            return;
+        }
+        
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (sgs == null || sgs.length < 1) {
             throw new IOException("Project has no Java sources"); //NOI18N
@@ -436,12 +441,7 @@ public abstract class RestSupport {
         FileObject sourceRoot = sgs[0].getRootFolder();
         for (String type : classPathTypes) {
             try {
-                ProjectClassPathModifier.addLibraries(new Library[] { swdpLibrary }, sourceRoot, type);
-                
-                Library library = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
-                if (library != null) {
-                    ProjectClassPathModifier.removeLibraries(new Library[] {library}, sourceRoot, ClassPath.COMPILE);
-                }
+                ProjectClassPathModifier.addLibraries(new Library[] {restapiLibrary, swdpLibrary }, sourceRoot, type);
             } catch(UnsupportedOperationException ex) {
                 Logger.getLogger(getClass().getName()).info(type+" not supported.");
             }
@@ -454,11 +454,16 @@ public abstract class RestSupport {
             return;
         }
 
+         
+        Library restapiLibrary = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
+        if (restapiLibrary == null) {
+            
+        }
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         FileObject sourceRoot = sgs[0].getRootFolder();
         for (String type : classPathTypes) {
             try {
-                ProjectClassPathModifier.removeLibraries(new Library[] { swdpLibrary }, sourceRoot, type);
+                ProjectClassPathModifier.removeLibraries(new Library[] {restapiLibrary, swdpLibrary }, sourceRoot, type);
             } catch(UnsupportedOperationException ex) {
                 Logger.getLogger(getClass().getName()).info(type+" not supported.");
             }

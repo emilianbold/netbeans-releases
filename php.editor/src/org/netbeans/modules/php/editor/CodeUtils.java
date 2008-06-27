@@ -58,6 +58,11 @@ public class CodeUtils {
         if (var.getName() instanceof Identifier) {
             Identifier id = (Identifier) var.getName();
             return "$" + id.getName(); //NOI18N
+        } else {
+            if (var.getName() instanceof Variable) {
+                Variable name = (Variable) var.getName();
+                return extractVariableName(name);
+            }
         }
 
         return null;

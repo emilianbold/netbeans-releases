@@ -156,11 +156,15 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                     }
                 }                
             } else if (CsmKindUtilities.isVariableDeclaration(csmObject)) {
-                // check if we are in function definition name => go to declaration
-                // else it is more useful to jump to definition of function
+                // check if we are in variable definition name => go to declaration
                 CsmVariableDefinition definition = ((CsmVariable)csmObject).getDefinition();
                 if (definition != null) {
                     item = definition;
+                    if (csmFile.equals(definition.getContainingFile()) &&
+                            (definition.getStartOffset() <= offset &&
+                            offset <= definition.getEndOffset())) {
+                        item = (CsmVariable)csmObject;
+                    }
                 }
             }
         } else if (CsmKindUtilities.isNamespace(csmObject)) {

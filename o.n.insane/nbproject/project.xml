@@ -48,6 +48,7 @@ made subject to such option by the copyright holder.
             <module-dependencies/>
             <friend-packages>
                 <friend>org.netbeans.modules.nbjunit</friend>
+                <friend>org.netbeans.modules.performance.insane</friend>
                 <friend>org.netbeans.modules.timers</friend>
                 <package>org.netbeans.insane.live</package>
                 <package>org.netbeans.insane.model</package>

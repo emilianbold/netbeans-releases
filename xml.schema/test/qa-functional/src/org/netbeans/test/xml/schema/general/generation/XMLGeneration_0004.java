@@ -83,6 +83,9 @@ import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.test.xml.schema.lib.SchemaMultiView;
 import java.util.List;
 
+import org.netbeans.junit.NbModuleSuite;
+import junit.framework.Test;
+
 /**
  *
  * @author michaelnazarov@netbeans.org
@@ -104,7 +107,8 @@ public class XMLGeneration_0004 extends XMLGeneration {
     public XMLGeneration_0004(String arg0) {
         super(arg0);
     }
-    
+
+    /*    
     public static TestSuite suite() {
         TestSuite testSuite = new TestSuite(XMLGeneration_0004.class.getName());
         
@@ -113,6 +117,21 @@ public class XMLGeneration_0004 extends XMLGeneration {
         }
         
         return testSuite;
+    }
+    */
+
+    public static Test suite( )
+    {
+      return NbModuleSuite.create(
+          NbModuleSuite.createConfiguration( XMLGeneration_0004.class ).addTest(
+              "CreateJavaApplication",
+              "CreateXML",
+              "CheckAdded"
+           )
+           .enableModules( ".*" )
+           .clusters( ".*" )
+           //.gui( true )
+        );
     }
 
     public void CreateJavaApplication( )
@@ -151,7 +170,7 @@ public class XMLGeneration_0004 extends XMLGeneration {
 
       // Browse file
       JFileChooserOperator opFileChooser = new JFileChooserOperator( );
-      opFileChooser.setCurrentDirectory( new File( System.getProperty( "xtest.data" ) ) );
+      opFileChooser.setCurrentDirectory( new File( GetWorkDir( ) ) );
       opFileChooser.chooseFile(
           "\"CreditReport.xsd\""
           + " "

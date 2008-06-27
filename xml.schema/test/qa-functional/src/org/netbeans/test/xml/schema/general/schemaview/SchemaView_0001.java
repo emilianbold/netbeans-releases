@@ -92,6 +92,9 @@ import org.netbeans.jellytools.TopComponentOperator;
 import javax.swing.JPopupMenu;
 import org.netbeans.jellytools.modules.web.NavigatorOperator;
 
+import org.netbeans.junit.NbModuleSuite;
+import junit.framework.Test;
+
 /**
  *
  * @author michaelnazarov@netbeans.org
@@ -163,7 +166,8 @@ public class SchemaView_0001 extends SchemaView {
     public SchemaView_0001(String arg0) {
         super(arg0);
     }
-    
+
+    /*    
     public static TestSuite suite() {
         TestSuite testSuite = new TestSuite(SchemaView_0001.class.getName());
         
@@ -173,7 +177,50 @@ public class SchemaView_0001 extends SchemaView {
         
         return testSuite;
     }
+    */
 
+    public static Test suite( )
+    {
+      return NbModuleSuite.create(
+          NbModuleSuite.createConfiguration( SchemaView_0001.class ).addTest(
+              "CreateJavaApplication",
+
+              "CreateXMLSchema",
+              "AddComponents",
+
+              "CreateXMLSchema2",
+              "ImportSchema",
+
+              "CreateXMLSchema3",
+              "CreateXMLSchema4",
+              "IncludeSchema",
+
+              "CreateXMLSchema5",
+              "CreateXMLSchema6",
+              "RedefineSchema",
+
+              "CreateXMLSchema7",
+              "ImportInternalSchema",
+
+              "ModifyAttributesProperties",
+
+              "CreateXMLSchema8",
+              "AddComponents8",
+              "ModifyAttributesCustomizer",
+
+              "NavigateThroughSchema",
+              "CheckAndValidate",
+              "SyncronizationBetweenViews",
+              "GotoSourceDesign",
+
+              "CreateXMLSchema9",
+              "DeleteComponents"
+           )
+           .enableModules( ".*" )
+           .clusters( ".*" )
+           //.gui( true )
+        );
+    }
 
     public void CreateJavaApplication( )
     {

@@ -123,6 +123,7 @@ public class MercurialAnnotator extends VCSAnnotator {
     private String emptyFormat;
     private File folderToScan;
     private ConcurrentLinkedQueue<File> dirsToScan = new ConcurrentLinkedQueue<File>();
+    private Map<File, FileInformation> modifiedFiles = null;
     private RequestProcessor.Task scanTask;
     private static final RequestProcessor rp = new RequestProcessor("MercurialAnnotateScan", 1, true); // NOI18N
     
@@ -220,7 +221,7 @@ public class MercurialAnnotator extends VCSAnnotator {
         return folderAnnotation ?
             annotateFolderNameHtml(name, context, mostImportantInfo, mostImportantFile) :
             annotateNameHtml(name, mostImportantInfo, mostImportantFile);
-        }
+    }
                 
     public Image annotateIcon(Image icon, VCSContext context) {
         boolean folderAnnotation = false;
@@ -256,21 +257,15 @@ public class MercurialAnnotator extends VCSAnnotator {
         boolean allExcluded = true;
         boolean modified = false;
         
-        Map<File, FileInformation> map = cache.getAllModifiedFiles();
-        Map<File, FileInformation> modifiedFiles = new HashMap<File, FileInformation>();
-        for (Iterator i = map.keySet().iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            FileInformation info = map.get(file);
-            if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) modifiedFiles.put(file, info);
-        }
+        Map<File, FileInformation> locallyChangedFiles = getLocallyChangedFiles();
         
         for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
             File file = (File) i.next();
             if (VersioningSupport.isFlat(file)) {
-                for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
+                for (Iterator j = locallyChangedFiles.keySet().iterator(); j.hasNext();) {
                     File mf = (File) j.next();
                     if (mf.getParentFile().equals(file)) {
-                        FileInformation info = modifiedFiles.get(mf);
+                        FileInformation info = locallyChangedFiles.get(mf);
                         if (info.isDirectory()) continue;
                         int status = info.getStatus();
                         if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
@@ -282,10 +277,10 @@ public class MercurialAnnotator extends VCSAnnotator {
                     }
                 }
             } else {
-                for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
+                for (Iterator j = locallyChangedFiles.keySet().iterator(); j.hasNext();) {
                     File mf = (File) j.next();
                     if (Utils.isAncestorOrEqual(file, mf)) {
-                        FileInformation info = modifiedFiles.get(mf);
+                        FileInformation info = locallyChangedFiles.get(mf);
                         int status = info.getStatus();
                         if ((status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY || status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) && file.equals(mf)) {
                             continue;
@@ -309,6 +304,21 @@ public class MercurialAnnotator extends VCSAnnotator {
         }
     }
     
+    private synchronized Map<File, FileInformation> getLocallyChangedFiles() {
+        if(modifiedFiles == null || cache.modifiedFilesChanged()) {
+            Map<File, FileInformation> map = cache.getAllModifiedFiles();
+            modifiedFiles = new HashMap<File, FileInformation>();
+            for (Iterator i = map.keySet().iterator(); i.hasNext();) {
+                File file = (File) i.next();
+               FileInformation info = map.get(file);
+                if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
+                    modifiedFiles.put(file, info);
+                }
+            }
+        }
+        return modifiedFiles;
+    }
+
     public Action[] getActions(VCSContext ctx, VCSAnnotator.ActionDestination destination) {
         // TODO: get resource strings for all actions:
         ResourceBundle loc = NbBundle.getBundle(MercurialAnnotator.class);

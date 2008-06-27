@@ -54,6 +54,8 @@ import org.netbeans.lib.lexer.test.ModificationTextDocument;
  */
 public class SQLLexerTest extends NbTestCase {
 
+    // XXX turn these into proper golden file tests.
+
     public SQLLexerTest(String testName) {
         super(testName);
     }
@@ -65,6 +67,17 @@ public class SQLLexerTest extends NbTestCase {
         TokenSequence seq = hi.tokenSequence();
         assertFalse(seq.moveNext());
         doc.insertString(0, "select -/ from 'a' + 1, dto", null);
+        seq = hi.tokenSequence();
+        System.out.println(dumpTokens(seq));
+    }
+
+    public void testQuotedIdentifiers() throws Exception {
+        Document doc = new ModificationTextDocument();
+        doc.putProperty(Language.class, SQLTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        TokenSequence seq = hi.tokenSequence();
+        assertFalse(seq.moveNext());
+        doc.insertString(0, "select \"derby\", `mysql`", null);
         seq = hi.tokenSequence();
         System.out.println(dumpTokens(seq));
     }
