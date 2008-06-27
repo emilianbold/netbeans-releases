@@ -53,6 +53,7 @@ import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -124,6 +125,10 @@ public class HibernateMappingMovePlugin implements RefactoringPlugin {
 
         // Get the configuration files
         HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
+        if (env == null) {
+            // The project does not support Hibernate framework
+            return null;
+        }
         List<FileObject> configFiles = env.getAllHibernateConfigFileObjects();
         if (configFiles.isEmpty()) {
             return null;
@@ -187,6 +192,10 @@ public class HibernateMappingMovePlugin implements RefactoringPlugin {
 
         ArrayList<MappingFileData> fileData = new ArrayList<MappingFileData>();
         HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
+        if (hibernateEnv == null) {
+            // The project does not support Hibernate framework
+            return fileData;
+        }
         List<FileObject> mappingFiles = hibernateEnv.getAllHibernateMappingFileObjects();
         for (FileObject fo : mappingFiles) {
             String path = fo.getPath();

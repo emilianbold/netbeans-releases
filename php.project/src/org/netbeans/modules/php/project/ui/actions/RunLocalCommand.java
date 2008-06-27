@@ -87,11 +87,19 @@ public class RunLocalCommand extends Command implements Displayable {
         processBuilder.directory(scriptFile.getParentFile());
         initProcessBuilder(processBuilder);
         try {
+            PhpOptions options = PhpOptions.getInstance();            
             Process process = processBuilder.start();
+            final File outputTmpFile = FileUtil.normalizeFile(tempFileForScript(scriptFile));
+            BufferedReader reader = reader(process.getInputStream(), encoding);
+            BufferedWriter fileWriter = writer(new FileOutputStream(outputTmpFile), encoding);
+            if (options.isOpenResultInOutputWindow()) {            
+                BufferedWriter outputTabWriter = outputTabWriter(scriptFile, false, true);
+                rewriteAndClose(null, reader, fileWriter, outputTabWriter);                
+            } else {
+                rewriteAndClose(null, reader, fileWriter);
+            }
             int exitValue = process.waitFor();
-            File outputTmpFile = FileUtil.normalizeFile(processOutput(process, scriptFile, encoding));
 
-            PhpOptions options = PhpOptions.getInstance();
             if (options.isOpenResultInBrowser()) {
                 HtmlBrowser.URLDisplayer.getDefault().showURL(outputTmpFile.toURL());
             }
@@ -101,10 +109,10 @@ public class RunLocalCommand extends Command implements Displayable {
                 EditorCookie ec = dobj.getCookie(EditorCookie.class);
                 ec.open();
             }
-            if (options.isOpenResultInOutputWindow()) {
-                BufferedReader reader = reader(new FileInputStream(outputTmpFile), encoding);
-                BufferedWriter writer = outputTabWriter(scriptFile, exitValue != 0, true);
-                rewriteAndClose(reader, writer, null);
+            if (options.isOpenResultInOutputWindow() && exitValue != 0) {
+                reader = reader(new FileInputStream(outputTmpFile), encoding);
+                BufferedWriter writer = outputTabWriter(scriptFile, true, true);
+                rewriteAndClose(null, reader, writer);
             }
         } catch (IOException ex) {
             // #137225
@@ -161,7 +169,7 @@ public class RunLocalCommand extends Command implements Displayable {
         final File retval = tempFileForScript(scriptFile);
         BufferedReader reader = reader(process.getInputStream(), encoding);
         BufferedWriter fileWriter = writer(new FileOutputStream(retval), encoding);
-        rewriteAndClose(reader, fileWriter, null);
+        rewriteAndClose(null,reader, fileWriter);
         return retval;
     }
 

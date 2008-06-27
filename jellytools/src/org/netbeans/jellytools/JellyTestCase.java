@@ -61,17 +61,13 @@ import java.io.PrintStream;
 import java.util.Vector;
 import javax.swing.JDialog;
 
-import javax.swing.tree.TreePath;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.jellytools.modules.j2ee.nodes.GlassFishV2ServerNode;
-import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.junit.*;
 
 import org.netbeans.jemmy.*;
-import org.netbeans.jemmy.operators.*;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.jemmy.util.Dumper;
@@ -315,8 +311,14 @@ public class JellyTestCase extends NbTestCase {
         OpenProjects.getDefault().open(newProjects.toArray(new Project[0]), false);
         openedProjects.addAll(newProjects);
         try {
-            SourceUtils.waitScanFinished();
-        } catch (InterruptedException ex) {
+            ClassLoader l = Thread.currentThread().getContextClassLoader();
+            if (l == null) {
+                l = getClass().getClassLoader();
+            }
+//            SourceUtils.waitScanFinished();
+            Class<?> sourceUtils = Class.forName("org.netbeans.api.java.source.SourceUtils", true, l);
+            sourceUtils.getMethod("waitScanFinished").invoke(null);
+        } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
     }

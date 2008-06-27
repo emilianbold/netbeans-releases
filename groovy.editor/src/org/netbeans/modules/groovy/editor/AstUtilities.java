@@ -54,7 +54,6 @@ import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.netbeans.editor.BaseDocument;
@@ -70,14 +69,12 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.groovy.editor.elements.AstElement;
 import org.netbeans.modules.groovy.editor.elements.IndexedElement;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.editor.parser.SourceUtils;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.napi.gsfret.source.Phase;
-import org.netbeans.napi.gsfret.source.Source;
 
 /**
  *
@@ -191,11 +188,18 @@ public class AstUtilities {
     }
     
     public static OffsetRange getRange(ASTNode node, BaseDocument doc) {
+        
+        // Warning! The implicit class and some other nodes has line/column numbers below 1
+        // if line is wrong, let's invalidate also column and vice versa
+        int lineNumber = node.getLineNumber();
+        int columnNumber = node.getColumnNumber();
+        if (lineNumber < 1 || columnNumber < 1) {
+            lineNumber = 1;
+            columnNumber = 1;
+        }
+
         if (node instanceof FieldNode) {
-            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
-            if (start < 0) {
-                start = 0;
-            }
+            int start = getOffset(doc, lineNumber, columnNumber);
             FieldNode fieldNode = (FieldNode) node;
             return new OffsetRange(start, start + fieldNode.getName().length());
         } else if (node instanceof ClassNode) {
@@ -203,19 +207,6 @@ public class AstUtilities {
             // after the "class" keyword, plus an indefinite nuber of spaces
             // FIXME: have to check what happens with other whitespaces between
             // the keyword and the identifier (like newline)
-            
-            // Warning! The implicit class has line/column numbers below 1
-            
-            int lineNumber = node.getLineNumber();
-            int columnNumber = node.getColumnNumber();
-
-            if (lineNumber < 1) {
-                lineNumber = 1;
-            }
-
-            if (columnNumber < 1) {
-                columnNumber = 1;
-            }
             
             // happens in some cases when groovy source uses some non-imported java class
             if (doc != null) {
@@ -253,30 +244,21 @@ public class AstUtilities {
                 return new OffsetRange(start, end);
             }
         } else if (node instanceof ConstructorNode) {
-            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
-            if (start < 0) {
-                start = 0;
-            }
+            int start = getOffset(doc, lineNumber, columnNumber);
             ConstructorNode constructorNode = (ConstructorNode) node;
             return new OffsetRange(start, start + constructorNode.getDeclaringClass().getNameWithoutPackage().length());
         } else if (node instanceof MethodNode) {
-            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
-            if (start < 0) {
-                start = 0;
-            }
+            int start = getOffset(doc, lineNumber, columnNumber);
             MethodNode methodNode = (MethodNode) node;
             return new OffsetRange(start, start + methodNode.getName().length());
         } else if (node instanceof VariableExpression) {
-            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
-            if (start < 0) {
-                start = 0;
-            }
+            int start = getOffset(doc, lineNumber, columnNumber);
             // In case of variable in GString: "Hello, ${name}", node coordinates 
             // are suggesting '{' (it means begin and end colum info is wrong).
             // Pick up what we really want from this.
             try {
-                if (node.getLineNumber() == node.getLastLineNumber() &&
-                        (node.getLastColumnNumber() - node.getColumnNumber() == 1) &&
+                if (lineNumber == node.getLastLineNumber() &&
+                        (node.getLastColumnNumber() - columnNumber == 1) &&
                         "{".equals(doc.getText(start, 1))) {
                     start++;
                 }
@@ -296,16 +278,18 @@ public class AstUtilities {
         } else if (node instanceof MethodCallExpression) {
             MethodCallExpression methodCall = (MethodCallExpression) node;
             Expression method = methodCall.getMethod();
-            int start = getOffset(doc, method.getLineNumber(), method.getColumnNumber());
-            if (start >= 0) {
-                return new OffsetRange(start, start + methodCall.getMethodAsString().length());
+            lineNumber = method.getLineNumber();
+            columnNumber = method.getColumnNumber();
+            if (lineNumber < 1 || columnNumber < 1) {
+                lineNumber = 1;
+                columnNumber = 1;
             }
+            int start = getOffset(doc, lineNumber, columnNumber);
+            return new OffsetRange(start, start + methodCall.getMethodAsString().length());
         } else if (node instanceof ClassExpression) {
             ClassExpression clazz = (ClassExpression) node;
-            int start = getOffset(doc, clazz.getLineNumber(), clazz.getColumnNumber());
-            if (start >= 0) {
-                return new OffsetRange(start, start + clazz.getText().length());
-            }
+            int start = getOffset(doc, lineNumber, columnNumber);
+            return new OffsetRange(start, start + clazz.getText().length());
         }
         return OffsetRange.NONE;
     }
@@ -376,6 +360,7 @@ public class AstUtilities {
     
     /**
      * Find offset in text for given line and column
+     * Never returns negative number
      */
     public static int getOffset(BaseDocument doc, int lineNumber, int columnNumber) {
         assert lineNumber > 0 : "Line number must be at least 1 and was: " + lineNumber;
@@ -395,24 +380,19 @@ public class AstUtilities {
     public static ASTNode getForeignNode(final IndexedElement o, ASTNode[] foreignRootRet) {
 
         final ASTNode[] nodes = new ASTNode[1];
-        Source source = Source.forFileObject(o.getFileObject());
         try {
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
-                public void run(CompilationController controller) throws Exception {
-                    controller.toPhase(Phase.PARSED);
-                    GroovyParserResult result = (GroovyParserResult) controller.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
-                    if (result != null) {
-                        String signature = o.getSignature();
-                        for (AstElement element : result.getStructure().getElements()) {
-                            if (signature.equals(element.getSignature())) {
-                                nodes[0] = element.getNode();
-                            }
+            SourceUtils.runUserActionTask(o.getFileObject(), new CancellableTask<GroovyParserResult>() {
+                public void run(GroovyParserResult result) throws Exception {
+                    String signature = o.getSignature();
+                    for (AstElement element : result.getStructure().getElements()) {
+                        if (signature.equals(element.getSignature())) {
+                            nodes[0] = element.getNode();
                         }
                     }
                 }
                 public void cancel() {}
-            }, true);
-        } catch (IOException ex) {
+            });
+        } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
         

@@ -56,7 +56,7 @@ made subject to such option by the copyright holder.
             <fileset dir="antsrc" excludes="${jar-excludes}"/>
         </copy>
         <mkdir dir="${cluster}/ant/extra"/>
-        <jar jarfile="${cluster}/ant/extra/copyfiles.jar" compress="false">
+        <jar jarfile="${cluster}/ant/extra/jspcompile.jar" compress="false">
             <manifest>
                 <attribute name="NetBeans-Own-Library" value="true"/>
             </manifest>

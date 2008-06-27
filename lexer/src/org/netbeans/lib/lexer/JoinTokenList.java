@@ -501,10 +501,12 @@ public class JoinTokenList<T extends TokenId> implements TokenList<T> {
                 activeTokenListIndex += lps;
                 fetchActiveTokenListData();
             } else { // Move to next ETL
-                activeTokenListIndex++;
-                fetchActiveTokenListData();
-                // Use first token but check for empty ETL and join token
-                adjustJoinedOrSkipEmpty();
+                if (activeTokenListIndex + 1 < tokenListCount()) {
+                    activeTokenListIndex++;
+                    fetchActiveTokenListData();
+                    // Use first token but check for empty ETL and join token
+                    adjustJoinedOrSkipEmpty();
+                }
             }
             
         } else if (joinIndex > activeEndJoinIndex) { // joinIndex > activeEndJoinIndex
@@ -517,7 +519,8 @@ public class JoinTokenList<T extends TokenId> implements TokenList<T> {
                 }
             }
         }
-        // The index is within bounds of activeTokenList
+        // The index is within bounds of activeTokenList or above its token count (which equals
+        // to the fact that joinIndex is above total token count).
     }
 
     private void positionToJoinIndex(int joinIndex, int low, int high) {

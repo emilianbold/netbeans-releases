@@ -53,8 +53,8 @@ import org.netbeans.modules.db.sql.analyzer.QualIdent;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -70,9 +70,9 @@ public abstract class SQLCompletionItem implements CompletionItem {
     private static final String BOLD = "<b>"; // NOI18N
     private static final String BOLD_END = "</b>"; // NOI18N
 
-    private static final ImageIcon SCHEMA_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/db/sql/editor/completion/resources/schema.gif")); // NOI18N
-    private static final ImageIcon TABLE_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/db/sql/editor/completion/resources/table.gif")); // NOI18N
-    private static final ImageIcon COLUMN_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/db/sql/editor/completion/resources/column.gif")); // NOI18N
+    private static final ImageIcon SCHEMA_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/db/sql/editor/completion/resources/schema.gif")); // NOI18N
+    private static final ImageIcon TABLE_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/db/sql/editor/completion/resources/table.gif")); // NOI18N
+    private static final ImageIcon COLUMN_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/db/sql/editor/completion/resources/column.gif")); // NOI18N
 
     private final String substitutionText;
     private final int substitutionOffset;

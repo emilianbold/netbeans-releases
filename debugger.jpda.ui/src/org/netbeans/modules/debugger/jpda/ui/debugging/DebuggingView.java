@@ -116,14 +116,13 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
 
     /** unique ID of <code>TopComponent</code> (singleton) */
     private static final String ID = "debugging"; //NOI18N
-    private static final int CLICKABLE_ICON_WIDTH = 24;
-    private static final int BAR_WIDTH = 8;
+    public static final int CLICKABLE_ICON_WIDTH = 24; // [TODO] move to ClickableIcon
+    public static final int BAR_WIDTH = 8;
     
     static final Color hitsColor = new Color(255, 255, 178);
     static final Color hitsBarColor = new Color(230, 230, 130);
     static final Color deadlockColor = UIManager.getDefaults().getColor("nb.errorForeground"); // new Color(252, 157, 159); 
-    
-    private transient Color greenBarColor = new Color(189, 230, 170);
+    static final Color greenBarColor = new Color(189, 230, 170);
     private transient Color treeBackgroundColor = UIManager.getDefaults().getColor("Tree.background"); // NOI18N
     
     private transient ExplorerManager manager = new ExplorerManager();
@@ -178,6 +177,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         focusedSuspendIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/suspend_button_focused_16.png"));
         pressedSuspendIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/suspend_button_pressed_16.png"));
         
+        setBackground(treeBackgroundColor);
+        
         treeView = new DebugTreeView();
         treeView.setRootVisible(false);
         treeView.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -190,6 +191,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         leftPanel.setPreferredSize(new Dimension(BAR_WIDTH, 0));
         leftPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
         rightPanel = new ZebraPanel(treeView);
+        rightPanel.setBackground(treeBackgroundColor);
         rightPanel.setPreferredSize(new Dimension(CLICKABLE_ICON_WIDTH, 0));
         rightPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
         

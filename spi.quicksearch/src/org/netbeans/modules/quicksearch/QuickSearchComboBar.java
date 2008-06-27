@@ -89,7 +89,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
             
             private void textChanged () {
                 if (command.isFocusOwner()) {
-                    displayer.update(command.getText());
+                    displayer.maybeEvaluate(command.getText());
                 }
             }
             
@@ -204,6 +204,14 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
         evt.consume();
     } else if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
         evt.consume();
+        invokeSelectedItem();
+    } else if ((evt.getKeyCode()) == KeyEvent.VK_ESCAPE) {
+        returnFocus();
+    }
+}//GEN-LAST:event_commandKeyPressed
+
+    /** Actually invokes action selected in the results list */
+    public void invokeSelectedItem () {
         // #137259: invoke only some results were found
         if (displayer.getList().getModel().getSize() > 0) {
             returnFocus();
@@ -215,11 +223,8 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
                     }
             });
         }
-    } else if ((evt.getKeyCode()) == KeyEvent.VK_ESCAPE) {
-        returnFocus();
     }
-}//GEN-LAST:event_commandKeyPressed
-
+    
     private void returnFocus () {
         displayer.setVisible(false);
         if (caller != null) {

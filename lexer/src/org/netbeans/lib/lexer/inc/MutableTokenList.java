@@ -81,6 +81,6 @@ public interface MutableTokenList<T extends TokenId> extends TokenList<T> {
     /**
      * Update the token list by replacing tokens according to the given change.
      */
-    void replaceTokens(TokenListChange<T> change, int diffLength);
+    void replaceTokens(TokenListChange<T> change, TokenHierarchyEventInfo eventInfo, boolean modInside);
 
 }

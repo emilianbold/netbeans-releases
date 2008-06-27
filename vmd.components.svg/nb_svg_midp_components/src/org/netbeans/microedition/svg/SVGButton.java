@@ -40,7 +40,7 @@ import org.w3c.dom.svg.SVGRGBColor;
  *       &lt;metadata> &lt;text>type=released&lt;/text> &lt;/metadata>
  *       &lt;/animate>
  *       &lt;/rect>
- *   &lt;text id="button_ok_stext" x="24" y="23" fill="black" font-size="20">
+ *   &lt;text x="24" y="23" fill="black" font-size="20">
  *       &lt;metadata> &lt;text>type=shadow_text&lt;/text> &lt;/metadata>
  *       OK&lt;/text>
  *       &lt;text x="23" y="21" fill="gray" font-size="20">

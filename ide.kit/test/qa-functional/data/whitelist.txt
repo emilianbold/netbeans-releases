@@ -5176,6 +5176,7 @@ org.netbeans.spi.sendopts.Option$1
 org.netbeans.spi.sendopts.OptionProcessor
 org.netbeans.spi.settings.Saver
 org.netbeans.spi.viewmodel.Models$ActionPerformer
+org.netbeans.spi.viewmodel.UnknownTypeException
 org.netbeans.swing.dirchooser.DelegatingChooserUI
 org.netbeans.swing.dirchooser.Module
 org.netbeans.swing.dirchooser.Module$1
@@ -5238,6 +5239,8 @@ org.netbeans.swing.tabcontrol.TabbedContainer
 org.netbeans.swing.tabcontrol.TabbedContainer$1
 org.netbeans.swing.tabcontrol.TabbedContainerUI
 org.netbeans.swing.tabcontrol.WinsysInfoForTabbed
+org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer
+org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer$DefaultWinsysInfoForTabbedContainer
 org.netbeans.swing.tabcontrol.event.ComplexListDataEvent
 org.netbeans.swing.tabcontrol.event.ComplexListDataListener
 org.netbeans.swing.tabcontrol.event.TabActionEvent
@@ -5911,6 +5914,7 @@ org.openide.util.Enumerations
 org.openide.util.Enumerations$Processor
 org.openide.util.HelpCtx
 org.openide.util.HelpCtx$Provider
+org.openide.util.ImageUtilities
 org.openide.util.Lookup
 org.openide.util.Lookup$Item
 org.openide.util.Lookup$Provider

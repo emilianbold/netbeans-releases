@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Maros Sandor
  */
-public class ClearcaseVCS extends VersioningSystem implements PropertyChangeListener, VersioningListener, CollocationQueryImplementation {
+public class ClearcaseVCS extends VersioningSystem implements PropertyChangeListener, VersioningListener {
 
     /**
      * Fired when textual annotations and badges have changed. The NEW value is Set<File> of files that changed or NULL
@@ -103,18 +103,27 @@ public class ClearcaseVCS extends VersioningSystem implements PropertyChangeList
         return Clearcase.getInstance().getInterceptor();
     }
 
-    public boolean areCollocated(File a, File b) {
-        File fra = getTopmostManagedAncestor(a);
-        File frb = getTopmostManagedAncestor(b);
-        if (fra == null || !fra.equals(frb)) return false;
-        
-        // TODO: should we check that they come from the same view?
-        return true;
+    @Override
+    public CollocationQueryImplementation getCollocationQueryImplementation() {
+        return collocationQueryImplementation;
     }
 
-    public File findRoot(File file) {
-        return getTopmostManagedAncestor(file);
-    }
+    private final CollocationQueryImplementation collocationQueryImplementation = new CollocationQueryImplementation() {
+    
+        public boolean areCollocated(File a, File b) {
+            File fra = getTopmostManagedAncestor(a);
+            File frb = getTopmostManagedAncestor(b);
+            if (fra == null || !fra.equals(frb)) return false;
+            
+            // TODO: should we check that they come from the same view?
+            return true;
+        }
+    
+        public File findRoot(File file) {
+            // TODO: we should probably return the closest common ancestor
+            return getTopmostManagedAncestor(file);
+        }
+    };
     
     public void propertyChange(PropertyChangeEvent event) {
         if (event.getPropertyName().equals(ClearcaseAnnotator.PROP_ANNOTATIONS_CHANGED)) {

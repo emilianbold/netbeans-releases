@@ -94,6 +94,9 @@ import javax.swing.JPopupMenu;
 import org.netbeans.jellytools.modules.web.NavigatorOperator;
 import java.util.regex.*;
 
+import org.netbeans.junit.NbModuleSuite;
+import junit.framework.Test;
+
 /**
  *
  * @author michaelnazarov@netbeans.org
@@ -134,7 +137,8 @@ public class SourceView_0001 extends SourceView {
     public SourceView_0001(String arg0) {
         super(arg0);
     }
-    
+
+    /*    
     public static TestSuite suite() {
         TestSuite testSuite = new TestSuite(SourceView_0001.class.getName());
         
@@ -144,7 +148,33 @@ public class SourceView_0001 extends SourceView {
         
         return testSuite;
     }
+    */
 
+    public static Test suite( )
+    {
+      return NbModuleSuite.create(
+          NbModuleSuite.createConfiguration( SourceView_0001.class ).addTest(
+              "CreateJavaApplication",
+
+              "CreateSchema1",
+              "FindSearch",
+
+              "CreateSchema2",
+              "Bookmarks",
+
+              "CreateSchema3",
+              "IndentSelect",
+
+              "CreateSchema4",
+              "CheckXML",
+              "ValidateXML",
+              "Transformation"
+           )
+           .enableModules( ".*" )
+           .clusters( ".*" )
+           //.gui( true )
+        );
+    }
 
     public void CreateJavaApplication( )
     {

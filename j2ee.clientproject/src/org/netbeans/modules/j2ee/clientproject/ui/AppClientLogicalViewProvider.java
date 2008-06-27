@@ -689,8 +689,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                         new PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE) // NOI18N
                     },
                     ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES,
-                    cs,
-                    new String[]{ProjectProperties.JAVAC_CLASSPATH})
+                    cs)
                 };
             } else if (key == TEST_LIBRARIES) {
                 result = new Node[]{
@@ -717,8 +716,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                         new PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), // NOI18N
                     },
                     null,
-                    cs,
-                    null)
+                    cs)
                 };
             }
             // else if (key instanceof SourceGroup) {
