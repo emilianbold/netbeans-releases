@@ -354,11 +354,14 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         } catch (java.net.MalformedURLException ex) {
             fo = null;
         }
-        FileObject[] roots;
+        FileObject[] roots = null;
         if (fo != null) {
             ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-            roots = cp.getRoots();
-        } else {
+            if (cp != null) {
+                roots = cp.getRoots();
+            }
+        }
+        if (roots == null) {
             roots = originalSourcePath.getRoots();
         }
         for (FileObject fileObject : roots) {

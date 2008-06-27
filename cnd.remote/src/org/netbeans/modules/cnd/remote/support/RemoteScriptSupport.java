@@ -57,9 +57,9 @@ public class RemoteScriptSupport extends RemoteConnectionSupport {
     
     public RemoteScriptSupport(String host, String user, ScriptManager manager) {
         super(host, user);
+        manager.setSupport(this);
         setChannelCommand(manager.getScript());
-        
-        manager.runScript(this); 
+        manager.runScript(); 
     }
 
     @Override
@@ -69,6 +69,6 @@ public class RemoteScriptSupport extends RemoteConnectionSupport {
     }
     
     private void setChannelCommand(String script) {
-        ((ChannelExec) getChannel()).setCommand(System.getProperty("user.home") + "/.netbeans/rddev/cnd.remote/scripts/" + script); //NOI18N
+        ((ChannelExec) getChannel()).setCommand(script);
     }
 }

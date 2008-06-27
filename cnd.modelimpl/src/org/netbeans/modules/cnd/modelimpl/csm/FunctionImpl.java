@@ -151,8 +151,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 	
         boolean _const = initConst(ast);
         setFlags(FLAGS_CONST, _const);
-        returnType = initReturnType(ast, scope);
         initTemplate(ast);
+        returnType = initReturnType(ast);
 
         // set parameters, do it in constructor to have final fields
         List<CsmParameter> params = initParameters(ast);
@@ -531,7 +531,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 //        return false;
 //    }
     
-    private CsmType initReturnType(AST node, CsmScope scope) {
+    private CsmType initReturnType(AST node) {
         CsmType ret = null;
         AST token = getTypeToken(node);
         if( token != null ) {
@@ -540,7 +540,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         if( ret == null ) {
             ret = TypeFactory.createBuiltinType("int", (AST) null, 0,  null/*getAst().getFirstChild()*/, getContainingFile()); // NOI18N
         }
-        return TemplateUtils.checkTemplateType(ret, scope);
+        return TemplateUtils.checkTemplateType(ret, FunctionImpl.this);
     }
     
     public CsmType getReturnType() {

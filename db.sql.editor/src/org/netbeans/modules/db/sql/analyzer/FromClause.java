@@ -49,11 +49,11 @@ import java.util.Set;
  *
  * @author Andrei Badea
  */
-public class FromTables {
+public class FromClause {
 
     private final List<FromTable> tables;
 
-    public FromTables(List<FromTable> tables) {
+    public FromClause(List<FromTable> tables) {
         this.tables = tables;
     }
 

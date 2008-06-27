@@ -27,3 +27,9 @@ private:
     static int f6() {}
 
 };
+
+namespace sys_ns {
+    struct string {
+
+    };
+}

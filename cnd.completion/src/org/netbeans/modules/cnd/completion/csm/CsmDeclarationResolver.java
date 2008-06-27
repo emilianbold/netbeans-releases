@@ -86,7 +86,7 @@ public class CsmDeclarationResolver {
         } else if (CsmKindUtilities.isClass(obj)) {
             clazz = (CsmClassifier)obj;
         } else if (CsmKindUtilities.isInheritance(obj)) {
-            clazz = ((CsmInheritance)obj).getCsmClassifier();
+            clazz = ((CsmInheritance)obj).getClassifier();
         }
         
         return clazz;

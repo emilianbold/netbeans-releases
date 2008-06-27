@@ -230,7 +230,7 @@ public class WebProjectProperties {
     Document WAR_NAME_MODEL; 
     Document BUILD_CLASSES_EXCLUDES_MODEL;
     ButtonModel WAR_COMPRESS_MODEL;
-    WarIncludesUiSupport.ClasspathTableModel WAR_CONTENT_ADDITIONAL_MODEL;
+    WarIncludesTableModel WAR_CONTENT_ADDITIONAL_MODEL;
 
     // CustomizerJavadoc
     ButtonModel JAVADOC_PRIVATE_MODEL;
@@ -354,7 +354,7 @@ public class WebProjectProperties {
         WAR_NAME_MODEL = projectGroup.createStringDocument( evaluator, WAR_NAME );
         BUILD_CLASSES_EXCLUDES_MODEL = projectGroup.createStringDocument( evaluator, BUILD_CLASSES_EXCLUDES );
         WAR_COMPRESS_MODEL = projectGroup.createToggleButtonModel( evaluator, WAR_COMPRESS );
-        WAR_CONTENT_ADDITIONAL_MODEL = WarIncludesUiSupport.createTableModel( cs.itemsList( (String)projectProperties.get( WAR_CONTENT_ADDITIONAL ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
+        WAR_CONTENT_ADDITIONAL_MODEL = WarIncludesTableModel.createTableModel( cs.itemsIterator( (String)projectProperties.get( WAR_CONTENT_ADDITIONAL ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
 
         // CustomizerJavadoc
         JAVADOC_PRIVATE_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_PRIVATE );
@@ -519,7 +519,7 @@ public class WebProjectProperties {
         String[] javac_cp = cs.encodeToStrings(javaClasspathList, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES  );        
         String[] javac_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ), null );
         String[] run_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ), null );
-        String[] war_includes = cs.encodeToStrings( WarIncludesUiSupport.getList( WAR_CONTENT_ADDITIONAL_MODEL ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES  );
+        String[] war_includes = cs.encodeToStrings( ClassPathUiSupport.getList( WAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel() ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES  );
 
         // Store standard properties
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
@@ -606,13 +606,6 @@ public class WebProjectProperties {
         }
 
         storeAdditionalProperties(projectProperties);
-        
-        List<ClassPathSupport.Item> libs = new ArrayList<ClassPathSupport.Item>();
-        libs.addAll(ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel()));
-        libs.addAll(WarIncludesUiSupport.getList(WAR_CONTENT_ADDITIONAL_MODEL));
-        
-        ProjectProperties.storeLibrariesLocations (project.getAntProjectHelper(), libs.iterator(), 
-                project.getAntProjectHelper().isSharableProject() ? projectProperties : privateProperties);
         
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );

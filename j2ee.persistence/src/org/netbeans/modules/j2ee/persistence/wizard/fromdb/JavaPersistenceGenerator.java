@@ -161,7 +161,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             final ProgressContributor handle) throws IOException {
         
         generateBeans(helper.getBeans(), helper.isGenerateFinderMethods(), 
-                helper.isCmpFieldsInInterface(), helper.isRegenTablesAttrs(),
+                helper.isFullyQualifiedTableNames(), helper.isRegenTablesAttrs(),
                 helper.getFetchType(), helper.getCollectionType(),
                 handle, progressPanel);
     }

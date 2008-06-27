@@ -43,9 +43,12 @@ package org.netbeans.modules.quicksearch;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.JLayeredPane;
 import javax.swing.JList;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.modules.quicksearch.recent.RecentSearches;
@@ -55,7 +58,7 @@ import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
  * Component representing drop down for quick search
  * @author  Jan Becicka
  */
-public class QuickSearchPopup extends javax.swing.JPanel implements ListDataListener {
+public class QuickSearchPopup extends javax.swing.JPanel implements ListDataListener, ActionListener {
     
     private QuickSearchComboBar comboBar;
     
@@ -63,6 +66,19 @@ public class QuickSearchPopup extends javax.swing.JPanel implements ListDataList
 
     /* Rect to store repetitive bounds computation */
     private Rectangle popupBounds = new Rectangle();
+
+    /** coalesce times varying according to lenght of input text for searching */
+    private static final int[] COALESCE_TIMES = new int[] { 
+        150, // time to wait before running search when input text has 0 characters
+        400, // ...when input text has 1 character
+        300, // ...2 characters
+        200// ...3 and more characters
+    };
+    
+    private Timer updateTimer;
+    
+    /** text to search for */
+    private String searchedText;
 
     /** Creates new form SilverPopup */
     public QuickSearchPopup (QuickSearchComboBar comboBar) {
@@ -94,11 +110,31 @@ public class QuickSearchPopup extends javax.swing.JPanel implements ListDataList
         return jList1;
     }
     
-    void update (String text) {
-        // TBD - fast coming evaluation requests coalescing
-        CommandEvaluator.evaluate(text, rModel);
+    public void maybeEvaluate (String text) {
+        this.searchedText = text;
+        
+        if (updateTimer == null) {
+            updateTimer = new Timer(200, this);
+        }
+        
+        if (!updateTimer.isRunning()) {
+            // first change in possible flurry, start timer with proper delay
+            updateTimer.setDelay(COALESCE_TIMES [ Math.min(text.length(), 3) ]);
+            updateTimer.start();
+        } else {
+            // text change came too fast, let's wait until user calms down :)
+            updateTimer.restart();
+        }
     }
-
+    
+    /** implementation of ActionListener, called by timer,
+     * actually runs search */
+    public void actionPerformed(ActionEvent e) {
+        updateTimer.stop();
+        CommandEvaluator.evaluate(searchedText, rModel);
+    }
+        
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

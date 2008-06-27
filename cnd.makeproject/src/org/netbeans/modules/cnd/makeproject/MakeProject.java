@@ -239,6 +239,7 @@ public final class MakeProject implements Project, AntProjectListener {
             "Templates/cFiles/main.c", // NOI18N
             "Templates/cFiles/file.c", // NOI18N
             "Templates/cFiles/file.h", // NOI18N
+            "Templates/cppFiles/class.cc", // NOI18N
             "Templates/cppFiles/main.cc", // NOI18N
             "Templates/cppFiles/file.cc", // NOI18N
             "Templates/cppFiles/file.h", // NOI18N
@@ -250,6 +251,7 @@ public final class MakeProject implements Project, AntProjectListener {
             "Templates/cFiles/main.c", // NOI18N
             "Templates/cFiles/file.c", // NOI18N
             "Templates/cFiles/file.h", // NOI18N
+            "Templates/cppFiles/class.cc", // NOI18N
             "Templates/cppFiles/main.cc", // NOI18N
             "Templates/cppFiles/file.cc", // NOI18N
             "Templates/cppFiles/file.h", // NOI18N

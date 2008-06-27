@@ -48,7 +48,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -76,10 +75,10 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarLogicalViewProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathExtender;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.common.project.classpath.LibrariesLocationUpdater;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
@@ -186,7 +185,6 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     private PropertyChangeListener j2eePlatformListener;
     private AntBuildExtender buildExtender;
     private final ClassPathProviderImpl cpProvider;
-    private LibrariesLocationUpdater librariesLocationUpdater;
     private ClassPathUiSupport.Callback classPathUiSupportCallback;
     
     // TODO: AB: replace the code in EjbJarProjectProperties.setNewServerInstanceValue with this 
@@ -270,9 +268,6 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), 
             getClassPathUiSupportCallback(), new String[]{ProjectProperties.JAVAC_CLASSPATH});
         classPathExtender = new ClassPathExtender(classPathModifier, ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
-        librariesLocationUpdater = new LibrariesLocationUpdater(this, updateHelper, eval, classPathModifier.getClassPathSupport(),
-                ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES, 
-                null, null);
         lookup = createLookup(aux, cpProvider);
         helper.addAntProjectListener(this);
         ProjectManager.mutex().postWriteRequest(
@@ -963,17 +958,18 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             // set jaxws.endorsed.dir property (for endorsed mechanism to be used with wsimport, wsgen)
             WSUtils.setJaxWsEndorsedDirProperty(ep);
 
+            // #134642 - use Ant task from copylibs library
+            if (helper.isSharableProject() && refHelper.getProjectLibraryManager().getLibrary("CopyLibs") == null) { // NOI18N
+                try {
+                    refHelper.copyLibrary(LibraryManager.getDefault().getLibrary("CopyLibs")); // NOI18N
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
             //update lib references in project properties
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            ArrayList<ClassPathSupport.Item> l = new ArrayList<ClassPathSupport.Item>();
-            l.addAll(classPathModifier.getClassPathSupport().itemsList(props.getProperty(ProjectProperties.JAVAC_CLASSPATH), ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES));
-            ProjectProperties.storeLibrariesLocations(helper, l.iterator(), helper.isSharableProject() ? props : ep);
-            
-            // #129316
-            if (helper.isSharableProject()) {
-                ProjectProperties.removeObsoleteLibraryLocations(ep);
-            }
-            ProjectProperties.refreshLibraryTotals(props, classPathModifier.getClassPathSupport(), ProjectProperties.JAVAC_CLASSPATH,  ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
+            ProjectProperties.removeObsoleteLibraryLocations(ep);
+            ProjectProperties.removeObsoleteLibraryLocations(props);
             updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);            
             
             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
@@ -1025,11 +1021,6 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
             if (platform != null) {
                 unregisterJ2eePlatformListener(platform);
-            }
-            
-            // unregister the property change listener on the prop evaluator
-            if (librariesLocationUpdater != null) {
-                librariesLocationUpdater.destroy();
             }
             
             // Probably unnecessary, but just in case:

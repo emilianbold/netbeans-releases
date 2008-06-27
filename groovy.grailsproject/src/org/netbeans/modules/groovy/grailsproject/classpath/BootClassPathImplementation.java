@@ -132,10 +132,16 @@ final class BootClassPathImplementation implements ClassPathImplementation {
         List<File> jars = new ArrayList<File>();
         
         File distDir = new File(grailsHome, "dist"); // NOI18N
-        jars.addAll(Arrays.asList(distDir.listFiles()));
+        File[] files = distDir.listFiles();
+        if (files != null) {
+            jars.addAll(Arrays.asList(files));
+        }
         
         File libDir = new File(grailsHome, "lib"); // NOI18N
-        jars.addAll(Arrays.asList(libDir.listFiles()));
+        files = libDir.listFiles();
+        if (files != null) {
+            jars.addAll(Arrays.asList(files));
+        }
         
         for (File f : jars) {
             try {
