@@ -204,4 +204,18 @@ public class DBConnMetadataModel implements MetadataModel {
             return str1.equalsIgnoreCase(str2);
         }
     }
+
+    public String getIdentifierQuoteString() {
+        DatabaseMetaData dmd = getMetaData();
+        if (dmd == null) {
+            return null;
+        }
+        String result = null;
+        try {
+            result = dmd.getIdentifierQuoteString();
+        } catch (SQLException e) {
+            Exceptions.printStackTrace(e);
+        }
+        return result;
+    }
 }

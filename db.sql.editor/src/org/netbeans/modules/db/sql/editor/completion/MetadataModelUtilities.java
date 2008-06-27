@@ -52,38 +52,38 @@ public class MetadataModelUtilities {
 
     private MetadataModelUtilities() {}
 
-    public static Set<String> addSchemaItems(final List<SQLCompletionItem> items, MetadataModel model, Set<String> restrict, String prefix, final int substitutionOffset) {
+    public static Set<String> addSchemaItems(final List<SQLCompletionItem> items, MetadataModel model, Set<String> restrict, String prefix, final String quoteString, final int substitutionOffset) {
         Set<String> result = new TreeSet<String>();
         filter(model.getSchemaNames(), restrict, prefix, new Handler() {
             public void handle(String schemaName) {
                 if (!MetadataModel.NO_SCHEMA_NAME.equals(schemaName)) {
-                    items.add(SQLCompletionItem.schema(schemaName, substitutionOffset));
+                    items.add(SQLCompletionItem.schema(schemaName, quoteString, substitutionOffset));
                 }
             }
         });
         return result;
     }
 
-    public static void addTableItems(final List<SQLCompletionItem> items, MetadataModel model, QualIdent schemaName, Set<String> restrict, String prefix, final int substitutionOffset) {
+    public static void addTableItems(final List<SQLCompletionItem> items, MetadataModel model, QualIdent schemaName, Set<String> restrict, String prefix, final String quoteString, final int substitutionOffset) {
         if (!schemaName.isSimple()) {
             return;
         }
         filter(model.getTableNames(schemaName.getSimpleName()), restrict, prefix, new Handler() {
             public void handle(String tableName) {
-                items.add(SQLCompletionItem.table(tableName, substitutionOffset));
+                items.add(SQLCompletionItem.table(tableName, quoteString, substitutionOffset));
             }
         });
     }
 
-    public static void addAliasItems(final List<SQLCompletionItem> items, List<String> aliases, String prefix, final int substitutionOffset) {
+    public static void addAliasItems(final List<SQLCompletionItem> items, List<String> aliases, String prefix, final String quoteString, final int substitutionOffset) {
         filter(aliases, null, prefix, new Handler() {
             public void handle(String alias) {
-                items.add(SQLCompletionItem.alias(alias, substitutionOffset));
+                items.add(SQLCompletionItem.alias(alias, quoteString, substitutionOffset));
             }
         });
     }
 
-    public static void addColumnItems(final List<SQLCompletionItem> items, MetadataModel model, final QualIdent tableName, String prefix, final int substitutionOffset) {
+    public static void addColumnItems(final List<SQLCompletionItem> items, MetadataModel model, final QualIdent tableName, String prefix, final String quoteString, final int substitutionOffset) {
         final String defaultSchemaName = model.getDefaultSchemaName();
         String schemaName;
         if (tableName.isSimple()) {
@@ -98,9 +98,9 @@ public class MetadataModelUtilities {
         filter(model.getColumnNames(schemaName, tableName.getSimpleName()), null, prefix, new Handler() {
             public void handle(String columnName) {
                 if (defaultSchema) {
-                    items.add(SQLCompletionItem.column(simpleTableName, columnName, substitutionOffset));
+                    items.add(SQLCompletionItem.column(simpleTableName, columnName, quoteString, substitutionOffset));
                 } else {
-                    items.add(SQLCompletionItem.column(tableName, columnName, substitutionOffset));
+                    items.add(SQLCompletionItem.column(tableName, columnName, quoteString, substitutionOffset));
                 }
             }
         });
