@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,47 +31,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
+package org.netbeans.modules.db.sql.editor.completion;
 
-package org.netbeans.modules.jumpto.quicksearch;
-
-import org.netbeans.spi.quicksearch.SearchProvider;
-import org.netbeans.spi.jumpto.type.TypeDescriptor;
-import org.netbeans.spi.quicksearch.SearchRequest;
-import org.netbeans.spi.quicksearch.SearchResponse;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author  Jan Becicka
+ * @author Andrei Badea
  */
-public class JavaTypeSearchProvider implements SearchProvider {
+public class SQLCompletionQueryUtilsTest extends NbTestCase {
 
-    public void evaluate(SearchRequest request, SearchResponse response) {
-        GoToTypeWorker worker = new GoToTypeWorker(request.getText());
-        worker.run();
-        
-        for (TypeDescriptor td : worker.getTypes()) {
-            if (!response.addResult(new GoToTypeCommand(td), td.getSimpleName() + td.getContextName(), td.getContextName(), null)) {
-                break;
-            }
-        }
-    }
-    
-    private static class GoToTypeCommand implements Runnable {
-        private TypeDescriptor command;
-        
-        public GoToTypeCommand(TypeDescriptor command) {
-            this.command = command;
-        }
-
-        public void run() {
-            command.open();
-        }
+    public SQLCompletionQueryUtilsTest(String name) {
+        super(name);
     }
 
+    public void testUnquote() {
+        assertEquals("id", SQLCompletionQuery.unquote("id", null));
+        assertEquals("id", SQLCompletionQuery.unquote("id", "`"));
+        assertEquals("id", SQLCompletionQuery.unquote("id", "`"));
+        assertEquals("id", SQLCompletionQuery.unquote("id", "`"));
+        assertEquals("id", SQLCompletionQuery.unquote("id", "`"));
+        assertEquals("id", SQLCompletionQuery.unquote("id", "`"));
+        assertNull(SQLCompletionQuery.unquote("``", "`"));
+        assertNull(SQLCompletionQuery.unquote("```", "`"));
+    }
 }

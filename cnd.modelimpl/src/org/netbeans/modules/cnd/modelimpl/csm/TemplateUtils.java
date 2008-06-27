@@ -46,8 +46,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
@@ -203,7 +203,7 @@ public class TemplateUtils {
         }
         
         // first check scope and super classes if needed
-        while (scope instanceof ClassImpl || scope instanceof CsmMethod) {
+        while (scope != null) {
             if (CsmKindUtilities.isTemplate(scope)) {
                 List<CsmTemplateParameter> params = ((CsmTemplate)scope).getTemplateParameters();
                 if (!params.isEmpty()) {
@@ -216,10 +216,10 @@ public class TemplateUtils {
                 }
             }
             // then check class or super class
-            if (scope instanceof ClassImpl) {
-                scope = ((ClassImpl)scope).getScope();
-            } else if (scope instanceof CsmMethod) {
-                scope = ((CsmMethod)scope).getContainingClass();
+            if (scope instanceof CsmScopeElement) {
+                scope = ((CsmScopeElement)scope).getScope();
+            } else {
+                break;
             }
         }
         

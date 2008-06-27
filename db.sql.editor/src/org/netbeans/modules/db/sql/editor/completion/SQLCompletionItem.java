@@ -77,28 +77,39 @@ public abstract class SQLCompletionItem implements CompletionItem {
     private final String substitutionText;
     private final int substitutionOffset;
 
-    public static SQLCompletionItem schema(String schemaName, int substitutionOffset) {
-        return new Schema(schemaName, substitutionOffset);
+    public static SQLCompletionItem schema(String schemaName, String quoteString, int substitutionOffset) {
+        return new Schema(schemaName, quoteString, substitutionOffset);
     }
 
-    public static SQLCompletionItem table(String tableName, int substitutionOffset) {
-        return new Table(tableName, substitutionOffset);
+    public static SQLCompletionItem table(String tableName, String quoteString, int substitutionOffset) {
+        return new Table(tableName, quoteString, substitutionOffset);
     }
 
-    public static SQLCompletionItem alias(String alias, int substitutionOffset) {
-        return new Alias(alias, substitutionOffset);
+    public static SQLCompletionItem alias(String alias, String quoteString, int substitutionOffset) {
+        return new Alias(alias, quoteString, substitutionOffset);
     }
 
-    public static SQLCompletionItem column(QualIdent tableName, String columnName, int substitutionOffset) {
-        return new QualTableColumn(tableName, columnName, substitutionOffset);
+    public static SQLCompletionItem column(QualIdent tableName, String columnName, String quoteString, int substitutionOffset) {
+        return new QualTableColumn(tableName, columnName, quoteString, substitutionOffset);
     }
 
-    public static SQLCompletionItem column(String simpleTableName, String columnName, int substitutionOffset) {
-        return new SimpleTableColumn(simpleTableName, columnName, substitutionOffset);
+    public static SQLCompletionItem column(String simpleTableName, String columnName, String quoteString, int substitutionOffset) {
+        return new SimpleTableColumn(simpleTableName, columnName, quoteString, substitutionOffset);
     }
 
-    protected SQLCompletionItem(String substitutionText, int substitutionOffset) {
-        this.substitutionText = substitutionText;
+    private static String computeSubstitutionText(String substitutionText, String quoteString) {
+        if (quoteString != null) {
+            StringBuilder sb = new StringBuilder(substitutionText.length() + 2);
+            sb.append(quoteString);
+            sb.append(substitutionText);
+            sb.append(quoteString);
+            return sb.toString();
+        }
+        return substitutionText;
+    }
+
+    protected SQLCompletionItem(String substitutionText, String quoteString, int substitutionOffset) {
+        this.substitutionText = computeSubstitutionText(substitutionText, quoteString);
         this.substitutionOffset = substitutionOffset;
     }
 
@@ -176,8 +187,8 @@ public abstract class SQLCompletionItem implements CompletionItem {
         private final String schemaName;
         private String leftText;
 
-        public Schema(String schemaName, int substitutionOffset) {
-            super(schemaName, substitutionOffset);
+        public Schema(String schemaName, String quoteString, int substitutionOffset) {
+            super(schemaName, quoteString, substitutionOffset);
             this.schemaName = schemaName;
         }
 
@@ -214,8 +225,8 @@ public abstract class SQLCompletionItem implements CompletionItem {
         private final String tableName;
         private String leftText;
 
-        public Table(String tableName, int substitutionOffset) {
-            super(tableName, substitutionOffset);
+        public Table(String tableName, String quoteString, int substitutionOffset) {
+            super(tableName, quoteString, substitutionOffset);
             this.tableName = tableName;
         }
 
@@ -252,8 +263,8 @@ public abstract class SQLCompletionItem implements CompletionItem {
 
         private final String alias;
 
-        public Alias(String alias, int substitutionOffset) {
-            super(alias, substitutionOffset);
+        public Alias(String alias, String quoteString, int substitutionOffset) {
+            super(alias, quoteString, substitutionOffset);
             this.alias = alias;
         }
 
@@ -284,8 +295,8 @@ public abstract class SQLCompletionItem implements CompletionItem {
         private String leftText;
         private String rightText;
 
-        public AbstractColumn(String columnName, int substitutionOffset) {
-            super(columnName, substitutionOffset);
+        public AbstractColumn(String columnName, String quoteString, int substitutionOffset) {
+            super(columnName, quoteString, substitutionOffset);
             this.columnName = columnName;
         }
 
@@ -335,8 +346,8 @@ public abstract class SQLCompletionItem implements CompletionItem {
 
         private final QualIdent tableName;
 
-        public QualTableColumn(QualIdent tableName, String columnName, int substitutionOffset) {
-            super(columnName, substitutionOffset);
+        public QualTableColumn(QualIdent tableName, String columnName, String quoteString, int substitutionOffset) {
+            super(columnName, quoteString, substitutionOffset);
             this.tableName = tableName;
         }
 
@@ -350,8 +361,8 @@ public abstract class SQLCompletionItem implements CompletionItem {
 
         private final String simpleTableName;
 
-        public SimpleTableColumn(String simpleTableName, String columnName, int substitutionOffset) {
-            super(columnName, substitutionOffset);
+        public SimpleTableColumn(String simpleTableName, String columnName, String quoteString, int substitutionOffset) {
+            super(columnName, quoteString, substitutionOffset);
             this.simpleTableName = simpleTableName;
         }
 

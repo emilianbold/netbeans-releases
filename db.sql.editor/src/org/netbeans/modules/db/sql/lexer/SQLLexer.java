@@ -182,9 +182,16 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                 // or a keyword.
                 case ISI_IDENTIFIER:
                     if (!Character.isLetterOrDigit(actChar) && actChar != '_') {
-                        state = INIT;
-                        input.backup(1);
-                        return factory.createToken(testKeyword(input.readText()));
+                        CharSequence text = input.readText();
+                        boolean quoted = false;
+                        if (text.length() > 0) {
+                            quoted = actChar == text.charAt(0);
+                        }
+                        if (!quoted) {
+                            state = INIT;
+                            input.backup(1);
+                            return factory.createToken(testKeyword(input.readText()));
+                        }
                     }
                     break;
 
