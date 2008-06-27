@@ -1814,9 +1814,15 @@ declarator
                 // VV: 23/05/06 added support for __restrict after pointers
                 //i.e. void foo (char **__restrict a)
 		(ptr_operator)=> ptr_operator // AMPERSAND or STAR
-		restrict_declarator
+		// IZ 109079 : Parser reports "unexpexted token" on parenthesized pointer to array
+                (
+                    (LPAREN declarator RPAREN (SEMICOLON | RPAREN)) =>
+                     LPAREN declarator RPAREN
+                |
+                    restrict_declarator
+                )
 	|	
-		direct_declarator
+		direct_declarator	
 	;
 
 restrict_declarator
