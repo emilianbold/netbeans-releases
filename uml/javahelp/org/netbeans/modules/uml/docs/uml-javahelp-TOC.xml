@@ -114,7 +114,6 @@
 				<tocitem text="Finding Diagram Elements in the Projects Window" target="uml_diagrams_editing_diagram_elements_finding" />
 				<tocitem text="Using the Redefine Dialog Box" target="uml_diagrams_editing_diagram_elements_using_redefine_db" />
 			</tocitem>
-			<tocitem text="Locking Diagram Elements" target="uml_diagrams_locking_diagram_elements" />
 			<tocitem text="Deleting Diagram Elements" target="uml_diagrams_deleting_diagram_elements" />
 			<tocitem text="Deleting Diagrams" target="uml_diagrams_deleting_diagrams" />
 			<tocitem text="Working With Activity Diagrams" target="uml_diagrams_activity_ww_diagram_elements">
