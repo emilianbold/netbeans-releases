@@ -89,6 +89,23 @@ public class CommandEvaluatorTest extends NbTestCase {
                 MAX_TIME + " millis, but was " + (endTime - startTime) + " millis.",
                 (endTime - startTime) > 1000);
     }
+
+    public void testObsoleteSupport () throws Exception {
+        System.out.println("Testing obsolete support...");
+
+        UnitTestUtils.prepareTest(new String [] { "/org/netbeans/modules/quicksearch/resources/testGetProviders.xml" });
+        ResultsModel rm = ResultsModel.getInstance();
+
+        CommandEvaluator.evaluate("test obsolete 1", rm);
+        List<? extends CategoryResult> categories = rm.getContent();
+
+        CommandEvaluator.evaluate("test obsolete 2", rm);
+
+        for (CategoryResult cr : categories) {
+            assertTrue("Category " + cr.getCategory().getDisplayName() +
+                    " should be obsolete", cr.isObsolete());
+        }
+    }
     
     public static class SlowProvider implements SearchProvider {
 
