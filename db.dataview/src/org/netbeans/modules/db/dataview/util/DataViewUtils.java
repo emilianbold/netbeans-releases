@@ -219,7 +219,7 @@ public class DataViewUtils {
         String nbBundle61 = mLoc.t("RESC061: Name");
         String nbBundle62 = mLoc.t("RESC062: Type");
         String nbBundle63 = mLoc.t("RESC063: Length ");
-        String nbBundle64 = mLoc.t("RESC064: Nullable");
+        String nbBundle64 = mLoc.t("RESC064: Precision");
         StringBuilder strBuf = new StringBuilder("<html> <table border=0 cellspacing=0 cellpadding=0 >");
         strBuf.append("<tr> <td>&nbsp;").append(nbBundle61.substring(15)).append("</td> <td> &nbsp; : &nbsp; <b>");
         strBuf.append(column.getName()).append("</b> </td> </tr>");
