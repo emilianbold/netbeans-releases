@@ -148,7 +148,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
         } else {
             rollback(conn);
             reinstateToolbar();
-            errorMsg = cmdName + " failed:";
+            errorMsg = cmdName + " failed: " + errorMsg;
             dataView.setErrorStatusText(new DBException(errorMsg, ex));
         }
     }

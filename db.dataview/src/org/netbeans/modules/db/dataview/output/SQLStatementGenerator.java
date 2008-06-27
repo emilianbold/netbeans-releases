@@ -156,11 +156,15 @@ class SQLStatementGenerator {
         String columnName = tblMeta.getQualifiedName(i);
         int type = tblMeta.getColumnType(i);
 
-        values.add(value);
-        types.add(type);
-
-        result.append(columnName + " = ? ");
-        raw.append(columnName).append(" = ").append(getQualifiedValue(type, value));
+        if(value != null) {
+            values.add(value);
+            types.add(type);
+            result.append(columnName + " = ? ");
+            raw.append(columnName).append(" = ").append(getQualifiedValue(type, value));
+        } else { // Handle NULL value in where condition
+            result.append(columnName + " IS NULL ");
+            raw.append(columnName).append(" IS ").append(getQualifiedValue(type, value));
+        }
     }
 
     private void generateWhereCondition(StringBuilder result, StringBuilder raw, List<Integer> types, List<Object> values, int rowNum, TableModel model) {
@@ -184,10 +188,8 @@ class SQLStatementGenerator {
         } else {
             for (int i = 0; i < model.getColumnCount(); i++) {
                 Object val = model.getValueAt(rowNum, i);
-                if (val != null) {
-                    and = addSeparator(and, result, raw, " AND ");
-                    generateNameValue(i, result, raw, val, values, types);
-                }
+                and = addSeparator(and, result, raw, " AND ");
+                generateNameValue(i, result, raw, val, values, types);
             }
         }
     }
