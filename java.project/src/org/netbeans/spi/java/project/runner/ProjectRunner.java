@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.api.java.project.runner;
+package org.netbeans.spi.java.project.runner;
 
 import java.io.File;
 import java.io.IOException;
