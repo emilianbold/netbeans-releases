@@ -101,7 +101,6 @@ public class JavaSymbolProvider implements SymbolProvider {
     }
     
     public void computeSymbolNames(final Context context, final Result result) {
-        long stime = System.currentTimeMillis();
         try {
             final SearchType st = context.getSearchType();
             String _ident = context.getText();
@@ -203,8 +202,6 @@ public class JavaSymbolProvider implements SymbolProvider {
             }
         } finally {
             cleanup();
-            long etime = System.currentTimeMillis();
-            System.out.println("Time: " + (etime-stime));
         }
     }
     

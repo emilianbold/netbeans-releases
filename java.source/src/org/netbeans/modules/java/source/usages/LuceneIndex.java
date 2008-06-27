@@ -774,8 +774,7 @@ class LuceneIndex extends Index {
         storeData(refs, create, timeStamp);
     }    
     
-    private void storeData (final Map<Pair<String,String>, Object[]> refs, final boolean create, final long timeStamp) throws IOException {        
-        long st = System.currentTimeMillis();
+    private void storeData (final Map<Pair<String,String>, Object[]> refs, final boolean create, final long timeStamp) throws IOException {
         final IndexWriter out = getWriter(create);
         try {
             if (debugIndexMerging) {
@@ -835,8 +834,6 @@ class LuceneIndex extends Index {
         } finally {
             out.close();
         }
-        long et = System.currentTimeMillis();
-        System.out.println("Indexing: " + this.directory.toString() +" took: " + (et-st));
     }
 
     public boolean isValid (boolean tryOpen) throws IOException {  
