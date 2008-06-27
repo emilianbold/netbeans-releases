@@ -60,7 +60,17 @@ public class MeasureEnterpriseGCTest extends NbTestCase {
         NbTestSuite suite = new NbTestSuite("Enterprise Performance GC suite");
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WatchProjects.class)
-                .addTest("testInitGCProjects").enableModules(".*").clusters(".*")));    
+                .addTest(WatchProjects.class, "testInitGCProjects")
+                .addTest(AddNewBpelProcess.class, "measureTime")
+
+                // TODO: Uncomment once issue 138456 is fixed
+                //.addTest(CreateBPELmodule.class, "measureTime")
+                
+                .addTest(CreateCompositeApplication.class, "measureTime")    
+//                .addTest(OpenSchemaView.class, "testGCwithOpenComplexSchemaView")    
+                .addTest(WatchProjects.class, "testGCProjects")
+                .enableModules(".*").clusters(".*").reuseUserDir(true)));    
+/*
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(AddNewBpelProcess.class)
                 .addTest("measureTime").enableModules(".*").clusters(".*")));    
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateBPELmodule.class)
@@ -71,7 +81,7 @@ public class MeasureEnterpriseGCTest extends NbTestCase {
                 .addTest("testGCProjects").enableModules(".*").clusters(".*")));    
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(OpenSchemaView.class)
                 .addTest("testGCwithOpenComplexSchemaView").enableModules(".*").clusters(".*")));    
-
+*/
         return suite;
     }
 }

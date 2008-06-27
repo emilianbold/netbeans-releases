@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,30 +31,63 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.performance.enterprise;
+package org.netbeans.modules.groovy.editor;
 
+import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.groovy.editor.completion.CodeCompleter;
 
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.performance.enterprise.actions.*;
 
 /**
- * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
- * @author  mmirilovic@netbeans.org
+ * @author schmidtm
  */
-public class MeasureEnterpriseActions4Test {
+public class GroovyCodeCompletionTest extends GroovyTestBase {
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness Enterprise Actions suite. Part 4");
-        
-        // EPMeasureActions4
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(OpenSchemaView.class)
-                .addTest("testOpenSchemaView").enableModules(".*").clusters(".*").reuseUserDir(true)));
 
-        return suite;
+    public GroovyCodeCompletionTest(String testName) {
+        super(testName);
+        Logger.getLogger(CodeCompleter.class.getName()).setLevel(Level.FINEST);
     }
-    
+
+    // uncomment this to have logging from GroovyLexer
+    protected Level logLevel() {
+        // enabling logging
+        return Level.INFO;
+        // we are only interested in a single logger, so we set its level in setUp(),
+        // as returning Level.FINEST here would log from all loggers
+    }
+
+
+//    public void testMethodCompletion1() throws Exception {
+//        checkCompletion("testfiles/completion/MethodCompletionTestCase.groovy", "new String().^toS", false);
+//    }
+
+
+    public void testDummy() {
+        assertTrue(true);
+    }
+
+//    public void testPrefix1() throws Exception {
+//        checkPrefix("testfiles/cc-prefix1.js");
+//    }
+//
+//    public void testAutoQueryStrings() throws Exception {
+//        assertAutoQuery(QueryType.COMPLETION, "foo^ 'foo'", ".");
+//        assertAutoQuery(QueryType.NONE, "'^foo'", ".");
+//        assertAutoQuery(QueryType.NONE, "/f^oo/", ".");
+//        assertAutoQuery(QueryType.NONE, "\"^\"", ".");
+//        assertAutoQuery(QueryType.NONE, "\" foo^ \"", ".");
+//    }
+//
+
+
 }

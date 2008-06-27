@@ -180,6 +180,15 @@ public class TemplateUtils {
                         }
                     }
                     break;
+                case CPPTokenTypes.CSM_TEMPLATE_TEMPLATE_PARAMETER:
+                    parameterStart = child;
+                     for (AST paramChild = child.getFirstChild(); paramChild != null; paramChild = paramChild.getNextSibling()) {
+                        if (paramChild.getType() == CPPTokenTypes.ID) {
+                           res.add(new TemplateParameterImpl(parameterStart, paramChild.getText(), file, (CsmScope)template));
+                           break;
+                        }
+                    }
+                    break;
             }
         }
         return res;
