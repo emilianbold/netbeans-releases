@@ -169,7 +169,7 @@ public class Utilities {
             ArrayList<NbMenuItem> submenu = new ArrayList<NbMenuItem>();
             submenu.add(parseMenuLineText(submenuName.substring(to)));
             while (scanner.hasNextLine()) {
-                submenu.add(parseMenuLineText(scanner.nextLine()));
+                submenu.add(parseMenuLineText(scanner.nextLine().trim()));
             }
             parsedMenu.setSubmenu(submenu);
             scanner.close();
@@ -201,7 +201,7 @@ public class Utilities {
         if(debug)
                 System.out.println("Parsing line: "+line);
         //is it separator? "======="
-        if (line.hasNext("^={5,}+\\s*+)")) { //at least 5x =
+        if (line.hasNext("^={5,}+\\s*")) { //at least 5x =
 
             menuitem.setSeparator(true);
         } else {
