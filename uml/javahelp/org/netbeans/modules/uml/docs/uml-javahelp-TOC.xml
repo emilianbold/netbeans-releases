@@ -255,10 +255,8 @@
 				<tocitem text="Launching Reverse Engineering" target="uml_reverse_eng_launching_rev_eng" />
 				<tocitem text="Reverse Engineer Dialog Box" target="uml_reverse_eng_reverse_eng_dialog_box" />
 				<tocitem text="Classes" target="uml_reverse_eng_classes" />
-				<tocitem text="Reference Classes" target="uml_reverse_eng_reference_classes" />
 				<tocitem text="Packages" target="uml_reverse_eng_packages" />
 				<tocitem text="Interfaces" target="uml_reverse_eng_interfaces" />
-				<tocitem text="Exceptions/Access Control/Modifiers" target="uml_reverse_eng_exceptions_access_control_modifiers" />
 			</tocitem>
 			<tocitem text="UML Model Reports">
 				<tocitem text="Generating Model Reports" target="uml_web_reports_generating_model_reports" />
