@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.PlatformConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.openide.nodes.Node;
 
 public class IntNodeProp extends Node.Property {

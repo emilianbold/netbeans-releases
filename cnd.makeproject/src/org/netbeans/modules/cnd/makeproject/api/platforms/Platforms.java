@@ -57,6 +57,7 @@ public class Platforms {
                 platforms.add(new PlatformWindows());
                 platforms.add(new PlatformMacOSX());
                 platforms.add(new PlatformGeneric());
+                platforms.add(new PlatformNone());
             }
             return platforms;
         }
