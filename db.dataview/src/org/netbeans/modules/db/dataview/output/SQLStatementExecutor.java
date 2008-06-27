@@ -42,9 +42,11 @@ package org.netbeans.modules.db.dataview.output;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBConnectionFactory;
 import org.openide.util.Cancellable;
 import org.openide.util.RequestProcessor;
@@ -57,12 +59,14 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
     protected final DataView dataView;
     protected Connection conn = null;
     protected boolean error = false;
-    protected volatile Exception ex;
+    protected volatile Throwable ex;
     protected String errorMsg = "";
     protected boolean lastCommitState;
     private String title;
     private String titleMsg;
     private volatile RequestProcessor.Task task;
+    private static Logger mLogger = Logger.getLogger(SQLStatementExecutor.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     public SQLStatementExecutor(DataView parent, String title, String msg) {
         this.title = title;
@@ -75,7 +79,8 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
     }
 
     public void run() {
-        assert task != null : "Should have called setTask()";
+        String nbBundle53 = mLoc.t("RESC053: Should have called setTask()");
+        assert task != null : nbBundle53.substring(15);
         try {
             ProgressHandle handle = ProgressHandleFactory.createHandle(title, this);
             handle.setDisplayName(titleMsg);
@@ -91,7 +96,8 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
 
                 conn = DBConnectionFactory.getInstance().getConnection(dataView.getDatabaseConnection());
                 if (conn == null) {
-                    this.ex = new DBException("Unable to Connect to database");
+                    String nbBundle54 = mLoc.t("RESC054: Unable to Connect to database");
+                    this.ex = new DBException(nbBundle54.substring(15));
                     return;
                 }
                 lastCommitState = setAutocommit(conn, false);
@@ -135,7 +141,8 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
 
     protected void commitOrRollback(String cmdName) {
         if (!error && commit(conn)) {
-            String infoMsg = cmdName + " Executed successfully\n";
+            String nbBundle55 = mLoc.t("RESC055:  Executed successfully\n");
+            String infoMsg = cmdName + nbBundle55.substring(15);
             dataView.setInfoStatusText(infoMsg);
             executeOnSucess(); // delegate 
         } else {
@@ -172,7 +179,8 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
                 conn.commit();
             }
         } catch (SQLException e) {
-            String msg = "Failure while commiting changes to database.";
+            String nbBundle56 = mLoc.t("RESC056: \nFailure while commiting changes to database.\n");
+            String msg = nbBundle56.substring(15);
             dataView.setErrorStatusText(new DBException(msg, e));
             return false;
         }
@@ -185,7 +193,8 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
                 conn.rollback();
             }
         } catch (SQLException e) {
-            String msg = "Fail to rollback.";
+            String nbBundle57 = mLoc.t("RESC057: \nFail to rollback.\n");
+            String msg  = nbBundle57.substring(15);
             dataView.setErrorStatusText(new DBException(msg, e));
         }
     }

@@ -49,9 +49,10 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Logger;
 import javax.swing.table.TableModel;
+import net.java.hulp.i18n.Logger;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBConnectionFactory;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.modules.db.dataview.meta.DBMetaDataFactory;
@@ -62,7 +63,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  * This class assumes there will be only one connection which can't be closed.
- * 
+ *
  * @author Ahimanikya Satapathy
  */
 class SQLExecutionHelper {
@@ -70,6 +71,7 @@ class SQLExecutionHelper {
     private final DataView dataView;
     private final DatabaseConnection dbConn;
     private static Logger mLogger = Logger.getLogger(SQLExecutionHelper.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     // the RequestProcessor used for executing statements.
     private final RequestProcessor rp = new RequestProcessor("SQLStatementExecution", 1, true); // NOI18N
 
@@ -139,7 +141,8 @@ class SQLExecutionHelper {
                     int rows = dataView.getUpdateCount();
                     if (rows != 1) {
                         error = true;
-                        errorMsg = "No rows inserted ";
+                        String nbBundle46 = mLoc.t("RESC046: No rows inserted ");
+                        errorMsg = nbBundle46.substring(15);
                     }
                 } finally {
                     DataViewUtils.closeResources(pstmt);
@@ -159,7 +162,7 @@ class SQLExecutionHelper {
                     dataView.getDataViewPageContext().first();
                 }
                 dataView.incrementRowSize(1);
-                
+
                 // refresh when required
                 if(dataView.getDataViewPageContext().refreshRequiredOnInsert()){
                     SQLExecutionHelper.this.executeQuery();
@@ -204,10 +207,12 @@ class SQLExecutionHelper {
                     int rows = dataView.getUpdateCount();
                     if (rows == 0) {
                         error = true;
-                        errorMsg = errorMsg + "No matching row(s) to delete.\n";
+                        String nbBundle48 = mLoc.t("RESC048: No matching row(s) to delete.\n");
+                        errorMsg = errorMsg + nbBundle48.substring(15);
                     } else if (rows > 1) {
                         error = true;
-                        errorMsg = errorMsg + "No unique row for the matching condition.\n";
+                        String nbBundle49 = mLoc.t("RESC049: No unique row for the matching condition.\n");
+                        errorMsg = errorMsg + nbBundle49.substring(15);
                     }
                 } finally {
                     DataViewUtils.closeResources(pstmt);
@@ -269,10 +274,12 @@ class SQLExecutionHelper {
                     int rows = dataView.getUpdateCount();
                     if (rows == 0) {
                         error = true;
-                        errorMsg = errorMsg + "No matching row(s) to update.\n";
+                        String nbBundle48 = mLoc.t("RESC048: No matching row(s) to delete.\n");
+                        errorMsg = errorMsg + nbBundle48.substring(15);;
                     } else if (rows > 1) {
                         error = true;
-                        errorMsg = errorMsg + "No unique row for the matching condition.\n";
+                        String nbBundle49 = mLoc.t("RESC049: No unique row for the matching condition.\n");
+                        errorMsg = errorMsg + nbBundle49.substring(15);
                     }
                 } finally {
                     DataViewUtils.closeResources(pstmt);
@@ -299,7 +306,8 @@ class SQLExecutionHelper {
 
     // Truncate is allowed only when there is single table used in the query.
     void executeTruncate() {
-        String msg = "Truncating Table from database, please wait...";
+        String nbBundle50 = mLoc.t("RESC050: Truncating Table from database, please wait...");
+        String msg = nbBundle50.substring(15);
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, "Executing Truncate", msg) {
 
             private Statement stmt = null;
@@ -313,7 +321,7 @@ class SQLExecutionHelper {
                 try {
                     executeSQLStatement(stmt, truncateSql);
                 } catch (SQLException sqe) {
-                    mLogger.info("TRUNCATE Not supported...will try DELETE * \n");
+                    mLogger.infoNoloc(mLoc.t("LOGR007: TRUNCATE Not supported...will try DELETE * \n"));
                     truncateSql = "Delete from " + dbTable.getFullyQualifiedName();
                     executeSQLStatement(stmt, truncateSql);
                 } finally {
@@ -405,7 +413,7 @@ class SQLExecutionHelper {
         if(!dataView.isLimitSupported()) {
             startFrom = dataView.getDataViewPageContext().getCurrentPos() - 1;
         }
-        
+
         DataViewDBTable tblMeta = dataView.getDataViewDBTable();
         List<Object[]> rows = new ArrayList<Object[]>();
         int colCnt = tblMeta.getColumnCount();
@@ -431,7 +439,7 @@ class SQLExecutionHelper {
                 }
             }
         } catch (SQLException e) {
-            mLogger.info(" Failed to set up table model " + DBException.getMessage(e));
+            mLogger.infoNoloc(mLoc.t("LOGR009: Failed to set up table model",DBException.getMessage(e)));
             throw e;
         } finally {
             dataView.getDataViewPageContext().setCurrentRows(rows);
@@ -449,7 +457,7 @@ class SQLExecutionHelper {
                 }
             }
         } catch (SQLException ex) {
-            mLogger.info("Could not get total row count " + ex);
+            mLogger.infoNoloc(mLoc.t("LOGR010: Could not get total row count ",ex));
         }
     }
 
@@ -481,7 +489,7 @@ class SQLExecutionHelper {
             sql += " LIMIT " + dataView.getDataViewPageContext().getPageSize(); // NOI18N
             sql += " OFFSET " + dataView.getDataViewPageContext().getCurrentPos(); // NOI18N
         }
-        mLogger.info("Executing Statement: " + sql);
+        mLogger.infoNoloc("Executing Statement: " + sql);
         dataView.setInfoStatusText("Executing Statement: " + sql);
 
         long startTime = System.currentTimeMillis();
@@ -494,7 +502,7 @@ class SQLExecutionHelper {
         long executionTime = System.currentTimeMillis() - startTime;
 
         String execTimeStr = millisecondsToSeconds(executionTime);
-        mLogger.info("Executed Successfully in " + execTimeStr +" seconds");
+        mLogger.infoNoloc("Executed Successfully in " + execTimeStr +" seconds");
         dataView.setInfoStatusText("Executed Successfully in " + execTimeStr +" seconds");
 
         dataView.setHasResultSet(isResultSet);

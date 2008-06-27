@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
+import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -54,6 +55,7 @@ class DataViewActionHandler {
     private final SQLExecutionHelper execHelper;
     private final DataViewUI dataViewUI;
     private final DataView dataView;
+    private static transient final Localizer mLoc = Localizer.get();
 
     DataViewActionHandler(DataViewUI dataViewUI, DataView dataView) {
         this.dataView = dataView;
@@ -66,8 +68,10 @@ class DataViewActionHandler {
     private boolean rejectModifications() {
         boolean doCalculation = true;
         if (dataViewUI.isCommitEnabled()) {
-            String msg = "You have uncommited Changes in this page. If you continue, you changes will be lost. Do you still want to continue?";
-            NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, "Confirm navigation", NotifyDescriptor.YES_NO_OPTION);
+            String nbBundle5 = mLoc.t("RESC005: You have uncommited Changes in this page. If you continue, you changes will be lost. Do you still want to continue?");
+            String msg = nbBundle5.substring(15);
+            String nbBundle6 = mLoc.t("RESC006: Confirm navigation");
+            NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, nbBundle6.substring(15), NotifyDescriptor.YES_NO_OPTION);
             if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.NO_OPTION) {
                 doCalculation = false;
             }
@@ -133,7 +137,8 @@ class DataViewActionHandler {
     }
 
     void truncateActionPerformed() {
-        String confirmMsg = "Truncate contents of table " + dataView.getDataViewDBTable().geTable(0).getDisplayName();
+        String nbBundle7 = mLoc.t("RESC007: Truncate contents of table");
+        String confirmMsg = nbBundle7.substring(15) + dataView.getDataViewDBTable().geTable(0).getDisplayName();
         NotifyDescriptor nd = new NotifyDescriptor.Confirmation(confirmMsg, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.WARNING_MESSAGE);
 
         if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.CANCEL_OPTION) {
@@ -145,11 +150,14 @@ class DataViewActionHandler {
     void deleteRecordActionPerformed() {
         DataViewTableUI rsTable = dataViewUI.getDataViewTableUI();
         if (rsTable.getSelectedRowCount() == 0) {
-            String msg = "Please select a row to delete.";
+            String nbBundle8 = mLoc.t("RESC008: Please select a row to delete.");
+            String msg = nbBundle8.substring(15);
             dataView.setInfoStatusText(msg);
         } else {
-            String msg = "Permanently delete record(s) from the database?";
-            NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, "Confirm delete", NotifyDescriptor.OK_CANCEL_OPTION);
+            String nbBundle9 = mLoc.t("RESC009: Permanently delete record(s) from the database?");
+            String msg = nbBundle9.substring(15);
+            String nbBundle10 = mLoc.t("RESC010: Confirm delete");
+            NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, nbBundle10.substring(15), NotifyDescriptor.OK_CANCEL_OPTION);
             if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
                 execHelper.executeDeleteRow(rsTable);
             }

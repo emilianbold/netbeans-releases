@@ -42,6 +42,7 @@ package org.netbeans.modules.db.dataview.output;
 
 import java.util.List;
 import javax.swing.table.TableModel;
+import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.modules.db.dataview.meta.DBPrimaryKey;
@@ -54,6 +55,7 @@ import org.netbeans.modules.db.dataview.util.DataViewUtils;
  */
 class SQLStatementGenerator {
 
+    private static transient final Localizer mLoc = Localizer.get();
     private DataViewDBTable tblMeta;
 
     public SQLStatementGenerator(DataViewDBTable tblMeta) {
@@ -74,7 +76,8 @@ class SQLStatementGenerator {
         for (int i = 0; i < insertedRow.length; i++) {
             DBColumn dbcol = tblMeta.getColumn(i);
             if (insertedRow[i] == null && !dbcol.isNullable() && !dbcol.isGenerated()) {
-                throw new DBException("Please enter valid values for not nullable columns");
+                    String nbBundle58 = mLoc.t("RESC058: Please enter valid values for not nullable columns");
+                    throw new DBException(nbBundle58.substring(15));
             }
             if (comma) {
                 values += commaStr;
@@ -102,7 +105,8 @@ class SQLStatementGenerator {
         int type = dbcol.getJdbcType();
 
         if (!dbcol.isNullable() && value == null) {
-            throw new DBException("Please enter valid values for not nullable columns");
+            String nbBundle58 = mLoc.t("RESC058: Please enter valid values for not nullable columns");
+            throw new DBException(nbBundle58.substring(15));
         }
 
         StringBuilder updateStmt = new StringBuilder();

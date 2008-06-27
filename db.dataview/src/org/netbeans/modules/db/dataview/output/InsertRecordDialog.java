@@ -53,6 +53,8 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.text.CloneableEditorSupport;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
@@ -70,6 +72,8 @@ import org.openide.windows.WindowManager;
 public class InsertRecordDialog extends javax.swing.JDialog {
 
     private final DataView dataView;
+    private static Logger mLogger = Logger.getLogger(InsertRecordDialog.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     /** Creates new form InsertRecordDialog */
     public InsertRecordDialog(DataView dataView) {
@@ -246,7 +250,8 @@ private void executeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         if (jSplitPane1.getBottomComponent() == null) {
             jSplitPane1.setDividerLocation(250);
             jSplitPane1.setBottomComponent(jScrollPane2);
-            previewBtn.setText("Hide SQL");
+            String nbBundle44 = mLoc.t("RESC044: Hide SQL");
+            previewBtn.setText(nbBundle44.substring(15));
         }
         jEditorPane1.setContentType("text/plain");
         jEditorPane1.setText(ex.getMessage());
@@ -254,13 +259,13 @@ private void executeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         return;
     }
     dispose();
-}                                          
+}//GEN-LAST:event_executeBtnActionPerformed
 
-private void clearBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-LAST:event_executeBtnActionPerformed
+private void clearBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearBtnActionPerformed
     int rows = dataView.getDataViewDBTable().getColumnCount();                                          
-    for (int i = 0; i < rows; i++) {//GEN-FIRST:event_clearBtnActionPerformed
+    for (int i = 0; i < rows; i++) {
         if (dataView.getDataViewDBTable().getColumn(i).isGenerated()) {                                             
-            colValueTextField[i].setText("<GENERATED>");//GEN-HEADEREND:event_clearBtnActionPerformed
+            colValueTextField[i].setText("<GENERATED>");
             colValueTextField[i].setEditable(false);
         } else {
             colValueTextField[i].setText("");
@@ -268,22 +273,24 @@ private void clearBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-LAST
         }
     }
     refreshSQL();
-}                                        
+}//GEN-LAST:event_clearBtnActionPerformed
 
-private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-LAST:event_clearBtnActionPerformed
+private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previewBtnActionPerformed
     if (evt.getActionCommand().equalsIgnoreCase("Show SQL")) {                                        
-        jSplitPane1.setDividerLocation(250);//GEN-FIRST:event_previewBtnActionPerformed
+        jSplitPane1.setDividerLocation(250);
         jSplitPane1.setBottomComponent(jScrollPane2);
         refreshSQL();                                               
-        previewBtn.setText("Hide SQL");
-    } else {//GEN-HEADEREND:event_previewBtnActionPerformed
+        String nbBundle44 = mLoc.t("RESC044: Hide SQL");
+        previewBtn.setText(nbBundle44.substring(15));
+    } else {
         jSplitPane1.setBottomComponent(null);
-        previewBtn.setText("Show SQL");
+        String nbBundle45 = mLoc.t("RESC045: Show SQL");
+        previewBtn.setText(nbBundle45.substring(15));
     }
-}                                          
+}//GEN-LAST:event_previewBtnActionPerformed
 
     private void refreshSQL() {
-        try {//GEN-LAST:event_previewBtnActionPerformed
+        try {
             if (jSplitPane1.getBottomComponent() != null) {                                          
                 SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();                                          
                 String sql = stmtBldr.generateInsertStatement(getInsertValues())[1];

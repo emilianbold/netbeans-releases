@@ -47,8 +47,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.JButton;
-import java.util.logging.Logger;
+import net.java.hulp.i18n.Logger;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.awt.StatusDisplayer;
 
@@ -61,6 +62,7 @@ import org.openide.awt.StatusDisplayer;
 public class DataView {
 
     private static Logger mLogger = Logger.getLogger(DataView.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     public static final int VERTICAL_TOOLBAR = 0;
     public static final int HORIZONTAL_TOOLBAR = 1; // Default
     private DatabaseConnection dbConn;
@@ -88,7 +90,8 @@ public class DataView {
      * @return a new DataView instance
      */
     public static DataView create(DatabaseConnection dbConn, String sqlString, int pageSize) {
-        assert dbConn != null : "DatabaseConnection can't be null";
+        String nbBundle1 = mLoc.t("RESC001: DatabaseConnection can't be null");
+        assert dbConn!= null : nbBundle1.substring(15);
 
         DataView dv = new DataView();
         dv.dbConn = dbConn;
@@ -255,8 +258,9 @@ public class DataView {
                 }
             }
             errMessages.add(ex);
-            StatusDisplayer.getDefault().setStatusText("ERROR: " + ex.getMessage());
-            mLogger.severe(ex.getMessage());
+            String nbBundle3 = mLoc.t("RESC003: ERROR: ");
+            StatusDisplayer.getDefault().setStatusText(nbBundle3.substring(15)+ ex.getMessage());
+            mLogger.infoNoloc(mLoc.t("LOGR012: {0}",ex.getMessage()));
         }
     }
 
@@ -265,7 +269,8 @@ public class DataView {
     }
 
     void resetToolbar(boolean wasError) {
-        assert dataViewUI != null : "Should have called createComponent()";
+        String nbBundle2 = mLoc.t("RESC002: Should have called createComponent()");
+        assert dataViewUI != null : nbBundle2.substring(15);
         dataViewUI.resetToolbar(wasError);
     }
 
@@ -274,8 +279,10 @@ public class DataView {
     }
 
     void setRowsInTableModel() {
-        assert dataViewUI != null : "Should have called createComponent()";
-        assert dataPage != null : "Should have called create()";
+        String nbBundle2 = mLoc.t("RESC002: Should have called createComponent()");
+        assert dataViewUI != null : nbBundle2.substring(15);
+        String nbBundle4 = mLoc.t("RESC004: Should have called create()");
+        assert dataPage != null : nbBundle4.substring(15);
 
         if (dataPage.getCurrentRows() != null) {
             dataViewUI.setDataRows(dataPage.getCurrentRows());

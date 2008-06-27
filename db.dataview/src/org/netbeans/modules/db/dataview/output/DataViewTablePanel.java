@@ -52,8 +52,9 @@ import javax.swing.table.TableModel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
-import java.util.logging.Logger;
 import javax.swing.JScrollPane;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.DialogDisplayer;
@@ -77,6 +78,7 @@ class DataViewTablePanel extends JPanel {
     private TableModel model;
     private final List<Integer> columnWidthList;
     private static Logger mLogger = Logger.getLogger(DataViewTablePanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     public DataViewTablePanel(DataView dataView, DataViewUI dataViewUI, DataViewActionHandler actionHandler) {
         this.tblMeta = dataView.getDataViewDBTable();
@@ -132,7 +134,8 @@ class DataViewTablePanel extends JPanel {
     }
 
     public void createTableModel(List<Object[]> rows) {
-        assert rows != null : "Must supply non-null TableModel";
+        String nbBundle13 = mLoc.t("RESC012: Must supply non-null TableModel");
+        assert rows != null : nbBundle13.substring(15);
 
         setDirty(false);
         model = createModelFrom(rows);
@@ -158,7 +161,7 @@ class DataViewTablePanel extends JPanel {
             }
             table.getTableHeader().setColumnModel(cModel);
         } catch (Exception e) {
-            mLogger.info(" Failed to set the size of the table headers" + e);
+            mLogger.infoNoloc(mLoc.t("LOGR011: Failed to set the size of the table headers"),e);
         }
     }
 
@@ -176,7 +179,7 @@ class DataViewTablePanel extends JPanel {
                 colWidthList.add(colWidth);
             }
         } catch (Exception e) {
-            mLogger.info("Failed to set the size of the table headers" + e);
+            mLogger.infoNoloc(mLoc.t("LOGR011: Failed to set the size of the table headers"),e);
         }
         return colWidthList;
     }
@@ -252,7 +255,7 @@ class DataViewTablePanel extends JPanel {
                 DialogDisplayer.getDefault().notify(nd);
             } catch (Exception ex) {
                 //ignore
-                mLogger.warning(new DBException(ex).getMessage());
+                mLogger.warnNoloc(mLoc.t("LOGR012: {0}",new DBException(ex).getMessage()));
             }
             tableUI.revalidate();
             tableUI.repaint();

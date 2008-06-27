@@ -57,7 +57,8 @@ import java.util.GregorianCalendar;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
-import java.util.logging.Logger;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
 
@@ -68,6 +69,7 @@ import org.netbeans.modules.db.dataview.meta.DBException;
 public class DBReadWriteHelper {
 
     private static Logger mLogger = Logger.getLogger(DBReadWriteHelper.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     @SuppressWarnings(value = "fallthrough")
     public static Object readResultSet(ResultSet rs, int colType, int index) throws SQLException {
@@ -283,7 +285,7 @@ public class DBReadWriteHelper {
 
                 case Types.TIMESTAMP:
                     long ts = DBReadWriteHelper.convertFromIso8601(valueObj.toString());
-                    mLogger.info("EDIT093: **** timestamp **** " + ts);
+                    mLogger.infoNoloc(mLoc.t("LOGR001: **** timestamp ****{0}",ts));
                     try {
                         ps.setTimestamp(index, new java.sql.Timestamp(ts));
                     } catch (java.sql.SQLException e) {
@@ -293,13 +295,13 @@ public class DBReadWriteHelper {
 
                 case Types.DATE:
                     ts = DBReadWriteHelper.convertFromIso8601(valueObj.toString());
-                    mLogger.info("EDIT093: **** timestamp **** " + ts);
+                    mLogger.infoNoloc(mLoc.t("LOGR001: **** timestamp ****{0}",ts));
                     ps.setDate(index, new java.sql.Date(ts));
                     break;
 
                 case Types.TIME:
                     ts = DBReadWriteHelper.convertFromIso8601(valueObj.toString());
-                    mLogger.info("EDIT093: **** timestamp **** " + ts);
+                    mLogger.infoNoloc(mLoc.t("LOGR001: **** timestamp ****{0}",ts));
                     ps.setTime(index, new Time(ts));
                     break;
 
@@ -329,7 +331,7 @@ public class DBReadWriteHelper {
                     ps.setObject(index, valueObj, jdbcType);
             }
         } catch (Exception e) {
-            mLogger.severe("Invalid Data for " + jdbcType + " type --" + e);
+            mLogger.errorNoloc(mLoc.t("LOGR002: Invalid Data for {0} type --",jdbcType), e);
             throw new DBException("Invalid Data for " + jdbcType + " type ", e);
         }
 

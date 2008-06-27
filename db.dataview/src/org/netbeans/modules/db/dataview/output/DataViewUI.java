@@ -58,6 +58,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
+import org.netbeans.modules.db.dataview.logger.Localizer;
 
 /**
  * DataViewUI hosting display of design-level SQL test output.
@@ -84,6 +85,7 @@ class DataViewUI extends JPanel {
     private final DataView dataView;
     private JButton cancel;
     private DataViewActionHandler actionHandler;
+    private static transient final Localizer mLoc = Localizer.get();
 
     DataViewUI(DataView dataView, int toolbarType) {
         this.dataView = dataView;
@@ -95,7 +97,8 @@ class DataViewUI extends JPanel {
 
         this.setLayout(new BorderLayout());
         this.setBorder(BorderFactory.createEmptyBorder());
-        this.setName("Data:" + dataView.getSQLString());
+        String nbBundle30 = mLoc.t("RESC030: Data:");
+        this.setName(nbBundle30.substring(15) + dataView.getSQLString());
 
         // Main pannel with toolbars
         JPanel panel = initializeMainPanel(toolbarType);
@@ -287,8 +290,8 @@ class DataViewUI extends JPanel {
         //add refresh button
         URL url = getClass().getResource(imgPrefix + "refresh.png");
         refreshButton = new JButton(new ImageIcon(url));
-        String nbBundle2 = "Refresh records";
-        refreshButton.setToolTipText(nbBundle2);
+        String nbBundle31 = mLoc.t("RESC031: Refresh records");
+        refreshButton.setToolTipText(nbBundle31.substring(15));
         refreshButton.addActionListener(outputListener);
 
         toolbar.add(refreshButton);
@@ -296,40 +299,40 @@ class DataViewUI extends JPanel {
         // add navigation buttons
         url = getClass().getResource(imgPrefix + "navigate_beginning.png");
         first = new JButton(new ImageIcon(url));
-        String nbBundle3 = "Go to the first page";
-        first.setToolTipText(nbBundle3);
+        String nbBundle32 = mLoc.t("RESC032: Go to the first page");
+        first.setToolTipText(nbBundle32.substring(15));
         first.addActionListener(outputListener);
         first.setEnabled(false);
         toolbar.add(first);
 
         url = getClass().getResource(imgPrefix + "navigate_left.png");
         previous = new JButton(new ImageIcon(url));
-        String nbBundle4 = "Go to the previous page";
-        previous.setToolTipText(nbBundle4);
+        String nbBundle33 = mLoc.t("RESC033: Go to the previous page");
+        previous.setToolTipText(nbBundle33.substring(15));
         previous.addActionListener(outputListener);
         previous.setEnabled(false);
         toolbar.add(previous);
 
         url = getClass().getResource(imgPrefix + "navigate_right.png");
         next = new JButton(new ImageIcon(url));
-        String nbBundle5 = "Go to the next page";
-        next.setToolTipText(nbBundle5);
+        String nbBundle34 = mLoc.t("RESC034: Go to the next page");
+        next.setToolTipText(nbBundle34.substring(15));
         next.addActionListener(outputListener);
         next.setEnabled(false);
         toolbar.add(next);
 
         url = getClass().getResource(imgPrefix + "navigate_end.png");
         last = new JButton(new ImageIcon(url));
-        String nbBundle6 = "Go to the last page";
-        last.setToolTipText(nbBundle6);
+        String nbBundle35 = mLoc.t("RESC035: Go to the last page");
+        last.setToolTipText(nbBundle35.substring(15));
         last.addActionListener(outputListener);
         last.setEnabled(false);
         toolbar.add(last);
         toolbar.addSeparator(new Dimension(10, 10));
 
         //add limit row label
-        String nbBundle7 = "Page size:";
-        limitRow = new JLabel(nbBundle7);
+        String nbBundle36 = mLoc.t("RESC036: Page size:");
+        limitRow = new JLabel(nbBundle36.substring(15));
         limitRow.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 8));
         toolbar.add(limitRow);
 
@@ -351,9 +354,9 @@ class DataViewUI extends JPanel {
         toolbar.add(refreshField);
         toolbar.addSeparator(new Dimension(10, 10));
 
-        String nbBundle8 = "Total Rows:";
-        JLabel totalRowsNameLabel = new JLabel(nbBundle8);
-        totalRowsNameLabel.getAccessibleContext().setAccessibleName(nbBundle8);
+        String nbBundle37 = mLoc.t("RESC037: Total Rows:");
+        JLabel totalRowsNameLabel = new JLabel(nbBundle37.substring(15));
+        totalRowsNameLabel.getAccessibleContext().setAccessibleName(nbBundle37.substring(15));
         totalRowsNameLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 8));
         toolbar.add(totalRowsNameLabel);
         totalRowsLabel = new JLabel();
@@ -364,32 +367,32 @@ class DataViewUI extends JPanel {
 
         URL url = getClass().getResource(imgPrefix + "row_add.png");
         insert = new JButton(new ImageIcon(url));
-        String nbBundle9 = " Insert a record.";
-        insert.setToolTipText(nbBundle9);
+        String nbBundle38 = mLoc.t("RESC038: Insert a record.");
+        insert.setToolTipText(nbBundle38.substring(15));
         insert.addActionListener(outputListener);
         insert.setEnabled(false);
         editButtons[0] = insert;
 
         url = getClass().getResource(imgPrefix + "row_delete.png");
         deleteRow = new JButton(new ImageIcon(url));
-        String nbBundle10 = "Delete selected records.";
-        deleteRow.setToolTipText(nbBundle10);
+        String nbBundle39 = mLoc.t("RESC039: Delete selected records.");
+        deleteRow.setToolTipText(nbBundle39.substring(15));
         deleteRow.addActionListener(outputListener);
         deleteRow.setEnabled(false);
         editButtons[1] = deleteRow;
 
         url = getClass().getResource(imgPrefix + "row_commit.png");
         commit = new JButton(new ImageIcon(url));
-        String nbBundle31 = "Commit changes done on current page.";
-        commit.setToolTipText(nbBundle31);
+        String nbBundle40 = mLoc.t("RESC040: Commit changes done on current page.");
+        commit.setToolTipText(nbBundle40.substring(15));
         commit.addActionListener(outputListener);
         commit.setEnabled(false);
         editButtons[2] = commit;
 
         url = getClass().getResource(imgPrefix + "cancel_edits.png");
         cancel = new JButton(new ImageIcon(url));
-        String nbBundle11 = "Cancel changes done on current page.";
-        cancel.setToolTipText(nbBundle11);
+        String nbBundle41 = mLoc.t("RESC041: Cancel changes done on current page.");
+        cancel.setToolTipText(nbBundle41.substring(15));
         cancel.addActionListener(outputListener);
         cancel.setEnabled(false);
         editButtons[3] = cancel;
@@ -397,8 +400,8 @@ class DataViewUI extends JPanel {
         //add truncate button
         url = getClass().getResource(imgPrefix + "table_truncate.png");
         truncateButton = new JButton(new ImageIcon(url));
-        String nbBundle14 = "Truncate table";
-        truncateButton.setToolTipText(nbBundle14);
+        String nbBundle42 = mLoc.t("RESC042: Truncate table");
+        truncateButton.setToolTipText(nbBundle42.substring(15));
         truncateButton.addActionListener(outputListener);
         truncateButton.setEnabled(false);
         editButtons[4] = truncateButton;
