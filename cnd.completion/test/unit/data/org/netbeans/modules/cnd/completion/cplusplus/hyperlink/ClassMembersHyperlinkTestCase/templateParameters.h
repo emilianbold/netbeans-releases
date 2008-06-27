@@ -17,3 +17,16 @@ template<unsigned int L, class T, template<class> class C>
         OrderedStatic(const OrderedStatic&);
         OrderedStatic& operator=(const OrderedStatic&);
     };
+
+    template <template <class, class> class ThreadingModel,
+              class MX = LOKI_DEFAULT_MUTEX >
+    struct RefCountedMTAdj
+    {
+        template <class P>
+        class RefCountedMT : public ThreadingModel< RefCountedMT<P>, MX >
+        {
+            typedef ThreadingModel< RefCountedMT<P>, MX > base_type;
+            typedef typename base_type::IntType       CountType;
+            typedef volatile CountType               *CountPtrType;
+        };
+    };
