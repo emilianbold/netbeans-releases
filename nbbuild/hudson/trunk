@@ -133,7 +133,7 @@ ant -f xml.schema/build.xml -Dtest.config=uicommit test
 # Ruby UI validation tests
 # ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-ruby -Dxtest.instance.name="Ruby tests" -Dxtest.no.cleanresults=true runtests
 # Ruby UI, Profiler UI and CND UI validation tests
-ant -f ide.kit/build.xml -Dtest.config=uicommit test
+ant -f ide.kit/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir="build/test/results" test
 echo TESTS STARTED: $TESTS_STARTED
 echo TESTS FINISHED: `date`
 
