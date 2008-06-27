@@ -43,9 +43,14 @@ package org.netbeans.modules.uml.drawingarea;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
+import javax.imageio.stream.FileImageOutputStream;
 import org.dom4j.Node;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.eventframework.IEventPayload;
@@ -55,18 +60,23 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.Diagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramTypesManager;
+import org.netbeans.modules.uml.core.metamodel.diagrams.GraphicExportDetails;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IBroadcastAction;
 import org.netbeans.modules.uml.core.metamodel.diagrams.ICoreRelationshipDiscovery;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IGraphicExportDetails;
+import org.netbeans.modules.uml.core.metamodel.diagrams.IGraphicMapLocation;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
+import org.netbeans.modules.uml.core.metamodel.diagrams.NodeMapLocation;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
+import org.netbeans.modules.uml.core.support.umlsupport.ETRect;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.drawingarea.dataobject.UMLDiagramDataObject;
+import org.netbeans.modules.uml.drawingarea.image.DiagramImageWriter;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
@@ -219,8 +229,70 @@ public class UIDiagram extends Diagram {
      * Saves the diagram as a graphic
      */
     public IGraphicExportDetails saveAsGraphic(String sFilename, int nKind, double scale) {
-        IGraphicExportDetails retVal = null;
+        IGraphicExportDetails retVal = new GraphicExportDetails();
+        
+        retVal.setFrameBoundingRect(new ETRect(scene.getBounds()));
+        retVal.setGraphicBoundingRect(new ETRect(getScene().getBounds()));
+        ETArrayList<IGraphicMapLocation> locations = new ETArrayList<IGraphicMapLocation>();
+
+        ArrayList<Widget> list = new ArrayList<Widget>();
+        for (Widget w: getNodes(scene, scene, list))
+        {
+            IPresentationElement pe = (IPresentationElement)scene.findObject(w);
+            IElement e = pe.getFirstSubject();
+            Rectangle rect = new Rectangle(w.convertLocalToScene(w.getBounds()));
+            rect.translate(scene.getLocation().x, scene.getLocation().y);
+            NodeMapLocation nodeM = new NodeMapLocation(e, rect);
+            locations.add(nodeM);
+        }
+        
+        // edge map is not used for now
+//        for (IPresentationElement pe: scene.getEdges())
+//        {
+//            EdgeMapLocation nodeM = new EdgeMapLocation();
+//            IElement e = pe.getFirstSubject();
+//
+//            nodeM.setElement(e);
+//            Widget w = scene.findWidget(pe);
+//            if (w instanceof ConnectionWidget)
+//            {
+//                ETArrayList<IETPoint> points = new ETArrayList<IETPoint>();
+//                for (Point p : ((ConnectionWidget) w).getControlPoints())
+//                {
+//                    p.translate(scene.getLocation().x, scene.getLocation().y);
+//
+//                    points.add(new ETPoint(p));
+//                }
+//                nodeM.setPoints(points);
+//                locations.add(nodeM);
+//            }
+//        }
+        
+        retVal.setMapLocations(locations);
+        try
+        {
+            FileImageOutputStream fo = new FileImageOutputStream(new File(sFilename));
+            DiagramImageWriter.write(scene, DiagramImageWriter.ImageType.png, fo,
+                    false, DiagramImageWriter.ACTUAL_SIZE, false, 100, scene.getBounds().width, scene.getBounds().height);
+        } catch (Exception e)
+        {
+            Logger.getLogger("UML").severe("unable to create diagram image file: " + e.getMessage());
+        }
         return retVal;
+    }
+    
+    private ArrayList<Widget> getNodes(DesignerScene scene, Widget widget, ArrayList<Widget> list)
+    {
+        for (Widget w: widget.getChildren())
+        {
+            if (scene.isNode(scene.findObject(w)))
+            {
+                list.add(w);             
+            }
+            getNodes(scene, w, list);
+        }
+        Collections.reverse(list);
+        return list;
     }
     
     public String getName() {

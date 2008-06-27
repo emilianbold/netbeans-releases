@@ -55,7 +55,7 @@ public class ForkStateInitializer implements NodeInitializer
     {
         if (element instanceof IPseudoState)
         {
-            ((IPseudoState) element).setKind(IPseudostateKind.PK_FORK);
+            ((IPseudoState) element).setKind(IPseudostateKind.PK_JOIN);
         }
     }
 }
