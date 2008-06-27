@@ -86,7 +86,7 @@ public class FolderLookupTest extends NbTestCase implements LookupListener {
 
     @Override
     protected Level logLevel() {
-        return Level.FINE;
+        return null;// Level.FINE;
     }
 
     @Override
@@ -100,10 +100,7 @@ public class FolderLookupTest extends NbTestCase implements LookupListener {
         super.tearDown();
         if (res != null) {
             res.allItems();
-            FolderLookup.ProxyLkp.DISPATCH.post(new Runnable() {
-                public void run() {
-                }
-            }).waitFinished();
+            FolderLookup.ProxyLkp.DISPATCH.waitFinished();
             if (threadName.contains("Folder") || threadName.length() == 0) {
                 fail("Wrong thread name: " + threadName);
             }
@@ -213,7 +210,8 @@ public class FolderLookupTest extends NbTestCase implements LookupListener {
         DataObject obj = InstanceDataObject.create (folder, "Test", toCreate);
         assertNotNull(obj.getPrimaryFile() + " not found",
             folder.getPrimaryFile().getFileSystem().findResource(obj.getPrimaryFile().getPath()));
-        assertEquals("just one Component in " + res.allInstances(), 1, res.allInstances().size());
+        Collection all = res.allInstances();
+        assertEquals("just one Component in " + all, 1, all.size());
 
         DataFolder subfolder = DataFolder.create(folder, "BB");
         assertNotNull(subfolder.getPrimaryFile() + " not found",
