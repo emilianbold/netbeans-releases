@@ -436,6 +436,10 @@ public class PHPIndex {
                         if (!constName.startsWith(name)) {
                             continue;
                         }
+                    } else if (kind == NameKind.EXACT_NAME){
+                        if (!constName.equals(name)) {
+                            continue;
+                        }
                     }
 
                     String typeName = sig.string(2);
