@@ -80,8 +80,20 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
     }
     
     public void setContent (List<? extends CategoryResult> categories) {
+        List<? extends CategoryResult> oldRes = this.results;
         this.results = categories;
+
+        if (oldRes != null) {
+            for (CategoryResult cr : oldRes) {
+                cr.setObsolete(true);
+            }
+        }
+
         maybeFireChanges();
+    }
+
+    public List<? extends CategoryResult> getContent () {
+        return results;
     }
 
     /******* AbstractListModel impl ********/
