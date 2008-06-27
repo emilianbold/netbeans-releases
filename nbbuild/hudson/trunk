@@ -108,6 +108,7 @@ echo SigTest: Incompatible Changes Done
 
 ###############  Commit validation tests  ##########################
 TESTS_STARTED=`date`
+TESTS_RESULT_DIR="`pwd`/nbbuild/build/test/results"
 # Different JDK for tests because JVM crashes often (see 6598709, 6607038)
 JDK_TESTS=/opt/jdk1.5.0_14
 # standard NetBeans unit and UI validation tests
@@ -133,7 +134,7 @@ ant -f xml.schema/build.xml -Dtest.config=uicommit test
 # Ruby UI validation tests
 # ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-ruby -Dxtest.instance.name="Ruby tests" -Dxtest.no.cleanresults=true runtests
 # Ruby UI, Profiler UI and CND UI validation tests
-ant -f ide.kit/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir="build/test/results" test
+ant -f ide.kit/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR -Dcontinue.after.failing.tests=true test
 echo TESTS STARTED: $TESTS_STARTED
 echo TESTS FINISHED: `date`
 
