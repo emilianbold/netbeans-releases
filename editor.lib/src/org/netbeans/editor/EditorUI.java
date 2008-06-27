@@ -1565,6 +1565,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         public void preferenceChange(PreferenceChangeEvent evt) {
             // ignore events that come after uninstalling the EditorUI from a component
             if (prefs == null) {
+                disableLineNumbers = false;
                 return;
             }
             

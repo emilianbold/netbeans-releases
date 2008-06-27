@@ -868,28 +868,13 @@ implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
     public static String dumpElements(java.util.List l) {
         StringBuffer sb = new StringBuffer();
         int size = l.size();
-        int sizeDigitCount = indexDigitCount(size);
+        int digitCount = String.valueOf(size - 1).length();
         for (int i = 0; i < size; i++) {
-            sb.append('[');
-            int extraSpacesCount = sizeDigitCount - indexDigitCount(i);
-            while (extraSpacesCount > 0) {
-                sb.append(' ');
-            }
-            sb.append(i);
-            sb.append("]: "); // NOI18N
+            ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
             sb.append(l.get(i));
             sb.append("\n"); // NOI18N
         }
         return sb.toString();
     }
     
-    private static int indexDigitCount(int i) {
-        int digitCount = 1;
-        while (i >= 10) {
-            i /= 10;
-            digitCount++;
-        }
-        return digitCount;
-    }
-
 }

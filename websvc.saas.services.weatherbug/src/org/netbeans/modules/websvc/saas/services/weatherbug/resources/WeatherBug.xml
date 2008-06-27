@@ -60,7 +60,12 @@
 
         <group name="WeatherBug">
         </group>
-
+        
+        <code-gen>
+            <artifacts targets="java,servlet,resource,jsp"/>
+            <artifacts targets="php"/>
+        </code-gen>
+        
         <authentication profile="Templates/SaaSServices/apikey.properties">
             <api-key id="ACode"/>
         </authentication>

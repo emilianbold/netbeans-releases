@@ -40,6 +40,7 @@ package org.netbeans.modules.uml.diagrams.nodes.state;
 
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
+import java.util.HashMap;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
@@ -61,6 +62,8 @@ import org.netbeans.modules.uml.diagrams.nodes.state.ProcedureWidget.EntryEventW
 import org.netbeans.modules.uml.diagrams.nodes.state.ProcedureWidget.ExitEventWidget;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
+import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
+import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
@@ -333,4 +336,40 @@ public class StateWidget extends UMLNodeWidget
         }
         return null;
     }
+
+    @Override
+    public void save(NodeWriter nodeWriter)
+    {
+        CompositeStateWidget csw = getCompositeStateWidget();
+        if (csw != null)
+        {
+            boolean horizontal = csw.isHorizontalLayout();
+            String layout = "";
+            if (horizontal)
+                layout = SeparatorWidget.Orientation.HORIZONTAL.toString();
+            else
+                layout = SeparatorWidget.Orientation.VERTICAL.toString();
+            
+            HashMap map = nodeWriter.getProperties();
+            map.put("Orientation", layout);
+            nodeWriter.setProperties(map);
+        }
+        super.save(nodeWriter);
+    }
+
+    @Override
+    public void load(NodeInfo nodeReader)
+    {
+        CompositeStateWidget csw = getCompositeStateWidget();
+        if (csw != null)
+        {
+            csw.load(nodeReader);
+        } 
+        else
+        {
+            super.load(nodeReader);
+        }
+    }
+    
+    
 }

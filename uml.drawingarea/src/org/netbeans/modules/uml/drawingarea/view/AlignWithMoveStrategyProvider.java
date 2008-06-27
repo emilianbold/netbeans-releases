@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Set;
 import org.netbeans.api.visual.action.*;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.widget.LayerWidget;
@@ -362,9 +363,10 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
             Object object = gscene.findObject(widget);
             if (gscene.isNode(object))
             {
-                for (Object o : gscene.getSelectedObjects())
+                Set < ? > selected = gscene.getSelectedObjects();
+                for (Object o : selected)
                 {
-                    if (gscene.isNode(o))
+                    if ((gscene.isNode(o)) && (isOwnerSelected(o, selected, gscene) == false))
                     {
                         Widget w = gscene.findWidget(o);
                         if (w != null)
@@ -409,6 +411,34 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
     public boolean isMovementInitialized()
     {
         return moveWidgetInitialized;
+    }
+
+    private boolean isOwnerSelected(Object o, 
+                                    Set<?> selected,
+                                    GraphScene gscene)
+    {
+        boolean retVal = false;
+        
+        Widget widget = gscene.findWidget(o);
+        if(widget != null)
+        {
+            Widget parent = widget.getParentWidget();
+            Object parentObj = gscene.findObject(parent);
+            
+            if(parentObj != null)
+            {
+                if(selected.contains(parentObj) == true)
+                {
+                    retVal = true;
+                }
+                else
+                {
+                    retVal = isOwnerSelected(parentObj, selected, gscene);
+                }
+            }
+        }
+        
+        return retVal;
     }
     
     private boolean processLocationOperator(Widget widget,

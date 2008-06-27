@@ -69,7 +69,7 @@ public class FixedWatchesManager implements TreeModelFilter,
 NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
             
     public static final String FIXED_WATCH =
-        "org/netbeans/modules/debugger/resources/watchesView/FixedWatch.gif";
+        "org/netbeans/modules/debugger/resources/watchesView/watch_type3_16.png";
     private final Action DELETE_ACTION = Models.createAction (
         NbBundle.getBundle (FixedWatchesManager.class).getString 
             ("CTL_DeleteFixedWatch_Label"),

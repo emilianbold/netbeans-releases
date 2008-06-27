@@ -44,14 +44,15 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifierBasedTemplateParameter;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -61,13 +62,14 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  *
  * @author eu155513
  */
-public class TemplateParameterImpl extends OffsetableBase implements CsmTemplateParameter, SelfPersistent {
+public class TemplateParameterImpl extends OffsetableDeclarationBase implements CsmClassifierBasedTemplateParameter, SelfPersistent {
     private final CharSequence name;
     private CsmUID<CsmScope> scope;
 
-    public TemplateParameterImpl(AST ast, CsmFile file, CsmScope scope) {
+    public TemplateParameterImpl(AST ast, String name, CsmFile file, CsmScope scope) {
         super(ast, file);
-        this.name = NameCache.getManager().getString(ast.getText());
+        // TODO what about explicite type in ast?
+        this.name = NameCache.getManager().getString(name);
         if ((scope instanceof CsmIdentifiable)) {
             this.scope = UIDCsmConverter.scopeToUID(scope);
         }
@@ -107,24 +109,27 @@ public class TemplateParameterImpl extends OffsetableBase implements CsmTemplate
         this.name = NameCache.getManager().getString(input.readUTF());
         this.scope = UIDObjectFactory.getDefaultFactory().readUID(input);
     }
+    
+    public CsmScope getScope() {
+        return scope.getObject();
+    }
 
-    //    TODO: It seems CsmScopeElement    
-//    public CsmScope getScope() {
-//        return scope.getObject();
-//    }
+    public CsmDeclaration.Kind getKind() {
+        return CsmDeclaration.Kind.TEMPLATE_PARAMETER;
+    }
 
-    public CsmTemplateParameter.Kind getKind() {
-        return CsmTemplateParameter.Kind.TEMPLATE; //FIXME
+    public CharSequence getQualifiedName() {
+        CsmScope s = scope.getObject();
+        if (CsmKindUtilities.isFunction(s)) {
+            return ((CsmFunction)s).getQualifiedName()+"::"+name; // NOI18N
+        } else if (CsmKindUtilities.isClass(s)) {
+            return ((CsmClass)s).getQualifiedName()+"::"+name; // NOI18N
+        }
+        return name;
     }
 
     @Override
     public String toString() {
-        CsmScope s = scope.getObject();
-        if (CsmKindUtilities.isFunction(s)) {
-            return ((CsmFunction)s).getQualifiedName()+"::"+name;
-        } else if (CsmKindUtilities.isClass(s)) {
-            return ((CsmClass)s).getQualifiedName()+"::"+name;
-        }
-        return name.toString();
+        return getQualifiedName().toString();
     }
 }

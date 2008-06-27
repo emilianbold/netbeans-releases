@@ -88,9 +88,11 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.ListenerList;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
+import org.netbeans.modules.editor.lib.EditorPackageAccessor;
 import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.FormatterOverride;
+import org.netbeans.modules.editor.lib.TrailingWhitespaceRemove;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
@@ -103,6 +105,10 @@ import org.openide.util.WeakListeners;
 */
 
 public class BaseDocument extends AbstractDocument implements AtomicLockDocument {
+
+    static {
+        EditorPackageAccessor.register(new Accessor());
+    }
 
     // -J-Dorg.netbeans.editor.BaseDocument.level=FINE
     private static final Logger LOG = Logger.getLogger(BaseDocument.class.getName());
@@ -317,6 +323,8 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     
     private ListenerList<DocumentListener> postModificationDocumentListenerList = new ListenerList<DocumentListener>();
     
+    private ListenerList<DocumentListener> updateDocumentListenerList = new ListenerList<DocumentListener>();
+    
     private Position lastPositionEditedByTyping = null;
     
     /** Formatter being used. */
@@ -519,6 +527,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         // start listening
         super.addDocumentListener(org.netbeans.lib.editor.util.swing.DocumentUtilities.initPriorityListening(this));
         FindSupport.getFindSupport().addPropertyChangeListener(findSupportListener);
+        findSupportChange(null); // update doc by find settings
+        
+        TrailingWhitespaceRemove.install(this);
+
         if (weakPrefsListener == null) {
             // the listening could have already been initialized from setMimeType(), which
             // is called by some kits from initDocument()
@@ -1030,6 +1042,9 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         org.netbeans.lib.editor.util.swing.DocumentUtilities.putEventProperty(
                 chng, String.class, bEvt.getText());
         
+        for (DocumentListener listener: updateDocumentListenerList.getListeners()) {
+            listener.insertUpdate(chng);
+        }
     }
     
     protected void preInsertUpdate(DefaultDocumentEvent chng, AttributeSet attr) {
@@ -1080,6 +1095,11 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         BaseDocumentEvent bEvt = (BaseDocumentEvent)chng;
         org.netbeans.lib.editor.util.swing.DocumentUtilities.putEventProperty(
                 chng, String.class, bEvt.getText());
+
+        for (DocumentListener listener: updateDocumentListenerList.getListeners()) {
+            listener.removeUpdate(chng);
+        }
+        
     }
 
     public String getText(int[] block) throws BadLocationException {
@@ -1417,6 +1437,8 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                 Analyzer.read(this, reader, pos);
             } else { // not initialized yet, we can use initialRead()
                 Analyzer.initialRead(this, reader, true);
+                // Reset modified regions accounting after the initial load
+                TrailingWhitespaceRemove.install(this).resetModRegions();
                 inited = true; // initialized but not modified
             }
             if (debugRead) {
@@ -1871,6 +1893,23 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         postModificationDocumentListenerList.remove(listener);
     }
 
+    /**
+     * Add a special document listener that gets notified after physical
+     * insertion/removal has been done but when the document event
+     * (which is a {@link javax.swing.undo.CompoundEdit}) is still
+     * opened for extra undoable edits that can be added by the clients (listeners).
+     * 
+     * @param listener non-null listener to be added.
+     * @since 1.27
+     */
+    public void addUpdateDocumentListener(DocumentListener listener) {
+        updateDocumentListenerList.add(listener);
+    }
+
+    public void removeUpdateDocumentListener(DocumentListener listener) {
+        updateDocumentListenerList.remove(listener);
+    }
+
     /** Was the document modified by either insert/remove
     * but not the initial read)?
     */
@@ -2001,6 +2040,14 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         return new LazyPropertyMap(origDocumentProperties);
     }
 
+    CompoundEdit markAtomicEditsNonSignificant() {
+        assert (atomicDepth > 0); // Should only be called under atomic lock
+        if (atomicEdits == null)
+            atomicEdits = new AtomicCompoundEdit();
+        atomicEdits.setSignificant(false);
+        return atomicEdits;
+    }
+
     public @Override String toString() {
         return super.toString() + 
             ", mimeType = '" + mimeType + "'" + //NOI18N
@@ -2019,6 +2066,8 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     class AtomicCompoundEdit extends CompoundEdit {
         
         private UndoableEdit previousEdit;
+        
+        private boolean nonSignificant;
         
         public @Override void undo() throws CannotUndoException {
             atomicLock();
@@ -2062,6 +2111,12 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         
         public @Override boolean replaceEdit(UndoableEdit anEdit) {
             UndoableEdit childEdit;
+            if (nonSignificant) { // Non-significant edit must be replacing
+                previousEdit = anEdit;
+                // Becomes significant
+                nonSignificant = false;
+                return true;
+            }
             if (size() == 1 && ((childEdit = (UndoableEdit)getEdits().get(0)) instanceof BaseDocumentEvent)) {
                 BaseDocumentEvent childEvt = (BaseDocumentEvent)childEdit;
                 if (anEdit instanceof BaseDocument.AtomicCompoundEdit) {
@@ -2092,6 +2147,15 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             return edits;
         }
 
+        @Override
+        public boolean isSignificant() {
+            return !nonSignificant;
+        }
+
+        public void setSignificant(boolean significant) {
+            this.nonSignificant = !significant;
+        }
+
     }
     
     /** Property evaluator is useful for lazy evaluation
@@ -2117,7 +2181,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         
         public Object getValue() {
             if (hackMimeType == null) {
-                return doc.getEditorKit().getContentType();
+                return doc.mimeType;
             } else {
                 return hackMimeType;
             }
@@ -2266,10 +2330,18 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         }
     }
 
+    private static final class Accessor extends EditorPackageAccessor {
+
+        @Override
+        public CompoundEdit markAtomicEditsNonSignificant(BaseDocument doc) {
+            return doc.markAtomicEditsNonSignificant();
+        }
+
+    }
+
     // XXX: the same as the one in CloneableEditorSupport
     private static final class PlainEditorKit extends DefaultEditorKit implements ViewFactory {
         static final long serialVersionUID = 1L;
-
         PlainEditorKit() {
         }
 
@@ -2297,4 +2369,5 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             pane.setFont(new Font("Monospaced", Font.PLAIN, pane.getFont().getSize() + 1)); //NOI18N
         }
     } // End of PlainEditorKit class
+
 }

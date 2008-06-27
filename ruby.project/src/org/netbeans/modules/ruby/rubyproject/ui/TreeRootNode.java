@@ -64,7 +64,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -102,16 +102,16 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
         g.addPropertyChangeListener(WeakListeners.propertyChange(this, g));
     }
 
-    private final static Image PACKAGE_BADGE = Utilities.loadImage("org/netbeans/modules/ruby/rubyproject/ui/packageBadge.gif"); // NOI18N
+    private final static Image PACKAGE_BADGE = ImageUtilities.loadImage("org/netbeans/modules/ruby/rubyproject/ui/packageBadge.gif"); // NOI18N
     
     /** Copied from PackageRootNode with modifications. */
     private Image computeIcon(boolean opened, int type) {
         Icon icon = g.getIcon(opened);
         if (icon == null) {
             Image image = opened ? super.getOpenedIcon(type) : super.getIcon(type);
-            return Utilities.mergeImages(image, /*PackageRootNode.*/PACKAGE_BADGE, 7, 7);
+            return ImageUtilities.mergeImages(image, /*PackageRootNode.*/PACKAGE_BADGE, 7, 7);
         } else {
-            return Utilities.icon2Image(icon);
+            return ImageUtilities.icon2Image(icon);
         }
     }
     

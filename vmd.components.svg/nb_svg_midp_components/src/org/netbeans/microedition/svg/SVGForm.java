@@ -50,55 +50,11 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
         setSVGEventListener(new SvgFormEventListener()); // set menu listener        
         setFullScreenMode(true); // menu is usually full screen
     }
+    
+    public void add(SVGComponent component ){
+        components.addElement( component );
+    }
          
-    public SVGTextField addTextField(String elemId) {
-        SVGTextField fld = new SVGTextField( this, elemId);
-        components.addElement(fld);
-        return fld;
-    }
-
-    public SVGButton addButton(String elemId) {
-        SVGButton button = new SVGButton( this, elemId);
-        components.addElement(button);
-        return button;
-    }
-
-    public SVGCheckBox addCheckBox(String elemId) {
-        SVGCheckBox checkBox = new SVGCheckBox( this, elemId);
-        components.addElement(checkBox);
-        return checkBox;
-    }
-
-    public SVGRadioButton addRadioButton(String elemId) {
-        SVGRadioButton button = new SVGRadioButton( this, elemId);
-        components.addElement(button);
-        return button;
-    }
-    
-    public SVGSlider addSlider( String elemId){
-        SVGSlider slider = new SVGSlider( this , elemId);
-        components.addElement( slider );
-        return slider;
-    }
-    
-    public SVGSpinner addSpinner( String elemId ){
-        SVGSpinner spinner = new SVGSpinner(this, elemId);
-        components.addElement( spinner );
-        return spinner;
-    }
-    
-    public SVGComboBox addComboBox( String elemId){
-        SVGComboBox box = new SVGComboBox( this , elemId);
-        components.addElement( box );
-        return box;
-    }
-    
-    public SVGList addList( String elemId ){
-        SVGList list = new SVGList( this , elemId );
-        components.addElement( list );
-        return list;
-    }
-    
     public SVGComponent getFocusedField() {
         return focusedComponent;
     }    
@@ -124,8 +80,11 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
     }
     
     public void setCaretVisible(boolean isVisible) {
-        if (focusedComponent != null && focusedComponent instanceof SVGTextField) {
+        if (focusedComponent instanceof SVGTextField  ) {
             ((SVGTextField)focusedComponent).setCaretVisible(isVisible);
+        }
+        if ( focusedComponent instanceof SVGTextArea ){
+            ((SVGTextArea)focusedComponent).setCaretVisible(isVisible);
         }
     }
      

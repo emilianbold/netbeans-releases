@@ -1,0 +1,82 @@
+#!/bin/bash
+
+#echo "gcc"
+
+allparams=$@
+params=""
+file=""
+cfile=""
+
+# processing params
+while [ -n "$1" ]
+do
+   	case "$1" in
+   	    -I*)
+            inc=${1##-I}
+
+            # getting canonical include path            
+            pushd "`pwd`"
+            cd "$inc"
+            inc="`pwd`"
+            popd
+            params="-I$inc ${params}"
+
+            echo "-I$inc"
+
+     		shift
+            continue
+   		;;
+
+   	    -D*)
+            params="$1 ${params}"
+     		shift
+            continue
+   		;;
+   	    -c*)
+            shift
+            echo "-c $1"
+            if [[ $1 =~ ".*\.cpp|.*\.cc|.*\.c\+\+|.*\.cxx|.*\.c|.*\.mm" ]]; then
+                cfile="$1"
+         		shift
+            fi
+            continue
+   		;;
+
+  	esac
+
+    file="$1"
+    shift
+done
+
+if [ ! -z "${cfile}" ]; then
+file=$cfile
+fi
+
+currentDir=""
+
+# getting canonical file path
+if [[ $FILE =~ "\\.*" ]]; then
+    currentDir="`dirname ${file}`"
+    file="`basename ${file}`"    
+else
+    currentDir="`pwd`"
+    pushd $currentDir
+    cd "`dirname ${currentDir}/${file}`"
+    currentDir="`pwd`"
+    file="`basename ${file}`"
+    popd
+fi
+
+relPath=${currentDir#$MY_PP_TARGET}
+relPath=${relPath#/}
+
+mkdir -p `dirname $MY_PP_TEMP/$relPath/${file}`
+
+# preprocessing file
+if [ ! -z "${params}" ]; then
+    /usr/sfw/bin/gcc -Wno-deprecated -E ${params}${currentDir}/${file} 2>/dev/null > $MY_PP_TEMP/$relPath/${file}
+else
+    /usr/sfw/bin/gcc -Wno-deprecated -E ${currentDir}/${file} 2>/dev/null > $MY_PP_TEMP/$relPath/${file}
+fi
+
+/usr/sfw/bin/gcc ${allparams}

@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.api.model.util;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
@@ -162,6 +163,28 @@ public class CsmBaseUtilities {
         } else if (CsmKindUtilities.isFunctionDeclaration(target)) {
             decl = target;
             def = ((CsmFunction)target).getDefinition();
+        } else if (CsmKindUtilities.isClassForwardDeclaration(target)) {
+            CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) target;
+            if (fd.getCsmClass() != null){
+                decl = target;
+                def = fd.getCsmClass();
+            } else {
+                decl = target;
+                def = null;
+            }
+        } else if (CsmKindUtilities.isClass(target)) {
+            CsmClass cls = (CsmClass)target;
+            CsmClassifier c = cls.getContainingFile().getProject().findClassifier(cls.getQualifiedName());
+            if (cls.equals(c)) {
+                decl = target;
+                def = null;
+            } else if (c != null){
+                decl = c;
+                def = cls;
+            } else {
+                decl = target;
+                def = null;
+            }
         } else {
             decl = target;
             def = null;
@@ -308,6 +331,12 @@ public class CsmBaseUtilities {
         // FIXUP: after fixing IZ# the code shold be changed to simple loop
         if (orig == null) {
             throw new NullPointerException("orig parameter must be not null"); // NOI18N
+        }
+        if (CsmKindUtilities.isClassForwardDeclaration(orig)){
+            CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) orig;
+            if (fd.getCsmClass()!= null){
+                return fd.getCsmClass();
+            }
         }
         CsmClassifier out = orig;
         Set<CsmClassifier> set = new HashSet<CsmClassifier>(100);

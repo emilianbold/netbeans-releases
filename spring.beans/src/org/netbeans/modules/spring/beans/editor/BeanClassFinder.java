@@ -124,6 +124,10 @@ public class BeanClassFinder {
 
     private String findImplementationClass(SpringBean logicalBean) {
         String implClass = null;
+        if (logicalBean == null) {
+            return null;
+        }
+
         boolean staticFlag = false;
         
         if (StringUtils.hasText(logicalBean.getFactoryBean())) {
@@ -298,7 +302,7 @@ public class BeanClassFinder {
         }
         
         name = beanAttribs.get(BeansAttributes.NAME);
-        if(name != null) {
+        if(StringUtils.hasText(name)) {
             name = StringUtils.tokenize(name, SpringXMLConfigEditorUtils.BEAN_NAME_DELIMITERS).get(0);
         }
         

@@ -196,7 +196,11 @@ public class PersistenceManager {
         DiagramLoader diagLoader = new DiagramLoader(fileName, topComp, groupEdges);
         //get the diagram info - diagramName, diagramType, and owner
         long start = System.currentTimeMillis();
+        //set to diagramLoading mode
+        PersistenceUtil.setDiagramLoading(true);
         DesignerScene scene = diagLoader.openDiagram();
+        //done with diagramLoading.. unset the mode
+        PersistenceUtil.setDiagramLoading(false);
         float elapsedTimeSec = (System.currentTimeMillis() - start) / 1000F;
         System.err.println(" !!!!!!!!!!!!!!!!!!!! Total time to load the diagram : " +elapsedTimeSec);
 

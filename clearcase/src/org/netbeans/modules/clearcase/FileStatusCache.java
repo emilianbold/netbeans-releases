@@ -95,7 +95,7 @@ public class FileStatusCache {
     private Set<File> filesToRefresh = new HashSet<File>();
     private RequestProcessor.Task filesToRefreshTask;
 
-    private static final Pattern keepPattern = Pattern.compile(".*\\.keep(\\.\\d+)?");
+    private static final Pattern ignorePattern = Pattern.compile(".*\\.(keep|contrib)(\\.\\d+)?");
     private final ClearcaseClient client;
     
     FileStatusCache() {
@@ -391,7 +391,7 @@ public class FileStatusCache {
             return true;
         }
         
-        if( keepPattern.matcher(file.getName()).matches()) {
+        if( ignorePattern.matcher(file.getName()).matches()) {
             return true;
         }
         

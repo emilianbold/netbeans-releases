@@ -45,8 +45,10 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IDependency;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IRelationship;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IRelationFactory;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IDerivation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IImplementation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface;
 
@@ -67,14 +69,31 @@ public class ImplementationFactory extends AbstractRelationshipFactory
         
         IRelationship retVal = null;
         
+        IPackage space = source.getOwningPackage();
         if((source instanceof IClassifier) && (target instanceof IInterface))
         {
-            IPackage space = source.getOwningPackage();
             ETPairT<IInterface, IDependency> value = 
                     factory.createImplementation((IClassifier)source, 
                                                  (IInterface)target,
                                                  space);
             retVal = value.getParamTwo();
+        }
+        else if((source instanceof IClassifier) && (target instanceof IDerivationClassifier))
+        {
+            // Also need to check if the supplier is a derivation
+            // classifier that is bound to an interface.
+            IDerivationClassifier classifier = (IDerivationClassifier)target;
+            IDerivation derivation = classifier.getDerivation();
+            if(derivation != null)
+            {
+                IClassifier template = derivation.getTemplate();
+                if(template instanceof IInterface)
+                {
+                    retVal = factory.createDependency2( (IClassifier)source, 
+                                                        (IClassifier)target, 
+                                                        "Implementation", space);
+                }
+            }
         }
         
         return retVal;

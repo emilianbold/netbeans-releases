@@ -48,7 +48,7 @@ import javax.swing.event.ChangeListener;
 
 
 /**
- * Interface implemented by common serve support.  Always available in server
+ * Interface implemented by common server support.  Always available in server
  * instance lookup.
  *
  * @author Peter Williams
@@ -142,7 +142,7 @@ public interface GlassfishModule {
     /**
      * Stop the server.
      *
-     * @todo returned Future instance shouldn't "finish" until server vm has
+     * XXX returned Future instance shouldn't "finish" until server vm has
      *   terminated (or been killed if it hangs).
      * 
      * @param stateListener listener to listen message describing the shutdown 

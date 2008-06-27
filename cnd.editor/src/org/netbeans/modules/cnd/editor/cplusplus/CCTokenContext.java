@@ -150,8 +150,7 @@ public class CCTokenContext extends TokenContext {
     public static final int REGISTER_ID = MUTABLE_ID + 1;
     public static final int SHORT_ID = REGISTER_ID + 1;
     public static final int SIGNED_ID = SHORT_ID + 1;
-    public static final int STRUCT_ID = SIGNED_ID + 1;
-    public static final int TYPEDEF_ID = STRUCT_ID + 1;
+    public static final int TYPEDEF_ID = SIGNED_ID + 1;
     public static final int TYPEID_ID = TYPEDEF_ID + 1;
     public static final int TYPENAME_ID = TYPEID_ID + 1;
     public static final int TYPEOF_ID = TYPENAME_ID + 1;
@@ -159,15 +158,16 @@ public class CCTokenContext extends TokenContext {
 
     // Void type keyword numeric-id
     public static final int VOID_ID = UNSIGNED_ID + 1;
-    public static final int WCHAR_T_ID = VOID_ID + 1;
-    public static final int UNION_ID = WCHAR_T_ID + 1;
 
     // Other keywords numeric-ids
+    public static final int WCHAR_T_ID = VOID_ID + 1;
+    public static final int UNION_ID = WCHAR_T_ID + 1;
     public static final int BREAK_ID = UNION_ID + 1;
     public static final int CASE_ID = BREAK_ID + 1;
     public static final int CATCH_ID = CASE_ID + 1;
     public static final int CLASS_ID = CATCH_ID + 1;
-    public static final int CONST_ID = CLASS_ID + 1;
+    public static final int STRUCT_ID = CLASS_ID + 1;    
+    public static final int CONST_ID = STRUCT_ID + 1;
     public static final int CONTINUE_ID = CONST_ID + 1;
     public static final int DEFAULT_ID = CONTINUE_ID + 1;
     public static final int DELETE_ID = DEFAULT_ID + 1;

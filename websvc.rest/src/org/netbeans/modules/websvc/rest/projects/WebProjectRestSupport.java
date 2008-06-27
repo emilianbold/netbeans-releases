@@ -78,6 +78,31 @@ public class WebProjectRestSupport extends RestSupport {
     }
 
     @Override
+    public void upgrade() {
+        FileObject ddFO = getDeploymentDescriptor();
+    
+        try {
+            WebApp webApp = getWebApp();
+            
+            if (webApp == null) {
+                return;
+            }
+      
+            Servlet adaptorServlet = getRestServletAdaptor(webApp);
+            if (adaptorServlet != null) {
+                // Starting with jersey 0.8, the adaptor class is under 
+                // com.sun.jersey package instead of com.sun.we.rest package.
+                if (REST_SERVLET_ADAPTOR_CLASS_OLD.equals(adaptorServlet.getServletClass())) {
+                    adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS);
+                    webApp.write(ddFO);
+                }
+            }
+        } catch (IOException ioe) {
+           Exceptions.printStackTrace(ioe);
+        }
+    }
+    
+    @Override
     public void extendBuildScripts() throws IOException {
         new AntFilesHelper(this).initRestBuildExtension();
     }
@@ -147,7 +172,7 @@ public class WebProjectRestSupport extends RestSupport {
         }
         return false;
     }
-
+    
     private boolean hasRestServletAdaptor(WebApp webApp) {
         return getRestServletAdaptor(webApp) != null;
     }
@@ -205,7 +230,8 @@ public class WebProjectRestSupport extends RestSupport {
                 adaptorServlet.setLoadOnStartup(BigInteger.valueOf(1));
                 webApp.addServlet(adaptorServlet);
                 needsSave = true;
-            }
+            } 
+            
             ServletMapping sm = getRestServletMapping(webApp);
             if (sm == null) {
                 sm = (ServletMapping) webApp.createBean("ServletMapping");

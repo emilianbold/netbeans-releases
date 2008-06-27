@@ -503,11 +503,14 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
         
         // filling the folder field
         String target=null;
-        for(int item = 0; target == null && item < locationCB.getModel().getSize(); item++) {
-            FileObject docBase = ((LocationItem)locationCB.getModel().getElementAt(item)).getFileObject();
-            if ( preselectedFolder != null && FileUtil.isParentOf( docBase, preselectedFolder ) ) {
-                target = FileUtil.getRelativePath( docBase, preselectedFolder );
-                locationCB.getModel().setSelectedItem(locationCB.getModel().getElementAt(item));
+        if (preselectedFolder != null) {
+            for(int item = 0; target == null && item < locationCB.getModel().getSize(); item++) {
+                FileObject docBase = ((LocationItem)locationCB.getModel().getElementAt(item)).getFileObject();
+                if (preselectedFolder.equals(docBase) || FileUtil.isParentOf(docBase, preselectedFolder)) {
+                    target = FileUtil.getRelativePath(docBase, preselectedFolder);
+                    locationCB.getModel().setSelectedItem(locationCB.getModel().getElementAt(item));
+                    break;
+                }
             }
         }
         

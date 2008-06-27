@@ -114,7 +114,6 @@ public class STSWizard implements TemplateWizard.Iterator {
         File wsdlFile = null;
         File tempFolder = new File(System.getProperty("netbeans.user"));     //NOI18N
         DataObject folderDO = DataObject.find(FileUtil.toFileObject(tempFolder));
-
         OutputStream schemaos = null, wsdlos = null;
                 
         try {
@@ -132,11 +131,13 @@ public class STSWizard implements TemplateWizard.Iterator {
         }
 
         try {
-            final InputStream wsdlIS = this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/websvc/wsitconf/resources/templates/sts.template"); //NOI18N
-            wsdlFile = new File(System.getProperty("netbeans.user") + File.separator + "sts.wsdl");     //NOI18N       
-            wsdlFile.createNewFile();
-            wsdlos = new FileOutputStream(wsdlFile);
-            FileUtil.copy(wsdlIS, wsdlos);
+            wsdlFile = new File(System.getProperty("netbeans.user") + File.separator + "sts.wsdl");     //NOI18N
+            if (!wsdlFile.exists()) {
+                final InputStream wsdlIS = this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/websvc/wsitconf/resources/templates/sts.template"); //NOI18N
+                wsdlFile.createNewFile();
+                wsdlos = new FileOutputStream(wsdlFile);
+                FileUtil.copy(wsdlIS, wsdlos);
+            }
         } catch (FileNotFoundException ex) {
             logger.log(Level.INFO, null, ex);
         } catch (IOException ex) {

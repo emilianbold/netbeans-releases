@@ -25,9 +25,9 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <Component id="jLabel1" min="-2" pref="112" max="-2" attributes="0"/>
+              <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="cmbDatabaseConn" pref="385" max="32767" attributes="0"/>
+              <Component id="cmbDatabaseConn" pref="409" max="32767" attributes="0"/>
           </Group>
           <Component id="tablesPanel" alignment="1" pref="501" max="32767" attributes="0"/>
           <Component id="jScrollPane3" alignment="1" pref="501" max="32767" attributes="0"/>
@@ -232,6 +232,9 @@
           <Properties>
             <Property name="selected" type="boolean" value="true"/>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/hibernate/wizards/Bundle.properties" key="HibernateRevengDatabaseTablesPanel_IncludeRelatedTables" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/hibernate/wizards/Bundle.properties" key="HibernateRevengDatabaseTablesPanel_IncludeRelatedTables" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">

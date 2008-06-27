@@ -253,7 +253,7 @@ ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Building of Test Distrubution failed"
-#    exit $ERROR_CODE;
+    exit $ERROR_CODE;
 else
     mv nbbuild/build/testdist.zip $DIST/zip/testdist-${BUILDNUMBER}.zip
 fi

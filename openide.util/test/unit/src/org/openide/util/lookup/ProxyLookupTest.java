@@ -47,6 +47,8 @@ import org.openide.util.*;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executor;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import org.openide.util.Lookup.Result;
@@ -102,7 +104,7 @@ implements AbstractLookupBaseHid.Impl {
         
         Lookup.Result<Object> res = lookup.lookup (template);
 
-        assertSize("Bigger", Collections.singleton(lookup), 208, IGNORE);
+        assertSize("Bigger", Collections.singleton(lookup), 216, IGNORE);
         
         LL ll = new LL ();
         res.addLookupListener (ll);
@@ -125,6 +127,64 @@ implements AbstractLookupBaseHid.Impl {
         
         lookup.setLookups (new Lookup[] { del });
         
+        if (ll.getCount () != 0) {
+           fail ("Calling setLookups (thesamearray) fired a change");
+        }
+    }
+    
+    public void testNoListenersProxyListener () {
+        ProxyLookup lookup = new ProxyLookup (new Lookup[0]);
+        class E implements Executor {
+            Runnable r;
+            public void execute(Runnable command) {
+                assertNull("NO previous", r);
+                r = command;
+            }
+            public void perform() {
+                assertNotNull("We shall have a runnable", r);
+                r.run();
+                r = null;
+            }
+        }
+        E executor = new E();
+                
+
+        final Lookup.Template<Object> template = new Lookup.Template<Object>(Object.class);
+        final Object[] IGNORE = {
+            ProxyLookup.ImmutableInternalData.EMPTY,
+            ProxyLookup.ImmutableInternalData.EMPTY_ARR,
+            Utilities.activeReferenceQueue(),
+            Collections.emptyMap(),
+            Collections.emptyList(),
+            Collections.emptySet()
+        };
+        
+        assertSize("Pretty small", Collections.singleton(lookup), 16, IGNORE);
+        
+        Lookup.Result<Object> res = lookup.lookup (template);
+
+        assertSize("Bigger", Collections.singleton(lookup), 216, IGNORE);
+        
+        LL ll = new LL ();
+        res.addLookupListener (ll);
+        Collection allRes = res.allInstances ();
+        
+        lookup.setLookups (executor, new Lookup[0]);
+        if (ll.getCount () != 0) {
+           fail ("Calling setLookups (emptyarray) fired a change");
+        }
+        
+        InstanceContent t = new InstanceContent();
+        Lookup del = new AbstractLookup (t);
+        t.add("Ahoj");
+        lookup.setLookups (executor, new Lookup[] { del });
+        assertEquals("No change yet", 0, ll.getCount());
+        executor.perform();
+        if (ll.getCount () != 1) {
+            fail ("Changing lookups did not generate an event");
+        }
+        
+        lookup.setLookups (executor, new Lookup[] { del });
         if (ll.getCount () != 0) {
            fail ("Calling setLookups (thesamearray) fired a change");
         }

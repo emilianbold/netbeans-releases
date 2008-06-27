@@ -580,6 +580,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
         CsmDeclaration.Kind kinds[] =	{
             CsmDeclaration.Kind.CLASS,
+            CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION,
             CsmDeclaration.Kind.STRUCT,
             CsmDeclaration.Kind.UNION,
             CsmDeclaration.Kind.ENUM,
@@ -1301,6 +1302,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             resolveTypes |= RESOLVE_LIB_CLASSES;
             resolveTypes |= RESOLVE_LIB_NAMESPACES;
             resolveTypes |= RESOLVE_CLASS_NESTED_CLASSIFIERS;        
+            resolveTypes |= RESOLVE_FILE_LOCAL_VARIABLES;
             
             assert (context != null);
             if (CsmContextUtilities.isInFunction(context, offset)) {
@@ -1318,7 +1320,6 @@ public class CompletionResolverImpl implements CompletionResolver {
                 resolveTypes |= RESOLVE_GLOB_ENUMERATORS;
                 resolveTypes |= RESOLVE_GLOB_FUNCTIONS;
                 resolveTypes |= RESOLVE_FILE_LOCAL_FUNCTIONS;
-                resolveTypes |= RESOLVE_FILE_LOCAL_VARIABLES;
                 resolveTypes |= RESOLVE_GLOB_NAMESPACES;
                 resolveTypes |= RESOLVE_LIB_CLASSES;
                 resolveTypes |= RESOLVE_LIB_VARIABLES;

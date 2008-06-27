@@ -505,9 +505,14 @@ public final class IndexSearch
                     task.cancel();
                 task = RequestProcessor.getDefault().post( new Runnable(){
                     public void run(){
+                        //workaround for #114175 
+                        int divider = splitPanel.getDividerLocation();
+                        quickBrowser.setVisible(false);
                         quickBrowser.setURL( furl );
+                        quickBrowser.setVisible(true);
+                        splitPanel.setDividerLocation(divider);
                     }
-                }, 650 );      
+                }, 300 );      
             }
             else
                 HtmlBrowser.URLDisplayer.getDefault().showURL( url );

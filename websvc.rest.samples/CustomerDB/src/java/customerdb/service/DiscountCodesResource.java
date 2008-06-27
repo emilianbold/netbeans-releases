@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -93,9 +93,13 @@ public class DiscountCodesResource {
     @DefaultValue("0")
     int start, @QueryParam("max")
     @DefaultValue("10")
-    int max) {
+    int max, @QueryParam("expandLevel")
+    @DefaultValue("1")
+    int expandLevel, @QueryParam("query")
+    @DefaultValue("SELECT e FROM DiscountCode e")
+    String query) {
         try {
-            return new DiscountCodesConverter(getEntities(start, max), context.getAbsolutePath());
+            return new DiscountCodesConverter(getEntities(start, max, query), context.getAbsolutePath(), expandLevel);
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -110,15 +114,15 @@ public class DiscountCodesResource {
     @POST
     @ConsumeMime({"application/xml", "application/json"})
     public Response post(DiscountCodeConverter data) {
-        PersistenceService service = PersistenceService.getInstance();
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
-            service.beginTx();
+            persistenceSvc.beginTx();
             DiscountCode entity = data.getEntity();
             createEntity(entity);
-            service.commitTx();
+            persistenceSvc.commitTx();
             return Response.created(context.getAbsolutePath().resolve(entity.getDiscountCode() + "/")).build();
         } finally {
-            service.close();
+            persistenceSvc.close();
         }
     }
 
@@ -138,8 +142,8 @@ public class DiscountCodesResource {
      *
      * @return a collection of DiscountCode instances
      */
-    protected Collection<DiscountCode> getEntities(int start, int max) {
-        return PersistenceService.getInstance().createQuery("SELECT e FROM DiscountCode e").setFirstResult(start).setMaxResults(max).getResultList();
+    protected Collection<DiscountCode> getEntities(int start, int max, String query) {
+        return PersistenceService.getInstance().createQuery(query).setFirstResult(start).setMaxResults(max).getResultList();
     }
 
     /**
@@ -150,7 +154,11 @@ public class DiscountCodesResource {
     protected void createEntity(DiscountCode entity) {
         PersistenceService.getInstance().persistEntity(entity);
         for (Customer value : entity.getCustomerCollection()) {
+            DiscountCode oldEntity = value.getDiscountCode();
             value.setDiscountCode(entity);
+            if (oldEntity != null) {
+                oldEntity.getCustomerCollection().remove(entity);
+            }
         }
     }
 }

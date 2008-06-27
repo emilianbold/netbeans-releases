@@ -57,7 +57,7 @@ public class GeneralizationConnector extends AbstractUMLConnectionWidget
         
         setForeground(Color.BLACK);
 
-        setTargetAnchorShape(AnchorShape.TRIANGLE_FILLED);
+        setTargetAnchorShape(AnchorShape.TRIANGLE_HOLLOW);
         setControlPointShape(PointShape.SQUARE_FILLED_BIG);
         setEndPointShape(PointShape.SQUARE_FILLED_BIG);
     }
