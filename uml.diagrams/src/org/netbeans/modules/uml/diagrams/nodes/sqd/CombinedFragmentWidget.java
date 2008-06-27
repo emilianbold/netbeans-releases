@@ -857,13 +857,13 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
             elt = locator.findByID(nodeReader.getProject(), nodeReader.getMEID());
         }            
         if (elt != null && elt instanceof ICombinedFragment)
-        {
-            super.load(nodeReader);            
+        {            
+            super.load(nodeReader); 
+            setPreferredSize(nodeReader.getSize());
         } 
         else if (elt != null && elt instanceof IInteractionOperand)
         {
             //find the proper operand,and set its size and other properties
-            System.out.println("hello");
             InteractionOperandWidget iow = operands.get(elt);
             if (iow != null && iow instanceof DiagramNodeReader)
             {
