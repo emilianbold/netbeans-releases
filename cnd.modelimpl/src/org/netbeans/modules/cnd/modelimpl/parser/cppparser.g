@@ -3112,6 +3112,9 @@ unary_expression
                         // TILDE was handled above
                         {LA(1)!=TILDE}? unary_operator cast_expression
                 |
+                        // IZ 138482 : No support for ({}) extensions
+                        (LPAREN LCURLY) => LPAREN statement RPAREN
+                |
                         //{!(LA(1)==TILDE && LA(2)==ID) || 
 			//	    qualifiedItemIsOneOf(qiVar | qiFun | qiDtor | qiCtor)}?
                         postfix_expression
