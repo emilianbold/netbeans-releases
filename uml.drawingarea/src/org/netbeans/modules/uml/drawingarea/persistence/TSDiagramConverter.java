@@ -499,6 +499,7 @@ public class TSDiagramConverter
                 {
                     //most likely unsupported widgets and it wasn't created
                     //or not named element (for example expression
+                    if(scene.isNode(presEl))scene.removeNode(presEl);
                     presEl.getFirstSubject().removePresentationElement(presEl);
                     presEltList.remove(presEl);
                     nodeInfo.getProperties().remove(PRESENTATIONELEMENT);
