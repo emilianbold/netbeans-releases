@@ -39,9 +39,11 @@
 
 package org.netbeans.modules.subversion.client.cli.commands;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -229,7 +231,7 @@ public class LogCommand extends SvnCommand {
         
         private class Path {
             char action;
-            String path;
+            String path = "";
             String copyRev;
             String copyPath;
         }
@@ -260,16 +262,20 @@ public class LogCommand extends SvnCommand {
             String s = toString(length, ch, start);            
             if(tag.equals(PATH_ELEMENT_NAME)) {
                 List<Path> paths = getPathList();
-                paths.get(paths.size() - 1).path = s;
-                tag = null;                    
+                paths.get(paths.size() - 1).path = paths.get(paths.size() - 1).path + s;
             } else {
-                values.put(tag, s);   
-                tag = null;                
+                Object v = values.get(tag);
+                if(v == null) {
+                    values.put(tag, s);
+                } else {
+                    values.put(tag, v + s);
+                }
             }            
         }                
         
         @Override
-        public void endElement(String uri, String localName, String name) throws SAXException {            
+        public void endElement(String uri, String localName, String name) throws SAXException {
+            tag = null;
             if (ENTRY_ELEMENT_NAME.equals(name)) {                      
                 if(values != null) {
                                                                                        
@@ -305,7 +311,7 @@ public class LogCommand extends SvnCommand {
                     
                     values = null;
                 }
-            } 
+            }
         }
                 
         public void error(SAXParseException e) throws SAXException {
