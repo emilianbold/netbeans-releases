@@ -162,6 +162,20 @@ public class PersistentClassIndex extends ClassIndexImpl {
         }
     }
     
+    public <T> void getDeclaredElements (final String ident, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<Pair<String,T>> result) throws InterruptedException {
+        updateDirty();
+        try {
+            ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void>() {
+                public Void run () throws IOException, InterruptedException {
+                    index.getDeclaredElements(ident, kind, convertor, result);
+                    return null;
+                }
+            });                    
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+    }
+    
     
     public void getPackageNames (final String prefix, final boolean directOnly, final Set<String> result) throws InterruptedException {
         try {

@@ -88,6 +88,8 @@ public abstract class ClassIndexImpl {
     
     public abstract <T> void getDeclaredTypes (String name, ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<? super T> result) throws InterruptedException;
     
+    public abstract <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<T> convertor, Set<Pair<String,T>> result) throws InterruptedException;
+    
     public abstract void getPackageNames (String prefix, boolean directOnly, Set<String> result) throws InterruptedException;
     
     public abstract FileObject[] getSourceRoots ();
