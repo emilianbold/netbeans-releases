@@ -100,8 +100,7 @@ public class RssNode extends FilterNode {
             super(rssFolderNode);
         }
         
-        protected Node[] createNodes(Object key) {
-            Node n = (Node) key;
+        protected Node[] createNodes(Node n) {
             if (n.getLookup().lookup(DataFolder.class) != null) {
                 return new Node[] {new RssNode(n)};
             } else {
