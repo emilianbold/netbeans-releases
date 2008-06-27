@@ -48,6 +48,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
+import org.netbeans.modules.ruby.platform.RubyPreferences;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -144,7 +145,7 @@ public final class Util {
     public static void storeWizardPlatform(JComboBox platforms) {
         RubyPlatform selectedPlatform = PlatformComponentFactory.getPlatform(platforms);
         if (selectedPlatform != null) {
-            org.netbeans.modules.ruby.platform.Util.getPreferences().put(LAST_PLATFORM_ID, selectedPlatform.getID());
+            RubyPreferences.getPreferences().put(LAST_PLATFORM_ID, selectedPlatform.getID());
         }
     }
     

@@ -42,8 +42,10 @@
 package org.netbeans.modules.xml.schema.completion;
 
 import javax.swing.text.JTextComponent;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
+import org.netbeans.modules.xml.schema.completion.util.CompletionUtil.DocRoot;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -65,11 +67,25 @@ public class SchemaBasedCompletionProvider implements CompletionProvider {
     }
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        XMLSyntaxSupport support = ((XMLSyntaxSupport)Utilities.
-                getDocument(component).getSyntaxSupport());
+        BaseDocument doc = Utilities.getDocument(component);
+        if(doc == null)
+            return 0;
+        XMLSyntaxSupport support = ((XMLSyntaxSupport)doc.getSyntaxSupport());
         if(support.noCompletion(component)) {
             return 0;
         }
+        //for .xml documents
+        if("xml".equals(getPrimaryFile().getExt())) {
+            //if DTD based, no completion
+            if(CompletionUtil.isDTDBasedDocument(doc)) {
+                return 0;
+            }
+            //if docroot doesn't declare ns, no completion
+            DocRoot root = CompletionUtil.getDocRoot(doc);
+            if(root != null && !root.declaresNamespace()) {
+                return 0;
+            }            
+        }        
         
         return COMPLETION_QUERY_TYPE;
     }

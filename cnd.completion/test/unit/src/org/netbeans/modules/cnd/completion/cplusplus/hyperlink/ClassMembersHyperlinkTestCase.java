@@ -48,7 +48,25 @@ package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
     public ClassMembersHyperlinkTestCase(String testName) {
         super(testName);
-    }        
+    }
+    
+    public void testTemplateParameters() throws Exception {
+        performTest("templateParameters.h", 1, 23, "templateParameters.h", 1, 10); // test for L
+        performTest("templateParameters.h", 2, 25, "templateParameters.h", 1, 10); // test for L
+        performTest("templateParameters.h", 5, 57, "templateParameters.h", 1, 10); // test for L
+        performTest("templateParameters.h", 8, 34, "templateParameters.h", 1, 10); // test for L
+        
+        performTest("templateParameters.h", 1, 32, "templateParameters.h", 1, 26); // test for T
+        performTest("templateParameters.h", 2, 28, "templateParameters.h", 1, 26); // test for T
+        performTest("templateParameters.h", 2, 83, "templateParameters.h", 1, 26); // test for T
+        performTest("templateParameters.h", 5, 54, "templateParameters.h", 1, 26); // test for T
+        performTest("templateParameters.h", 13, 40, "templateParameters.h", 1, 26); // test for T
+        performTest("templateParameters.h", 13, 63, "templateParameters.h", 1, 26); // test for T
+        
+        performTest("templateParameters.h", 1, 57, "templateParameters.h", 1, 35); // test for C
+        performTest("templateParameters.h", 11, 9, "templateParameters.h", 1, 35); // test for C
+        performTest("templateParameters.h", 13, 61, "templateParameters.h", 1, 35); // test for C
+    }
         
     public void testSameName() throws Exception {
         performTest("main.cc", 53, 10, "main.cc", 51, 1); //sameValue(  in sameValue(sameValue - 1);

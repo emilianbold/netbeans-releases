@@ -61,7 +61,7 @@ import java.beans.PropertyChangeEvent;
 /**
  * @author Maros Sandor
  */
-public class SubversionVCS extends VersioningSystem implements VersioningListener, PreferenceChangeListener, PropertyChangeListener, CollocationQueryImplementation {
+public class SubversionVCS extends VersioningSystem implements VersioningListener, PreferenceChangeListener, PropertyChangeListener {
     
     private static SubversionVCS instance;
 
@@ -125,24 +125,32 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
         Subversion.getInstance().getOriginalFile(workingCopy, originalFile);
     }
 
-    public boolean areCollocated(File a, File b) {
-        File fra = getTopmostManagedAncestor(a);
-        File frb = getTopmostManagedAncestor(b);
-        if (fra == null || !fra.equals(frb)) return false;
-        try {
-            SVNUrl ra = SvnUtils.getRepositoryRootUrl(a);
-            SVNUrl rb = SvnUtils.getRepositoryRootUrl(b);
-            SVNUrl rr = SvnUtils.getRepositoryRootUrl(fra);
-            return ra.equals(rb) && ra.equals(rr);
-        } catch (SVNClientException e) {
-            // root not found
-            return false;
-        }
+    @Override
+    public CollocationQueryImplementation getCollocationQueryImplementation() {
+        return collocationQueryImplementation;
     }
 
-    public File findRoot(File file) {
-        return getTopmostManagedAncestor(file);
-    }
+    private final CollocationQueryImplementation collocationQueryImplementation = new CollocationQueryImplementation() {
+        public boolean areCollocated(File a, File b) {
+            File fra = getTopmostManagedAncestor(a);
+            File frb = getTopmostManagedAncestor(b);
+            if (fra == null || !fra.equals(frb)) return false;
+            try {
+                SVNUrl ra = SvnUtils.getRepositoryRootUrl(a);
+                SVNUrl rb = SvnUtils.getRepositoryRootUrl(b);
+                SVNUrl rr = SvnUtils.getRepositoryRootUrl(fra);
+                return ra.equals(rb) && ra.equals(rr);
+            } catch (SVNClientException e) {
+                // root not found
+                return false;
+            }
+        }
+
+        public File findRoot(File file) {
+            // TODO: we should probably return the closest common ancestor
+            return getTopmostManagedAncestor(file);
+        }
+    };
     
     public void versioningEvent(VersioningEvent event) {
         if (event.getId() == FileStatusCache.EVENT_FILE_STATUS_CHANGED) {

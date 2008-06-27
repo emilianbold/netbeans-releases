@@ -319,7 +319,7 @@ public class PHPIndex {
             String foundClassName = getSignatureItem(classSignatures[0], 1);
             String persistentURL = classMap.getPersistentUrl();
             
-            if (!className.equals(foundClassName) || (context != null && !isReachable(context, persistentURL))) {
+            if (!className.equals(foundClassName)) {
                 continue;
             }
             
@@ -434,6 +434,10 @@ public class PHPIndex {
                     if (kind == NameKind.PREFIX) {
                         //case sensitive
                         if (!constName.startsWith(name)) {
+                            continue;
+                        }
+                    } else if (kind == NameKind.EXACT_NAME){
+                        if (!constName.equals(name)) {
                             continue;
                         }
                     }
@@ -626,31 +630,24 @@ public class PHPIndex {
         lastIsReachableURL = url;
         lastIsReachableReturnValue = true;
         
-        Project project = FileOwnerQuery.getOwner(result.getFile().getFileObject());
-        
-        if (project != null){
-            try {
-                // return true for platform files
-                // TODO temporary implementation
-                PhpSourcePath phpSourcePath = project.getLookup().lookup(PhpSourcePath.class);
-                if (phpSourcePath != null) {
-                    File file = new File(new URI(url));
-                    
-                    if (!file.exists()){
-                        lastIsReachableReturnValue = false;
-                        return false; // a workaround for #131906
-                    }
-                    
-                    FileObject fileObject = FileUtil.toFileObject(file);
-                    PhpSourcePath.FileType fileType = phpSourcePath.getFileType(fileObject);
-                    if (fileType == PhpSourcePath.FileType.INTERNAL
-                            || fileType == PhpSourcePath.FileType.INCLUDE) {
-                        return true;
-                    }
-                }
-            } catch (URISyntaxException ex) {
-                Exceptions.printStackTrace(ex);
+        try {
+            // return true for platform files
+            // TODO temporary implementation
+            File file = new File(new URI(url));
+
+            if (!file.exists()){
+                lastIsReachableReturnValue = false;
+                return false; // a workaround for #131906
             }
+
+            FileObject fileObject = FileUtil.toFileObject(file);
+            PhpSourcePath.FileType fileType = PhpSourcePath.getFileType(fileObject);
+            if (fileType == PhpSourcePath.FileType.INTERNAL
+                    || fileType == PhpSourcePath.FileType.INCLUDE) {
+                return true;
+            }
+        } catch (URISyntaxException ex) {
+            Exceptions.printStackTrace(ex);
         }
         
         String processedFileURL = null;

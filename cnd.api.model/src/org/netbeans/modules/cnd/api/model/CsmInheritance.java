@@ -55,7 +55,7 @@ public interface CsmInheritance extends CsmOffsetable {
     //CsmClass getCsmClass();
 
     /** Gets base classifer (class or typedef) */
-    CsmClassifier getCsmClassifier();
+    CsmClassifier getClassifier();
 
     /** gets visibility */
     CsmVisibility getVisibility();

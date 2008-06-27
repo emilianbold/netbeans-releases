@@ -73,31 +73,66 @@ public class JoinRandomTest extends NbTestCase {
     }
 
     @Override
-    public PrintStream getLog() {
-        return System.out;
-//        return super.getLog();
-    }
-
-    @Override
     protected Level logLevel() {
         return Level.INFO;
 //        return super.logLevel();;
     }
 
     public void testRandom() throws Exception {
-        test(1212495582649L);
+        test(1214497020179L);
+//        test(1212495582649L);
+//        test(0L);
     }
     
     private void test(long seed) throws Exception {
         TestRandomModify randomModify = new TestRandomModify(seed);
         randomModify.setLanguage(TestJoinSectionsTopTokenId.language());
 
-//        randomModify.setDebugOperation(true);
-//        randomModify.setDebugDocumentText(true);
-//        randomModify.setDebugHierarchy(true);
+        randomModify.setDebugOperation(true);
+        randomModify.setDebugDocumentText(true);
+        randomModify.setDebugHierarchy(true);
 
         // Certain explicit cases that caused errors to be found follow:
         
+        Logger.getLogger(org.netbeans.lib.lexer.inc.TokenListUpdater.class.getName()).setLevel(Level.FINE); // Extra logging
+        randomModify.insertText(0, "a<xy>");
+        //             0000000000111111111122222222223333333333
+        //             0123456789012345678901234567890123456789
+        //     text = "uot<((WkdUL)(CO>"
+        randomModify.removeText(4, 1);
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, "uot<((WkdUL)(CO>");
+        //             0000000000111111111122222222223333333333
+        //             0123456789012345678901234567890123456789
+        //     text = "uot<((WkdUL)(CO>"
+        randomModify.removeText(10, 6);
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, "y<>");
+        randomModify.insertText(0, "x<a>");
+        //             0123456789
+        //     text = "x<a>y<>"
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, "<>Z{N}A<{>P<v}}>");
+        //             0000000000111111111122222222223333333333
+        //             0123456789012345678901234567890123456789
+        //     text = "<>Z{{{}zN}A<{>P<v}}>"
+        randomModify.removeText(2, 1);
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, ")({x}G<q{}W>(Z");
+        //             0000000000111111111122222222223333333333
+        //             0123456789012345678901234567890123456789
+        //     text = ")({x}G<q{}W>(Z"
+        randomModify.insertText(0, "ABC");
+        randomModify.clearDocument();
+
         randomModify.insertText(0, "{x}<a>y");
         //             0000000000111111111122222222223333333333
         //             0123456789012345678901234567890123456789
@@ -118,7 +153,6 @@ public class JoinRandomTest extends NbTestCase {
             "t{}>i<a><>OloX}}>Um<{x}a>bx{}}>K<}><>><}<{<a>R>>>{g>z{xhYs{}}ikbFV{ND<w{}}>a" +
             "i><{{x}Esx>}}Q>}{}>Fv>>{x}<<>}r}n<e<a><wmF>Y<>>BUQ}}jbG>lacFn<l}>}"
         );
-//        Logger.getLogger(org.netbeans.lib.lexer.inc.TokenListUpdater.class.getName()).setLevel(Level.FINE); // Extra logging
         randomModify.insertText(612, ">");
         randomModify.clearDocument();
 
@@ -231,6 +265,7 @@ public class JoinRandomTest extends NbTestCase {
         //             000000000011111111112222222222
         //             012345678901234567890123456789
         //     text = "b>c";
+        randomModify.clearDocument();
 
 
         // Begin really randomized testing
@@ -252,7 +287,7 @@ public class JoinRandomTest extends NbTestCase {
         
         randomModify.test(
             new RandomModifyDescriptor[] {
-                new RandomModifyDescriptor(20000, textProvider,
+                new RandomModifyDescriptor(1000, textProvider,
                         0.2, 0.2, 0.1,
                         0.2, 0.2,
                         0.0, 0.0), // snapshots create/destroy

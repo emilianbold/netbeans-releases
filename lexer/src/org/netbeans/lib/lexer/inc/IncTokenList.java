@@ -278,7 +278,7 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
         return (lexerInputOperation == null);
     }
 
-    public void replaceTokens(TokenListChange<T> change, int diffLength) {
+    public void replaceTokens(TokenListChange<T> change, TokenHierarchyEventInfo eventInfo, boolean modInside) {
         int index = change.index();
         // Remove obsolete tokens (original offsets are retained)
         int removeTokenCount = change.removedTokenCount();
@@ -293,15 +293,15 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
                 // It's necessary to update-status of all removed tokens' contained embeddings
                 // since otherwise (if they would not be up-to-date) they could not be updated later
                 // as they lose their parent token list which the update-status relies on.
-                EmbeddingContainer<T> ec = tokenOrEmbedding.embedding();
-                if (ec != null) {
-                    assert (ec.cachedModCount() != rootModCount) : "ModCount already updated"; // NOI18N
-                    ec.updateStatusUnsyncAndMarkRemoved();
-                }
                 AbstractToken<T> token = tokenOrEmbedding.token();
                 if (!token.isFlyweight()) {
                     updateElementOffsetRemove(token);
                     token.setTokenList(null);
+                    EmbeddingContainer<T> ec = tokenOrEmbedding.embedding();
+                    if (ec != null) {
+                        assert (ec.cachedModCount() != rootModCount) : "ModCount already updated"; // NOI18N
+                        ec.markRemoved(token.rawOffset());
+                    }
                 }
             }
             remove(index, removeTokenCount); // Retain original offsets
@@ -319,7 +319,7 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
             // Minimum of the index of the first removed index and original computed index
             moveOffsetGap(change.offset(), change.index());
         }
-        updateOffsetGapLength(-diffLength);
+        updateOffsetGapLength(-eventInfo.diffLength());
 
         // Add created tokens.
         List<TokenOrEmbedding<T>> addedTokensOrEmbeddings = change.addedTokenOrEmbeddings();
