@@ -352,7 +352,7 @@ final class DataViewTableSorter extends AbstractTableModel {
     }
 
     // Helper classes
-    @SuppressWarnings(value = "unchecked")
+    @SuppressWarnings(value = "unchecked") // NOI18N
     private class Row implements Comparable<Object> {
 
         private int modelIndex;

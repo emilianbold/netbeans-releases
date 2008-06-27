@@ -158,23 +158,23 @@ public final class DBMetaDataFactory {
 
         // get the database type based on the product name converted to lowercase
         url = url.toLowerCase();
-        if (url.indexOf("sybase") > -1) {
+        if (url.indexOf("sybase") > -1) { // NOI18N
             dbtype = SYBASE;
-        } else if (url.equals("microsoft sql server") || (url.equals("sql server"))) {
+        } else if (url.equals("microsoft sql server") || (url.equals("sql server"))) { // NOI18N
             dbtype = SQLSERVER;
-        } else if ((url.indexOf("db2") > -1) || (url.equals("as"))) {
+        } else if ((url.indexOf("db2") > -1) || (url.equals("as"))) { // NOI18N
             dbtype = DB2;
-        } else if ((url.equals("exadas")) || (url.equals("attunity connect driver"))) {
+        } else if ((url.equals("exadas")) || (url.equals("attunity connect driver"))) { // NOI18N
             dbtype = VSAM_ADABAS_IAM;
-        } else if (url.indexOf("orac") > -1) {
+        } else if (url.indexOf("orac") > -1) { // NOI18N
             dbtype = ORACLE;
-        } else if (url.indexOf("axion") > -1) {
+        } else if (url.indexOf("axion") > -1) { // NOI18N
             dbtype = AXION;
-        } else if (url.indexOf("derby") > -1) {
+        } else if (url.indexOf("derby") > -1) { // NOI18N
             dbtype = DERBY;
-        } else if (url.indexOf("postgre") > -1) {
+        } else if (url.indexOf("postgre") > -1) { // NOI18N
             dbtype = PostgreSQL;
-        } else if (url.indexOf("mysql") > -1) {
+        } else if (url.indexOf("mysql") > -1) { // NOI18N
             dbtype = MYSQL;
         } else {
             dbtype = JDBC;
@@ -214,7 +214,7 @@ public final class DBMetaDataFactory {
 
     public synchronized Collection<DBTable> generateDBTables(ResultSet rs) throws DBException {
         Map<String, DBTable> tables = new HashMap<String, DBTable>();
-        String noTableName = "UNKNOWN";
+        String noTableName = "UNKNOWN"; // NOI18N
         try {
             // get table column information
             ResultSetMetaData rsMeta = rs.getMetaData();
@@ -235,15 +235,15 @@ public final class DBMetaDataFactory {
                 int sqlTypeCode = rsMeta.getColumnType(i);
                 if (sqlTypeCode == java.sql.Types.OTHER && dbType == ORACLE) {
                     String sqlTypeStr = rsMeta.getColumnTypeName(i);
-                    if (sqlTypeStr.startsWith("TIMESTAMP")) {
+                    if (sqlTypeStr.startsWith("TIMESTAMP")) { // NOI18N
                         sqlTypeCode = java.sql.Types.TIMESTAMP;
-                    } else if (sqlTypeStr.startsWith("FLOAT")) {
+                    } else if (sqlTypeStr.startsWith("FLOAT")) { // NOI18N
                         sqlTypeCode = java.sql.Types.FLOAT;
-                    } else if (sqlTypeStr.startsWith("REAL")) {
+                    } else if (sqlTypeStr.startsWith("REAL")) { // NOI18N
                         sqlTypeCode = java.sql.Types.REAL;
-                    } else if (sqlTypeStr.startsWith("BLOB")) {
+                    } else if (sqlTypeStr.startsWith("BLOB")) { // NOI18N
                         sqlTypeCode = java.sql.Types.BLOB;
-                    } else if (sqlTypeStr.startsWith("CLOB")) {
+                    } else if (sqlTypeStr.startsWith("CLOB")) { // NOI18N
                         sqlTypeCode = java.sql.Types.CLOB;
                     }
                 }

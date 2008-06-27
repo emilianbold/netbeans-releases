@@ -70,7 +70,7 @@ class DataViewActionHandler {
         if (dataViewUI.isCommitEnabled()) {
             String nbBundle5 = mLoc.t("RESC005: You have uncommited Changes in this page. If you continue, you changes will be lost. Do you still want to continue?");
             String msg = nbBundle5.substring(15);
-            String nbBundle6 = mLoc.t("RESC006: Confirm navigation");
+            String nbBundle6 = mLoc.t("RESC006: Confirm Navigation");
             NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, nbBundle6.substring(15), NotifyDescriptor.YES_NO_OPTION);
             if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.NO_OPTION) {
                 doCalculation = false;
@@ -156,7 +156,7 @@ class DataViewActionHandler {
         } else {
             String nbBundle9 = mLoc.t("RESC009: Permanently delete record(s) from the database?");
             String msg = nbBundle9.substring(15);
-            String nbBundle10 = mLoc.t("RESC010: Confirm delete");
+            String nbBundle10 = mLoc.t("RESC010: Confirm Delete");
             NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, nbBundle10.substring(15), NotifyDescriptor.OK_CANCEL_OPTION);
             if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
                 execHelper.executeDeleteRow(rsTable);

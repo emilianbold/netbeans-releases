@@ -60,12 +60,11 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
     protected Connection conn = null;
     protected boolean error = false;
     protected volatile Throwable ex;
-    protected String errorMsg = "";
+    protected String errorMsg = ""; // NOI18N
     protected boolean lastCommitState;
     private String title;
     private String titleMsg;
     private volatile RequestProcessor.Task task;
-    private static Logger mLogger = Logger.getLogger(SQLStatementExecutor.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public SQLStatementExecutor(DataView parent, String title, String msg) {

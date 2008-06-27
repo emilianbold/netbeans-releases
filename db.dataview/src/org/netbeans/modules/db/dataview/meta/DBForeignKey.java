@@ -218,13 +218,13 @@ public final class DBForeignKey extends DBObject<DBTable> {
     }
 
     private boolean references(String pkTableName, String pkSchemaName, String pkCatalogName) {
-        if (pkCatalogName.equals("")) {
+        if (pkCatalogName.equals("")) { // NOI18N
             pkCatalogName = null;
         }
-        if (pkSchemaName.equals("")) {
+        if (pkSchemaName.equals("")) { // NOI18N
             pkSchemaName = null;
         }
-        if (pkTableName.equals("")) {
+        if (pkTableName.equals("")) { // NOI18N
             pkTableName = null;
         }
 

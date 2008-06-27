@@ -160,7 +160,7 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
         DBTable table = this.getParentObject();
         if (table != null) {
             buf.append(table.getFullyQualifiedName());
-            buf.append(".");
+            buf.append("."); // NOI18N
         }
 
         String escapeString = table.getEscapeString();

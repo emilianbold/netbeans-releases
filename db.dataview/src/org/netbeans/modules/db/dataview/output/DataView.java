@@ -90,8 +90,7 @@ public class DataView {
      * @return a new DataView instance
      */
     public static DataView create(DatabaseConnection dbConn, String sqlString, int pageSize) {
-        String nbBundle1 = mLoc.t("RESC001: DatabaseConnection can't be null");
-        assert dbConn!= null : nbBundle1.substring(15);
+        assert dbConn != null;
 
         DataView dv = new DataView();
         dv.dbConn = dbConn;
@@ -232,7 +231,7 @@ public class DataView {
     }
 
     void disableButtons() {
-        assert dataViewUI != null : "Should have called createComponent()";
+        assert dataViewUI != null;
         if (dataViewUI != null) {
             dataViewUI.disableButtons();
         }
@@ -252,15 +251,15 @@ public class DataView {
 
     void setErrorStatusText(Throwable ex) {
         if (ex != null) {
-            if(ex instanceof DBException) {
-                if(ex.getCause() instanceof SQLException) {
+            if (ex instanceof DBException) {
+                if (ex.getCause() instanceof SQLException) {
                     errMessages.add(ex.getCause());
                 }
             }
             errMessages.add(ex);
             String nbBundle3 = mLoc.t("RESC003: ERROR: ");
-            StatusDisplayer.getDefault().setStatusText(nbBundle3.substring(15)+ ex.getMessage());
-            mLogger.infoNoloc(mLoc.t("LOGR012: {0}",ex.getMessage()));
+            StatusDisplayer.getDefault().setStatusText(nbBundle3.substring(15) + ex.getMessage());
+            mLogger.infoNoloc(mLoc.t("LOGR012: {0}", ex.getMessage()));
         }
     }
 
@@ -269,8 +268,7 @@ public class DataView {
     }
 
     void resetToolbar(boolean wasError) {
-        String nbBundle2 = mLoc.t("RESC002: Should have called createComponent()");
-        assert dataViewUI != null : nbBundle2.substring(15);
+        assert dataViewUI != null;
         dataViewUI.resetToolbar(wasError);
     }
 
@@ -279,10 +277,8 @@ public class DataView {
     }
 
     void setRowsInTableModel() {
-        String nbBundle2 = mLoc.t("RESC002: Should have called createComponent()");
-        assert dataViewUI != null : nbBundle2.substring(15);
-        String nbBundle4 = mLoc.t("RESC004: Should have called create()");
-        assert dataPage != null : nbBundle4.substring(15);
+        assert dataViewUI != null;
+        assert dataPage != null;
 
         if (dataPage.getCurrentRows() != null) {
             dataViewUI.setDataRows(dataPage.getCurrentRows());
@@ -291,13 +287,13 @@ public class DataView {
     }
 
     void incrementRowSize(int count) {
-        assert dataViewUI != null : "Should have called createComponent()";
+        assert dataViewUI != null;
         dataPage.setTotalRows(dataPage.getTotalRows() + count);
         dataViewUI.setTotalCount(dataPage.getTotalRows());
     }
 
     void decrementRowSize(int count) {
-        assert dataViewUI != null : "Should have called createComponent()";
+        assert dataViewUI != null;
         dataPage.decrementRowSize(count);
         dataViewUI.setTotalCount(dataPage.getTotalRows());
     }

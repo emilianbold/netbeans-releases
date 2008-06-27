@@ -70,7 +70,7 @@ import org.netbeans.modules.db.dataview.meta.DBException;
     public void createUpdateStatement(int row, int col, Object value, TableModel tblModel) throws DBException {
         List<Object> values = new ArrayList<Object>();
         List<Integer> types = new ArrayList<Integer>();
-        String changeData = (row + 1) + ";" + (col + 1);
+        String changeData = (row + 1) + ";" + (col + 1); // NOI18N
         String[] updateStmt = stmtGenerator.generateUpdateStatement(row, col, value, values, types, tblModel);
 
         updateStatements.put(changeData, updateStmt[0]);

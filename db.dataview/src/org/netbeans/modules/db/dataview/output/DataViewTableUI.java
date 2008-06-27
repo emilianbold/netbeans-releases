@@ -81,7 +81,7 @@ class DataViewTableUI extends JTable {
     private final int multiplier;
     private final DataViewTablePanel tablePanel;
     private static transient final Localizer mLoc = Localizer.get();
-    private static final String data = "WE WILL EITHER FIND A WAY, OR MAKE ONE.";
+    private static final String data = "WE WILL EITHER FIND A WAY, OR MAKE ONE."; // NOI18N
 
     public DataViewTableUI(final DataViewTablePanel tablePanel, final DataViewActionHandler handler, final DataView dataView) {
         this.tablePanel = tablePanel;
@@ -117,7 +117,7 @@ class DataViewTableUI extends JTable {
         // content popup menu on table with results
         tablePopupMenu = new JPopupMenu();
         String nbBundle15 = mLoc.t("RESC015: Print Table Data");
-        JMenuItem printTable = new JMenuItem(nbBundle15.substring(15)); //NOI18N
+        JMenuItem printTable = new JMenuItem(nbBundle15.substring(15)); 
 
         printTable.addActionListener(new ActionListener() {
 
@@ -135,7 +135,7 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.add(printTable);
 
         String nbBundle17 = mLoc.t("RESC017: Refresh Records");
-        JMenuItem miRefreshAction = new JMenuItem(nbBundle17.substring(15)); //NOI18N
+        JMenuItem miRefreshAction = new JMenuItem(nbBundle17.substring(15)); 
         miRefreshAction.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -146,7 +146,7 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.addSeparator();
 
         String nbBundle18 = mLoc.t("RESC018: Insert Record");
-        final JMenuItem miInsertAction = new JMenuItem(nbBundle18.substring(15)); //NOI18N
+        final JMenuItem miInsertAction = new JMenuItem(nbBundle18.substring(15)); 
         miInsertAction.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -156,7 +156,7 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.add(miInsertAction);
 
         String nbBundle19 = mLoc.t("RESC019: Delete Record(s)");
-        final JMenuItem miDeleteAction = new JMenuItem(nbBundle19.substring(15)); //NOI18N
+        final JMenuItem miDeleteAction = new JMenuItem(nbBundle19.substring(15)); 
         miDeleteAction.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -166,7 +166,7 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.add(miDeleteAction);
 
         String nbBundle20 = mLoc.t("RESC020: Commit Record(s)");
-        final JMenuItem miCommitAction = new JMenuItem(nbBundle20.substring(15)); //NOI18N
+        final JMenuItem miCommitAction = new JMenuItem(nbBundle20.substring(15)); 
         miCommitAction.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -177,7 +177,7 @@ class DataViewTableUI extends JTable {
 
 
         String nbBundle21 = mLoc.t("RESC021: Cancel Edits");
-        final JMenuItem miCancelEdits = new JMenuItem(nbBundle21.substring(15)); //NOI18N
+        final JMenuItem miCancelEdits = new JMenuItem(nbBundle21.substring(15)); 
         miCancelEdits.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -187,7 +187,7 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.add(miCancelEdits);
 
         String nbBundle22 = mLoc.t("RESC022: Truncate Table");
-        final JMenuItem miTruncateRecord = new JMenuItem(nbBundle22.substring(15)); //NOI18N
+        final JMenuItem miTruncateRecord = new JMenuItem(nbBundle22.substring(15)); 
         miTruncateRecord.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -198,7 +198,7 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.addSeparator();
 
         String nbBundle23 = mLoc.t("RESC023: Copy Cell Value");
-        final JMenuItem miCopyValue = new JMenuItem(nbBundle23.substring(15)); //NOI18N
+        final JMenuItem miCopyValue = new JMenuItem(nbBundle23.substring(15)); 
         miCopyValue.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -216,7 +216,7 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.add(miCopyValue);
 
         String nbBundle24 = mLoc.t("RESC024: Copy Row Values");
-        final JMenuItem miCopyRowValues = new JMenuItem(nbBundle24.substring(15)); //NOI18N
+        final JMenuItem miCopyRowValues = new JMenuItem(nbBundle24.substring(15)); 
         miCopyRowValues.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -226,7 +226,7 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.add(miCopyRowValues);
 
         String nbBundle25 = mLoc.t("RESC025: Copy Row Values(With Header)");
-        final JMenuItem miCopyRowValuesH = new JMenuItem(nbBundle25.substring(15)); //NOI18N
+        final JMenuItem miCopyRowValuesH = new JMenuItem(nbBundle25.substring(15)); 
         miCopyRowValuesH.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -237,7 +237,7 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.addSeparator();
 
         String nbBundle26 = mLoc.t("RESC026: Show SQL Script for INSERT");
-        final JMenuItem miInsertSQLScript = new JMenuItem(nbBundle26.substring(15)); //NOI18N
+        final JMenuItem miInsertSQLScript = new JMenuItem(nbBundle26.substring(15));
         miInsertSQLScript.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -247,7 +247,7 @@ class DataViewTableUI extends JTable {
                     for (int j = 0; j < rows.length; j++) {
                         Object[] insertRow = dataView.getDataViewPageContext().getCurrentRows().get(rows[j]);
                         String sql = dataView.getSQLStatementGenerator().generateInsertStatement(insertRow)[1];
-                        insertSQL += sql.replaceAll("\n", "").replaceAll("\t", "") + "\n";
+                        insertSQL += sql.replaceAll("\n", "").replaceAll("\t", "") + "\n"; // NOI18N
                     }
                     ShowSQLDialog dialog = new ShowSQLDialog();
                     dialog.setLocationRelativeTo(DataViewTableUI.this);
@@ -261,7 +261,7 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.add(miInsertSQLScript);
 
         String nbBundle27 = mLoc.t("RESC027: Show SQL Script for DELETE");
-        final JMenuItem miDeleteSQLScript = new JMenuItem(nbBundle27.substring(15)); //NOI18N
+        final JMenuItem miDeleteSQLScript = new JMenuItem(nbBundle27.substring(15)); 
         miDeleteSQLScript.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -274,7 +274,7 @@ class DataViewTableUI extends JTable {
 
                     SQLStatementGenerator generator = dataView.getSQLStatementGenerator();
                     final String[] deleteStmt = generator.generateDeleteStatement(types, values, rows[j], getModel());
-                    rawDeleteStmt += deleteStmt[1] + "\n";
+                    rawDeleteStmt += deleteStmt[1] + "\n"; // NOI18N
                 }
                 ShowSQLDialog dialog = new ShowSQLDialog();
                 dialog.setLocationRelativeTo(DataViewTableUI.this);
@@ -285,7 +285,7 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.add(miDeleteSQLScript);
 
         String nbBundle28 = mLoc.t("RESC028: Show SQL Script for UPDATE");
-        final JMenuItem miCommitSQLScript = new JMenuItem(nbBundle28.substring(15)); //NOI18N
+        final JMenuItem miCommitSQLScript = new JMenuItem(nbBundle28.substring(15));
         miCommitSQLScript.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -295,7 +295,7 @@ class DataViewTableUI extends JTable {
                     return;
                 }
                 for (String key : tblContext.getUpdateKeys()) {
-                    rawUpdateStmt += tblContext.getRawUpdateStmt((key)) + "\n";
+                    rawUpdateStmt += tblContext.getRawUpdateStmt((key)) + "\n"; // NOI18N
                 }
                 ShowSQLDialog dialog = new ShowSQLDialog();
                 dialog.setLocationRelativeTo(DataViewTableUI.this);
@@ -367,13 +367,13 @@ class DataViewTableUI extends JTable {
                 @Override
                 public void setValue(Object value) {
                     val = value;
-                    textField.setText((value != null) ? value.toString() : "");
+                    textField.setText((value != null) ? value.toString() : ""); // NOI18N
                 }
 
                 @Override
                 public Object getCellEditorValue() {
                     String txtVal = textField.getText();
-                    if (val == null && textField.getText().equals("")) {
+                    if (val == null && textField.getText().equals("")) { // NOI18N
                         return null;
                     } else {
                         return txtVal;
@@ -494,7 +494,7 @@ class DataViewTableUI extends JTable {
     public TableCellRenderer getCellRenderer(int row, int column) {
         if (tablePanel.getDataViewDBTable().getColumn(column).isGenerated()) {
             return new GeneratedResultSetCellRenderer();
-        } else if (getResultSetRowContext().getValueList((row + 1) + ";" + (column + 1)) != null) {
+        } else if (getResultSetRowContext().getValueList((row + 1) + ";" + (column + 1)) != null) { // NOI18N
             return new UpdatedResultSetCellRenderer();
         }
         return super.getCellRenderer(row, column);
@@ -502,7 +502,7 @@ class DataViewTableUI extends JTable {
 
     private static class NullObjectCellRenderer extends DefaultTableCellRenderer {
 
-        static final String NULL_LABEL = "<NULL>";
+        static final String NULL_LABEL = "<NULL>"; // NOI18N
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {

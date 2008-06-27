@@ -317,12 +317,12 @@ class SQLExecutionHelper {
                 stmt = conn.createStatement();
 
                 DBTable dbTable = dataView.getDataViewDBTable().geTable(0);
-                String truncateSql = "Truncate table " + dbTable.getFullyQualifiedName();
+                String truncateSql = "TRUNCATE TABLE" + dbTable.getFullyQualifiedName(); // NOI18N
                 try {
                     executeSQLStatement(stmt, truncateSql);
                 } catch (SQLException sqe) {
                     mLogger.infoNoloc(mLoc.t("LOGR007: TRUNCATE Not supported...will try DELETE * \n"));
-                    truncateSql = "Delete from " + dbTable.getFullyQualifiedName();
+                    truncateSql = "DELETE FROM " + dbTable.getFullyQualifiedName(); // NOI18N
                     executeSQLStatement(stmt, truncateSql);
                 } finally {
                     DataViewUtils.closeResources(stmt);
@@ -484,7 +484,7 @@ class SQLExecutionHelper {
     }
 
     private void executeSQLStatement(Statement stmt, String sql) throws SQLException {
-        sql = sql.replaceAll("\\n", "").replaceAll("\\t", "");
+        sql = sql.replaceAll("\\n", "").replaceAll("\\t", ""); // NOI18N
         if (dataView.isLimitSupported() && isSelectStatement(sql)) {
             sql += " LIMIT " + dataView.getDataViewPageContext().getPageSize(); // NOI18N
             sql += " OFFSET " + dataView.getDataViewPageContext().getCurrentPos(); // NOI18N
@@ -511,7 +511,7 @@ class SQLExecutionHelper {
     }
 
     private boolean isSelectStatement(String queryString) {
-        return queryString.trim().toUpperCase().startsWith("SELECT");
+        return queryString.trim().toUpperCase().startsWith("SELECT"); // NOI18N
     }
 
     private String millisecondsToSeconds(long ms) {

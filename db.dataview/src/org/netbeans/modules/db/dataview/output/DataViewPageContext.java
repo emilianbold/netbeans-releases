@@ -126,7 +126,7 @@ class DataViewPageContext {
 
     String pageOf() {
         if (pageSize < 1 || totalRows < 1) {
-            return "";
+            return ""; // NOI18N
         }
 
         int curPage = currentPos / pageSize + 1;

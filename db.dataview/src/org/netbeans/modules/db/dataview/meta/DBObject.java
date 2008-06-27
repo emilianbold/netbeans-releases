@@ -57,7 +57,7 @@ public abstract class DBObject<Parent> {
     }
 
     public void setDisplayName(String newName) {
-        displayName = (newName != null) ? newName.trim() : "";
+        displayName = (newName != null) ? newName.trim() : ""; // NOI18N
     }
 
     public void setParentObject(Parent newParent) {

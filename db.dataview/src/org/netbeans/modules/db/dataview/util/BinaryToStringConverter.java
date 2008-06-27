@@ -63,7 +63,7 @@ public class BinaryToStringConverter {
     /**
      * List of characters considered "printable".
      */
-    private static String printable = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`~!@#$%^&*()-_=+[{]}\\|;:'\",<.>/?";
+    private static String printable = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`~!@#$%^&*()-_=+[{]}\\|;:'\",<.>/?"; // NOI18N
 
     /**
      * Convert from an array of Bytes into a string.
@@ -86,7 +86,7 @@ public class BinaryToStringConverter {
             // see if this is one that should be displayed that way
             if (showAscii) {
                 if (printable.indexOf((char) value) > -1) {
-                    s = new Character((char) value) + "          ".substring(10 - (convConst.width - 1));
+                    s = new Character((char) value) + "          ".substring(10 - (convConst.width - 1)); // NOI18N
                 }
             }
 
@@ -120,7 +120,7 @@ public class BinaryToStringConverter {
                 // front pad with zeros and add to output
                 }
                 if (s.length() < convConst.width) {
-                    buf.append("00000000".substring(8 - (convConst.width - s.length())));
+                    buf.append("00000000".substring(8 - (convConst.width - s.length()))); // NOI18N
                 }
             }
             buf.append(showAscii ? s.trim() : s);

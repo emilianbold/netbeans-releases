@@ -76,7 +76,7 @@ public final class DBException extends Exception {
                 buf.append("Error code ").append(e.getErrorCode());
                 buf.append(", SQL state ").append(e.getSQLState());
             }
-            buf.append(super.getMessage()).append(" -- ").append(t.toString());
+            buf.append(super.getMessage()).append(" -- ").append(t.toString()); // NOI18N
         } else {
             buf.append(super.getMessage());
         }
@@ -90,7 +90,7 @@ public final class DBException extends Exception {
             buf.append("Error code ").append(e.getErrorCode());
             buf.append(", SQL state ").append(e.getSQLState());
         }
-        buf.append(" -- ").append(t.getMessage());
+        buf.append(" -- ").append(t.getMessage()); // NOI18N
         return buf.toString();
     }
 }

@@ -71,7 +71,7 @@ public class DBReadWriteHelper {
     private static Logger mLogger = Logger.getLogger(DBReadWriteHelper.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
-    @SuppressWarnings(value = "fallthrough")
+    @SuppressWarnings(value = "fallthrough") // NOI18N
     public static Object readResultSet(ResultSet rs, int colType, int index) throws SQLException {
         switch (colType) {
             case Types.BIT:
@@ -337,40 +337,36 @@ public class DBReadWriteHelper {
 
     }
 
-    public static boolean validate(Object valueObj, DBColumn col) throws DBException {
+    public static Object validate(Object valueObj, DBColumn col) throws DBException {
         int jdbcType = col.getJdbcType();
         try {
             if (valueObj == null) {
-                return true;
+                return null;
             }
 
             switch (jdbcType) {
                 case Types.DOUBLE:
-                    Number numberObj = (valueObj instanceof Number) ? (Number) valueObj : Double.valueOf(valueObj.toString());
-                    break;
+                    return (valueObj instanceof Number) ? (Number) valueObj : Double.valueOf(valueObj.toString());
 
                 case Types.BIGINT:
                 case Types.NUMERIC:
                 case Types.DECIMAL:
-                    numberObj = (valueObj instanceof Number) ? (Number) valueObj : new BigDecimal(valueObj.toString());
-                    break;
+                    return  (valueObj instanceof Number) ? (Number) valueObj : new BigDecimal(valueObj.toString());
 
                 case Types.FLOAT:
                 case Types.REAL:
-                    numberObj = (valueObj instanceof Number) ? (Number) valueObj : Float.valueOf(valueObj.toString());
-                    break;
+                    return  (valueObj instanceof Number) ? (Number) valueObj : Float.valueOf(valueObj.toString());
 
                 case Types.INTEGER:
                 case Types.SMALLINT:
                 case Types.TINYINT:
-                    numberObj = (valueObj instanceof Number) ? (Number) valueObj : Integer.valueOf(valueObj.toString());
-                    break;
+                    return  (valueObj instanceof Number) ? (Number) valueObj : Integer.valueOf(valueObj.toString());
 
                 case Types.TIMESTAMP:
                 case Types.DATE:
                 case Types.TIME:
                     DBReadWriteHelper.convertFromIso8601(valueObj.toString());
-                    break;
+                    return valueObj;
 
                 case Types.CHAR:
                 case Types.VARCHAR:
@@ -380,7 +376,7 @@ public class DBReadWriteHelper {
                         throw new DBException(errMsg);
                     }
             }
-            return true;
+            return valueObj;
         } catch (Exception e) {
             String type = DataViewUtils.getStdSqlType(jdbcType);
             String colName = col.getQualifiedName();
@@ -405,9 +401,9 @@ public class DBReadWriteHelper {
      */
     public static GregorianCalendar getCalendar(String isodate) throws DBException {
         // YYYY-MM-DDThh:mm:ss.sTZD
-        StringTokenizer st = new StringTokenizer(isodate, "-T:.+Z", true);
+        StringTokenizer st = new StringTokenizer(isodate, "-T:.+Z", true); // NOI18N
 
-        GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+        GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC")); // NOI18N
         calendar.clear();
 
         try {
@@ -420,7 +416,7 @@ public class DBReadWriteHelper {
             }
 
             // Month
-            if (check(st, "-") && (st.hasMoreTokens())) {
+            if (check(st, "-") && (st.hasMoreTokens())) { // NOI18N
                 int month = Integer.parseInt(st.nextToken()) - 1;
                 calendar.set(Calendar.MONTH, month);
             } else {
@@ -428,7 +424,7 @@ public class DBReadWriteHelper {
             }
 
             // Day
-            if (check(st, "-") && (st.hasMoreTokens())) {
+            if (check(st, "-") && (st.hasMoreTokens())) { // NOI18N
                 int day = Integer.parseInt(st.nextToken());
                 calendar.set(Calendar.DAY_OF_MONTH, day);
             } else {
@@ -436,7 +432,7 @@ public class DBReadWriteHelper {
             }
 
             // Hour
-            if (check(st, "T") && (st.hasMoreTokens())) {
+            if (check(st, "T") && (st.hasMoreTokens())) { // NOI18N
                 int hour = Integer.parseInt(st.nextToken());
                 calendar.set(Calendar.HOUR_OF_DAY, hour);
             } else {
@@ -449,7 +445,7 @@ public class DBReadWriteHelper {
             }
 
             // Minutes
-            if (check(st, ":") && (st.hasMoreTokens())) {
+            if (check(st, ":") && (st.hasMoreTokens())) { // NOI18N
                 int minutes = Integer.parseInt(st.nextToken());
                 calendar.set(Calendar.MINUTE, minutes);
             } else {
@@ -470,7 +466,7 @@ public class DBReadWriteHelper {
 
             String tok = st.nextToken();
 
-            if (tok.equals(":")) { // seconds
+            if (tok.equals(":")) { // seconds // NOI18N
 
                 if (st.hasMoreTokens()) {
                     int secondes = Integer.parseInt(st.nextToken());
@@ -483,12 +479,12 @@ public class DBReadWriteHelper {
                     // frac sec
                     tok = st.nextToken();
 
-                    if (tok.equals(".")) {
+                    if (tok.equals(".")) { // NOI18N
                         // bug fixed, thx to Martin Bottcher
                         String nt = st.nextToken();
 
                         while (nt.length() < 3) {
-                            nt += "0";
+                            nt += "0"; // NOI18N
                         }
 
                         nt = nt.substring(0, 3); // Cut trailing chars..
@@ -517,11 +513,11 @@ public class DBReadWriteHelper {
             // Timezone
             if (!tok.equals("Z")) { // UTC
 
-                if (!(tok.equals("+") || tok.equals("-"))) {
+                if (!(tok.equals("+") || tok.equals("-"))) { // NOI18N
                     throw new RuntimeException("only Z, + or - allowed");
                 }
 
-                boolean plus = tok.equals("+");
+                boolean plus = tok.equals("+"); // NOI18N
 
                 if (!st.hasMoreTokens()) {
                     throw new RuntimeException("Missing hour field");
@@ -530,7 +526,7 @@ public class DBReadWriteHelper {
                 int tzhour = Integer.parseInt(st.nextToken());
                 int tzmin;
 
-                if (check(st, ":") && (st.hasMoreTokens())) {
+                if (check(st, ":") && (st.hasMoreTokens())) { // NOI18N
                     tzmin = Integer.parseInt(st.nextToken());
                 } else {
                     throw new RuntimeException("Missing minute field");
@@ -562,7 +558,7 @@ public class DBReadWriteHelper {
      * @return String which is Oracle safe
      */
     public static String makeStringOracleSafe(String value) {
-        if (value.indexOf("'") == -1) {
+        if (value.indexOf("'") == -1) { // NOI18N
             return value;
         // nothing to escape
         }

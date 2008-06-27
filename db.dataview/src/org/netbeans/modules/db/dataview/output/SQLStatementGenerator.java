@@ -65,13 +65,13 @@ class SQLStatementGenerator {
     String[] generateInsertStatement(Object[] insertedRow) throws DBException {
         StringBuilder insertSql = new StringBuilder();
         StringBuilder rawInsertSql = new StringBuilder();
-        insertSql.append("INSERT INTO ");
+        insertSql.append("INSERT INTO "); // NOI18N
         rawInsertSql.append(insertSql.toString());
 
-        String colNames = " (";
-        String values = "";
-        String rawvalues = "";
-        String commaStr = ", ";
+        String colNames = " ("; // NOI18N
+        String values = "";     // NOI18N
+        String rawvalues = "";  // NOI18N
+        String commaStr = ", "; // NOI18N
         boolean comma = false;
         for (int i = 0; i < insertedRow.length; i++) {
             DBColumn dbcol = tblMeta.getColumn(i);
@@ -87,15 +87,15 @@ class SQLStatementGenerator {
                 comma = true;
             }
 
-            values += insertedRow[i] == null ? " NULL " : "?";
+            values += insertedRow[i] == null ? " NULL " : "?"; // NOI18N
             rawvalues += getQualifiedValue(dbcol.getJdbcType(), insertedRow[i]);
             colNames += dbcol.getQualifiedName();
         }
 
-        colNames += ") ";
+        colNames += ") "; // NOI18N
         String tableName = tblMeta.getFullyQualifiedName(0);
-        insertSql.append(tableName + colNames + " Values(" + values + ")");
-        rawInsertSql.append(tableName.trim() + "\n\t" + colNames + "\nVALUES\n\t (" + rawvalues + ")");
+        insertSql.append(tableName + colNames + " Values(" + values + ")"); // NOI18N
+        rawInsertSql.append(tableName.trim() + "\n\t" + colNames + "\nVALUES\n\t (" + rawvalues + ")"); // NOI18N
 
         return new String[]{insertSql.toString(), rawInsertSql.toString()};
     }
@@ -112,11 +112,11 @@ class SQLStatementGenerator {
         StringBuilder updateStmt = new StringBuilder();
         StringBuilder rawUpdateStmt = new StringBuilder();
 
-        updateStmt.append("UPDATE ").append(tblMeta.getFullyQualifiedName(0)).append(" SET ");
+        updateStmt.append("UPDATE ").append(tblMeta.getFullyQualifiedName(0)).append(" SET "); // NOI18N
 
-        rawUpdateStmt.append(updateStmt.toString()).append(tblMeta.getQualifiedName(col)).append(" = ").append(getQualifiedValue(type, value).toString()).append(" WHERE ");
+        rawUpdateStmt.append(updateStmt.toString()).append(tblMeta.getQualifiedName(col)).append(" = ").append(getQualifiedValue(type, value).toString()).append(" WHERE "); // NOI18N
 
-        updateStmt.append(tblMeta.getQualifiedName(col)).append(" = ? WHERE ");
+        updateStmt.append(tblMeta.getQualifiedName(col)).append(" = ? WHERE "); // NOI18N
         values.add(value);
         types.add(type);
 
@@ -129,7 +129,7 @@ class SQLStatementGenerator {
         StringBuilder deleteStmt = new StringBuilder();
         StringBuilder rawDeleteStmt = new StringBuilder();
 
-        deleteStmt.append("DELETE FROM ").append(tblMeta.getFullyQualifiedName(0)).append(" WHERE ");
+        deleteStmt.append("DELETE FROM ").append(tblMeta.getFullyQualifiedName(0)).append(" WHERE "); // NOI18N
         rawDeleteStmt.append(deleteStmt.toString());
 
         generateWhereCondition(deleteStmt, rawDeleteStmt, types, values, rowNum, tblModel);
@@ -138,8 +138,8 @@ class SQLStatementGenerator {
 
     static String getCountSQLQuery(String queryString) {
         // User may type "FROM" in either lower, upper or mixed case
-        String[] splitByFrom = queryString.toUpperCase().split("FROM");
-        return "SELECT COUNT(*) " + queryString.substring(splitByFrom[0].length());
+        String[] splitByFrom = queryString.toUpperCase().split("FROM"); // NOI18N
+        return "SELECT COUNT(*) " + queryString.substring(splitByFrom[0].length()); // NOI18N
     }
 
     private boolean addSeparator(boolean and, StringBuilder result, StringBuilder raw, String sep) {
@@ -159,11 +159,11 @@ class SQLStatementGenerator {
         if(value != null) {
             values.add(value);
             types.add(type);
-            result.append(columnName + " = ? ");
-            raw.append(columnName).append(" = ").append(getQualifiedValue(type, value));
+            result.append(columnName + " = ? "); // NOI18N
+            raw.append(columnName).append(" = ").append(getQualifiedValue(type, value)); // NOI18N
         } else { // Handle NULL value in where condition
-            result.append(columnName + " IS NULL ");
-            raw.append(columnName).append(" IS ").append(getQualifiedValue(type, value));
+            result.append(columnName + " IS NULL "); // NOI18N
+            raw.append(columnName).append(" IS ").append(getQualifiedValue(type, value)); // NOI18N
         }
     }
 
@@ -173,7 +173,7 @@ class SQLStatementGenerator {
 
         if (key != null) {
             for (String keyName : key.getColumnNames()) {
-                and = addSeparator(and, result, raw, " AND ");
+                and = addSeparator(and, result, raw, " AND "); // NOI18N
                 for (int i = 0; i < model.getColumnCount(); i++) {
                     String columnName = tblMeta.getColumnName(i);
                     if (columnName.equals(keyName)) {
@@ -188,7 +188,7 @@ class SQLStatementGenerator {
         } else {
             for (int i = 0; i < model.getColumnCount(); i++) {
                 Object val = model.getValueAt(rowNum, i);
-                and = addSeparator(and, result, raw, " AND ");
+                and = addSeparator(and, result, raw, " AND "); // NOI18N
                 generateNameValue(i, result, raw, val, values, types);
             }
         }
@@ -196,12 +196,12 @@ class SQLStatementGenerator {
 
     private Object getQualifiedValue(int type, Object val) {
         if(val == null) {
-            return "NULL";
+            return "NULL"; // NOI18N
         }
         if (DataViewUtils.isNumeric(type)) {
             return val;
         } else {
-            return "'" + val + "'";
+            return "'" + val + "'"; // NOI18N
         }
     }
 }

@@ -57,7 +57,7 @@ import java.util.LinkedHashMap;
  */
 public final class DBTable extends DBObject<DBModel> {
 
-    private static final String FQ_TBL_NAME_SEPARATOR = ".";
+    private static final String FQ_TBL_NAME_SEPARATOR = "."; // NOI18N
     private String catalog;
     private Map<String, DBColumn> columns;
     private Map<String, DBForeignKey> foreignKeys;

@@ -243,10 +243,10 @@ class DataViewTablePanel extends JPanel {
             }
 
             try {
-                DBReadWriteHelper.validate(value, tblMeta.getColumn(col));
-                tblContext.createUpdateStatement(row, col, value, model);
+                Object newVal = DBReadWriteHelper.validate(value, tblMeta.getColumn(col));
+                tblContext.createUpdateStatement(row, col, newVal, model);
                 isDirty = true;
-                super.setValueAt(value, row, col);
+                super.setValueAt(newVal, row, col);
                 dataViewUI.setCommitEnabled(true);
                 dataViewUI.setCancelEnabled(true);
                 fireTableDataChanged();

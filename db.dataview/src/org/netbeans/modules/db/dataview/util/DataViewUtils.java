@@ -67,57 +67,57 @@ public class DataViewUtils {
 
 
     static {
-        SQL_JDBC_MAP.put("array", String.valueOf(Types.ARRAY));
-        SQL_JDBC_MAP.put("bigint", String.valueOf(Types.BIGINT));
-        SQL_JDBC_MAP.put("binary", String.valueOf(Types.BINARY));
-        SQL_JDBC_MAP.put("boolean", String.valueOf(Types.BOOLEAN));
-        SQL_JDBC_MAP.put("bit", String.valueOf(Types.BIT));
-        SQL_JDBC_MAP.put("blob", String.valueOf(Types.BLOB));
-        SQL_JDBC_MAP.put("char", String.valueOf(Types.CHAR));
-        SQL_JDBC_MAP.put("clob", String.valueOf(Types.CLOB));
-        SQL_JDBC_MAP.put("date", String.valueOf(Types.DATE));
-        SQL_JDBC_MAP.put("decimal", String.valueOf(Types.DECIMAL));
-        SQL_JDBC_MAP.put("distinct", String.valueOf(Types.DISTINCT));
-        SQL_JDBC_MAP.put("double", String.valueOf(Types.DOUBLE));
-        SQL_JDBC_MAP.put("float", String.valueOf(Types.FLOAT));
-        SQL_JDBC_MAP.put("integer", String.valueOf(Types.INTEGER));
-        SQL_JDBC_MAP.put("longvarbinary", String.valueOf(Types.LONGVARBINARY));
-        SQL_JDBC_MAP.put("longvarchar", String.valueOf(Types.LONGVARCHAR));
-        SQL_JDBC_MAP.put("numeric", String.valueOf(Types.NUMERIC));
-        SQL_JDBC_MAP.put("real", String.valueOf(Types.REAL));
-        SQL_JDBC_MAP.put("smallint", String.valueOf(Types.SMALLINT));
-        SQL_JDBC_MAP.put("time", String.valueOf(Types.TIME));
-        SQL_JDBC_MAP.put("timestamp", String.valueOf(Types.TIMESTAMP));
-        SQL_JDBC_MAP.put("tinyint", String.valueOf(Types.TINYINT));
-        SQL_JDBC_MAP.put("varbinary", String.valueOf(Types.VARBINARY));
-        SQL_JDBC_MAP.put("varchar", String.valueOf(Types.VARCHAR));
-        SQL_JDBC_MAP.put("null", String.valueOf(Types.NULL));
+        SQL_JDBC_MAP.put("array", String.valueOf(Types.ARRAY)); // NOI18N
+        SQL_JDBC_MAP.put("bigint", String.valueOf(Types.BIGINT)); // NOI18N
+        SQL_JDBC_MAP.put("binary", String.valueOf(Types.BINARY)); // NOI18N
+        SQL_JDBC_MAP.put("boolean", String.valueOf(Types.BOOLEAN)); // NOI18N
+        SQL_JDBC_MAP.put("bit", String.valueOf(Types.BIT)); // NOI18N
+        SQL_JDBC_MAP.put("blob", String.valueOf(Types.BLOB)); // NOI18N
+        SQL_JDBC_MAP.put("char", String.valueOf(Types.CHAR)); // NOI18N
+        SQL_JDBC_MAP.put("clob", String.valueOf(Types.CLOB)); // NOI18N
+        SQL_JDBC_MAP.put("date", String.valueOf(Types.DATE)); // NOI18N
+        SQL_JDBC_MAP.put("decimal", String.valueOf(Types.DECIMAL)); // NOI18N
+        SQL_JDBC_MAP.put("distinct", String.valueOf(Types.DISTINCT)); // NOI18N
+        SQL_JDBC_MAP.put("double", String.valueOf(Types.DOUBLE)); // NOI18N
+        SQL_JDBC_MAP.put("float", String.valueOf(Types.FLOAT)); // NOI18N
+        SQL_JDBC_MAP.put("integer", String.valueOf(Types.INTEGER)); // NOI18N
+        SQL_JDBC_MAP.put("longvarbinary", String.valueOf(Types.LONGVARBINARY)); // NOI18N
+        SQL_JDBC_MAP.put("longvarchar", String.valueOf(Types.LONGVARCHAR)); // NOI18N
+        SQL_JDBC_MAP.put("numeric", String.valueOf(Types.NUMERIC)); // NOI18N
+        SQL_JDBC_MAP.put("real", String.valueOf(Types.REAL)); // NOI18N
+        SQL_JDBC_MAP.put("smallint", String.valueOf(Types.SMALLINT)); // NOI18N
+        SQL_JDBC_MAP.put("time", String.valueOf(Types.TIME)); // NOI18N
+        SQL_JDBC_MAP.put("timestamp", String.valueOf(Types.TIMESTAMP)); // NOI18N
+        SQL_JDBC_MAP.put("tinyint", String.valueOf(Types.TINYINT)); // NOI18N
+        SQL_JDBC_MAP.put("varbinary", String.valueOf(Types.VARBINARY)); // NOI18N
+        SQL_JDBC_MAP.put("varchar", String.valueOf(Types.VARCHAR)); // NOI18N
+        SQL_JDBC_MAP.put("null", String.valueOf(Types.NULL)); // NOI18N
 
-        JDBC_SQL_MAP.put(String.valueOf(Types.ARRAY), "array");
-        JDBC_SQL_MAP.put(String.valueOf(Types.BIGINT), "bigint");
-        JDBC_SQL_MAP.put(String.valueOf(Types.BINARY), "binary");
-        JDBC_SQL_MAP.put(String.valueOf(Types.BIT), "bit");
-        JDBC_SQL_MAP.put(String.valueOf(Types.BLOB), "blob");
-        JDBC_SQL_MAP.put(String.valueOf(Types.BOOLEAN), "boolean");
-        JDBC_SQL_MAP.put(String.valueOf(Types.CHAR), "char");
-        JDBC_SQL_MAP.put(String.valueOf(Types.CLOB), "clob");
-        JDBC_SQL_MAP.put(String.valueOf(Types.DATE), "date");
-        JDBC_SQL_MAP.put(String.valueOf(Types.DECIMAL), "decimal");
-        JDBC_SQL_MAP.put(String.valueOf(Types.DISTINCT), "distinct");
-        JDBC_SQL_MAP.put(String.valueOf(Types.DOUBLE), "double");
-        JDBC_SQL_MAP.put(String.valueOf(Types.FLOAT), "float");
-        JDBC_SQL_MAP.put(String.valueOf(Types.INTEGER), "integer");
-        JDBC_SQL_MAP.put(String.valueOf(Types.LONGVARBINARY), "longvarbinary");
-        JDBC_SQL_MAP.put(String.valueOf(Types.LONGVARCHAR), "longvarchar");
-        JDBC_SQL_MAP.put(String.valueOf(Types.NUMERIC), "numeric");
-        JDBC_SQL_MAP.put(String.valueOf(Types.REAL), "real");
-        JDBC_SQL_MAP.put(String.valueOf(Types.SMALLINT), "smallint");
-        JDBC_SQL_MAP.put(String.valueOf(Types.TIME), "time");
-        JDBC_SQL_MAP.put(String.valueOf(Types.TIMESTAMP), "timestamp");
-        JDBC_SQL_MAP.put(String.valueOf(Types.TINYINT), "tinyint");
-        JDBC_SQL_MAP.put(String.valueOf(Types.VARBINARY), "varbinary");
-        JDBC_SQL_MAP.put(String.valueOf(Types.VARCHAR), "varchar");
-        JDBC_SQL_MAP.put(String.valueOf(Types.NULL), "null");
+        JDBC_SQL_MAP.put(String.valueOf(Types.ARRAY), "array"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.BIGINT), "bigint"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.BINARY), "binary"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.BIT), "bit"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.BLOB), "blob"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.BOOLEAN), "boolean"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.CHAR), "char"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.CLOB), "clob"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.DATE), "date"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.DECIMAL), "decimal"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.DISTINCT), "distinct"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.DOUBLE), "double"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.FLOAT), "float"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.INTEGER), "integer"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.LONGVARBINARY), "longvarbinary"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.LONGVARCHAR), "longvarchar"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.NUMERIC), "numeric"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.REAL), "real"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.SMALLINT), "smallint"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.TIME), "time");  // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.TIMESTAMP), "timestamp");  // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.TINYINT), "tinyint"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.VARBINARY), "varbinary"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.VARCHAR), "varchar"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.NULL), "null"); // NOI18N
     }
     /**
      * Data types in decreasing order of precedence 1 is hightest
@@ -269,7 +269,7 @@ public class DataViewUtils {
     }
 
     public static String getForeignKeyString(DBColumn column) {
-        String refString = column.getName() + " --> ";
+        String refString = column.getName() + " --> "; // NOI18N
         StringBuilder str = new StringBuilder(refString);
         DBTable table = column.getParentObject();
         List list = table.getForeignKeys();
@@ -284,7 +284,7 @@ public class DataViewUtils {
                     String pkColName = (String) it1.next();
                     str.append(pkColName);
                     if (it1.hasNext()) {
-                        str.append(", ");
+                        str.append(", "); // NOI18N
                     }
                 }
             }

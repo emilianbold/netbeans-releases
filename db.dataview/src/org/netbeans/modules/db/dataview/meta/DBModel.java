@@ -51,7 +51,7 @@ import java.util.Set;
  */
 public final class DBModel extends DBObject<Object> {
 
-    private static final String FQ_TBL_NAME_SEPARATOR = ".";
+    private static final String FQ_TBL_NAME_SEPARATOR = "."; // NOI18N
     private Map<String, DBTable> tables;
 
     public DBModel() {

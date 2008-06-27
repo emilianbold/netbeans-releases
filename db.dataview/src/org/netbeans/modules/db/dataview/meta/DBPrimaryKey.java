@@ -117,7 +117,7 @@ public final class DBPrimaryKey extends DBObject<DBTable> {
         StringBuilder buf = new StringBuilder(100);
         for (int i = 0; i < columnNames.size(); i++) {
             if (i != 0) {
-                buf.append(",");
+                buf.append(","); // NOI18N
             }
             buf.append((columnNames.get(i)).trim());
         }
