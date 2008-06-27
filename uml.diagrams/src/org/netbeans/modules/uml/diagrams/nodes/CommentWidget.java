@@ -46,13 +46,14 @@ import java.beans.PropertyChangeListener;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.widgets.MultilineLabelWidget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.PresentationElement;
 import org.netbeans.modules.uml.core.metamodel.structure.Comment;
+import org.netbeans.modules.uml.core.metamodel.structure.IComment;
 import org.netbeans.modules.uml.diagrams.DefaultWidgetContext;
 import org.netbeans.modules.uml.diagrams.border.NoteBorder;
-import org.netbeans.modules.uml.drawingarea.actions.ResizeStrategyProvider;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
@@ -97,6 +98,12 @@ public class CommentWidget extends UMLNodeWidget implements PropertyChangeListen
 //        bodyLabel.setBackground(Color.WHITE);
 
         setCurrentView(bodyLabel);
+        //populate the comment text
+        IElement elt = element.getFirstSubject();
+        if (elt != null && elt instanceof IComment)
+        {
+            bodyLabel.setLabel(((IComment)elt).getBody());
+        }
     }
 
     @Override
