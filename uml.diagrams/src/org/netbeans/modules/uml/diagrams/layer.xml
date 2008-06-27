@@ -600,6 +600,13 @@ made subject to such option by the copyright holder.
                     </file>                      
                 </folder>
             </folder>
+            <folder name="x-usecase-element">
+                <folder name="Popup">
+                    <file name="org.netbeans.modules.uml.diagrams.actions.usecase.ShowExtensionPointsAction.instance">
+                        <attr name="position" intvalue="201"/>
+                    </file>                      
+                </folder>
+            </folder>
             
         </folder>
     </folder>
