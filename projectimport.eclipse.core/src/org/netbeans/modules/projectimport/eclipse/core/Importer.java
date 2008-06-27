@@ -101,7 +101,6 @@ final class Importer {
                 ProjectManager.mutex().writeAccess(new Runnable() {
                     public void run() {
                         try {
-                            int pos = 0;
                             for (Iterator it = eclProjects.iterator(); it.hasNext(); ) {
                                 EclipseProject eclPrj = (EclipseProject) it.next();
                                 Project p = importProject(eclPrj, warnings);
@@ -188,7 +187,7 @@ final class Importer {
         Project p;
         if (alreadyImported != null) {
             p = alreadyImported;
-            projectImportProblems.add("Existing NetBeans project was found and will be used intead.");
+            projectImportProblems.add("Existing NetBeans project was found and will be used instead.");
         } else {
             if (!eclProject.isImportSupported()) {
                 importProblems.add("Unkown project type - it cannot be imported.");

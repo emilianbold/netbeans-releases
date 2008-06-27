@@ -678,6 +678,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
             collectLibs(uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel(), libs, jars);
             collectLibs(uiProperties.JAVAC_TEST_CLASSPATH_MODEL, libs, jars);
             collectLibs(uiProperties.RUN_TEST_CLASSPATH_MODEL, libs, jars);
+            libs.add("CopyLibs"); // NOI18N
             boolean result = SharableLibrariesUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), uiProperties.getProject().getReferenceHelper(), libs, jars);
             if (result) {
                 isSharable = true;
@@ -706,12 +707,12 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         for (int i = 0; i < model.size(); i++) {
             ClassPathSupport.Item item = (ClassPathSupport.Item) model.get(i);
             if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
-                if (!item.isBroken()) {
+                if (!item.isBroken() && !libs.contains(item.getLibrary().getName())) {
                     libs.add(item.getLibrary().getName());
                 }
             }
             if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
-                if (item.getReference() != null && item.getVariableBasedProperty() == null) {
+                if (item.getReference() != null && item.getVariableBasedProperty() == null && !jarReferences.contains(item.getReference())) {
                     //TODO reference is null for not yet persisted items.
                     // there seems to be no way to generate a reference string without actually
                     // creating and writing the property..

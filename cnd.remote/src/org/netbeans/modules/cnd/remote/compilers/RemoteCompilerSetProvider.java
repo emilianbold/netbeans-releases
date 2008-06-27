@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.cnd.remote.compilers;
 
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetProvider;
 import org.netbeans.modules.cnd.remote.support.RemoteScriptSupport;
 import org.netbeans.modules.cnd.remote.support.managers.CompilerSetScriptManager;
@@ -51,20 +50,21 @@ import org.netbeans.modules.cnd.remote.support.managers.CompilerSetScriptManager
 public class RemoteCompilerSetProvider implements CompilerSetProvider {
     
     private RemoteScriptSupport support;
+    private CompilerSetScriptManager manager;
     
     public void init(String name) {
         int pos = name.indexOf('@');
         String user = name.substring(0, pos);
         String host = name.substring(pos + 1);
-        
-        support = new RemoteScriptSupport(host, user, new CompilerSetScriptManager());
+        manager = new CompilerSetScriptManager();
+        support = new RemoteScriptSupport(host, user, manager);
     }
 
     public boolean hasMoreCompilerSets() {
-        return false;
+        return manager.hasMoreCompilerSets();
     }
 
-    public CompilerSet getNextCompilerSet() {
-        return null;
+    public String getNextCompilerSetData() {
+        return manager.getNextCompilerSetData();
     }
 }

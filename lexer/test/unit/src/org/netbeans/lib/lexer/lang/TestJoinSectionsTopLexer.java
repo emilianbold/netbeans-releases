@@ -108,6 +108,7 @@ final class TestJoinSectionsTopLexer implements Lexer<TestJoinSectionsTopTokenId
                 while (true) {
                     switch ((c = input.read())) {
                         case '<':
+                        case '(':
                         case EOF:
                             input.backup(1);
                             return token(TestJoinSectionsTopTokenId.TEXT);

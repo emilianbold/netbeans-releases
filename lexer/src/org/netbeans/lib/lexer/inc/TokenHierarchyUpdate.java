@@ -44,6 +44,7 @@ package org.netbeans.lib.lexer.inc;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -349,7 +350,11 @@ public final class TokenHierarchyUpdate {
                     } else {
                         change = tokenListChange;
                     }
-                    processBoundsChange(change);
+                    Set<Language<?>> removedLanguages = processBoundsChange(change);
+                    if (removedLanguages != null) {
+                        // Just assume a single embedded language
+                        collectAddedEmbeddings(change);
+                    }
 
                 } else { // Non-bounds change
                     // Mark changed area based on start of first mod.token and end of last mod.token
@@ -381,7 +386,7 @@ public final class TokenHierarchyUpdate {
          * @param change non-null change describing the change.
          * @param parentChange parent change or null for root change.
          */
-        void processBoundsChange(TokenListChange<T> change) {
+        Set<Language<?>> processBoundsChange(TokenListChange<T> change) {
             // Add an embedded change to the parent change (if exists)
             if (parentItem != null) {
                 parentItem.tokenListChange.tokenChangeInfo().addEmbeddedChange(change.tokenChangeInfo());
@@ -401,18 +406,28 @@ public final class TokenHierarchyUpdate {
                     int modRelOffset = eventInfo.modOffset() - change.offset();
                     int beyondModLength = change.addedEndOffset() - (eventInfo.modOffset() + eventInfo.diffLengthOrZero());
                     EmbeddedTokenList<?> prevEtl = null;
+                    Set<Language<?>> removedLanguages = null;
                     do {
                         // Check whether chars in start/end skip lengths weren't modified
                         if (processBoundsChangeEmbeddedTokenList(etl, modRelOffset, beyondModLength)) { // Embedding saved -> proceed to next ETL
                             prevEtl = etl;
                             etl = prevEtl.nextEmbeddedTokenList();
                         } else {
+                            Language<?> lang = etl.languagePath().innerLanguage();
+                            if (removedLanguages == null) {
+                                removedLanguages = Collections.<Language<?>>singleton(lang);
+                            } else if (removedLanguages.size() == 1) {
+                                removedLanguages = new HashSet<Language<?>>(removedLanguages);
+                                removedLanguages.add(lang);
+                            }
                             etl = ec.removeEmbeddedTokenList(prevEtl, etl);
                             // Removal of children is done in processBoundsChangeEmbeddedTokenList()
                         }
                     } while (etl != null && etl != EmbeddedTokenList.NO_DEFAULT_EMBEDDING);
+                    return removedLanguages;
                 }
-            } 
+            }
+            return null;
         }
 
         /**
