@@ -48,6 +48,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
@@ -162,7 +163,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
         }
     }
     
-    public <T> void getDeclaredElements (final String ident, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<Pair<String,T>> result) throws InterruptedException {
+    public <T> void getDeclaredElements (final String ident, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Map<T,Set<String>> result) throws InterruptedException {
         updateDirty();
         try {
             ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void>() {

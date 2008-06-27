@@ -40,9 +40,11 @@
 package org.netbeans.modules.java.source.ui;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -155,7 +157,7 @@ public class JavaSymbolProvider implements SymbolProvider {
                     final Project project = FileOwnerQuery.getOwner(root);
                     final ClassIndexImpl impl = manager.getUsagesQuery(root.getURL());                                                
                     if (impl != null) {
-                        final Set<Pair<String,ElementHandle<TypeElement>>> r = new HashSet<Pair<String,ElementHandle<TypeElement>>>();
+                        final Map<ElementHandle<TypeElement>,Set<String>> r = new HashMap<ElementHandle<TypeElement>,Set<String>>();
                         impl.getDeclaredElements(ident, kind, ResultConvertor.elementHandleConvertor(),r);
                         if (!r.isEmpty()) {
                             //final ClasspathInfo cpInfo = ClasspathInfo.create(root);
@@ -163,15 +165,17 @@ public class JavaSymbolProvider implements SymbolProvider {
                             final JavaSource js = JavaSource.create(cpInfo);
                             js.runUserActionTask(new Task<CompilationController>() {
                                 public void run (final CompilationController controller) {
-                                    for (final Pair<String,ElementHandle<TypeElement>> p : r) {                        
-                                        TypeElement te = p.second.resolve(controller);
+                                    for (final Map.Entry<ElementHandle<TypeElement>,Set<String>> p : r.entrySet()) {
+                                        final ElementHandle<TypeElement> owner = p.getKey();
+                                        final TypeElement te = owner.resolve(controller);
+                                        final Set<String> idents = p.getValue();
                                         if (te != null) {
-                                            if (p.first.equals(getSimpleName(te))) {
-                                                result.addResult(new JavaSymbolDescriptor(te.getSimpleName().toString(), te.getKind(), te.getModifiers(), p.second, ElementHandle.create(te), project, root));
+                                            if (idents.contains(getSimpleName(te))) {
+                                                result.addResult(new JavaSymbolDescriptor(te.getSimpleName().toString(), te.getKind(), te.getModifiers(), owner, ElementHandle.create(te), project, root));
                                             }
                                             for (Element ne : te.getEnclosedElements()) {
-                                                if (p.first.equals(getSimpleName(ne))) {
-                                                    result.addResult(new JavaSymbolDescriptor(getDisplayName(ne), ne.getKind(), ne.getModifiers(), p.second, ElementHandle.create(ne), project, root));
+                                                if (idents.contains(getSimpleName(ne))) {
+                                                    result.addResult(new JavaSymbolDescriptor(getDisplayName(ne), ne.getKind(), ne.getModifiers(), owner, ElementHandle.create(ne), project, root));
                                                 }
                                             }
                                         }

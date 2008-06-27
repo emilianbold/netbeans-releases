@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.JavaSource;
@@ -88,7 +89,7 @@ public abstract class ClassIndexImpl {
     
     public abstract <T> void getDeclaredTypes (String name, ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<? super T> result) throws InterruptedException;
     
-    public abstract <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<T> convertor, Set<Pair<String,T>> result) throws InterruptedException;
+    public abstract <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<T> convertor, Map<T,Set<String>> result) throws InterruptedException;
     
     public abstract void getPackageNames (String prefix, boolean directOnly, Set<String> result) throws InterruptedException;
     

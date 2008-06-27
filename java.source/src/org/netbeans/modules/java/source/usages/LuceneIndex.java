@@ -351,7 +351,7 @@ class LuceneIndex extends Index {
         }        
     }
     
-    public <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<T> convertor, Set<Pair<String,T>> result) throws IOException, InterruptedException {
+    public <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<T> convertor, Map<T,Set<String>> result) throws IOException, InterruptedException {
         if (!isValid(false)) {
             LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));   //NOI18N
             return;
@@ -454,7 +454,7 @@ class LuceneIndex extends Index {
         LOGGER.fine(String.format("LuceneIndex.getDeclaredElements[%s] returned %d elements\n",this.toString(), toSearch.size()));  //NOI18N
         final Iterator<Term> it = toSearch.iterator();        
         final ElementKind[] kindHolder = new ElementKind[1];
-        Set<Pair<Integer,String>> docNums = new HashSet<Pair<Integer, String>>();   //todo: TreeSet may perform better, ordered according to doc nums => linear IO
+        Map<Integer,Set<String>> docNums = new HashMap<Integer,Set<String>>();   //todo: TreeMap may perform better, ordered according to doc nums => linear IO
         int[] docs = new int[25];
         int[] freq = new int [25];
         int len;
@@ -466,20 +466,25 @@ class LuceneIndex extends Index {
             tds.seek(term);
             while ((len = tds.read(docs, freq))>0) {
                 for (int i = 0; i < len; i++) {
-                    docNums.add (Pair.of(docs[i],term.text()));
+                    Set<String> row = docNums.get(docs[i]);
+                    if (row == null) {
+                        row = new HashSet<String>();
+                        docNums.put(docs[i], row);
+                    }
+                    row.add(term.text());
                 }
                 if (len < docs.length) {
                     break;
                 }
             }
         }
-        for (Pair<Integer,String> docNum : docNums) {
+        for (Map.Entry<Integer,Set<String>> docNum : docNums.entrySet()) {
             if (cancel.get()) {
                 throw new InterruptedException ();
             }
-            final Document doc = in.document(docNum.first, DocumentUtil.declaredTypesFieldSelector());
-            final String binaryName = DocumentUtil.getBinaryName(doc, kindHolder);
-            result.add (Pair.of(docNum.second,convertor.convert(kindHolder[0],binaryName)));
+            final Document doc = in.document(docNum.getKey(), DocumentUtil.declaredTypesFieldSelector());
+            final String binaryName = DocumentUtil.getBinaryName(doc, kindHolder);            
+            result.put (convertor.convert(kindHolder[0],binaryName),docNum.getValue());
         }        
     }
     
