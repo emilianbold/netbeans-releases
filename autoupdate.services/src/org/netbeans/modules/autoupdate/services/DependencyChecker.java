@@ -168,8 +168,15 @@ class DependencyChecker extends Object {
         Set<ModuleInfo> providers = new HashSet<ModuleInfo> ();
         providers.addAll (mgr.getAvailableProviders (dep.getName ()));
         providers.addAll (mgr.getInstalledProviders (dep.getName ()));
-        providers.retainAll (modules);
-        return providers;
+        Set<ModuleInfo> res = new HashSet<ModuleInfo> (providers);
+        for (ModuleInfo mi : providers) {
+            for (ModuleInfo input : modules) {
+                if (mi.getCodeName ().equals (input.getCodeName ())) {
+                    res.add (mi);
+                }
+            }
+        }
+        return res;
     }
     
     private static ModuleInfo matchDependencyModule (Dependency dep, Collection<ModuleInfo> modules) {
