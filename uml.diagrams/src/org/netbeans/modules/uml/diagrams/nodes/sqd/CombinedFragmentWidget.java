@@ -137,7 +137,7 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
         body.addChild(operandsContainer);
         //
         body.setMinimumSize(new Dimension(60, 20));
-        setMinimumSize(new Dimension(120, 100));
+        setPreferredBounds(new Rectangle(new Dimension(120, 100)));
 
         body.setPreferredLocation(new Point(0, 0));
         childContainer=new ContainerWidget(getScene());
@@ -700,7 +700,11 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
             if(cfBeforeW!=null)
             {
                 Point loc=cfBeforeW.getParentWidget().convertLocalToScene(cfBeforeW.getPreferredLocation());
-                y=Math.max(y, loc.y+cfBeforeW.getMinimumSize().height);
+                int prevheight=0;
+                if(cfBeforeW.isPreferredBoundsSet())prevheight=cfBeforeW.getPreferredBounds().height;//we use bounds for resizing now, same should be in save-load etc
+                else if(cfBeforeW.getPreferredSize()!=null)prevheight=cfBeforeW.getPreferredSize().height;//but in case of any problem try also prefsize
+                else if(cfBeforeW.getMinimumSize()!=null)prevheight=cfBeforeW.getMinimumSize().height;//and min size
+                y=Math.max(y, loc.y+prevheight);
             }
             y+=20;
             if(y<100)y=100;
@@ -727,9 +731,10 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
             //correct upper side
             if(bounds.y<=5)bounds.y=5;//may be good to decrease height also,need to set better upper limit amy be
             //
-            bounds= convertSceneToLocal(bounds);
+            bounds= getParentWidget().convertSceneToLocal(bounds);
             setPreferredLocation(bounds.getLocation());
-            setMinimumSize(bounds.getSize());
+            //setMinimumSize(bounds.getSize());
+            setPreferredBounds(new Rectangle(bounds.getSize()));
             //need to set proper position for operands
             IInteractionOperand prevIO=null;
             for(IInteractionOperand io:operandInCf)
