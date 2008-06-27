@@ -249,8 +249,14 @@ public class UIDiagram extends Diagram {
     
     public String getAlias() 
     {
+        String retVal = alias;
         
-        return alias;
+        if((retVal == null) || (retVal.length() <= 0))
+        {
+            retVal = getName();
+        }
+        
+        return retVal;
     }
     
     public void setAlias(String value) 
