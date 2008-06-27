@@ -1040,7 +1040,7 @@ exists or setup the property manually. For example like this:
                 <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
                 <!-- copy libraries into ear  -->
                 <xsl:for-each select="//webproject3:web-module-libraries/webproject3:library[webproject3:path-in-war]">
-                    <copyfiles todir="${{dist.ear.dir}}" iftldtodir="${{build.web.dir}}/WEB-INF/lib">
+                    <copyfiles todir="${{dist.ear.dir}}" iftldtodir="${{build.web.dir}}/WEB-INF">
                        <xsl:attribute name="files"><xsl:value-of select="webproject3:file"/></xsl:attribute>
                        <xsl:attribute name="manifestproperty">
                            <xsl:value-of select="concat('manifest.', substring-before(substring-after(webproject3:file,'{'),'}'), '')"/>

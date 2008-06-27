@@ -64,9 +64,10 @@ public class CopyFiles extends Task {
     private File todir;
     
     /**
-     * Special case for WAR file deployed within EAR: if file contains any files
-     * META-INF/*.tld or META-INF/tlds/*.tld then jar file should be will be 
-     * copied to this folder instead of todir. See issue #58167 for more details.
+     * Special case for WAR file deployed within EAR: if file contains any files matching
+     * META-INF/*.tld or META-INF/tlds/*.tld then jar file will be
+     * copied to <code>${iftldtodir}/lib</code> instead of todir and classes folder will
+     * be copied to <code>${iftldtodir}/classes</code>. See issue #58167 for more details.
      */
     private File iftldtodir;
     
@@ -100,7 +101,11 @@ public class CopyFiles extends Task {
             File f = getProject().resolveFile(tokenizer.nextToken());
             File toDirectory = todir;
             if (iftldtodir != null && containsTLD(f)) {
-                toDirectory = iftldtodir;
+                if (f.isFile()) {
+                    toDirectory = new File(iftldtodir, "lib"); // NOI18N
+                } else {
+                    toDirectory = new File(iftldtodir, "classes"); // NOI18N
+                }
             } else {
                 if (sb.length() > 0) {
                     sb.append(" "); // NOI18N
@@ -132,10 +137,17 @@ public class CopyFiles extends Task {
     }
     
     private boolean containsTLD(File f) {
-        ZipFileSet zpf = new ZipFileSet();
-        zpf.setSrc(f);
-        zpf.setIncludes("META-INF/*.tld META-INF/tlds/*.tld"); // NOI18N
-        DirectoryScanner ds = zpf.getDirectoryScanner(getProject());
+        FileSet fs;
+        if (f.isFile()) {
+            ZipFileSet zpf = new ZipFileSet();
+            zpf.setSrc(f);
+            fs = zpf;
+        } else {
+            fs = new FileSet();
+            fs.setDir(f);
+        }
+        fs.setIncludes("META-INF/*.tld META-INF/tlds/*.tld"); // NOI18N
+        DirectoryScanner ds = fs.getDirectoryScanner(getProject());
         ds.scan();
         return ds.getIncludedFilesCount() > 0;
     }
