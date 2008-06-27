@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.quicksearch;
 
-import java.util.List;
 import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
@@ -51,17 +50,16 @@ import org.netbeans.spi.quicksearch.SearchResponse;
  *
  * @author Dafe Simonek
  */
-public class CommandEvaluatorTest extends NbTestCase {
+public class SlowProviderTest extends NbTestCase {
     
     private static final int MAX_TIME = 1000;
-    
-    private Exception exc = null;
-    
-    public CommandEvaluatorTest() {
+    private static final int WAIT_TIME = 4000;
+
+    public SlowProviderTest() {
         super("");
     }
     
-    public CommandEvaluatorTest(String testName) {
+    public SlowProviderTest(String testName) {
         super(testName);
     }
     
@@ -70,7 +68,7 @@ public class CommandEvaluatorTest extends NbTestCase {
     }
     
     public static NbTest suite() {
-        NbTestSuite suite = new NbTestSuite(CommandEvaluatorTest.class);
+        NbTestSuite suite = new NbTestSuite(SlowProviderTest.class);
         return suite;
     }
     
@@ -81,31 +79,32 @@ public class CommandEvaluatorTest extends NbTestCase {
         
         long startTime = System.currentTimeMillis();
         
-        CommandEvaluator.evaluate("sample text", ResultsModel.getInstance());
+        org.openide.util.Task t =
+                CommandEvaluator.evaluate("sample text", ResultsModel.getInstance());
         
         long endTime = System.currentTimeMillis();
-        
+
         assertFalse("Evaluator is slower then expected, max allowed time is " +
                 MAX_TIME + " millis, but was " + (endTime - startTime) + " millis.",
                 (endTime - startTime) > 1000);
+
+        System.out.println("Testing CommandEvaluator.Wait4AllTask...");
+
+        // should be still running
+        assertFalse(t.isFinished());
+
+        // wait for all providers
+        t.waitFinished();
+
+        long waitTime = System.currentTimeMillis();
+
+        assertTrue("Waiting for slow providers doesn't work, waited " +
+                (waitTime - startTime) + " millis, but should at least " +
+                WAIT_TIME + " millis.", (waitTime - startTime) > WAIT_TIME);
+
+
     }
 
-    public void testObsoleteSupport () throws Exception {
-        System.out.println("Testing obsolete support...");
-
-        UnitTestUtils.prepareTest(new String [] { "/org/netbeans/modules/quicksearch/resources/testGetProviders.xml" });
-        ResultsModel rm = ResultsModel.getInstance();
-
-        CommandEvaluator.evaluate("test obsolete 1", rm);
-        List<? extends CategoryResult> categories = rm.getContent();
-
-        CommandEvaluator.evaluate("test obsolete 2", rm);
-
-        for (CategoryResult cr : categories) {
-            assertTrue("Category " + cr.getCategory().getDisplayName() +
-                    " should be obsolete", cr.isObsolete());
-        }
-    }
     
     public static class SlowProvider implements SearchProvider {
 
