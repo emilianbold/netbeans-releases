@@ -531,8 +531,6 @@ function update() {
 	error_message = "Note: " + NOTE_UML;
     }
 
-    error_message += NOTE_UML;
-
     document.getElementById("error_message").innerHTML = error_message;
     
     // update the sizes 
