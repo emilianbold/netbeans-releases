@@ -23,7 +23,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <api-answers
   question-version="1.29"
-  author="yourname@netbeans.org"
+  author="PeterTLiu@netbeans.org"
 >
 
   &api-questions;
@@ -47,7 +47,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-overall">
   <p>
-   XXX no answer for arch-overall
+    This is the library wrapper module for JSR 311 - Java API for RESTful Web Services and
+    and its reference implementation called Jersey.  It contains JAR files for JSR 311 API, 
+    Jersey runtime and API, grizzly web server and other components Jersey depends on internally.  
   </p>
  </answer>
 
@@ -68,7 +70,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-quality">
   <p>
-   XXX no answer for arch-quality
+    We are currently bundling the 0.8 version of the JSR-311 API and Jersey which will 
+    become 1.0 in the later part of 2008.
   </p>
  </answer>
 
@@ -87,7 +90,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-time">
   <p>
-   XXX no answer for arch-time
+   1.0 version of JSR 311 and Jersey should be released before the end of 2008.
   </p>
  </answer>
 
@@ -111,7 +114,13 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-usecases">
   <p>
-   XXX no answer for arch-usecases
+   The main usecase for this library module is for NB end-users to develope and run
+      RESTful web services using JSR 311 API.
+      
+      There are also other interesting usecases for NB developers if this module is made public.
+      For example, you can implement a project opener module that starts up an embedded Jersey runtime using 
+      the Grizzly web server.  You can then send a HTTP request to open a project given a file-based URL location.
+      (Note: This idea came from Paul Sandoz, author of Jersey.)
   </p>
  </answer>
 
@@ -129,7 +138,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-what">
   <p>
-   XXX no answer for arch-what
+      Please refer to the arch-usecases section.
   </p>
  </answer>
 
@@ -236,7 +245,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-jre">
   <p>
-   XXX no answer for dep-jre
+   1.5
   </p>
  </answer>
 
