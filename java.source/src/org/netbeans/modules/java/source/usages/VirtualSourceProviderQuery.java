@@ -40,6 +40,7 @@
 package org.netbeans.modules.java.source.usages;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -121,8 +122,9 @@ public final class VirtualSourceProviderQuery {
     
     private static synchronized Map<String,VirtualSourceProvider> getExt2ProvMap () {
         if (ext2prov == null) {
+            Collection<? extends VirtualSourceProvider> allInstances = new LinkedList<VirtualSourceProvider>(result.allInstances());
             ext2prov = new HashMap<String, VirtualSourceProvider>();
-            for (VirtualSourceProvider vsp : result.allInstances()) {
+            for (VirtualSourceProvider vsp : allInstances) {
                 for (String ext : vsp.getSupportedExtensions()) {
                     ext2prov.put(ext, vsp);
                 }

@@ -40,6 +40,7 @@
  */
 package org.netbeans.jellytools.actions;
 
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -68,19 +69,23 @@ public class DebugProjectActionTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new DebugProjectActionTest("testPerformPopup"));
         suite.addTest(new DebugProjectActionTest("testPerformMenu"));
         suite.addTest(new DebugProjectActionTest("testPerformShortcut"));
         return suite;
+         */
+        return createModuleTest(DebugProjectActionTest.class, "testPerformPopup", "testPerformMenu", "testPerformShortcut");
     }
     
     private static MainWindowOperator.StatusTextTracer statusTextTracer;
 
     /** Method called before all test cases. */
     @Override
-    public void setUp() {
+    public void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");  // NOI18N
+        openDataProjects("SampleProject");
         if(statusTextTracer == null) {
             // increase timeout to 60 seconds
             MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 60000);

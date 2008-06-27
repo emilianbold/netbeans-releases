@@ -38,9 +38,8 @@
  */
 package org.netbeans.modules.ws.qaf.saas;
 
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
-import org.netbeans.junit.NbTestSuite;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -62,16 +61,25 @@ public class AmazonTest extends SaasTestBase {
         return "Amazon|S3 Service|[/]|getBuckets";
     }
 
-    public static TestSuite suite() {
-        TestSuite ts = new NbTestSuite();
-        ts.addTest(new AmazonTest("testRestDrop"));
-        ts.addTest(new AmazonTest("testJspDrop"));
-        ts.addTest(new AmazonTest("testServletDrop"));
-        ts.addTest(new AmazonTest("testJavaDrop"));
-        return ts;
+    public static Test suite() {
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(AmazonTest.class),
+                "testRestDrop",
+                "testJspDrop",
+                "testServletDrop",
+                "testJavaDrop"
+                ).enableModules(".*").clusters(".*"));
     }
-
-    public static void main(String... args) {
-        TestRunner.run(suite());
-    }
+    
+//    public static TestSuite suite() {
+//        TestSuite ts = new NbTestSuite();
+//        ts.addTest(new AmazonTest("testRestDrop"));
+//        ts.addTest(new AmazonTest("testJspDrop"));
+//        ts.addTest(new AmazonTest("testServletDrop"));
+//        ts.addTest(new AmazonTest("testJavaDrop"));
+//        return ts;
+//    }
+//
+//    public static void main(String... args) {
+//        TestRunner.run(suite());
+//    }
 }

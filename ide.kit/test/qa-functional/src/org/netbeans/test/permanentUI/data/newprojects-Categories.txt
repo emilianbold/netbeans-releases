@@ -4,21 +4,20 @@ Enterprise
 Mobility
 UML
 SOA
+PHP
 Ruby
 C/C++
-NetBeans Plugin Modules
+NetBeans Modules
 Samples
     Java
     Web
+    Web Services
     Enterprise
-    Mobility
+    Mobility (MIDP)
+    Mobility (Ricoh SDK/J)
     UML
     SOA
-    Ruby ???
-    NetBeans Plugin Modules
-    Java BluePrints Solutions
-        Java Persistence API
-        AJAX Programming Model
-        AJAX Components
-        Web Tier (Java EE 1.4)
-        Web Services (Java EE 1.4)
+    PHP
+    Ruby
+    C/C++
+    NetBeans Modules

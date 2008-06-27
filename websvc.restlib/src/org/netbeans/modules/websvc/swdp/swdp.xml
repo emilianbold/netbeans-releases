@@ -49,7 +49,6 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org/netbeans/modules/websvc/swdp/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/rest/jsr311-api.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/jersey.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/activation.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/api/jsr250-api.jar!/</resource>
@@ -68,6 +67,6 @@ made subject to such option by the copyright holder.
     </volume>  
      <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///docs/jsr311-api-doc.zip!/</resource>
+        <resource>jar:nbinst:///docs/jersey-api-doc.zip!/</resource>
     </volume>
 </library>

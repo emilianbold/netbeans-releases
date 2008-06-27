@@ -86,6 +86,17 @@ import java.util.List;
 
 import org.netbeans.test.xml.schema.general.GeneralXMLTest;
 
+import java.util.zip.ZipFile;
+import java.util.zip.ZipEntry;
+import java.util.Enumeration;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.FileOutputStream;
+import java.io.File;
+import java.io.IOException;
+
+import java.util.Properties;
+
 /**
  *
  * @author michaelnazarov@netbeans.org
@@ -117,6 +128,48 @@ public class components extends GeneralXMLTest {
     public components( String arg0 )
     {
       super( arg0 );
+    }
+
+    public void setUp( )
+    {
+      try
+      {
+        String sBase = System.getProperty( "nbjunit.workdir" ) + File.separator + ".." + File.separator + "data" + File.separator;
+        // Extract zip data
+        ZipFile zf = new ZipFile( sBase + "projects.zip" );
+        Enumeration<? extends ZipEntry> ent = zf.entries( );
+        while( ent.hasMoreElements( ) )
+        {
+          ZipEntry e = ent.nextElement( );
+          String name = e.getName( );
+          if( e.isDirectory( ) )
+          {
+            ( new File( sBase + name ) ).mkdirs( );
+          }
+          else
+          {
+            InputStream is = zf.getInputStream( e );
+            //File f = new File( name );
+            //System.out.println( "-->" + f.getPath( ) );
+            OutputStream os = new FileOutputStream( sBase + name );
+            int r;
+            byte[] b = new byte[ 1024 ];
+            while( -1 != ( r = is.read( b ) ) )
+              os.write( b, 0, r );
+            is.close( );
+            os.flush( );
+            os.close( );
+          }
+        }
+        zf.close( );
+
+        // Open project
+        openDataProjects( "XSDTestProject" );
+      }
+      catch( IOException ex )
+      {
+        System.out.println( "+++ Projects failed +++" );
+      }
     }
 
     public void CheckingProperty(

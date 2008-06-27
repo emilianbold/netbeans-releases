@@ -338,6 +338,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "}\n";
         preferences.put("wrapExtendsImplementsKeyword", CodeStyle.WrapStyle.WRAP_NEVER.name());
         preferences.put("wrapExtendsImplementsList", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
+        preferences.putInt("rightMargin", 50);
         reformat(doc, content, golden);
 
         golden =
