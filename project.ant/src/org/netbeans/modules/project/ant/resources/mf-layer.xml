@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
         <folder name="Tools">
             <file name="VariablesCustomizerAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ant.VariablesCustomizerAction"/>
-                <attr name="position" intvalue="550"/>
+                <attr name="position" intvalue="475"/>
             </file>
         </folder>
     </folder>
