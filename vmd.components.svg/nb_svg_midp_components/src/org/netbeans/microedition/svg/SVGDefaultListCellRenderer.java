@@ -41,7 +41,6 @@
 package org.netbeans.microedition.svg;
 
 import org.w3c.dom.svg.SVGLocatableElement;
-import org.w3c.dom.svg.SVGRect;
 
 
 /**
@@ -74,8 +73,12 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
     private static final String SELECTION   = "selection";          // NOI18N
     
     
-    private static final float ASCENT_SELECTION   = 1;
+    private static final float ASCENT_SELECTION   = 2;
     private static final float DESCENT_SELECTION   = 2;
+    
+    SVGDefaultListCellRenderer( float height){
+        myHeight = height;
+    }
 
     /* (non-Javadoc)
      * @see org.netbeans.microedition.svg.SVGListCellRenderer#getCellRendererComponent(org.netbeans.microedition.svg.SVGList, java.lang.Object, int, boolean)
@@ -88,18 +91,17 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
             SVGComponent.getElementByMeta(xmlElement, 
                     SVGList.TYPE,  SVGList.CONTENT );
         
-            SVGLocatableElement lastText;
-            SVGLocatableElement hiddenText = (SVGLocatableElement)
-            SVGComponent.getElementByMeta(xmlElement,  SVGList.TYPE ,HIDDEN_TEXT );
-            if ( hiddenText == null ){
-                throw new IllegalArgumentException("List argument " +
-                		"doesn't contain hidden text for access to font" +
-                		"characteristics. Unable render any value.");         // NOI18N
-            }
-            myX = hiddenText.getFloatTrait( SVGComponent.TRAIT_X );
-            myY = hiddenText.getFloatTrait( SVGComponent.TRAIT_Y );
-            myHeight = hiddenText.getScreenBBox().getHeight();
-            lastText = hiddenText;
+        SVGLocatableElement lastText;
+        SVGLocatableElement hiddenText = (SVGLocatableElement) SVGComponent
+                .getElementByMeta(xmlElement, SVGList.TYPE, HIDDEN_TEXT);
+        if (hiddenText == null) {
+            throw new IllegalArgumentException("List argument "
+                    + "doesn't contain hidden text for access to font"
+                    + "characteristics. Unable render any value."); // NOI18N
+        }
+        myX = hiddenText.getFloatTrait(SVGComponent.TRAIT_X);
+        myY = hiddenText.getFloatTrait(SVGComponent.TRAIT_Y);
+        lastText = hiddenText;
             
         SVGLocatableElement textElement = (SVGLocatableElement) list.getForm().
             getDocument().createElementNS( SVGComponent.SVG_NS, SVGTextField.TEXT);
@@ -123,15 +125,7 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
             showSelection( list , index );
         }
         
-        /* 
-         * TODO: currently there is no need to use returned component.
-         * One only need to render ( via mechanism of SVG ) content.
-         * This should be done via code above.
-         * But may be later one will need to use rendered component.
-         * But CTOR of SVGComponent should be changed or added 
-         * new one without need of <code>elemId</code>.
-         */
-        return null;
+        return new SVGLabel( list.getForm() ,textElement );
     }
     
     private void showSelection( SVGList list, int index ) {
@@ -141,7 +135,7 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
             (SVGLocatableElement)SVGComponent.getElementByMeta(xmlElement,
                 SVGList.TYPE,  SELECTION );
         selection.setFloatTrait(SVGComponent.TRAIT_Y, myY + (index-1)*myHeight 
-                -ASCENT_SELECTION);
+                +ASCENT_SELECTION);
         selection.setFloatTrait( "height", myHeight +DESCENT_SELECTION);
     }
 

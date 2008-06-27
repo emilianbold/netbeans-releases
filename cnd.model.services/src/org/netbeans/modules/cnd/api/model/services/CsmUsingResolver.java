@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
 import org.openide.util.Lookup;
-import sun.awt.geom.AreaOp.CAGOp;
 
 /**
  * entry point to resolve using directives and using declarations

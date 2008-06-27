@@ -93,9 +93,9 @@ class ProjectNode extends AbstractNode {
 
     ProjectNode (AntArtifact antArtifact, URI artifactLocation, UpdateHelper helper, 
             String classPathId, String entryId, String webModuleElementName, 
-            ClassPathSupport cs, String[] libUpdaterProperties, ReferenceHelper rh) {
+            ClassPathSupport cs, ReferenceHelper rh) {
         super (Children.LEAF, createLookup (antArtifact, artifactLocation, 
-                helper, classPathId, entryId, webModuleElementName, cs, libUpdaterProperties, rh));
+                helper, classPathId, entryId, webModuleElementName, cs, rh));
         this.antArtifact = antArtifact;
         this.artifactLocation = artifactLocation;
     }
@@ -160,7 +160,7 @@ class ProjectNode extends AbstractNode {
     private static Lookup createLookup (AntArtifact antArtifact, URI artifactLocation, 
             UpdateHelper helper, 
             String classPathId, String entryId, String webModuleElementName,
-            ClassPathSupport cs, String[] libUpdaterProperties,
+            ClassPathSupport cs,
             ReferenceHelper rh) {
         Project p = antArtifact.getProject();
         Object[] content;
@@ -172,7 +172,7 @@ class ProjectNode extends AbstractNode {
             content[1] = new JavadocProvider(antArtifact, artifactLocation);
             content[2] = p;
         }
-        content[0] = new ActionFilterNode.Removable(helper, classPathId, entryId, webModuleElementName, cs, libUpdaterProperties, rh);
+        content[0] = new ActionFilterNode.Removable(helper, classPathId, entryId, webModuleElementName, cs, rh);
         Lookup lkp = Lookups.fixed(content);
         return lkp;
     }

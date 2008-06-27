@@ -313,10 +313,10 @@ public class CompletionUtil {
         if(attr == null)
             return null;
         AXIType type = attr.getType();
-        if(type == null || !(type instanceof Datatype))
+        if(type == null || !(type instanceof Datatype) ||
+           ((Datatype)type).getEnumerations() == null)
             return null;                
-        Datatype dataType = (Datatype)type;
-        for(Object value: dataType.getEnumerations()) {
+        for(Object value: ((Datatype)type).getEnumerations()) {
             if(context.getTypedChars() == null || context.getTypedChars().equals("")) {
                 ValueResultItem item = new ValueResultItem(attr, (String)value, context);
                 result.add(item);
@@ -716,7 +716,15 @@ public class CompletionUtil {
         
         public List<DocRootAttribute> getAttributes() {
             return attributes;
-        }        
+        }
+        
+        public boolean declaresNamespace() {
+            for(DocRootAttribute attr: getAttributes()) {
+                if(attr.getName().startsWith(XMLConstants.XMLNS_ATTRIBUTE))
+                    return true;
+            }            
+            return false;
+        }
     }
     
     public static class DocRootAttribute {

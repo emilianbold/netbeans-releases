@@ -40,6 +40,9 @@
  */
 package org.netbeans.microedition.svg;
 
+import org.w3c.dom.svg.SVGLocatableElement;
+
+
 
 /**
  * Suggested SVG snippet :
@@ -58,5 +61,9 @@ public class SVGLabel extends SVGComponent {
 
     public SVGLabel( SVGForm form, String elemId ) {
         super(form, elemId);
+    }
+    
+    public SVGLabel( SVGForm form, SVGLocatableElement element ) {
+        super(form, element);
     }
 }

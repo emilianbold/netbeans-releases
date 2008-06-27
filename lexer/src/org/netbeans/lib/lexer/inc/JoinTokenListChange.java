@@ -200,7 +200,7 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
         jtl.base().tokenListModNotify(tokenListListUpdate.tokenListCountDiff());
     }
     
-    public void replaceTokens(int diffLength) {
+    public void replaceTokens(TokenHierarchyEventInfo eventInfo) {
         // Determine position of matchIndex in token lists
         // if matchIndex == jtl.tokenCount() the token list index will be the last list
         //   and endLocalIndex will be its tokenCount(). Because of this
@@ -225,11 +225,17 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
         if (matchTokenListIndex >= tokenListListUpdate.modTokenListIndex + tokenListListUpdate.removedTokenListCount) {
             // Project into relexChanges
             matchTokenListIndex += tokenListListUpdate.tokenListCountDiff();
-            relexChanges.get(matchTokenListIndex - startRelexTokenListIndex).setMatchIndex(localMatchIndex);
+            // It's possible that the matching ETL is empty and thus the relexChanges
+            // will not contain it.
+            if (matchTokenListIndex - startRelexTokenListIndex < relexChanges.size()) {
+                relexChanges.get(matchTokenListIndex - startRelexTokenListIndex).setMatchIndex(localMatchIndex);
+            }
             int afterAddIndex = tokenListListUpdate.modTokenListIndex + tokenListListUpdate.addedTokenLists.size();
             while (--matchTokenListIndex >= afterAddIndex) {
-                TokenListChange<T> change = relexChanges.get(matchTokenListIndex - startRelexTokenListIndex);
-                change.setMatchIndex(change.tokenList().tokenCountCurrent());
+                if (matchTokenListIndex - startRelexTokenListIndex < relexChanges.size()) {
+                    TokenListChange<T> change = relexChanges.get(matchTokenListIndex - startRelexTokenListIndex);
+                    change.setMatchIndex(change.tokenList().tokenCountCurrent());
+                }
             }
         }
         // Fill in the below-mod-ETLs area
@@ -281,8 +287,7 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
                 etl.joinInfo.setJoinTokenLastPartShift(change.joinTokenLastPartShift);
             }
             // Replace tokens in the individual ETL
-            int realDiffLength = (etl == charModTokenList) ? diffLength : 0;
-            etl.replaceTokens(change, realDiffLength);
+            etl.replaceTokens(change, eventInfo, (etl == charModTokenList));
             // Fix join token count
             joinTokenIndex += etl.joinTokenCount();
         }

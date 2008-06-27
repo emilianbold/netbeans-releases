@@ -80,10 +80,6 @@ public final class RerunAction extends AbstractAction implements ChangeListener 
         putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(RerunAction.class, "Rerun"));
     }
 
-    public InputOutput getParent() {
-        return parent;
-    }
-
     public void setParent(InputOutput parent) {
         synchronized (this) {
             this.parent = parent;

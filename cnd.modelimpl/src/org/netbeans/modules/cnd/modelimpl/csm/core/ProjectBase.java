@@ -237,7 +237,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
     
     /** Finds namespace by its qualified name */
-    public CsmNamespace findNamespace( String qualifiedName, boolean findInLibraries ) {
+    public CsmNamespace findNamespace( CharSequence qualifiedName, boolean findInLibraries ) {
         CsmNamespace result = findNamespace(qualifiedName);
         if( result == null && findInLibraries ) {
             for (Iterator it = getLibraries().iterator(); it.hasNext();) {
