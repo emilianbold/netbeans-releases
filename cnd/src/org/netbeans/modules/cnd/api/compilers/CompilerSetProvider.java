@@ -49,5 +49,5 @@ public interface CompilerSetProvider {
 
     public boolean hasMoreCompilerSets();
     
-    public CompilerSet getNextCompilerSet();
+    public String getNextCompilerSetData();
 }

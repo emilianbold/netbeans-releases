@@ -276,7 +276,7 @@ public class TagHandlerIterator implements TemplateWizard.Iterator {
         if (! hasPrevious ()) throw new NoSuchElementException ();
         index--;
     }
-    public WizardDescriptor.Panel current () {
+    public WizardDescriptor.Panel<WizardDescriptor> current () {
         return panels[index];
     }
     

@@ -55,7 +55,7 @@ TESTS_STARTED=`date`
 JDK_TESTS=$JDK_HOME
 # standard NetBeans unit and UI validation tests
 for i in 1 2 3; do
-    ant -f nbbuild/build.xml -Dnetbeans.dest.dir=$NB_ALL/nbbuild/test-netbeans commit-validation
+    ant -v -f nbbuild/build.xml -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -Dnetbeans.dest.dir=$NB_ALL/nbbuild/test-netbeans commit-validation
     ERROR_CODE=$?
     if [ $ERROR_CODE = 0 ]; then
         break;

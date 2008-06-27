@@ -55,7 +55,7 @@ import org.netbeans.modules.gsf.api.OffsetRange;
  */
 class SequenceElement implements Comparable<SequenceElement> {
     public final Language language;
-    public final OffsetRange range;
+    public OffsetRange range;
     public final Coloring coloring;
     
     private SequenceElement() {

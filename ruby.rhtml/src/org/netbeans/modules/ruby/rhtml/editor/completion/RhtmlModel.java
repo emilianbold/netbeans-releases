@@ -48,6 +48,8 @@ import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.api.EditHistory;
+import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 
 /**
@@ -329,6 +331,37 @@ public class RhtmlModel {
         return null;
     }
     
+    IncrementalEmbeddingModel.UpdateState incrementalUpdate(EditHistory history) {
+        // Clear cache
+        //prevLexOffset = prevAstOffset = 0;
+        prevLexOffset = history.convertOldToNew(prevLexOffset);
+
+        int offset = history.getStart();
+        int limit = history.getOldEnd();
+        int delta = history.getSizeDelta();
+
+        boolean codeOverlaps = false;
+        for (CodeBlockData codeBlock : codeBlocks) {
+            // Block not affected by move
+            if (codeBlock.sourceEnd <= offset) {
+                continue;
+            }
+            if (codeBlock.sourceStart >= limit) {
+                codeBlock.sourceStart += delta;
+                codeBlock.sourceEnd += delta;
+                continue;
+            }
+            if (codeBlock.sourceStart <= offset && codeBlock.sourceEnd >= limit) {
+                codeBlock.sourceEnd += delta;
+                codeOverlaps = true;
+                continue;
+            }
+            return IncrementalEmbeddingModel.UpdateState.FAILED;
+        }
+
+        return codeOverlaps ? IncrementalEmbeddingModel.UpdateState.UPDATED : IncrementalEmbeddingModel.UpdateState.COMPLETED;
+    }
+
     private class CodeBlockData {
         /** Start of section in RHTML file */
         private int sourceStart;
