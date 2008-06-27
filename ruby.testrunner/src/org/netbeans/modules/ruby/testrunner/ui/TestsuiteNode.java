@@ -41,8 +41,10 @@
 
 package org.netbeans.modules.ruby.testrunner.ui;
 
+import java.awt.Image;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
@@ -84,8 +86,7 @@ final class TestsuiteNode extends AbstractNode {
                           final boolean filtered) {
         super(report != null ? new TestsuiteNodeChildren(report, filtered)
                              : Children.LEAF);
-        
-        this.report = report;
+        this.report = report; 
         this.suiteName = (report != null) ? report.suiteClassName : suiteName;
         this.filtered = filtered;
         
@@ -94,6 +95,21 @@ final class TestsuiteNode extends AbstractNode {
         setDisplayName();
         setIconBaseWithExtension(
                 "org/netbeans/modules/ruby/testrunner/ui/res/class.gif");     //NOI18N
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
+    }
+    
+    @Override
+    public Image getIcon(int type) {
+        Image classIcon = ImageUtilities.loadImage("org/netbeans/modules/ruby/testrunner/ui/res/class.gif"); //NOI18N
+        if (containsFailed()) {
+            Image errorBadgeIcon = ImageUtilities.loadImage("org/netbeans/modules/ruby/testrunner/ui/res/error-badge.gif"); //NOI18N
+            return ImageUtilities.mergeImages(classIcon, errorBadgeIcon, 0, 10);
+        }
+        return classIcon;
     }
     
     /**
