@@ -60,7 +60,9 @@ public class MeasureEnterpriseActions1Test {
         // EPMeasureActions1
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(EnterpriseSetup.class)
                 .addTest(EnterpriseSetup.class, "cleanTempDir")
-                .addTest(CreateBPELmodule.class, "measureTime")
+
+                // TODO: Uncomment once issue 138456 is fixed
+                // .addTest(CreateBPELmodule.class, "measureTime")
                 .addTest(CreateCompositeApplication.class, "measureTime")
                 .addTest(AddNewWSDLDocument.class, "measureTime")
                 .addTest(AddNewXMLSchema.class, "measureTime")

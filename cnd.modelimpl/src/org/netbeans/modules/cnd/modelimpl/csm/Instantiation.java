@@ -205,6 +205,9 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
                 return new Class((CsmClass)member, getMapping());
             } else if (member instanceof CsmClassForwardDeclaration) {
                 return new ClassForward((CsmClassForwardDeclaration)member, this);
+            } else if (member instanceof CsmEnum) {
+                // no need to instantiate enums?
+                return member;
             }
             assert false : "Unknown class for member instantiation:" + member + " of class:" + member.getClass(); // NOI18N
             return member;

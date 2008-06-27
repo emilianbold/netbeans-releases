@@ -83,18 +83,24 @@ public final class CommonPhpSourcePath {
                 continue;
             }
             InputStream is = null;
-            OutputStream os = null;
             ByteArrayOutputStream bos = null;
             try {
                 is = fo.getInputStream();
-                os = fo.getOutputStream();
                 bos = new ByteArrayOutputStream();
                 FileUtil.copy(is, bos);
+            } catch (IOException exc) {
+                Exceptions.printStackTrace(exc);
+            } finally {
+                closeStreams(is);
+            }
+            OutputStream os = null;
+            try {
+                os = fo.getOutputStream();
                 os.write(bos.toByteArray());
             } catch (IOException exc) {
                 Exceptions.printStackTrace(exc);
             } finally {
-                closeStreams(is, os, bos);
+                closeStreams(os, bos);
             }
         }
         File file = FileUtil.toFile(sfsFolder);
