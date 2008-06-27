@@ -173,8 +173,10 @@ public final class Deployment {
             // inform the plugin about the deploy action, even if there was
             // really nothing needed to be deployed
             targetserver.notifyIncrementalDeployment(modules);
-            startListeningOnCos(jmp);
-            
+            if (targetserver.supportsDeployOnSave(modules)) {
+                startListeningOnCos(jmp);
+            }
+
             if (modules != null && modules.length > 0) {
                 deploymentTarget.setTargetModules(modules);
             } else {

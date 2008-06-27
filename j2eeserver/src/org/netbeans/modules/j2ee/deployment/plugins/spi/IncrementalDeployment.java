@@ -178,11 +178,22 @@ public abstract class IncrementalDeployment {
     }
 
     /**
+     * Returns <code>true</code> if deploy on save is supported, <code>false</code>
+     * otherwise. If this method returns <code>true</code>
+     * {@link #deployOnSave(javax.enterprise.deploy.spi.TargetModuleID, org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor)}
+     * must provide (reasonably fast) redeploy functionality.
+     *
+     * @return <code>true</code> if deploy on save is supported
+     * @since 1.47
+     */
+    public boolean isDeployOnSaveSupported() {
+        return false;
+    }
+
+    /**
      * Performs reload of the artifacts when the deploy on save is requested.
      * All chenged files are alredy prepared at required location before this
-     * call. Returns object tracking the realod.
-     * <p>
-     * Default implementation calls {@link #incrementalDeploy(javax.enterprise.deploy.spi.TargetModuleID, org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor)}.
+     * call. Returns object tracking the reload.
      *
      * @param module module owning the artifacts
      * @param desc description of changes
@@ -190,6 +201,6 @@ public abstract class IncrementalDeployment {
      * @since 1.47
      */
     public ProgressObject deployOnSave(TargetModuleID module, DeploymentChangeDescriptor desc) {
-        return incrementalDeploy(module, desc);
+        throw new UnsupportedOperationException("Deploy on save not supported");
     }
 }

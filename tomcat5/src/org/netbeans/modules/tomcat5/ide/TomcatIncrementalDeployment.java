@@ -152,6 +152,16 @@ public class TomcatIncrementalDeployment extends IncrementalDeployment {
         }
     }
 
+    @Override
+    public ProgressObject deployOnSave(TargetModuleID module, DeploymentChangeDescriptor desc) {
+        return incrementalDeploy(module, desc);
+    }
+
+    @Override
+    public boolean isDeployOnSaveSupported() {
+        return true;
+    }
+    
     private static class P implements ProgressObject {
         
         ProgressEventSupport supp = new ProgressEventSupport (this);

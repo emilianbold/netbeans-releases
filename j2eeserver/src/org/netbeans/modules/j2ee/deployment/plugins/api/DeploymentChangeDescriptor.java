@@ -66,30 +66,53 @@ public final class DeploymentChangeDescriptor implements AppChangeDescriptor {
         this.desc = desc;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public String[] getChangedEjbs() {
         return desc.getChangedEjbs();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean ejbsChanged() {
         return desc.ejbsChanged();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean serverDescriptorChanged() {
         return desc.serverDescriptorChanged();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean manifestChanged() {
         return desc.manifestChanged();
     }
 
+    /**
+     * {@inheritDoc}<p>
+     * 
+     * Returns all changed files (locations where they are deployed).
+     */
     public File[] getChangedFiles() {
         return desc.getChangedFiles();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean descriptorChanged() {
         return desc.descriptorChanged();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean classesChanged() {
         return desc.classesChanged();
     }

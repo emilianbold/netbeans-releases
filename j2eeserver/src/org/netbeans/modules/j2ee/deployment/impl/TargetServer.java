@@ -627,6 +627,22 @@ public class TargetServer {
         || acd.ejbsChanged() || acd.serverDescriptorChanged());
     }
 
+    public boolean supportsDeployOnSave(TargetModule[] modules) throws IOException {
+        J2eeModule deployable = null;
+        ModuleConfigurationProvider deployment = dtarget.getModuleConfigurationProvider();
+        if (deployment != null) {
+            deployable = deployment.getJ2eeModule(null);
+        }
+
+        boolean hasDirectory = (dtarget.getModule().getContentDirectory() != null);
+        IncrementalDeployment lincremental = isModuleImplComplete(deployable);
+        if (lincremental == null || !hasDirectory || !canFileDeploy(modules, deployable)
+                || !lincremental.isDeployOnSaveSupported()) {
+            return false;
+        }
+        return true;
+    }
+
     public boolean notifyArtifactsUpdated(Iterable<File> artifacts) {
         if (!dtarget.getServer().getServerInstance().isRunning()) {
             return false;
@@ -644,15 +660,8 @@ public class TargetServer {
 
             TargetModule[] modules = getDeploymentDirectoryModules();
 
-            J2eeModule deployable = null;
-            ModuleConfigurationProvider deployment = dtarget.getModuleConfigurationProvider();
-            if (deployment != null) {
-                deployable = deployment.getJ2eeModule(null);
-            }
             try {
-                boolean hasDirectory = (dtarget.getModule().getContentDirectory() != null);
-                IncrementalDeployment lincremental = isModuleImplComplete(deployable);
-                if (lincremental == null || !hasDirectory || !canFileDeploy(modules, deployable)) {
+                if (!supportsDeployOnSave(modules)) {
                     return false;
                 }
             } catch (IOException ex) {
