@@ -80,7 +80,7 @@ public abstract class RemoteConnectionSupport {
         this(host, user, 22);
     }
     
-    protected Channel getChannel() {
+    public Channel getChannel() {
         return channel;
     }
     
@@ -91,4 +91,11 @@ public abstract class RemoteConnectionSupport {
         session.disconnect();
     }
 
+    public String getHost() {
+        return host;
+    }
+    
+    public String getUser() {
+        return user;
+    }
 }
