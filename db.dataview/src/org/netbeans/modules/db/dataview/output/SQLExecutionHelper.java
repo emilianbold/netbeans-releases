@@ -122,8 +122,8 @@ class SQLExecutionHelper {
     }
 
     void executeInsertRow(final String[] insertSQL, final Object[] insertedRow) {
-
-        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, "Executing Insert", "") {
+        String nbBundle74 = mLoc.t("RESC074: Executing Insert");
+        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, nbBundle74.substring(15), "") {
 
             @Override
             public void execute() throws SQLException, DBException {
@@ -152,7 +152,8 @@ class SQLExecutionHelper {
             @Override
             public void finished() {
                 dataView.setEditable(true);
-                commitOrRollback("Insert command");
+                String nbBundle82 = mLoc.t("RESC082: Insert command");
+                commitOrRollback(nbBundle82.substring(15));
             }
 
             @Override
@@ -177,8 +178,8 @@ class SQLExecutionHelper {
     }
 
     void executeDeleteRow(final DataViewTableUI rsTable) {
-
-        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, "Executing Delete", "") {
+        String nbBundle75 = mLoc.t("RESC075: Executing Delete");
+        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, nbBundle75.substring(15), "") {
 
             @Override
             public void execute() throws SQLException, DBException {
@@ -222,7 +223,8 @@ class SQLExecutionHelper {
             @Override
             public void finished() {
                 dataView.setEditable(true);
-                commitOrRollback("Delete command");
+                String nbBundle83 = mLoc.t("RESC083: Delete command");
+                commitOrRollback(nbBundle83.substring(15));
             }
 
             @Override
@@ -238,8 +240,8 @@ class SQLExecutionHelper {
     }
 
     void executeUpdateRow() {
-
-        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, "Executing Update", "") {
+        String nbBundle76 = mLoc.t("RESC076: Executing Update");
+        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, nbBundle76.substring(15), "") {
 
             private PreparedStatement pstmt;
 
@@ -289,7 +291,8 @@ class SQLExecutionHelper {
             @Override
             public void finished() {
                 dataView.setEditable(true);
-                commitOrRollback("Update command");
+                String nbBundle84 = mLoc.t("RESC084: Update command");
+                commitOrRollback(nbBundle84.substring(15));
             }
 
             @Override
@@ -308,7 +311,8 @@ class SQLExecutionHelper {
     void executeTruncate() {
         String nbBundle50 = mLoc.t("RESC050: Truncating Table from database, please wait...");
         String msg = nbBundle50.substring(15);
-        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, "Executing Truncate", msg) {
+        String nbBundle77 = mLoc.t("RESC077: Executing Truncate");
+        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, nbBundle77.substring(15), msg) {
 
             private Statement stmt = null;
 
@@ -331,7 +335,8 @@ class SQLExecutionHelper {
 
             @Override
             public void finished() {
-                commitOrRollback("Truncate command");
+                String nbBundle85 = mLoc.t("RESC085: Truncate command");
+                commitOrRollback(nbBundle85.substring(15));
             }
 
             @Override
@@ -349,7 +354,8 @@ class SQLExecutionHelper {
 
     // Once Data View is created the it assumes the query never changes.
     void executeQuery() {
-        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, "Executing Query", dataView.getSQLString()) {
+        String nbBundle78 = mLoc.t("RESC078: Executing Query");
+        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, nbBundle78.substring(15), dataView.getSQLString()) {
 
             private ResultSet rs = null;
             private ResultSet crs = null;
@@ -489,8 +495,9 @@ class SQLExecutionHelper {
             sql += " LIMIT " + dataView.getDataViewPageContext().getPageSize(); // NOI18N
             sql += " OFFSET " + dataView.getDataViewPageContext().getCurrentPos(); // NOI18N
         }
-        mLogger.infoNoloc("Executing Statement: " + sql);
-        dataView.setInfoStatusText("Executing Statement: " + sql);
+        String nbBundle79 = mLoc.t("RESC079: Executing Statement: ");
+        mLogger.infoNoloc(mLoc.t("LOGR021: Executing Statement: {0} ",sql));
+        dataView.setInfoStatusText(nbBundle79.substring(15) + sql);
 
         long startTime = System.currentTimeMillis();
         boolean isResultSet;
@@ -502,8 +509,10 @@ class SQLExecutionHelper {
         long executionTime = System.currentTimeMillis() - startTime;
 
         String execTimeStr = millisecondsToSeconds(executionTime);
-        mLogger.infoNoloc("Executed Successfully in " + execTimeStr +" seconds");
-        dataView.setInfoStatusText("Executed Successfully in " + execTimeStr +" seconds");
+        mLogger.infoNoloc(mLoc.t("LOGR022: Executed Successfully in {0} seconds",execTimeStr));
+        String nbBundle80 = mLoc.t("RESC080: Executed Successfully in ");
+        String nbBundle81 = mLoc.t("RESC081: seconds");
+        dataView.setInfoStatusText(nbBundle80.substring(15) + execTimeStr +nbBundle81.substring(15));
 
         dataView.setHasResultSet(isResultSet);
         dataView.setUpdateCount(stmt.getUpdateCount());

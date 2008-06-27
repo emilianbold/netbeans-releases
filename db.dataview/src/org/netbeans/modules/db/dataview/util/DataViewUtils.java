@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBForeignKey;
 import org.netbeans.modules.db.dataview.meta.DBTable;
@@ -64,7 +65,7 @@ public class DataViewUtils {
     private static HashMap<Integer, Integer> dataTypePrecedenceMap = new HashMap<Integer, Integer>();
     private static Map<String, String> JDBC_SQL_MAP = new HashMap<String, String>();
     private static Map<String, String> SQL_JDBC_MAP = new HashMap<String, String>();
-
+    private static transient final Localizer mLoc = Localizer.get();
 
     static {
         SQL_JDBC_MAP.put("array", String.valueOf(Types.ARRAY)); // NOI18N
@@ -215,22 +216,30 @@ public class DataViewUtils {
         boolean fk = column.isForeignKey();
         boolean isNullable = column.isNullable();
         boolean generated = column.isGenerated();
-
+        String nbBundle61 = mLoc.t("RESC061: Name");
+        String nbBundle62 = mLoc.t("RESC062: Type");
+        String nbBundle63 = mLoc.t("RESC063: Length ");
+        String nbBundle64 = mLoc.t("RESC064: Nullable");
         StringBuilder strBuf = new StringBuilder("<html> <table border=0 cellspacing=0 cellpadding=0 >");
-        strBuf.append("<tr> <td>&nbsp; Name </td> <td> &nbsp; : &nbsp; <b>");
+        strBuf.append("<tr> <td>&nbsp;").append(nbBundle61.substring(15)).append("</td> <td> &nbsp; : &nbsp; <b>");
         strBuf.append(column.getName()).append("</b> </td> </tr>");
-        strBuf.append("<tr> <td>&nbsp; Type </td> <td> &nbsp; : &nbsp; <b>");
+        strBuf.append("<tr> <td>&nbsp;").append(nbBundle62.substring(15)).append("</td> <td> &nbsp; : &nbsp; <b>");
         strBuf.append(DataViewUtils.getStdSqlType(column.getJdbcType())).append("</b> </td> </tr>");
         switch (column.getJdbcType()) {
             case Types.CHAR:
             case Types.VARCHAR:
-                strBuf.append("<tr> <td>&nbsp; Length  </td> <td> &nbsp; : &nbsp; <b>");
+                strBuf.append("<tr> <td>&nbsp;").append(nbBundle63.substring(15)).append("</td> <td> &nbsp; : &nbsp; <b>");
                 break;
             default:
-                strBuf.append("<tr> <td>&nbsp; Precision  </td> <td> &nbsp; : &nbsp; <b>");
+                strBuf.append("<tr> <td>&nbsp;").append(nbBundle64.substring(15)).append("</td> <td> &nbsp; : &nbsp; <b>");
         }
         strBuf.append(column.getPrecision()).append("</b> </td> </tr>");
-
+        
+        String nbBundle65 = mLoc.t("RESC065: Scale");
+        String nbBundle66 = mLoc.t("RESC066: PK");
+        String nbBundle67 = mLoc.t("RESC067: FK ");
+        String nbBundle68 = mLoc.t("RESC068: Nullable");
+        String nbBundle69 = mLoc.t("RESC069: Generated");
         switch (column.getJdbcType()) {
             case Types.CHAR:
             case Types.DATE:
@@ -246,23 +255,23 @@ public class DataViewUtils {
                 break;
 
             default:
-                strBuf.append("<tr> <td>&nbsp; Scale </td> <td> &nbsp; : &nbsp; <b>");
+                strBuf.append("<tr> <td>&nbsp;").append(nbBundle65.substring(15)).append("</td> <td> &nbsp; : &nbsp; <b>");
                 strBuf.append(column.getScale()).append("</b> </td> </tr>");
         }
 
         if (pk) {
-            strBuf.append("<tr> <td>&nbsp; PK </td> <td> &nbsp; : &nbsp; <b> Yes </b> </td> </tr>");
+            strBuf.append("<tr> <td>&nbsp;").append(nbBundle66.substring(15)).append("</td> <td> &nbsp; : &nbsp; <b> Yes </b> </td> </tr>");
         }
         if (fk) {
-            strBuf.append("<tr> <td>&nbsp; FK  </td> <td> &nbsp; : &nbsp; <b>" + getForeignKeyString(column)).append("</b>").append("</td> </tr>");
+            strBuf.append("<tr> <td>&nbsp;").append(nbBundle67.substring(15)).append("</td> <td> &nbsp; : &nbsp; <b>" + getForeignKeyString(column)).append("</b>").append("</td> </tr>");
         }
 
         if (!isNullable) {
-            strBuf.append("<tr> <td>&nbsp; Nullable </td> <td> &nbsp; : &nbsp; <b> No </b> </td> </tr>");
+            strBuf.append("<tr> <td>&nbsp;").append(nbBundle68.substring(15)).append("</td> <td> &nbsp; : &nbsp; <b> No </b> </td> </tr>");
         }
 
         if (generated) {
-            strBuf.append("<tr> <td>&nbsp; Generated </td> <td> &nbsp; : &nbsp; <b> Yes </b> </td> </tr>");
+            strBuf.append("<tr> <td>&nbsp;").append(nbBundle69.substring(15)).append("</td> <td> &nbsp; : &nbsp; <b> Yes </b> </td> </tr>");
         }
         strBuf.append("</table> </html>");
         return strBuf.toString();
@@ -301,21 +310,24 @@ public class DataViewUtils {
      * @return String containing HTML-formatted table metadata
      */
     public static String getTableToolTip(DBTable table) {
+        String nbBundle70 = mLoc.t("RESC070: Table");
+        String nbBundle71 = mLoc.t("RESC071: Schema");
+        String nbBundle72 = mLoc.t("RESC072: Catalog");
         StringBuilder strBuf = new StringBuilder("<html> <table border=0 cellspacing=0 cellpadding=0 >");
-        strBuf.append("<tr> <td>&nbsp; Table </td> <td> &nbsp; : &nbsp; <b>");
+        strBuf.append("<tr> <td>&nbsp;").append(nbBundle70.substring(15)).append("</td> <td> &nbsp; : &nbsp; <b>");
         strBuf.append(table.getName());
         strBuf.append("</b> </td> </tr>");
 
         String schema = table.getSchema();
         if (!DataViewUtils.isNullString(schema)) {
-            strBuf.append("<tr> <td>&nbsp; Schema  </td> <td> &nbsp; : &nbsp; <b>");
+            strBuf.append("<tr> <td>&nbsp;").append(nbBundle71.substring(15)).append("</td> <td> &nbsp; : &nbsp; <b>");
             strBuf.append(schema.trim());
             strBuf.append("</b> </td> </tr>");
         }
 
         String catalog = table.getCatalog();
         if (!DataViewUtils.isNullString(catalog)) {
-            strBuf.append("<tr> <td>&nbsp; Catalog  </td> <td> &nbsp; : &nbsp; <b>");
+            strBuf.append("<tr> <td>&nbsp;").append(nbBundle72.substring(15)).append("</td> <td> &nbsp; : &nbsp; <b>");
             strBuf.append(catalog.trim());
             strBuf.append("</b> </td> </tr>");
         }

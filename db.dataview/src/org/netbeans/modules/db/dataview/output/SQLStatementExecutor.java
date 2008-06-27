@@ -147,7 +147,8 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
         } else {
             rollback(conn);
             reinstateToolbar();
-            errorMsg = cmdName + " failed: " + errorMsg;
+            String nbBundle73 = mLoc.t("RESC073:  failed: ");
+            errorMsg = cmdName + nbBundle73.substring(15) + errorMsg;
             dataView.setErrorStatusText(new DBException(errorMsg, ex));
         }
     }

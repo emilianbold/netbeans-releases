@@ -62,6 +62,7 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
+import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
@@ -82,7 +83,8 @@ class DataViewTableUI extends JTable {
     private final DataViewTablePanel tablePanel;
     private static transient final Localizer mLoc = Localizer.get();
     private static final String data = "WE WILL EITHER FIND A WAY, OR MAKE ONE."; // NOI18N
-
+    private static Logger mLogger = Logger.getLogger(DataViewTableUI.class.getName());
+    
     public DataViewTableUI(final DataViewTablePanel tablePanel, final DataViewActionHandler handler, final DataView dataView) {
         this.tablePanel = tablePanel;
         addKeyListener(new KeyListener() {
@@ -128,6 +130,7 @@ class DataViewTableUI extends JTable {
                         System.err.println(nbBundle16.substring(15));
                     }
                 } catch (java.awt.print.PrinterException ex) {
+                    mLogger.infoNoloc(mLoc.t("LOGR023: Cannot print %s%n",ex.getMessage()));
                     System.err.format("Cannot print %s%n", ex.getMessage());
                 }
             }
