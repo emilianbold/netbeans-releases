@@ -73,21 +73,19 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.groovy.editor.elements.AstElement;
 import org.netbeans.modules.groovy.editor.elements.IndexedElement;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.editor.parser.SourceUtils;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.napi.gsfret.source.Phase;
-import org.netbeans.napi.gsfret.source.Source;
 
 /**
  *
  * @author Martin Adamek
  */
 public class AstUtilities {
-    
+
 
     public static int getAstOffset(CompilationInfo info, int lexOffset) {
         ParserResult result = info.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
@@ -97,7 +95,7 @@ public class AstUtilities {
                 return ts.getAstOffset(lexOffset);
             }
         }
-              
+
         return lexOffset;
     }
 
@@ -194,7 +192,7 @@ public class AstUtilities {
             }
             return new OffsetRange(start, end);
     }
-    
+
     public static OffsetRange getRange(ASTNode node, BaseDocument doc) {
         if (node instanceof FieldNode) {
             int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
@@ -208,9 +206,9 @@ public class AstUtilities {
             // after the "class" keyword, plus an indefinite nuber of spaces
             // FIXME: have to check what happens with other whitespaces between
             // the keyword and the identifier (like newline)
-            
+
             // Warning! The implicit class has line/column numbers below 1
-            
+
             int lineNumber = node.getLineNumber();
             int columnNumber = node.getColumnNumber();
 
@@ -221,40 +219,40 @@ public class AstUtilities {
             if (columnNumber < 1) {
                 columnNumber = 1;
             }
-            
+
             // happens in some cases when groovy source uses some non-imported java class
             if (doc != null) {
-                
+
                 // if we are dealing with an empty groovy-file, we have take into consideration,
-                // that even though we're running on an ClassNode, there is no "class " String 
+                // that even though we're running on an ClassNode, there is no "class " String
                 // in the sourcefile. So take doc.getLength() as maximum.
-                
+
                 int start = getOffset(doc, lineNumber, columnNumber) + "class".length(); // NOI18N
                 int docLength = doc.getLength();
-                
+
                 if (start > docLength) {
                     start = docLength;
-                } 
-                
+                }
+
                 try {
                     start = Utilities.getFirstNonWhiteFwd(doc, start);
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                
+
                 // This seems to happen every now and then ...
                 if (start < 0){
                     start = 0;
                 }
 
                 ClassNode classNode = (ClassNode) node;
-                
+
                 int end = start + classNode.getNameWithoutPackage().length();
-                
+
                 if (end > docLength) {
                     end = docLength;
                 }
-                
+
                 return new OffsetRange(start, end);
             }
         } else if (node instanceof ConstructorNode) {
@@ -276,7 +274,7 @@ public class AstUtilities {
             if (start < 0) {
                 start = 0;
             }
-            // In case of variable in GString: "Hello, ${name}", node coordinates 
+            // In case of variable in GString: "Hello, ${name}", node coordinates
             // are suggesting '{' (it means begin and end colum info is wrong).
             // Pick up what we really want from this.
             try {
@@ -301,15 +299,15 @@ public class AstUtilities {
         }
         return OffsetRange.NONE;
     }
-    
+
     @SuppressWarnings("unchecked")
     public static List<ASTNode> children(ASTNode root) {
-        
+
         // Logger PRIV_LOG = Logger.getLogger(AstUtilities.class.getName());
         // PRIV_LOG.log(Level.FINEST, "children(ASTNode):Name" + root.getClass().getName() +":"+ root.getText());
-        
+
         List<ASTNode> children = new ArrayList<ASTNode>();
-        
+
         if (root instanceof ModuleNode) {
             ModuleNode moduleNode = (ModuleNode) root;
             children.addAll(moduleNode.getClasses());
@@ -331,18 +329,18 @@ public class AstUtilities {
                     children.add(field);
                 }
             }
-            
+
             for (Object object : classNode.getDeclaredConstructors()) {
                 ConstructorNode constructor = (ConstructorNode) object;
-                
+
                 if (constructor.getLineNumber() >= 0) {
                     children.add(constructor);
                 }
                 // PRIV_LOG.log(Level.FINEST, "Constructor found: " + constructor.toString());
             }
-            
-            
-            
+
+
+
         } else if (root instanceof MethodNode) {
             MethodNode methodNode = (MethodNode) root;
             children.add(methodNode.getCode());
@@ -361,11 +359,11 @@ public class AstUtilities {
             root.visit(astChildrenSupport);
             children = astChildrenSupport.children();
         }
-        
+
         // PRIV_LOG.log(Level.FINEST, "List:" + children.toString());
         return children;
     }
-    
+
     /**
      * Find offset in text for given line and column
      */
@@ -375,25 +373,25 @@ public class AstUtilities {
 
         int offset = Utilities.getRowStartFromLineOffset(doc, lineNumber - 1);
         offset += (columnNumber - 1);
-        
-        // some sanity checks 
+
+        // some sanity checks
         if (offset < 0){
             offset = 0;
         }
-        
+
         return offset;
     }
-    
+
     public static ASTNode findVariableScope(Variable variable, AstPath path, ModuleNode moduleNode) {
-        
+
 //        final Logger LOG = Logger.getLogger(AstUtilities.class.getName());
 //        LOG.setLevel(Level.FINEST);
-//        
+//
 //        LOG.log(Level.FINEST, "findVariableScope(...)"); //NOI18N
-        
+
         String name = variable.getName();
         VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(moduleNode, name);
-        
+
         for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
             ASTNode current = it.next();
             if (current instanceof MethodNode) {
@@ -410,14 +408,14 @@ public class AstUtilities {
             } else if (current instanceof FieldNode) {
                 // if we are dealing with a FieldNode the scope is the surrounding
                 // class. So go and find it:
-                
+
                 while (it.hasNext()) {
                     current = it.next();
                     if (current instanceof ClassNode) {
                         return current;
                     }
                 }
-                
+
 //                scopeVisitor.visitField((FieldNode)current);
 //                if (scopeVisitor.isDeclaring()) {
 //                    return current;
@@ -438,15 +436,15 @@ public class AstUtilities {
                     // ok, the variable i'm searching for (name) gets declared here.
                     // It's either a file and i have to stop on the surrounding class or
                     // it's a local-var and we need to stop on the method
-                    
+
                     while (it.hasNext()){
                         current = it.next();
                         if(current instanceof MethodNode){
                             return current;
                         }
                     }
-                    
-                    
+
+
                 }
             } else {
                 // visit is not implemented for everybody and then it throws exception
@@ -462,31 +460,25 @@ public class AstUtilities {
     public static ASTNode getForeignNode(final IndexedElement o, ASTNode[] foreignRootRet) {
 
         final ASTNode[] nodes = new ASTNode[1];
-        Source source = Source.forFileObject(o.getFileObject());
         try {
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
-                public void run(CompilationController controller) throws Exception {
-                    System.out.println("### Ast.getForeignNode()");
-                    controller.toPhase(Phase.PARSED);
-                    GroovyParserResult result = (GroovyParserResult) controller.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
-                    if (result != null) {
-                        String signature = o.getSignature();
-                        for (AstElement element : result.getStructure().getElements()) {
-                            if (signature.equals(element.getSignature())) {
-                                nodes[0] = element.getNode();
-                            }
+            SourceUtils.runUserActionTask(o.getFileObject(), new CancellableTask<GroovyParserResult>() {
+                public void run(GroovyParserResult result) throws Exception {
+                    String signature = o.getSignature();
+                    for (AstElement element : result.getStructure().getElements()) {
+                        if (signature.equals(element.getSignature())) {
+                            nodes[0] = element.getNode();
                         }
                     }
                 }
                 public void cancel() {}
-            }, true);
-        } catch (IOException ex) {
+            });
+        } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
-        
+
         return nodes[0];
     }
-    
+
     public static String getDefSignature(MethodNode node) {
         StringBuilder sb = new StringBuilder();
         sb.append(node.getName());
@@ -513,16 +505,16 @@ public class AstUtilities {
         private final String name;
         private final Set<Variable> localVariables = new HashSet<Variable>();
         private boolean declaring = false;
-        
+
         public VariableScopeVisitor(ModuleNode moduleNode, String variableName) {
             sourceUnit = moduleNode.getContext();
             name = variableName;
         }
-        
+
         public boolean isDeclaring() {
             return declaring;
         }
-        
+
         @Override
         protected SourceUnit getSourceUnit() {
             return sourceUnit;
@@ -545,7 +537,7 @@ public class AstUtilities {
                 declaring = true;
             }
         }
-        
+
         @Override
         public void visitField(FieldNode fieldNode) {
             if (!localVariables.contains(fieldNode)) {
@@ -557,5 +549,5 @@ public class AstUtilities {
         }
 
     }
-    
+
 }
