@@ -42,6 +42,8 @@ package org.netbeans.modules.cnd.remote.server;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 
 /**
  * The definition of a remote server and login. 
@@ -55,12 +57,14 @@ public class RemoteServerRecord implements ServerRecord, PropertyChangeListener 
     private String name;
     private boolean editable;
     private boolean active;
+    private int platform;
     
     protected RemoteServerRecord(String user, String server, boolean active) {
         this.user = user;
         this.server = server;
         name = user + '@' + server;
         editable = true;
+        platform = -1;
         if (active) {
             RemoteServerList list = RemoteServerList.getInstance();
             if (list != null) {
@@ -104,6 +108,25 @@ public class RemoteServerRecord implements ServerRecord, PropertyChangeListener 
 
     public String getUserName() {
         return user;
+    }
+    
+    public int getPlatform() {
+        platform = -1; // DEBUG
+        if (platform < 0 ) {
+            int x = 0;
+            String cmd = x == 0 ? "uname -s -m" : "PATH=/bin:/usr/bin:$PATH uname -s -m";
+            RemoteCommandSupport support = new RemoteCommandSupport(name, cmd);
+            String val = support.toString().toLowerCase();
+            if (val.startsWith("linux")) {
+                platform = Platform.PLATFORM_LINUX;
+            } else if (val.startsWith("sunos")) {
+                String os = val.substring(val.indexOf(' '));
+                platform = os.startsWith("sun") ? Platform.PLATFORM_SOLARIS_SPARC : Platform.PLATFORM_SOLARIS_INTEL;
+            } else if (val.startsWith("cygwin") || val.startsWith("mingw32")) {
+                platform = Platform.PLATFORM_WINDOWS;
+            }
+        }
+        return platform;
     }
 
     public void propertyChange(PropertyChangeEvent evt) {

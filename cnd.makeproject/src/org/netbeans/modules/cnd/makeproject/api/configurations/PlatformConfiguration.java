@@ -39,42 +39,65 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.platforms;
+package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
-import org.openide.util.NbBundle;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.PlatformNodeProp;
+import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
-public class PlatformGeneric extends Platform {
-    public static final String NAME = "Generic"; // NOI18N
+public class PlatformConfiguration extends IntConfiguration implements PropertyChangeListener {
+    
+    private int old;
+    private PlatformNodeProp pnp;
 
-    public static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
-        // empty
-    };
-
-    public PlatformGeneric() {
-        super(NAME, NbBundle.getBundle(PlatformGeneric.class).getString("GenericName"), Platform.PLATFORM_GENERIC);
-    }
-
-    public LibraryItem.StdLibItem[] getStandardLibraries() {
-        return standardLibrariesLinux;
+    public PlatformConfiguration(int def, String[] names) {
+        super(null, def, names, null);
+        old = -1;
+        pnp = null;
     }
     
-    public String getLibraryName(String baseName) {
-        // Use Linux style
-        return "lib" + baseName + ".so"; // NOI18N
+    public void setPlatformNodeProp(PlatformNodeProp pnp) {
+        this.pnp = pnp;
     }
-    
-    public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
-        if (libName.endsWith(".so")) { // NOI18N
-            int i = libName.indexOf(".so"); // NOI18N
-            if (i > 0)
-                libName = libName.substring(0, i);
-            if (libName.startsWith("lib")) // NOI18N
-                libName = libName.substring(3);
-            return compilerSet.getLibrarySearchOption() + libDir + " " + compilerSet.getLibraryOption() + libName; // NOI18N
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        setValue(Platform.PLATFORM_NONE);
+        final PlatformConfiguration pconf = this;
+        final String key = evt.getNewValue().toString();
+        
+        if (key.equals("localhost")) { // NOI18N
+            if (old != -1) {
+                setValue(old);
+            }
         } else {
-            return libPath;
+            old = getValue();
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    ServerList server = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+                    if (server != null) {
+                        ServerRecord record = server.get(key);
+                        if (record != null) {
+                            pconf.setValue(record.getPlatform());
+                            if (pnp != null) {
+                                pnp.repaint();
+                            }
+                        }
+                    }
+                }
+            });
         }
+    }
+
+    @Override
+    public Object clone() {
+	PlatformConfiguration clone = new PlatformConfiguration(getDefault(), getNames());
+	clone.setValue(getValue());
+	clone.setModified(getModified());
+	return clone;
     }
 }
