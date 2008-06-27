@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 
 
@@ -166,9 +167,10 @@ public abstract class IndexedElement extends PHPElement {
     }
 
     public ParserFile getFile() {
-        boolean platform = false; // XXX FIND OUT WHAT IT IS!
-
-        return new DefaultParserFile(getFileObject(), null, platform);
+        FileObject fobj = getFileObject();
+        PhpSourcePath.FileType fileType = PhpSourcePath.getFileType(fileObject);
+        boolean platform = fileType == PhpSourcePath.FileType.INTERNAL;
+        return new DefaultParserFile(fobj, null, platform);
     }
 
     @Override
