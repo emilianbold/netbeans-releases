@@ -129,13 +129,12 @@ class DataViewTablePanel extends JPanel {
         return tblMeta;
     }
 
-    boolean isCommitEnabled(){
+    boolean isCommitEnabled() {
         return dataViewUI.isCommitEnabled();
     }
 
     public void createTableModel(List<Object[]> rows) {
-        String nbBundle13 = mLoc.t("RESC012: Must supply non-null TableModel");
-        assert rows != null : nbBundle13.substring(15);
+        assert rows != null;
 
         setDirty(false);
         model = createModelFrom(rows);
@@ -161,7 +160,7 @@ class DataViewTablePanel extends JPanel {
             }
             table.getTableHeader().setColumnModel(cModel);
         } catch (Exception e) {
-            mLogger.infoNoloc(mLoc.t("LOGR011: Failed to set the size of the table headers"),e);
+            mLogger.infoNoloc(mLoc.t("LOGR011: Failed to set the size of the table headers"), e);
         }
     }
 
@@ -179,17 +178,17 @@ class DataViewTablePanel extends JPanel {
                 colWidthList.add(colWidth);
             }
         } catch (Exception e) {
-            mLogger.infoNoloc(mLoc.t("LOGR011: Failed to set the size of the table headers"),e);
+            mLogger.infoNoloc(mLoc.t("LOGR011: Failed to set the size of the table headers"), e);
         }
         return colWidthList;
     }
 
     private TableModel createModelFrom(List<Object[]> rows) {
-        DataViewTableModel dtm = new DataViewTableModel();
+        DataViewTableModel dtm = new DataViewTableModel(rows);
         DataViewTableSorter sorter = new DataViewTableSorter(dtm);
         sorter.setTableHeader(tableUI.getTableHeader());
         // Obtain display name
-        for (int i = 0,   I = tblMeta.getColumnCount(); i < I; i++) {
+        for (int i = 0, I = tblMeta.getColumnCount(); i < I; i++) {
             DBColumn col = tblMeta.getColumn(i);
             dtm.addColumn(col.getDisplayName());
         }
@@ -216,6 +215,22 @@ class DataViewTablePanel extends JPanel {
     }
 
     class DataViewTableModel extends DefaultTableModel {
+
+        Class[] collumnClasses;
+
+        DataViewTableModel(List<Object[]> rows) {
+            super();
+            // TODO there should be a better way to do this
+            collumnClasses = new Class[tblMeta.getColumnCount()];
+            if (rows.size() > 0) {
+                Object[] row = rows.get(0);
+                for (int i = 0, I = row.length; i < I; i++) {
+                    if(row[i] != null) {
+                        collumnClasses[i] = row[i].getClass();
+                    }
+                }
+            }
+        }
 
         @Override
         public boolean isCellEditable(int row, int column) {
@@ -255,10 +270,19 @@ class DataViewTablePanel extends JPanel {
                 DialogDisplayer.getDefault().notify(nd);
             } catch (Exception ex) {
                 //ignore
-                mLogger.warnNoloc(mLoc.t("LOGR012: {0}",new DBException(ex).getMessage()));
+                mLogger.warnNoloc(mLoc.t("LOGR012: {0}", new DBException(ex).getMessage()));
             }
             tableUI.revalidate();
             tableUI.repaint();
+        }
+
+        @Override
+        public Class getColumnClass(int columnIndex) {
+            if (collumnClasses[columnIndex] == null) {
+                return super.getColumnClass(columnIndex);
+            } else {
+                return collumnClasses[columnIndex];
+            }
         }
     }
 }

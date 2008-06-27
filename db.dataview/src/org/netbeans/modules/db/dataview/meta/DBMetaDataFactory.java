@@ -103,13 +103,10 @@ public final class DBMetaDataFactory {
     private Logger mLogger = Logger.getLogger(DBMetaDataFactory.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
-    public DBMetaDataFactory(Connection conn) throws DBException {
-        if (conn == null) {
-            throw new NullPointerException("Connection can't be null.");
-        }
-        dbconn = conn;
+    public DBMetaDataFactory(Connection dbconn) throws DBException {
+        assert dbconn != null;
 
-        // get the metadata
+        this.dbconn = dbconn;
         try {
             dbmeta = dbconn.getMetaData();
             dbType = getDBType();
@@ -334,16 +331,6 @@ public final class DBMetaDataFactory {
            mLogger.errorNoloc(mLoc.t("LOGR012: {0}"),e);
             throw e;
         }
-    }
-
-    private int getDBTypeCode(String name) {
-        for (int i = 0; i < DBTYPES.length; i++) {
-            String dbName = DBTYPES[i];
-            if (dbName.equals(name)) {
-                return i;
-            }
-        }
-        return -1;
     }
 
     private String setToNullIfEmpty(String source) {
