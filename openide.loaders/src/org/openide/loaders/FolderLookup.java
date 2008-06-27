@@ -280,6 +280,7 @@ public class FolderLookup extends FolderInstance {
     
     /** <code>ProxyLookup</code> delegate so we can change the lookups on fly. */
     static final class ProxyLkp extends ProxyLookup implements Serializable {
+        static final RequestProcessor DISPATCH = new RequestProcessor("Lookup Dispatch Thread"); // NOI18N
         
         private static final long serialVersionUID = 1L;
 
@@ -294,7 +295,7 @@ public class FolderLookup extends FolderInstance {
         /** Constructs lookup which holds all items+lookups from underlying world.
          * @param folder <code>FolderLookup</code> to associate to */
         public ProxyLkp(FolderLookup folder) {
-            this(folder, new AbstractLookup.Content());
+            this(folder, new AbstractLookup.Content(DISPATCH));
         }
 
         /** Constructs lookup. */
@@ -305,6 +306,7 @@ public class FolderLookup extends FolderInstance {
             this.content = content;
         }
         
+        @Override
         public String toString() {
             return "FolderLookup.lookup[\"" + fl.rootName + "\"]";
         }
@@ -335,7 +337,7 @@ public class FolderLookup extends FolderInstance {
             
             content = (AbstractLookup.Content)ois.readObject ();
             
-            setLookups (arr);
+            setLookups (DISPATCH, arr);
 
             readFromStream = true;
             org.openide.util.RequestProcessor.getDefault ().post (fl, 0, Thread.MIN_PRIORITY);
@@ -359,11 +361,12 @@ public class FolderLookup extends FolderInstance {
             lookups.set(0, pairs);
 
             Lookup[] arr = (Lookup[])lookups.toArray (new Lookup[lookups.size ()]);
-            setLookups (arr);
+            setLookups (DISPATCH, arr);
             if (fl.err().isLoggable(Level.FINE)) fl.err ().fine("Changed lookups: " + lookups); // NOI18N
         }
         
         /** Waits before the processing of changes is finished. */
+        @Override
         protected void beforeLookup (Template template) {
             if (readFromStream) {
                 // ok
