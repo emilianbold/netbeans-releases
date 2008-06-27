@@ -682,7 +682,7 @@ public class TargetServer {
 
     private void reloadArtifacts(ProgressUI ui, TargetModule[] modules, DeploymentChangeDescriptor desc) {
         for (TargetModule module : modules) {
-            ProgressObject obj = incremental.reloadArtifacts(module.delegate(), desc);
+            ProgressObject obj = incremental.deployOnSave(module.delegate(), desc);
             try {
                 // this also save last deploy timestamp
                 trackDeployProgressObject(ui, obj, true);
@@ -690,6 +690,7 @@ public class TargetServer {
                 Exceptions.printStackTrace(ex);
             }
         }
+        notifyIncrementalDeployment(modules);
     }
 
     private TargetModule[] getDeploymentDirectoryModules() {

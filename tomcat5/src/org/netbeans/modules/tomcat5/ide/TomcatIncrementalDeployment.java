@@ -152,11 +152,6 @@ public class TomcatIncrementalDeployment extends IncrementalDeployment {
         }
     }
 
-    @Override
-    public ProgressObject reloadArtifacts(TargetModuleID module, DeploymentChangeDescriptor desc) {
-        return incrementalDeploy(module, desc);
-    }
-
     private static class P implements ProgressObject {
         
         ProgressEventSupport supp = new ProgressEventSupport (this);

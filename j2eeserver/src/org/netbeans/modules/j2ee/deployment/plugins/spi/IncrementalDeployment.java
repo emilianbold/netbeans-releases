@@ -176,17 +176,20 @@ public abstract class IncrementalDeployment {
     public void notifyDeployment(TargetModuleID module) {
         //do nothing, override if needed
     }
-    
+
     /**
-     * Performs reload of the artifacts. Return object tracking the realod
-     * or <code>null</code> if the reload is instant or noop.
-     * 
+     * Performs reload of the artifacts when the deploy on save is requested.
+     * All chenged files are alredy prepared at required location before this
+     * call. Returns object tracking the realod.
+     * <p>
+     * Default implementation calls {@link #incrementalDeploy(javax.enterprise.deploy.spi.TargetModuleID, org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor)}.
+     *
      * @param module module owning the artifacts
      * @param desc description of changes
-     * @return object tracking the realod or <code>null</code> if the reload is instant or noop
+     * @return object tracking the reload
      * @since 1.47
      */
-    public ProgressObject reloadArtifacts(TargetModuleID module, DeploymentChangeDescriptor desc) {
-        return null;
+    public ProgressObject deployOnSave(TargetModuleID module, DeploymentChangeDescriptor desc) {
+        return incrementalDeploy(module, desc);
     }
 }
