@@ -42,7 +42,6 @@ package org.netbeans.modules.db.dataview.output;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -78,8 +77,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
     }
 
     public void run() {
-        String nbBundle53 = mLoc.t("RESC053: Should have called setTask()");
-        assert task != null : nbBundle53.substring(15);
+        assert task != null;
         try {
             ProgressHandle handle = ProgressHandleFactory.createHandle(title, this);
             handle.setDisplayName(titleMsg);

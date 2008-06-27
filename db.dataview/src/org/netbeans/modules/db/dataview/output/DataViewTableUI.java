@@ -378,6 +378,8 @@ class DataViewTableUI extends JTable {
                     String txtVal = textField.getText();
                     if (val == null && textField.getText().equals("")) { // NOI18N
                         return null;
+                    } else if(val != null && val.toString().equals(txtVal)){
+                        return val;
                     } else {
                         return txtVal;
                     }
@@ -495,6 +497,8 @@ class DataViewTableUI extends JTable {
 
     @Override
     public TableCellRenderer getCellRenderer(int row, int column) {
+        DataViewTableSorter model =  (DataViewTableSorter)getModel();
+        row = model.modelIndex(row);
         if (tablePanel.getDataViewDBTable().getColumn(column).isGenerated()) {
             return new GeneratedResultSetCellRenderer();
         } else if (getResultSetRowContext().getValueList((row + 1) + ";" + (column + 1)) != null) { // NOI18N
