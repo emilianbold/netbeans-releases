@@ -53,6 +53,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
@@ -69,6 +70,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
+import org.netbeans.api.java.project.runner.ProjectRunner;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
@@ -568,6 +570,9 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 data[i].setText(v);
             }
             quickRun.setSelected(isQuickRunEnabled(configs, activeConfig));
+            if (!ProjectRunner.isSupported(ProjectRunner.QUICK_RUN, project.getProjectDirectory())) {
+                quickRun.setEnabled(false);
+            }
         } // else ??
         configDel.setEnabled(activeConfig != null);
     }
