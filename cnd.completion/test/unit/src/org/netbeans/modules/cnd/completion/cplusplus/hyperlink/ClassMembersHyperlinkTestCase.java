@@ -49,7 +49,21 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
     public ClassMembersHyperlinkTestCase(String testName) {
         super(testName);
     }
-    
+
+    public void testNestedTemplateClassTemplateParameters() throws Exception {
+        performTest("templateParameters.h", 21, 50, "templateParameters.h", 21, 15); // test for ThreadingModel
+        performTest("templateParameters.h", 26, 45, "templateParameters.h", 21, 15); // test for ThreadingModel
+        performTest("templateParameters.h", 28, 30, "templateParameters.h", 21, 15); // test for ThreadingModel
+
+        performTest("templateParameters.h", 22, 22, "templateParameters.h", 22, 15); // test for MX
+        performTest("templateParameters.h", 26, 71, "templateParameters.h", 22, 15); // test for MX
+        performTest("templateParameters.h", 28, 55, "templateParameters.h", 22, 15); // test for MX
+
+        performTest("templateParameters.h", 25, 25, "templateParameters.h", 25, 19); // test for P
+        performTest("templateParameters.h", 26, 66, "templateParameters.h", 25, 19); // test for P
+        performTest("templateParameters.h", 28, 50, "templateParameters.h", 25, 19); // test for P
+    }
+
     public void testTemplateParameters() throws Exception {
         performTest("templateParameters.h", 1, 23, "templateParameters.h", 1, 10); // test for L
         performTest("templateParameters.h", 2, 25, "templateParameters.h", 1, 10); // test for L
