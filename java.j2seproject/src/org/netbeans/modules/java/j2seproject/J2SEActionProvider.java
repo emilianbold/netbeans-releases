@@ -158,6 +158,13 @@ class J2SEActionProvider implements ActionProvider {
         COMMAND_DEBUG_STEP_INTO,
     };
 
+    private static final String[] actionsDisabledForQuickRun = {
+        COMMAND_BUILD,
+        COMMAND_CLEAN,
+        COMMAND_COMPILE_SINGLE,
+        JavaProjectConstants.COMMAND_DEBUG_FIX,
+    };
+
     // Project
     final J2SEProject project;
 
@@ -714,6 +721,10 @@ class J2SEActionProvider implements ActionProvider {
     public boolean isActionEnabled( String command, Lookup context ) {
         FileObject buildXml = findBuildXml();
         if (  buildXml == null || !buildXml.isValid()) {
+            return false;
+        }
+        if (   Arrays.asList(actionsDisabledForQuickRun).contains(command)
+            && Boolean.valueOf(project.evaluator().getProperty(J2SEProjectProperties.QUICK_TEST_SINGLE))) {
             return false;
         }
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
