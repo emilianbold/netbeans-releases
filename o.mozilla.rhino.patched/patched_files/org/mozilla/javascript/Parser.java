@@ -3038,6 +3038,51 @@ return null;
     public void setTokenStream(TokenStream ts) {
         this.ts = ts;
     }
+    
+    public FunctionNode parseFunction(String sourceString,
+                                String sourceURI, int lineno)
+    {
+        this.sourceURI = sourceURI;
+        this.ts = new TokenStream(this, null, sourceString, lineno);
+        setJsonMode(false);
+        
+        this.decompiler = createDecompiler(compilerEnv);
+        this.nf = new IRFactory(this);
+        currentScriptOrFn = nf.createScript();
+        this.encodedSource = null;
+        this.currentFlaggedToken = Token.EOF;
+        
+        // TODO - what about syntaxErrorCount?
+        this.syntaxErrorCount = 0;
+
+        try {
+            int tt = peekToken();
+
+            if (tt <= Token.EOF) {
+                return null;
+            }
+
+            if (tt == Token.FUNCTION) {
+                int startOffset = peekedTokenStart;
+                consumeToken();
+                try {
+                    Node n = function(calledByCompileFunction
+                                 ? FunctionNode.FUNCTION_EXPRESSION
+                                 : FunctionNode.FUNCTION_STATEMENT);
+                    setSourceOffsets(n, startOffset);
+                    return (FunctionNode)n;
+                } catch (ParserException e) {
+                    return null;
+                }
+            }
+        } catch (IOException ex) {
+            // Should never happen in the IDE
+            throw new IllegalStateException();
+        }
+
+        
+        return null;
+    }
 
     public ScriptOrFnNode parseJson(String sourceString,
                                 String sourceURI, int lineno)
@@ -3048,7 +3093,7 @@ return null;
             setJsonMode(true);
             return parseJson();
         } catch (IOException ex) {
-            // Should never happen
+            // Should never happen in the IDE
             throw new IllegalStateException();
         }
     }

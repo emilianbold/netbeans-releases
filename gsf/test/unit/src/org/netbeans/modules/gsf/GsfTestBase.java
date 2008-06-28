@@ -56,26 +56,17 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.CharBuffer;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JTextArea;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
-import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.editor.Utilities;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.LanguageManager;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
@@ -83,7 +74,6 @@ import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.HintFix;
 import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.gsf.api.ColoringAttributes;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
@@ -100,9 +90,7 @@ import org.netbeans.modules.gsf.api.Indexer;
 import org.netbeans.modules.gsf.api.InstantRenamer;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.OccurrencesFinder;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.modules.gsf.api.StructureScanner;
@@ -127,6 +115,23 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentEvent.ElementChange;
+import javax.swing.event.DocumentEvent.EventType;
+import javax.swing.text.Document;
+import javax.swing.text.Element;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.EditHistory;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ParserResult;
 
 /**
  * @author Tor Norbye
@@ -270,9 +275,9 @@ public abstract class GsfTestBase extends NbTestCase {
 
     public BaseDocument getDocument(String s, String mimeType, Language language) {
         try {
-            BaseDocument doc = new BaseDocument(null, false);
+            BaseDocument doc = new BaseDocument(true, mimeType);
 
-            doc.putProperty("mimeType", mimeType);
+            //doc.putProperty("mimeType", mimeType);
             doc.putProperty(org.netbeans.api.lexer.Language.class, language);
 
             doc.insertString(0, s, null);
@@ -1617,7 +1622,7 @@ public abstract class GsfTestBase extends NbTestCase {
                         String s1Name = s1.getName();
                         String s2Name = s2.getName();
                         if (s1Name == null || s2Name == null) {
-                            if (s1Name == s2Name) {
+                            if (s1Name == (Object)s2Name) { // Object Cast: avoid String==String semantic warning
                                 return 0;
                             } else if (s1Name == null) {
                                 return -1;
@@ -2250,7 +2255,7 @@ public abstract class GsfTestBase extends NbTestCase {
         return null;
     }
     
-    protected void initializeNodes(CompilationInfo info, List<Object> validNodes,
+    protected void initializeNodes(CompilationInfo info, ParserResult result, List<Object> validNodes,
             Map<Object,OffsetRange> positions, List<Object> invalidNodes) throws Exception {
         // Override in your test
     }
@@ -2283,7 +2288,8 @@ public abstract class GsfTestBase extends NbTestCase {
         List<Object> validNodes = new ArrayList<Object>();
         List<Object> invalidNodes = new ArrayList<Object>();
         Map<Object,OffsetRange> positions = new HashMap<Object,OffsetRange>();
-        initializeNodes(info, validNodes, positions, invalidNodes);
+        initializeNodes(info, info.getEmbeddedResult(getPreferredMimeType(), caretOffset),
+                validNodes, positions, invalidNodes);
 
         BaseDocument doc = (BaseDocument) info.getDocument();
         String annotatedSource = annotateOffsets(validNodes, positions, invalidNodes, info);
@@ -2399,7 +2405,188 @@ public abstract class GsfTestBase extends NbTestCase {
 
         return sb.toString();
     }
+
+
     
+    ////////////////////////////////////////////////////////////////////////////
+    // Incremental Parsing and Offsets
+    ////////////////////////////////////////////////////////////////////////////
+    protected void verifyIncremental(ParserResult result, EditHistory history, ParserResult oldResult) {
+        // Your module should check that the parser results are really okay and incremental here
+    }
+
+    public class TestDocumentEvent implements DocumentEvent {
+        private int offset;
+        private int length;
+
+        public TestDocumentEvent(int offset, int length) {
+            this.offset = offset;
+            this.length = length;
+        }
+
+        public int getOffset() {
+            return offset;
+        }
+        public int getLength() {
+            return length;
+        }
+        public Document getDocument() {
+            return null;
+        }
+        public EventType getType() {
+            return null;
+        }
+        public ElementChange getChange(Element elem) {
+            return null;
+        }
+    }
+
+
+    public static final String INSERT = "insert:"; // NOI18N
+    public static final String REMOVE = "remove:"; // NOI18N
+
+    public class IncrementalParse {
+        public ParserResult oldParserResult;
+        public GsfTestCompilationInfo info;
+        public ParserResult newParserResult;
+        public ParserResult fullParseResult;
+        public EditHistory history;
+        public String initialSource;
+        public String modifiedSource;
+
+        public IncrementalParse(ParserResult oldParserResult, GsfTestCompilationInfo info, ParserResult newParserResult,
+                EditHistory history,
+                String initialSource, String modifiedSource,
+                ParserResult fullParseResult
+                ) {
+            this.oldParserResult = oldParserResult;
+            this.info = info;
+            this.newParserResult = newParserResult;
+            this.history = history;
+            this.initialSource = initialSource;
+            this.modifiedSource = modifiedSource;
+            this.fullParseResult = fullParseResult;
+        }
+    }
+
+    /**
+     * Produce an incremental parser result for the given test file with the given
+     * series of edits. An edit is a pair of caret position string (with ^ representing
+     * the caret) and a corresponding insert or delete (with insert:string or remove:string)
+     * as the value.
+     */
+    protected IncrementalParse getIncrementalResult(String relFilePath, String... edits) throws Exception {
+        assertNotNull("Must provide a list of edits", edits);
+        assertTrue("Should be an even number of edit events: pairs of caret, insert/remove", edits.length % 2 == 0);
+
+        GsfTestCompilationInfo info = getInfo(relFilePath);
+
+        // Obtain the initial parse result
+        ParserResult initialResult = info.getEmbeddedResult(getPreferredMimeType(), 0);
+        assertNotNull(initialResult);
+
+        // Apply edits
+        String modifiedText = info.getText();
+        assertNotNull(modifiedText);
+        String initialText = modifiedText;
+        EditHistory history = new EditHistory();
+        for (int i = 0, n = edits.length; i < n; i += 2) {
+            String caretLine = edits[i];
+            String event = edits[i+1];
+            int caretDelta = caretLine.indexOf("^");
+            assertTrue(caretDelta != -1);
+            caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
+            int lineOffset = modifiedText.indexOf(caretLine);
+            assertTrue(lineOffset != -1);
+
+            int caretOffset = lineOffset + caretDelta;
+            //info.setCaretOffset(caretOffset);
+
+            assertTrue(event + " must start with " + INSERT + " or " + REMOVE,
+                    event.startsWith(INSERT) || event.startsWith(REMOVE));
+            if (event.startsWith(INSERT)) {
+                event = event.substring(INSERT.length());
+                history.insertUpdate(new TestDocumentEvent(caretOffset, event.length()));
+                modifiedText = modifiedText.substring(0, caretOffset) + event + modifiedText.substring(caretOffset);
+            } else {
+                assertTrue(event.startsWith(REMOVE));
+                event = event.substring(REMOVE.length());
+                assertTrue(modifiedText.regionMatches(caretOffset, event, 0, event.length()));
+                history.removeUpdate(new TestDocumentEvent(caretOffset, event.length()));
+                modifiedText = modifiedText.substring(0, caretOffset) + modifiedText.substring(caretOffset+event.length());
+            }
+        }
+
+        info.setText(modifiedText);
+        info.setEditHistory(history);
+        info.setPreviousResult(initialResult);
+
+        // Attempt to avoid garbage collection during timing
+        System.gc();
+        System.gc();
+        System.gc();
+        long incrementalStartTime = System.nanoTime();
+        ParserResult incrementalResult = info.getEmbeddedResult(info.getPreferredMimeType(), 0);
+        assertNotNull(incrementalResult);
+        long incrementalEndTime = System.nanoTime();
+        verifyIncremental(incrementalResult, history, initialResult);
+
+        info.setEditHistory(null);
+        info.setPreviousResult(null);
+        info.setText(modifiedText);
+
+        System.gc();
+        System.gc();
+        System.gc();
+        long fullParseStartTime = System.nanoTime();
+        ParserResult fullParseResult = info.getEmbeddedResult(info.getPreferredMimeType(), 0);
+        long fullParseEndTime = System.nanoTime();
+        assertNotNull(fullParseResult);
+
+        long incrementalParseTime = incrementalEndTime-incrementalStartTime;
+        long fullParseTime = fullParseEndTime-fullParseStartTime;
+        //assertTrue("Incremental parsing time (" + incrementalParseTime + " ns) should be less than full parse time (" + fullParseTime + " ns)",
+        //        incrementalParseTime < fullParseTime);
+        // Figure out how to ensure garbage collections etc. make a fair run.
+        assertTrue("Incremental parsing time (" + incrementalParseTime + " ns) should be less than full parse time (" + fullParseTime + " ns)",
+// 2x here -- figure out how to make test stable, then remove!!                
+                incrementalParseTime < 2*fullParseTime);
+
+        return new IncrementalParse(initialResult, info, incrementalResult, history, initialText, modifiedText, fullParseResult);
+    }
+
+    protected void checkIncremental(String relFilePath, String... edits) throws Exception {
+        IncrementalParse parse = getIncrementalResult(relFilePath, edits);
+
+        ParserResult incrementalResult = parse.newParserResult;
+        ParserResult fullParseResult = parse.fullParseResult;
+        CompilationInfo info = parse.info;
+
+        BaseDocument doc = (BaseDocument)info.getDocument();
+        assertEquals("Parse trees must equal", doc, fullParseResult,incrementalResult);
+        
+//        List<Object> incrValidNodes = new ArrayList<Object>();
+//        List<Object> incrInvalidNodes = new ArrayList<Object>();
+//        Map<Object,OffsetRange> incrPositions = new HashMap<Object,OffsetRange>();
+//        initializeNodes(info, incrementalResult, incrValidNodes, incrPositions, incrInvalidNodes);
+//
+//        String incrementalAnnotatedSource = annotateOffsets(incrValidNodes, incrPositions, incrInvalidNodes, info);
+//
+//        // Now make sure we get an identical linearization of the non-incremental result
+//        List<Object> validNodes = new ArrayList<Object>();
+//        List<Object> invalidNodes = new ArrayList<Object>();
+//        Map<Object,OffsetRange> positions = new HashMap<Object,OffsetRange>();
+//        initializeNodes(info, fullParseResult, validNodes, positions, invalidNodes);
+//
+//        String fullParseAnnotatedSource = annotateOffsets(validNodes, positions, invalidNodes, info);
+//
+//        assertEquals(fullParseAnnotatedSource, incrementalAnnotatedSource);
+    }
+
+    protected void assertEquals(String message, BaseDocument doc, ParserResult expected, ParserResult actual) throws Exception {
+        fail("You must override assertEquals(ParserResult,ParserResult)");
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // Type Test
     ////////////////////////////////////////////////////////////////////////////
