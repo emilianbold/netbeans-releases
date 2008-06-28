@@ -47,7 +47,8 @@ import javax.swing.event.DocumentListener;
 /**
  * <p>The EditHistory object contains information about a set of edits that
  * have occurred in a given Document recently. This is typically used to
- * support incremental parsing. The IDE infrastructure will hand a parser
+ * support <a href="../../../../../incremental-parsing.html">incremental parsing</a>.
+ * The IDE infrastructure will hand a parser
  * its old parse tree along with an EditHistory. The EditHistory represents
  * edits made since the previous parse.  If the parser supports incremental
  * parsing, it can use the edit history to determine if it can parse just
@@ -60,19 +61,19 @@ import javax.swing.event.DocumentListener;
  * The EditHistory tracks edits accurately, so you can use the
  * {@link #convertOldToNew(int)} method to translate a pre-edits offsets
  * to a post-edits offsets.  However, the EditHistory maintains a couple
- * of attributes that usually more interesting:
+ * of attributes that are usually more interesting:
  * <ol>
  * <li> The offset</li>
- * <li> The old size</li>
- * <li> The new size</li>
+ * <li> The original size</li>
+ * <li> The edited size</li>
  * </ol>
  * These three parameters indicate that in the old document, the text between
- * <code>offset</code> and <code>offset+oldSize</code> has been modified,
+ * <code>offset</code> and <code>offset+originalSize</code> has been modified,
  * and after the edits, this region corresponds to
- * <code>offset</code> to <code>offset+newSize</code>. Put another way,
+ * <code>offset</code> to <code>offset+editedSize</code>. Put another way,
  * all document positions below <code>offset</code> are unaffected by the edits,
- * and all document positions above <code>offset+oldSize</code> are uniformly
- * shifted up by a delta of <code>newSize-oldSize</code> (which can be negative,
+ * and all document positions above <code>offset+originalSize</code> are uniformly
+ * shifted up by a delta of <code>editedSize-originalSize</code> (which can be negative,
  * when more text was deleted than added).
  * </p>
  * <p>
@@ -103,13 +104,16 @@ import javax.swing.event.DocumentListener;
  * their offsets (by adding delta for offsets above the affected region,
  * and nothing for offsets below the affected region).
  * </p>
+ * <p>For more information about incremental parsing, see the
+ * <a href="../../../../../incremental-parsing.html">incremental updating</a>
+ * document.</p>
  *
  * @author Tor Norbye
  */
 public class EditHistory implements DocumentListener {
     private int start = -1;
-    private int oldEnd = -1;
-    private int newEnd = -1;
+    private int originalEnd = -1;
+    private int editedEnd = -1;
     private List<Edit> edits = new ArrayList<Edit>(4);
     private int delta = 0;
 
@@ -129,7 +133,7 @@ public class EditHistory implements DocumentListener {
         if (start == -1) {
             return false;
         }
-        return (pos >= start && pos <= newEnd);
+        return (pos >= start && pos <= editedEnd);
     }
 
     /**
@@ -141,7 +145,7 @@ public class EditHistory implements DocumentListener {
         if (start == -1) {
             return false;
         }
-        return range.getStart() < newEnd && range.getEnd() > start;
+        return range.getStart() < editedEnd && range.getEnd() > start;
     }
 
     /**
@@ -149,19 +153,27 @@ public class EditHistory implements DocumentListener {
      * deleted than added). The key rule is that
      * <pre>
      *   oldText[i] = newText[i]   for i &lt; offset, and
-     *   oldText[i] = newText[i+newSize]  for i &gt;= offset
+     *   oldText[i] = newText[i+editedSize]  for i &gt;= offset
      * </pre>
      */
-    public int getNewSize() {
-        return newEnd - start;
+    public int getEditedSize() {
+        return editedEnd - start;
     }
 
-    public int getOldEnd() {
-        return oldEnd;
+    /**
+     * The end of the affected region, in the original document.
+     * @return The offset of the end of the affected region in the original document
+     */
+    public int getOriginalEnd() {
+        return originalEnd;
     }
 
-    public int getNewEnd() {
-        return newEnd;
+    /**
+     * The end of the affected region, in the edited document.
+     * @return The offset of the end of the affected region in the edited document
+     */
+    public int getEditedEnd() {
+        return editedEnd;
     }
 
     public int getSizeDelta() {
@@ -169,12 +181,12 @@ public class EditHistory implements DocumentListener {
     }
 
     /**
-     * The old size of the region that was damaged. The first character
-     * after offset+oldSize before the edits, corresponds to the character
-     * at offset+newSize after the edits.
+     * The original size of the region that was damaged. The first character
+     * after offset+originalSize before the edits, corresponds to the character
+     * at offset+editedSize after the edits.
      */
-    public int getOldSize() {
-        return oldEnd - start;
+    public int getOriginalSize() {
+        return originalEnd - start;
     }
 
     /**
@@ -182,12 +194,12 @@ public class EditHistory implements DocumentListener {
      * @param oldPos The position in the unedited document
      * @return The corresponding position after the edits
      */
-    public int convertOldToNew(int oldPos) {
+    public int convertOriginalToEdited(int oldPos) {
         if (start == -1 || oldPos <= start) {
             return oldPos;
         }
 
-        if (oldPos >= oldEnd) {
+        if (oldPos >= originalEnd) {
             return oldPos+delta;
         }
 
@@ -224,7 +236,7 @@ public class EditHistory implements DocumentListener {
      * @param newPos The position in the edited document
      * @return The corresponding position prior to the edits
      */
-    public int convertNewToOld(int newPos) {
+    public int convertEditedToOriginal(int newPos) {
         List<Edit> list = edits;
         int len = list.size();
         if (len == 0) {
@@ -271,24 +283,24 @@ public class EditHistory implements DocumentListener {
 
         if (start == -1) {
             start = pos;
-            oldEnd = pos;
-            newEnd = pos+length;
+            originalEnd = pos;
+            editedEnd = pos+length;
             delta = length;
         } else {
             // Compute history backwards
-            int original = convertNewToOld(pos);
-            if (original > oldEnd) {
-                oldEnd = original;
+            int original = convertEditedToOriginal(pos);
+            if (original > originalEnd) {
+                originalEnd = original;
             }
             if (pos < start) {
                 start = pos;
             }
-            if (pos+length > newEnd) {
-                newEnd = pos+length;
+            if (pos+length > editedEnd) {
+                editedEnd = pos+length;
             } else {
-                newEnd += length;
+                editedEnd += length;
             }
-            delta = getNewSize()-getOldSize();
+            delta = getEditedSize()-getOriginalSize();
         }
     }
 
@@ -304,26 +316,26 @@ public class EditHistory implements DocumentListener {
         
         if (start == -1) {
             start = pos;
-            oldEnd = pos+length;
-            newEnd = pos;
+            originalEnd = pos+length;
+            editedEnd = pos;
             delta = -length;
         } else {
             // TODO
-            int original = convertNewToOld(pos);
-            if (original > oldEnd) {
-                oldEnd = original;
+            int original = convertEditedToOriginal(pos);
+            if (original > originalEnd) {
+                originalEnd = original;
             }
 
             if (pos < start) {
                 start = pos;
             }
 
-            if (pos > newEnd) {
-                newEnd = pos;
+            if (pos > editedEnd) {
+                editedEnd = pos;
             } else {
-                newEnd -= length;
+                editedEnd -= length;
             }
-            delta = getNewSize()-getOldSize();
+            delta = getEditedSize()-getOriginalSize();
         }
     }
 
@@ -336,7 +348,7 @@ public class EditHistory implements DocumentListener {
 
     @Override
     public String toString() {
-        return "EditHistory(offset=" + start + ", oldSize=" + getOldSize() + ", newSize=" + getNewSize() + ", delta=" + delta + ")"; // NOI18N
+        return "EditHistory(offset=" + start + ", originalSize=" + getOriginalSize() + ", editedSize=" + getEditedSize() + ", delta=" + delta + ")"; // NOI18N
     }
 
     /**

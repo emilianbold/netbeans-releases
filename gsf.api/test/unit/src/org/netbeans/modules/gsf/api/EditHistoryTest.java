@@ -113,8 +113,8 @@ public class EditHistoryTest extends TestCase {
         // Ensure that the head and tail of the document is identical to the beginning
         String head = original.substring(0, history.getStart());
         assertEquals("Wrong head; ", head, modified.substring(0, history.getStart()));
-        String tail = original.substring(history.getStart()+history.getOldSize());
-        assertEquals("Wrong tail; ", tail, modified.substring(history.getStart()+history.getNewSize()));
+        String tail = original.substring(history.getStart()+history.getOriginalSize());
+        assertEquals("Wrong tail; ", tail, modified.substring(history.getStart()+history.getEditedSize()));
     }
 
     private void insert(Document document, EditHistory history, int offset, String string) throws Exception {
@@ -147,8 +147,8 @@ public class EditHistoryTest extends TestCase {
         assertEquals("   He__lloWorld", modified);
         validateHistory(original, modified, history);
         assertEquals(5, history.getStart());
-        assertEquals(0, history.getOldSize());
-        assertEquals(2, history.getNewSize());
+        assertEquals(0, history.getOriginalSize());
+        assertEquals(2, history.getEditedSize());
     }
 
     public void testRemoves1() throws Exception {
@@ -163,8 +163,8 @@ public class EditHistoryTest extends TestCase {
         assertEquals("   HeoWorld", modified);
         validateHistory(original, modified, history);
         assertEquals(5, history.getStart());
-        assertEquals(2, history.getOldSize());
-        assertEquals(0, history.getNewSize());
+        assertEquals(2, history.getOriginalSize());
+        assertEquals(0, history.getEditedSize());
     }
 
     public void testMultipleRemoves1() throws Exception {
@@ -182,10 +182,10 @@ public class EditHistoryTest extends TestCase {
         String modified = doc.getText(0, doc.getLength());
         assertEquals("   HeoWld", modified);
         assertEquals(5, history.getStart());
-        assertEquals(11, history.getOldEnd());
-        assertEquals(7, history.getNewEnd());
-        assertEquals(6, history.getOldSize());
-        assertEquals(2, history.getNewSize());
+        assertEquals(11, history.getOriginalEnd());
+        assertEquals(7, history.getEditedEnd());
+        assertEquals(6, history.getOriginalSize());
+        assertEquals(2, history.getEditedSize());
         assertEquals(-4, history.getSizeDelta());
         validateHistory(original, modified, history);
     }
@@ -205,10 +205,10 @@ public class EditHistoryTest extends TestCase {
         String modified = doc.getText(0, doc.getLength());
         assertEquals("   HeoWod", modified);
         assertEquals(5, history.getStart());
-        assertEquals(12, history.getOldEnd());
-        assertEquals(8, history.getNewEnd());
-        assertEquals(7, history.getOldSize());
-        assertEquals(3, history.getNewSize());
+        assertEquals(12, history.getOriginalEnd());
+        assertEquals(8, history.getEditedEnd());
+        assertEquals(7, history.getOriginalSize());
+        assertEquals(3, history.getEditedSize());
         assertEquals(-4, history.getSizeDelta());
         validateHistory(original, modified, history);
     }
@@ -232,10 +232,10 @@ public class EditHistoryTest extends TestCase {
         String modified = doc.getText(0, doc.getLength());
         assertEquals("   Heood", modified);
         assertEquals(5, history.getStart());
-        assertEquals(12, history.getOldEnd());
-        assertEquals(7, history.getNewEnd());
-        assertEquals(7, history.getOldSize());
-        assertEquals(2, history.getNewSize());
+        assertEquals(12, history.getOriginalEnd());
+        assertEquals(7, history.getEditedEnd());
+        assertEquals(7, history.getOriginalSize());
+        assertEquals(2, history.getEditedSize());
         assertEquals(-5, history.getSizeDelta());
         validateHistory(original, modified, history);
     }
@@ -256,10 +256,10 @@ public class EditHistoryTest extends TestCase {
         String modified = doc.getText(0, doc.getLength());
         assertEquals("   He__llo__World", modified);
         assertEquals(5, history.getStart());
-        assertEquals(8, history.getOldEnd());
-        assertEquals(12, history.getNewEnd());
-        assertEquals(3, history.getOldSize());
-        assertEquals(7, history.getNewSize());
+        assertEquals(8, history.getOriginalEnd());
+        assertEquals(12, history.getEditedEnd());
+        assertEquals(3, history.getOriginalSize());
+        assertEquals(7, history.getEditedSize());
         assertEquals(4, history.getSizeDelta());
         validateHistory(original, modified, history);
     }
@@ -280,10 +280,10 @@ public class EditHistoryTest extends TestCase {
         String modified = doc.getText(0, doc.getLength());
         assertEquals("   He__lloWo__rld", modified);
         assertEquals(5, history.getStart());
-        assertEquals(10, history.getOldEnd());
-        assertEquals(14, history.getNewEnd());
-        assertEquals(5, history.getOldSize());
-        assertEquals(9, history.getNewSize());
+        assertEquals(10, history.getOriginalEnd());
+        assertEquals(14, history.getEditedEnd());
+        assertEquals(5, history.getOriginalSize());
+        assertEquals(9, history.getEditedSize());
         assertEquals(4, history.getSizeDelta());
         validateHistory(original, modified, history);
     }
@@ -308,10 +308,10 @@ public class EditHistoryTest extends TestCase {
         String modified = doc.getText(0, doc.getLength());
         assertEquals("   He__ll__oWo__rld", modified);
         assertEquals(5, history.getStart());
-        assertEquals(10, history.getOldEnd());
-        assertEquals(16, history.getNewEnd());
-        assertEquals(5, history.getOldSize());
-        assertEquals(11, history.getNewSize());
+        assertEquals(10, history.getOriginalEnd());
+        assertEquals(16, history.getEditedEnd());
+        assertEquals(5, history.getOriginalSize());
+        assertEquals(11, history.getEditedSize());
         assertEquals(6, history.getSizeDelta());
         validateHistory(original, modified, history);
     }
@@ -332,10 +332,10 @@ public class EditHistoryTest extends TestCase {
         String modified = doc.getText(0, doc.getLength());
         assertEquals("   He__llorld", modified);
         assertEquals(5, history.getStart());
-        assertEquals(10, history.getOldEnd());
-        assertEquals(10, history.getNewEnd());
-        assertEquals(5, history.getOldSize());
-        assertEquals(5, history.getNewSize());
+        assertEquals(10, history.getOriginalEnd());
+        assertEquals(10, history.getEditedEnd());
+        assertEquals(5, history.getOriginalSize());
+        assertEquals(5, history.getEditedSize());
         assertEquals(0, history.getSizeDelta());
         validateHistory(original, modified, history);
     }
@@ -360,10 +360,10 @@ public class EditHistoryTest extends TestCase {
         String modified = doc.getText(0, doc.getLength());
         assertEquals("   He__l__World", modified);
         assertEquals(5, history.getStart());
-        assertEquals(8, history.getOldEnd());
-        assertEquals(10, history.getNewEnd());
-        assertEquals(3, history.getOldSize());
-        assertEquals(5, history.getNewSize());
+        assertEquals(8, history.getOriginalEnd());
+        assertEquals(10, history.getEditedEnd());
+        assertEquals(3, history.getOriginalSize());
+        assertEquals(5, history.getEditedSize());
         assertEquals(2, history.getSizeDelta());
         validateHistory(original, modified, history);
     }

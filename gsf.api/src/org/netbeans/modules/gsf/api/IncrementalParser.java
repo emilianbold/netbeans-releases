@@ -43,7 +43,7 @@ import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 /**
- * An incremental parser can be called to parse a file, and is
+ * <p>An incremental parser can be called to parse a file, and is
  * handed one of its own previous ParserResults along with an EditHistory
  * with information on edits since the previous parse.
  * It should use this information to more quickly produce an updated
@@ -51,7 +51,10 @@ import org.netbeans.modules.gsf.api.annotations.NonNull;
  * were any semantic changes in the AST. When there aren't any semantic
  * differences, clients can more cheaply update themselves (for example,
  * the navigator doesn't have to be updated, and semantic highlighting
- * only has to adjust offsets to accommodate the edits.)
+ * only has to adjust offsets to accommodate the edits.)</p>
+ * <p>For more information about incremental parsing, see the
+ * <a href="../../../../../incremental-parsing.html">incremental updating</a>
+ * document.</p>
  *
  * @author Tor Norbye
  */

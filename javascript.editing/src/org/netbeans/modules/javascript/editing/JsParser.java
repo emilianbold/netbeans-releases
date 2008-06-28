@@ -377,11 +377,11 @@ public class JsParser implements IncrementalParser {
             final int oldFunctionEnd = oldFunction.getSourceEnd();
 
             // Make sure the edits were all inside the old function
-            if (history.getOldEnd() > oldFunctionEnd) {
+            if (history.getOriginalEnd() > oldFunctionEnd) {
                 return null;
             }
 
-            int newFunctionEnd = history.convertOldToNew(oldFunctionEnd);
+            int newFunctionEnd = history.convertOriginalToEdited(oldFunctionEnd);
             
             // This should not happen unless there is an error in the EditHistory...
             if (context.source.charAt(newFunctionEnd-1) != '}') {
@@ -480,7 +480,7 @@ public class JsParser implements IncrementalParser {
                 adjustOffsets(newFunction, 0, oldFunctionStart);
 
                 // Adjust the offsets in the rest of the AST - the offsets up the chain as well, not just the following node.
-                int limit = history.getOldEnd();
+                int limit = history.getOriginalEnd();
                 int delta = history.getSizeDelta();
                 
                 adjustOffsets(root, limit, delta);
@@ -548,7 +548,7 @@ public class JsParser implements IncrementalParser {
                 }
                 
 
-                // Add in new errors discovered in this function
+                r.setUpdateState(ParserResult.UpdateState.UPDATED);
 
                 return r;
             } catch (IllegalStateException ise) {
