@@ -326,6 +326,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("IZ138320.cc"); // NOI18N
     }
 
+    public void testIZ138551() throws Exception {
+        // IZ 138551 : parser fails on "template class A::B<1>;"
+        performTest("IZ138551.cc"); // NOI18N
+    }
+
     public void testStringizeMacro() throws Exception {
         // IZ 137465 : wrong macro expansion for #x
         performPreprocessorTest("stringize_macro.cc"); // NOI18N

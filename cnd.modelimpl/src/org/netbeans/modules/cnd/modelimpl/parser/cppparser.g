@@ -735,13 +735,13 @@ template_explicit_specialization
 // it's a caller's responsibility to check isCPlusPlus
 //
 protected
-external_declaration_template { K_and_R = false; boolean ctrName=false;}
+external_declaration_template { String s; K_and_R = false; boolean ctrName=false;}
 	:      
 		(LITERAL_template LESSTHAN GREATERTHAN) => template_explicit_specialization
 	|
 		(LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union)) =>
 		LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union) 
-		ID LESSTHAN template_argument_list GREATERTHAN SEMICOLON
+		s=scope_override ID LESSTHAN template_argument_list GREATERTHAN SEMICOLON
 		{#external_declaration_template = #(#[CSM_TEMPLATE_EXPLICIT_INSTANTIATION, "CSM_TEMPLATE_EXPLICIT_INSTANTIATION"], #external_declaration_template);}
 	|
 		(LITERAL_template (~LESSTHAN)) =>
