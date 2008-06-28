@@ -3015,6 +3015,7 @@ cast_expression_type_specifier
                 (tq = cv_qualifier)? 
                 (LITERAL_struct|LITERAL_union|LITERAL_class|LITERAL_enum)? 
                 ts = simple_type_specifier 
+                (postfix_cv_qualifier)? // to support (char const*)
                 (ptr_operator)*
             RPAREN
         ;
