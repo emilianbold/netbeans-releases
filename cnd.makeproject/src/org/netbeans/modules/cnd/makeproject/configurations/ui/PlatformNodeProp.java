@@ -43,18 +43,19 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
-import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.PlatformConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.openide.nodes.Node;
 
-public class DevelopmentHostNodeProp extends Node.Property {
-    private DevelopmentHostConfiguration configuration;
+public class PlatformNodeProp extends Node.Property {
+    private PlatformConfiguration platformConfiguration;
     private boolean canWrite;
     private String name;
     private String description;
 
-    public DevelopmentHostNodeProp(DevelopmentHostConfiguration configuration, boolean canWrite, String name, String description) {
+    public PlatformNodeProp(PlatformConfiguration platformConfiguration, boolean canWrite, String name, String description) {
         super(Integer.class);
-        this.configuration = configuration;
+        this.platformConfiguration = platformConfiguration;
 	this.canWrite = canWrite;
 	this.name = name;
 	this.description = description;
@@ -72,24 +73,23 @@ public class DevelopmentHostNodeProp extends Node.Property {
     
     @Override
     public String getHtmlDisplayName() {
-        if (configuration.getModified()) {
-            return "<b>" + getDisplayName() + "</b>"; // NOI18N
-        } else {
+        if (platformConfiguration.getModified())
+            return "<b>" + getDisplayName(); // NOI18N
+        else
             return null;
-        }
     }
     
     public Object getValue() {
-        return configuration.getValue();
+        return new Integer(platformConfiguration.getValue());
     }
     
-    public void setValue(Object value) {
-        configuration.setValue((String) value, true);
-}
+    public void setValue(Object v) {
+        platformConfiguration.setValue((String)v);
+    }
     
     @Override
     public void restoreDefaultValue() {
-        configuration.reset();
+        platformConfiguration.reset();
     }
     
     @Override
@@ -99,7 +99,7 @@ public class DevelopmentHostNodeProp extends Node.Property {
     
     @Override
     public boolean isDefaultValue() {
-        return !configuration.getModified();
+        return !platformConfiguration.getModified();
     }
 
     public boolean canWrite() {
@@ -114,6 +114,10 @@ public class DevelopmentHostNodeProp extends Node.Property {
     public PropertyEditor getPropertyEditor() {
 	return new IntEditor();
     }
+    
+    public void repaint() {
+        //getPropertyEditor().repaint();
+    }
 
     private class IntEditor extends PropertyEditorSupport {
         @Override
@@ -123,17 +127,31 @@ public class DevelopmentHostNodeProp extends Node.Property {
         
         @Override
         public String getAsText() {
-            return configuration.getDisplayName();
+            if (platformConfiguration instanceof PlatformConfiguration) {
+                if (platformConfiguration.getValue() == Platform.PLATFORM_NONE) {
+                    System.err.println("");
+                }
+            }
+            return platformConfiguration.getName();
         }
         
         @Override
-        public void setAsText(String text) throws IllegalArgumentException {
+        public void setAsText(String text) throws java.lang.IllegalArgumentException {
+            if (platformConfiguration instanceof PlatformConfiguration) {
+                if (platformConfiguration.getValue() == Platform.PLATFORM_NONE) {
+                    System.err.println("");
+                }
+            }
             setValue(text);
         }
         
         @Override
         public String[] getTags() {
-            return configuration.getServerNames();
+            return platformConfiguration.getNames();
+        }
+        
+        public void repaint() {
+            
         }
     }
 }

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,28 +31,30 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.remote;
+package org.netbeans.modules.javascript.hints;
 
-/**
- * This is a place holder for a RemoteServerList which will be implemented in cnd.remote.
- * 
- * @author gordonp
- */
-public interface ServerList {
+public class DuplicateLabelHintTest extends HintTestBase {
     
-    /** The index of the default development server */
-    public int getDefaultServerIndex();
-    
-    /** A String[] containing the names of all currently defined development servers */
-    public String[] getServerNames();
+    public DuplicateLabelHintTest(String testName) {
+        super(testName);
+    }            
 
-    public ServerRecord get(String key);
-    
-    // Other methods are TBD...
+    public void testHint1() throws Exception {
+        checkHints(this, new DuplicateLabelHint(), "testfiles/duplicatelabels.js", null);
+    }
+
+    public void testLabels() throws Exception {
+        checkHints(this, new DuplicateLabelHint(), "testfiles/prototype.js", null);
+    }
+
+    public void testLabels2() throws Exception {
+        checkHints(this, new DuplicateLabelHint(), "testfiles/returns.js", null);
+    }
+
 }

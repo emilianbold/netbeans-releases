@@ -45,5 +45,5 @@ package org.netbeans.modules.cnd.api.remote;
  * @author gordonp
  */
 public interface PathMapProvider {
-    public PathMap getMapper(String user, String host);
+    public PathMap getMapper(String key);
 }

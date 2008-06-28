@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
@@ -48,7 +50,7 @@ import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-public class CompilerSet2Configuration {
+public class CompilerSet2Configuration implements PropertyChangeListener {
 //    private MakeConfiguration makeConfiguration;
     private StringConfiguration compilerSetName;
     private String flavor;
@@ -237,5 +239,9 @@ public class CompilerSet2Configuration {
 
     public void setFlavor(String flavor) {
         this.flavor = flavor;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        System.err.println("CompilerSet2Configuration.propertyChange: " + evt.getNewValue().toString());
     }
 }
