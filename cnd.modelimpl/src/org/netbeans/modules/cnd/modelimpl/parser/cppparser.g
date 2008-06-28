@@ -2421,14 +2421,12 @@ protected template_template_parameter
  *	as type setting is ineffective whilst guessing
  */
 assigned_type_name
-	{/*TypeSpecifier*/int ts;}
+	{/*TypeSpecifier*/int ts;
+         TypeQualifier tq;}
 	:
-	(LITERAL_typename)?
-	(options{generateAmbigWarnings = false;}:
-		qualified_type abstract_declarator	
-	|
-		ts = simple_type_specifier abstract_declarator
-	)
+            (tq=cv_qualifier)? (LITERAL_typename)?
+            ts = simple_type_specifier (postfix_cv_qualifier)?
+            abstract_declarator
 	;
 
 // This rule refers to an instance of a template class or function

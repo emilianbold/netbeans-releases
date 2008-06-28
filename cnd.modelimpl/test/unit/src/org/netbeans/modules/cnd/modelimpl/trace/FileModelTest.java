@@ -321,6 +321,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("attribute_in_constructor.cc"); // NOI18N
     }
 
+    public void testIZ138320() throws Exception {
+        // IZ 138320 : IDE doesn't recognize 'class P = V const *' line in template
+        performTest("IZ138320.cc"); // NOI18N
+    }
+
     public void testStringizeMacro() throws Exception {
         // IZ 137465 : wrong macro expansion for #x
         performPreprocessorTest("stringize_macro.cc"); // NOI18N
