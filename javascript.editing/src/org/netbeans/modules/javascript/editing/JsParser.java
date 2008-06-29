@@ -384,6 +384,10 @@ public class JsParser implements IncrementalParser {
             int newFunctionEnd = history.convertOriginalToEdited(oldFunctionEnd);
             
             // This should not happen unless there is an error in the EditHistory...
+            int docLength = context.source.length();
+            if (newFunctionEnd > docLength) {
+                return null;
+            }
             if (context.source.charAt(newFunctionEnd-1) != '}') {
                 return null;
             }
