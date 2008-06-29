@@ -51,6 +51,7 @@ import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.text.Line;
 import org.openide.util.NbBundle;
 
 public final class BreakpointCustomizer extends JPanel implements Customizer, Controller {
@@ -92,7 +93,12 @@ public final class BreakpointCustomizer extends JPanel implements Customizer, Co
                 Util.notifyLocalized(BreakpointCustomizer.class, "BreakpointCustomizer.file.not.found", file);
                 return false;
             } else {
-                bp.setLine(EditorUtil.getLine(file, line));
+                Line eLine = EditorUtil.getLine(file, line);
+                if (eLine == null) {
+                    Util.notifyLocalized(BreakpointCustomizer.class, "BreakpointCustomizer.invalid.line.number", "" + (line + 1), file);
+                    return false;
+                }
+                bp.setLine(eLine);
             }
             if (getCondition().length() > 0) {
                 bp.setCondition(getCondition());
