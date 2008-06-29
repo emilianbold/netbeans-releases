@@ -1,4 +1,4 @@
-|>CLASS:// <|From http://www.w3schools.com/e4x/e4x_example.asp
+// From http://www.w3schools.com/e4x/e4x_example.asp
 var |>GLOBAL:order<| = new |>CLASS:XML<|()
 
 |>GLOBAL:order<|=<order id="555">
