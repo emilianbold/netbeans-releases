@@ -49,10 +49,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.junit.output.antutils.FileSetScanner.AntPattern.PatternPartType;
-import org.netbeans.modules.junit.output.antutils.FileUtils;
 
 /**
  *
