@@ -162,12 +162,6 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         if (!additionalOptions.isEmpty()) {
             debugDesc.setAdditionalOptions(additionalOptions);
         }
-//        List<String> additionalOptions = new ArrayList<String>();
-//        additionalOptions.add("-J-Djruby.compile.mode=OFF");
-//        additionalOptions.add("-d");
-//        additionalOptions.add("-J-Xdebug");
-//        additionalOptions.add("-J-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y");
-//        debugDesc.setAdditionalOptions(additionalOptions);
         debugDesc.setScriptArguments(descriptor.getAdditionalArgs());
         debugDesc.setSynchronizedOutput(true);
         if (descriptor.getPwd() != null) {
@@ -230,7 +224,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             Util.offerToInstallFastDebugger(platform);
         }
         
-        if (fastDebuggerRequired && !Util.ensureRubyDebuggerIsPresent(platform, true, "RubyDebugger.wrong.fast.debugger.required")) {
+        if (fastDebuggerRequired && !Util.ensureRubyDebuggerIsPresent(platform, true, "RubyDebugger.wrong.fast.debugger.required")) { // NOI18N
             return false;
         }
 
