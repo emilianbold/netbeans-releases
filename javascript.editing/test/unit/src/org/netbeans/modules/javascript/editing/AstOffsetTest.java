@@ -232,6 +232,11 @@ public class AstOffsetTest extends JsTestBase {
         checkOffsets("testfiles/e4x2.js", "order^");
     }
 
+    public void testOffsetsE4x3() throws Exception {
+        checkOffsets("testfiles/e4x3.js");
+    }
+
+
     public void testOffsetsTryCatch() throws Exception {
         checkOffsets("testfiles/tryblocks.js");
     }
