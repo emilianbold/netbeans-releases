@@ -622,6 +622,14 @@ class FileSetScanner {
                                     ((AntPattern) object).patternParts);
         }
         @Override
+        public int hashCode() {
+            int hash = 131;
+            for (int i = 0; i < patternParts.length; i++) {
+                hash += patternParts[i].hashCode() << i;
+            }
+            return hash;
+        }
+        @Override
         public String toString() {
             String patternsString;
             if (patternParts.length == 0) {
