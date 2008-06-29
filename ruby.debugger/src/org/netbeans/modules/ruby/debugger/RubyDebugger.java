@@ -152,9 +152,14 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         debugDesc.useDefaultPort(false);
         debugDesc.setJRuby(jrubySet);
         debugDesc.setScriptPath(descriptor.getScript());
+        List<String> additionalOptions = new ArrayList<String>();
         if (descriptor.getInitialArgs() != null) {
-            List<String> additionalOptions = new ArrayList<String>();
             additionalOptions.addAll(Arrays.asList(descriptor.getInitialArgs()));
+        }
+        if (descriptor.getJRubyProps() != null) {
+            additionalOptions.addAll(Arrays.asList(descriptor.getJRubyProps()));
+        }
+        if (!additionalOptions.isEmpty()) {
             debugDesc.setAdditionalOptions(additionalOptions);
         }
 //        List<String> additionalOptions = new ArrayList<String>();
