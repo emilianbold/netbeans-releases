@@ -798,7 +798,6 @@ public final class WebProject implements Project, AntProjectListener {
                 // Register copy on save support
                 css.initialize();
                 
-                
                 // Check up on build scripts.
                 if (updateHelper.isCurrent()) {
                     int flags = genFilesHelper.getBuildScriptState(
@@ -885,6 +884,11 @@ public final class WebProject implements Project, AntProjectListener {
                 webModule.setContextPath (sysName);
             }
 
+            if (Boolean.parseBoolean((String) getWebProjectProperties().get(
+                    WebProjectProperties.DEPLOY_ON_SAVE))) {
+                Deployment.getDefault().enableCompileOnSaveSupport(webModule);
+            }
+            
             WebLogicalViewProvider logicalViewProvider = (WebLogicalViewProvider) WebProject.this.getLookup().lookup (WebLogicalViewProvider.class);
             if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {   
                 BrokenReferencesSupport.showAlert();
@@ -1062,6 +1066,8 @@ public final class WebProject implements Project, AntProjectListener {
             catch (FileStateInvalidException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
+            
+            Deployment.getDefault().disableCompileOnSaveSupport(webModule);
             
             // unregister project's classpaths to GlobalPathRegistry
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));

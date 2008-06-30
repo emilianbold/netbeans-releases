@@ -195,6 +195,8 @@ public class WebProjectProperties {
     
     public static final String ANT_DEPLOY_BUILD_SCRIPT = "nbproject/ant-deploy.xml"; // NOI18N
     
+    private static Logger LOGGER = Logger.getLogger(WebProjectProperties.class.getName());
+    
     public ClassPathSupport cs;
 
     //list of frameworks to add to the application
@@ -620,6 +622,15 @@ public class WebProjectProperties {
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );
+        
+        // compile on save listeners
+        if (DEPLOY_ON_SAVE_MODEL.isEnabled() && DEPLOY_ON_SAVE_MODEL.isSelected()) {
+            LOGGER.log(Level.FINE, "Starting listening on cos for {0}", project.getWebModule());
+            Deployment.getDefault().enableCompileOnSaveSupport(project.getWebModule());
+        } else {
+            LOGGER.log(Level.FINE, "Stopping listening on cos for {0}", project.getWebModule());
+            Deployment.getDefault().disableCompileOnSaveSupport(project.getWebModule());
+        }
         
         String value = (String)additionalProperties.get(SOURCE_ENCODING);
         if (value != null) {
