@@ -198,12 +198,6 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
         
         return ((IncrementalDeployment)inner).incrementalDeploy(module, changes);
     }
-
-    @Override
-    public ProgressObject reloadArtifacts(TargetModuleID module, DeploymentChangeDescriptor desc) {
-        return incrementalDeploy(module, desc);
-    }
-    
     
     public File getDirectoryForNewApplication(String deploymentName, Target target, DeploymentConfiguration configuration){
         SunONEDeploymentConfiguration s1dc =(SunONEDeploymentConfiguration) configuration;

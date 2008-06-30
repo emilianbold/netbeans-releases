@@ -177,6 +177,7 @@ public class EjbJarProjectProperties {
     
     public static final String JAVA_SOURCE_BASED = "java.source.based";
     
+    private static final Logger LOGGER = Logger.getLogger(EjbJarProjectProperties.class.getName());
     
     ClassPathSupport cs;    
     
@@ -477,6 +478,15 @@ public class EjbJarProjectProperties {
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );        
+        
+        // compile on save listeners
+        if (DEPLOY_ON_SAVE_MODEL.isEnabled() && DEPLOY_ON_SAVE_MODEL.isSelected()) {
+            LOGGER.log(Level.FINE, "Starting listening on cos for {0}", project.getEjbModule());
+            Deployment.getDefault().enableCompileOnSaveSupport(project.getEjbModule());
+        } else {
+            LOGGER.log(Level.FINE, "Stopping listening on cos for {0}", project.getEjbModule());
+            Deployment.getDefault().disableCompileOnSaveSupport(project.getEjbModule());
+        }
         
         String value = (String)additionalProperties.get(SOURCE_ENCODING);
         if (value != null) {

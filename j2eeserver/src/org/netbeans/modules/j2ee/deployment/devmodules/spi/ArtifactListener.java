@@ -37,84 +37,17 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.deployment.plugins.api;
+package org.netbeans.modules.j2ee.deployment.devmodules.spi;
 
 import java.io.File;
-import org.netbeans.modules.j2ee.deployment.impl.ServerFileDistributor;
 
 /**
- * This class allows the plugin to ask for changes which happened
- * in the application. This is compatible replacement for {@link AppChangeDescriptor}.
  *
  * @author Petr Hejl
- * @since 1.47
+ * @since 1.48
  */
-public final class DeploymentChangeDescriptor implements AppChangeDescriptor {
+public interface ArtifactListener {
 
-    private final AppChangeDescriptor desc;
-
-    static {
-        ServerFileDistributor.Accessor.setDefault(new ServerFileDistributor.Accessor() {
-            @Override
-            public DeploymentChangeDescriptor newDescriptor(ServerFileDistributor.AppChanges desc) {
-                return new DeploymentChangeDescriptor(desc);
-            }
-        });
-    }
-
-    private DeploymentChangeDescriptor(ServerFileDistributor.AppChanges desc) {
-        this.desc = desc;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public String[] getChangedEjbs() {
-        return desc.getChangedEjbs();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public boolean ejbsChanged() {
-        return desc.ejbsChanged();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public boolean serverDescriptorChanged() {
-        return desc.serverDescriptorChanged();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public boolean manifestChanged() {
-        return desc.manifestChanged();
-    }
-
-    /**
-     * {@inheritDoc}<p>
-     * 
-     * Returns all changed files (locations where they are deployed).
-     */
-    public File[] getChangedFiles() {
-        return desc.getChangedFiles();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public boolean descriptorChanged() {
-        return desc.descriptorChanged();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public boolean classesChanged() {
-        return desc.classesChanged();
-    }
+    public void artifactsUpdated(Iterable<File> artifacts);
 
 }

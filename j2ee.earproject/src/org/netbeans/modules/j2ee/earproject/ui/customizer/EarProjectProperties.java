@@ -210,6 +210,8 @@ public final class EarProjectProperties {
     
     public static final String ANT_DEPLOY_BUILD_SCRIPT = "nbproject/ant-deploy.xml"; // NOI18N
     
+    private static final Logger LOGGER = Logger.getLogger(EarProjectProperties.class.getName());
+    
     // CustomizerLibraries
     Document SHARED_LIBRARIES_MODEL;
     DefaultListModel DEBUG_CLASSPATH_MODEL;
@@ -367,6 +369,14 @@ public final class EarProjectProperties {
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );
         
+        // compile on save listeners
+        if (DEPLOY_ON_SAVE_MODEL.isEnabled() && DEPLOY_ON_SAVE_MODEL.isSelected()) {
+            LOGGER.log(Level.FINE, "Starting listening on cos for {0}", project.getAppModule());
+            Deployment.getDefault().enableCompileOnSaveSupport(project.getAppModule());
+        } else {
+            LOGGER.log(Level.FINE, "Stopping listening on cos for {0}", project.getAppModule());
+            Deployment.getDefault().disableCompileOnSaveSupport(project.getAppModule());
+        }        
     }
 
     public static void setServerInstance(final Project project, final UpdateHelper helper, final String serverInstanceID) {
