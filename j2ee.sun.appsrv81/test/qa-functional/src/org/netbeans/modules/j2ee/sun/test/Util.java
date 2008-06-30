@@ -97,13 +97,13 @@ public class Util {
     // SERVER PROPERTIES FOR TESTS
     public static final String _SEP = System.getProperty("file.separator");
     public static final String _DISPLAY_NAME = "Sun Java System Application Server";
-    public static final String _PLATFORM_LOCATION =  System.getProperty("sjsas.server.path");
+    public static final String _PLATFORM_LOCATION = System.getProperty("sjsas.server.path");
     public static final String _INSTALL_LOCATION = _PLATFORM_LOCATION+_SEP+"domains";
     public static final String _DOMAIN = "domain1";
     public static final String _HOST = "localhost";
     public static final String _PORT = getPort(new File(_INSTALL_LOCATION+_SEP+_DOMAIN+_SEP+"config"+_SEP+"domain.xml"));
     public static final String _USER_NAME = "admin";
-    public static final String _PASSWORD =  System.getProperty("sjsas.server.password");
+    public static final String _PASSWORD = System.getProperty("sjsas.server.password");
     public static final String _URL = "["+_PLATFORM_LOCATION+"]deployer:Sun:AppServer::"+_HOST+":"+_PORT;
     
     // SERVER PROPERTIES FOR APP SERVER REGISTRATION
