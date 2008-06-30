@@ -50,6 +50,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import org.netbeans.modules.groovy.editor.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.elements.IndexedElement;
+import org.netbeans.modules.groovy.editor.elements.IndexedMethod;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchResult;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
@@ -78,6 +79,11 @@ public final class GroovyIndex {
         this.index = index;
     }
     
+    Set<IndexedClass> getClasses(String name, final NameKind kind, boolean includeAll,
+        boolean skipClasses, boolean skipModules) {
+        return getClasses(name, kind, includeAll, skipClasses, skipModules, ALL_SCOPE, null);
+    }
+
     /**
      * Return the full set of classes that match the given name.
      *
@@ -128,7 +134,7 @@ public final class GroovyIndex {
             throw new UnsupportedOperationException(kind.toString());
         }
 
-        search(field, name, kind, result, scope, null);
+        search(field, name, kind, result, scope);
 
         // TODO Prune methods to fit my scheme - later make lucene index smarter about how to prune its index search
         if (includeAll) {
@@ -235,28 +241,150 @@ public final class GroovyIndex {
         return classes;
     }
     
-    private IndexedClass createClass(String fqn, String clz, SearchResult map) {
-        String require = map.getValue(GroovyIndexer.REQUIRE);
+    /**
+     * Return a set of methods that match the given name prefix, and are in the given
+     * class and module. If no class is specified, match methods across all classes.
+     * Note that inherited methods are not checked. If you want to match inherited methods
+     * you must call this method on each superclass as well as the mixin modules.
+     */
+    @SuppressWarnings("unchecked") // unchecked - lucene has source 1.4
 
-        // TODO - how do I determine -which- file to associate with the file?
-        // Perhaps the one that defines initialize() ?
-        String fileUrl = map.getPersistentUrl();
+    Set<IndexedMethod> getMethods(final String name, final String clz, NameKind kind) {
+        return getMethods(name, clz, kind, ALL_SCOPE);
+    }
 
-        if (clz == null) {
-            clz = map.getValue(GroovyIndexer.CLASS_NAME);
+    @SuppressWarnings("fallthrough")
+    public Set<IndexedMethod> getMethods(final String name, final String clz, NameKind kind,
+        Set<Index.SearchScope> scope) {
+        boolean inherited = clz == null;
+
+        //    public void searchByCriteria(final String name, final ClassIndex.NameKind kind, /*final ResultConvertor<T> convertor,*/ final Set<String> result) throws IOException {
+        final Set<SearchResult> result = new HashSet<SearchResult>();
+
+        //        if (!isValid()) {
+        //            LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));
+        //            return;
+        //        }
+        String field = GroovyIndexer.METHOD_NAME;
+        NameKind originalKind = kind;
+        if (kind == NameKind.EXACT_NAME) {
+            // I can't do exact searches on methods because the method
+            // entries include signatures etc. So turn this into a prefix
+            // search and then compare chopped off signatures with the name
+            kind = NameKind.PREFIX;
         }
 
-        String attrs = map.getValue(GroovyIndexer.CLASS_ATTRS);
-        
-        int flags = 0;
-        if (attrs != null) {
-            flags = IndexedElement.stringToFlag(attrs, 0);
+        // No point in doing case insensitive searches on method names because
+        // method names in Ruby are always case insensitive anyway
+        //            case CASE_INSENSITIVE_PREFIX:
+        //            case CASE_INSENSITIVE_REGEXP:
+        //                field = RubyIndexer.FIELD_CASE_INSENSITIVE_METHOD_NAME;
+        //                break;
+
+        search(field, name, kind, result, scope);
+
+        //return Collections.unmodifiableSet(result);
+
+        // TODO Prune methods to fit my scheme - later make lucene index smarter about how to prune its index search
+        final Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
+
+        for (SearchResult map : result) {
+            if (clz != null) {
+                String fqn = map.getValue(GroovyIndexer.FQN_NAME);
+
+                if (!(clz.equals(fqn))) {
+                    continue;
+                }
+            }
+
+            String[] signatures = map.getValues(GroovyIndexer.METHOD_NAME);
+
+            if (signatures != null) {
+                for (String signature : signatures) {
+                    // Skip weird methods... Think harder about this
+                    if (((name == null) || (name.length() == 0)) &&
+                            !Character.isLowerCase(signature.charAt(0))) {
+                        continue;
+                    }
+
+                    // Lucene returns some inexact matches, TODO investigate why this is necessary
+                    if ((kind == NameKind.PREFIX) && !signature.startsWith(name)) {
+                        continue;
+                    } else if (kind == NameKind.CASE_INSENSITIVE_PREFIX && !signature.regionMatches(true, 0, name, 0, name.length())) {
+                        continue;
+                    } else if (kind == NameKind.CASE_INSENSITIVE_REGEXP) {
+                        int len = signature.length();
+                        int end = signature.indexOf('(');
+                        if (end == -1) {
+                            end = signature.indexOf(';');
+                            if (end == -1) {
+                                end = len;
+                            }
+                        }
+                        String n = end != len ? signature.substring(0, end) : signature;
+                        try {
+                            if (!n.matches(name)) {
+                                continue;
+                            }
+                        } catch (Exception e) {
+                            // Silently ignore regexp failures in the search expression
+                        }
+                    } else if (originalKind == NameKind.EXACT_NAME) {
+                        // Make sure the name matches exactly
+                        // We know that the prefix is correct from the first part of
+                        // this if clause, by the signature may have more
+                        if (((signature.length() > name.length()) &&
+                                (signature.charAt(name.length()) != '(')) &&
+                                (signature.charAt(name.length()) != ';')) {
+                            continue;
+                        }
+                    }
+
+                    // XXX THIS DOES NOT WORK WHEN THERE ARE IDENTICAL SIGNATURES!!!
+                    assert map != null;
+                    methods.add(createMethod(signature, map, inherited));
+                }
+            }
+
+            String[] attributes = map.getValues(GroovyIndexer.ATTRIBUTE_NAME);
+
+            if (attributes != null) {
+                for (String signature : attributes) {
+                    // Skip weird methods... Think harder about this
+                    if (((name == null) || (name.length() == 0)) &&
+                            !Character.isLowerCase(signature.charAt(0))) {
+                        continue;
+                    }
+
+                    // Lucene returns some inexact matches, TODO investigate why this is necessary
+                    if (kind == NameKind.PREFIX && !signature.startsWith(name)) {
+                        continue;
+                    } else if (kind == NameKind.CASE_INSENSITIVE_PREFIX && !signature.regionMatches(true, 0, name, 0, name.length())) {
+                        continue;
+                    } else if (kind == NameKind.CASE_INSENSITIVE_REGEXP && !signature.matches(name)) {
+                        continue;
+                    } else if (originalKind == NameKind.EXACT_NAME) {
+                        // Make sure the name matches exactly
+                        // We know that the prefix is correct from the first part of
+                        // this if clause, by the signature may have more
+                        if (((signature.length() > name.length()) &&
+                                //(signature.charAt(name.length()) != '(')) &&
+                                (signature.charAt(name.length()) != ';'))) {
+                            continue;
+                        }
+                    }
+
+                    // XXX THIS DOES NOT WORK WHEN THERE ARE IDENTICAL SIGNATURES!!!
+                    assert map != null;
+                    // Create method for the attribute
+                    methods.add(createMethod(signature, map, inherited));
+                }
+            }
+
+            // TODO - fields
         }
 
-        IndexedClass c =
-            IndexedClass.create(this, clz, fqn, fileUrl, require, attrs, flags);
-
-        return c;
+        return methods;
     }
 
     public static FileObject getFileObject(String url) {
@@ -273,10 +401,82 @@ public final class GroovyIndex {
         return null;
     }
 
-    private boolean search(String key, String name, NameKind kind, Set<SearchResult> result,
-        Set<SearchScope> scope, Set<String> terms) {
+    private IndexedClass createClass(String fqn, String clz, SearchResult map) {
+
+        // TODO - how do I determine -which- file to associate with the file?
+        // Perhaps the one that defines initialize() ?
+        String fileUrl = map.getPersistentUrl();
+
+        if (clz == null) {
+            clz = map.getValue(GroovyIndexer.CLASS_NAME);
+        }
+
+        String attrs = map.getValue(GroovyIndexer.CLASS_ATTRS);
+
+        int flags = 0;
+        if (attrs != null) {
+            flags = IndexedElement.stringToFlag(attrs, 0);
+        }
+
+        IndexedClass c =
+            IndexedClass.create(this, clz, fqn, fileUrl, attrs, flags);
+
+        return c;
+    }
+
+    private IndexedMethod createMethod(String signature, SearchResult map, boolean inherited) {
+        String clz = map.getValue(GroovyIndexer.CLASS_NAME);
+        String module = map.getValue(GroovyIndexer.IN);
+
+        if (clz == null) {
+            // Module method?
+            clz = module;
+        } else if ((module != null) && (module.length() > 0)) {
+            clz = module + "." + clz;
+        }
+
+        String fileUrl = map.getPersistentUrl();
+
+        String fqn = map.getValue(GroovyIndexer.FQN_NAME);
+
+        // Extract attributes
+        int attributeIndex = signature.indexOf(';');
+        String attributes = null;
+        int flags = 0;
+
+        if (attributeIndex != -1) {
+            flags = IndexedElement.stringToFlag(signature, attributeIndex+1);
+
+            if (signature.length() > attributeIndex+1) {
+                attributes = signature.substring(attributeIndex+1, signature.length());
+            }
+
+            signature = signature.substring(0, attributeIndex);
+        }
+
+        IndexedMethod m =
+            IndexedMethod.create(this, signature, fqn, clz, fileUrl, attributes, flags);
+
+        m.setInherited(inherited);
+        return m;
+    }
+
+    private boolean search(String key, String name, NameKind kind, Set<SearchResult> result) {
         try {
-            index.search(key, name, kind, scope, result, terms);
+            index.search(key, name, kind, ALL_SCOPE, result, null);
+
+            return true;
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+
+            return false;
+        }
+    }
+
+    private boolean search(String key, String name, NameKind kind, Set<SearchResult> result,
+        Set<SearchScope> scope) {
+        try {
+            index.search(key, name, kind, scope, result, null);
 
             return true;
         } catch (IOException ioe) {

@@ -64,7 +64,6 @@ public abstract class IndexedElement extends GroovyElement {
     protected final String clz;
     protected final String fqn;
     protected final GroovyIndex index;
-    protected final String require;
     protected final String attributes;
     protected Set<Modifier> modifiers;
     protected int flags;
@@ -73,11 +72,10 @@ public abstract class IndexedElement extends GroovyElement {
     private FileObject fileObject;
 
     protected IndexedElement(GroovyIndex index, String fileUrl, String fqn,
-        String clz, String require, String attributes, int flags) {
+        String clz, String attributes, int flags) {
         this.index = index;
         this.fileUrl = fileUrl;
         this.fqn = fqn;
-        this.require = require;
         this.attributes = attributes;
         // XXX Why do methods need to know their clz (since they already have fqn)
         this.clz = clz;
@@ -88,10 +86,6 @@ public abstract class IndexedElement extends GroovyElement {
 
     public final String getFileUrl() {
         return fileUrl;
-    }
-
-    public final String getRequire() {
-        return require;
     }
 
     public final String getFqn() {
