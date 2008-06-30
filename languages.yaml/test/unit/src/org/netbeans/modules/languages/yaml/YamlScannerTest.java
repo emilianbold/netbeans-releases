@@ -77,6 +77,26 @@ public class YamlScannerTest extends YamlTestBase {
         checkStructure("testfiles/test6.yaml");
     }
 
+    public void testStructure7() throws Exception {
+        checkStructure("testfiles/test7.yaml");
+    }
+
+    public void testStructure8() throws Exception {
+        checkStructure("testfiles/test8.yaml");
+    }
+
+    public void testStructure9() throws Exception {
+        checkStructure("testfiles/test9.yaml");
+    }
+
+    public void testStructure10() throws Exception {
+        checkStructure("testfiles/test10.yaml");
+    }
+
+    public void testStructure11() throws Exception {
+        checkStructure("testfiles/test11.yaml");
+    }
+
     public void testStructureOmap() throws Exception {
         checkStructure("testfiles/ordered.yaml");
     }

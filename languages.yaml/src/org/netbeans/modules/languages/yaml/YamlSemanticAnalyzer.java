@@ -47,6 +47,7 @@ import java.util.Set;
 import org.jvyamlb.Position.Range;
 import org.jvyamlb.nodes.Node;
 import org.jvyamlb.nodes.PositionedScalarNode;
+import org.jvyamlb.nodes.PositionedSequenceNode;
 import org.netbeans.modules.gsf.api.ColoringAttributes;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -112,14 +113,42 @@ public class YamlSemanticAnalyzer implements SemanticAnalyzer {
 
             for (Map.Entry entry : entrySet) {
                 Object key = entry.getKey();
-                assert key instanceof PositionedScalarNode;
-                //ScalarNode scalar = (ScalarNode)key;
-                PositionedScalarNode scalar = (PositionedScalarNode)key;
-                Range r = scalar.getRange();
-                OffsetRange range = new OffsetRange(r.start.offset, r.end.offset);
-                highlights.put(range, ColoringAttributes.METHOD_SET);
-                Node child = (Node) entry.getValue();
-                addHighlights(child, highlights, depth+1);
+                if (key instanceof PositionedSequenceNode) {
+                    PositionedSequenceNode psn = (PositionedSequenceNode)key;
+                    Object keyValue = psn.getValue();
+                    assert keyValue instanceof List;
+                    List<Node> list = (List<Node>)keyValue;
+                    for (Node child : list) {
+                        if (child == node) {
+                            // Circularity??
+                            return;
+                        }
+                        addHighlights(child, highlights, depth+1);
+                    }
+                    Object entryValue = entry.getValue();
+                    if (entryValue instanceof PositionedSequenceNode) {
+                        psn = (PositionedSequenceNode)entryValue;
+                        keyValue = psn.getValue();
+                        assert keyValue instanceof List;
+                        list = (List<Node>)keyValue;
+                        for (Node o : list) {
+                            if (o == node) {
+                                // Circularity??
+                                return;
+                            }
+                            addHighlights(o, highlights, depth+1);
+                        }
+                    }
+                } else {
+                    assert key instanceof PositionedScalarNode;
+                    //ScalarNode scalar = (ScalarNode)key;
+                    PositionedScalarNode scalar = (PositionedScalarNode)key;
+                    Range r = scalar.getRange();
+                    OffsetRange range = new OffsetRange(r.start.offset, r.end.offset);
+                    highlights.put(range, ColoringAttributes.METHOD_SET);
+                    Node child = (Node) entry.getValue();
+                    addHighlights(child, highlights, depth+1);
+                }
             }
         } else if (value instanceof List) {
             List<Node> list = (List<Node>)value;

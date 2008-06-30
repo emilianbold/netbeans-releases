@@ -47,6 +47,7 @@ import javax.swing.ImageIcon;
 import org.jvyamlb.Positionable;
 import org.jvyamlb.nodes.Node;
 import org.jvyamlb.nodes.PositionedScalarNode;
+import org.jvyamlb.nodes.PositionedSequenceNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
@@ -168,15 +169,49 @@ public class YamlScanner implements StructureScanner {
                     for (Map.Entry entry : entrySet) {
 
                         Object key = entry.getKey();
-                        assert key instanceof PositionedScalarNode;
-                        //ScalarNode scalar = (ScalarNode)key;
-                        PositionedScalarNode scalar = (PositionedScalarNode) key;
-                        String childName = scalar.getValue().toString();
-                        Node child = (Node) entry.getValue();
-                        children.add(new YamlStructureItem(child, childName, depth+1,
-                                // Range: beginning of -key- to ending of -value-
-                                ((Positionable) scalar).getRange().start.offset,
-                                ((Positionable) child).getRange().end.offset));
+                        if (key instanceof PositionedSequenceNode) {
+                            PositionedSequenceNode psn = (PositionedSequenceNode)key;
+                            Object keyValue = psn.getValue();
+                            assert keyValue instanceof List;
+                            List<Node> list = (List<Node>)keyValue;
+                            for (Node o : list) {
+                                //String childName = o.getValue().toString();
+                                Object childValue = o.getValue();
+                                if (childValue instanceof List || childValue instanceof Map) {
+                                    children.add(new YamlStructureItem(o, "list item", depth+1));
+                                } else {
+                                    String childName = childValue.toString();
+                                    children.add(new YamlStructureItem(o, childName, depth+1));
+                                }
+                            }
+                            Object entryValue = entry.getValue();
+                            if (entryValue instanceof PositionedSequenceNode) {
+                                psn = (PositionedSequenceNode)entryValue;
+                                keyValue = psn.getValue();
+                                assert keyValue instanceof List;
+                                list = (List<Node>)keyValue;
+                                for (Node o : list) {
+                                    //String childName = o.getValue().toString();
+                                    Object childValue = o.getValue();
+                                    if (childValue instanceof List || childValue instanceof Map) {
+                                        children.add(new YamlStructureItem(o, "list item", depth+1));
+                                    } else {
+                                        String childName = childValue.toString();
+                                        children.add(new YamlStructureItem(o, childName, depth+1));
+                                    }
+                                }
+                            }
+                        } else {
+                            assert key instanceof PositionedScalarNode;
+                            //ScalarNode scalar = (ScalarNode)key;
+                            PositionedScalarNode scalar = (PositionedScalarNode) key;
+                            String childName = scalar.getValue().toString();
+                            Node child = (Node) entry.getValue();
+                            children.add(new YamlStructureItem(child, childName, depth+1,
+                                    // Range: beginning of -key- to ending of -value-
+                                    ((Positionable) scalar).getRange().start.offset,
+                                    ((Positionable) child).getRange().end.offset));
+                        }
                     }
                     // Keep the list ordered, same order as in the document!!
                     Collections.sort(children);

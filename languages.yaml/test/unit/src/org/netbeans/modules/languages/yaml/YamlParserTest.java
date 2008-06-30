@@ -56,5 +56,7 @@ public class YamlParserTest extends YamlTestBase {
         checkErrors("testfiles/error2.yaml");
     }
 
-
+    public void testErrors3() throws Exception {
+        checkErrors("testfiles/error3.yaml");
+    }
 }

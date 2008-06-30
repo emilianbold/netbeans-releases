@@ -77,6 +77,26 @@ public class YamlSemanticAnalyzerTest extends YamlTestBase {
         checkSemantic("testfiles/test6.yaml");
     }
 
+    public void testSemantic7() throws Exception {
+        checkSemantic("testfiles/test7.yaml");
+    }
+
+    public void testSemantic8() throws Exception {
+        checkSemantic("testfiles/test8.yaml");
+    }
+
+    public void testSemantic9() throws Exception {
+        checkSemantic("testfiles/test9.yaml");
+    }
+
+    public void testSemantic10() throws Exception {
+        checkSemantic("testfiles/test10.yaml");
+    }
+
+    public void testSemantic11() throws Exception {
+        checkSemantic("testfiles/test11.yaml");
+    }
+
     public void testSemanticOmap() throws Exception {
         checkSemantic("testfiles/ordered.yaml");
     }
