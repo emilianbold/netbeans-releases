@@ -87,6 +87,7 @@ public class WebModuleMethods extends NbTestCase {
             Util.undeployModule(ModuleType.WAR, Util.WEB_PROJECT_PATH, Util.WEB_PROJECT_NAME, moduleID);
         } catch(Exception e) {
             e.printStackTrace();
+            System.getProperties().list(System.out);
             fail(e.getMessage());
         }
     }
