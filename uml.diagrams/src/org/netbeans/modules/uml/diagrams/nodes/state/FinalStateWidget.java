@@ -63,6 +63,7 @@ public class FinalStateWidget extends UMLLabelNodeWidget
     public FinalStateWidget(Scene scene)
     {
         super(scene);
+        setResizable(false);
         addToLookup(initializeContextPalette());
     }
 
@@ -96,26 +97,6 @@ public class FinalStateWidget extends UMLLabelNodeWidget
         }
     }
 
-    
-    @Override
-    protected void notifyStateChanged(ObjectState previousState,
-                                       ObjectState state)
-    {
-        boolean select = state.isSelected();
-        boolean wasSelected = previousState.isSelected();
-
-        if (select && !wasSelected)
-        {
-            setBorder(UMLWidget.NON_RESIZABLE_BORDER);
-        }
-        else
-        {
-            if (!select && wasSelected)
-            {
-                setBorder(BorderFactory.createEmptyBorder());
-            }
-        }
-    }
     
     private String loc(String key)
     {

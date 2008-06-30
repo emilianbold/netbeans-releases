@@ -99,8 +99,8 @@ public class RegionWidget extends Widget implements PropertyChangeListener, Diag
     private Rectangle mininumBounds;
     private int BORDER_THICKNESS = 1;
     private ResizeStrategy RESIZE_STRATEGY;
-    private static SelectProvider provider = new RegionSelectProvider();
-    private static RegionWidgetSelectAction regionSelectAction = new RegionWidgetSelectAction(provider, true);
+//    private static SelectProvider provider = new RegionSelectProvider();
+//    private static RegionWidgetSelectAction regionSelectAction = new RegionWidgetSelectAction(provider, true);
     
     
     public RegionWidget(Scene scene, IRegion region, CompositeStateWidget compositeStateWidget)
@@ -113,12 +113,12 @@ public class RegionWidget extends Widget implements PropertyChangeListener, Diag
         this.compositeStateWidget = compositeStateWidget;
         init(region);
 
-        DiagramPopupMenuProvider menuProvider = new DiagramPopupMenuProvider();
+//        DiagramPopupMenuProvider menuProvider = new DiagramPopupMenuProvider();
         WidgetAction.Chain selectTool = createActions(DesignerTools.SELECT);
         selectTool.addAction(ActionFactory.createResizeAction(RESIZE_STRATEGY, new RegionResizeControlPointResolver(), RESIZE_PROVIDER));               
-        
-        selectTool.addAction(regionSelectAction);
-        selectTool.addAction(ActionFactory.createPopupMenuAction(menuProvider));
+//        
+//        selectTool.addAction(regionSelectAction);
+//        selectTool.addAction(ActionFactory.createPopupMenuAction(menuProvider));
         
     }
 
@@ -169,7 +169,6 @@ public class RegionWidget extends Widget implements PropertyChangeListener, Diag
                 return new Rectangle(suggestedBounds.x, suggestedBounds.y, suggestedBounds.width, height);
             }
         };
-        
     }
 
     

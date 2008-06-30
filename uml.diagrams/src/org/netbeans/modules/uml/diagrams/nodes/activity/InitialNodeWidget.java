@@ -40,7 +40,6 @@ package org.netbeans.modules.uml.diagrams.nodes.activity;
 
 import java.util.List;
 import org.netbeans.api.visual.action.WidgetAction;
-import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.diagrams.nodes.OvalWidget;
@@ -56,6 +55,7 @@ public class InitialNodeWidget extends ControlNodeWidget
     public InitialNodeWidget(Scene scene)
     {
         super(scene, true);   // context palette is on
+        setResizable(false);
     }
 
     @Override
@@ -90,12 +90,6 @@ public class InitialNodeWidget extends ControlNodeWidget
         return UMLWidgetIDString.INITIALNODEWIDGET.toString();
     }
 
-    @Override
-    protected void notifyStateChanged(ObjectState previousState,
-                                       ObjectState state)
-    {
-        processStateChange(previousState, state);
-    }
     
 //    private class CircleWidget extends OvalWidget
 //    {   
