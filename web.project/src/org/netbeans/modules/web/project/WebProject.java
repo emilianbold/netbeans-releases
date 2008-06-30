@@ -430,6 +430,7 @@ public final class WebProject implements Project, AntProjectListener {
             new Info(),
             aux,
             helper.createCacheDirectoryProvider(),
+            helper.createAuxiliaryProperties(),
             spp,
             new ProjectWebModuleProvider (),
             new ProjectWebServicesSupportProvider(),

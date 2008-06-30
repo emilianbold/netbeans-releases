@@ -65,6 +65,8 @@ import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.drawingarea.dataobject.UMLDiagramDataObject;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
+import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.ui.support.DispatchHelper;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.diagramsupport.DiagramAreaEnumerations;
@@ -481,6 +483,33 @@ public class UIDiagram extends Diagram {
     public void receiveBroadcast(IBroadcastAction pAction) {
     }
     
+    /**
+     * Notifies the diagram to refresh the node graphical object that 
+     * is associated with the presentation element.
+     * 
+     * @param presentation The presentation element that needs to be refreshed.
+     * @return true if the presenation element was found and refreshed.
+     */
+    public boolean refresh(IPresentationElement presentation)
+    {
+        boolean retVal = false;
+        
+        Widget widget = scene.findWidget(presentation);
+        if (widget instanceof UMLNodeWidget)
+        {
+            UMLNodeWidget node = (UMLNodeWidget) widget;
+            node.refresh();
+            retVal = true;
+        }
+        else if (widget instanceof UMLEdgeWidget)
+        {
+            UMLEdgeWidget edge = (UMLEdgeWidget) widget;
+            edge.refresh();;
+            retVal = true;
+        }
+        
+        return retVal;
+    }
         /* (non-Javadoc)
          * @see org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram#getIsDirty()
          */

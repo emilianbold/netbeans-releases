@@ -39,21 +39,34 @@
 
 package org.netbeans.modules.quicksearch;
 
-import java.util.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.KeyStroke;
+import javax.swing.Timer;
 
 /**
  * Model of search results. Works as ListModel for JList which is displaying
  * results. Actual results data are stored in List of CategoryResult objects.
  * 
+ * As model changes can come very frequently, firing of changes is coalesced.
+ * Coalescing of changes helps UI to reduce flicker and unnecessary updates.
+ * 
  * @author Jan Becicka
  */
-public final class ResultsModel extends AbstractListModel {
+public final class ResultsModel extends AbstractListModel implements ActionListener {
 
     private static ResultsModel instance;
     
     private List<? extends CategoryResult> results;
+    
+    /* Timer for coalescing fast coming changes of model */
+    private Timer fireTimer;
+
+    /** Amount of time during which model has to be unchanged in order to fire
+     * changes to listeners. */
+    static final int COALESCE_TIME = 200;
 
     /** Singleton */
     private ResultsModel () {
@@ -68,7 +81,7 @@ public final class ResultsModel extends AbstractListModel {
     
     public void setContent (List<? extends CategoryResult> categories) {
         this.results = categories;
-        fireContentsChanged(this, 0, getSize());
+        maybeFireChanges();
     }
 
     /******* AbstractListModel impl ********/
@@ -108,14 +121,14 @@ public final class ResultsModel extends AbstractListModel {
         private CategoryResult category;
         private Runnable action;
         private String displayName;
-        private KeyStroke shortcut;
+        private List<? extends KeyStroke> shortcut;
         private String displayHint;
 
         public ItemResult (CategoryResult category, Runnable action, String displayName) {
             this(category, action, displayName, null, null);
         }
 
-        public ItemResult (CategoryResult category, Runnable action, String displayName, KeyStroke shortcut, String displayHint) {
+        public ItemResult (CategoryResult category, Runnable action, String displayName, List<? extends KeyStroke> shortcut, String displayHint) {
             this.category = category;
             this.action = action;
             this.displayName = displayName;
@@ -135,7 +148,7 @@ public final class ResultsModel extends AbstractListModel {
             return displayHint;
         }
 
-        public KeyStroke getShortcut() {
+        public List<? extends KeyStroke> getShortcut() {
             return shortcut;
         }
 
@@ -148,9 +161,26 @@ public final class ResultsModel extends AbstractListModel {
     void categoryChanged (CategoryResult cr) {
         // fire change only if category is contained in model
         if (results != null && results.contains(cr)) {
-            // TBD - fine tune to use fireIntervalAdded
-            fireContentsChanged(this, 0, getSize());
+            maybeFireChanges();
         }
+    }
+    
+    private void maybeFireChanges () {
+        if (fireTimer == null) {
+            fireTimer = new Timer(COALESCE_TIME, this);
+        }
+        if (!fireTimer.isRunning()) {
+            // first change in possible flurry, start timer
+            fireTimer.start();
+        } else {
+            // model change came too fast, let's wait until providers calm down :)
+            fireTimer.restart();
+        }
+    }
+    
+    public void actionPerformed(ActionEvent e) {
+        fireTimer.stop();
+        fireContentsChanged(this, 0, getSize());
     }
     
 }

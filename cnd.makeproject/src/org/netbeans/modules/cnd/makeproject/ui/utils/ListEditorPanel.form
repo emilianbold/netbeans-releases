@@ -20,7 +20,6 @@
   <SubComponents>
     <Container class="javax.swing.JPanel" name="dataPanel">
       <Properties>
-        <Property name="opaque" type="boolean" value="false"/>
         <Property name="requestFocusEnabled" type="boolean" value="false"/>
       </Properties>
       <Constraints>

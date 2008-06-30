@@ -97,7 +97,7 @@ public final class Language<T extends TokenId> {
     
     private final LanguageOperation<T> languageOperation;
     
-    private String mimeType;
+    private final String mimeType;
     
     private final int maxOrdinal;
 

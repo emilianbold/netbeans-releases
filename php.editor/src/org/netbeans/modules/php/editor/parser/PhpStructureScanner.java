@@ -59,10 +59,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 /**
- * Just s dummy impl. to enable the html, javascript and css navigator
- * Needs to be implemented properly.
  *
- * @author marek
+ * @author Petr Pisl
  */
 public class PhpStructureScanner implements StructureScanner {
 
@@ -190,6 +188,8 @@ public class PhpStructureScanner implements StructureScanner {
                     items.add(item);
                     children = null;
                 }
+                PHPStructureItem item = new PHPInterfaceStructureItem(new GSFPHPElementHandle.InterfaceDeclarationHandle(info, indec), formatter.getText(), children, "in"); //NOI18N
+                items.add(item);
             }
         }
 
@@ -200,7 +200,8 @@ public class PhpStructureScanner implements StructureScanner {
                 String functionName = function.getFunctionName().getName();
                 PHPStructureItem item;
                 appendFunctionDescription(function);
-                if (className.equals(functionName) || "__construct".equals(functionName)) { //NOI8N
+                // className doesn't have to be defined if it's interace
+                if (className!= null && (className.equals(functionName) || "__construct".equals(functionName))) { //NOI8N
                     item = new PHPConstructorStructureItem(new GSFPHPElementHandle.MethodDeclarationHandle(info, method), formatter.getText(), null, "con"); //NOI18N
                 }
                 else {
@@ -292,11 +293,26 @@ public class PhpStructureScanner implements StructureScanner {
                     String name = null;
                     Expression parameter = formalParameter.getParameterName();
                     if (parameter != null) {
-                        if (parameter instanceof Variable) {
-                            Variable variable = (Variable)parameter;
+                        Variable variable = null;
+                        boolean isReference = false;
+                        if (parameter instanceof Reference) {
+                            Reference reference = (Reference)parameter;
+                            isReference = true;
+                            if (reference.getExpression() instanceof Variable) {
+                                variable = (Variable)reference.getExpression();
+                            }
+                        }
+                        else if (parameter instanceof Variable) {
+                            variable = (Variable)parameter;
+                        }
+
+                        if (variable != null) {
                             name = Utils.resolveVariableName(variable);
                             if (name != null) {
                                 name = (variable.isDollared() ? "$" + name: name); //NOI18N
+                                if (isReference) {
+                                    name = '&' + name; //NOI18N
+                                }
                             }
                         }
                         else {

@@ -150,7 +150,7 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
         this.addComponentListener(this);
 
         // vlv: print
-        putClientProperty(java.awt.print.Printable.class, ""); // NOI18N
+        putClientProperty("print.printable", Boolean.TRUE); // NOI18N
     }
     
     private void manualInit() {
@@ -195,10 +195,10 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
         this.populateScenePreviewList(panelScenes);
         this.populateTiledLayerPreviewList(panelTiledLayers);
         this.populateSpritePreviewList(panelSprites);
-		
-		this.getAccessibleContext().setAccessibleName((NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.accessible.name")));
-		this.getAccessibleContext().setAccessibleDescription((NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.accessible.description")));
-		
+        
+        this.getAccessibleContext().setAccessibleName((NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.accessible.name")));
+        this.getAccessibleContext().setAccessibleDescription((NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.accessible.description")));
+        
     }
     
     private void populateTiledLayerPreviewList(JComponent container) {

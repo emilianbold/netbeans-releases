@@ -176,9 +176,7 @@ public class RailsProjectGenerator {
             }
         }
 
-        // Run Rake -T silently to determine the available tasks and write into private area
         RakeSupport.refreshTasks(p);
-        
         return h;
     }
     

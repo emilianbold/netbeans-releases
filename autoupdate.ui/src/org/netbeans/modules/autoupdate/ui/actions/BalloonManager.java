@@ -80,7 +80,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 
 /**
  * Shows, hides balloon-like tooltip windows.
@@ -445,11 +445,11 @@ public class BalloonManager {
     private static class DismissButton extends JButton {
 
         public DismissButton() {
-            Image img = Utilities.loadImage( "org/netbeans/modules/autoupdate/ui/resources/dismiss_enabled.png" );
+            Image img = ImageUtilities.loadImage( "org/netbeans/modules/autoupdate/ui/resources/dismiss_enabled.png" );
             setIcon( new ImageIcon( img ) );
-            img = Utilities.loadImage( "org/netbeans/modules/autoupdate/ui/resources/dismiss_rollover.png" );
+            img = ImageUtilities.loadImage( "org/netbeans/modules/autoupdate/ui/resources/dismiss_rollover.png" );
             setRolloverIcon(new ImageIcon( img ));
-            img = Utilities.loadImage( "org/netbeans/modules/autoupdate/ui/resources/dismiss_pressed.png" );
+            img = ImageUtilities.loadImage( "org/netbeans/modules/autoupdate/ui/resources/dismiss_pressed.png" );
             setPressedIcon(new ImageIcon( img ));
 
             setBorder( BorderFactory.createEmptyBorder() );

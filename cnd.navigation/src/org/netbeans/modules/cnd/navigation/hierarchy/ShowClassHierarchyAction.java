@@ -49,8 +49,6 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
-import org.openide.windows.Mode;
-import org.openide.windows.WindowManager;
 
 public final class ShowClassHierarchyAction extends CookieAction {
     
@@ -59,26 +57,10 @@ public final class ShowClassHierarchyAction extends CookieAction {
         if (decl != null){
             HierarchyTopComponent view = HierarchyTopComponent.findInstance();
             if (!view.isOpened()) {
-                if (HierarchyTopComponent.USE_VIEW_AS_DIALOG) {
-                    if (!view.isUserOpenView()) {
-                        if (!view.isUserOpenDialog()) {
-                            Mode preferedMode = WindowManager.getDefault().findMode("rightSlidingSide");
-                            if (preferedMode != null) {
-                                preferedMode.dockInto(view);
-                            }
-                            view.setUserOpenDialog();
-                        }
-                    }
-                    view.open();
-                    view.setClass(decl, true);
-                    view.requestActive();
-                } else {
-                    HierarchyDialog.show(decl);
-                }
-            } else {
-                view.setClass(decl, false);
-                view.requestActive();
+                 view.open();
             }
+            view.setClass(decl, false);
+            view.requestActive();
         } else {
             String msg = NbBundle.getMessage(getClass(), "MESSAGE_NoContextClass"); // NOI18N
             StatusDisplayer.getDefault().setStatusText(msg);

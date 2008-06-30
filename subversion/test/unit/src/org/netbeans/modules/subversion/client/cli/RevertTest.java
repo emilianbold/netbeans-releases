@@ -41,6 +41,7 @@ package org.netbeans.modules.subversion.client.cli;
 
 import java.io.File;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 
 /**
@@ -68,6 +69,17 @@ public class RevertTest extends AbstractCLITest {
         assertStatus(SVNStatusKind.NORMAL, file);
         assertContents(file, 1);
         assertNotifiedFiles(new File[] {file});        
+    }            
+    
+    public void testRevertNoFiles() throws Exception {                                                
+        ISVNClientAdapter c = getNbClient();        
+        SVNClientException e1 = null;
+        try {
+            c.revert(new File[]{}, false);
+        } catch (SVNClientException e) {
+            e1 = e;
+        }
+        assertNull(e1);
     }            
     
     public void testRevertFiles() throws Exception {                                                

@@ -79,6 +79,7 @@ import org.netbeans.modules.subversion.client.cli.commands.UpdateCommand;
 import org.netbeans.modules.subversion.client.cli.commands.VersionCommand;
 import org.netbeans.modules.subversion.client.parser.LocalSubversionException;
 import org.netbeans.modules.subversion.client.parser.SvnWcParser;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.tigris.subversion.svnclientadapter.AbstractClientAdapter;
 import org.tigris.subversion.svnclientadapter.Annotations;
 import org.tigris.subversion.svnclientadapter.Annotations.Annotation;
@@ -328,6 +329,9 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
 
     public void revert(File[] files, boolean recursivelly) throws SVNClientException {
+        if(files == null || files.length == 0) {
+            return;
+        }
         RevertCommand cmd = new RevertCommand(files, recursivelly);
         exec(cmd);
     }
@@ -773,7 +777,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
 
     private boolean hasMetadata(File file) {
-        return new File(file, ".svn/entries").canRead() || new File(file, "_svn/entries").canRead();
+        return new File(file, SvnUtils.SVN_ENTRIES_DIR).canRead();
     }
     
     private boolean isManaged(File file) {        

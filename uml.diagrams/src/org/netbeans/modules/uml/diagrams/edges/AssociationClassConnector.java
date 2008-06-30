@@ -53,6 +53,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ICreationFactory;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.LabelManager;
+import org.netbeans.modules.uml.drawingarea.persistence.data.EdgeInfo;
 
 /**
  *
@@ -88,7 +89,7 @@ public class AssociationClassConnector extends AssociationConnector
     public void buildBridge(IPresentationElement node)
     {
         GraphScene scene = (GraphScene)getScene();
-        
+        boolean newasocnode=false;
         if(node == null)
         {
             node = createPresentationElement();
@@ -100,6 +101,7 @@ public class AssociationClassConnector extends AssociationConnector
         boolean createBridge = true;
         if(nodeWidget == null)
         {
+            newasocnode=true;
             nodeWidget = scene.addNode(node);
         }
         else
@@ -117,8 +119,8 @@ public class AssociationClassConnector extends AssociationConnector
         if(createBridge == true)
         {
             Rectangle bounds = getBounds();
-
-            nodeWidget.setPreferredLocation(new Point(bounds.x + bounds.width / 2,
+            if (bounds != null && newasocnode)//reposition only if node was created, existred should stay
+                nodeWidget.setPreferredLocation(new Point(bounds.x + bounds.width / 2,
                                                   bounds.y + bounds.height * 2)); 
 
             ConnectToAssociationClass connectTo = new ConnectToAssociationClass(scene);
@@ -144,6 +146,17 @@ public class AssociationClassConnector extends AssociationConnector
         }
 
         return retVal;
+    }
+
+    @Override
+    public void load(EdgeInfo edgeReader)
+    {
+        super.load(edgeReader);
+        LabelManager manager = getLabelManager();
+        if (manager != null)
+        {
+            manager.createInitialLabels();
+        }        
     }
         
     public class AssociationClassLabelManager extends AssociationLabelManager

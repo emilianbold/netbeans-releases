@@ -53,8 +53,7 @@ public class LocalhostNode extends RemoteServerNode {
     
     public LocalhostNode(RemoteServerRecord record) {
         super(Children.LEAF, record);
-        setName(record.getServerName());
-        setActive(record.isActive());
+        setName(record.getName());
         setIconBaseWithExtension(LOCALHOST_ICON);
     }
 }

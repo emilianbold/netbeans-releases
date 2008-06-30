@@ -48,7 +48,9 @@ import java.util.Vector;
 import javax.accessibility.AccessibleContext;
 import javax.swing.JButton;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
+import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.openide.util.NbBundle;
@@ -330,7 +332,6 @@ public class ListEditorPanel extends javax.swing.JPanel {
         setRequestFocusEnabled(false);
         setLayout(new java.awt.GridBagLayout());
 
-        dataPanel.setOpaque(false);
         dataPanel.setRequestFocusEnabled(false);
         dataPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -652,6 +653,9 @@ public class ListEditorPanel extends javax.swing.JPanel {
         addObjectAction();
     }//GEN-LAST:event_addButtonActionPerformed
     
+    public JPanel getDataPanel() {
+        return dataPanel;
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;

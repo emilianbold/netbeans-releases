@@ -44,6 +44,7 @@ package org.netbeans.core.projects;
 import org.openide.filesystems.*;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.util.Set;
 import org.openide.util.Exceptions;
 
 /**
@@ -78,11 +79,11 @@ public final class FilterFileSystem extends MultiFileSystem {
         return root;
     }
 
-    protected FileObject findResourceOn (FileSystem fs, String res) {
+    protected @Override FileObject findResourceOn(FileSystem fs, String res) {
         return fs.findResource (root.getPath() + "/" + res); //NOI18N
     }
 
-    protected java.util.Set createLocksOn (String name) throws IOException {
+    protected @Override Set<? extends FileSystem> createLocksOn(String name) throws IOException {
         String nn = root.getPath() + "/" + name;
         org.netbeans.core.startup.layers.LocalFileSystemEx.potentialLock (name, nn);
         return super.createLocksOn (name);

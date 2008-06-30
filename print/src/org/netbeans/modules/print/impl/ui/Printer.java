@@ -47,8 +47,6 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.util.List;
 
-import org.openide.ErrorManager;
-
 import org.netbeans.modules.print.impl.util.Option;
 import static org.netbeans.modules.print.impl.ui.UI.*;
 
@@ -74,10 +72,7 @@ final class Printer implements Printable {
       }
     }
     catch (PrinterException e) {
-      String msg = i18n(
-        Printer.class, "ERR_Printer_Problem", e.getLocalizedMessage()); // NOI18N
-      ErrorManager.getDefault().annotate(e, msg);
-      ErrorManager.getDefault().notify(ErrorManager.USER, e);
+      printError(i18n(Printer.class, "ERR_Printer_Problem", e.getLocalizedMessage())); // NOI18N
     }
     myPapers = null;
   }

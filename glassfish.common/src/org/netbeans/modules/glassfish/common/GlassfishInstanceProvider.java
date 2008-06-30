@@ -60,6 +60,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -124,6 +125,17 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         }
 
         return result;
+    }
+    
+    public Lookup getLookupFor(ServerInstance instance) {
+        synchronized (instanceMap) {
+            for (GlassfishInstance gfInstance : instanceMap.values()) {
+                if (gfInstance.getCommonInstance().equals(instance)) {
+                    return gfInstance.getLookup();
+                }
+            }
+            return null;
+        }
     }
     
     public ServerInstanceImplementation getInternalInstance(String uri) {

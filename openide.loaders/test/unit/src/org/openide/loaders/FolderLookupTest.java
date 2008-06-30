@@ -52,13 +52,17 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
-public class FolderLookupTest extends NbTestCase {
+public class FolderLookupTest extends NbTestCase implements LookupListener {
+    private Lookup.Result<?> res;
+    private boolean bad;
+    private String threadName = "";
     
     public FolderLookupTest(java.lang.String testName) {
         super(testName);
@@ -68,11 +72,45 @@ public class FolderLookupTest extends NbTestCase {
         System.setProperty ("org.openide.util.Lookup", GLkp.class.getName());
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
     }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        if (res != null) {
+            res.allItems();
+            FolderLookup.ProxyLkp.DISPATCH.post(new Runnable() {
+                public void run() {
+                }
+            }).waitFinished();
+            if (threadName.contains("Folder") || threadName.length() == 0) {
+                fail("Wrong thread name: " + threadName);
+            }
+        }
+    }
     
+    
+    
+    private void addListener(Lookup l) {
+        bad = true;
+        assertNull("No result yet", res);
+        res = l.lookupResult(Object.class);
+        res.addLookupListener(this);
+        res.allItems();
+    }
+    
+    public void resultChanged(LookupEvent ev) {
+        if (threadName.length() == 0) {
+            threadName = Thread.currentThread().getName();
+        } else {
+            threadName = threadName + ", " + Thread.currentThread().getName();
+        }
+    }
+
     /** Test of the lookup method. Creates a file under Services directory 
      * and tries to lookup it. The object should be immediatelly found.
      *
@@ -100,6 +138,8 @@ public class FolderLookupTest extends NbTestCase {
 
 
    private void checkTheLookup (Lookup lookup, DataFolder folder) throws Exception {
+       addListener(lookup);
+       
         Class toFind = java.util.Dictionary.class;
         Class toCreate = java.util.Hashtable.class;
         
@@ -145,6 +185,8 @@ public class FolderLookupTest extends NbTestCase {
     }
     
     private void checkTheLookupForSubfolders (Lookup lookup, DataFolder folder) throws Exception {
+        addListener(lookup);
+        
         Class toFind = java.awt.Component.class;
         Class toCreate = javax.swing.JButton.class;
 
@@ -180,10 +222,11 @@ public class FolderLookupTest extends NbTestCase {
         
         DataFolder folder = DataFolder.findFolder (bb);
 
-        InstanceDataObject obj = InstanceDataObject.create (folder, null, ALkp.class);
         
         Lookup lookup = new org.openide.loaders.FolderLookup (folder).getLookup ();
+        addListener(lookup);
         
+        InstanceDataObject obj = InstanceDataObject.create (folder, null, ALkp.class);
         if (lookup.lookup (Integer.class) == null) {
             fail ("Integer not found in delegating lookup");
         }
@@ -337,8 +380,11 @@ public class FolderLookupTest extends NbTestCase {
                     } catch (Exception ex) {
                         this.ex = ex;
                     }
-                    // and this will deadlock
-                    lookup.lookup (String.class);
+                    Lookup l = lookup;
+                    if (l != null) {
+                        // and this will deadlock
+                        lookup.lookup (String.class);
+                    }
                 }
             }
 

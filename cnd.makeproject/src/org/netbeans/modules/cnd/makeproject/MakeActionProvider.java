@@ -110,6 +110,7 @@ public class MakeActionProvider implements ActionProvider {
     
     // Commands available from Make project
     public static final String COMMAND_BATCH_BUILD = "batch_build"; // NOI18N
+    public static final String COMMAND_BUILD_PACKAGES = "build_packages"; // NOI18N
     public static final String COMMAND_DEBUG_LOAD_ONLY = "debug.load.only"; // NOI18N
     public static final String COMMAND_CUSTOM_ACTION = "custom.action"; // NOI18N
     private static final String[] supportedActions = {

@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
-import java.util.List;
-import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -69,8 +67,6 @@ final class ComponentDescriptorVisualPanel extends JPanel {
                                               = "MSG_CD_DotInPrefix";          // NOI18N 
     private static final String MSG_ERR_PREFIX_INVALID 
                                               = "MSG_CD_InvalidPrefix";          // NOI18N 
-    private static final String MSG_ERR_PREFIX_EXISTS 
-                                              = "MSG_CD_ExistingPrefix";          // NOI18N 
     private static final String MSG_ERR_CLASS_NAME_EMPTY 
                                               = "MSG_CD_EmptyClassName";       // NOI18N 
     private static final String MSG_ERR_CLASS_NAME_INVALID 
@@ -240,7 +236,26 @@ final class ComponentDescriptorVisualPanel extends JPanel {
     }
 
     private String getDefaultPrefix(){
-        return getMessage(TXT_DEFAULT_PREFIX);
+        String prefixProposal = getMessage(TXT_DEFAULT_PREFIX);
+        int index = 1;
+        String prefix = getDefaultFreePrefix(prefixProposal, "");
+        while (prefix == null){
+            prefix = getDefaultFreePrefix(prefixProposal, ""+index);
+            index++;
+        }
+        return prefix;
+    }
+    
+    private String getDefaultFreePrefix(String prefix, String index){
+        String proposal = prefix + index;
+        String cdClass = NewComponentDescriptor.createDefaultCDClass(proposal);
+        String producerClass = NewComponentDescriptor.createDefaultProducerClass(proposal);
+        if (   getHelper().isCDClassNameExist(cdClass) 
+            || getHelper().isProducerClassNameExist(producerClass))
+        {
+            proposal = null;
+        }
+        return proposal;
     }
     
     private Version getVersion(){
@@ -272,8 +287,8 @@ final class ComponentDescriptorVisualPanel extends JPanel {
     private void updateValuesOnPrefixUpdate(){
         if (isCCPrefixValid()){
             if (!isCDClassNameUpdated){
-                myCDClassName.setText(getPrefixValue() + 
-                        NewComponentDescriptor.COMPONENT_DESCRIPTOR_POSTFIX);
+                myCDClassName.setText( 
+                        NewComponentDescriptor.createDefaultCDClass(getPrefixValue()));
                 isCDClassNameUpdated = false;
             }
             if (!isCDTypeIdUpdated){

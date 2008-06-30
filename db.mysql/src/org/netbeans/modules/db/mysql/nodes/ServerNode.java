@@ -40,6 +40,7 @@
 package org.netbeans.modules.db.mysql.nodes;
 
 import org.netbeans.modules.db.mysql.*;
+import org.netbeans.modules.db.mysql.actions.DisconnectServerAction;
 import org.netbeans.modules.db.mysql.nodes.DatabaseNode;
 import org.netbeans.modules.db.mysql.actions.PropertiesAction;
 import org.netbeans.modules.db.mysql.actions.StopAction;
@@ -142,6 +143,7 @@ public class ServerNode extends AbstractNode implements ChangeListener, Comparab
                 SystemAction.get(StartAction.class),
                 SystemAction.get(StopAction.class),
                 SystemAction.get(ConnectServerAction.class),
+                SystemAction.get(DisconnectServerAction.class),
                 SystemAction.get(DeleteAction.class),
                 SystemAction.get(RefreshServerAction.class),
                 SystemAction.get(AdministerAction.class),

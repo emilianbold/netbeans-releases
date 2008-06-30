@@ -744,6 +744,7 @@ public final class LoaderPoolNode extends AbstractNode {
      * @param fo MIMEResolver FileObject
      * @return list of extension and MIME type pairs. The list can contain 
      * duplicates and also [null, MIME] pairs.
+     * @since 3.9
      */
     public static ArrayList<String[]> getExtensionsAndMIMETypes(FileObject fo) {
         return MIMEResolverImpl.getExtensionsAndMIMETypes(fo);

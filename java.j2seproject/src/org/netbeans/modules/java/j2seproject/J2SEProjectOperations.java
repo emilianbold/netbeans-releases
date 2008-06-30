@@ -72,7 +72,8 @@ import org.openide.util.NbBundle;
  */
 public class J2SEProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
     
-    private J2SEProject project;
+    private final J2SEProject project;
+    private final J2SEActionProvider actionProvider;
     
     //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
     private String appArgs;
@@ -88,8 +89,11 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
     //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
     private String absolutesRelPath;
     
-    public J2SEProjectOperations(J2SEProject project) {
+    public J2SEProjectOperations(final J2SEProject project, final J2SEActionProvider actionProvider) {
+        assert project != null;
+        assert actionProvider != null;
         this.project = project;
+        this.actionProvider = actionProvider;
     }
     
     private static void addFile(FileObject projectDirectory, String fileName, List<FileObject> result) {
@@ -121,13 +125,9 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         return files;
     }
     
-    public void notifyDeleting() throws IOException {
-        J2SEActionProvider ap = project.getLookup().lookup(J2SEActionProvider.class);
-        
-        assert ap != null;
-        
+    public void notifyDeleting() throws IOException {                
         Properties p = new Properties();
-        String[] targetNames = ap.getTargetNames(ActionProvider.COMMAND_CLEAN, Lookup.EMPTY, p);
+        String[] targetNames = this.actionProvider.getTargetNames(ActionProvider.COMMAND_CLEAN, Lookup.EMPTY, p);
         FileObject buildXML = J2SEProjectUtil.getBuildXml(project);
         
         assert targetNames != null;

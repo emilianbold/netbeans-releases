@@ -433,6 +433,12 @@ public class NewCDCProjectWizardIterator implements TemplateWizard.Iterator {
 
     static int getNumberOfCdcPlatforms(){
         JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms (null, new Specification(CDCPlatform.PLATFORM_CDC,null));    //NOI18N
-        return platforms.length;
+        int cnt = platforms.length;
+        for (JavaPlatform javaPlatform : platforms) {
+            if (javaPlatform.getInstallFolders().size() == 0){ //platfrom invalid
+                cnt--;
+            }
+        }
+        return cnt;
     }
 }

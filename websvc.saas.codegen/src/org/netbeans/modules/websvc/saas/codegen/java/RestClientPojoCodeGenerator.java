@@ -57,7 +57,6 @@ import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
-import org.netbeans.modules.websvc.saas.codegen.Constants.DropFileType;
 import org.netbeans.modules.websvc.saas.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.SaasClientCodeGenerator;
@@ -66,6 +65,7 @@ import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.codegen.java.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.RestClientSaasBean;
+import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SessionKeyAuthentication;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
@@ -82,21 +82,33 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
     private FileObject saasServiceFile = null;
     private JavaSource saasServiceJS = null;
     private FileObject serviceFolder = null;
-    private DropFileType dropFileType;
     private SaasClientJavaAuthenticationGenerator authGen;
 
     public RestClientPojoCodeGenerator() {
         setDropFileType(Constants.DropFileType.JAVA_CLIENT);
     }
+
+    public boolean canAccept(SaasMethod method, Document doc) {
+        if (SaasBean.canAccept(method, WadlSaasMethod.class, getDropFileType()) &&
+                Util.isJava(doc)) {
+            return true;
+        }
+        return false;
+    }
     
     @Override
     public void init(SaasMethod m, Document doc) throws IOException {
+        init(m, new RestClientSaasBean((WadlSaasMethod) m), doc);
+    }
+    
+    public void init(SaasMethod m, RestClientSaasBean saasBean, Document doc) throws IOException {
         super.init(m, doc);
-        setBean(new RestClientSaasBean((WadlSaasMethod) m)); 
+        setBean(saasBean); 
         targetSource = JavaSource.forFileObject(getTargetFile());
         String packageName = JavaSourceHelper.getPackageName(targetSource);
         getBean().setPackageName(packageName);
         
+        serviceFolder = null;
         saasServiceFile = SourceGroupSupport.findJavaSourceFile(getProject(),
                 getBean().getSaasServiceName());
         if (saasServiceFile != null) {
@@ -129,14 +141,6 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
         }
         return serviceFolder;
     }
-
-    public DropFileType getDropFileType() {
-        return dropFileType;
-    }
-
-    public void setDropFileType(DropFileType dropFileType) {
-        this.dropFileType = dropFileType;
-    }
     
     @Override
     public RestClientSaasBean getBean() {
@@ -152,13 +156,6 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
         if (getBean().getMethod().getSaas().getLibraryJars().size() > 0) {
             Util.addClientJars(getBean(), getProject(), null);
         }
-    }
-
-    public boolean canAccept(SaasMethod method, Document doc) {
-        if (method instanceof WadlSaasMethod && Util.isJava(doc)) {
-            return true;
-        }
-        return false;
     }
 
     @Override
@@ -293,9 +290,9 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
             }
         } else if (httpMethod == HttpMethodType.POST) {
             if (hasRequestRep) {
-                methodBody += "             " + returnStatement + ".post(" + headerUsage + ", " + Constants.QUERY_PARAMS + ");\n";
-            } else {
                 methodBody += "             " + returnStatement + ".post(" + headerUsage + ", " + Constants.PUT_POST_CONTENT + ");\n";
+            } else {
+                methodBody += "             " + returnStatement + ".post(" + headerUsage + ", " + Constants.QUERY_PARAMS + ");\n";
             }
         } else if (httpMethod == HttpMethodType.DELETE) {
             methodBody += "             " + returnStatement + ".delete(" + headerUsage + ");\n";

@@ -40,15 +40,11 @@
 package org.netbeans.modules.quicksearch;
 
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Point;
-import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.lang.ref.WeakReference;
 import javax.swing.JTextArea;
-import javax.swing.JWindow;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -61,18 +57,22 @@ import org.openide.windows.TopComponent;
  */
 public class QuickSearchComboBar extends javax.swing.JPanel {
     
-    JWindow popup;
     QuickSearchPopup displayer = new QuickSearchPopup(this);
     WeakReference<TopComponent> caller;
     
     Color origForeground;
-    
+    private KeyStroke keyStroke;
+
+    public QuickSearchComboBar(KeyStroke ks) {
+        this();
+        keyStroke = ks;
+        setShowHint(true);
+    }
+
     /** Creates new form SilverLightComboBar */
     public QuickSearchComboBar() {
         initComponents();
         
-        setShowHint(true);
-
         command.getDocument().addDocumentListener(new DocumentListener() {
 
             public void insertUpdate(DocumentEvent arg0) {
@@ -89,26 +89,11 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
             
             private void textChanged () {
                 if (command.isFocusOwner()) {
-                    processCommand(command.getText());
+                    displayer.maybeEvaluate(command.getText());
                 }
             }
             
         });
-    }
-
-    private void processCommand(String text) {
-        if (popup == null) {
-            Point where = new Point(-SearchResultRender.shift-6, jPanel1.getSize().height - 1);
-            Window parent = SwingUtilities.windowForComponent(this);
-            SwingUtilities.convertPointToScreen(where, command);
-            popup = new JWindow(parent);
-            popup.setFocusableWindowState(false);
-            popup.getContentPane().add(displayer);
-            popup.setLocation(where);
-            popup.setVisible(true);
-            command.requestFocus();
-        }
-        displayer.update(text);
     }
 
     /** This method is called from within the constructor to
@@ -151,7 +136,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 2, 3, 1);
+        gridBagConstraints.insets = new java.awt.Insets(1, 2, 1, 1);
         jPanel1.add(jLabel2, gridBagConstraints);
 
         jScrollPane1.setBorder(null);
@@ -196,7 +181,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 3);
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 3);
         jPanel1.add(jSeparator1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -207,9 +192,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void formFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusLost
-    if (popup!=null)
-        popup.setVisible(false);
-    popup = null;
+    displayer.setVisible(false);
 }//GEN-LAST:event_formFocusLost
 
 private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_commandKeyPressed
@@ -220,19 +203,30 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
         displayer.selectPrev();
         evt.consume();
     } else if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-        returnFocus();
-        displayer.invoke();
         evt.consume();
+        invokeSelectedItem();
     } else if ((evt.getKeyCode()) == KeyEvent.VK_ESCAPE) {
         returnFocus();
     }
 }//GEN-LAST:event_commandKeyPressed
 
-    private void returnFocus () {
-        if (popup != null) {
-            popup.setVisible(false);
-            popup = null;
+    /** Actually invokes action selected in the results list */
+    public void invokeSelectedItem () {
+        // #137259: invoke only some results were found
+        if (displayer.getList().getModel().getSize() > 0) {
+            returnFocus();
+            // #137342: run action later to let focus indeed be transferred
+            // by previous returnFocus() call
+            SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        displayer.invoke();
+                    }
+            });
         }
+    }
+    
+    private void returnFocus () {
+        displayer.setVisible(false);
         if (caller != null) {
             TopComponent tc = caller.get();
             if (tc != null) {
@@ -244,13 +238,7 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
 
 
 private void commandFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_commandFocusLost
-    if(popup != null && evt.getOppositeComponent() != null) {
-        if (!evt.getOppositeComponent().equals(displayer.getList())) {
-            popup.setVisible(false);
-            popup = null;
-        }
-    }
-    
+    displayer.setVisible(false);
     setShowHint(true);
 }//GEN-LAST:event_commandFocusLost
 
@@ -265,7 +253,8 @@ private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:even
         }
         if (showHint) {
             command.setForeground(command.getDisabledTextColor());
-            command.setText(NbBundle.getMessage(QuickSearchComboBar.class, "MSG_DiscoverabilityHint"));
+            String sc = keyStroke == null ? "" : " (" + keyStroke.toString().replace(" pressed ", "+") + ")"; //NOI18N
+            command.setText(NbBundle.getMessage(QuickSearchComboBar.class, "MSG_DiscoverabilityHint") + sc); //NOI18N
         } else {
             command.setForeground(origForeground);
             command.setText("");        
@@ -287,10 +276,6 @@ private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:even
         caller = new WeakReference<TopComponent>(TopComponent.getRegistry().getActivated());
         super.requestFocus();
         command.requestFocus();
-    }
-    
-    JWindow getPopup () {
-        return popup;
     }
     
     JTextArea getCommand() {

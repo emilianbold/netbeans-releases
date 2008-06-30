@@ -52,7 +52,7 @@ import org.netbeans.modules.xml.text.syntax.XMLKit;
 
 
 /**
- *
+ * Formatting related tests based on old formatter. See XMLFormatter.
  * @author Tomasz Slota
  */
 public class XMLFormatterTest extends NbTestCase {
@@ -65,19 +65,22 @@ public class XMLFormatterTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
     }
 
+    @Override
     protected void tearDown() throws Exception {
     }
 
     public static Test suite() {
-        TestSuite suite = new TestSuite(XMLFormatterTest.class);
-        
+        TestSuite suite = new TestSuite();
+        suite.addTest(new XMLFormatterTest("testReformatSample1"));
+        //suite.addTest(new XMLFormatterTest("testReformatSample2"));        
         return suite;
     }
 
-    public void testReformatSample1(){
+    public void testReformatSample1() {
         testReformat("web.xml");
     }
     

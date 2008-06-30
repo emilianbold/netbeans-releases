@@ -42,6 +42,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -86,10 +87,11 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
         categoryLabel.setForeground(QuickSearchComboBar.getCategoryTextColor());
         shift = categoryLabel.getPreferredSize().width;
         ItemResult ir = (ItemResult) value;
-        KeyStroke shortcut = ir.getShortcut();
+        List<? extends KeyStroke> shortcut = ir.getShortcut();
         JMenuItem itemLabel = new JMenuItem(ir.getDisplayName());
-        if (shortcut != null) {
-            itemLabel.setAccelerator(shortcut);
+        if (shortcut != null && shortcut.size() > 0) {
+            // TBD - how to display multi shortcuts?
+            itemLabel.setAccelerator(shortcut.get(0));
         }
         if (!IS_GTK) {
             itemLabel.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 2));

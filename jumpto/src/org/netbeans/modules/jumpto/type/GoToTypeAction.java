@@ -383,7 +383,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             
             LOGGER.fine( "Worker for " + text + " - started " + ( System.currentTimeMillis() - createTime ) + " ms."  );                
             
-            List<? extends TypeDescriptor> types = getTypeNames( text );
+            final List<? extends TypeDescriptor> types = getTypeNames( text );
             if ( isCanceled ) {
                 LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );                                
                 return;
@@ -392,18 +392,22 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             if (typeFilter != null) {
                 model = LazyListModel.create(model, GoToTypeAction.this, 0.1, "Not computed yet");;
             }
+            final ListModel fmodel = model;
             if ( isCanceled ) {            
                 LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );                                
                 return;
             }
             
-            if ( !isCanceled && model != null ) {
+            if ( !isCanceled && fmodel != null ) {                
                 LOGGER.fine( "Worker for text " + text + " finished after " + ( System.currentTimeMillis() - createTime ) + " ms."  );                
-                
-                panel.setModel(model);
-                if (okButton != null && !types.isEmpty()) {
-                    okButton.setEnabled (true);
-                }
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        panel.setModel(fmodel);
+                        if (okButton != null && !types.isEmpty()) {
+                            okButton.setEnabled (true);
+                        }
+                    }
+                });
             }
             
             
