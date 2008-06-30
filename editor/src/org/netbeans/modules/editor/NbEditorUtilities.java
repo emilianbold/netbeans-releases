@@ -65,7 +65,7 @@ import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import java.util.MissingResourceException;
 import java.awt.Toolkit;
-import javax.swing.text.EditorKit;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -276,7 +276,7 @@ public class NbEditorUtilities {
      * @see NbEditorDocument#MIME_TYPE_PROP
      */
     public static String getMimeType(Document doc) {
-        return (String)doc.getProperty(NbEditorDocument.MIME_TYPE_PROP);
+        return DocumentUtilities.getMimeType(doc);
     }
 
     /**
@@ -292,15 +292,7 @@ public class NbEditorUtilities {
      * @since 1.29
      */
     public static String getMimeType(JTextComponent component) {
-        Document doc = component.getDocument();
-        String mimeType = getMimeType(doc);
-        if (mimeType == null) {
-            EditorKit kit = component.getUI().getEditorKit(component);
-            if (kit != null) {
-                mimeType = kit.getContentType();
-            }
-        }
-        return mimeType;
+        return DocumentUtilities.getMimeType(component);
     }
     
     /** Displays ErrorManager window with the localized message. If bundleKey parameter is not founded in bundle

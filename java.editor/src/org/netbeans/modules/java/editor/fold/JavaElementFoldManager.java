@@ -61,23 +61,23 @@ import java.util.TreeMap;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.fold.Fold;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.SettingsChangeEvent;
-import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.ext.java.JavaFoldManager;
-import org.netbeans.editor.ext.java.JavaSettingsNames;
+import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.editor.semantic.ScanningCancellableTask;
 import org.netbeans.modules.java.editor.semantic.Utilities;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
@@ -97,11 +97,11 @@ public class JavaElementFoldManager extends JavaFoldManager {
     private JavaElementFoldTask task;
     
     // Folding presets
-    private boolean foldImportsPreset;
-    private boolean foldInnerClassesPreset;
-    private boolean foldJavadocsPreset;
-    private boolean foldCodeBlocksPreset;
-    private boolean foldInitialCommentsPreset;
+    private boolean foldImportsPreset = false;
+    private boolean foldInnerClassesPreset = false;
+    private boolean foldJavadocsPreset = false;
+    private boolean foldCodeBlocksPreset = false;
+    private boolean foldInitialCommentsPreset = false;
     
     /** Creates a new instance of JavaElementFoldManager */
     public JavaElementFoldManager() {
@@ -110,7 +110,12 @@ public class JavaElementFoldManager extends JavaFoldManager {
     public void init(FoldOperation operation) {
         this.operation = operation;
         
-        settingsChange(null);
+        Preferences prefs = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
+        foldInitialCommentsPreset = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_COLLAPSE_INITIAL_COMMENT, foldInitialCommentsPreset);
+        foldImportsPreset = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_COLLAPSE_IMPORT, foldImportsPreset);
+        foldCodeBlocksPreset = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_COLLAPSE_METHOD, foldCodeBlocksPreset);
+        foldInnerClassesPreset = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_COLLAPSE_INNERCLASS, foldInnerClassesPreset);
+        foldJavadocsPreset = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_COLLAPSE_JAVADOC, foldJavadocsPreset);
     }
 
     public synchronized void initFolds(FoldHierarchyTransaction transaction) {
@@ -161,20 +166,6 @@ public class JavaElementFoldManager extends JavaFoldManager {
         initialCommentFold = null;
     }
     
-    public void settingsChange(SettingsChangeEvent evt) {
-        // Get folding presets
-        foldInitialCommentsPreset = getSetting(JavaSettingsNames.CODE_FOLDING_COLLAPSE_INITIAL_COMMENT);
-        foldImportsPreset = getSetting(JavaSettingsNames.CODE_FOLDING_COLLAPSE_IMPORT);
-        foldCodeBlocksPreset = getSetting(JavaSettingsNames.CODE_FOLDING_COLLAPSE_METHOD);
-        foldInnerClassesPreset = getSetting(JavaSettingsNames.CODE_FOLDING_COLLAPSE_INNERCLASS);
-        foldJavadocsPreset = getSetting(JavaSettingsNames.CODE_FOLDING_COLLAPSE_JAVADOC);
-    }
-    
-    private boolean getSetting(String settingName){
-        JTextComponent tc = operation.getHierarchy().getComponent();
-        return SettingsUtil.getBoolean(org.netbeans.editor.Utilities.getKitClass(tc), settingName, false);
-    }
-    
     static final class JavaElementFoldTask extends ScanningCancellableTask<CompilationInfo> {
         
         //XXX: this will hold JavaElementFoldTask as long as the FileObject exists:
@@ -199,23 +190,23 @@ public class JavaElementFoldManager extends JavaFoldManager {
         public void run(final CompilationInfo info) {
             resume();
             
-            JavaElementFoldManager manager;
+            JavaElementFoldManager jefm;
             
             //the synchronized section should be as limited as possible here
             //in particular, "scan" should not be called in the synchronized section
             //or a deadlock could appear: sy(this)+document read lock against
             //document write lock and this.cancel/sy(this)
             synchronized (this) {
-                manager = this.manager != null ? this.manager.get() : null;
+                jefm = this.manager != null ? this.manager.get() : null;
             }
             
-            if (manager == null)
+            if (jefm == null)
                 return ;
             
             long startTime = System.currentTimeMillis();
 
             final CompilationUnitTree cu = info.getCompilationUnit();
-            final JavaElementFoldVisitor v = manager.new JavaElementFoldVisitor(info, cu, info.getTrees().getSourcePositions());
+            final JavaElementFoldVisitor v = jefm.new JavaElementFoldVisitor(info, cu, info.getTrees().getSourcePositions());
             
             scan(v, cu, null);
             
@@ -228,7 +219,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
             if (v.stopped || isCancelled())
                 return ;
             
-            SwingUtilities.invokeLater(manager.new CommitFolds(v.folds));
+            SwingUtilities.invokeLater(jefm.new CommitFolds(v.folds));
             
             long endTime = System.currentTimeMillis();
             

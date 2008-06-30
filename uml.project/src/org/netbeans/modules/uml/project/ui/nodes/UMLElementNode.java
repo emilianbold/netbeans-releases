@@ -199,30 +199,30 @@ public class UMLElementNode extends AbstractModelElementNode
 		}
 	}
 	
-	//**************************************************
-	// ITreeItem Implementation
-	//**************************************************
-	
-	public String getName()
-	{
-		IElement element = getModelElement();
-		
+    //**************************************************
+    // ITreeItem Implementation
+    //**************************************************
+
+   public String getName()
+    {
+        IElement element = getModelElement(); 
+
         if (element instanceof INamedElement)
-		{
-			// return unformatted name for attributes and operations, so that
-			// rename action on those nodes will display the bare name without
-			// visibility modifier and type information, since we only support 
-			// rename the name part of these two types of elements from project
-			// tree
-			if (element.getElementType().equals(ELEMENT_TYPE_ATTRIBUTE) ||
-				element.getElementType().equals(ELEMENT_TYPE_OPERATION))
+        {
+            // return unformatted name for attributes and operations, so that
+            // rename action on those nodes will display the bare name without
+            // visibility modifier and type information, since we only support 
+            // rename the name part of these two types of elements from project
+            // tree
+            if (element.getElementType().equals(ELEMENT_TYPE_ATTRIBUTE) ||
+                    element.getElementType().equals(ELEMENT_TYPE_OPERATION))
             {
-				return (((INamedElement)element).getName());
+                return (((INamedElement) element).getName());
             }
-		}
-        
-		return super.getName();
-	}
+        }
+
+        return super.getName();
+    }
 
     
    /* (non-Javadoc)

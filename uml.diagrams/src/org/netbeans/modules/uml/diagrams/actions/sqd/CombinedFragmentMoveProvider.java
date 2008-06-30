@@ -63,10 +63,10 @@ import org.openide.windows.TopComponent;
  */
 public class CombinedFragmentMoveProvider  implements MoveProvider {
 
-                private MoveProvider provider;
+                private AlignWithMoveStrategyProvider provider;
                 private JTrackBar tb;
                 
-                public CombinedFragmentMoveProvider(MoveProvider baseProvider)
+                public CombinedFragmentMoveProvider(AlignWithMoveStrategyProvider baseProvider)
                 {
                     provider=baseProvider;
                 }
@@ -86,16 +86,7 @@ public class CombinedFragmentMoveProvider  implements MoveProvider {
                     //
                     CombinedFragmentWidget cfW=(CombinedFragmentWidget) widget;
                     final ContainerWidget finalcontainer=cfW.getContainer();
-                    if(finalcontainer!=null)
-                        new AfterValidationExecutor(new ActionProvider(){
-
-                            public void perfomeAction() {
-                                verifyCFContentLifelines(widget);
-                                verifyCFContentPins(widget);
-                                verifyCreatedLifelines(widget);
-                                finalcontainer.calculateChildren(true);
-                            }
-                        },widget.getScene());
+                    processAllVerifications(widget,finalcontainer);
                     widget.getScene().validate();
                     tb=null;
                     if (widget.getScene() instanceof DesignerScene) 
@@ -112,11 +103,10 @@ public class CombinedFragmentMoveProvider  implements MoveProvider {
                     return provider.getOriginalLocation(widget);
                 }
 
-                public void setNewLocation(Widget widget, Point location) {
+                public void setNewLocation(final Widget widget, Point location) {
                     provider.setNewLocation(widget, location);
-                    verifyCFContentLifelines(widget);
-                    verifyCFContentPins(widget);
-                    verifyCreatedLifelines(widget);
+                    if(provider.isMovementInitialized())processAllVerifications(widget,null);
+                    widget.getScene().validate();
                  }
                 
                 private void verifyCFContentLifelines(Widget widget)
@@ -159,7 +149,7 @@ public class CombinedFragmentMoveProvider  implements MoveProvider {
                             }
                             if(changed)l.setPreferredLocation(loc);
                             IPresentationElement el=(IPresentationElement) scene.findObject(l);
-                            tb.moveObject(el);
+                            if(tb!=null)tb.moveObject(el);
                         }
                         else if(child instanceof CombinedFragmentWidget)
                         {
@@ -238,7 +228,7 @@ public class CombinedFragmentMoveProvider  implements MoveProvider {
                             }
                             if(changed)l.setPreferredLocation(loc);
                             IPresentationElement el=(IPresentationElement) scene.findObject(l);
-                            tb.moveObject(el);
+                            if(tb!=null)tb.moveObject(el);
                         }
                         else if(child instanceof CombinedFragmentWidget)
                         {
@@ -248,4 +238,37 @@ public class CombinedFragmentMoveProvider  implements MoveProvider {
                     //
                     scene.validate();
                 }
+
+                private void processAllVerifications(final Widget widget,final ContainerWidget finalcontainer)
+                {
+                        new AfterValidationExecutor(new ActionProvider(){
+                            public void perfomeAction() {
+                                verifyCFContentLifelines(widget);
+                                widget.revalidate();
+                                new AfterValidationExecutor(new ActionProvider(){
+                                    public void perfomeAction() {
+                                        verifyCFContentPins(widget);
+                                        widget.revalidate();
+                                        new AfterValidationExecutor(new ActionProvider(){
+                                            public void perfomeAction() {
+                                                verifyCreatedLifelines(widget);
+                                                widget.revalidate();
+                                                if(finalcontainer!=null)new AfterValidationExecutor(new ActionProvider(){
+                                                    public void perfomeAction() {
+                                                        finalcontainer.calculateChildren(true);
+                                                        widget.getScene().validate();
+                                                    }
+                                                },widget.getScene());
+                                                widget.getScene().validate();
+                                           }
+                                        },widget.getScene());
+                                        widget.getScene().validate();
+                                    }
+                                },widget.getScene());
+                                widget.getScene().validate();
+                            }
+                        },widget.getScene());
+                        widget.getScene().validate();
+                }
+
 }

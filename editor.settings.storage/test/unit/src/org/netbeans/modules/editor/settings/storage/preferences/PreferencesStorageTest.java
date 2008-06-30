@@ -48,7 +48,7 @@ import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.settings.storage.EditorTestLookup;
 import org.netbeans.modules.editor.settings.storage.StorageImpl;
-import org.netbeans.modules.editor.settings.storage.preferences.PreferencesImpl.TypedValue;
+import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
 
 /**
  *
@@ -62,6 +62,7 @@ public class PreferencesStorageTest extends NbTestCase {
     
     protected @Override void setUp() throws Exception {
         super.setUp();
+        clearWorkDir();
     
         EditorTestLookup.setLookup(
             new URL[] {
@@ -84,14 +85,14 @@ public class PreferencesStorageTest extends NbTestCase {
     }
     
     public void testSimple() throws IOException {
-        StorageImpl<String, TypedValue> storage = new StorageImpl<String, TypedValue>(new PreferencesStorage());
+        StorageImpl<String, TypedValue> storage = new StorageImpl<String, TypedValue>(new PreferencesStorage(), null);
         Map<String, TypedValue> map = storage.load(MimePath.EMPTY, null, false);
         assertNotNull("Preferences map should not be null", map);
         assertEquals("Wrong value for 'simple-value-setting-A'", "value-A", map.get("simple-value-setting-A").getValue());
     }
 
     public void testWriting() throws IOException {
-        StorageImpl<String, TypedValue> storage = new StorageImpl<String, TypedValue>(new PreferencesStorage());
+        StorageImpl<String, TypedValue> storage = new StorageImpl<String, TypedValue>(new PreferencesStorage(), null);
         Map<String, TypedValue> map = storage.load(MimePath.EMPTY, null, false);
         assertNotNull("Preferences map should not be null", map);
         assertEquals("Wrong value for 'simple-value-setting-A'", "value-A", map.get("simple-value-setting-A").getValue());
@@ -103,7 +104,7 @@ public class PreferencesStorageTest extends NbTestCase {
         storage.save(MimePath.EMPTY, null, false, mm);
         
         // use fresh new StorageImpl
-        storage = new StorageImpl<String, TypedValue>(new PreferencesStorage());
+        storage = new StorageImpl<String, TypedValue>(new PreferencesStorage(), null);
         map = storage.load(MimePath.EMPTY, null, false);
         assertNotNull("Preferences map should not be null", map);
         assertEquals("Wrong number of settings", 2, map.size());
@@ -114,7 +115,7 @@ public class PreferencesStorageTest extends NbTestCase {
     // test localization through valueId
     
     public void testLocalizedValues() throws IOException {
-        StorageImpl<String, TypedValue> storage = new StorageImpl<String, TypedValue>(new PreferencesStorage());
+        StorageImpl<String, TypedValue> storage = new StorageImpl<String, TypedValue>(new PreferencesStorage(), null);
         Map<String, TypedValue> map = storage.load(MimePath.EMPTY, null, false);
         assertNotNull("Preferences map should not be null", map);
         assertEquals("Wrong value for 'localized-setting'", "Hey! This is the value from Bundle.properties!!!", map.get("localized-setting").getValue());
@@ -123,7 +124,7 @@ public class PreferencesStorageTest extends NbTestCase {
     // test reading from multiple files (including remove="true")
 
     public void testMultiplePreferencesFiles() throws IOException {
-        StorageImpl<String, TypedValue> storage = new StorageImpl<String, TypedValue>(new PreferencesStorage());
+        StorageImpl<String, TypedValue> storage = new StorageImpl<String, TypedValue>(new PreferencesStorage(), null);
         Map<String, TypedValue> map = storage.load(MimePath.parse("text/x-testA"), null, false);
         assertNotNull("Preferences map should not be null", map);
         
@@ -136,7 +137,7 @@ public class PreferencesStorageTest extends NbTestCase {
     // test removing settings
 
     public void testRemovingSettings() throws IOException {
-        StorageImpl<String, TypedValue> storage = new StorageImpl<String, TypedValue>(new PreferencesStorage());
+        StorageImpl<String, TypedValue> storage = new StorageImpl<String, TypedValue>(new PreferencesStorage(), null);
         Map<String, TypedValue> map = storage.load(MimePath.EMPTY, null, false);
         assertNotNull("Preferences map should not be null", map);
         assertEquals("Wrong value for 'simple-value-setting-A'", "value-A", map.get("simple-value-setting-A").getValue());
@@ -150,7 +151,7 @@ public class PreferencesStorageTest extends NbTestCase {
         storage.save(MimePath.EMPTY, null, false, mm);
         
         // use fresh new StorageImpl
-        storage = new StorageImpl<String, TypedValue>(new PreferencesStorage());
+        storage = new StorageImpl<String, TypedValue>(new PreferencesStorage(), null);
         map = storage.load(MimePath.EMPTY, null, false);
         assertNotNull("Preferences map should not be null", map);
         assertEquals("Wrong number of settings", 3, map.size());

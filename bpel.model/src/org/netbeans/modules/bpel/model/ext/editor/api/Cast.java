@@ -37,23 +37,20 @@ import org.netbeans.modules.xml.schema.model.GlobalType;
 
 /**
  * @author Vitaly Bychkov
+ * @author nk160297
  * @version 1.0
  */
 public interface Cast extends ExtensionEntity, BpelContainer, 
         ReferenceCollection, OutOfImportReference {
     
-    String SOURCE = "source"; //NOI18N
-    String PATH = "path"; //NOI18N
-    String TYPE = "type"; //NOI18N
-
-    Source getSource();
-    void setSource(Source source);
-
+    SchemaReference<? extends GlobalType> getType();
+    void setType(SchemaReference<? extends GlobalType> type);
+    void removeType();
+    
     String getPath();
     void setPath(String path) throws VetoException;
     void removePath();
 
-    SchemaReference<GlobalType> getType();
-    void setType(SchemaReference<GlobalType> type);
-    void removeType();
+    Source getSource();
+    void setSource(Source source);
 }

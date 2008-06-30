@@ -53,6 +53,7 @@ public class PopupConstants {
     public final static String HIDE = "Hide";
     public final static String SHOW = "Show";
     public final static String LABELS = "Labels";
+    public final static String COLORS_FONTS = "Colors & Fonts";
     
     //edit section
     public final static String COPY = "Copy";
@@ -79,8 +80,8 @@ public class PopupConstants {
     
     //Font and colors section
     public final static String FONT = "Font";
-    public final static String FONT_COLOR = "Font Color";
-    public final static String BACKGROUND_COLOR = "Background Color";
+    public final static String FONT_COLOR = "Foreground";
+    public final static String BACKGROUND = "Background";
     public final static String BORDER_COLOR = "Border Color";
     
     //Labels section

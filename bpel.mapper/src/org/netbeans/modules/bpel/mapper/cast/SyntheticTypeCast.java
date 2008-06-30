@@ -19,15 +19,15 @@
 
 package org.netbeans.modules.bpel.mapper.cast;
 
+import java.util.Iterator;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
-import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Variable;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.openide.ErrorManager;
 
 /**
@@ -37,30 +37,30 @@ import org.openide.ErrorManager;
  */
 public class SyntheticTypeCast extends AbstractTypeCast {
 
-    private RestartableIterator<Object> mItr;
+    private Iterable<Object> mItrb;
     private XPathSchemaContext mSContext;
     
-    public SyntheticTypeCast(RestartableIterator<Object> itr, GlobalType castTo) {
+    public SyntheticTypeCast(Iterable<Object> itrb, GlobalType castTo) {
         super(castTo);
-        assert itr != null;
-        mItr = itr;
+        assert itrb != null;
+        mItrb = itrb;
     }
     
-    public RestartableIterator<Object> getLocationIterator() {
-        return mItr;
+    public Iterable<Object> getLocationIterable() {
+        return mItrb;
     }
     
     public XPathSchemaContext getSchemaContext() {
         if (mSContext == null) {
-            mSContext = PathConverter.constructContext(mItr);
+            mSContext = PathConverter.constructContext(mItrb, false);
         }
         return mSContext;
     }
 
     public Variable getBaseVariable() {
-        mItr.restart();
-        while (mItr.hasNext()) {
-            Object obj = mItr.next();
+        Iterator itr = mItrb.iterator();
+        while (itr.hasNext()) {
+            Object obj = itr.next();
             if (obj instanceof Variable) {
                 return (Variable)obj;
             }
@@ -69,11 +69,11 @@ public class SyntheticTypeCast extends AbstractTypeCast {
         return null;
     }
     
-    @Override
     public boolean populateCast(Cast target, 
             BpelEntity destination, boolean inLeftMapperTree) {
-        RestartableIterator<Object> itr = getLocationIterator();
-        XPathExpression pathObj = PathConverter.constructXPath(destination, itr);
+        Iterable<Object> itrb = getLocationIterable();
+        XPathExpression pathObj = PathConverter.constructXPath(
+                destination, itrb, false);
         if (pathObj == null) {
             return false;
         }
@@ -86,12 +86,11 @@ public class SyntheticTypeCast extends AbstractTypeCast {
             return false;
         }
         //
-        return super.populateCast(target, destination, inLeftMapperTree);
+        return populateCastImpl(target, destination, inLeftMapperTree);
     }
 
     public Object getCastedObject() {
-        mItr.restart();
-        Object result = mItr.next();
+        Object result = mItrb.iterator().next();
         return result;
     }
 
@@ -103,7 +102,7 @@ public class SyntheticTypeCast extends AbstractTypeCast {
      * @return
      */
     public XPathExpression getPathExpression() {
-        return PathConverter.constructXPath(getBaseVariable(), mItr);
+        return PathConverter.constructXPath(getBaseVariable(), mItrb, false);
     }
     
 } 

@@ -12,8 +12,7 @@
                 </file>
                 
                 <folder name="Actions">
-                    <file name="org-netbeans-modules-ruby-rubyproject-RunFocusedTest.instance"/>
-                    <file name="org-netbeans-modules-ruby-rubyproject-DebugFocusedTest.instance"/>
+                    <file name="org-netbeans-modules-ruby-ReflowParagraphAction.instance"/>
                 </folder>
                 
                 <!-- TODO - this should not be necessary; I'm doing this now to work around

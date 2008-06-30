@@ -53,6 +53,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
@@ -73,11 +74,7 @@ public class J2SEProjectType {
     private static SpecificationVersion JDK15Version = new SpecificationVersion("1.5");// NOI18N
     
     public static boolean isProjectTypeSupported(Project project) {
-        AuxiliaryConfiguration aux = (AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class);
-        if (aux == null) {
-            System.err.println("Auxiliary Configuration is null for Project: " + project);// NOI18N
-            return false;
-        }
+        AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
         Element e = aux.getConfigurationFragment("data", J2SE_PROJECT_NAMESPACE_50, true);// NOI18N
         if(e == null) {
             e = aux.getConfigurationFragment("data", J2SE_PROJECT_NAMESPACE_40, true);// NOI18N

@@ -58,7 +58,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.hibernate.loaders.reveng.HibernateRevengDataObject;
 import org.netbeans.modules.hibernate.reveng.model.HibernateReverseEngineering;
-import org.netbeans.modules.hibernate.service.HibernateEnvironment;
 import org.netbeans.modules.hibernate.spi.hibernate.HibernateFileLocationProvider;
 import org.netbeans.modules.hibernate.wizards.support.Table;
 import org.openide.WizardDescriptor;
@@ -79,7 +78,8 @@ import org.hibernate.tool.hbm2x.POJOExporter;
 import org.hibernate.util.XMLHelper;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader;
-import org.netbeans.modules.hibernate.service.CustomClassLoader;
+import org.netbeans.modules.hibernate.util.CustomClassLoader;
+import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.openide.filesystems.FileUtil;
@@ -373,6 +373,8 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
             SessionFactory sf = hco.getHibernateConfiguration().getSessionFactory();
             FileObject pkg = SourceGroups.getFolderForPackage(helper.getLocation(), helper.getPackageName(), false);
             if (pkg != null && pkg.isFolder()) {
+		    // bugfix: 137052
+                pkg.getFileSystem().refresh(true);
                 Enumeration<? extends FileObject> enumeration = pkg.getChildren(true);            
                 while (enumeration.hasMoreElements()) {
                     FileObject fo = enumeration.nextElement();                    

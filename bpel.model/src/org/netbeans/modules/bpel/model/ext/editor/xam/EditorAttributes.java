@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.model.ext.editor.xam;
 
-import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
 import org.netbeans.modules.bpel.model.ext.editor.api.Source;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.xam.dom.Attribute;
@@ -29,9 +28,13 @@ import org.netbeans.modules.xml.xam.dom.Attribute;
  * @version 1.0
  */
 public enum EditorAttributes implements Attribute {
-    SOURCE(Cast.SOURCE, Source.class),
-    PATH(Cast.PATH, String.class),
-    TYPE(Cast.TYPE, GlobalType.class ),
+    TYPE("type", GlobalType.class), //NOI18N
+    PATH("path", String.class), //NOI18N
+    SOURCE("source", Source.class), //NOI18N
+    PARENT_PATH("parentPath", String.class), //NOI18N
+    NAME("name", String.class), //NOI18N
+    NAMESPACE("namespace", String.class), //NOI18N
+    IS_ATTRIBUTE("isAttribute", boolean.class), //NOI18N
     ;
     
     public static enum AttrType {

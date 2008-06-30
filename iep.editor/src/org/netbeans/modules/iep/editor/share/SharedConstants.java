@@ -81,7 +81,9 @@ public interface SharedConstants {
     
     public static final String OP_CONTIGUOUS_ORDER = "ContiguousOrder";
     
+    public static final String OP_INVOKE_STREAM = "InvokeStream";
        
+    public static final String OP_EXTERNAL_TABLE_POLLING_STREAM = "ExternalTablePollingStream";
     // Sub TcgCompoent
     public static String METADATA_KEY = "Metadata";
     
@@ -178,6 +180,26 @@ public interface SharedConstants {
     
     public static String INCREMENT_UNIT_KEY = "incrementUnit";
 
+    //-----Invoke Stream properties --
+    public static String EXTERNAL_IEP_PROCESS_QUALIFIED_NAME = "externalIepProcessQualifiedName";
+    
+    public static String EXTERNAL_OPERATOR_NAME = "externalOperatorName";
+    
+    // ----- External Table Polling Stream operator
+    public static String POLLING_INTERVAL = "pollingInterval";
+    
+    public static String POLLING_INTERVAL_TIME_UNIT = "pollingIntervalTimeUnit";
+    
+    public static String POLLING_RECORD_SIZE = "pollingRecordSize";
+    
+    public static String POLLING_DATABASE_JNDI_NAME = "databaseJndiName";
+    
+    public static String POLLING_RECORD_IDENTIFIER_COLUMNS = "recordIdentifierColumns";
+    
+    public static String RECORD_IDENTIFIER_COLUMNS_SCHEMA = "recordIdentifierColumnsSchema";
+    
+    public static String POLLING_IS_DELETE_RECORDS = "isDeleteRecords";
+    
     //===================================================
     public static String IS_GLOBAL_KEY = "isGlobal"; 
     
@@ -277,5 +299,20 @@ public interface SharedConstants {
     //      "REF",
     //      "STRUCT",
   };
+  
+  //reserved column names  
+  public static final String COL_SEQID = "ems_seqid";
+  public static final String COL_TIMESTAMP = "ems_timestamp"; 
+  
+  
+  public static String[] RESERVED_COLUMN_NAMES = new String[] {
+      COL_SEQID,
+      COL_TIMESTAMP
+  };
+  
+  //default jndi name
+  public static final String DEFAULT_JNDINAME = "jdbc/iepseDerbyNonXA"; 
+  
+  
 }
     

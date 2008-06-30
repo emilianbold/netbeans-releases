@@ -59,7 +59,7 @@ public class TablePollingStreamWizardHelper {
         WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
-        wizardDescriptor.setTitle("Your wizard dialog title here");
+        wizardDescriptor.setTitle(NbBundle.getMessage(TablePollingStreamWizardHelper.class, "TablePollingStreamWizardHelper.title"));
         
         return wizardDescriptor;
     }

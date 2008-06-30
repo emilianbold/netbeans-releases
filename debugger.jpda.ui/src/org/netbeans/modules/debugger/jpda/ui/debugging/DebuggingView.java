@@ -43,8 +43,12 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.GridBagConstraints;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -61,9 +65,12 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTree;
+import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeModelEvent;
@@ -88,6 +95,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -96,7 +104,8 @@ import org.openide.windows.WindowManager;
  * @author  Dan
  */
 public class DebuggingView extends TopComponent implements org.openide.util.HelpCtx.Provider,
-       ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener, TreeModelListener {
+       ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener, TreeModelListener,
+       AdjustmentListener, ChangeListener {
 
     /** unique ID of <code>TopComponent</code> (singleton) */
     private static final String ID = "debugging"; //NOI18N
@@ -133,6 +142,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private JPanel rightPanel;
     
     private ThreadsListener threadsListener;
+    private transient Reference<TopComponent> lastSelectedTCRef;
+    private transient Reference<TopComponent> componentToActivateAfterClose;
     
     /**
      * instance/singleton of this class
@@ -161,7 +172,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         
         treeView = new DebugTreeView();
         treeView.setRootVisible(false);
-        treeView.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        treeView.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         treeView.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
         mainPanel.add(treeView, BorderLayout.CENTER);
@@ -187,9 +198,11 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         tapPanel.setToolTipText(NbBundle.getMessage(DebuggingView.class, "LBL_TapPanel", keyText)); //NOI18N
         infoPanel = new InfoPanel(tapPanel);
         tapPanel.add(infoPanel);
-        add(tapPanel, BorderLayout.SOUTH);
-        
-        treeView.setHorizontalScrollBar(treeScrollBar);
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        add(tapPanel, gridBagConstraints);
         
         manager.addPropertyChangeListener(this);
         treeView.addTreeExpansionListener(this);
@@ -198,10 +211,12 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         
         prefListener = new DebuggingPreferenceChangeListener();
         preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefListener, preferences));
+        
+        scrollBarPanel.setVisible(false);
+        treeScrollBar.addAdjustmentListener(this);
+        treeView.getViewport().addChangeListener(this);
 
         setSuspendTableVisible(preferences.getBoolean(FiltersDescriptor.SHOW_SUSPEND_TABLE, true));
-        
-        // [TODO] do not hardcode component sizes
     }
  
     /** This method is called from within the constructor to
@@ -212,6 +227,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         sessionComboBox = new javax.swing.JComboBox();
         mainScrollPane = new javax.swing.JScrollPane();
@@ -221,12 +237,16 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         leftPanel1 = new javax.swing.JPanel();
         rightPanel1 = new javax.swing.JPanel();
 
-        setLayout(new java.awt.BorderLayout());
+        setLayout(new java.awt.GridBagLayout());
 
         sessionComboBox.setMaximumRowCount(1);
         sessionComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Java Project" }));
         sessionComboBox.setMaximumSize(new java.awt.Dimension(32767, 20));
-        add(sessionComboBox, java.awt.BorderLayout.NORTH);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        add(sessionComboBox, gridBagConstraints);
 
         mainScrollPane.setBorder(null);
         mainScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -235,7 +255,13 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         mainPanel.setLayout(new java.awt.BorderLayout());
         mainScrollPane.setViewportView(mainPanel);
 
-        add(mainScrollPane, java.awt.BorderLayout.CENTER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(mainScrollPane, gridBagConstraints);
 
         scrollBarPanel.setMaximumSize(new java.awt.Dimension(2147483647, 17));
         scrollBarPanel.setLayout(new java.awt.BorderLayout());
@@ -243,17 +269,19 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         treeScrollBar.setOrientation(javax.swing.JScrollBar.HORIZONTAL);
         scrollBarPanel.add(treeScrollBar, java.awt.BorderLayout.CENTER);
 
-        leftPanel1.setBackground(javax.swing.UIManager.getDefaults().getColor("Tree.background"));
         leftPanel1.setPreferredSize(new java.awt.Dimension(8, 0));
         leftPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
         scrollBarPanel.add(leftPanel1, java.awt.BorderLayout.WEST);
 
-        rightPanel1.setBackground(javax.swing.UIManager.getDefaults().getColor("Tree.background"));
         rightPanel1.setPreferredSize(new java.awt.Dimension(24, 0));
         rightPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
         scrollBarPanel.add(rightPanel1, java.awt.BorderLayout.EAST);
 
-        add(scrollBarPanel, java.awt.BorderLayout.SOUTH);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        add(scrollBarPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 
@@ -276,8 +304,12 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 }
                 previousDebugger = this.debugger;
                 this.debugger = deb;
-                this.session = engine.lookupFirst(null, Session.class);
-                deb.addPropertyChangeListener(this);
+                if (deb != null) {
+                    this.session = engine.lookupFirst(null, Session.class);
+                    deb.addPropertyChangeListener(this);
+                } else {
+                    this.session = null;
+                }
             }
             threadsListener.changeDebugger(deb);
         } else {
@@ -300,6 +332,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         }
         manager.setRootContext(root);
         refreshView();
+        adjustTreeScrollBar();
     }
     
     public ExplorerManager getExplorerManager() {
@@ -381,6 +414,41 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     protected void componentDeactivated() {
         ExplorerUtils.activateActions(manager, false);
     }
+
+    @Override
+    protected void componentOpened() {
+        // Remember which component was active so that we can re-activate it
+        // after Debugging is closed.
+        super.componentOpened();
+        Mode debuggingMode = WindowManager.getDefault().findMode(this);
+        lastSelectedTCRef = new WeakReference(debuggingMode.getSelectedTopComponent());
+        requestActive();
+    }
+
+    @Override
+    public boolean canClose() {
+        // Check whether we're active, if so, we'll re-activate the previously
+        // active component.
+        Mode debuggingMode = WindowManager.getDefault().findMode(this);
+        if (debuggingMode.getSelectedTopComponent() == this) {
+            componentToActivateAfterClose = lastSelectedTCRef;
+        } else {
+            componentToActivateAfterClose = null;
+        }
+        return super.canClose();
+    }
+
+    @Override
+    protected void componentClosed() {
+        // Re-activate the previously active component, if any.
+        TopComponent lastSelectedTC = (componentToActivateAfterClose != null) ? componentToActivateAfterClose.get() : null;
+        if (lastSelectedTC != null) {
+            lastSelectedTC.requestActive();
+        }
+        super.componentClosed();
+    }
+    
+    
     
 //    public org.openide.util.HelpCtx getHelpCtx() {
 //        return new org.openide.util.HelpCtx("NetbeansDebuggerSourcesNode"); // NOI18N
@@ -420,6 +488,10 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         }
     }
 
+    // **************************************************************************
+    // implementation of TreeExpansion and TreeModel listener
+    // **************************************************************************
+    
     public void treeExpanded(TreeExpansionEvent event) {
         refreshView();
     }
@@ -454,6 +526,44 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         SwingUtilities.invokeLater(new ViewRefresher());
     }
 
+    private void adjustTreeScrollBar() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                JViewport viewport = treeView.getViewport();
+                Dimension viewSize = viewport.getExtentSize();
+                Dimension treeSize = viewport.getViewSize();
+                if (treeSize.width <= viewSize.width) {
+                    scrollBarPanel.setVisible(false);
+                } else {
+                    scrollBarPanel.setVisible(true);
+                    treeScrollBar.setMaximum(treeSize.width);
+                    treeScrollBar.setVisibleAmount(viewSize.width);
+                }
+            }
+        });
+    }
+    
+    // **************************************************************************
+    // implementation of AdjustmentListener (listens on horizontal scrollbar
+    // connected to treeView)
+    // **************************************************************************
+    
+    public void adjustmentValueChanged(AdjustmentEvent e) {
+        JViewport viewport = treeView.getViewport();
+        Point position = viewport.getViewPosition();
+        Dimension viewSize = viewport.getExtentSize();
+        Rectangle newRect = new Rectangle(e.getValue(), position.y, viewSize.width, viewSize.height);
+        ((JComponent)viewport.getView()).scrollRectToVisible(newRect);
+    }
+    
+    // **************************************************************************
+    // implementation of ComponentListener on treeView
+    // **************************************************************************
+    
+    public void stateChanged(ChangeEvent e) {
+        adjustTreeScrollBar();
+    }
+    
     // **************************************************************************
     // inner classes
     // **************************************************************************
@@ -627,5 +737,5 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         }
         
     }
-    
+
 }

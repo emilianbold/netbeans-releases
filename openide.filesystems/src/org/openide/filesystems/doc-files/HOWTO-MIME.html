@@ -113,7 +113,7 @@ that will interpret the declaration as efficiently as possible.</p>
 <p>The semantics is described in an XML document following
 a documented DTD. The
 
-<a href="resolverDocumentation.html">DTD documentation</A>
+<a href="resolverDocumentation.html">DTD documentation</a>
 
 provides details of the permitted syntax.
 
@@ -188,6 +188,7 @@ file (that is, <samp>*.xml</samp>) whose root element is
                       <font class="variable-name">stringvalue</font>=<font class="string">"org.nb.modules.ant.Bundle"</font>/&gt;
                 &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"SystemFileSystem.icon"</font>
                       <font class="variable-name">urlvalue</font>=<font class="string">"nbresloc:/org/nb/modules/ant/resolver-icon.gif"</font>/&gt;
+                &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"position"</font> <font class="variable-name">intvalue</font>=<font class="string">"1234"</font>/&gt;
             &lt;/<font class="function-name">file</font>&gt;
         &lt;/<font class="function-name">folder</font>&gt;
     &lt;/<font class="function-name">folder</font>&gt;
@@ -208,15 +209,15 @@ matching key:</p>
 <p>and <samp>org/nb/modules/ant/resolver-icon.gif</samp> should hold a
 suitable icon.</p>
 
+<p>
+    Note that an <a href="http://deadlock.netbeans.org/hudson/job/javadoc-nbms/lastSuccessfulBuild/artifact/nbbuild/build/generated/layers.txt">open position</a>
+    in the system filesystem should be specified.
+    Smaller positions mean the resolver runs earlier, which is appropriate for
+    commonly used file types, or resolvers which logically must take precedence
+    over more generic resolvers.
+</p>
+
 <h2>Using the MIME Resolver</h2>
-
-<p>In order to ensure that the current API implementation is capable
-of processing the resolver you should declare the manifest
-dependency:</p>
-
-<pre>
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.31
-</pre>
 
 <p>Now whenever matching files are encountered, they will be treated
 as having the MIME type <code>text/x-ant+xml</code> (in this example).

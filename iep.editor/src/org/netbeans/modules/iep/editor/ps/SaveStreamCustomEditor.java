@@ -20,6 +20,7 @@ import javax.swing.border.TitledBorder;
 
 import org.netbeans.modules.iep.editor.designer.GuiConstants;
 import org.netbeans.modules.iep.editor.model.NameGenerator;
+import org.netbeans.modules.iep.editor.share.SharedConstants;
 import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizerState;
 import org.netbeans.modules.iep.editor.tcg.table.DefaultMoveableRowTableModel;
 import org.netbeans.modules.iep.model.IEPModel;
@@ -170,7 +171,10 @@ public class SaveStreamCustomEditor extends DefaultCustomEditor {
             Property sizeProp = mComponent.getProperty(SaveStreamOperatorComponent.PROP_DATABASE_JNDI_NAME);
             String sizeStr = NbBundle.getMessage(SaveStreamCustomEditor.class, "SaveStreamCustomEditor.DATABASE_JNDI_NAME");
             mSizePanel = PropertyPanel.createSingleLineTextPanelWithoutFilter(sizeStr, sizeProp, false);
-            
+            if(mSizePanel.getStringValue() == null || mSizePanel.getStringValue().equals("")) {
+                mSizePanel.setStringValue(SharedConstants.DEFAULT_JNDINAME);
+                
+            }
             gbc.gridx = 3;
             gbc.gridy = 1;
             gbc.gridwidth = 1;

@@ -64,18 +64,21 @@ public class ProjectUtilities {
 
   private ProjectUtilities() {}
     
-  public static List<FileObject> getXSDFilesRecursively(Project project) {
-    return getFilesRecursively(project, XSD);
+  public static List<FileObject> getXSDFilesRecursively(
+          Project project, boolean inProjectOnly) {
+    return getFilesRecursively(project, XSD, inProjectOnly);
   }
 
-  public static List<FileObject> getWSDLFilesRecursively(Project project) {
-    return getFilesRecursively(project, WSDL);
+  public static List<FileObject> getWSDLFilesRecursively(Project project, 
+          boolean inProjectOnly) {
+    return getFilesRecursively(project, WSDL, inProjectOnly);
   }
 
-  private static List<FileObject> getFilesRecursively(Project project, final String extension) {
+  private static List<FileObject> getFilesRecursively(Project project, 
+          final String extension, boolean inProjectOnly) {
     final List<FileObject> files = new ArrayList<FileObject>();
-
-    ProjectUtilities.visitRecursively(project, new ProjectVisitor() {
+    //
+    ProjectVisitor visitor = new ProjectVisitor() {
       public void visit(Project project) {
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup [] groups = sources.getSourceGroups(ProjectConstants.SOURCES_TYPE_XML);
@@ -92,8 +95,14 @@ public class ProjectUtilities {
           }
         }
       }
-    });
-
+    };
+    //
+    if (inProjectOnly) {
+        visitor.visit(project);
+    } else {
+        ProjectUtilities.visitRecursively(project, visitor);
+    }
+    //
     return files;
   }
 
@@ -129,7 +138,7 @@ public class ProjectUtilities {
      * @param baseProj
      * @return
      */
-    public static Set getReferencedProjects(Project baseProj) {
+    public static Set<Project> getReferencedProjects(Project baseProj) {
         HashSet<Project> projectSet = new HashSet<Project>();
         populateReferencedProjects(baseProj, projectSet);
         return projectSet;

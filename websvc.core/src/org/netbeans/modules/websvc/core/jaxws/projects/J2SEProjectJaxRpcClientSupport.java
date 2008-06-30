@@ -55,6 +55,7 @@ import java.util.HashSet;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -67,7 +68,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex.Action;
 import org.openide.util.NbBundle;
-import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -110,7 +110,7 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
                  *  if it's not found.
                  */
                 //Element data = helper.getPrimaryConfigurationData(true);
-                AuxiliaryConfiguration aux = project.getLookup().lookup(AuxiliaryConfiguration.class);
+                AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
                 Element clientElements = aux.getConfigurationFragment(WebServicesClientConstants.WEB_SERVICE_CLIENTS,
                                             JAX_RPC_NAMESPACE, true);
                 if (clientElements==null) {
@@ -407,7 +407,7 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
 
                 /** Locate root of web service client node structure in project,xml
                  */
-                AuxiliaryConfiguration aux = project.getLookup().lookup(AuxiliaryConfiguration.class);
+                AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
                 Element clientElements = aux.getConfigurationFragment(WebServicesClientConstants.WEB_SERVICE_CLIENTS,
                                             JAX_RPC_NAMESPACE, true);
                 if (clientElements!=null) {
@@ -470,8 +470,8 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
         return wsdlFolder;
     }
     
-    public List/*ClientStubDescriptor*/ getStubDescriptors() {
-        ArrayList stubs = new ArrayList(2);
+    public List<ClientStubDescriptor> getStubDescriptors() {
+        List<ClientStubDescriptor> stubs = new ArrayList<ClientStubDescriptor>(2);
         stubs.add(jaxrpcClientStub);
         return stubs;
     }
@@ -536,7 +536,7 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
         public List getServiceClients() {
         
         List<WsCompileClientEditorSupport.ServiceSettings> serviceNames = new ArrayList<WsCompileClientEditorSupport.ServiceSettings>();
-        AuxiliaryConfiguration aux = project.getLookup().lookup(AuxiliaryConfiguration.class);
+        AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
         Element clientElements = aux.getConfigurationFragment(WebServicesClientConstants.WEB_SERVICE_CLIENTS,
                                     JAX_RPC_NAMESPACE, true);
         if (clientElements!=null) {

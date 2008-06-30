@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/dnd.js
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   base : _additemclass;webui.suntheme4_2.dojo.dnd.Container;_addItemClass;|PRIVATE|FUNCTION|;node,type;0;;;void;
   base : _changestate;webui.suntheme4_2.dojo.dnd.Container;_changeState;|PRIVATE|FUNCTION|;type,newState;0;;;void;
   base : _createnode;webui.suntheme4_2.dojo.dnd;_createNode;|PRIVATE|FUNCTION|;tag;0;;;Function;
@@ -286,4 +281,4 @@ Indexed:
   fqn : webui.suntheme4_2.dojo.dnd.target.markupfactory;;webui.suntheme4_2.dojo.dnd.Target.markupFactory;|DOCUMENTED|FUNCTION|;params,node;0;f2d5;;webui.suntheme4_2.dojo.dnd.Target;
   fqn : webui.suntheme4_2.dojo.parser._nameanonfunc;;webui.suntheme4_2.dojo.parser._nameAnonFunc;|DOCUMENTED|PRIVATE|FUNCTION|;anonFuncPtr,thisObj;0;7437;;;
 
-Not Indexed:
+Not Searchable Keys:

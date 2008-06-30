@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.editor.settings.storage.preferences;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -57,6 +59,7 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;
+import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -80,29 +83,6 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
         return prefs;
     }
 
-    public static final class TypedValue {
-        
-        private final String value;
-        private String javaType;
-        
-        public TypedValue(String value, String javaType) {
-            this.value = value;
-            this.javaType = javaType;
-        }
-
-        public String getJavaType() {
-            return javaType;
-        }
-
-        public void setJavaType(String javaType) {
-            this.javaType = javaType;
-        }
-        
-        public String getValue() {
-            return value;
-        }
-    } // End of TypedValue class
-    
     // ---------------------------------------------------------------------
     // Preferences API
     // ---------------------------------------------------------------------
@@ -261,7 +241,9 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
                     getLocal().get(bareKey).setJavaType(value);
                     asyncInvocationOfFlushSpi();
                 } else {
-                    getInherited().put(key, value);
+                    Preferences inheritedPrefs = getInherited();
+                    assert inheritedPrefs != null : mimePath;
+                    inheritedPrefs.put(key, value);
                 }
             }
         }
@@ -283,7 +265,8 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
             TypedValue typedValue = getLocal().get(bareKey);
             return returnValue ? typedValue.getValue() : typedValue.getJavaType();
         } else {
-            return getInherited().get(key, null);
+            Preferences inheritedPrefs = getInherited();
+            return inheritedPrefs != null ? inheritedPrefs.get(key, null) : null;
         }
     }
 
@@ -334,9 +317,8 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
         // clients can generally get this node and call flush() on it without
         // changing anything.
         if (local != null) {
-            EditorSettingsStorage<String, TypedValue> ess = EditorSettingsStorage.<String, TypedValue>get(PreferencesStorage.ID);
             try {
-                ess.save(MimePath.parse(mimePath), null, false, local);
+                storage.save(MimePath.parse(mimePath), null, false, local);
             } catch (IOException ioe) {
                 LOG.log(Level.WARNING, "Can't save editor preferences for '" + mimePath + "'", ioe); //NOI18N
             }
@@ -387,10 +369,50 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
         true // initially finished
     );
 
+    private boolean noEnqueueMethodAvailable = false;
     private final ThreadLocal<String> refiringChangeKey = new ThreadLocal<String>();
     private final ThreadLocal<String> putValueJavaType = new ThreadLocal<String>();
     
     private final String mimePath;
+    private final EditorSettingsStorage<String, TypedValue> storage;
+    private final PropertyChangeListener storageTracker = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt == null || EditorSettingsStorage.PROP_DATA.equals(evt.getPropertyName())) {
+//                Map<String, TypedValue> added = new HashMap<String, TypedValue>();
+//                Map<String, TypedValue> removed = new HashMap<String, TypedValue>();
+                
+                synchronized (lock) {
+                    if (local == null) {
+                        // the data has not been read yet
+                        return;
+                    }
+                    
+//                    Map<String, TypedValue> oldLocal = local;
+                    
+                    // re-read the data
+                    local = null;
+                    getLocal();
+//                    
+//                    // figure out what changed
+//                    Utils.<String, TypedValue>diff(oldLocal, local, added, removed);
+                }
+                
+//                // fire the changes
+//                for(String key : added.keySet()) {
+//                    TypedValue value = added.get(key);
+//                    firePreferenceChange(key, value.getValue());
+//                }
+//                
+//                for(String key : removed.keySet()) {
+//                    TypedValue value = removed.get(key);
+//                    firePreferenceChange(key, value.getValue());
+//                }
+                
+                firePreferenceChange(null, null);
+            }
+        }
+    };
+    
     private Map<String, TypedValue> local = null;
     private Preferences inherited = null;
     
@@ -398,13 +420,14 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
         super(null, EMPTY);
         
         this.mimePath = mimePath;
+        this.storage = EditorSettingsStorage.<String, TypedValue>get(PreferencesStorage.ID);
+        this.storage.addPropertyChangeListener(WeakListeners.propertyChange(storageTracker, this.storage));
     }
 
     private Map<String, TypedValue> getLocal() {
         if (local == null) {
-            EditorSettingsStorage<String, TypedValue> ess = EditorSettingsStorage.<String, TypedValue>get(PreferencesStorage.ID);
             try {
-                local = new HashMap<String, TypedValue>(ess.load(MimePath.parse(mimePath), null, false));
+                local = new HashMap<String, TypedValue>(storage.load(MimePath.parse(mimePath), null, false));
             } catch (IOException ioe) {
                 LOG.log(Level.WARNING, "Can't load editor preferences for '" + mimePath + "'", ioe); //NOI18N
                 local = new HashMap<String, TypedValue>();
@@ -442,13 +465,33 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
     private void asyncInvocationOfFlushSpi() {
         flushTask.schedule(200);
     }
-    
+
+    // XXX: we probably should not extends AbstractPreferences and do it all ourselfs
+    // including the firing of events. For the events delivery we could just reuse common
+    // RequestProcessor threads.
     private void firePreferenceChange(String key, String newValue) {
-        refiringChangeKey.set(key);
-        try {
-            put(key, newValue);
-        } finally {
-            refiringChangeKey.remove();
+        if (!noEnqueueMethodAvailable) {
+            try {
+                Method enqueueMethod = AbstractPreferences.class.getDeclaredMethod("enqueuePreferenceChangeEvent", String.class, String.class); //NOI18N
+                enqueueMethod.setAccessible(true);
+                enqueueMethod.invoke(this, key, newValue);
+                return;
+            } catch (NoSuchMethodException nsme) {
+                noEnqueueMethodAvailable = true;
+            } catch (Exception e) {
+                LOG.log(Level.WARNING, null, e);
+            }
+        }
+        
+        if (key != null && newValue != null) {
+            refiringChangeKey.set(key);
+            try {
+                put(key, newValue);
+            } finally {
+                refiringChangeKey.remove();
+            }
+        } else {
+            assert false : "Can't fire preferenceChange event for null key or value, no enqueuePreferenceChangeEvent available"; //NOI18N
         }
     }
 }

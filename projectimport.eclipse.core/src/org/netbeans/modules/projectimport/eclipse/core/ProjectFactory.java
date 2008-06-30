@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.netbeans.modules.projectimport.eclipse.core.Workspace.Variable;
 
 /**
  * Able to load and fill up an <code>EclipseProject</code> from Eclipse project
@@ -86,10 +87,13 @@ public final class ProjectFactory {
     
     public EclipseProject load(File projectDir, File workspaceDir) throws
             ProjectImporterException {
-        Workspace workspace = Workspace.createWorkspace(workspaceDir);
-        if (workspace != null) {
-            WorkspaceParser parser = new WorkspaceParser(workspace);
-            parser.parse();
+        Workspace workspace = null;
+        if (workspaceDir != null) {
+            workspace = Workspace.createWorkspace(workspaceDir);
+            if (workspace != null) {
+                WorkspaceParser parser = new WorkspaceParser(workspace);
+                parser.parse();
+            }
         }
         return load(projectDir, workspace);
     }
@@ -122,7 +126,11 @@ public final class ProjectFactory {
         try {
             Set<String> natures = new HashSet<String>();
             List<Link> links = new ArrayList<Link>();
-            String projName = ProjectParser.parse(project.getProjectFile(), natures, links);
+            Set<Variable> variables = new HashSet<Variable>();
+            if (project.getWorkspace() != null) {
+                variables = project.getWorkspace().getResourcesVariables();
+            }
+            String projName = ProjectParser.parse(project.getProjectFile(), natures, links, variables);
             project.setNatures(natures);
             project.setName(projName);
 

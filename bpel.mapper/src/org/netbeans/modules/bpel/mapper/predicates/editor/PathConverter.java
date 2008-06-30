@@ -23,31 +23,37 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.mapper.cast.AbstractTypeCast;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableDeclarationWrapper;
-import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.support.XPathBpelVariable;
 import org.netbeans.modules.bpel.model.api.support.BpelXPathModelFactory;
+import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xpath.ext.AbstractLocationPath;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.xpath.ext.StepNodeNameTest;
+import org.netbeans.modules.xml.xpath.ext.XPathAxis;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathExpressionPath;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.XPathModelFactory;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
 import org.netbeans.modules.xml.xpath.ext.schema.SchemaModelsStack;
-import org.netbeans.modules.xml.xpath.ext.spi.CastSchemaContext;
-import org.netbeans.modules.xml.xpath.ext.spi.SimpleSchemaContext;
-import org.netbeans.modules.xml.xpath.ext.spi.VariableSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.CastSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.SimpleSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.VariableSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathVariable;
 
 /**
@@ -72,19 +78,24 @@ public class PathConverter {
      * @return
      */
     public static List<Object> constructObjectLocationtList(
-            RestartableIterator<Object> pathItr, boolean sameOrder) {
+            Iterable<Object> pathItrb, 
+            boolean sameOrder, boolean skipFirst) {
         //
-        pathItr.restart();
+        Iterator<Object> itr = pathItrb.iterator();
+        if (skipFirst && itr.hasNext()) {
+            // move forward one step if possible
+            itr.next();
+        }
         //
         LinkedList<Object> treeItemList = new LinkedList<Object>();
         //
         // Process the path
         ParsingStage stage = null;
         boolean needBreak = false;
-        while (pathItr.hasNext()) {
-            Object obj = pathItr.next();
+        while (itr.hasNext()) {
+            Object obj = itr.next();
             Object toAdd = null;
-            if (obj instanceof SchemaComponent) {
+            if (obj instanceof SchemaComponent || obj instanceof XPathPseudoComp) {
                 if (!(stage == null || stage == ParsingStage.SCHEMA)) {
                     return null;
                 }
@@ -242,11 +253,11 @@ public class PathConverter {
     }
     
     public static XPathExpression constructXPath(BpelEntity base, 
-            RestartableIterator<Object> pathItr) {
+            Iterable<Object> pathItrb, boolean skipFirst) {
         //
         // It's necessary to have the order, oposite to the iterator. 
         // It's required for correct buildeing the XPath expression
-        List<Object> objList = constructObjectLocationtList(pathItr, false);
+        List<Object> objList = constructObjectLocationtList(pathItrb, false, skipFirst);
         //
         if (objList == null || objList.isEmpty()) {
             return null;
@@ -261,28 +272,44 @@ public class PathConverter {
         SchemaModelsStack sms = new SchemaModelsStack();
         //
         // Process the path
-        for (Object obj : objList) {
+        for (Object stepObj : objList) {
             SchemaComponent sComp = null;
-            if (obj instanceof SchemaComponent) {
-                sComp = (SchemaComponent)obj;
-                StepNodeNameTest nodeTest = 
-                        new StepNodeNameTest(xPathModel, sComp, sms);
-                LocationStep ls = factory.newLocationStep(null, nodeTest, null);
+            if (stepObj instanceof SchemaComponent) {
+                sComp = (SchemaComponent)stepObj;
+                LocationStep ls = constructLStep(xPathModel, sComp, null, sms);
                 stepList.add(0, ls);
-            } else if (obj instanceof AbstractPredicate) {
-                AbstractPredicate pred = (AbstractPredicate)obj;
-                sComp = pred.getSComponent();
-                StepNodeNameTest nodeTest = 
-                        new StepNodeNameTest(xPathModel, sComp, sms);
-                LocationStep ls = factory.newLocationStep(
-                        null, nodeTest, pred.getPredicates());
+            } else if (stepObj instanceof AbstractPredicate) {
+                AbstractPredicate pred = (AbstractPredicate)stepObj;
+                XPathPredicateExpression[] predArr = pred.getPredicates();
+                SchemaCompHolder sCompHolder = pred.getSCompHolder();
+                sComp = sCompHolder.getSchemaComponent();
+                LocationStep ls = constructLStep(xPathModel, sCompHolder, predArr, sms);
                 stepList.add(0, ls);
-            } else if (obj instanceof LocationStep) {
-                stepList.add(0, (LocationStep)obj);
-            } else if (obj instanceof Part) {
-                part = (Part)obj;
-            } else if (obj instanceof AbstractVariableDeclaration) {
-                AbstractVariableDeclaration var = (AbstractVariableDeclaration)obj;
+            } else if (stepObj instanceof AbstractTypeCast) {
+                AbstractTypeCast typeCast = (AbstractTypeCast)stepObj;
+                sComp = typeCast.getSComponent();
+                LocationStep ls = constructLStep(xPathModel, sComp, null, sms);
+                //
+                stepList.add(0, ls);
+            } else if (stepObj instanceof LocationStep) {
+                //
+                // TODO: It would be more correct to do a copy of the stepObj
+                // because of it is owned by another XPathModel. 
+                LocationStep ls = (LocationStep)stepObj;
+                stepList.add(0, ls);
+                //
+                XPathSchemaContext sContext = ls.getSchemaContext();
+                if (sContext != null) {
+                    sComp = XPathSchemaContext.Utilities.getSchemaComp(sContext);
+                }
+            } else if (stepObj instanceof XPathPseudoComp) {
+                XPathPseudoComp pseudo = (XPathPseudoComp)stepObj;
+                LocationStep ls = constructLStep(xPathModel, pseudo, null, sms);
+                stepList.add(0, ls);
+            } else if (stepObj instanceof Part) {
+                part = (Part)stepObj;
+            } else if (stepObj instanceof AbstractVariableDeclaration) {
+                AbstractVariableDeclaration var = (AbstractVariableDeclaration)stepObj;
                 //
                 if (var instanceof VariableDeclaration) {
                     varDecl = (VariableDeclaration)var;
@@ -318,11 +345,165 @@ public class PathConverter {
         } 
     }
     
-    public static String toString(RestartableIterator<Object> pathItr) {
+    //--------------------------------------------------------------
+    
+    public static List<LocationStep> constructLSteps(XPathModel xPathModel, 
+            List<Object> sCompList, Set<AbstractTypeCast> typeCastCollector, 
+            Set<XPathPseudoComp> pseudoCollector, SchemaModelsStack sms) {
+        if (sCompList == null || sCompList.isEmpty()) {
+            return null;
+        } 
+        //
+        ArrayList<LocationStep> result = new ArrayList<LocationStep>();
+        SchemaComponent sComp = null;
+        //
+        for (Object stepObj : sCompList) {
+            LocationStep newLocationStep = null;
+            if (stepObj instanceof SchemaComponent) {
+                sComp = (SchemaComponent)stepObj;
+                newLocationStep = constructLStep(xPathModel, sComp, null, sms);
+            } else if (stepObj instanceof AbstractPredicate) {
+                AbstractPredicate pred = (AbstractPredicate)stepObj;
+                XPathPredicateExpression[] predArr = pred.getPredicates();
+                SchemaCompHolder sCompHolder = pred.getSCompHolder();
+                sComp = sCompHolder.getSchemaComponent();
+                newLocationStep = constructLStep(xPathModel, sCompHolder, predArr, sms);
+            } else if (stepObj instanceof AbstractTypeCast) {
+                AbstractTypeCast typeCast = (AbstractTypeCast)stepObj;
+                sComp = typeCast.getSComponent();
+                newLocationStep = constructLStep(xPathModel, sComp, null, sms);
+                //
+                if (typeCastCollector != null) {
+                    typeCastCollector.add(typeCast);
+                }
+            } else if (stepObj instanceof LocationStep) {
+                //
+                // TODO: It would be more correct to do a copy of the stepObj
+                // because of it is owned by another XPathModel. 
+                newLocationStep = (LocationStep)stepObj;
+                if (newLocationStep != null) {
+                    XPathSchemaContext sContext = newLocationStep.getSchemaContext();
+                    if (sContext != null) {
+                        sComp = XPathSchemaContext.Utilities.getSchemaComp(sContext);
+                    }
+                }
+            } else if (stepObj instanceof XPathPseudoComp) {
+                XPathPseudoComp pseudo = (XPathPseudoComp)stepObj;
+                newLocationStep = constructLStep(xPathModel, pseudo, null, sms);
+                //
+                if (pseudoCollector != null) {
+                    pseudoCollector.add(pseudo);
+                }
+            }
+            //
+            if (sComp != null) {
+                sms.appendSchemaComponent(sComp);
+            } else {
+                sms.discard();
+            }
+            //
+            if (newLocationStep != null) {
+                result.add(newLocationStep);
+            }
+        }
+        //
+        return result;
+    } 
+    
+    /**
+     * Constructs a LocationStep object by the schema component. 
+     * @param xPathModel
+     * @param sCompHolder
+     * @return
+     */
+    public static LocationStep constructLStep(XPathModel xPathModel, 
+            SchemaCompHolder sCompHolder, XPathPredicateExpression[] predArr, 
+            SchemaModelsStack sms) {
+        //
+        if (sCompHolder.isPseudoComp()) {
+            XPathAxis axis = null;
+            switch (sCompHolder.getComponentType()) {
+                case ATTRIBUTE:
+                case PSEUDO_ATTRIBUTE:
+                    axis = XPathAxis.ATTRIBUTE;
+                    break;
+                case ELEMENT:
+                case PSEUDO_ELEMENT:
+                case TYPE:
+                    axis = XPathAxis.CHILD;
+                    break;
+            }
+            //
+            StepNodeNameTest nameTest = new StepNodeNameTest(xPathModel, sCompHolder, sms);
+            LocationStep newLocationStep = xPathModel.getFactory().
+                    newLocationStep(axis, nameTest, predArr);
+            //
+            return newLocationStep;
+        } else {
+            SchemaComponent sComp = (SchemaComponent)sCompHolder.getHeldComponent();
+            return constructLStep(xPathModel, sComp, predArr, sms);
+        }
+    }
+
+    /**
+     * Constructs a LocationStep object by the schema component. 
+     * @param xPathModel
+     * @param sComp
+     * @return
+     */
+    public static LocationStep constructLStep(XPathModel xPathModel, 
+            SchemaComponent sComp, XPathPredicateExpression[] predArr, 
+            SchemaModelsStack sms) {
+        //
+        if (!(sComp instanceof Named)) {
+            return null;
+        }
+        //
+        XPathAxis axis = null;
+        if (sComp instanceof Attribute) {
+            axis = XPathAxis.ATTRIBUTE;
+        } else {
+            axis = XPathAxis.CHILD;
+        }
+        //
+        StepNodeNameTest nameTest = new StepNodeNameTest(xPathModel, sComp, sms);
+        LocationStep newLocationStep = xPathModel.getFactory().
+                newLocationStep(axis, nameTest, predArr);
+        //
+        return newLocationStep;
+    }
+
+    /**
+     * Constructs a LocationStep object by the Pseudo schema component. 
+     * @param xPathModel
+     * @param pseudo
+     * @return
+     */
+    public static LocationStep constructLStep(XPathModel xPathModel, 
+            XPathPseudoComp pseudo, XPathPredicateExpression[] predArr, 
+            SchemaModelsStack sms) {
+        //
+        XPathAxis axis = null;
+        if (pseudo.isAttribute()) {
+            axis = XPathAxis.ATTRIBUTE;
+        } else {
+            axis = XPathAxis.CHILD;
+        }
+        //
+        StepNodeNameTest nameTest = new StepNodeNameTest(xPathModel, pseudo, sms);
+        LocationStep newLocationStep = xPathModel.getFactory().
+                newLocationStep(axis, nameTest, predArr);
+        //
+        return newLocationStep;
+    }
+
+    //--------------------------------------------------------------
+    
+    public static String toString(Iterable<Object> pathItrb) {
         LinkedList<Object> list = new LinkedList<Object>();
-        pathItr.restart();
-        while (pathItr.hasNext()) {
-            list.addFirst(pathItr.next());
+        Iterator itr = pathItrb.iterator();
+        while (itr.hasNext()) {
+            list.addFirst(itr.next());
         }
         //
         StringBuilder sb = new StringBuilder();
@@ -339,11 +520,18 @@ public class PathConverter {
         return sb.toString();
     }
 
+    /**
+     * Builds the new Schema context from the location on the tree. 
+     * @param pathItrb specifies the location
+     * @param skipFirstItem indicates if it necessary to ignore 
+     * the first location item. It is used to get context of the parent tree item.
+     * @return
+     */
     public static XPathSchemaContext constructContext(
-            RestartableIterator<Object> pathItr) {
+            Iterable<Object> pathItrb, boolean skipFirstItem) {
         //
         SchemaContextBuilder builder = new SchemaContextBuilder();
-        return builder.constructContext(pathItr, null);
+        return builder.constructContext(pathItrb, null, skipFirstItem);
     }
     
     public static class SchemaContextBuilder {
@@ -359,12 +547,17 @@ public class PathConverter {
          * @return
          */
         public XPathSchemaContext constructContext(
-                RestartableIterator<Object> pathItr, 
-                XPathSchemaContext initialContext) {
+                Iterable<Object> pathItrb, 
+                XPathSchemaContext initialContext, 
+                boolean skipFirst) {
             //
-            pathItr.restart();
+            Iterator itr = pathItrb.iterator();
             //
-            return constructContextImpl(pathItr, initialContext);
+            if (skipFirst) {
+                itr.next();
+            }
+            //
+            return constructContextImpl(itr, initialContext);
         }
 
         private VariableSchemaContext buildVariableSchemaContext() {
@@ -400,10 +593,14 @@ public class PathConverter {
                 return new SimpleSchemaContext(
                         constructContextImpl(pathItr, baseContext), 
                         (SchemaComponent)obj);
+            } else if (obj instanceof XPathPseudoComp) {
+                return new SimpleSchemaContext(
+                        constructContextImpl(pathItr, baseContext), 
+                        (XPathPseudoComp)obj);
             } else if (obj instanceof AbstractPredicate) {
                 return new SimpleSchemaContext(
                         constructContextImpl(pathItr, baseContext), 
-                        ((AbstractPredicate)obj).getSComponent());
+                        ((AbstractPredicate)obj).getSCompHolder());
             } else if (obj instanceof AbstractVariableDeclaration) {
                 var = (AbstractVariableDeclaration)obj;
                 return buildVariableSchemaContext();
@@ -417,6 +614,10 @@ public class PathConverter {
                         castedObj, pathItr, 
                         constructContextImpl(pathItr, baseContext));
                 return new CastSchemaContext(castedContext, typeCast);
+            } else if (obj instanceof XPathPseudoComp) {
+                XPathPseudoComp pseudo = (XPathPseudoComp)obj;
+                return new SimpleSchemaContext(
+                        constructContextImpl(pathItr, baseContext), pseudo);
             } else {
                 return baseContext;
             }

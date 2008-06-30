@@ -43,6 +43,7 @@ package org.netbeans.modules.xml.axi.datatype;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import junit.framework.*;
 import org.netbeans.modules.xml.axi.*;
@@ -70,15 +71,36 @@ public class DatatypeTest extends AbstractTestCase {
     }
     
     public static Test suite() {
-        TestSuite suite = new TestSuite(DatatypeTest.class);
-        
+        TestSuite suite = new TestSuite();
+        suite.addTest(new DatatypeTest("testDatatypeEnumerations"));
+        suite.addTest(new DatatypeTest("testCreateDatatype"));        
         return suite;
     }
     
     /**
+     * Test enumerations for simple type.
+     */
+    public void testDatatypeEnumerations() throws Exception {
+        Element items = (Element)(globalElement.getChildElements().get(4));
+        Element item = (Element)(items.getChildElements().get(0));
+        Attribute partNum = (Attribute)(item.getAttributes().get(0));
+        Attribute cost = (Attribute)(item.getAttributes().get(1));
+        Datatype partNumType = (Datatype)partNum.getType();
+        Datatype costType = (Datatype)cost.getType();
+        assert(partNumType.getEnumerations() == Collections.EMPTY_LIST);
+        assert(costType.getEnumerations() != null);
+        assert(costType.getEnumerations().get(0).toString().equals("100.00"));
+        assert(costType.getEnumerations().get(1).toString().equals("110.00"));
+        assert(costType.getEnumerations().get(2).toString().equals("120.00"));
+        assert(costType.getEnumerations().get(3).toString().equals("130.00"));
+        assert(costType.getEnumerations().get(4).toString().equals("140.00"));
+        assert(costType.getEnumerations().get(5).toString().equals("150.00"));
+    }
+        
+    /**
      * Test of createElement method, of class org.netbeans.modules.xml.axi.XAMFactory.
      */
-    public void testCreateDatatype() {
+    public void testCreateDatatype() throws Exception {
         validateSchema(axiModel.getSchemaModel());
         Element element = globalElement;
         assertNotNull(element);

@@ -46,8 +46,8 @@ import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.xam.ModelSource;
-import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xslt.core.XSLTDataEditorSupport;
 import org.netbeans.modules.xslt.model.XslModel;
 import org.netbeans.modules.xslt.model.spi.XslModelFactory;
@@ -75,10 +75,11 @@ public class XSLTCompletionUtil {
     }
     
     public static String extractAttributeName(Document document, int caretOffset, 
-        DocumentComponent docComponent) {
-        if ((document == null) || (docComponent == null) || (caretOffset < 0)) return null;
+        SyntaxElement surroundTag) {
+        if ((document == null) || (surroundTag == null) || (caretOffset < 0)) 
+            return null;
         
-        int docComponentPos = docComponent.findPosition(),
+        int startTagPos = surroundTag.getElementOffset(),
             startPos = caretOffset - PATTERN_ATTRIB_VALUE_PREFIX.length();
         try {
             int currentPos = startPos - 1;
@@ -90,7 +91,7 @@ public class XSLTCompletionUtil {
                 } else {
                     break;
                 }
-                if ((--currentPos) <= docComponentPos) break;
+                if ((--currentPos) <= startTagPos) break;
             }
             return strBuf.toString();
         } catch (Exception e) {

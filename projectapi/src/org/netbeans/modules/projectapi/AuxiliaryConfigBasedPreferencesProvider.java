@@ -46,7 +46,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -61,12 +60,15 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
-import org.openide.filesystems.FileObject;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex.Action;
+import org.openide.util.Mutex.ExceptionAction;
+import org.openide.util.MutexException;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.xml.XMLUtil;
@@ -92,15 +94,10 @@ public class AuxiliaryConfigBasedPreferencesProvider {
             return prov;
         }
         
-        AuxiliaryConfiguration ac = p.getLookup().lookup(AuxiliaryConfiguration.class);
+        AuxiliaryConfiguration ac = ProjectUtils.getAuxiliaryConfiguration(p);
         AuxiliaryProperties ap = p.getLookup().lookup(AuxiliaryProperties.class);
         
-        if (ac != null || ap != null) {
-            target.put(p, new WeakReference<AuxiliaryConfigBasedPreferencesProvider>(prov = new AuxiliaryConfigBasedPreferencesProvider(p, ac, ap, shared)));
-        } else {
-            ap = new FallbackAuxiliaryPropertiesImpl(p.getProjectDirectory());
-            target.put(p, new WeakReference<AuxiliaryConfigBasedPreferencesProvider>(prov = new AuxiliaryConfigBasedPreferencesProvider(p, null, ap, shared)));
-        }
+        target.put(p, new WeakReference<AuxiliaryConfigBasedPreferencesProvider>(prov = new AuxiliaryConfigBasedPreferencesProvider(p, ac, ap, shared)));
         
         return prov;
     }
@@ -202,7 +199,16 @@ public class AuxiliaryConfigBasedPreferencesProvider {
         this.configRoot = configRootLoc;
     }
     
-    synchronized void flush() {
+    void flush() {
+        ProjectManager.mutex().writeAccess(new Action<Void>() {
+            public Void run() {
+                flushImpl();
+                return null;
+            }
+        });
+    }
+    
+    private synchronized void flushImpl() {
         if (!modified) {
             return ;
         }
@@ -302,7 +308,16 @@ public class AuxiliaryConfigBasedPreferencesProvider {
         modified = false;
     }
     
-    synchronized void sync() {
+    void sync() {
+        ProjectManager.mutex().writeAccess(new Action<Void>() {
+            public Void run() {
+                syncImpl();
+                return null;
+            }
+        });
+    }
+    
+    private synchronized void syncImpl() {
         loadConfigRoot();
         flush();
     }
@@ -620,55 +635,124 @@ public class AuxiliaryConfigBasedPreferencesProvider {
             return names;
         }
 
-    }
-    
-    private static final class FallbackAuxiliaryPropertiesImpl implements AuxiliaryProperties {
-
-        private static final String PREFIX = "auxiliary.";
-        private FileObject projectDir;
-
-        public FallbackAuxiliaryPropertiesImpl(FileObject projectDir) {
-            this.projectDir = projectDir;
-        }
-        
-        public String get(String key, boolean shared) {
-            assert !shared;
-            
-            Object v = projectDir.getAttribute(PREFIX + key);
-            
-            return v instanceof String ? (String) v : null;
-        }
-
-        public void put(String key, String value, boolean shared) {
-            assert !shared;
-            
-            try {
-                projectDir.setAttribute(PREFIX + key, value);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-        public Iterable<String> listKeys(boolean shared) {
-            assert !shared;
-            
-            List<String> result = new LinkedList<String>();
-            
-            for (Enumeration<String> en = projectDir.getAttributes(); en.hasMoreElements(); ) {
-                String key = en.nextElement();
-                
-                if (key.startsWith(PREFIX)) {
-                    key = key.substring(PREFIX.length());
-                    
-                    if (get(key, shared) != null) {
-                        result.add(key);
-                    }
+        @Override
+        public void put(final String key, final String value) {
+            ProjectManager.mutex().writeAccess(new Action<Void>() {
+                public Void run() {
+                    AuxiliaryConfigBasedPreferences.super.put(key, value);
+                    return null;
                 }
-            }
-            
-            return result;
+            });
         }
-        
+
+        @Override
+        public String get(final String key, final String def) {
+            return ProjectManager.mutex().readAccess(new Action<String>() {
+                public String run() {
+                    return AuxiliaryConfigBasedPreferences.super.get(key, def);
+                }
+            });
+        }
+
+        @Override
+        public void remove(final String key) {
+            ProjectManager.mutex().writeAccess(new Action<Void>() {
+                public Void run() {
+                    AuxiliaryConfigBasedPreferences.super.remove(key);
+                    return null;
+                }
+            });
+        }
+
+        @Override
+        public void clear() throws BackingStoreException {
+            try {
+                ProjectManager.mutex().writeAccess(new ExceptionAction<Void>() {
+                    public Void run() throws BackingStoreException {
+                        AuxiliaryConfigBasedPreferences.super.clear();
+                        return null;
+                    }
+                });
+            } catch (MutexException ex) {
+                throw (BackingStoreException) ex.getException();
+            }
+        }
+
+        @Override
+        public String[] keys() throws BackingStoreException {
+            try {
+                return ProjectManager.mutex().readAccess(new ExceptionAction<String[]>() {
+                    public String[] run() throws BackingStoreException {
+                        return AuxiliaryConfigBasedPreferences.super.keys();
+                    }
+                });
+            } catch (MutexException ex) {
+                throw (BackingStoreException) ex.getException();
+            }
+        }
+
+        @Override
+        public String[] childrenNames() throws BackingStoreException {
+            try {
+                return ProjectManager.mutex().readAccess(new ExceptionAction<String[]>() {
+                    public String[] run() throws BackingStoreException {
+                        return AuxiliaryConfigBasedPreferences.super.childrenNames();
+                    }
+                });
+            } catch (MutexException ex) {
+                throw (BackingStoreException) ex.getException();
+            }
+        }
+
+        @Override
+        public Preferences node(final String path) {
+            return ProjectManager.mutex().writeAccess(new Action<Preferences>() {
+                public Preferences run() {
+                    return AuxiliaryConfigBasedPreferences.super.node(path);
+                }
+            });
+        }
+
+        @Override
+        public boolean nodeExists(final String path) throws BackingStoreException {
+            try {
+                return ProjectManager.mutex().readAccess(new ExceptionAction<Boolean>() {
+                    public Boolean run() throws BackingStoreException {
+                        return AuxiliaryConfigBasedPreferences.super.nodeExists(path);
+                    }
+                });
+            } catch (MutexException ex) {
+                throw (BackingStoreException) ex.getException();
+            }
+        }
+
+        @Override
+        public void removeNode() throws BackingStoreException {
+            try {
+                ProjectManager.mutex().writeAccess(new ExceptionAction<Void>() {
+                    public Void run() throws BackingStoreException {
+                        AuxiliaryConfigBasedPreferences.super.removeNode();
+                        return null;
+                    }
+                });
+            } catch (MutexException ex) {
+                throw (BackingStoreException) ex.getException();
+            }
+        }
+
+        @Override
+        protected AbstractPreferences getChild(final String nodeName) throws BackingStoreException {
+            try {
+                return ProjectManager.mutex().writeAccess(new ExceptionAction<AbstractPreferences>() {
+                    public AbstractPreferences run() throws BackingStoreException {
+                        return AuxiliaryConfigBasedPreferences.super.getChild(nodeName);
+                    }
+                });
+            } catch (MutexException ex) {
+                throw (BackingStoreException) ex.getException();
+            }
+        }
+
     }
     
 }

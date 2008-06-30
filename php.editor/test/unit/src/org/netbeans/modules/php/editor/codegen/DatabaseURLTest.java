@@ -55,16 +55,23 @@ public class DatabaseURLTest extends TestCase {
     public void testDetect() {
         DatabaseURL parsed = DatabaseURL.detect("jdbc:mysql://localhost/foo");
         assertEquals(Server.MYSQL, parsed.getServer());
-        assertEquals("localhost", parsed.getHostAndPort());
+        assertEquals("localhost", parsed.getHost());
+        assertNull(parsed.getPort());
         assertEquals("foo", parsed.getDatabase());
-        parsed = DatabaseURL.detect("jdbc:mysql://localhost:3106/foo");
-        assertEquals("localhost:3106", parsed.getHostAndPort());
+        parsed = DatabaseURL.detect("jdbc:mysql:// localhost : 3106 / foo ");
+        assertEquals("localhost", parsed.getHost());
+        assertEquals("3106", parsed.getPort());
         assertEquals("foo", parsed.getDatabase());
         parsed = DatabaseURL.detect("jdbc:mysql://localhost:3106");
-        assertEquals("localhost:3106", parsed.getHostAndPort());
+        assertEquals("localhost", parsed.getHost());
+        assertEquals("3106", parsed.getPort());
         assertNull(parsed.getDatabase());
         parsed = DatabaseURL.detect("jdbc:mysql://localhost:3106/");
-        assertEquals("localhost:3106", parsed.getHostAndPort());
         assertNull(parsed.getDatabase());
+    }
+
+    public void testNotDetect() {
+        assertNull(DatabaseURL.detect("jdbc:mysql:///foo"));
+        assertNull(DatabaseURL.detect("jdbc:mysql://:1/foo"));
     }
 }

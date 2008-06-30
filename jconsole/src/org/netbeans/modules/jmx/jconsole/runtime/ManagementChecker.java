@@ -49,7 +49,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
@@ -113,7 +113,7 @@ public class ManagementChecker {
     }
     
     public static boolean checkProjectIsModifiedForManagement(Project project) {
-        Element e = ((AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class)).getConfigurationFragment("data", MANAGEMENT_NAME_SPACE, true);// NOI18N
+        Element e = ProjectUtils.getAuxiliaryConfiguration(project).getConfigurationFragment("data", MANAGEMENT_NAME_SPACE, true);// NOI18N
         if (e != null) return true; // already modified, nothing more to do
         
         if (ManagementDialogs.getDefault().notify(
@@ -126,7 +126,7 @@ public class ManagementChecker {
         
         Element mgtFragment = XMLUtil.createDocument("ignore", null, null, null).createElementNS(MANAGEMENT_NAME_SPACE, "data");// NOI18N
         mgtFragment.setAttribute("version", "0.4");// NOI18N
-        ((AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class)).putConfigurationFragment(mgtFragment, true);
+        ProjectUtils.getAuxiliaryConfiguration(project).putConfigurationFragment(mgtFragment, true);
         try {
             ProjectManager.getDefault().saveProject(project);
         } catch (IOException e1) {

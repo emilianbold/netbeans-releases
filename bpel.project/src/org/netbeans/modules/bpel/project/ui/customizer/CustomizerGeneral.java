@@ -272,15 +272,15 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
     }//GEN-LAST:event_validationHandler
 
     private void jCheckBox2validationHandler(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jCheckBox2validationHandler
-        // TODO add your handling code here:
+        // add your handling code here:
     }//GEN-LAST:event_jCheckBox2validationHandler
 
 private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
-// TODO add your handling code here:
+// add your handling code here:
 }//GEN-LAST:event_jCheckBox1ActionPerformed
 
 private void jCheckBox2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox2ActionPerformed
-// TODO add your handling code here:
+// add your handling code here:
 }//GEN-LAST:event_jCheckBox2ActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
