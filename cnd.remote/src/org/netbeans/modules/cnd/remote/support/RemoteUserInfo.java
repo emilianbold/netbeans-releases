@@ -68,11 +68,11 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
                          GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0,0,0,0),0,0);
     private Container panel;
     
-    public static RemoteUserInfo getUserInfo(String host, String user) {
+    public static RemoteUserInfo getUserInfo(String key) {
         if (map == null) {
             map = new HashMap<String, RemoteUserInfo>();
         }
-        String key = host + ':' + user;
+        
         RemoteUserInfo ui = map.get(key);
         if (ui == null) {
             ui = new RemoteUserInfo();

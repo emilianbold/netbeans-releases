@@ -304,8 +304,27 @@ public class AstUtil {
             }
         };
         impl.visit(ast);
-    }    
-    
+    }
+
+    /**
+     * Creates an AST with node <code>n1</code> as root and node <code>n2</code>
+     * as its single child, discarding all other children and siblings of
+     * both nodes. This function creates copies of nodes, original nodes
+     * are not changed.
+     * 
+     * @param n1  root node
+     * @param n2  child node
+     * @return AST consisting of two given nodes
+     */
+    public static AST createAST(AST n1, AST n2) {
+        AST root = new CsmAST();
+        root.initialize(n1);
+        AST child = new CsmAST();
+        child.initialize(n2);
+        root.addChild(child);
+        return root;
+    }
+
     private static void print(AST ast, PrintStream ps) {
         ps.print('[');
         ps.print(ast.getText());

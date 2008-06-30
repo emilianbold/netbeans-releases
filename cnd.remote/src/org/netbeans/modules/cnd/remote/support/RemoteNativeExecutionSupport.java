@@ -61,24 +61,45 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
     private BufferedReader in;
     private ChannelExec echannel;
 
-    public RemoteNativeExecutionSupport(String host, String user, File dirf, String exe, String args, String[] envp, PrintWriter out) {
-        super(host, user);
+    public RemoteNativeExecutionSupport(String key, int port, File dirf, String exe, String args, String[] envp, PrintWriter out) {
+        super(key, port);
                 
         try {
             setChannelCommand(dirf, exe, args, envp);
             InputStream is = channel.getInputStream();
             in = new BufferedReader(new InputStreamReader(is)); // XXX - Change to non-buffered input
             
+//            String line;
+//            while ((line = in.readLine()) != null) { // XXX - Change to character oriented input
+//                out.println(line);
+//                out.flush();
+//            }
+//            in.close();
+//            is.close();
+    
             String line;
-            while ((line = in.readLine()) != null) { // XXX - Change to character oriented input
-                out.println(line);
-                out.flush();
+            while ((line = in.readLine()) != null || !channel.isClosed()) {
+                if (line!=null) {
+                    out.write(line + "\n");
+                    out.flush();
+                }
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                }
             }
             in.close();
             is.close();
+
         } catch (JSchException jse) {
         } catch (IOException ex) {
-        }
+        } finally {
+            disconnect();
+        } 
+    }
+
+    public RemoteNativeExecutionSupport(String key, File dirf, String exe, String args, String[] envp, PrintWriter out) {
+        this(key, 22, dirf, exe, args, envp, out);
     }
 
     @Override
@@ -89,7 +110,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
     
     private void setChannelCommand(File dirf, String exe, String args, String[] envp) throws JSchException {
         String dircmd;
-        String path = RemotePathMap.getMapper(user, host).getRemotePath(dirf.getAbsolutePath());
+        String path = RemotePathMap.getMapper(key).getRemotePath(dirf.getAbsolutePath());
         
         if (path != null) {
             dircmd = "cd " + path + "; "; // NOI18N
@@ -106,7 +127,8 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
 //            echannel.setEnv(var, val); // not in 0.1.24
 //        }
         
-        String cmdline = dircmd + exe + " " + args; // NOI18N
+        String cmdline = dircmd + exe + " " + args + " 2>&1"; // NOI18N
+        channel = createChannel();
         echannel.setCommand(cmdline.replace('\\', '/'));
         echannel.setInputStream(System.in);
         echannel.setErrStream(System.err);

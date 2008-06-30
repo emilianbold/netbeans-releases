@@ -90,8 +90,12 @@ class NbTestMediator
   def add_to_suites file_name
     file_name = file_name[0..file_name.length - 4]
     require "#{file_name}"
-    last_slash = file_name.rindex("/")
-    test_class = file_name[last_slash + 1..file_name.length]
+    last_slash = file_name.rindex(File::SEPARATOR)
+    if last_slash != nil
+      test_class = file_name[last_slash + 1..file_name.length]
+    else 
+      test_class = file_name
+    end
     begin
       instance = Object.const_get(camelize(test_class))
     rescue NameError

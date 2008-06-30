@@ -10,7 +10,7 @@ LINE_COMMENT    "# :nodoc:", la=1, st=0
 ----- EOF -----
 
 .t.e.s.t. Documentation
-DOCUMENTATION   "=begin\nComments\nRdoc *bold* and #method\n:nodoc:\n=en", la=1, st=0
+DOCUMENTATION   "=begin\nComments\nRdoc *bold* and #method\n:nodoc:\n=en", la=2, st=0
 IDENTIFIER      "d", la=1, st=0
 ----- EOF -----
 

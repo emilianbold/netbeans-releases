@@ -85,10 +85,9 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
         checkSemantic("testfiles/e4x.js", "order^");
     }
 
-    // This test fails because there are overlaps in the offsets
-    //public void testSemanticE4x2() throws Exception {
-    //    checkSemantic("testfiles/e4x2.js", "order^");
-    //}
+    public void testSemanticE4x2() throws Exception {
+        checkSemantic("testfiles/e4x2.js", "order^");
+    }
 
     public void testSemanticTryCatch() throws Exception {
         checkSemantic("testfiles/tryblocks.js");

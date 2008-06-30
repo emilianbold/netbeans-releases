@@ -48,34 +48,34 @@ public class NewEventPanel extends javax.swing.JPanel {
 
     // TODO: hard code here for now
     private static final String[] types = new String[]{
-        "auto-flush",
-        "merge",
-        "create",
-        "create-onflush",
-        "delete",
-        "dirty-check",
-        "evict",
-        "flush",
-        "flush-entity",
-        "load",
-        "load-collection",
-        "lock",
-        "refresh",
-        "replicate",
-        "save-update",
-        "save",
-        "update",
-        "pre-load",
-        "pre-update",
-        "pre-insert",
-        "pre-delete",
-        "post-load",
-        "post-update",
-        "post-insert",
-        "post-delete",
-        "post-commit-update",
-        "post-commit-insert",
-        "post-commit-delete"
+        "auto-flush", // NOI18N
+        "merge", // NOI18N
+        "create", // NOI18N
+        "create-onflush", // NOI18N
+        "delete", // NOI18N
+        "dirty-check", // NOI18N
+        "evict", // NOI18N
+        "flush", // NOI18N
+        "flush-entity", // NOI18N
+        "load", // NOI18N
+        "load-collection", // NOI18N
+        "lock", // NOI18N
+        "refresh", // NOI18N
+        "replicate", // NOI18N
+        "save-update", // NOI18N
+        "save", // NOI18N
+        "update", // NOI18N
+        "pre-load", // NOI18N
+        "pre-update", // NOI18N
+        "pre-insert", // NOI18N
+        "pre-delete", // NOI18N
+        "post-load", // NOI18N
+        "post-update", // NOI18N
+        "post-insert", // NOI18N
+        "post-delete", // NOI18N
+        "post-commit-update", // NOI18N
+        "post-commit-insert", // NOI18N
+        "post-commit-delete" // NOI18N
     };
 
     /** Creates new form NewEventPanel */

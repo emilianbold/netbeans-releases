@@ -563,6 +563,7 @@ public class CommonUtilities {
 
         RuntimeTabOperator rto = RuntimeTabOperator.invoke();        
         JTreeOperator runtimeTree = rto.tree();
+        runtimeTree.setComparator(new Operator.DefaultStringComparator(true, true));
         
         long oldTimeout = runtimeTree.getTimeouts().getTimeout("JTreeOperator.WaitNextNodeTimeout");
         runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", 6000);
@@ -649,6 +650,7 @@ public class CommonUtilities {
 
         RuntimeTabOperator rto = RuntimeTabOperator.invoke();        
         JTreeOperator runtimeTree = rto.tree();
+        runtimeTree.setComparator(new Operator.DefaultStringComparator(true, true));
         
         long oldTimeout = runtimeTree.getTimeouts().getTimeout("JTreeOperator.WaitNextNodeTimeout");
         runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", 6000);

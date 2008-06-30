@@ -59,9 +59,12 @@ public class EnterpriseSetup extends JellyTestCase {
         super(testName);
     }
     
-    // FIXME: Remove this workaround
     public void addApplicationServer() {
         EPUtilities.addApplicationServer();
+    }
+
+    public void addTomcatServer() {
+        EPUtilities.addTomcatServer();
     }
     
     public void openProject(String projectPath) {

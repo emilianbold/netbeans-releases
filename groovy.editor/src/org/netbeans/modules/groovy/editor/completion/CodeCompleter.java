@@ -80,7 +80,6 @@ import java.util.logging.Level;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.util.Elements;
-import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
@@ -89,7 +88,6 @@ import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
@@ -106,6 +104,9 @@ import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.elements.ElementHandleSupport;
@@ -116,12 +117,14 @@ import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public class CodeCompleter implements CodeCompletionHandler {
 
+    private static volatile boolean testMode = false;   // see setTesting(), thanks Petr. ;-)
     private static ImageIcon groovyIcon;
     private static ImageIcon javaIcon;
     private int anchor;
@@ -152,6 +155,19 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         LOG.log(Level.FINEST, "GDK Doc path: {0}", groovyJavaDocBase);
         LOG.log(Level.FINEST, "GAPI Doc path: {0}", gapiDocBase);
+
+        if(testMode){
+            LOG.log(Level.FINEST, "Running in test-mode");
+        } else {
+            LOG.log(Level.FINEST, "Running in the IDE");
+        }
+
+
+        }
+
+    /*Configures testing environment only*/
+    static public void setTesting(boolean testing) {
+        testMode = testing;
     }
 
     String directoryNameToUrl(String dirname) {
@@ -497,22 +513,34 @@ public class CodeCompleter implements CodeCompletionHandler {
      * @param request completion request which includes position information
      * @return the next surrouning MethodNode
      */
-       private MethodNode getSurroundingMethodNode (CompletionRequest request) {
+       private ASTNode getSurroundingMethodOrClosure (CompletionRequest request) {
            AstPath path = getPathFromRequest(request);
 
            if (path == null) {
                LOG.log(Level.FINEST, "path == null"); // NOI18N
                return null;
            }
+
+           LOG.log(Level.FINEST, "getSurroundingMethodOrClosure() ----------------------------------------");
+           LOG.log(Level.FINEST, "Path : {0}", path);
            
            for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
-            ASTNode current = it.next();
-                if(current instanceof MethodNode){
-                    MethodNode mn = (MethodNode)current;
-                    LOG.log(Level.FINEST, "Found Method: {0}", mn.getName()); // NOI18N
-                    return mn;
-                }
-            }
+               ASTNode current = it.next();
+               if (current instanceof MethodNode) {
+                   MethodNode mn = (MethodNode) current;
+                   LOG.log(Level.FINEST, "Found Method: {0}", mn.getName()); // NOI18N
+                   return mn;
+               } /*else if (current instanceof FieldNode) {
+               FieldNode fn = (FieldNode) current;
+               if (fn.isClosureSharedVariable()) {
+               LOG.log(Level.FINEST, "Found Closure(Field): {0}", fn.getName()); // NOI18N
+               return fn;
+               }
+               } else if (current instanceof ClosureExpression) {
+               LOG.log(Level.FINEST, "Found Closure(Expr.): {0}", ((ClosureExpression)current).getText()); // NOI18N
+               return current;
+               }*/
+           }
            return null;
        }
        
@@ -901,7 +929,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             return false;
         }
 
-        ASTNode scope = getSurroundingMethodNode(request);
+        ASTNode scope = getSurroundingMethodOrClosure(request);
 
         if(request.scriptMode){
             LOG.log(Level.FINEST, "We are running in script-mode."); // NOI18N
@@ -1275,27 +1303,48 @@ public class CodeCompleter implements CodeCompletionHandler {
         String prefix;
     }
     
-    
-    private ClasspathInfo getClassPathFromDocument(BaseDocument doc){
-        
-        DataObject dob = NbEditorUtilities.getDataObject(doc);
+    /**
+     * Getting the ClasspathInfo for this completion instance. We retrieve this
+     * information either from the BaseDocument, or (in case we are running from 
+     * a test) we use the ClassPathProvider from the Lookup.
+     * 
+     * @param doc
+     * @return
+     */
 
-        if (dob == null) {
-            LOG.log(Level.FINEST, "Problem getting DataObject");
-            return null;
-        }
 
-        FileObject fo = dob.getPrimaryFile();
+    private ClasspathInfo getClassPathInfo(BaseDocument doc){
 
-        if (fo == null) {
-            LOG.log(Level.FINEST, "Problem getting FileObject");
-            return null;
-        }
+        ClasspathInfo pathInfo = null;
 
-        ClasspathInfo pathInfo = NbUtilities.getClasspathInfoForFileObject(fo);
 
-        if (pathInfo == null) {
-            LOG.log(Level.FINEST, "Problem getting ClasspathInfo");
+        if (!testMode) {
+            assert doc != null : "What am i supposed to do if doc == null ?";
+
+            if (!(doc instanceof BaseDocument)) {
+                LOG.log(Level.FINEST, "Document is *not* a BaseDocument");
+            }
+
+
+            DataObject dob = NbEditorUtilities.getDataObject(doc);
+
+            if (dob == null) {
+                LOG.log(Level.FINEST, "Problem getting DataObject");
+                return null;
+            }
+
+            FileObject fo = dob.getPrimaryFile();
+
+            if (fo == null) {
+                LOG.log(Level.FINEST, "Problem getting FileObject");
+                return null;
+            }
+
+            pathInfo = NbUtilities.getClasspathInfoForFileObject(fo);
+
+            if (pathInfo == null) {
+                LOG.log(Level.FINEST, "Problem getting ClasspathInfo");
+            }
         }
         
         return pathInfo;
@@ -1317,8 +1366,10 @@ public class CodeCompleter implements CodeCompletionHandler {
      
         LOG.log(Level.FINEST, "Token fullString = >{0}<", packageRequest.fullString);
         
-        ClasspathInfo pathInfo = getClassPathFromDocument(request.doc);
+        ClasspathInfo pathInfo = getClassPathInfo(request.doc);
 
+        // assert pathInfo != null : "Can not get ClasspathInfo";
+        
         // try to find suitable packages ...
 
         Set<String> pkgSet;
@@ -1343,6 +1394,17 @@ public class CodeCompleter implements CodeCompletionHandler {
     }
 
     /**
+     * Complete the Groovy and Java types available at this position.
+     * These are the Groovy default imports:
+     *
+     * java.io.*
+     * java.lang.*
+     * java.math.BigDecimal
+     * java.math.BigInteger
+     * java.net.*
+     * java.util.*
+     * groovy.lang.*
+     * groovy.util.*
      * 
      * @param proposals
      * @param request
@@ -1363,7 +1425,7 @@ public class CodeCompleter implements CodeCompletionHandler {
            return false;
        }
         
-        ClasspathInfo pathInfo = getClassPathFromDocument(request.doc);
+        ClasspathInfo pathInfo = getClassPathInfo(request.doc);
        
         LOG.log(Level.FINEST, "Prefix = >{0}<", packageRequest.basePackage);
 

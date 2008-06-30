@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
@@ -150,9 +150,7 @@ public class TemplateUtils {
                         // The fakeAST is needed to initialize TemplateParameter with correct offsets.
                         // Without it TemplateParameter would span either "class"/"typename" keyword
                         // or parameter name, but not both.
-                        fakeAST = new CsmAST();
-                        fakeAST.initialize(parameterStart);
-                        fakeAST.addChild(child);
+                        fakeAST = AstUtil.createAST(parameterStart, child);
                     }
                     res.add(new TemplateParameterImpl(fakeAST, child.getText(), file, (CsmScope)template));
                     parameterStart = null;
@@ -177,6 +175,15 @@ public class TemplateUtils {
                                     }
                                 }
                                break;
+                        }
+                    }
+                    break;
+                case CPPTokenTypes.CSM_TEMPLATE_TEMPLATE_PARAMETER:
+                    parameterStart = child;
+                     for (AST paramChild = child.getFirstChild(); paramChild != null; paramChild = paramChild.getNextSibling()) {
+                        if (paramChild.getType() == CPPTokenTypes.ID) {
+                           res.add(new TemplateParameterImpl(parameterStart, paramChild.getText(), file, (CsmScope)template));
+                           break;
                         }
                     }
                     break;

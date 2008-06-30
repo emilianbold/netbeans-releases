@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.text.Document;
+import org.mozilla.javascript.FunctionNode;
 import org.mozilla.javascript.Node;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Error;
@@ -72,8 +73,8 @@ public class JsParseResult extends ParserResult {
     private JsAnalyzer.AnalysisResult analysisResult;
     private JsParser.Sanitize sanitized;
     private boolean commentsAdded;
+    private IncrementalParse incrementalParse;
 
-    
     public JsParseResult(JsParser parser, ParserFile file, Node rootNode, AstTreeNode ast) {
         super(parser, file, JsTokenId.JAVASCRIPT_MIME_TYPE);
         this.rootNode = rootNode;
@@ -214,10 +215,15 @@ public class JsParseResult extends ParserResult {
 
     public VariableVisitor getVariableVisitor() {
         if (variableVisitor == null) {
-            Node root = getRootNode();
-            assert root != null : "Attempted to get variable visitor for broken source";
-            variableVisitor = new VariableVisitor();
-            new ParseTreeWalker(variableVisitor).walk(root);
+            if (incrementalParse != null && incrementalParse.previousResult.variableVisitor != null) {
+                variableVisitor = incrementalParse.previousResult.variableVisitor;
+                variableVisitor.incrementalEdits(incrementalParse);
+            } else {
+                Node root = getRootNode();
+                assert root != null : "Attempted to get variable visitor for broken source";
+                variableVisitor = new VariableVisitor();
+                new ParseTreeWalker(variableVisitor).walk(root);
+            }
         }
 
         return variableVisitor;
@@ -227,5 +233,43 @@ public class JsParseResult extends ParserResult {
     public String toString() {
         return "JsParseResult(file=" + getFile() + ",rootnode=" + rootNode + ")";
     }
-    
+
+    public void setIncrementalParse(IncrementalParse incrementalParse) {
+        this.incrementalParse = incrementalParse;
+    }
+
+    public IncrementalParse getIncrementalParse() {
+        return incrementalParse;
+    }
+
+    public static class IncrementalParse {
+        public FunctionNode oldFunction;
+        public FunctionNode newFunction;
+        /**
+         * The offset of the beginning of the function node that was replaced
+         */
+        public int incrementalOffset;
+        /**
+         * The offset at which the function node used to end
+         */
+        public int incrementalOffsetLimit;
+        /**
+         * The new offset at which the function node ends - old end, e.g. delta to apply
+         * to all offsets greated than the incremental offset limit
+         */
+        public int incrementalOffsetDelta;
+        public JsParseResult previousResult;
+
+        public IncrementalParse(FunctionNode oldFunction, FunctionNode newFunction, int incrementalOffset, int incrementalOffsetLimit, int incrementalOffsetDelta, JsParseResult previousResult) {
+            this.oldFunction = oldFunction;
+            this.newFunction = newFunction;
+            this.incrementalOffset = incrementalOffset;
+            this.incrementalOffsetLimit = incrementalOffsetLimit;
+            this.incrementalOffsetDelta = incrementalOffsetDelta;
+            this.previousResult = previousResult;
+        }
+
+        // Cached for incremental support
+        //public Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
+    }
 }

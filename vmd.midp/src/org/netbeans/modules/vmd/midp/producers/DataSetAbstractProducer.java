@@ -47,7 +47,7 @@ import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.databinding.DataSetCD;
 import org.netbeans.modules.vmd.midp.palette.DatabindingPaletteProvider;
 import org.netbeans.modules.vmd.midp.components.databinding.AddressDataSetCD;
-import org.netbeans.modules.vmd.midp.components.databinding.ContactDataSetCD;
+import org.netbeans.modules.vmd.midp.components.databinding.ContactsDataSetCD;
 import org.netbeans.modules.vmd.midp.components.databinding.NameDataSetCD;
 import org.netbeans.modules.vmd.midp.components.databinding.PIMDataSetCD;
 import org.netbeans.modules.vmd.midp.components.databinding.ToDoDataSetCD;
@@ -104,7 +104,7 @@ public abstract class DataSetAbstractProducer extends ComponentProducer {
     public static final class ContactDataSetProducer extends DataSetAbstractProducer {
         
         public ContactDataSetProducer() {
-            super("javax.microedition.lcdui.Canvas", ContactDataSetCD.TYPEID.toString(), ContactDataSetCD.TYPEID, new PaletteDescriptor(DATABINDING_CATEGORY, "Contact DataSet", "Contact DataSet", ContactDataSetCD.ICON_PATH, null)); //NOI18N
+            super("javax.microedition.lcdui.Canvas", ContactsDataSetCD.TYPEID.toString(), ContactsDataSetCD.TYPEID, new PaletteDescriptor(DATABINDING_CATEGORY, "Contact DataSet", "Contact DataSet", ContactsDataSetCD.ICON_PATH, null)); //NOI18N
         }
         
     }
@@ -128,7 +128,15 @@ public abstract class DataSetAbstractProducer extends ComponentProducer {
     public static final class ToDoDataSetProducer extends DataSetAbstractProducer {
         
         public ToDoDataSetProducer() {
-            super("javax.microedition.lcdui.Canvas", ToDoDataSetCD.TYPEID.toString(), ToDoDataSetCD.TYPEID, new PaletteDescriptor(DATABINDING_CATEGORY, "Name DataSet", "ToDo DataSet", ToDoDataSetCD.ICON_PATH, null)); //NOI18N
+            super("javax.microedition.lcdui.Canvas", ToDoDataSetCD.TYPEID.toString(), ToDoDataSetCD.TYPEID, new PaletteDescriptor(DATABINDING_CATEGORY, "ToDo DataSet", "ToDo DataSet", ToDoDataSetCD.ICON_PATH, null)); //NOI18N
+        }
+        
+    } 
+    
+    public static final class IndexableDataSetProducer extends DataSetAbstractProducer {
+        
+        public IndexableDataSetProducer() {
+            super("javax.microedition.lcdui.Canvas", ToDoDataSetCD.TYPEID.toString(), ToDoDataSetCD.TYPEID, new PaletteDescriptor(DATABINDING_CATEGORY, "Indexable DataSet", "ToDo DataSet", ToDoDataSetCD.ICON_PATH, null)); //NOI18N
         }
         
     } 
