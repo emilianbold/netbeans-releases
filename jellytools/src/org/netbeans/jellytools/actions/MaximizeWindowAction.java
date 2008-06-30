@@ -41,14 +41,14 @@
 
 package org.netbeans.jellytools.actions;
 
-import org.netbeans.core.windows.ModeImpl;
-import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /** Used to call "Maximize Window" popup menu item, "Window|Maximize Window" main menu item,
  * shortcut or maximize window by IDE API.
@@ -104,10 +104,9 @@ public class MaximizeWindowAction extends Action {
         // run in dispatch thread
         new QueueTool().invokeSmoothly(new Runnable() {
             public void run() {
-                WindowManagerImpl wm = WindowManagerImpl.getInstance();
-                ModeImpl activeMode = wm.getActiveMode();
+                Mode activeMode = (Mode)AttachWindowAction.callWindowManager("getActiveMode");
                 if(activeMode != null) {
-                    wm.switchMaximizedMode(activeMode);
+                    AttachWindowAction.callWindowManager("switchMaximizedMode", activeMode);
                 }
             }
         });
@@ -122,9 +121,9 @@ public class MaximizeWindowAction extends Action {
         // run in dispatch thread
         tco.getQueueTool().invokeSmoothly(new Runnable() {
             public void run() {
-                WindowManagerImpl wm = WindowManagerImpl.getInstance();
-                ModeImpl mode = (ModeImpl)wm.findMode((TopComponent)tco.getSource());
-                wm.switchMaximizedMode(mode);
+                WindowManager wm = WindowManager.getDefault();
+                Mode mode = (Mode)wm.findMode((TopComponent)tco.getSource());
+                AttachWindowAction.callWindowManager("switchMaximizedMode", mode);
             }
         });
     }

@@ -40,9 +40,9 @@
  */
 package org.netbeans.jellytools.actions;
 
-import org.netbeans.core.windows.Constants;
-import org.netbeans.core.windows.ModeImpl;
-import org.netbeans.core.windows.WindowManagerImpl;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import javax.swing.JSplitPane;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -50,7 +50,10 @@ import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.openide.util.Exceptions;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /** Used to attach a window to a new position by IDE API.
  * It also defines constants used for attaching.
@@ -70,10 +73,10 @@ import org.openide.windows.TopComponent;
  */
 public class AttachWindowAction extends Action {
     
-    public static final String BOTTOM = Constants.BOTTOM;
-    public static final String TOP = Constants.TOP;
-    public static final String RIGHT = Constants.RIGHT;
-    public static final String LEFT = Constants.LEFT;
+    public static final String TOP    = JSplitPane.TOP;
+    public static final String BOTTOM = JSplitPane.BOTTOM;
+    public static final String LEFT   = JSplitPane.LEFT;
+    public static final String RIGHT  = JSplitPane.RIGHT;
     public static final String AS_LAST_TAB = "As a Last Tab";
     
     /** "Window" main menu item. */
@@ -194,13 +197,13 @@ public class AttachWindowAction extends Action {
         // run in dispatch thread
         tco.getQueueTool().invokeSmoothly(new Runnable() {
             public void run() {
-                ModeImpl mode = (ModeImpl)WindowManagerImpl.getDefault().findMode(targetTc);
+                Mode mode = (Mode)WindowManager.getDefault().findMode(targetTc);
                 if(sideConstant == AS_LAST_TAB) {
                     mode.dockInto(sourceTc);
                     sourceTc.open();
                     sourceTc.requestActive();
                 } else {
-                    WindowManagerImpl.getInstance().attachTopComponentToSide(sourceTc, mode, sideConstant);
+                    callWindowManager("attachTopComponentToSide", sourceTc, mode, sideConstant);
                 }
             }
         });
@@ -219,6 +222,30 @@ public class AttachWindowAction extends Action {
             throw new JemmyException("Interrupted.", e); // NOI18N
         }
     }
+
+    static Object callWindowManager(String method, Object... args) {
+        return callWindowManager(WindowManager.getDefault().getClass(), method, args);
+    }
+
+    private static Object callWindowManager(Class clazz, String method, Object... args) {
+        for (Method m : clazz.getDeclaredMethods()) {
+            if (!method.equals(m.getName())) {
+                continue;
+            }
+            if (args == null && m.getParameterTypes().length > 0 ||
+                    args != null && m.getParameterTypes().length != args.length) {
+                continue;
+            }
+            try {
+                return m.invoke(WindowManager.getDefault(), args);
+            } catch (Exception ex) {
+                throw (IllegalStateException)new IllegalStateException("Cannot execute " + method).initCause(ex);
+            }
+        }
+        return callWindowManager(clazz.getSuperclass(), method, args);
+    }
+
+
     
     /** Throws UnsupportedOperationException because AttachWindowAction doesn't have
      * representation on nodes.

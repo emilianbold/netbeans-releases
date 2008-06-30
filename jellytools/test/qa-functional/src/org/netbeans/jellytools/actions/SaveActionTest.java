@@ -75,7 +75,7 @@ public class SaveActionTest extends JellyTestCase {
         suite.addTest(new SaveActionTest("testPerformShortcut"));
         return suite;
          */
-        return createModuleTest(ReplaceActionTest.class, 
+        return createModuleTest(SaveActionTest.class,
                 "testPerformMenu", "testPerformAPI", "testPerformShortcut");
     }
     
