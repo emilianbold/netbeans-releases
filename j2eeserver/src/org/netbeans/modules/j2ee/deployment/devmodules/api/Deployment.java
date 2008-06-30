@@ -542,20 +542,25 @@ public final class Deployment {
             List<URL> urls = new ArrayList<URL>();
             for (J2eeModuleProvider provider : providers) {
                 for (FileObject file : provider.getSourceFileMap().getSourceRoots()) {
-                    try {
-                        URL[] binaries = BinaryForSourceQuery.findBinaryRoots(file.getURL()).getRoots();
-                        for (URL binary : binaries) {
-                            FileObject object = URLMapper.findFileObject(binary);
-                            if (object != null) {
-                                URL url = URLMapper.findURL(file, URLMapper.EXTERNAL);
-                                if (url != null) {
-                                    urls.add(url);
-                                }
-                            }
-                        }
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
+                    URL url = URLMapper.findURL(file, URLMapper.EXTERNAL);
+                    if (url != null) {
+                        urls.add(url);
                     }
+//                    try {
+//                        URL[] binaries = BinaryForSourceQuery.findBinaryRoots(file.getURL()).getRoots();
+//                        for (URL binary : binaries) {
+//                            FileObject object = URLMapper.findFileObject(binary);
+//                            if (object != null) {
+//                                URL url = URLMapper.findURL(file, URLMapper.EXTERNAL);
+//                                if (url != null) {
+//                                    urls.add(url);
+//                                }
+//                            }
+//                            urls.add(binary);
+//                        }
+//                    } catch (IOException ex) {
+//                        Exceptions.printStackTrace(ex);
+//                    }
                 }
             }
 
