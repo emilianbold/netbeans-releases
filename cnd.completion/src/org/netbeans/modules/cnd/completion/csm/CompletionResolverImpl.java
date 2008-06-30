@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
@@ -548,6 +549,21 @@ public class CompletionResolverImpl implements CompletionResolver {
     private Collection<CsmTemplateParameter> getTemplateParameters(CsmContext context, String strPrefix, boolean match) {
         Collection<CsmTemplateParameter> templateParameters = null;
         CsmFunction fun = CsmContextUtilities.getFunction(context);
+        if (fun == null && context.getLastObject() != null) {
+            // Fix for IZ#138099: unresolved identifier for functions' template parameter.
+            // We might be just before function name, where its template parameters
+            // and type reside. Let's try a bit harder to find that function.
+            CsmObject obj = context.getLastObject();
+            if (CsmKindUtilities.isFunction(obj)) {
+                fun = (CsmFunction)obj;
+            } else {
+                int offset = ((CsmOffsetable)context.getLastObject()).getEndOffset();
+                obj = CsmDeclarationResolver.findInnerFileObject(file, offset, context);
+                if (CsmKindUtilities.isFunction(obj)) {
+                    fun = (CsmFunction)obj;
+                }
+            }
+        }
         CsmClass clazz = fun == null ? null : CsmBaseUtilities.getFunctionClass(fun);
         clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false);
         if (CsmKindUtilities.isTemplate(clazz)) {
@@ -577,18 +593,6 @@ public class CompletionResolverImpl implements CompletionResolver {
                 if (CsmSortUtilities.matchName(elem.getName(), strPrefix, match, caseSensitive)) {
                     templateParameters.add(elem);
                 }
-            }
-        }
-        if (fun == null && CsmKindUtilities.isTemplateParameter(context.getLastObject())) {
-            // Fix for IZ#138099: unresolved identifier for functions' template parameter.
-            // We've hit a parameter of function template. Current context does
-            // not contain function itself because template parameters go before function.
-            CsmTemplateParameter elem = (CsmTemplateParameter) context.getLastObject();
-            if (CsmSortUtilities.matchName(elem.getName(), strPrefix, match, caseSensitive)) {
-                if (templateParameters == null) {
-                    templateParameters = new ArrayList<CsmTemplateParameter>();
-                }
-                templateParameters.add(elem);
             }
         }
         return templateParameters;
