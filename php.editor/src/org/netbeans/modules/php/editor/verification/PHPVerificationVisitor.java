@@ -360,7 +360,10 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
             if (variable != null && variable.getName() instanceof Identifier) {
                 Identifier identifier = (Identifier) variable.getName();
                 String varName = identifier.getName();
-                vars.getLast().put(new VariableWrapper(var), varName);
+                
+                if (!isVariableDefined(varName)){
+                    vars.getLast().put(new VariableWrapper(var), varName);
+                }
             }
         }
         
