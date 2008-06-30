@@ -495,7 +495,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         Collection<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
         String url = null;
         try {
-            url = request.result.getFile().getFile().toURL().toExternalForm();
+            url = request.result.getFile().getFile().toURI().toURL().toExternalForm();
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }

@@ -91,7 +91,9 @@ class NbTestMediator
     file_name = file_name[0..file_name.length - 4]
     require "#{file_name}"
     last_slash = file_name.rindex(File::SEPARATOR)
-    if last_slash != nil
+     # try ALT_SEPARATOR for some Windows versions
+    last_slash = file_name.rindex(File::ALT_SEPARATOR) unless last_slash
+    if last_slash
       test_class = file_name[last_slash + 1..file_name.length]
     else 
       test_class = file_name
