@@ -380,7 +380,7 @@ public class CompilerSetManager {
             }
             for (int i = 0; i < best.length; i++) {
                 String name = best[i];
-                if (Utilities.isWindows()) {
+                if (isWindows()) {
                     name = name + ".exe"; // NOI18N
                 }
                 if (new File(dir, name).exists() && !new File(dir, name).isDirectory()) { // NOI18N
@@ -418,7 +418,7 @@ public class CompilerSetManager {
             }
             for (int i = 0; i < best.length; i++) {
                 String name = best[i];
-                if (Utilities.isWindows()) {
+                if (isWindows()) {
                     name = name + ".exe"; // NOI18N
                 }
                 if (new File(dir, name).exists() && !new File(dir, name).isDirectory()) { // NOI18N
@@ -456,7 +456,7 @@ public class CompilerSetManager {
             }
             for (int i = 0; i < best.length; i++) {
                 String name = best[i];
-                if (Utilities.isWindows()) {
+                if (isWindows()) {
                     name = name + ".exe"; // NOI18N
                 }
                 if (new File(dir, name).exists() && !new File(dir, name).isDirectory()) { // NOI18N
@@ -838,5 +838,47 @@ public class CompilerSetManager {
     /** Look up i18n strings here */
     private static String getString(String s) {
         return NbBundle.getMessage(CompilerSetManager.class, s);
+    }
+
+    private boolean isWindows() {
+        //TODO: use fake set for remote until remote compiler set retrieving would work
+        if (useFakeRemoteCompilerSet)
+            return false;
+        
+        return Utilities.isWindows();
+    }
+    
+
+    public static boolean useFakeRemoteCompilerSet = Boolean.getBoolean("cnd.remote.fakeCompilerSet");
+    public static CompilerSet fakeRemoteCS = new FakeRemoteCompilerSet();
+    
+    private static class FakeRemoteCompilerSet extends CompilerSet {
+
+        @Override
+        public String getName() {
+            return "fakeRemote";
+        }
+
+        @Override
+        public Tool getTool(int kind) {
+            switch (kind) {
+                case Tool.MakeTool: return fakeMake;
+                case Tool.CCompiler: return fakeC;
+                case Tool.CCCompiler: return fakeCC;
+                case Tool.FortranCompiler: return fakeFortran;
+            }
+            return null;
+        }
+
+        @Override
+        public Tool getTool(String name) {
+            throw new UnsupportedOperationException();
+        }
+        
+        private Tool fakeMake = new Tool(CompilerFlavor.GNU, Tool.MakeTool, "", "fakeMake", "/usr/sfw/bin/gmake"); 
+        private Tool fakeC = new Tool(CompilerFlavor.GNU, Tool.CCompiler, "", "fakeGcc", "/usr/sfw/bin/gcc"); 
+        private Tool fakeCC = new Tool(CompilerFlavor.GNU, Tool.CCCompiler, "", "fakeG++", "/usr/sfw/bin/g++"); 
+        private Tool fakeFortran = new Tool(CompilerFlavor.GNU, Tool.FortranCompiler, "", "veryFakeFortran", "/usr/sfw/bin/g++"); 
+        
     }
 }

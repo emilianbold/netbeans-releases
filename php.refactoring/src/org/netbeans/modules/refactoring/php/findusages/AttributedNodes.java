@@ -1005,7 +1005,7 @@ public class AttributedNodes extends DefaultVisitor {
             }
             Index i = getInfo().getIndex(PhpSourcePath.MIME_TYPE);
             PHPIndex index = PHPIndex.get(i);
-            int attrs = BodyDeclaration.Modifier.PUBLIC;
+            int attrs = PHPIndex.ANY_ATTR;
             
             switch(k) {
                 case CONST:
