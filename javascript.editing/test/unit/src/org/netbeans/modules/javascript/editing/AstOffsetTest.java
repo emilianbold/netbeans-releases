@@ -41,12 +41,15 @@ package org.netbeans.modules.javascript.editing;
 
 import java.util.List;
 import java.util.Map;
+import org.mozilla.javascript.FunctionNode;
 import org.mozilla.javascript.Node;
 import org.mozilla.javascript.Token;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.EditHistory;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 
 /**
@@ -86,10 +89,10 @@ public class AstOffsetTest extends JsTestBase {
     }
     
     @Override
-    protected void initializeNodes(CompilationInfo info, List<Object> validNodes,
+    protected void initializeNodes(CompilationInfo info, ParserResult result, List<Object> validNodes,
             Map<Object,OffsetRange> positions, List<Object> invalidNodes) throws Exception {
-        Node root = AstUtilities.getRoot(info);
-        BaseDocument doc = LexUtilities.getDocument(info, false);
+        //Node root = AstUtilities.getRoot(info);
+        Node root = AstUtilities.getRoot(result);
         assertNotNull(root);
         
         initialize(root, validNodes, invalidNodes, positions, info);
@@ -115,6 +118,78 @@ public class AstOffsetTest extends JsTestBase {
                 initialize(child, validNodes, invalidNodes, positions, info);
             }
         }
+    }
+
+    @Override
+    protected void assertEquals(String message, BaseDocument doc, ParserResult expected, ParserResult actual) throws Exception {
+        Node expectedRoot = ((JsParseResult)expected).getRootNode();
+        Node actualRoot = ((JsParseResult)actual).getRootNode();
+        assertEquals(doc, expectedRoot, actualRoot);
+    }
+
+    private boolean assertEquals(BaseDocument doc, Node expected, Node actual) throws Exception {
+        assertEquals(expected.hasChildren(), actual.hasChildren());
+        if (expected.getType() != actual.getType() ||
+                expected.hasChildren() != actual.hasChildren() /* ||
+                expected.getSourceStart() != actual.getSourceStart() ||
+                expected.getSourceEnd() != actual.getSourceEnd()*/
+                ) {
+            String s = null;
+            Node curr = expected;
+            while (curr != null) {
+                String desc = curr.toString();
+                int start = curr.getSourceStart();
+                int line = Utilities.getLineOffset(doc, start);
+                desc = desc + " (line " + line + ")";
+                if (curr.getType() == Token.FUNCTION) {
+                    String name = null;
+                    Node label = ((FunctionNode)curr).labelNode;
+                    if (label != null) {
+                        name = label.getString();
+                    } else {
+                        for (Node child = curr.getFirstChild(); child != null; child = child.getNext()) {
+                            if (child.getType() == Token.FUNCNAME) {
+                                desc = child.getString();
+                                break;
+                            }
+                        }
+                    }
+                    if (name != null) {
+                        desc = desc + " : " + name + "()";
+                    }
+                } else if (curr.getType() == Token.OBJECTLIT) {
+                    String[] names = AstUtilities.getObjectLitFqn(curr);
+                    if (names != null) {
+                        desc = desc + " : " + names[0];
+                    }
+                }
+                if (s == null) {
+                    s = desc;
+                } else {
+                    s = desc + " - " + s;
+                }
+                curr = curr.getParentNode();
+            }
+            fail("node mismatch: Expected=" + expected + ", Actual=" + actual + "; path=" + s);
+        }
+
+        if (expected.hasChildren()) {
+            for (Node expectedChild = expected.getFirstChild(),
+                    actualChild = actual.getFirstChild();
+                    expectedChild != null; expectedChild = expectedChild.getNext(), actualChild = actualChild.getNext()) {
+                assertEquals(expectedChild.getNext() != null, actualChild.getNext() != null);
+                assertEquals(doc, expectedChild, actualChild);
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    protected void verifyIncremental(ParserResult result, EditHistory history, ParserResult oldResult) {
+        JsParseResult pr = (JsParseResult)result;
+        assertNotNull(pr.getIncrementalParse());
+        assertNotNull(pr.getIncrementalParse().newFunction);
     }
     
     public void testOffsets1() throws Exception {
@@ -157,6 +232,11 @@ public class AstOffsetTest extends JsTestBase {
         checkOffsets("testfiles/e4x2.js", "order^");
     }
 
+    public void testOffsetsE4x3() throws Exception {
+        checkOffsets("testfiles/e4x3.js");
+    }
+
+
     public void testOffsetsTryCatch() throws Exception {
         checkOffsets("testfiles/tryblocks.js");
     }
@@ -175,5 +255,23 @@ public class AstOffsetTest extends JsTestBase {
 
     public void testOffsets136162() throws Exception {
         checkOffsets("testfiles/rename2.js");
+    }
+
+    public void testIncremental1() throws Exception {
+        checkIncremental("testfiles/dragdrop.js",
+                "for (i = 1; i < ^drops.length; ++i)", INSERT+"target",
+                "if (Element.isPa^rent", REMOVE+"re"
+                );
+    }
+
+    public void testIncremental2() throws Exception {
+        checkIncremental("testfiles/rename.js",
+                "bbb: function(^ppp)", REMOVE+"pp"
+                );
+    }
+    public void testIncremental3() throws Exception {
+        checkIncremental("testfiles/semantic3.js",
+                "document.createElement(\"option\");^", INSERT+"\nfoo = 5;\n"
+                );
     }
 }

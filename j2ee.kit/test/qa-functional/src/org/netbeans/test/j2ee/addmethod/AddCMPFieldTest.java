@@ -41,19 +41,11 @@
 
 package org.netbeans.test.j2ee.addmethod;
 
-import java.io.File;
 import java.io.IOException;
 import javax.swing.JTextField;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jemmy.Waitable;
-import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.jemmy.util.PNGEncoder;
-import org.netbeans.test.j2ee.*;
 
 /**
  *

@@ -137,7 +137,7 @@ public class PHPIndex {
 
             }
 
-            return URLMapper.findFileObject(new URL(url));
+            return URLMapper.findFileObject(new URL(new URL(url).toExternalForm()));
         } catch (MalformedURLException mue) {
             Exceptions.printStackTrace(mue);
         }
@@ -434,6 +434,10 @@ public class PHPIndex {
                     if (kind == NameKind.PREFIX) {
                         //case sensitive
                         if (!constName.startsWith(name)) {
+                            continue;
+                        }
+                    } else if (kind == NameKind.EXACT_NAME){
+                        if (!constName.equals(name)) {
                             continue;
                         }
                     }

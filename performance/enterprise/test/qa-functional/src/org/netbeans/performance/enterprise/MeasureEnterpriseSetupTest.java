@@ -64,11 +64,11 @@ public class MeasureEnterpriseSetupTest extends NbTestCase {
             .addTest("cleanTempDir")
             .addTest("closeMemoryToolbar")
             .addTest("closeWelcome")
+
+            .addTest("addApplicationServer")
+            .addTest("addTomcatServer")
+
             .addTest("openWebProject")
-
-//            // FIXME: Remove this workaround of manual App Server addition
-//            .addTest("addApplicationServer")
-
             .addTest("openReservationPartnerServicesProject")
             .addTest("openTravelReservationServiceProject")
             .addTest("openTravelReservationServiceApplicationProject")

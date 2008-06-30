@@ -57,10 +57,7 @@ public class NativePathMap {
             provider = (PathMapProvider) Lookup.getDefault().lookup(PathMapProvider.class);
         }
         if (provider != null) {
-            int pos = name.indexOf('@');
-            String user = name.substring(0, pos);
-            String host = name.substring(pos + 1);
-            return provider.getMapper(user, host).isRemote(path);
+            return provider.getMapper(name).isRemote(path);
         } else {
             return false;
         }

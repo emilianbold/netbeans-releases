@@ -176,9 +176,9 @@ public class Mapper extends JPanel {
         aMap.put(DefaultEditorKit.copyAction, new CopyMapperAction(canvas));
         aMap.put(DefaultEditorKit.cutAction, new CutMapperAction(canvas));
         aMap.put(DefaultEditorKit.pasteAction, new PasteMapperAction(canvas));
-//        actionMap.put("delete", ExplorerUtils.actionDelete(manager, false));
+        aMap.put(DefaultEditorKit.deleteNextCharAction, new DeleteMapperAction(canvas));
 
-    
+
         getAccessibleContext().setAccessibleName(NbBundle
                 .getMessage(Mapper.class, "ACSN_Mapper")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle

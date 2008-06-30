@@ -48,7 +48,7 @@ import org.netbeans.modules.cnd.api.remote.PathMapProvider;
  */
 public class RemotePathMapProvider implements PathMapProvider {
     
-    public PathMap getMapper(String user, String host) {
-        return RemotePathMap.getMapper(user, host);
+    public PathMap getMapper(String key) {
+        return RemotePathMap.getMapper(key);
     }
 }

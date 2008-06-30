@@ -109,19 +109,6 @@ public class XMLGeneration extends GeneralXMLTest {
         "XML checking finished."
       };
 
-      OutputTabOperator oto = new OutputTabOperator("XML check");
-      oto.waitText( asIdeals[ asIdeals.length - 1 ] );
-      int iCount = oto.getLineCount( );
-      if( oto.getLine( iCount - 1 ).equals( "" ) )
-        iCount--;
-      if( asIdeals.length != iCount )
-        fail( "Wrong number of output lines: " + iCount );
-      for( int i = 0; i < asIdeals.length; i++ )
-      {
-        String sText = oto.getText( i, i );
-        if( -1 == sText.indexOf( asIdeals[ i ] ) )
-          fail( "Unable to find required text in output: " + asIdeals[ i ] + "; found: " + sText );
-      }
-
+      CheckOutputLines( "XML check", asIdeals );
     }
 }

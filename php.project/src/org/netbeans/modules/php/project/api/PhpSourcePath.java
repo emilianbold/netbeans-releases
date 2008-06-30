@@ -134,7 +134,7 @@ public final class PhpSourcePath {
     private static org.netbeans.modules.php.project.classpath.PhpSourcePath getPhpOptionsFromLookup(Project project) {
         org.netbeans.modules.php.project.classpath.PhpSourcePath phpSourcePath =
                 project.getLookup().lookup(org.netbeans.modules.php.project.classpath.PhpSourcePath.class);
-        assert phpSourcePath != null : "Not PHP project! [" + project + "]";
+        assert phpSourcePath != null : "Not PHP project (interface PhpSourcePath not found in lookup)! [" + project + "]";
         return phpSourcePath;
     }
 
