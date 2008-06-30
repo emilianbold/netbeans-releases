@@ -89,6 +89,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     public static final String SORT_SUSPEND = "sort.suspend";
     public static final String SHOW_SYSTEM_THREADS = "show.systemThreads";
     public static final String SHOW_THREAD_GROUPS = "show.threadGroups";
+    public static final String SHOW_SUSPENDED_THREADS_ONLY = "show.suspendedThreadsOnly";
     
     private static final Set<String> SYSTEM_THREAD_NAMES = new HashSet<String>(Arrays.asList(new String[] {
                                                            "Reference Handler",
@@ -116,8 +117,6 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefListener, preferences));
     }
 
-    private static int counter = 0;
-    
     @Override
     protected Object[] computeChildren(Object parent) throws UnknownTypeException {
         if (parent == ROOT) {
@@ -153,8 +152,9 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     
     protected Object[] reorder(Object[] nodes) {
         boolean showSystemThreads = preferences.getBoolean(SHOW_SYSTEM_THREADS, false);
-        if (!showSystemThreads) {
-            nodes = filterSystemThreads(nodes);
+        boolean showSuspendedThreadsOnly = preferences.getBoolean(SHOW_SUSPENDED_THREADS_ONLY, false);
+        if (!showSystemThreads || showSuspendedThreadsOnly) {
+            nodes = filterSystemThreads(nodes, !showSystemThreads, showSuspendedThreadsOnly);
         }
         boolean alphabet = preferences.getBoolean(SORT_ALPHABET, true);
         if (!alphabet) {
@@ -174,16 +174,25 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         return nodes;
     }
     
-    private Object[] filterSystemThreads(Object[] nodes) {
+    private static int counter = 0;
+    
+    private Object[] filterSystemThreads(Object[] nodes, boolean filterSystem, boolean filterRunning) {
+        
+        System.out.println("filterSystemThreads: " + counter++);
+        
         List list = null;
         for (Object node : nodes) {
-            if (node instanceof JPDAThread && isSystem((JPDAThread) node)) {
-                if (list == null) {
-                    list = new ArrayList(Arrays.asList(nodes));
-                }
-                list.remove(node);
-            }
-        }
+            if (node instanceof JPDAThread) {
+                JPDAThread t = (JPDAThread)node;
+                if ((filterSystem && isSystem(t) ||
+                        (filterRunning && !t.isSuspended() && t != debugger.getCurrentThread()))) {
+                    if (list == null) {
+                        list = new ArrayList(Arrays.asList(nodes));
+                    }
+                    list.remove(node);
+                } // if
+            } // if
+        } // for
         return (list != null) ? list.toArray() : nodes;
     }
 
@@ -402,6 +411,9 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
 
     
     private void fireThreadStateChanged (Object node) {
+        if (preferences.getBoolean(SHOW_SUSPENDED_THREADS_ONLY, false)) {
+            fireNodeChanged(ROOT);
+        }
         List<ModelListener> ls;
         synchronized (listeners) {
             ls = new ArrayList<ModelListener>(listeners);
@@ -644,7 +656,8 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         public void preferenceChange(PreferenceChangeEvent evt) {
             String key = evt.getKey();
             if (SORT_ALPHABET.equals(key) || SORT_SUSPEND.equals(key) ||
-                    SHOW_SYSTEM_THREADS.equals(key) || SHOW_THREAD_GROUPS.equals(key) || 
+                    SHOW_SYSTEM_THREADS.equals(key) || SHOW_THREAD_GROUPS.equals(key) ||
+                    SHOW_SUSPENDED_THREADS_ONLY.equals(key) ||
                     DebuggingNodeModel.SHOW_PACKAGE_NAMES.equals(key)) {
                 // We have to catch the Throwables, so that the AbstractPreferences.EventDispatchThread
                 // is not killed. See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6467096
