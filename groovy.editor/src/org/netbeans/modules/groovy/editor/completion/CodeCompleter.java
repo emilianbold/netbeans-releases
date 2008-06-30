@@ -497,22 +497,34 @@ public class CodeCompleter implements CodeCompletionHandler {
      * @param request completion request which includes position information
      * @return the next surrouning MethodNode
      */
-       private MethodNode getSurroundingMethodNode (CompletionRequest request) {
+       private ASTNode getSurroundingMethodOrClosure (CompletionRequest request) {
            AstPath path = getPathFromRequest(request);
 
            if (path == null) {
                LOG.log(Level.FINEST, "path == null"); // NOI18N
                return null;
            }
+
+           LOG.log(Level.FINEST, "getSurroundingMethodOrClosure() ----------------------------------------");
+           LOG.log(Level.FINEST, "Path : {0}", path);
            
            for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
-            ASTNode current = it.next();
-                if(current instanceof MethodNode){
-                    MethodNode mn = (MethodNode)current;
-                    LOG.log(Level.FINEST, "Found Method: {0}", mn.getName()); // NOI18N
-                    return mn;
-                }
-            }
+               ASTNode current = it.next();
+               if (current instanceof MethodNode) {
+                   MethodNode mn = (MethodNode) current;
+                   LOG.log(Level.FINEST, "Found Method: {0}", mn.getName()); // NOI18N
+                   return mn;
+               } /*else if (current instanceof FieldNode) {
+               FieldNode fn = (FieldNode) current;
+               if (fn.isClosureSharedVariable()) {
+               LOG.log(Level.FINEST, "Found Closure(Field): {0}", fn.getName()); // NOI18N
+               return fn;
+               }
+               } else if (current instanceof ClosureExpression) {
+               LOG.log(Level.FINEST, "Found Closure(Expr.): {0}", ((ClosureExpression)current).getText()); // NOI18N
+               return current;
+               }*/
+           }
            return null;
        }
        
@@ -901,7 +913,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             return false;
         }
 
-        ASTNode scope = getSurroundingMethodNode(request);
+        ASTNode scope = getSurroundingMethodOrClosure(request);
 
         if(request.scriptMode){
             LOG.log(Level.FINEST, "We are running in script-mode."); // NOI18N
@@ -1277,7 +1289,9 @@ public class CodeCompleter implements CodeCompletionHandler {
     
     
     private ClasspathInfo getClassPathFromDocument(BaseDocument doc){
-        
+
+        assert doc != null : "What am i supposed to do if doc == null ?";
+
         DataObject dob = NbEditorUtilities.getDataObject(doc);
 
         if (dob == null) {
@@ -1319,6 +1333,8 @@ public class CodeCompleter implements CodeCompletionHandler {
         
         ClasspathInfo pathInfo = getClassPathFromDocument(request.doc);
 
+        // assert pathInfo != null : "Can not get ClasspathInfo";
+        
         // try to find suitable packages ...
 
         Set<String> pkgSet;

@@ -45,7 +45,6 @@ package org.netbeans.performance.enterprise;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.performance.enterprise.actions.*;
-import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -57,16 +56,16 @@ public class MeasureEnterpriseActions2Test {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Enterprise Actions suite. Part 2");
         
-        // EPMeasureActions1
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(EnterpriseSetup.class)
-                .addTest(EnterpriseSetup.class, "cleanTempDir")
-                .addTest(CreateBPELmodule.class, "measureTime")
-                .addTest(CreateCompositeApplication.class, "measureTime")
-                .addTest(AddNewWSDLDocument.class, "measureTime")
-                .addTest(AddNewXMLSchema.class, "measureTime")
-                .addTest(AddNewXMLDocument.class, "measureTime")
-                .addTest(AddNewBpelProcess.class, "measureTime")
-                .enableModules(".*").clusters(".*").reuseUserDir(true)));    
+        // EPMeasureActions2
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateSchema.class)
+                .addTest(ValidateSchema.class, "measureTime")
+//TODO it's the same as SwitchSchemaView, isn't it ?        .addTest(SchemaViewSwitchTest.class, "measureTime")
+                .addTest(BuildComplexProject.class, "measureTime")
+                .addTest(SwitchToDesignView.class, "measureTime")
+                .addTest(SwitchToSchemaView.class, "measureTime")
+                .addTest(SchemaNavigatorDesignView.class, "measureTime")
+                .addTest(ApplyDesignPattern.class, "measureTime")
+                .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;
     }

@@ -137,6 +137,7 @@ import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthenticatio
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseTemplates;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseTemplates.Template;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.Time;
+import org.netbeans.modules.websvc.saas.codegen.ui.CodeSetupPanel;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.util.LibrariesHelper;
@@ -789,7 +790,7 @@ public class Util {
             Thread.sleep(2000);
             if (SourceUtils.isScanInProgress()) {
                 if (showMessage) {
-                    String message = NbBundle.getMessage(SaasClientCodeGenerator.class,
+                    String message = NbBundle.getMessage(CodeSetupPanel.class,
                             "MSG_ScanningInProgress"); // NOI18N
                     NotifyDescriptor desc = new NotifyDescriptor.Message(message, NotifyDescriptor.Message.WARNING_MESSAGE);
                     DialogDisplayer.getDefault().notify(desc);
@@ -1250,6 +1251,18 @@ public class Util {
             JavaSource loginJS, FileObject loginFile,
             JavaSource callbackJS, FileObject callbackFile,
             final String[] parameters, final Object[] paramTypes, boolean isUseTemplates) throws IOException {
+        createSessionKeyAuthorizationClassesForWeb(bean, project, groupName, 
+                saasServicePackageName, targetFolder, loginJS, loginFile, 
+                callbackJS, callbackFile, parameters, paramTypes, isUseTemplates, false);
+    }
+    
+    public static void createSessionKeyAuthorizationClassesForWeb(
+            SaasBean bean, Project project,
+            String groupName, String saasServicePackageName, FileObject targetFolder,
+            JavaSource loginJS, FileObject loginFile,
+            JavaSource callbackJS, FileObject callbackFile,
+            final String[] parameters, final Object[] paramTypes, boolean isUseTemplates,
+            boolean skipWebDescEntry) throws IOException {
         SaasAuthenticationType authType = bean.getAuthenticationType();
         if (authType == SaasAuthenticationType.SESSION_KEY ||
                 authType == SaasAuthenticationType.HTTP_BASIC) {
@@ -1320,10 +1333,6 @@ public class Util {
                                 fObj = files.iterator().next();
                             }
                         } else {
-                            if (templateUrl.indexOf("/") != -1) {
-                                fileName = bean.getSaasName() +
-                                        templateUrl.substring(templateUrl.lastIndexOf("/") + 1);
-                            }
                             if (fileName != null) {
                                 fObj = targetFolder.getFileObject(fileName);
                                 if (fObj == null) {
@@ -1347,14 +1356,16 @@ public class Util {
             }
 
             //Make entry into web.xml for login and callback servlets
-            if (loginFile != null && callbackFile != null) {
-                Map<String, String> filesMap = new HashMap<String, String>();
-                filesMap.put(loginFile.getName(), saasServicePackageName + "." + loginFile.getName());
-                filesMap.put(callbackFile.getName(), saasServicePackageName + "." + callbackFile.getName());
-                addAuthorizationClassesToWebDescriptor(project, filesMap);
-            } else {
-                Logger.getLogger(Util.class.getName()).log(Level.INFO, "Cannot add login and callback servlets" +
-                        "to web descriptor");
+            if(!skipWebDescEntry) {
+                if (loginFile != null && callbackFile != null) {
+                    Map<String, String> filesMap = new HashMap<String, String>();
+                    filesMap.put(loginFile.getName(), saasServicePackageName + "." + loginFile.getName());
+                    filesMap.put(callbackFile.getName(), saasServicePackageName + "." + callbackFile.getName());
+                    addAuthorizationClassesToWebDescriptor(project, filesMap);
+                } else {
+                    Logger.getLogger(Util.class.getName()).log(Level.INFO, "Cannot add login and callback servlets" +
+                            "to web descriptor");
+                }
             }
         }
     }
@@ -1606,8 +1617,10 @@ public class Util {
         if (webInfFo == null) {
             if (isProjectOpened(p)) {
                 DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(NbBundle.getMessage(Util.class, "MSG_WebInfCorrupted"), // NOI18N
-                        NotifyDescriptor.ERROR_MESSAGE));
+                        new NotifyDescriptor.Message(NbBundle.getMessage(
+                            CodeSetupPanel.class, "MSG_WebInfCorrupted",
+                            new Object[] {p.getProjectDirectory().getPath()}), // NOI18N
+                            NotifyDescriptor.ERROR_MESSAGE));
             }
             return null;
         }
@@ -1713,7 +1726,7 @@ public class Util {
     }
 
     public static void showUnsupportedDropMessage(Object[] args) {
-        String message = NbBundle.getMessage(SaasClientCodeGenerator.class,
+        String message = NbBundle.getMessage(CodeSetupPanel.class,
                 "WARN_UnsupportedDropTarget", args); // NOI18N
         NotifyDescriptor desc = new NotifyDescriptor.Message(message,
                 NotifyDescriptor.Message.WARNING_MESSAGE);

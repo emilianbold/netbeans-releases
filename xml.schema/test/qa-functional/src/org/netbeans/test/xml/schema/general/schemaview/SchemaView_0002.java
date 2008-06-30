@@ -194,20 +194,31 @@ public class SchemaView_0002 extends SchemaView {
   protected boolean CheckFindBar( TopComponentOperator top, boolean bPresent )
   {
     String[] asButtons = { "Find Next", "Find Previous", "Clear" };
+    System.out.println( "+++ Enter." );
     for( String s : asButtons )
     {
       try
       {
+        System.out.println( "+++ Checking: " + s );
         JButtonOperator but = new JButtonOperator( top, s );
+        System.out.println( "+++ Present." );
         if( !bPresent )
+        {
+          System.out.println( "+++ Should not be present." );
           return false;
+        }
       }
       catch( JemmyException ex )
       {
+        System.out.println( "+++ Not present." );
         if( bPresent )
+        {
+          System.out.println( "+++ Should be resent." );
           return false;
+        }
       }
     }
+    System.out.println( "+++ Done." );
     return true;
   }
 
@@ -223,22 +234,24 @@ public class SchemaView_0002 extends SchemaView {
     new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Edit|Find...");
     // Check there is find bar
     if( !CheckFindBar( top, true ) )
-      fail( "First find check failed." );
+      fail( "Second find check failed." );
     // Press Escape
     top.pushKey( KeyEvent.VK_ESCAPE );
+    Sleep( 1000 );
     // Check there is no find bar
     if( !CheckFindBar( top, false ) )
-      fail( "First find check failed." );
+      fail( "Third find check failed." );
     // Preff Ctrl+F
     top.pushKey( KeyEvent.VK_F, InputEvent.CTRL_MASK );
     // Check there is find bar
     if( !CheckFindBar( top, true ) )
-      fail( "First find check failed." );
+      fail( "Forth find check failed." );
     // Press Escape
     top.pushKey( KeyEvent.VK_ESCAPE );
+    Sleep( 1000 );
     // Check there is no find bar
     if( !CheckFindBar( top, false ) )
-      fail( "First find check failed." );
+      fail( "Fifth find check failed." );
 
     endTest( );
   }

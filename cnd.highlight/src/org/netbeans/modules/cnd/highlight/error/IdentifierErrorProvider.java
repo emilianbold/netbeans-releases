@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
 public class IdentifierErrorProvider extends CsmErrorProvider {
 
     private static final boolean ENABLED =
-            getBoolean("cnd.identifier.error.provider", false); //NOI18N
+            getBoolean("cnd.identifier.error.provider", true); //NOI18N
 
     @Override
     public Collection<CsmErrorInfo> getErrors(BaseDocument doc, CsmFile file) {

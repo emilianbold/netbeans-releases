@@ -76,14 +76,14 @@ public class PullUpRefactoringUI implements RefactoringUI {
     /** Creates a new instance of PullUpRefactoringUI
      * @param selectedElements Elements the refactoring action was invoked on.
      */
-    public PullUpRefactoringUI(TreePathHandle[] selectedElements, CompilationInfo info) {
+    public PullUpRefactoringUI(TreePathHandle selectedElements, CompilationInfo info) {
         initialMembers = new HashSet();
-        initialMembers.add(MemberInfo.create(selectedElements[0].resolveElement(info),info));
+        initialMembers.add(MemberInfo.create(selectedElements.resolveElement(info),info));
         // compute source type and members that should be pre-selected from the
         // set of elements the action was invoked on
         
        // create an instance of pull up refactoring object
-        Element selected = selectedElements[0].resolveElement(info);
+        Element selected = selectedElements.resolveElement(info);
         if (!(selected instanceof TypeElement))
             selected = SourceUtils.getEnclosingTypeElement(selected);
         TreePath tp = info.getTrees().getPath(selected);

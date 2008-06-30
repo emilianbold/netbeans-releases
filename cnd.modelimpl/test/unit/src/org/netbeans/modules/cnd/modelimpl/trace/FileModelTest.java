@@ -316,11 +316,26 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("complex.c"); // NOI18N
     }
 
+    public void testAttributeInConstructor() throws Exception {
+        // IZ 136239 : C++ grammar does not allow attributes after constructor
+        performTest("attribute_in_constructor.cc"); // NOI18N
+    }
+
+    public void testIZ138320() throws Exception {
+        // IZ 138320 : IDE doesn't recognize 'class P = V const *' line in template
+        performTest("IZ138320.cc"); // NOI18N
+    }
+
+    public void testIZ138551() throws Exception {
+        // IZ 138551 : parser fails on "template class A::B<1>;"
+        performTest("IZ138551.cc"); // NOI18N
+    }
+
     public void testStringizeMacro() throws Exception {
         // IZ 137465 : wrong macro expansion for #x
         performPreprocessorTest("stringize_macro.cc"); // NOI18N
     }
-    
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
@@ -354,3 +369,4 @@ public class FileModelTest extends TraceModelTestBase {
    }
     
 }
+
