@@ -314,5 +314,15 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
     public void notifyDeployment(TargetModuleID module) {
         super.notifyDeployment(module);
     }
+
+    @Override
+    public ProgressObject deployOnSave(TargetModuleID module, DeploymentChangeDescriptor desc) {
+        return incrementalDeploy(module, desc);
+    }
+
+    @Override
+    public boolean isDeployOnSaveSupported() {
+        return true;
+    }
     
 }
