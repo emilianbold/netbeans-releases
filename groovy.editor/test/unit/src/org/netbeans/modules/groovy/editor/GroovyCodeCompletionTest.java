@@ -39,11 +39,28 @@
 
 package org.netbeans.modules.groovy.editor;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import junit.framework.Assert;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.editor.completion.CodeCompleter;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 
 /**
@@ -52,11 +69,78 @@ import org.netbeans.modules.groovy.editor.completion.CodeCompleter;
  */
 public class GroovyCodeCompletionTest extends GroovyTestBase {
 
+    String TEST_BASE = "testfiles/completion/";
+
+    static {
+        GroovyCodeCompletionTest.class.getClassLoader().setDefaultAssertionStatus(true);
+        System.setProperty("org.openide.util.Lookup", GroovyCodeCompletionTest.Lkp.class.getName());
+        Assert.assertEquals(GroovyCodeCompletionTest.Lkp.class, Lookup.getDefault().getClass());
+    }
+
+    
+    public static class Lkp extends ProxyLookup {
+
+        private static Lkp DEFAULT;
+
+        public Lkp() {
+            Assert.assertNull(DEFAULT);
+            DEFAULT = this;
+            ClassLoader l = Lkp.class.getClassLoader();
+            this.setLookups(
+                    new Lookup[]{
+                        Lookups.metaInfServices(l),
+                        Lookups.singleton(l),
+                    });
+        }
+
+        public void setLookupsWrapper(Lookup... l) {
+            setLookups(l);
+        }
+
+    }
+
+    private ClassPath createBootPath () throws MalformedURLException {
+        String bootPath = System.getProperty ("sun.boot.class.path");
+        String[] paths = bootPath.split(File.pathSeparator);
+        List<URL>roots = new ArrayList<URL> (paths.length);
+        for (String path : paths) {
+            File f = new File (path);            
+            if (!f.exists()) {
+                continue;
+            }
+            URL url = f.toURI().toURL();
+            if (FileUtil.isArchiveFile(url)) {
+                url = FileUtil.getArchiveRoot(url);
+            }
+            roots.add (url);
+        }
+        return ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
+    }
+    
+    private ClassPath createCompilePath () {
+        return ClassPathSupport.createClassPath(Collections.EMPTY_LIST);
+    }
+    
+    private ClassPath createSourcePath () throws IOException {
+        File workdir = this.getWorkDir();
+        File root = new File (workdir, "src");
+        File test = new File (workdir, "test/unit/data/testfiles/completion");
+        
+        return ClassPathSupport.createClassPath(new URL[] {root.toURI().toURL(), test.toURI().toURL()});
+    }
+
 
     public GroovyCodeCompletionTest(String testName) {
         super(testName);
         Logger.getLogger(CodeCompleter.class.getName()).setLevel(Level.FINEST);
     }
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        CodeCompleter.setTesting(true);
+    }
+
 
     // uncomment this to have logging from GroovyLexer
     protected Level logLevel() {
@@ -67,9 +151,55 @@ public class GroovyCodeCompletionTest extends GroovyTestBase {
     }
 
 
-//    public void testMethodCompletion1() throws Exception {
-//        checkCompletion("testfiles/completion/MethodCompletionTestCase.groovy", "new String().^toS", false);
-//    }
+    public void testMethodCompletion1() throws Exception {
+        
+        final ClassPath bootPath = createBootPath();
+        final ClassPath compilePath = createCompilePath();
+        final ClassPath sourcePath = createSourcePath();
+
+        ClassLoader l = GroovyCodeCompletionTest.class.getClassLoader();
+        
+        Lkp.DEFAULT.setLookupsWrapper(
+                Lookups.metaInfServices(l),
+                Lookups.singleton(l),
+                Lookups.singleton(new ClassPathProvider() {
+
+            public ClassPath findClassPath(FileObject file, String type) {
+                if (ClassPath.BOOT.equals(type)) {
+                    return bootPath;
+                }
+
+                if (ClassPath.SOURCE.equals(type)) {
+                    return sourcePath;
+                }
+
+                if (ClassPath.COMPILE.equals(type)) {
+                    return compilePath;
+                }
+                return null;
+            }
+        }));
+
+        checkCompletion(TEST_BASE + "MethodCompletionTestCase.groovy", "new String().^toS", false);
+    }
+
+
+    public void testFileOwnership() throws IOException{
+
+        File inputFile = new File(getDataDir(), TEST_BASE + "MethodCompletionTestCase.groovy");
+
+        if (!inputFile.exists()) {
+            fail("File " + inputFile + " not found.");
+        }
+        FileObject fo = FileUtil.toFileObject(inputFile.getParentFile());
+        assertNotNull(fo);
+
+        // I've learned from Martin, that FileOwnerQuery.getOwner() isn't fully supported
+        // in tests.
+        
+        Project p = FileOwnerQuery.getOwner(fo);
+        assertNull(p);
+    }
 
 
     public void testDummy() {
