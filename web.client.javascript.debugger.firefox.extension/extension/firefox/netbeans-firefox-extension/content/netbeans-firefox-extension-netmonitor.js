@@ -40,7 +40,7 @@
 
 (function() {
     const ignoreThese = /about:|javascript:|resource:|chrome:|jar:/;
-    const DEBUG = true;
+    const DEBUG = false;
     
     //Should we move this to constants.js?
     const STATE_IS_WINDOW = NetBeans.Constants.WebProgressListenerIF.STATE_IS_WINDOW;
@@ -157,12 +157,17 @@
         onModifyRequest: function (aNsISupport) {
             var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
 
+            /*
+             *Joelle: You need to store this in the requestID probably as an nsIRequest rather than httpChannel
+             *http://people.mozilla.com/~axel/doxygen/html/interfacensIRequest.html
+             **/
+
             if ( isRelevantWindow(request) ){
                 requests.push(request);
                 var id = uuid();
                 var activity = getHttpRequestHeaders(request);
                 activity.uuid = uuid();
-                requestsId[request] = activity.uuid;
+                requestsId[requests.indexOf(request)] = activity.uuid;
                 activity.time = nowTime();
                 activity.category = getRequestCategory(request);
                 sendNetActivity(activity);
@@ -174,11 +179,16 @@
             var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
             //The bug is here.. Figure it out.
             //  if( isRelevantWindow(request) ){
-            if( requests.indexOf(request) != -1 ){
+            var index = requests.indexOf(request);
+            
+            if(  index != -1 ){
+                requests.pop(request);
                 var activity = getHttpResponseHeaders(request);
 
                 if ( activity ) {
                     activity.time = nowTime();
+                    activity.uuid = requestsId[index];
+                    requestsId[index]=null;
                     sendExamineNetResponse(activity);
                 }
             }
@@ -325,9 +335,9 @@
      */
     function getHttpResponseHeaders(aRequest)
     {
-//        if ( DEBUG ) {
-//            NetBeans.Logger.log("GetHttpResponseHeaders: ");
-//        }
+        //        if ( DEBUG ) {
+        //            NetBeans.Logger.log("GetHttpResponseHeaders: ");
+        //        }
         var activity = new NetActivity();
         try
         {
@@ -371,9 +381,10 @@
      */
     function getHttpRequestHeaders( aRequest )
     {
-//        if( DEBUG ){
-//            NetBeans.Logger.log("GetHttpRequestHeaders: ");
-//        }
+
+        //        if( DEBUG ){
+        //            NetBeans.Logger.log("GetHttpRequestHeaders: ");
+        //        }
         var activity = new NetActivity();
         try
         {
@@ -463,7 +474,7 @@
             NetBeans.Logger.log(netActivity.toXMLString());
         }
 
-        //socket.send(breakpointSetResponse);
+    //socket.send(breakpointSetResponse);
     }
     /*
      * On Observe when topic is "http-on-examine-request"
@@ -471,28 +482,13 @@
      */
     function sendExamineNetResponse ( aActivity ){
 
-//        <http type="response" id="1209013880362" method="GET" timestamp="1209013880362" ipaddress="127.0.0.1" method="GET" protocol="HTTP/1.1" queryString="&user=Name?password=Pass" uri="/WebApplication2/">
-//<header
-//date="Sun, 08 Jun 2008 19:32:56 GMT"
-//cache-control="max-age=315360000"
-//expires"Wed, 19 Mar 2008 21:11:32 GMT"
-//last-modified="We, 19 Mar 2008 21:11:32 GMT"
-//accept-ranges="bytes"
-//x-yahoo-compressed="true"
-//vary="Accept-Encoding"
-//connect-type="application/x-javascript"
-//connection="keep-alive"
-//Server="YTS/1.16.0"
-///> //header
-///> //http
-
-       var netActivity = <http/>;
-       netActivity.type = "response";
-       netActivity.id = 0;
-       netActivity.method = aActivity.method;
-       netActivity.timestamp=aActivity.time;
-       netActivity.status = aActivity.status;
-       netActivity.urlParams = aActivity.urlParams;
+        var netActivity = <http/>;
+        netActivity.type = "response";
+        netActivity.id = aActivity.uuid;
+        netActivity.method = aActivity.method;
+        netActivity.timestamp=aActivity.time;
+        netActivity.status = aActivity.status;
+        netActivity.urlParams = aActivity.urlParams;
 
         var headers = aActivity.responseHeaders;
         for( var header in headers ){
@@ -502,28 +498,27 @@
         if(DEBUG){
             NetBeans.Logger.log(netActivity.toXMLString());
         }
-        //socket.send(netActivity);
-
-//        if (DEBUG){
-//            for( var key in aActivity ){
-//                if ( key == "responseHeaders"){
-//                    var headers = aActivity[key];
-//                    NetBeans.Logger.log("   < Response Headers");
-//                    for( var header in headers ){
-//                        NetBeans.Logger.log("       " + headers[header].name + " : " + headers[header].value);
-//                    }
-//                } else {
-//                    NetBeans.Logger.log("   <" + key + " : " + aActivity[key]);
-//                }
-//            }
-//        }
+    //socket.send(netActivity);
     }
     
-    function sendProgressUpdate(progress, request, current, max, total, maxTotal) {
-        var uuid = requestsId[request];
+    function sendProgressUpdate(progress, aRequest, current, max, total, maxTotal) {
+
+        var request = aRequest.QueryInterface(NetBeans.Constants.HttpChannelIF);
+        var index = requests.indexOf(request);
+        var uuid = requestsId[index];
+
+
+        var netActivity = <http />;
+        netActivity.type ="progress";
+        netActivity.id = uuid;
+        netActivity.current = current;
+        netActivity.max = max;
+        netActivity.total = total;
+        netActivity.maxTotal = maxTotal;
         if( DEBUG ){
-            NetBeans.Logger.log("UUID: " + uuid + " On ProgressChange: " + Object.prototype.toString.apply(progress.wrappedJSObject) + " Request: " + Object.prototype.toString.apply(request) + " current: " + current +" max: " + max + " total: " + total + " maxTotal: " + maxTotal);
+            NetBeans.Logger.log(netActivity.toXMLString());
         }
+    //socket.send(netActivity);
     }
     
     
