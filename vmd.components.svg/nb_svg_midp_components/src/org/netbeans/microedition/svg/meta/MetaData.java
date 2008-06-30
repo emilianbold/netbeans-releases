@@ -57,6 +57,8 @@ import org.w3c.dom.svg.SVGElement;
  */
 public class MetaData extends Hashtable {
     
+    private static final long serialVersionUID = 526844381412432697L;
+    
     public static final String METADATA         = "metadata";       // NOI18N
     public static final String TEXT             = "text";           // NOI18N
     public static final String TRAIT_TEXT       = "#text";          // NOI18N

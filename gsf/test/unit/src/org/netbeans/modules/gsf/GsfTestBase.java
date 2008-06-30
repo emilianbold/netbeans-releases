@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -187,12 +187,12 @@ public abstract class GsfTestBase extends NbTestCase {
         return touch(new File(dir), path);
     }
 
-    protected FileObject touch(final File dir, final String binary) throws IOException {
+    protected FileObject touch(final File dir, final String path) throws IOException {
         if (!dir.isDirectory()) {
             assertTrue("success to create " + dir, dir.mkdirs());
         }
         FileObject dirFO = FileUtil.toFileObject(FileUtil.normalizeFile(dir));
-        return FileUtil.createData(dirFO, binary);
+        return FileUtil.createData(dirFO, path);
     }
     
     public static final FileObject copyStringToFileObject(FileObject fo, String content) throws IOException {
