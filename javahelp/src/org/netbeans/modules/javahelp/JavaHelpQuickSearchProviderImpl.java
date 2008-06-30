@@ -37,51 +37,47 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.core.ui.quicksearch.web;
+package org.netbeans.modules.javahelp;
 
 import java.awt.Toolkit;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.List;
+import javax.help.SearchTOCItem;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
-import org.openide.awt.HtmlBrowser;
-import org.openide.awt.StatusDisplayer;
-import org.openide.util.NbBundle;
+import org.openide.util.Lookup;
+import org.netbeans.api.javahelp.Help;
 
 /**
- *
+ * QuickSearch provider for IDE's JavaHelp topics.
+ * 
  * @author S. Aubrecht
  */
-public class WebQuickSearchProviderImpl implements SearchProvider {
+public class JavaHelpQuickSearchProviderImpl implements SearchProvider {
 
-    private Query query;
+    private JavaHelpQuery query;
     
     public void evaluate(SearchRequest request, SearchResponse response) {
         if( null == query ) {
-            query = Query.getDefault();
+            query = JavaHelpQuery.getDefault();
         }
-        Result res = query.search( request.getText() );
-        for( Item item : res.getItems() ) {
-            if( !response.addResult( createAction( item.getUrl() ), item.getTitle() ) )
+        List<SearchTOCItem> res = query.search( request.getText() );
+        for( SearchTOCItem item : res ) {
+            if( !response.addResult( createAction( item.getURL() ), item.getName() ) )
                 return;
         }
     }
 
-    private Runnable createAction( final String url ) {
+    private Runnable createAction( final URL url ) {
         return new Runnable() {
             public void run() {
-                try {
-                    HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault();
-                    if (displayer != null) {
-                        displayer.showURL(new URL(url));
-                    }
-                } catch (Exception e) {
-                    StatusDisplayer.getDefault().setStatusText(
-                            NbBundle.getMessage(WebQuickSearchProviderImpl.class, "Err_CannotDisplayURL", url) ); //NOI18N
+                Help h = (Help)Lookup.getDefault().lookup(Help.class);
+                if (h != null && h instanceof JavaHelp ) {
+                    JavaHelp jh = (JavaHelp)h;
+                    jh.showHelp(url);
+                } else {
                     Toolkit.getDefaultToolkit().beep();
-                    Logger.getLogger(WebQuickSearchProviderImpl.class.getName()).log(Level.FINE, null, e);
                 }
             }
         };
