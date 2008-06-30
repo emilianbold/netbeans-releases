@@ -48,6 +48,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.logging.Level;
 
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.modules.web.client.javascript.debugger.firefox.Launcher.LaunchDescriptor;
 import org.netbeans.modules.web.client.javascript.debugger.js.dbgp.DebuggerProxy;
@@ -65,6 +66,7 @@ import org.netbeans.modules.web.client.javascript.debugger.js.api.JSDebuggerCons
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSDebuggerEvent;
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSDebuggerState;
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSProperty;
+import org.netbeans.modules.web.client.javascript.debugger.js.dbgp.HttpMessage;
 import org.netbeans.modules.web.client.javascript.debugger.js.impl.JSFactory;
 import org.netbeans.modules.web.client.javascript.debugger.js.spi.JSAbstractDebugger;
 import org.openide.awt.HtmlBrowser;
@@ -311,12 +313,20 @@ public class FFJSDebugger extends JSAbstractDebugger {
         public void run() {
             Log.getLogger().log(Level.FINEST, "Starting " + getName()); //NOI18N
             while (proxy.isActive()) {
-                Message message = proxy.getSuspensionPoint();
-                if(message != null) {
-                    handle(message);
-                }
+               Message message = getNextMessage();
+               if ( message != null ){
+                   handle(message);
+               }
             }
             Log.getLogger().log(Level.FINEST, "Ending " + getName());   //NOI18N
+        }
+        
+        private Message getNextMessage() {
+             Message message = proxy.getSuspensionPoint();
+                if(message == null ) {
+                    message = proxy.getHttpPoint();
+                }
+             return message;
         }
 
         private void handle(Message message) {
@@ -329,6 +339,9 @@ public class FFJSDebugger extends JSAbstractDebugger {
                 return;
             }else if (message instanceof StreamMessage) {
                 handleStreamMessage((StreamMessage)message);
+            } else if ( message instanceof HttpMessage ){
+                Logger.getLogger(this.getClass().getName()).info("HttpMessage Found");
+                return;
             }
             // State oriented
             JSDebuggerState messageDebuggerState = DbgpUtils.getDebuggerState(message);

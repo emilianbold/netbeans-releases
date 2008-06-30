@@ -62,6 +62,7 @@ public class Feature {
         SUPPORTS_POSTMORTEM(false),
         SHOW_HIDDEN(true),
         NOTIFY_OK(true),
+        HTTP_MONITOR(true) { @Override public String toDBGPFeatureName() { return "http_monitor"; }},
         
         // Javascript debugger options
         SHOW_FUNCTIONS(true)             { @Override public String toDBGPFeatureName() { return "showFunctions"; }},
@@ -72,6 +73,7 @@ public class Feature {
     	SUSPEND_ON_EXCEPTIONS(true)      { @Override public String toDBGPFeatureName() { return "suspendOnExceptions"; }},
     	SUSPEND_ON_ERRORS(true)          { @Override public String toDBGPFeatureName() { return "suspendOnErrors"; }},
     	SUSPEND_ON_DEBUGGERKEYWORD(true) { @Override public String toDBGPFeatureName() { return "suspendOnDebuggerKeyword"; }},
+        
     	ENABLE(true)                     { @Override public String toDBGPFeatureName() { return "enable"; }}
         ;
 

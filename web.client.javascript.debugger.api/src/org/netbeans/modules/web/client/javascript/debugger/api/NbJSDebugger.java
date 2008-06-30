@@ -341,6 +341,9 @@ public final class NbJSDebugger {
             debugger.setBooleanFeature(Feature.Name.SUSPEND_ON_ERRORS, preferences.getSuspendOnErrors());
             debugger.setBooleanFeature(Feature.Name.SUSPEND_ON_DEBUGGERKEYWORD, preferences.getSuspendOnDebuggerKeyword());
             
+            //We probably need to figure out the best place to specify the Http Monitor being on or off by default.  
+            debugger.setBooleanFeature(Feature.Name.HTTP_MONITOR, preferences.getHttpMonitor());
+            
             setBreakPoints();
         }
         if (state == JSDebuggerState.STARTING_READY){
