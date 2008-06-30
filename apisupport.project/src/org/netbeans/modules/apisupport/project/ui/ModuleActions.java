@@ -56,7 +56,6 @@ import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.project.runner.ProjectRunner;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
@@ -66,6 +65,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderI
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.spi.java.project.runner.ProjectRunner;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
