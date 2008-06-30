@@ -25,8 +25,6 @@ import org.w3c.dom.svg.SVGRect;
 /**
  * Suggested svg snippet :
  * <pre>
- * &lt;text id="textfield_name_title" x="20" y="30" stroke="gray" font-size="15">Name
- * &lt;/text>
  *   &lt;g id="textfield_name" transform="translate(20,40)">
  *       &lt;!-- metadata definition-->
  *       &lt;text display="none">readOnly="false" enabled="true" </text>
@@ -50,20 +48,8 @@ public class SVGTextField extends SVGComponent {
     protected static final String TRAIT_FONT_FAMILY = "font-family";      // NOI18N
     protected static final String TEXT              = "text";             // NOI18N
     private static final String CARETELEM           = "caret";            // NOI18N
-    private static final String TITLEELEM_SUFFIX    = "_title";           // NOI18N
     protected static final String TRAIT_FONT_SIZE   = "font-size";        // NOI18N
     
-    private final SVGLocatableElement textElement;
-    private final SVGLocatableElement caretElement;
-    private final SVGLocatableElement hiddenTextElement;
-    private final int                 elemWidth;
-    
-    private       String              textValue;
-    private       int                 startOffset = 0;
-    private       int                 endOffset   = 0;
-    private       int                 caretPos = -1;
-    private       float               caretWidth = 0;
-
     public SVGTextField( SVGForm form, SVGLocatableElement element ) {
         super(form, element );
         textElement  = (SVGLocatableElement) getElementByMeta(getElement(), 
@@ -105,15 +91,22 @@ public class SVGTextField extends SVGComponent {
         showCaret( false);
         setText( getTextTrait());
     }
+    
     public SVGTextField( SVGForm form, String elemId ) {
         this( form , (SVGLocatableElement) 
                 form.getDocument().getElementById(elemId));
     }
     
     public String getTitle() {
-        SVGLocatableElement titleElement = form.getSVGLocatableElementById(
-                getElement().getId()+ TITLEELEM_SUFFIX);
-        return titleElement != null ? titleElement.getTrait( TRAIT_TEXT) : null;
+        if ( myTitle == null ) {
+            SVGLabel label = getLabel();
+            setTitle( label.getText() );
+        }
+        return myTitle;
+    }
+    
+    public void setTitle( String title ){
+        myTitle = title;
     }
     
     public String getText() {
@@ -237,4 +230,17 @@ public class SVGTextField extends SVGComponent {
     private void setTextTrait( String text) {
         textElement.setTrait( TRAIT_TEXT, text);
     }
+    
+    private final SVGLocatableElement textElement;
+    private final SVGLocatableElement caretElement;
+    private final SVGLocatableElement hiddenTextElement;
+    private final int                 elemWidth;
+    
+    private       String              textValue;
+    private       int                 startOffset = 0;
+    private       int                 endOffset   = 0;
+    private       int                 caretPos = -1;
+    private       float               caretWidth = 0;
+    private       String              myTitle;
+
 }

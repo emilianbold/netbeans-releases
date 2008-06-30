@@ -50,6 +50,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *  &lt;g id="label" transform="translate(130,200)">
  *   &lt;metadata> &lt;text>type=label&lt;/text> &lt;/metadata>
  *   &lt;text x="5" y="5" stroke="black" font-size="15"  font-family="SunSansSemiBold">
+ *       &lt;metadata> &lt;text>type=text&lt;/text> &lt;/metadata>
  *       Label
  *   &lt;/text>
  *   &lt;/g>
@@ -58,12 +59,39 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *
  */
 public class SVGLabel extends SVGComponent {
-
+    
     public SVGLabel( SVGForm form, String elemId ) {
         super(form, elemId);
+        myText = (SVGLocatableElement) getElementByMeta( getElement(), 
+                TYPE , SVGTextField.TEXT );
     }
     
     public SVGLabel( SVGForm form, SVGLocatableElement element ) {
         super(form, element);
     }
+    
+    public void setLabelFor( SVGComponent component ){
+        setProperty( LABEL_FOR , component );
+    }
+    
+    public SVGComponent getLabelFor(){
+        return (SVGComponent)getProperty( LABEL_FOR );
+    }
+    
+    public void setText( String text ){
+        if ( myText == null  ){
+            throw new IllegalArgumentException("No nested text element found"); // NOI18N
+        }
+        myText.setTrait( TRAIT_TEXT,  text );
+    }
+    
+    public String getText(){
+        if ( myText == null  ){
+            return null;
+        }
+        return myText.getTrait( TRAIT_TEXT );
+    }
+    
+    
+    private SVGLocatableElement myText;
 }
