@@ -61,9 +61,6 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     <folder name="Actions">
-        <folder name="Debug">
-            <file name="org-netbeans-modules-web-client-javascript-debugger-actions-NbJSDebugURLAction.instance"/>
-        </folder>
 	<folder name="Window">
            <file name="org-netbeans-modules-web-client-javascript-debugger-http-ui-HttpMonitorAction.instance"/>
     </folder>
@@ -123,6 +120,10 @@ made subject to such option by the copyright holder.
 
     <folder name="Menu">
         <folder name="RunProject">
+            <file name="org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ConnectAction.instance"/>
+                <attr name="position" intvalue="600"/>
+            </file>
             <file name="org-netbeans-modules-debugger-ui-actions-KillAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
                 <attr name="position" intvalue="700"/>
@@ -171,14 +172,6 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
                 <attr name="position" intvalue="2500"/>
-            </file>         
-            <file name="org-netbeans-modules-web-client-javascript-debugger-actions-NbJSDebugURLAction-separatorBefore.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                <attr name="position" intvalue="2650"/>
-            </file>
-            <file name="org-netbeans-modules-web-client-javascript-debugger-actions-NbJSDebugURLAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-web-client-javascript-debugger-actions-NbJSDebugURLAction.instance"/>
-                <attr name="position" intvalue="2700"/>
             </file>
         </folder>
 		<!--
