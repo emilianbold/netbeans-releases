@@ -47,6 +47,7 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -133,12 +134,16 @@ class ClickableIcon extends JLabel implements MouseListener {
     }
     
     private void invokeAction() {
-        if (isThreadSupended) {
-            jpdaThread.resume();
-        } else {
-            jpdaThread.suspend();
-        }
-        isThreadSupended = !isThreadSupended;
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                if (isThreadSupended) {
+                    jpdaThread.resume();
+                } else {
+                    jpdaThread.suspend();
+                }
+                isThreadSupended = !isThreadSupended;
+            }
+        });
     }
     
     // **************************************************************************

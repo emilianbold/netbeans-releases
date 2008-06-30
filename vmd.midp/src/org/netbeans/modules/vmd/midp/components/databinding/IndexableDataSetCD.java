@@ -39,7 +39,6 @@
 package org.netbeans.modules.vmd.midp.components.databinding;
 
 import org.netbeans.modules.vmd.midp.components.*;
-import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.Presenter;
@@ -52,16 +51,9 @@ import org.netbeans.modules.vmd.api.model.VersionDescriptor;
  *
  * @author Karol Harezlak
  */
-public class ContactDataSetCD extends ComponentDescriptor {
+public class IndexableDataSetCD extends ComponentDescriptor {
 
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/dataset_16.gif"; // NOI18N
-    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.databinding.pim.ContactDataSet"); //NOI18N
-    
-    public static final String PROP_NAMES = "names"; 
-
-    static {
-        MidpTypes.registerIconResource(TYPEID, ICON_PATH);
-    }
+    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.databinding.IndexableDataSet"); //NOI18N
 
     @Override
     public TypeDescriptor getTypeDescriptor() {
@@ -73,40 +65,13 @@ public class ContactDataSetCD extends ComponentDescriptor {
         return MidpVersionDescriptor.MIDP_2;
     }
 
-    @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return null;
     }
-
-    @Override
-    protected void gatherPresenters(ArrayList<Presenter> presenters) {
-        //DocumentSupport.removePresentersOfClass(presenters, CodeClassLevelPresenter.class);
-        super.gatherPresenters(presenters);
-    }
+    
 
     @Override
     protected List<? extends Presenter> createPresenters() {
         return null;
     }
-    
-    //Runtime parameters
-    public static final String NAME                 = "name";
-    public static final String ADDRESS              = "address";
-    public static final String EMAIL                = "email";
-    public static final String FORMATTED_NAME       = "formatted_name";
-    public static final String NICKNAME             = "nickname";
-    public static final String NOTE                 = "note";
-    public static final String ORGANIZATION         = "organization";
-    public static final String TELEPHONE            = "telephone";
-    public static final String TITLE                = "title";
-    public static final String UID                  = "uid";
-    public static final String URL                  = "url";
-    public static final String BIRTHDAY             = "birthday";
-    public static final String REVISION             = "revision";
-    public static final String PHOTO                = "photo";
-    public static final String PUBLIC_KEY           = "public_key";    
-    public static final String PHOTO_URL            = "photo_url";
-    public static final String PUBLIC_KEY_STRING    = "public_key_string";        
-    public static final String CLASS                = "class";
-    
 }

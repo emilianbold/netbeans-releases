@@ -69,16 +69,33 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             InputStream is = channel.getInputStream();
             in = new BufferedReader(new InputStreamReader(is)); // XXX - Change to non-buffered input
             
+//            String line;
+//            while ((line = in.readLine()) != null) { // XXX - Change to character oriented input
+//                out.println(line);
+//                out.flush();
+//            }
+//            in.close();
+//            is.close();
+    
             String line;
-            while ((line = in.readLine()) != null) { // XXX - Change to character oriented input
-                out.println(line);
-                out.flush();
+            while ((line = in.readLine()) != null || !channel.isClosed()) {
+                if (line!=null) {
+                    out.write(line + "\n");
+                    out.flush();
+                }
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                }
             }
             in.close();
             is.close();
+
         } catch (JSchException jse) {
         } catch (IOException ex) {
-        }
+        } finally {
+            disconnect();
+        } 
     }
 
     public RemoteNativeExecutionSupport(String key, File dirf, String exe, String args, String[] envp, PrintWriter out) {
@@ -110,7 +127,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
 //            echannel.setEnv(var, val); // not in 0.1.24
 //        }
         
-        String cmdline = dircmd + exe + " " + args; // NOI18N
+        String cmdline = dircmd + exe + " " + args + " 2>&1"; // NOI18N
         channel = createChannel();
         echannel.setCommand(cmdline.replace('\\', '/'));
         echannel.setInputStream(System.in);
