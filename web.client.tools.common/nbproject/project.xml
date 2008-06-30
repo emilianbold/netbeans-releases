@@ -50,9 +50,9 @@
             <friend-packages>
                 <friend>org.netbeans.modules.web.client.tools.firefox</friend>
                 <friend>org.netbeans.modules.web.client.tools.impl</friend>
-                <package>org.netbeans.modules.web.client.tools.javascript.debugger.api</package>
                 <package>org.netbeans.modules.web.client.tools.common.dbgp</package>
                 <package>org.netbeans.modules.web.client.tools.common.launcher</package>
+                <package>org.netbeans.modules.web.client.tools.javascript.debugger.api</package>
                 <package>org.netbeans.modules.web.client.tools.javascript.debugger.impl</package>
                 <package>org.netbeans.modules.web.client.tools.javascript.debugger.spi</package>
             </friend-packages>
