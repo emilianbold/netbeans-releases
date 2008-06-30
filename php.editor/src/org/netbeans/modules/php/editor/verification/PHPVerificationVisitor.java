@@ -51,6 +51,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
@@ -135,6 +136,20 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
         }        
     }
 
+    @Override
+    public void visit(ClassInstanceCreation node) {
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
+        }
+        
+        super.visit(node);
+    }
+
+    
+    
     
     @Override
     public void visit(IfStatement node) {
