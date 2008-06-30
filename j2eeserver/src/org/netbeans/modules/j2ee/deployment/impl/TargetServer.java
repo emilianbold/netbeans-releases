@@ -627,6 +627,22 @@ public class TargetServer {
         || acd.ejbsChanged() || acd.serverDescriptorChanged());
     }
 
+    public boolean supportsDeployOnSave(TargetModule[] modules) throws IOException {
+        J2eeModule deployable = null;
+        ModuleConfigurationProvider deployment = dtarget.getModuleConfigurationProvider();
+        if (deployment != null) {
+            deployable = deployment.getJ2eeModule(null);
+        }
+
+        boolean hasDirectory = (dtarget.getModule().getContentDirectory() != null);
+        IncrementalDeployment lincremental = isModuleImplComplete(deployable);
+        if (lincremental == null || !hasDirectory || !canFileDeploy(modules, deployable)
+                || !lincremental.isDeployOnSaveSupported()) {
+            return false;
+        }
+        return true;
+    }
+
     public boolean notifyArtifactsUpdated(Iterable<File> artifacts) {
         if (!dtarget.getServer().getServerInstance().isRunning()) {
             return false;
@@ -644,15 +660,8 @@ public class TargetServer {
 
             TargetModule[] modules = getDeploymentDirectoryModules();
 
-            J2eeModule deployable = null;
-            ModuleConfigurationProvider deployment = dtarget.getModuleConfigurationProvider();
-            if (deployment != null) {
-                deployable = deployment.getJ2eeModule(null);
-            }
             try {
-                boolean hasDirectory = (dtarget.getModule().getContentDirectory() != null);
-                IncrementalDeployment lincremental = isModuleImplComplete(deployable);
-                if (lincremental == null || !hasDirectory || !canFileDeploy(modules, deployable)) {
+                if (!supportsDeployOnSave(modules)) {
                     return false;
                 }
             } catch (IOException ex) {
@@ -682,7 +691,7 @@ public class TargetServer {
 
     private void reloadArtifacts(ProgressUI ui, TargetModule[] modules, DeploymentChangeDescriptor desc) {
         for (TargetModule module : modules) {
-            ProgressObject obj = incremental.reloadArtifacts(module.delegate(), desc);
+            ProgressObject obj = incremental.deployOnSave(module.delegate(), desc);
             try {
                 // this also save last deploy timestamp
                 trackDeployProgressObject(ui, obj, true);
@@ -690,6 +699,7 @@ public class TargetServer {
                 Exceptions.printStackTrace(ex);
             }
         }
+        notifyIncrementalDeployment(modules);
     }
 
     private TargetModule[] getDeploymentDirectoryModules() {
