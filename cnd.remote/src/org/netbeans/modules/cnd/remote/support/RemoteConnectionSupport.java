@@ -44,6 +44,7 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
+import java.util.logging.Logger;
 
 /**
  *
@@ -52,36 +53,41 @@ import com.jcraft.jsch.UserInfo;
 public abstract class RemoteConnectionSupport {
     
     private JSch jsch;
+    protected String key;
     protected Session session;
     protected Channel channel;
-    protected String host;
-    protected String user;
+    private String user;
+    protected static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
-    public RemoteConnectionSupport(String host, String user, int port) {
-        assert host != null && user != null;
-        this.host = host;
-        this.user = user;
+    public RemoteConnectionSupport(String key, int port) {
+        this.key = key;
+        int pos = key.indexOf('@');
+        user = key.substring(0, pos);
+        String host = key.substring(pos + 1);
         
         try {
             jsch = new JSch();
             jsch.setKnownHosts(System.getProperty("user.home") + "/.ssh/known_hosts");
             session = jsch.getSession(user, host, port);
 
-            UserInfo ui = RemoteUserInfo.getUserInfo(host, user);
+            UserInfo ui = RemoteUserInfo.getUserInfo(key);
             session.setUserInfo(ui);
             session.connect();
-            channel = createChannel();
         } catch (JSchException jsce) {
-            System.err.println("RPB<Init>: Got JSchException [" + jsce.getMessage() + "]");
+            log.warning("RPB<Init>: Got JSchException [" + jsce.getMessage() + "]");
         }
     }
     
-    public RemoteConnectionSupport(String host, String user) {
-        this(host, user, 22);
+    public RemoteConnectionSupport(String key) {
+        this(key, 22);
     }
     
     public Channel getChannel() {
         return channel;
+    }
+    
+    public void setChannel(Channel channel) {
+        this.channel = channel;
     }
     
     protected abstract Channel createChannel() throws JSchException;
@@ -89,10 +95,6 @@ public abstract class RemoteConnectionSupport {
     protected void disconnect() {
         channel.disconnect();
         session.disconnect();
-    }
-
-    public String getHost() {
-        return host;
     }
     
     public String getUser() {

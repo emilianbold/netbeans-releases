@@ -58,8 +58,8 @@ public class MeasureEnterpriseActions5Test {
         
         // EPMeasureActions5
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(OpenSchemaView.class)
-                .addTest("testOpenComplexSchemaView").enableModules(".*").clusters(".*").reuseUserDir(true)));    
-        
+                .addTest("testOpenComplexSchemaView").enableModules(".*").clusters(".*").reuseUserDir(true)));
+
         return suite;
     }
     

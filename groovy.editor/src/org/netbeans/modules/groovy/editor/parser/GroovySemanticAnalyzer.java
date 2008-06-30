@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.groovy.editor.parser;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Map;
@@ -56,7 +55,6 @@ import org.netbeans.modules.groovy.editor.AstPath;
 import org.netbeans.modules.groovy.editor.AstUtilities;
 import org.netbeans.modules.groovy.editor.SemanticAnalysisVisitor;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
-import org.openide.util.Exceptions;
 
 /**
  * 

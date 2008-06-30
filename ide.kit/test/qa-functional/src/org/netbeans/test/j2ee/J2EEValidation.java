@@ -69,6 +69,7 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.ide.WatchProjects;
 
 /**
@@ -77,18 +78,32 @@ import org.netbeans.test.ide.WatchProjects;
  * @author Jiri.Skrivanek@sun.com
  */
 public class J2EEValidation extends JellyTestCase {
+
+    static final String [] tests = {
+                "testWebApplication"
+    };
     
     /** Need to be defined because of JUnit */
     public J2EEValidation(String name) {
         super(name);
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new J2EEValidation("testWebApplication"));
-        return suite;
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite();
+//        suite.addTest(new J2EEValidation("testWebApplication"));
+//        return suite;
+//    }
+    public static junit.framework.Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(J2EEValidation.class)
+                .addTest(tests)
+                .clusters(".*")
+                .enableModules(".*")
+                .gui(true)
+                );
     }
-    
+
+
     /** Use for execution inside IDE */
     public static void main(java.lang.String[] args) {
         // run whole suite
@@ -220,7 +235,7 @@ public class J2EEValidation extends JellyTestCase {
             public Object actionProduced(Object obj) {
                 InputStream is = null;
                 try {
-                    URLConnection connection = new URI("http://localhost:8090/"+urlSuffix).toURL().openConnection();
+                    URLConnection connection = new URI("http://localhost:8080/"+urlSuffix).toURL().openConnection();
                     connection.setReadTimeout(Long.valueOf(timeout).intValue());
                     is = connection.getInputStream();
                     BufferedReader br = new BufferedReader(new InputStreamReader(is));

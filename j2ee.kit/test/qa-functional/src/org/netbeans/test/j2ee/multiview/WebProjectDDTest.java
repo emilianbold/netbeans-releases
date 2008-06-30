@@ -51,9 +51,8 @@ import javax.swing.JTextField;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.api.project.Project;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.j2ee.dd.api.common.*;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Filter;
@@ -78,7 +77,7 @@ import org.openide.loaders.DataObject;
  *
  * @author jp159440
  */
-public class WebProjectDDTest extends JellyTestCase{
+public class WebProjectDDTest extends J2eeTestCase{
     
     /** Creates a new instance of WebProjectDDTest */
     public WebProjectDDTest(String testName) {
@@ -100,82 +99,40 @@ public class WebProjectDDTest extends JellyTestCase{
     private static WebApp webapp;
     private static DDDataObject ddObj;
     private static DDTestUtils utils;
-    
+    private static String[] webprojectddtests = {
+        "testOpenProject","testValuesInOverview","testModificationByApi","testModificationInDesign",
+        "testExistingContextParameters","testAddContextParameters","testModifyContextParameter",
+        "testDelContextParameter","testExistingListeners","testAddListener","testModifyListener",
+        "testDelListener","testExistingServlets","testModifyServlet","testAddServletParam",
+        "testModifyServletParam","testDelServletParam","testExistingFilters","testModifyFilter",
+        "testAddFilterParam","testModifyFilterParam","testDelFilterParam","testExistingFilterMappings",
+        "testAddFilterMapping","testFilterNameChangePropagation","testServletNameChangePropagation",
+        "testModifyFilterMapping","testDelFilterMapping"};
+    private static String[] pagesandreferencesddtests = {
+        "testOpenProject","testExistingWelcomePages","testAddWelcomePage","testDelWelcomePage",
+        "testExistingErrorPages","testAddErrorPage","testModifyErrorPage","testDelErrorPage",
+        "testExistingProperyGroups","testModifyProperyGroup","testDelPropertyGroup",
+        "testExistingEnvEntries","testAddEnvEntry","testModifyEnvEntry","testDelEnvEntry",
+        "testExistingResReferences","testAddResReference","testModifyResReference",
+        "testDelResReference","testExistingResEnvReferences","testAddResEnvReference",
+        "testModifyResEnvReference","testDelResEnvReference","testExistingEJBReferences",
+        "testAddLocalEJBReference","testModifyLocalEJBReference","testDelLocalEJBReference",
+        "testAddRemoteEJBReference","testModifyRemoteEJBReference","testDelRemoteEJBReference",
+        "testExistingMsgDstReferences","testAddMsgDstReference","testModifyMsgDstReference",
+        "testDelMsgDstReference"};
+    private static String[] securityddtests = {
+        "testOpenProject","testExistingLoginConfiguration","testExistingSecurityRoles",
+        "testExistingSecurityConstraint","testAddSecurityRole","testEditSecurityRole",
+        "testDelSecurityRole"};
+
     public static Test suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new WebProjectDDTest("testOpenProject"));
-        suite.addTest(new WebProjectDDTest("testValuesInOverview"));
-        suite.addTest(new WebProjectDDTest("testModificationByApi"));
-        suite.addTest(new WebProjectDDTest("testModificationInDesign"));
-        suite.addTest(new WebProjectDDTest("testExistingContextParameters"));
-        suite.addTest(new WebProjectDDTest("testAddContextParameters"));
-        suite.addTest(new WebProjectDDTest("testModifyContextParameter"));
-        suite.addTest(new WebProjectDDTest("testDelContextParameter"));
-        suite.addTest(new WebProjectDDTest("testExistingListeners"));
-        suite.addTest(new WebProjectDDTest("testAddListener"));
-        suite.addTest(new WebProjectDDTest("testModifyListener"));
-        suite.addTest(new WebProjectDDTest("testDelListener"));
-        suite.addTest(new WebProjectDDTest("testExistingServlets"));
-        suite.addTest(new WebProjectDDTest("testModifyServlet"));
-        suite.addTest(new WebProjectDDTest("testAddServletParam"));
-        suite.addTest(new WebProjectDDTest("testModifyServletParam"));
-        suite.addTest(new WebProjectDDTest("testDelServletParam"));
-        suite.addTest(new WebProjectDDTest("testExistingFilters"));
-        suite.addTest(new WebProjectDDTest("testModifyFilter"));
-        suite.addTest(new WebProjectDDTest("testAddFilterParam"));
-        suite.addTest(new WebProjectDDTest("testModifyFilterParam"));
-        suite.addTest(new WebProjectDDTest("testDelFilterParam"));
-        suite.addTest(new WebProjectDDTest("testExistingFilterMappings"));
-        suite.addTest(new WebProjectDDTest("testAddFilterMapping"));
-        suite.addTest(new WebProjectDDTest("testFilterNameChangePropagation"));
-        suite.addTest(new WebProjectDDTest("testServletNameChangePropagation"));
-        suite.addTest(new WebProjectDDTest("testModifyFilterMapping"));
-        suite.addTest(new WebProjectDDTest("testDelFilterMapping"));
         
-        suite.addTest(new PagesAndReferencesDDTest("testOpenProject"));
-        suite.addTest(new PagesAndReferencesDDTest("testExistingWelcomePages"));
-        suite.addTest(new PagesAndReferencesDDTest("testAddWelcomePage"));
-        suite.addTest(new PagesAndReferencesDDTest("testDelWelcomePage"));
-        suite.addTest(new PagesAndReferencesDDTest("testExistingErrorPages"));
-        suite.addTest(new PagesAndReferencesDDTest("testAddErrorPage"));
-        suite.addTest(new PagesAndReferencesDDTest("testModifyErrorPage"));
-        suite.addTest(new PagesAndReferencesDDTest("testDelErrorPage"));
-        suite.addTest(new PagesAndReferencesDDTest("testExistingProperyGroups"));
-        suite.addTest(new PagesAndReferencesDDTest("testModifyProperyGroup"));
-        suite.addTest(new PagesAndReferencesDDTest("testDelPropertyGroup"));
-        suite.addTest(new PagesAndReferencesDDTest("testExistingEnvEntries"));
-        suite.addTest(new PagesAndReferencesDDTest("testAddEnvEntry"));
-        suite.addTest(new PagesAndReferencesDDTest("testModifyEnvEntry"));
-        suite.addTest(new PagesAndReferencesDDTest("testDelEnvEntry"));
-        suite.addTest(new PagesAndReferencesDDTest("testExistingResReferences"));
-        suite.addTest(new PagesAndReferencesDDTest("testAddResReference"));
-        suite.addTest(new PagesAndReferencesDDTest("testModifyResReference"));
-        suite.addTest(new PagesAndReferencesDDTest("testDelResReference"));
-        suite.addTest(new PagesAndReferencesDDTest("testExistingResEnvReferences"));
-        suite.addTest(new PagesAndReferencesDDTest("testAddResEnvReference"));
-        suite.addTest(new PagesAndReferencesDDTest("testModifyResEnvReference"));
-        suite.addTest(new PagesAndReferencesDDTest("testDelResEnvReference"));
-        suite.addTest(new PagesAndReferencesDDTest("testExistingEJBReferences"));
-        suite.addTest(new PagesAndReferencesDDTest("testAddLocalEJBReference"));
-        suite.addTest(new PagesAndReferencesDDTest("testModifyLocalEJBReference"));
-        suite.addTest(new PagesAndReferencesDDTest("testDelLocalEJBReference"));
-        suite.addTest(new PagesAndReferencesDDTest("testAddRemoteEJBReference"));
-        suite.addTest(new PagesAndReferencesDDTest("testModifyRemoteEJBReference"));
-        suite.addTest(new PagesAndReferencesDDTest("testDelRemoteEJBReference"));
-        suite.addTest(new PagesAndReferencesDDTest("testExistingMsgDstReferences"));
-        suite.addTest(new PagesAndReferencesDDTest("testAddMsgDstReference"));
-        suite.addTest(new PagesAndReferencesDDTest("testModifyMsgDstReference"));
-        suite.addTest(new PagesAndReferencesDDTest("testDelMsgDstReference"));
-
-        suite.addTest(new SecurityDDTest("testOpenProject"));
-        suite.addTest(new SecurityDDTest("testExistingLoginConfiguration"));
-        suite.addTest(new SecurityDDTest("testExistingSecurityRoles"));
-        suite.addTest(new SecurityDDTest("testExistingSecurityConstraint"));
-        suite.addTest(new SecurityDDTest("testAddSecurityRole"));
-        suite.addTest(new SecurityDDTest("testEditSecurityRole"));
-        suite.addTest(new SecurityDDTest("testDelSecurityRole"));
-
-        return suite;
+        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
+        conf = addServerTests(Server.ANY,conf,WebProjectDDTest.class,webprojectddtests);
+        conf = addServerTests(Server.ANY,conf,PagesAndReferencesDDTest.class,pagesandreferencesddtests);
+        conf = addServerTests(Server.ANY,conf,SecurityDDTest.class,securityddtests);
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
     }
     
     /** Use for execution inside IDE */

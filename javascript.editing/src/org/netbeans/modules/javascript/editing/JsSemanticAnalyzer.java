@@ -101,6 +101,16 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
             return;
         }
 
+//        if (rpr.getEditedNode() != null && rpr.semanticHighlights != null) {
+//            // Just perform incremental analysis
+//            semanticHighlights = analyzeIncremental(info, rpr, root);
+//        } else {
+            semanticHighlights = analyzeFullTree(info, rpr, root);
+//        }
+//        rpr.semanticHighlights = semanticHighlights;
+    }
+
+    Map<OffsetRange, Set<ColoringAttributes>> analyzeFullTree(CompilationInfo info, JsParseResult rpr, Node root) {
         VariableVisitor visitor = rpr.getVariableVisitor();
         Map<OffsetRange, Set<ColoringAttributes>> highlights =
                 new HashMap<OffsetRange, Set<ColoringAttributes>>(100);
@@ -111,12 +121,25 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
         }
 
         Collection<Node> globalVars = visitor.getGlobalVars(false);
+        // I'm sanitizing keywords like "undefined" etc. by stripping the final character
+        // to avoid a parser error. This gives me what is actually a global variable
+        // symbol in the input, which gets highlighted here. We don't want that, so if
+        // I see that the global variable sits immediately next to the sanitized range,
+        // I don't highlight it.
         OffsetRange sanitizedRange = rpr.getSanitizedRange();
         boolean checkRange = sanitizedRange != OffsetRange.NONE && sanitizedRange.getLength() == 1;
+        if (checkRange) {
+            String sanitized = rpr.getSanitizedContents();
+            if (sanitized != null && sanitized.length() > 0 && !Character.isLetter(sanitized.charAt(0))) {
+                // If I'm clipping away things like "," or "." it wasn't a clipped keyword and
+                // there's no need to avoid highlighting these symbols
+                checkRange = false;
+            }
+        }
         for (Node node : globalVars) {
             String s = node.getString();
             //filter out generated code
-            if(JsModel.isGeneratedIdentifier(s)) {
+            if (JsModel.isGeneratedIdentifier(s)) {
                 continue;
             }
             OffsetRange range = AstUtilities.getNameRange(node);
@@ -135,7 +158,7 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
         AstUtilities.addNodesByType(root, new int[] { Token.REGEXP, Token.FUNCNAME, Token.OBJLITNAME }, regexps);
         for (Node node : regexps) {
             OffsetRange range = AstUtilities.getNameRange(node);
-            if(node.isStringNode() && JsModel.isGeneratedIdentifier(node.getString())) {
+            if (node.isStringNode() && JsModel.isGeneratedIdentifier(node.getString())) {
                 continue;
             }
             final int type = node.getType();
@@ -152,7 +175,7 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
         }
         
         if (isCancelled()) {
-            return;
+            return null;
         }
 
         if (highlights.size() > 0) {
@@ -168,9 +191,13 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
                 highlights = translated;
             }
 
-            this.semanticHighlights = highlights;
+            return highlights;
         } else {
-            this.semanticHighlights = null;
+            return null;
         }
     }
+
+    // Perform a partial analysis of the tree, only for the incrementally parsed function
+    //Map<OffsetRange, Set<ColoringAttributes>> analyzeIncremental(CompilationInfo info, JsParseResult rpr, Node root) {
+    //}
 }

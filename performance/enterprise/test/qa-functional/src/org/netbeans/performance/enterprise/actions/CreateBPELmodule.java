@@ -145,11 +145,12 @@ public class CreateBPELmodule extends PerformanceTestCase {
         log("================= Destination directory={"+directory+"}");
       //  wizard_location.txtProjectLocation().setText("");
         new EventTool().waitNoEvent(1000);
-        wizard_location.txtProjectLocation().setText(directory);
+        wizard_location.txtProjectLocation().clearText();
+        wizard_location.txtProjectLocation().typeText(directory);
         
         project_name = project_type + "_" + (index++);
         log("================= Project name="+project_name+"}");
-        wizard_location.txtProjectName().setText("");
+        wizard_location.txtProjectName().clearText();
         new EventTool().waitNoEvent(1000);
         wizard_location.txtProjectName().typeText(project_name);
     }

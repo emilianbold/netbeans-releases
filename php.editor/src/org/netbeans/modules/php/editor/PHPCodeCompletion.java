@@ -735,9 +735,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             final IndexedElement indexedElement = (IndexedElement) element;
             StringBuilder builder = new StringBuilder();
             
+            String location = indexedElement.getFile().isPlatform() ? NbBundle.getMessage(PHPCodeCompletion.class, "PHPPlatform")
+                    : indexedElement.getFilenameUrl();
+            
             builder.append(String.format("<font size=-1>%s</font>" +
                     "<p><font size=+1><code><b>%s</b></code></font></p><br>", //NOI18N
-                    indexedElement.getFilenameUrl(), indexedElement.getDisplayName()));
+                    location, indexedElement.getDisplayName()));
             
             final StringBuilder phpDoc = new StringBuilder();
             

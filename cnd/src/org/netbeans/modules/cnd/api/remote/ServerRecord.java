@@ -54,6 +54,8 @@ public interface ServerRecord {
     public boolean isRemote();
     
     public boolean isActive();
+
+    public int getPlatform();
     
     // Other methods are TBD...
 }

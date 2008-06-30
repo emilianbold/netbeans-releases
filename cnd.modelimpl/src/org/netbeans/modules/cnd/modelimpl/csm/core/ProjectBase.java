@@ -307,9 +307,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
     
     public Collection<CsmOffsetableDeclaration> findDeclarationsByPrefix(String prefix) {
-        return getDeclarationsSorage().getDeclarationsRange(prefix, prefix+"z"); // NOI18N
+        return getDeclarationsSorage().getDeclarationsRange(prefix, prefix+Character.MAX_VALUE); // NOI18N
     }
-    
+
     public Collection<CsmFriend> findFriendDeclarations(CsmOffsetableDeclaration decl) {
         return getDeclarationsSorage().findFriends(decl);
     }

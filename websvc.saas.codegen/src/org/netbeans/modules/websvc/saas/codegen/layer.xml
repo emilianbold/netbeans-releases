@@ -70,7 +70,19 @@
             <file name="apikey.php" url="/org/netbeans/modules/websvc/saas/codegen/php/resources/apikey.template">
                 <attr name="position" intvalue="350"/>
             </file>
-
+            <file name="HttpBasicAuthenticator.php" url="/org/netbeans/modules/websvc/saas/codegen/php/resources/HttpBasicAuthenticator.template">
+                <attr name="position" intvalue="360"/>
+            </file>
+            <file name="HttpBasicLogin.php" url="/org/netbeans/modules/websvc/saas/codegen/php/resources/HttpBasicLogin.template">
+                <attr name="position" intvalue="370"/>
+            </file>
+            <file name="HttpBasicCallback.php" url="/org/netbeans/modules/websvc/saas/codegen/php/resources/HttpBasicCalback.template">
+                <attr name="position" intvalue="380"/>
+            </file>
+            <file name="httpbasic.php" url="/org/netbeans/modules/websvc/saas/codegen/php/resources/httpbasic.template">
+                <attr name="position" intvalue="400"/>
+            </file>
+            
         </folder>
     </folder>
 </filesystem>

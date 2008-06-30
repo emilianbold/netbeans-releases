@@ -73,7 +73,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     
     private final List<CsmInheritance> inheritances = new ArrayList<CsmInheritance>();
     
-    private List<CsmTemplateParameter> templateParams = Collections.emptyList();
+    private List<CsmTemplateParameter> templateParams = Collections.<CsmTemplateParameter>emptyList();
     private CharSequence templateSuffix;
     private boolean template;
     

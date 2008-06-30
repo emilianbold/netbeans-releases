@@ -305,6 +305,9 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             }
             return ((JPDAThread) node).isSuspended () ? SUSPENDED_THREAD : RUNNING_THREAD;
         }
+        if (node == TreeModel.ROOT) {
+            return CALL_STACK; // will not be displayed
+        }
         throw new UnknownTypeException (node);
     }
 
@@ -410,6 +413,9 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         if (node instanceof JPDAThreadGroup) {
             return ((JPDAThreadGroup) node).getName ();
         }
+        if (node == TreeModel.ROOT) {
+            return ""; // NOI18N
+        }
         throw new UnknownTypeException(node.toString());
     }
 
@@ -454,6 +460,9 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     }
 
     private void fireNodeChanged (Object node) {
+        if (preferences.getBoolean(DebuggingTreeModel.SHOW_SUSPENDED_THREADS_ONLY, false)) {
+            node = TreeModel.ROOT;
+        }
         List<ModelListener> ls;
         synchronized (listeners) {
             ls = new ArrayList<ModelListener>(listeners);

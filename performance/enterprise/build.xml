@@ -4,7 +4,24 @@
 <!-- If you delete this file and reopen the project it will be recreated. -->
 <project name="org.netbeans.performance.enterprise" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.performance.enterprise</description>
-    <property name="test.timeout" value="2000000"/>
+
+    <property name="test.timeout" value="3000000"/>
+
+    <condition property="j2ee.appserver.path" value="e:\\space\\appserver">
+        <os family="windows"/>
+    </condition>
+    <condition property="j2ee.appserver.path" value="/space/appserver">
+        <os family="unix"/>
+    </condition>
+
+    <condition property="tomcat.webserver.path" value="e:\\space\\tomcat">
+        <os family="windows"/>
+    </condition>
+    <condition property="tomcat.webserver.path" value="/space/tomcat">
+        <os family="unix"/>
+    </condition>
+
+    <property name="test.run.args" value="-client -Xss2m -Xms32m -Xmx1024m -XX:PermSize=32m -XX:MaxPermSize=200m -Xverify:none -ea -Dcom.sun.aas.installRoot=&quot;${j2ee.appserver.path}&quot; -Dtomcat.installRoot=&quot;${tomcat.webserver.path}&quot;"/>
     <target name="test" description="Uses test-single to run each suite in different VM">
         <antcall target="test-single">         
             <param name="test.includes" value="**\MeasureEnterpriseSetupTest*"/>

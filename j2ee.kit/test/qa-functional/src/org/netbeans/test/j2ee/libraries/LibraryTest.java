@@ -54,19 +54,19 @@ import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.j2ee.lib.ContentComparator;
 import org.netbeans.test.j2ee.lib.FilteringLineDiff;
 import org.netbeans.test.j2ee.lib.Utils;
@@ -76,7 +76,7 @@ import org.netbeans.test.j2ee.wizard.WizardUtils;
  *
  * @author jungi
  */
-public class LibraryTest extends JellyTestCase {
+public class LibraryTest extends J2eeTestCase {
     
     private static boolean CREATE_GOLDEN_FILES = Boolean.getBoolean("org.netbeans.test.j2ee.libraries.golden");
     //private static boolean CREATE_GOLDEN_FILES = true;
@@ -93,10 +93,10 @@ public class LibraryTest extends JellyTestCase {
     }
     
     public static Test suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new LibraryTest("testDD"));
-        suite.addTest(new LibraryTest("testDDandManifests"));
-        return suite;
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(LibraryTest.class);
+        conf = addServerTests(conf,"testDD","testDDandManifests");
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
     }
     
     /** Use for execution inside IDE */
