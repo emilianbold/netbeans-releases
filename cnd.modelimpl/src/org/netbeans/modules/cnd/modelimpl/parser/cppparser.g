@@ -3164,7 +3164,7 @@ postfix_expression
 	|
 		(LITERAL_dynamic_cast|LITERAL_static_cast|LITERAL_reinterpret_cast|LITERAL_const_cast)
 		    // Note const_cast in elsewhere
-		LESSTHAN declaration_specifiers (ptr_operator)* GREATERTHAN
+		LESSTHAN declaration_specifiers ptr_operators_in_cast_operator (LPAREN RPAREN)? GREATERTHAN
 		LPAREN expression RPAREN
 	) 
         // add possibility to have a().b().c()->d() etc.
@@ -3172,6 +3172,14 @@ postfix_expression
         // not at the end of postfix_expression
         (post_postfix_expression)*
 	;
+
+protected
+ptr_operators_in_cast_operator
+        : 
+                ((ptr_operator)* (GREATERTHAN|RPAREN)) => (ptr_operator)*               
+        |
+                ((STAR)* LPAREN) => (STAR)* LPAREN ptr_operators_in_cast_operator RPAREN                
+;
 
 protected
 fun_call_param_list : fun_call_param (COMMA fun_call_param)*;
