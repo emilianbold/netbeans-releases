@@ -874,20 +874,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 TypeMirror fieldType = copy.getElements().getTypeElement(typeName).asType();
                 if (role.isToMany()) {
                     // Use the collection type the user wants
-                    String collectionTypeStr = "java.util.Collection"; // NOI18N
-
-                    switch (collectionType) {
-                        case LIST:
-                            collectionTypeStr = "java.util.List"; // NOI18N
-                            break;
-                        case SET:
-                            collectionTypeStr = "java.util.Set"; // NOI18N
-                            break;
-                        default:
-                            collectionTypeStr = "java.util.Collection"; // NOI18
-
-                    }
-                    TypeElement collectionTypeElem = copy.getElements().getTypeElement(collectionTypeStr);
+                    TypeElement collectionTypeElem = copy.getElements().getTypeElement(collectionType.className());
                     fieldType = copy.getTypes().getDeclaredType(collectionTypeElem, fieldType);
                 }
 
