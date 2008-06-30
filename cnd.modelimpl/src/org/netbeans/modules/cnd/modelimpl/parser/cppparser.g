@@ -735,13 +735,13 @@ template_explicit_specialization
 // it's a caller's responsibility to check isCPlusPlus
 //
 protected
-external_declaration_template { K_and_R = false; boolean ctrName=false;}
+external_declaration_template { String s; K_and_R = false; boolean ctrName=false;}
 	:      
 		(LITERAL_template LESSTHAN GREATERTHAN) => template_explicit_specialization
 	|
 		(LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union)) =>
 		LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union) 
-		ID LESSTHAN template_argument_list GREATERTHAN SEMICOLON
+		s=scope_override ID LESSTHAN template_argument_list GREATERTHAN SEMICOLON
 		{#external_declaration_template = #(#[CSM_TEMPLATE_EXPLICIT_INSTANTIATION, "CSM_TEMPLATE_EXPLICIT_INSTANTIATION"], #external_declaration_template);}
 	|
 		(LITERAL_template (~LESSTHAN)) =>
@@ -2421,14 +2421,12 @@ protected template_template_parameter
  *	as type setting is ineffective whilst guessing
  */
 assigned_type_name
-	{/*TypeSpecifier*/int ts;}
+	{/*TypeSpecifier*/int ts;
+         TypeQualifier tq;}
 	:
-	(LITERAL_typename)?
-	(options{generateAmbigWarnings = false;}:
-		qualified_type abstract_declarator	
-	|
-		ts = simple_type_specifier abstract_declarator
-	)
+            (tq=cv_qualifier)? (LITERAL_typename)?
+            ts = simple_type_specifier (postfix_cv_qualifier)?
+            abstract_declarator
 	;
 
 // This rule refers to an instance of a template class or function
@@ -3017,6 +3015,7 @@ cast_expression_type_specifier
                 (tq = cv_qualifier)? 
                 (LITERAL_struct|LITERAL_union|LITERAL_class|LITERAL_enum)? 
                 ts = simple_type_specifier 
+                (postfix_cv_qualifier)? // to support (char const*)
                 (ptr_operator)*
             RPAREN
         ;

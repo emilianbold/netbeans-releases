@@ -51,6 +51,8 @@ public interface ServerList {
     
     /** A String[] containing the names of all currently defined development servers */
     public String[] getServerNames();
+
+    public ServerRecord get(String key);
     
     // Other methods are TBD...
 }

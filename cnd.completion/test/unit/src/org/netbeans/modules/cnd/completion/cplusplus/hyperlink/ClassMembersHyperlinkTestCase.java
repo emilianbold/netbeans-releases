@@ -48,7 +48,39 @@ package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
     public ClassMembersHyperlinkTestCase(String testName) {
         super(testName);
-    }        
+    }
+
+    public void testNestedTemplateClassTemplateParameters() throws Exception {
+        performTest("templateParameters.h", 21, 50, "templateParameters.h", 21, 15); // test for ThreadingModel
+        performTest("templateParameters.h", 26, 45, "templateParameters.h", 21, 15); // test for ThreadingModel
+        performTest("templateParameters.h", 28, 30, "templateParameters.h", 21, 15); // test for ThreadingModel
+
+        performTest("templateParameters.h", 22, 22, "templateParameters.h", 22, 15); // test for MX
+        performTest("templateParameters.h", 26, 71, "templateParameters.h", 22, 15); // test for MX
+        performTest("templateParameters.h", 28, 55, "templateParameters.h", 22, 15); // test for MX
+
+        performTest("templateParameters.h", 25, 25, "templateParameters.h", 25, 19); // test for P
+        performTest("templateParameters.h", 26, 66, "templateParameters.h", 25, 19); // test for P
+        performTest("templateParameters.h", 28, 50, "templateParameters.h", 25, 19); // test for P
+    }
+
+    public void testTemplateParameters() throws Exception {
+        performTest("templateParameters.h", 1, 23, "templateParameters.h", 1, 10); // test for L
+        performTest("templateParameters.h", 2, 25, "templateParameters.h", 1, 10); // test for L
+        performTest("templateParameters.h", 5, 57, "templateParameters.h", 1, 10); // test for L
+        performTest("templateParameters.h", 8, 34, "templateParameters.h", 1, 10); // test for L
+        
+        performTest("templateParameters.h", 1, 32, "templateParameters.h", 1, 26); // test for T
+        performTest("templateParameters.h", 2, 28, "templateParameters.h", 1, 26); // test for T
+        performTest("templateParameters.h", 2, 83, "templateParameters.h", 1, 26); // test for T
+        performTest("templateParameters.h", 5, 54, "templateParameters.h", 1, 26); // test for T
+        performTest("templateParameters.h", 13, 40, "templateParameters.h", 1, 26); // test for T
+        performTest("templateParameters.h", 13, 63, "templateParameters.h", 1, 26); // test for T
+        
+        performTest("templateParameters.h", 1, 57, "templateParameters.h", 1, 35); // test for C
+        performTest("templateParameters.h", 11, 9, "templateParameters.h", 1, 35); // test for C
+        performTest("templateParameters.h", 13, 61, "templateParameters.h", 1, 35); // test for C
+    }
         
     public void testSameName() throws Exception {
         performTest("main.cc", 53, 10, "main.cc", 51, 1); //sameValue(  in sameValue(sameValue - 1);

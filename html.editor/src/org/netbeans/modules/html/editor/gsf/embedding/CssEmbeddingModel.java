@@ -44,7 +44,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.EmbeddingModel;
+import org.netbeans.modules.gsf.api.EditHistory;
+import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 
 /**
@@ -52,7 +53,7 @@ import org.netbeans.modules.gsf.api.TranslatedSource;
  *
  * @author Marek Fukala
  */
-public class CssEmbeddingModel implements EmbeddingModel {
+public class CssEmbeddingModel implements IncrementalEmbeddingModel {
 
     static final String HTML_MIME_TYPE = "text/html"; // NOI18N
 
@@ -81,5 +82,7 @@ public class CssEmbeddingModel implements EmbeddingModel {
         return "CssEmbeddingModel(target=" + getTargetMimeType() + ",sources=" + getSourceMimeTypes() + ")";
     }
     
-    
+    public IncrementalEmbeddingModel.UpdateState update(EditHistory history, Collection<? extends TranslatedSource> previousTranslation) {
+        return ((CssTranslatedSource)previousTranslation.iterator().next()).incrementalUpdate(history);
+    }
 }
