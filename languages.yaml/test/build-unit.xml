@@ -1,4 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
+
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
 Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
@@ -40,8 +42,16 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<HTML><BODY>
-Creates an empty YAML file. You can edit the file in the IDE's Source Editor. 
-To change this template, choose Tools | Template Manager 
-and open the template in the editor.
-</BODY></HTML>
+<project name="languages.yaml/test-unit" basedir="." default="all">
+    <import file="../../nbbuild/templates/xtest-unit.xml"/>
+
+    <target name="pre-init-cp">
+        <!-- XXX: xtext does not support compilation to build/test/classes.
+            Add org.netbeans.api.project.TestUtil to classpath. -->
+        <!-- Extra classpath for compilation: -->
+        <property name="cp.compile.extra" value="../../projectapi/test/unit/src"/>
+        <!-- Extra classpath for execution: -->
+        <!-- <property name="cp.run.extra" value=""/> -->
+    </target>
+    
+</project>

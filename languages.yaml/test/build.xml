@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -39,9 +40,23 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
+<project name="languages.yaml unit tests" basedir="." default="all" >
 
-<HTML><BODY>
-Creates an empty YAML file. You can edit the file in the IDE's Source Editor. 
-To change this template, choose Tools | Template Manager 
-and open the template in the editor.
-</BODY></HTML>
+    <property name="debug" value="false"/>
+
+    <!-- be ready for debugging -->
+    <property name="xtest.debug.port" value="5005"/>
+    <property name="xtest.debug.address" value=""/>
+    <property name="xtest.debug.suspend" value="${debug}"/>
+    <property name="xtest.enable.assertions" value="true"/>
+
+    <!-- Name of tested module -->
+    <property name="xtest.module" value="languages.yaml"/>
+
+    <import file="../../nbbuild/templates/xtest.xml"/>
+
+    <!-- default testtypes, attributes used when no value is supplied from command line -->
+    <property name="xtest.testtype" value="unit"/>
+    <property name="xtest.attribs" value="stable"/>
+    
+</project>

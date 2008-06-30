@@ -20,6 +20,15 @@
 				<include name="jruby-src-${jruby_src_version}.zip"/>
 			</fileset>
 	</unzip>
+        <!--
+         We need a more recent version of jvyamlb for use by the YAML module.
+         The JRuby IDE module itself doesn't really care.
+        -->
+        <unzip dest="${patched_source}/jruby-${jruby_src_version}/build_lib">
+			<fileset dir="external/">
+				<include name="jvyamlb-0.2.zip"/>
+			</fileset>
+	</unzip>
         <!-- I don't need the bsf stuff -->
         <delete dir="${src.dir}/org/jruby/javasupport/bsf"/>
 

@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN" "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -40,8 +42,28 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<HTML><BODY>
-Creates an empty YAML file. You can edit the file in the IDE's Source Editor. 
-To change this template, choose Tools | Template Manager 
-and open the template in the editor.
-</BODY></HTML>
+<!--
+  These classes are excluded by default (defined in build.xml):
+    "**/*Suite.class"
+    "**/*$$*.class"
+    "**/data/**"
+    "**/hidden/**"
+    "**/*Hidden.*"
+    "**/*Hid.*"
+-->
+
+<mconfig name="languages.yaml">
+
+    <testbag testattribs="all,stable" executor="code" name="Unit Tests">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="**/**Test.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <executor name="code" antfile="build-unit.xml" target="run-unit-test"/>
+    
+    <compiler name="unit-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
+    
+</mconfig>
