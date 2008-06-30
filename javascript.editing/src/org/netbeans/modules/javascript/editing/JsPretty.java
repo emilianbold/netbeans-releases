@@ -44,9 +44,13 @@ package org.netbeans.modules.javascript.editing;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Stack;
+import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import org.mozilla.javascript.Node;
 import org.mozilla.javascript.Token;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -83,7 +87,10 @@ public class JsPretty {
         this.ts = LexUtilities.getPositionedSequence(doc, 0, false);
         this.indentSize = codeStyle.getIndentSize();
         this.continuationIndentSize = codeStyle.getContinuationIndentSize();
-        this.tabSize = document.getFormatter().getSpacesPerTab();
+        //Preferences prefs = MimeLookup.getLookup(MimePath.get(JsTokenId.JAVASCRIPT_MIME_TYPE)).lookup(Preferences.class);
+        // Tab settings are still global...
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        this.tabSize = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4);
     }
 
     public void format() {

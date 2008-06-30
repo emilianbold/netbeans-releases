@@ -140,7 +140,6 @@ public final class LineConvertors {
     /**
      * Locates the file for the given path, file or part of the path.
      *
-     * @see LineConvertors#filePattern(org.netbeans.modules.extexecution.api.print.LineConvertor, org.netbeans.modules.extexecution.api.print.LineConvertors.FileLocator, java.util.regex.Pattern, java.util.regex.Pattern)
      * @see LineConvertors#filePattern(org.netbeans.modules.extexecution.api.print.LineConvertor, org.netbeans.modules.extexecution.api.print.LineConvertors.FileLocator, java.util.regex.Pattern, java.util.regex.Pattern, int, int)
      */
     public interface FileLocator {

@@ -44,7 +44,7 @@ package org.netbeans.test.cvsmodule;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Random;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputOperator;
@@ -56,7 +56,6 @@ import org.netbeans.jellytools.modules.javacvs.CVSRootStepOperator;
 import org.netbeans.jellytools.modules.javacvs.CheckoutWizardOperator;
 import org.netbeans.jellytools.modules.javacvs.EditCVSRootOperator;
 import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
-import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
@@ -64,12 +63,11 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JPasswordFieldOperator;
-import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 /**
  *
@@ -91,48 +89,46 @@ public class CheckOutWizardTest extends JellyTestCase {
         super(name);
     }
     
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TestRunner.run(suite());
-    }
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(CheckOutWizardTest.class).addTest(
+                     "testInvokeCheckoutWizard",
+                     "testCancelCheckoutWizard",
+                     "testCheckoutWizardLocal",
+                     "testCheckoutWizardFork",
+                     "testCheckoutWizardPserver",
+                     "testCheckoutWizardExt",
+                     "testRandomChange",
+                     "testLocalUI",
+                     "testForkUI",
+                     "testPserverUI",
+                     "testExtUI",
+                     "testEditCVSRootDialogUI",
+                     "testPserverLoginSuccess",
+                     "testCheckWizardSecondStepUI",
+                     "testPserverLoginFailed",
+                     "testRepositoryBrowsing",
+                     "testAliasBrowsing",
+                     "testBranchBrowsing",
+                     "testTagBrowsing",
+                     "testCheckWizardFinish"                     
+                )
+                .enableModules(".*")
+                .clusters(".*")
+        );
+     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CheckOutWizardTest("testInvokeCheckoutWizard"));
-        suite.addTest(new CheckOutWizardTest("testCancelCheckoutWizard"));
-        suite.addTest(new CheckOutWizardTest("testCheckoutWizardLocal"));
-        suite.addTest(new CheckOutWizardTest("testCheckoutWizardFork"));
-        suite.addTest(new CheckOutWizardTest("testCheckoutWizardPserver"));
-        suite.addTest(new CheckOutWizardTest("testCheckoutWizardExt"));
-        suite.addTest(new CheckOutWizardTest("testRandomChange"));
-        suite.addTest(new CheckOutWizardTest("testLocalUI"));
-        suite.addTest(new CheckOutWizardTest("testForkUI"));
-        suite.addTest(new CheckOutWizardTest("testPserverUI"));
-        suite.addTest(new CheckOutWizardTest("testExtUI"));
-        suite.addTest(new CheckOutWizardTest("testEditCVSRootDialogUI"));
-        suite.addTest(new CheckOutWizardTest("testPserverLoginSuccess"));
-        suite.addTest(new CheckOutWizardTest("testCheckWizardSecondStepUI"));
-        suite.addTest(new CheckOutWizardTest("testPserverLoginFailed"));
-        suite.addTest(new CheckOutWizardTest("testRepositoryBrowsing"));
-        suite.addTest(new CheckOutWizardTest("testAliasBrowsing"));
-        suite.addTest(new CheckOutWizardTest("testBranchBrowsing"));
-        suite.addTest(new CheckOutWizardTest("testTagBrowsing"));
-        suite.addTest(new CheckOutWizardTest("testCheckWizardFinish"));
-        //debug
-        //suite.addTest(new CheckOutWizardTest("testCheckWizardFinish"));
-       
-        //suite.addTest(new CheckOutWizardTest("testBranchBrowsing"));
-        return suite;
-    }
+    @Override
     protected void setUp() throws Exception {
-        
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
         System.out.println("### "+getName()+" ###");
-        
+        //extract CVS protocol dump file
+        try {
+            TestKit.extractProtocol(getDataDir());
+        } catch (Exception e ) {
+            e.printStackTrace();
+        }
     }
     
     protected boolean isUnix() {
@@ -229,7 +225,7 @@ public class CheckOutWizardTest extends JellyTestCase {
         assertEquals("Wrong repository path Edit CVSRoot dialog", "/cvs", editOperator.getRepositoryPath());
         
         //change values in EditCVSRoot dialog but cancel it
-        editOperator.selectAccessMethod(editOperator.ITEM_PSERVER);
+        editOperator.selectAccessMethod(EditCVSRootOperator.ITEM_PSERVER);
         editOperator.setRepositoryPath("/cvs/repo");
         editOperator.setHost("127.0.0.1");
         editOperator.setUser("user");
@@ -239,7 +235,7 @@ public class CheckOutWizardTest extends JellyTestCase {
         
         //change values in EditCVSRoot dialog
         editOperator = crso.edit();
-        editOperator.selectAccessMethod(editOperator.ITEM_PSERVER);
+        editOperator.selectAccessMethod(EditCVSRootOperator.ITEM_PSERVER);
         editOperator.setRepositoryPath("/cvs/repo");
         editOperator.setHost("127.0.0.1");
         editOperator.setUser("user");
@@ -274,7 +270,7 @@ public class CheckOutWizardTest extends JellyTestCase {
         assertEquals("Wrong repository path Edit CVSRoot dialog", "/cvs", editOperator.getRepositoryPath());
         
         //change values in EditCVSRoot dialog but cancel it
-        editOperator.selectAccessMethod(editOperator.ITEM_EXT);
+        editOperator.selectAccessMethod(EditCVSRootOperator.ITEM_EXT);
         editOperator.setRepositoryPath("/cvs/repo");
         editOperator.setHost("127.0.0.1");
         editOperator.setUser("user");
@@ -284,7 +280,7 @@ public class CheckOutWizardTest extends JellyTestCase {
         
         //change values in EditCVSRoot dialog
         editOperator = crso.edit();
-        editOperator.selectAccessMethod(editOperator.ITEM_EXT);
+        editOperator.selectAccessMethod(EditCVSRootOperator.ITEM_EXT);
         editOperator.setRepositoryPath("/cvs/repo");
         editOperator.setHost("127.0.0.1");
         editOperator.setUser("user");
@@ -987,13 +983,15 @@ public class CheckOutWizardTest extends JellyTestCase {
             //crso.setCVSRoot(CVSroot);
             System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
             cwo.finish();
+            Thread.sleep(3000);
         
         
             //System.out.println(CVSroot);
-            oo = OutputOperator.invoke();
+            //oo = OutputOperator.invoke();
             //System.out.println(CVSroot);
         
-            OutputTabOperator oto = oo.getOutputTab(sessionCVSroot);
+            OutputTabOperator oto = new OutputTabOperator(sessionCVSroot); 
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
             oto.waitText("Checking out finished");
             cvss.stop();
             in.close();
@@ -1002,8 +1000,8 @@ public class CheckOutWizardTest extends JellyTestCase {
             open.push();
         
             ProjectSupport.waitScanFinished();
-            TestKit.waitForQueueEmpty();
-            ProjectSupport.waitScanFinished();
+//            TestKit.waitForQueueEmpty();
+//            ProjectSupport.waitScanFinished();
         } catch (Exception e) {
             throw new Exception("Test failed: " + e);
         } finally {

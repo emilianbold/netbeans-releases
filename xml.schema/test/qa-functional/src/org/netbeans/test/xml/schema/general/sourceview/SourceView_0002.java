@@ -91,7 +91,9 @@ import javax.swing.ListModel;
 import org.netbeans.jellytools.TopComponentOperator;
 import javax.swing.JPopupMenu;
 import org.netbeans.jellytools.modules.web.NavigatorOperator;
-import java.util.regex.*;
+
+import org.netbeans.junit.NbModuleSuite;
+import junit.framework.Test;
 
 /**
  *
@@ -114,7 +116,6 @@ public class SourceView_0002 extends SourceView {
         "CreateSampleSchema2",
         "CheckAndValidate",
         "XSLTransformation",
-
         "CutCopyPaste",
         "Navigate"
     };
@@ -122,7 +123,8 @@ public class SourceView_0002 extends SourceView {
     public SourceView_0002(String arg0) {
         super(arg0);
     }
-    
+
+    /*    
     public static TestSuite suite() {
         TestSuite testSuite = new TestSuite(SourceView_0002.class.getName());
         
@@ -132,7 +134,28 @@ public class SourceView_0002 extends SourceView {
         
         return testSuite;
     }
+    */
 
+    public static Test suite( )
+    {
+      return NbModuleSuite.create(
+          NbModuleSuite.createConfiguration( SourceView_0002.class ).addTest(
+              "CreateJavaApplication",
+
+              "CreateSampleSchema",
+              "FormatCode",
+
+              "CreateSampleSchema2",
+              "CheckAndValidate",
+              "XSLTransformation",
+              "CutCopyPaste",
+              "Navigate"
+           )
+           .enableModules( ".*" )
+           .clusters( ".*" )
+           //.gui( true )
+        );
+    }
 
     public void CreateJavaApplication( )
     {
@@ -177,6 +200,9 @@ public class SourceView_0002 extends SourceView {
       String sFormat = code.getText( );
       if( !sIdeal.equals( sFormat ) )
         ;//fail( "Reformatted code is not equal to original one.\n" + sIdeal + "\n" + sFormat );
+      // TODO
+
+      code.closeDiscard( );
 
       endTest( );
     }
@@ -194,70 +220,23 @@ public class SourceView_0002 extends SourceView {
     {
       startTest( );
 
+      SchemaMultiView xml = new SchemaMultiView( SAMPLE_SCHEMA_NAME_LA );
+      xml.switchToSource( );
+
       EditorOperator code = new EditorOperator( SAMPLE_SCHEMA_NAME_LA );
 
-      // Set focus to file for validation to ensure Validate menu enabled
-      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Window|Editor");
+      code.clickForPopup( );
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenuNoBlock( "Check XML" );
+
+      CheckCheckXMLOutput( );
 
       // Validate
-      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Build|Check XML");
+      code.clickForPopup( );
+      popup = new JPopupMenuOperator( );
+      popup.pushMenuNoBlock( "Validate XML" );
 
-      // "Output - XML Check"
-      OutputOperator out = new OutputOperator( );
-      String sText = out.getText( );
-
-      String[] asIdealOutputCheck =
-      {
-        "XML checking started.",
-        "Checking file:",
-        "XML checking finished."
-      };
-      // wait till stop line will appear
-      while( -1 == sText.indexOf( asIdealOutputCheck[ asIdealOutputCheck.length - 1 ] ) )
-      {
-        try{ Thread.sleep( 100 ); } catch( InterruptedException ex ) { }
-        sText = out.getText( );
-      }
-      // Find errors
-      Pattern p = Pattern.compile( "\\[[0-9]+\\]" );
-      Matcher m = p.matcher( sText );
-      if( m.find( ) )
-        fail( "Errors in the checker output." );
-
-      // Check ideal
-      for( String sChecker : asIdealOutputCheck )
-      {
-        if( -1 == sText.indexOf( sChecker ) )
-          fail( "Unable to find ideal XML checker output: \"" + sChecker + "\"\n\"" + sText + "\"" );
-      }
-
-      // Validate
-      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Build|Validate XML");
-
-      // "Output - XML Check"
-      out = new OutputOperator( );
-      sText = out.getText( );
-
-      String[] asIdealOutputValidate =
-      {
-        "XML validation started.",
-        "0 Error(s),  0 Warning(s).",
-        "XML validation finished."
-      };
-      // wait till stop line will appear
-      while( -1 == sText.indexOf( asIdealOutputValidate[ asIdealOutputValidate.length - 1 ] ) )
-      {
-        try{ Thread.sleep( 100 ); } catch( InterruptedException ex ) { }
-        sText = out.getText( );
-      }
-      // Check ideal
-      for( String sValidator: asIdealOutputValidate )
-      {
-        if( -1 == sText.indexOf( sValidator ) )
-          fail( "Unable to find ideal XML validate output: \"" + sValidator + "\"\n\"" + sText + "\"" );
-      }
-
-      out.close( );
+      CheckValidateXMLOutput( );
 
       endTest( );
     }
@@ -270,10 +249,8 @@ public class SourceView_0002 extends SourceView {
       code.clickForPopup( );
       JPopupMenuOperator popup = new JPopupMenuOperator( );
       popup.pushMenuNoBlock( "XSL Transformation..." );
-      JDialogOperator jdTrans = new JDialogOperator( "XSL Transformation" );
-      JButtonOperator jbCancel = new JButtonOperator( jdTrans, "Cancel" );
-      jbCancel.push( );
-      jdTrans.waitClosed( );
+
+      CheckTransformationDialog( );
 
       endTest( );
     }
@@ -355,6 +332,8 @@ public class SourceView_0002 extends SourceView {
       sSelected = code.getText( code.getLineNumber( ) );
       if( -1 == sSelected.indexOf( "<xs:simpleType name=\"LoanType\">" ) )
         fail( "Wrong Go To Definition: \"" + sSelected + "\"" );
+
+      code.close( );
 
       endTest( );
     }

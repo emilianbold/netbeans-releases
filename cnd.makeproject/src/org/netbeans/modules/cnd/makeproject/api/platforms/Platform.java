@@ -53,6 +53,7 @@ public abstract class Platform {
     public static final int PLATFORM_WINDOWS = 3;
     public static final int PLATFORM_MACOSX = 4;
     public static final int PLATFORM_GENERIC = 5;
+    public static final int PLATFORM_NONE = 6;
     
     private static int defaultPlatform = -1;
     

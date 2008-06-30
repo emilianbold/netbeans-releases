@@ -42,10 +42,10 @@
 package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.EventQueue;
 import java.lang.ref.WeakReference;
 import javax.accessibility.AccessibleContext;
+import javax.swing.JSplitPane;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -101,7 +101,7 @@ public final class ResultWindow extends TopComponent {
     }
     
     /** */
-    private Component view;
+    private JSplitPane view;
     
     
     /** Creates a new instance of ResultWindow */
@@ -127,7 +127,7 @@ public final class ResultWindow extends TopComponent {
 
     /**
      */
-    void addDisplayComponent(Component displayComp) {
+    void addDisplayComponent(JSplitPane displayComp) {
         assert EventQueue.isDispatchThread();
 
         removeAll();
@@ -137,7 +137,7 @@ public final class ResultWindow extends TopComponent {
     
     /**
      */
-    private void addView(final Component view) {
+    private void addView(final JSplitPane view) {
         assert EventQueue.isDispatchThread();
         
         this.view = view;
@@ -158,6 +158,21 @@ public final class ResultWindow extends TopComponent {
         open();
         requestVisible();
         requestActive();
+    }
+    
+    /**
+     * Sets the layout orientation of the contained result pane.
+     * 
+     * @param orientation the orientation (see {@link JSplitPane#VERTICAL_SPLIT} 
+     * and {@link JSplitPane#HORIZONTAL_SPLIT}) to set.
+     */
+    void setOrientation(int orientation) {
+        if (view == null) {
+            return;
+        }
+        if (view.getOrientation() != orientation) {
+            view.setOrientation(orientation);
+        }
     }
     
     /**

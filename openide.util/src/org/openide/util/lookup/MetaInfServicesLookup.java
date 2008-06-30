@@ -276,7 +276,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
                         }
 
                         if (!clazz.isAssignableFrom(inst)) {
-                            throw new ClassNotFoundException(inst.getName() + " not a subclass of " + clazz.getName()); // NOI18N
+                            throw new ClassNotFoundException(clazzToString(inst) + " not a subclass of " + clazzToString(clazz)); // NOI18N
                         }
 
                         if (remove) {
@@ -315,6 +315,9 @@ final class MetaInfServicesLookup extends AbstractLookup {
 
             result.add(new P(item.clazz));
         }
+    }
+    private static String clazzToString(Class clazz) {
+        return clazz.getName() + "@" + clazz.getClassLoader() + ":" + clazz.getProtectionDomain().getCodeSource().getLocation(); // NOI18N
     }
 
     /**

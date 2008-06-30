@@ -388,10 +388,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 if (staticContext) {
                     typeName = varName;
                 } else {
-                    Collection<IndexedConstant> localVars = getLocalVariables(request.result.getProgram().getStatements(), varName, request.anchor, null);
+                    Collection<IndexedConstant> vars = getVariables(request.result, request.index,
+                            request.result.getProgram().getStatements(), varName, request.anchor, null);
 
-                    if (localVars != null) {
-                        for (IndexedConstant var : localVars){
+                    if (vars != null) {
+                        for (IndexedConstant var : vars){
                             if (var.getName().equals(varName)){ // can be just a prefix
                                 typeName = var.getTypeName();
                                 break;
@@ -499,9 +500,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             Exceptions.printStackTrace(ex);
         }
         
-        Collection<IndexedConstant> localVars = getLocalVariables(statementList, request.prefix, request.anchor, url);
+        Collection<IndexedConstant> allVars = getVariables(request.result, request.index,
+                statementList, request.prefix, request.anchor, url);
         
-        for (IndexedConstant localVar : localVars){
+        for (IndexedConstant localVar : allVars){
             CompletionProposal proposal = new PHPCompletionItem.VariableItem(localVar, request);
             proposals.add(proposal);
         }
@@ -516,15 +518,37 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         return proposals;
     }
     
+    public Collection<IndexedConstant> getVariables(PHPParseResult context,  PHPIndex index, Collection<Statement> statementList,
+            String namePrefix, int position, String localFileURL){
+        Collection<IndexedConstant> localVars = getLocalVariables(statementList, namePrefix, position, localFileURL);
+        Collection<IndexedConstant> allVars = new ArrayList<IndexedConstant>(localVars);
+        Map<String, IndexedConstant> localVarsByName = new HashMap(localVars.size());
+        
+        for (IndexedConstant localVar : localVars){
+            localVarsByName.put(localVar.getName(), localVar);
+        }
+        
+        
+        for (IndexedConstant topLevelVar : index.getTopLevelVariables(context, namePrefix, NameKind.PREFIX)){
+            IndexedConstant localVar = localVarsByName.get(topLevelVar.getName());
+            
+            if (localVar == null || localVar.getOffset() != topLevelVar.getOffset()){
+                allVars.add(topLevelVar);
+            }
+        }
+        
+        return allVars;
+    }
+    
     private void getLocalVariables_indexVariable(Variable var,
             Map<String, IndexedConstant> localVars,
             String namePrefix, String localFileURL, String type) {
 
-        String varName = extractVariableName(var);
+        String varName = CodeUtils.extractVariableName(var);
         
         if (isPrefix(varName, namePrefix)) {
             IndexedConstant ic = new IndexedConstant(varName, null,
-                    null, localFileURL, -1, 0, type);
+                    null, localFileURL, var.getStartOffset(), 0, type);
 
             localVars.put(varName, ic);
         }
@@ -544,7 +568,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             
             if (assignment.getLeftHandSide() instanceof Variable) {
                 Variable variable = (Variable) assignment.getLeftHandSide();
-                String varType = extractVariableTypeFromAssignment(assignment);
+                String varType = CodeUtils.extractVariableTypeFromAssignment(assignment);
                 
                 getLocalVariables_indexVariable(variable, localVars, namePrefix, 
                         localFileURL, varType);
@@ -649,7 +673,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
                 for (FormalParameter param : functionDeclaration.getFormalParameters()) {
                     if (param.getParameterName() instanceof Variable) {
-                        String varName = extractVariableName((Variable) param.getParameterName());
+                        String varName = CodeUtils.extractVariableName((Variable) param.getParameterName());
                         String type = param.getParameterType() != null ? param.getParameterType().getName() : null;
                         
                         if (isPrefix(varName, namePrefix)) {
@@ -679,6 +703,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             
         }
         
+        
+        
         return localVars.values();
     }
     
@@ -691,39 +717,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private static boolean offsetWithinStatement(int offset, Statement statement){
         return statement.getEndOffset() >= offset && statement.getStartOffset() <= offset;
     }
-    
-    private static String extractVariableTypeFromAssignment(Assignment assignment) {
-        Expression rightSideExpression = assignment.getRightHandSide();
-        
-        if (rightSideExpression instanceof Assignment) {
-            // handle nested assignments, e.g. $l = $m = new ObjectName;
-            return extractVariableTypeFromAssignment((Assignment)assignment.getRightHandSide());
-        }
-
-        if (rightSideExpression instanceof ClassInstanceCreation) {
-            ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) rightSideExpression;
-            Expression className = classInstanceCreation.getClassName().getName();
-
-            if (className instanceof Identifier) {
-                Identifier identifier = (Identifier) className;
-                return identifier.getName();
-            }
-        } else if (rightSideExpression instanceof ArrayCreation) {
-            return "array"; //NOI18N
-        }
-
-        return null;
-    }
-    
-    private static String extractVariableName(Variable var){
-        if (var.getName() instanceof Identifier) {
-            Identifier id = (Identifier) var.getName();
-            return "$" + id.getName();
-        }
-
-        return null;
-    }
-        
+            
     public String document(CompilationInfo info, ElementHandle element) {
         
         //todo use inheritance instead of these checks
@@ -741,9 +735,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             final IndexedElement indexedElement = (IndexedElement) element;
             StringBuilder builder = new StringBuilder();
             
+            String location = indexedElement.getFile().isPlatform() ? NbBundle.getMessage(PHPCodeCompletion.class, "PHPPlatform")
+                    : indexedElement.getFilenameUrl();
+            
             builder.append(String.format("<font size=-1>%s</font>" +
                     "<p><font size=+1><code><b>%s</b></code></font></p><br>", //NOI18N
-                    indexedElement.getFilenameUrl(), indexedElement.getDisplayName()));
+                    location, indexedElement.getDisplayName()));
             
             final StringBuilder phpDoc = new StringBuilder();
             

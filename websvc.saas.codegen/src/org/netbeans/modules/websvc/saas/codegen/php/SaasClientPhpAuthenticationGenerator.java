@@ -106,7 +106,7 @@ public class SaasClientPhpAuthenticationGenerator extends SaasClientAuthenticati
             methodBody += "        $apiKey = " + getBean().getAuthenticatorClassName() + "::getApiKey();";
         } else if (authType == SaasAuthenticationType.SESSION_KEY) {
             SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) getBean().getAuthentication();
-            methodBody += "        " + getBean().getAuthenticatorClassName() + ".login(" + getLoginArguments() + ");\n";
+            methodBody += "        " + getBean().getAuthenticatorClassName() + "::login(" + getLoginArguments() + ");\n";
             List<ParameterInfo> signParams = sessionKey.getParameters();
             String paramStr = "";
 
@@ -129,7 +129,6 @@ public class SaasClientPhpAuthenticationGenerator extends SaasClientAuthenticati
             methodBody += paramStr;
 
         } else if (authType == SaasAuthenticationType.HTTP_BASIC) {
-            HttpBasicAuthentication httpBasic = (HttpBasicAuthentication) getBean().getAuthentication();
             methodBody += "        " + getBean().getAuthenticatorClassName() + ".login(" + getLoginArguments() + ");\n";
         }
         return methodBody;
@@ -206,18 +205,8 @@ public class SaasClientPhpAuthenticationGenerator extends SaasClientAuthenticati
                     String id = template.getId();
                     String type = template.getType();
                     String templateUrl = template.getUrl();
-
-                    String fileName = null;
                     if (type.equals(Constants.AUTH)) {
-                        fileName = getBean().getAuthenticatorClassName();
-                    } else
-                        continue;
-
-                    if (templateUrl.indexOf("/") != -1) {
-                        fileName = getBean().getSaasName() +
-                                templateUrl.substring(templateUrl.lastIndexOf("/") + 1);
-                    }
-                    if (fileName != null) {
+                        String fileName = getBean().getAuthenticatorClassName();
                         FileObject fobj = targetFolder.getFileObject(fileName);
                         if (fobj == null) {
                             Util.createDataObjectFromTemplate(templateUrl, targetFolder,
@@ -280,7 +269,7 @@ public class SaasClientPhpAuthenticationGenerator extends SaasClientAuthenticati
                 getSaasServiceFolder(), 
                 loginJS, loginFile, 
                 callbackJS, callbackFile,
-                parameters, paramTypes, getBean().isUseTemplates()
+                parameters, paramTypes, getBean().isUseTemplates(), true
             );
         }
     }

@@ -42,7 +42,6 @@
 package org.netbeans.api.debugger;
 
 import java.beans.*;
-import java.io.*;
 import java.util.*;
 
 import org.netbeans.spi.debugger.ActionsProvider;
@@ -127,6 +126,17 @@ public final class ActionsManager {
      */
     ActionsManager (Lookup lookup) {
         this.lookup = lookup;
+        
+        if (lookup instanceof Lookup.MetaInf) {
+            // listen on module install/uninstall notifications
+            ((Lookup.MetaInf)lookup).addClearCacheListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    synchronized (actionProvidersLock) {
+                        actionProviders = null;
+                    }
+                }
+            });
+        }
     }
     
     

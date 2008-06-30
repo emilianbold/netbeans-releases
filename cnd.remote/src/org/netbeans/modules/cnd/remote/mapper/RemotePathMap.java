@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.remote.mapper;
 
 import java.util.HashMap;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.openide.util.Utilities;
 
 /**
  * An implementation of PathMap which returns remote path information.
@@ -51,26 +52,20 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
     
     private static HashMap<String, RemotePathMap> pmtable = new HashMap<String, RemotePathMap>();
     
-    private String user;
-    private String host;
+    private String key;
 
-    public static RemotePathMap getMapper(String user, String host) {
-        RemotePathMap pathmap = pmtable.get(makeKey(user, host));
+    public static RemotePathMap getMapper(String key) {
+        RemotePathMap pathmap = pmtable.get(key);
         
         if (pathmap == null) {
-            pathmap = new RemotePathMap(user, host);
-            pmtable.put(makeKey(user, host), pathmap);
+            pathmap = new RemotePathMap(key);
+            pmtable.put(key, pathmap);
         }
         return pathmap;
     }
     
-    private static String makeKey(String user, String host) {
-        return user + ' ' + host;
-    }
-    
-    private RemotePathMap(String user, String host) {
-        this.user = user;
-        this.host = host;
+    private RemotePathMap(String key) {
+        this.key = key;
     }
     
     public String getRemotePath(String lpath) {
@@ -102,13 +97,15 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
     public boolean isRemote(String path) {
         if (Boolean.getBoolean("cnd.remote.enable")) { // Debug
             String ch = path.substring(0, 2).toLowerCase();
-            if (user.equals("gordonp")) { // Debug
+            if (key.startsWith("gordonp@")) { // Debug
                 if (ch.equals("z:") || ch.equals("x:")) { // Debug
                     return true; // Debug
                 } else if (ch.equals("c:") || ch.equals("d:")) { // Debug
                     return false; // Debug
+                } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+                    return true; // for me, all relevant Solaris paths are remotely visible...
                 }
-            } else if (user.equals("sg155630")) { // Debug
+            } else if (key.startsWith("sg155630@")) { // Debug
                 // fill in your debugging pathmaps if you want...
             }
         }
@@ -129,18 +126,23 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
         String rpath = null;
         
         if (Boolean.getBoolean("cnd.remote.enable")) { // Debug
-            if (user.equals("gordonp")) { // Debug
+            if (key.startsWith("gordonp@")) { // Debug
                 if (lpath.toLowerCase().startsWith("z:")) { // Debug
                     rpath = "/net/pucci/export/pucci1/" + lpath.substring(2); // Debug
                 } else if (lpath.toLowerCase().startsWith("x:")) { // Debug
                     rpath = "/net/pucci/export/pucci2/" + lpath.substring(2); // Debug
                 } else if (lpath.startsWith("/export/")) { // Debug
-                    rpath = "/net/" + host + lpath; // Debug
+                    rpath = "/net/" + getHost() + lpath; // Debug
                 } else {
                     rpath = lpath;
                 }
-            } else if (user.equals("sg155630")) { // Debug
+            } else if (key.startsWith("sg155630@")) { // Debug
                 // fill in your debugging pathmaps if you want...
+                if (lpath.toLowerCase().startsWith("z:")) { // Debug
+                    rpath = "/home/sg155630/" + lpath.substring(2); // Debug
+                } else {
+                    rpath = lpath;
+                }
             }
         }
         
@@ -151,5 +153,10 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
         }
         
         return rpath;
+    }
+    
+    private String getHost() {
+        int pos = key.indexOf('@');
+        return key.substring(pos + 1);
     }
 }

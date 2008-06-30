@@ -107,7 +107,7 @@ public final class SceneManager {
         if ( LOGGER.getLevel() == null) {
             LOGGER.setLevel( Level.WARNING);
         }
-        Logger.getLogger("global").log( Level.INFO, "mobility.svg.level=" + LOGGER.getLevel()); //NOI18N
+        //Logger.getLogger("global").log( Level.INFO, "mobility.svg.level=" + LOGGER.getLevel()); //NOI18N
         String str;
 
         str = LOGGER_NAME + ".logTime"; //NOI18N

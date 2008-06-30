@@ -102,13 +102,8 @@ public class FSCompletion implements CompletionProvider {
                 if (file == null) {
                     return ;
                 }
-                
-                final PhpSourcePath[] psp = new PhpSourcePath[1];
-                Project p = FileOwnerQuery.getOwner(file);
-                
-                if (p != null) {
-                    psp[0] = p.getLookup().lookup(PhpSourcePath.class);
-                }
+
+                final List<FileObject> includePath = PhpSourcePath.getIncludePath(file);
                 
                 SourceModelFactory.getInstance().getModel(file).runUserActionTask(new CancellableTask<CompilationInfo>() {
                         public void cancel() {}
@@ -142,10 +137,7 @@ public class FSCompletion implements CompletionProvider {
                             int startOffset = s.getStartOffset() + 1;
                             String prefix = parameter.getText().substring(startOffset, caretOffset);
                             List<FileObject> relativeTo = new LinkedList<FileObject>();
-                            
-                            if (psp[0] != null) {
-                                relativeTo.addAll(psp[0].getIncludePath());
-                            }
+                            relativeTo.addAll(includePath);
                             
                             relativeTo.add(parameter.getFileObject().getParent());
                             

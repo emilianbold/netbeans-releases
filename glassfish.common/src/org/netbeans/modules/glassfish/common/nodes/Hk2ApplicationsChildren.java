@@ -88,7 +88,7 @@ public class Hk2ApplicationsChildren extends Children.Keys<Object> implements Re
                             List<AppDesc> apps = entry.getValue();
                             Decorator decorator = DecoratorManager.findDecorator(entry.getKey(), Hk2ItemNode.J2EE_APPLICATION);
                             for(AppDesc app: apps) {
-                                keys.add(new Hk2ItemNode(lookup, app, decorator));
+                                keys.add(new Hk2ApplicationNode(lookup, app, decorator));
                             }
                         }
                     } catch (Exception ex) {

@@ -2081,6 +2081,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                     }
                     break;
                     
+                case ARRAY_OPEN:
                 case PARENTHESIS_OPEN:
                     pushExp(CsmCompletionExpression.createEmptyVariable(
                             bufferStartPos + bufferOffsetDelta + offset));

@@ -41,6 +41,7 @@
 
 package org.netbeans.test.junit.testcreation;
 
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
@@ -49,15 +50,18 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JMenuOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.test.junit.testcase.JunitTestCase;
 import org.netbeans.test.junit.utils.Utilities;
+import org.netbeans.test.junit4.CreateProjectTest;
 
 /**
  * Tests "Goto Test" action
  * @author Max Sauer
  */
-public class GotoTest extends NbTestCase {
+public class GotoTest extends JunitTestCase {
     private static final String TEST_PACKAGE_NAME =
             "org.netbeans.test.junit.testresults.test";
     
@@ -73,9 +77,10 @@ public class GotoTest extends NbTestCase {
      * Adds tests to suite
      * @return created suite
      */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite(GotoTest.class);
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(GotoTest.class).addTest(
+                "testSelectTestFromMainMenu",
+                "testSelectTestFromExplorer").enableModules(".*").clusters(".*"));
     }
     
     /**
@@ -90,10 +95,7 @@ public class GotoTest extends NbTestCase {
         
         JMenuBarOperator jbo = new JMenuBarOperator(
                 MainWindowOperator.getDefault().getJMenuBar());
-        String[] sf = {Bundle.getStringTrimmed("org.netbeans.core.Bundle",
-                "Menu/GoTo"),
-                Bundle.getStringTrimmed("org.netbeans.modules.junit.Bundle",
-                "LBL_Action_GoToTest")};
+        String[] sf = {"Navigate", "Go to Test"};
         Utilities.takeANap(Utilities.ACTION_TIMEOUT);        
         jbo.pushMenu(sf[0]);
         JMenuItemOperator jmio = new JMenuItemOperator(new JMenuOperator(jbo, sf[0]).getItem(0));
@@ -123,10 +125,7 @@ public class GotoTest extends NbTestCase {
         JMenuBarOperator jbo = new JMenuBarOperator(
                 MainWindowOperator.getDefault().getJMenuBar());
         
-        String[] sf = {Bundle.getStringTrimmed("org.netbeans.core.Bundle",
-                "Menu/GoTo"),
-                Bundle.getStringTrimmed("org.netbeans.modules.junit.Bundle",
-                "LBL_Action_GoToTest")};
+        String[] sf = {"Navigate", "Go to Test"};
         Utilities.takeANap(Utilities.ACTION_TIMEOUT);        
         jbo.pushMenu(sf[0]);
         JMenuItemOperator jmio = new JMenuItemOperator(new JMenuOperator(jbo, sf[0]).getItem(0));

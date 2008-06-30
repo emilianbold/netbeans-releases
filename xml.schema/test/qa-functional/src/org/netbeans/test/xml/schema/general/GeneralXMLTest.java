@@ -45,6 +45,7 @@ import java.awt.Point;
 import java.util.zip.CRC32;
 import javax.swing.tree.TreePath;
 import junit.framework.TestSuite;
+import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
@@ -183,7 +184,7 @@ public class GeneralXMLTest extends JellyTestCase {
           sName
         );
 
-        org.netbeans.junit.ide.ProjectSupport.waitScanFinished( );
+        //org.netbeans.junit.ide.ProjectSupport.waitScanFinished( );
     }
 
     protected void AddSampleSchemaInternal(
@@ -556,9 +557,31 @@ public class GeneralXMLTest extends JellyTestCase {
     }
   }
 
+  protected void CheckOutputLines( String sOutputTitle, String[] asIdeals )
+  {
+    OutputTabOperator oto = new OutputTabOperator( sOutputTitle );
+    oto.waitText( asIdeals[ asIdeals.length - 1 ] );
+    int iCount = oto.getLineCount( );
+
+    for( int i = 0; i < iCount; i++ )
+      System.out.println( ">>>" + oto.getText( i, i ) + "<<<" );
+
+    String sLast = oto.getLine( iCount - 1 );
+    if( sLast.endsWith( "\r" ) || sLast.endsWith( "\n" ) )
+      iCount--;
+    if( asIdeals.length != iCount )
+      fail( "Wrong number of output lines: " + iCount );
+    for( int i = 0; i < asIdeals.length; i++ )
+    {
+      String sText = oto.getText( i, i );
+      if( -1 == sText.indexOf( asIdeals[ i ] ) )
+        fail( "Unable to find required text in output: " + asIdeals[ i ] + "; found: " + sText );
+    }
+  }
+
   protected String GetWorkDir( )
   {
-    return System.getProperty( "xtest.workdir" ); // XTest
-    // return System.getProperty( "nbjunit.workdir" ); // SimpleTest
+    // return System.getProperty( "xtest.workdir" ); // XTest
+    return System.getProperty( "nbjunit.workdir" ) + File.separator + ".." + File.separator + "data"; // SimpleTest
   }
 }

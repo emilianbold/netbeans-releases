@@ -34,6 +34,7 @@ import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.extexecution.api.input.InputProcessor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import java.util.NoSuchElementException;
@@ -47,7 +48,8 @@ import org.netbeans.api.progress.ProgressHandle;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptorBuilder;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor.InputProcessorFactory;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
 import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.netbeans.modules.extexecution.api.input.InputProcessors;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
@@ -89,7 +91,7 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
             };
     }
 
-   public Set instantiate(ProgressHandle handle) throws IOException {
+   public Set instantiate(final ProgressHandle handle) throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
 
         serverRunning = true;
@@ -100,9 +102,13 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
             Callable<Process> callable = ExecutionSupport.getInstance().createCreateApp(
                     (File) wiz.getProperty("projectFolder")); // NOI18N
             
-            ExecutionDescriptorBuilder builder = new ExecutionDescriptorBuilder();
+            ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
             builder.frontWindow(true).inputVisible(true);
-            builder.outProcessor(InputProcessors.bridge(new ProgressSnooper(handle, 100, 2)));
+            builder.outProcessorFactory(new InputProcessorFactory() {
+                public InputProcessor newInputProcessor() {
+                    return InputProcessors.bridge(new ProgressSnooper(handle, 100, 2));
+                }
+            });
             // TODO refresh
             
             ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);

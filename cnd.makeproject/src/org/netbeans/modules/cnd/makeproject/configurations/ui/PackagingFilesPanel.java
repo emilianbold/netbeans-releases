@@ -25,21 +25,81 @@ public class PackagingFilesPanel extends javax.swing.JPanel {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 400, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 300, Short.MAX_VALUE)
-        );
+        scrollPaneFiles = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
+        buttonPanel = new javax.swing.JPanel();
+        addButton = new javax.swing.JButton();
+        removeButton = new javax.swing.JButton();
+        duplicateButton = new javax.swing.JButton();
+
+        setLayout(new java.awt.GridBagLayout());
+
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        scrollPaneFiles.setViewportView(jTable1);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(scrollPaneFiles, gridBagConstraints);
+
+        buttonPanel.setLayout(new java.awt.GridBagLayout());
+
+        addButton.setText(org.openide.util.NbBundle.getMessage(PackagingFilesPanel.class, "PackagingFilesPanel.addButton.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        buttonPanel.add(addButton, gridBagConstraints);
+
+        removeButton.setText(org.openide.util.NbBundle.getMessage(PackagingFilesPanel.class, "PackagingFilesPanel.removeButton.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        buttonPanel.add(removeButton, gridBagConstraints);
+
+        duplicateButton.setText(org.openide.util.NbBundle.getMessage(PackagingFilesPanel.class, "PackagingFilesPanel.duplicateButton.text")); // NOI18N
+        duplicateButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                duplicateButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        buttonPanel.add(duplicateButton, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        add(buttonPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
+
+private void duplicateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateButtonActionPerformed
+// TODO add your handling code here:
+}//GEN-LAST:event_duplicateButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addButton;
+    private javax.swing.JPanel buttonPanel;
+    private javax.swing.JButton duplicateButton;
+    private javax.swing.JTable jTable1;
+    private javax.swing.JButton removeButton;
+    private javax.swing.JScrollPane scrollPaneFiles;
     // End of variables declaration//GEN-END:variables
 
 }

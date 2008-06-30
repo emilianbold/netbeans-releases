@@ -145,4 +145,8 @@ public class TestMetadataModel implements MetadataModel {
         }
         return table;
     }
+
+    public String getIdentifierQuoteString() {
+        return "\"";
+    }
 }

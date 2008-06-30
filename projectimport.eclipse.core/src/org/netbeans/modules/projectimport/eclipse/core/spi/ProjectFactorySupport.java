@@ -602,6 +602,13 @@ public class ProjectFactorySupport {
         for (DotClassPathEntry entry : model.getEclipseSourceRoots()) {
             String s = entry.getProperty(DotClassPathEntry.ATTRIBUTE_SOURCE_EXCLUDES);
             if (s != null) {
+                if (s.contains("**/*.java")) { // NOI18N
+                    // ignore this exclude: merging it would result in hiding all sources
+                    // which is not desirable; this exclude seems to be frequently used 
+                    // in .classpath files generated from Maven pom.xml - it is used on folders
+                    // keeping resources (e.g. src/main/resources)
+                    continue;
+                }
                 if (excludes.length() > 0) {
                     excludes.append(","); // NOI18N
                 }

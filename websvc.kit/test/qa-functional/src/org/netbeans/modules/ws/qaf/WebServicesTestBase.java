@@ -46,7 +46,6 @@ import java.io.OutputStream;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
@@ -55,6 +54,7 @@ import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
@@ -74,7 +74,7 @@ import org.openide.filesystems.FileUtil;
  * Base class for web services UI tests
  * @author lukas
  */
-public abstract class WebServicesTestBase extends JellyTestCase {
+public abstract class WebServicesTestBase extends J2eeTestCase {
 
     protected static final ServerType REGISTERED_SERVER;
     private Project project;

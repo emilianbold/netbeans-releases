@@ -73,6 +73,16 @@
                     url="Templates/SaaSServices/HttpBasicCallback.java"/>
             </artifacts>
         </code-gen>
+        <code-gen>
+            <artifacts targets="php">
+                <artifact id="HttpBasicAuthenticator" type="template"
+                    url="Templates/SaaSServices/HttpBasicAuthenticator.php"/>
+                <artifact id="HttpBasicAuthenticatorLogin" type="template"
+                    url="Templates/SaaSServices/HttpBasicLogin.php"/>
+                <artifact id="HttpBasicAuthenticatorCallback" type="template"
+                    url="Templates/SaaSServices/HttpBasicCallback.php"/>
+            </artifacts>
+        </code-gen>
         <authentication profile="Templates/SaaSServices/httpbasic.properties">
             <http-basic username="username" password="password">
                 <authenticator>

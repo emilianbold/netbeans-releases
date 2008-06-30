@@ -71,6 +71,7 @@ public final class AddToPaletteWizardAction extends CallableSystemAction {
     }
 
     public void performAction() {
+        /* // fix for #133074.
         DesignDocument document = ActiveDocumentSupport.getDefault ().getActiveDocument ();
         if (document == null) {
             return;
@@ -78,7 +79,7 @@ public final class AddToPaletteWizardAction extends CallableSystemAction {
         
         if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (document.getDocumentInterface ().getProjectType ()))
             return;
-
+        */
         WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
