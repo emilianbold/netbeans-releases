@@ -330,6 +330,9 @@ made subject to such option by the copyright holder.
 
     <target name="test-preinit" depends="init"/>
     <target name="test-init" depends="init,test-preinit,test-lib-init">
+        <property name="test.timeout" value="600000"/> <!-- 10min per test -->
+        <property name="test.run.args" value="-ea"/>
+        <property name="test.filter.trace" value="true"/>
         <macrodef name="test-init">
             <attribute name="test.type"/>
             <sequential>
@@ -344,9 +347,6 @@ made subject to such option by the copyright holder.
                 <!-- if project.xml doesn't contain test dependencies -->
                 <property name="test.@{test.type}.folder" location="build/test/@{test.type}/dist"/>
                 <property name="test.@{test.type}.out.folder" location="${test.@{test.type}.folder}"/>
-                <property name="test.timeout" value="600000"/> <!-- 10min per test -->
-                <property name="test.run.args" value="-ea"/>
-                <property name="test.filter.trace" value="true"/>
                 <path id="test.@{test.type}.cp">
                     <!-- Cannot use <path refid="cp"/> since that uses ${module.classpath} and we want ${module.run.classpath}: -->
                     <pathelement path="${test.@{test.type}.compile.cp}"/>
