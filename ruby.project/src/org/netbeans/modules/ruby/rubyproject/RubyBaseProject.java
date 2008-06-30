@@ -230,7 +230,7 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
     }
 
     private void updateRakeTasks() {
-        if (RubyPlatform.platformFor(this).showWarningIfInvalid()) {
+        if (RubyPlatform.hasValidRake(this, false)) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     RakeSupport.refreshTasks(RubyBaseProject.this);

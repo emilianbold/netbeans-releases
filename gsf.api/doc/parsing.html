@@ -58,37 +58,8 @@
         </p>
         <h3>Incremental Parsing</h3>
         <p>
-            GSF does not yet support incremental parsing, but it's planned for
-            both the Parsing API, and obviously I will be updating all the
-            feature implementation interfaces in GSF to account for it.
-        </p>
-        <p>
-            The idea is that your parser will be told about recent editing
-            regions (e.g. the "damage area" since your last parse job).
-            You will also be handed your old parse tree. Your parser then
-            has the option of deciding that the editing range is small,
-            for example completely contained within a single function,
-            and you can run your parser in such a way that you <b>only</b>
-            parse that single function, and then perform some AST surgery
-            to update the AST offsets (after the damage range) and replace
-            the function node with the new function node. (Or in other cases,
-            cloning the AST tree with modifications, as appropriate).
-        </p>
-        <p>
-            Your parser will have a way to indicate whether it supports incremental
-            parsing. If it doesn't, GSF doesn't have to store ParserResults around,
-            as well as other data to help with incremental updates (such as
-            your previous semantic highlighting results, etc).
-        </p>
-        <p>
-            In your parser, you'll store information about the incremental update
-            if you performed one.  When your other features like semantic
-            highlighting are running, they have the option of performing a
-            an incremental update to their own data, e.g. only updating the
-            semantic highlights for the current function. Obviously, some features
-            may include looking outside the current function or the whole
-            file (for example, unused private method detection) - but that will
-            be up to each individual language plugin and feature implementation.
+          GSF supports incremental parsing. This is described in the separate
+          <a href="incremental-parsing.html">incremental parsing</a> document.
         </p>
         <br/>
         <span style="color: #cccccc">Tor Norbye &lt;tor@netbeans.org&gt;</span>

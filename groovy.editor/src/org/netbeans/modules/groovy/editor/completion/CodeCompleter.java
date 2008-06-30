@@ -80,7 +80,6 @@ import java.util.logging.Level;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.util.Elements;
-import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
@@ -89,9 +88,9 @@ import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.reflection.CachedClass;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -105,6 +104,9 @@ import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.elements.ElementHandleSupport;
@@ -115,12 +117,14 @@ import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public class CodeCompleter implements CodeCompletionHandler {
 
+    private static volatile boolean testMode = false;   // see setTesting(), thanks Petr. ;-)
     private static ImageIcon groovyIcon;
     private static ImageIcon javaIcon;
     private int anchor;
@@ -151,6 +155,19 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         LOG.log(Level.FINEST, "GDK Doc path: {0}", groovyJavaDocBase);
         LOG.log(Level.FINEST, "GAPI Doc path: {0}", gapiDocBase);
+
+        if(testMode){
+            LOG.log(Level.FINEST, "Running in test-mode");
+        } else {
+            LOG.log(Level.FINEST, "Running in the IDE");
+        }
+
+
+        }
+
+    /*Configures testing environment only*/
+    static public void setTesting(boolean testing) {
+        testMode = testing;
     }
 
     String directoryNameToUrl(String dirname) {
@@ -171,20 +188,6 @@ public class CodeCompleter implements CodeCompletionHandler {
             return fileURL + dirname;
         } else {
             return "";
-        }
-    }
-
-    private void populateProposal(Class clz, Object method, CompletionRequest request, List<CompletionProposal> proposals, boolean isGDK) {
-        if (method != null && (method instanceof MetaMethod)) {
-            MetaMethod mm = (MetaMethod) method;
-
-            LOG.log(Level.FINEST, "populateProposal - MetaMethod : {0}", mm.getName());
-
-            if (mm.getName().startsWith(request.prefix)) {
-                MethodItem item = new MethodItem(clz, mm, anchor, request, isGDK);
-                proposals.add(item);
-            }
-
         }
     }
 
@@ -506,75 +509,38 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         
     /**
-     * Get the closest ASTNode related to this request. 
-     * This is used to complete methods and fields for classes.
-     *
-     * Here are some sample paths:
-     *
-     * new String().
-     * [ModuleNode:ConstructorCallExpression:ExpressionStatement:ConstructorCallExpression:]
-     *
-     * s.
-     * [ModuleNode:VariableExpression:ExpressionStatement:VariableExpression:]
-     *
-     * s.spli
-     * [ModuleNode:PropertyExpression:ConstantExpression:ExpressionStatement:PropertyExpression:ConstantExpression:]
-     *
-     * Long-file l.
-     * [ModuleNode:ClassNode:MethodNode:ExpressionStatement:VariableExpression:]
-     *
-     * l.ab
-     *[ModuleNode:ClassNode:MethodNode:ExpressionStatement:PropertyExpression:ConstantExpression:]
-     *
-     * @param request
-     * @return a valid ASTNode or null
-     */
-    ASTNode getClosestNode(CompletionRequest request) {
-
-        AstPath path = getPathFromRequest(request);
-
-        if (path == null) {
-            LOG.log(Level.FINEST, "path == null"); // NOI18N
-            return null;
-        }
-
-        ASTNode closest;
-
-        if (request.prefix.equals("")) {
-            closest = path.leaf();
-        } else {
-            closest = path.leafGrandParent();
-        }
-
-        LOG.log(Level.FINEST, "getClosestNode() ----------------------------------------");
-        LOG.log(Level.FINEST, "Path : {0}", path);
-        LOG.log(Level.FINEST, "node : ");
-        printASTNodeInformation(closest);
-
-        return closest;
-    }
-
-    /**
      * returns the next enclosing MethodNode for the given request
      * @param request completion request which includes position information
      * @return the next surrouning MethodNode
      */
-       private MethodNode getSurroundingMethodNode (CompletionRequest request) {
+       private ASTNode getSurroundingMethodOrClosure (CompletionRequest request) {
            AstPath path = getPathFromRequest(request);
 
            if (path == null) {
                LOG.log(Level.FINEST, "path == null"); // NOI18N
                return null;
            }
+
+           LOG.log(Level.FINEST, "getSurroundingMethodOrClosure() ----------------------------------------");
+           LOG.log(Level.FINEST, "Path : {0}", path);
            
            for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
-            ASTNode current = it.next();
-                if(current instanceof MethodNode){
-                    MethodNode mn = (MethodNode)current;
-                    LOG.log(Level.FINEST, "Found Method: {0}", mn.getName()); // NOI18N
-                    return mn;
-                }
-            }
+               ASTNode current = it.next();
+               if (current instanceof MethodNode) {
+                   MethodNode mn = (MethodNode) current;
+                   LOG.log(Level.FINEST, "Found Method: {0}", mn.getName()); // NOI18N
+                   return mn;
+               } /*else if (current instanceof FieldNode) {
+               FieldNode fn = (FieldNode) current;
+               if (fn.isClosureSharedVariable()) {
+               LOG.log(Level.FINEST, "Found Closure(Field): {0}", fn.getName()); // NOI18N
+               return fn;
+               }
+               } else if (current instanceof ClosureExpression) {
+               LOG.log(Level.FINEST, "Found Closure(Expr.): {0}", ((ClosureExpression)current).getText()); // NOI18N
+               return current;
+               }*/
+           }
            return null;
        }
        
@@ -868,9 +834,19 @@ public class CodeCompleter implements CodeCompletionHandler {
             return false;
         }
 
+        boolean behindDot = false;
+
+        if (request == null || request.ctx == null || request.ctx.before1 == null) {
+            behindDot = false;
+        } else {
+            if (request.ctx.before1.text().equals(".")) {
+                behindDot = true;
+            }
+        }
+
         ClassNode requestedClass;
 
-        if (request.behindDot) {
+        if (behindDot) {
             LOG.log(Level.FINEST, "We are invoked right behind a dot."); // NOI18N
 
             requestedClass = getDeclaringClass(request);
@@ -898,7 +874,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             
             String fieldTypeAsString = field.getType().getNameWithoutPackage();
 
-            if (request.behindDot == true) {
+            if (behindDot) {
                 Class clz = null;
 
                 try {
@@ -928,15 +904,11 @@ public class CodeCompleter implements CodeCompletionHandler {
             if (field.getName().startsWith("__timeStamp")) { // NOI18N
                 continue;
             }
-            
-            if (request.prefix.length() < 1) {
+ 
+            if (field.getName().startsWith(request.prefix)) {
                 proposals.add(new FieldItem(field.getName(), anchor, request, javax.lang.model.element.ElementKind.FIELD, fieldTypeAsString));
-            } else {
-                String fieldName = field.getName();
-                if (fieldName.compareTo(request.prefix) != 0 && fieldName.startsWith(request.prefix)) {
-                    proposals.add(new FieldItem(field.getName(), anchor, request, javax.lang.model.element.ElementKind.FIELD, fieldTypeAsString));
-                }
             }
+            
         }
 
         return true;
@@ -957,7 +929,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             return false;
         }
 
-        ASTNode scope = getSurroundingMethodNode(request);
+        ASTNode scope = getSurroundingMethodOrClosure(request);
 
         if(request.scriptMode){
             LOG.log(Level.FINEST, "We are running in script-mode."); // NOI18N
@@ -1331,27 +1303,48 @@ public class CodeCompleter implements CodeCompletionHandler {
         String prefix;
     }
     
-    
-    private ClasspathInfo getClassPathFromDocument(BaseDocument doc){
-        
-        DataObject dob = NbEditorUtilities.getDataObject(doc);
+    /**
+     * Getting the ClasspathInfo for this completion instance. We retrieve this
+     * information either from the BaseDocument, or (in case we are running from 
+     * a test) we use the ClassPathProvider from the Lookup.
+     * 
+     * @param doc
+     * @return
+     */
 
-        if (dob == null) {
-            LOG.log(Level.FINEST, "Problem getting DataObject");
-            return null;
-        }
 
-        FileObject fo = dob.getPrimaryFile();
+    private ClasspathInfo getClassPathInfo(BaseDocument doc){
 
-        if (fo == null) {
-            LOG.log(Level.FINEST, "Problem getting FileObject");
-            return null;
-        }
+        ClasspathInfo pathInfo = null;
 
-        ClasspathInfo pathInfo = NbUtilities.getClasspathInfoForFileObject(fo);
 
-        if (pathInfo == null) {
-            LOG.log(Level.FINEST, "Problem getting ClasspathInfo");
+        if (!testMode) {
+            assert doc != null : "What am i supposed to do if doc == null ?";
+
+            if (!(doc instanceof BaseDocument)) {
+                LOG.log(Level.FINEST, "Document is *not* a BaseDocument");
+            }
+
+
+            DataObject dob = NbEditorUtilities.getDataObject(doc);
+
+            if (dob == null) {
+                LOG.log(Level.FINEST, "Problem getting DataObject");
+                return null;
+            }
+
+            FileObject fo = dob.getPrimaryFile();
+
+            if (fo == null) {
+                LOG.log(Level.FINEST, "Problem getting FileObject");
+                return null;
+            }
+
+            pathInfo = NbUtilities.getClasspathInfoForFileObject(fo);
+
+            if (pathInfo == null) {
+                LOG.log(Level.FINEST, "Problem getting ClasspathInfo");
+            }
         }
         
         return pathInfo;
@@ -1373,8 +1366,10 @@ public class CodeCompleter implements CodeCompletionHandler {
      
         LOG.log(Level.FINEST, "Token fullString = >{0}<", packageRequest.fullString);
         
-        ClasspathInfo pathInfo = getClassPathFromDocument(request.doc);
+        ClasspathInfo pathInfo = getClassPathInfo(request.doc);
 
+        // assert pathInfo != null : "Can not get ClasspathInfo";
+        
         // try to find suitable packages ...
 
         Set<String> pkgSet;
@@ -1399,6 +1394,17 @@ public class CodeCompleter implements CodeCompletionHandler {
     }
 
     /**
+     * Complete the Groovy and Java types available at this position.
+     * These are the Groovy default imports:
+     *
+     * java.io.*
+     * java.lang.*
+     * java.math.BigDecimal
+     * java.math.BigInteger
+     * java.net.*
+     * java.util.*
+     * groovy.lang.*
+     * groovy.util.*
      * 
      * @param proposals
      * @param request
@@ -1419,7 +1425,7 @@ public class CodeCompleter implements CodeCompletionHandler {
            return false;
        }
         
-        ClasspathInfo pathInfo = getClassPathFromDocument(request.doc);
+        ClasspathInfo pathInfo = getClassPathInfo(request.doc);
        
         LOG.log(Level.FINEST, "Prefix = >{0}<", packageRequest.basePackage);
 
@@ -1477,8 +1483,51 @@ public class CodeCompleter implements CodeCompletionHandler {
         return false;
     }
 
+
+    /**
+     * Get the ClassNode this request operates on.
+     * This is used to complete methods and fields for classes.
+     *
+     * Here are some sample paths:
+     *
+     * new String().
+     * [ModuleNode:ConstructorCallExpression:ExpressionStatement:ConstructorCallExpression:]
+     *
+     * s.
+     * [ModuleNode:VariableExpression:ExpressionStatement:VariableExpression:]
+     *
+     * s.spli
+     * [ModuleNode:PropertyExpression:ConstantExpression:ExpressionStatement:PropertyExpression:ConstantExpression:]
+     *
+     * l.
+     * [ModuleNode:ClassNode:MethodNode:ExpressionStatement:VariableExpression:]
+     *
+     * l.ab
+     * [ModuleNode:ClassNode:MethodNode:ExpressionStatement:PropertyExpression:ConstantExpression:]
+     *
+     * l.M
+     * [ModuleNode:ClassNode:MethodNode:ExpressionStatement:PropertyExpression:VariableExpression:ConstantExpression:]
+     *
+     * @param request
+     * @return a valid ASTNode or null
+     */
+
     private ClassNode getDeclaringClass(CompletionRequest request) {
-        ASTNode closest = getClosestNode(request);
+
+        AstPath path = getPathFromRequest(request);
+
+        if (path == null) {
+            LOG.log(Level.FINEST, "path == null"); // NOI18N
+            return null;
+        }
+
+        ASTNode closest = path.leaf();
+
+        LOG.log(Level.FINEST, "getClosestNode() ----------------------------------------");
+        LOG.log(Level.FINEST, "Path : {0}", path);
+        LOG.log(Level.FINEST, "node : ");
+        printASTNodeInformation(closest);
+
 
         if(closest == null){
             LOG.log(Level.FINEST, "closest == null"); // NOI18N
@@ -1487,32 +1536,39 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         ClassNode declClass = null;
 
-        if (closest instanceof AnnotatedNode) {
-            LOG.log(Level.FINEST, "closest: AnnotatedNode"); // NOI18N
+        /* -------------------------------------------
 
-            // if this AnnotetedNode happens to be a ClassNode then 
-            // just cast it. Otherwise try to find declaring class
+         Here are some testpatterns:
 
-            if (closest instanceof ClassNode) {
-                declClass = (ClassNode) closest;
+        new String().
+        new String().toS
+        " ddd ".
+        " ddd ".toS
+        s.
+        s.spli
+        l.
+        l.M
+        // ------------------------------------------- */
 
-            } else {
-                declClass = ((AnnotatedNode) closest).getDeclaringClass();
+
+        // Loop the path till we find something usefull.
+        
+        for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
+            ASTNode current = it.next();
+            if (current instanceof VariableExpression) {
+                LOG.log(Level.FINEST, "* VariableExpression"); // NOI18N
+                declClass = ((VariableExpression) current).getType();
+                break;
+            } else if (current instanceof ExpressionStatement) {
+                LOG.log(Level.FINEST, "* ExpressionStatement"); // NOI18N
+                Expression expr = ((ExpressionStatement) current).getExpression();
+                declClass = expr.getType();
+                break;
+            } else if (current instanceof PropertyExpression) {
+                LOG.log(Level.FINEST, "* PropertyExpression"); // NOI18N
+                declClass = ((PropertyExpression) current).getObjectExpression().getType();
+                break;
             }
-        } else if (closest instanceof Expression) {
-            LOG.log(Level.FINEST, "closest: Expression"); // NOI18N
-            declClass = ((Expression) closest).getType();
-        } else if (closest instanceof ExpressionStatement) {
-            LOG.log(Level.FINEST, "closest: ExpressionStatement"); // NOI18N
-            Expression expr = ((ExpressionStatement) closest).getExpression();
-            if (expr instanceof PropertyExpression) {
-                declClass = ((PropertyExpression) expr).getObjectExpression().getType();
-            } else {
-                return null;
-            }
-        } else {
-            LOG.log(Level.FINEST, "Found nothing to work on"); // NOI18N
-            return null;
         }
 
         return declClass;
@@ -1564,19 +1620,71 @@ public class CodeCompleter implements CodeCompletionHandler {
             MetaClass metaClz = GroovySystem.getMetaClassRegistry().getMetaClass(clz);
 
             if (metaClz != null) {
+
+                List<MethodItem> result = new ArrayList<MethodItem>();
+
                 LOG.log(Level.FINEST, "Adding groovy methods --------------------------"); // NOI18N
                 for (Object method : metaClz.getMetaMethods()) {
-                    populateProposal(clz, method, request, proposals, true);
+                    populateProposal(clz, method, request, result, true);
                 }
                 LOG.log(Level.FINEST, "Adding JDK methods --------------------------"); // NOI18N
                 for (Object method : metaClz.getMethods()) {
-                    populateProposal(clz, method, request, proposals, false);
+                    populateProposal(clz, method, request, result, false);
                 }
+
+                for (MethodItem methodItem : result) {
+                    proposals.add(methodItem);
+                }
+
             }
         }
 
         return true;
     }
+
+    private void populateProposal(Class clz, Object method, CompletionRequest request, List<MethodItem> methodList, boolean isGDK) {
+        if (method != null && (method instanceof MetaMethod)) {
+            MetaMethod mm = (MetaMethod) method;
+
+            if (mm.getName().startsWith(request.prefix)) {
+//                LOG.log(Level.FINEST, "populateProposal -------------------------------------");
+//                LOG.log(Level.FINEST, "MetaMethod Name : {0}", mm.getName());
+//                LOG.log(Level.FINEST, "MetaMethod Decl : {0}", mm.getDeclaringClass());
+//                LOG.log(Level.FINEST, "MetaMethod Dist : {0}", mm.getDeclaringClass().getSuperClassDistance());
+//                LOG.log(Level.FINEST, "MetaMethod Sign : {0}", mm.getSignature());
+
+                MethodItem item = new MethodItem(clz, mm, anchor, request, isGDK);
+                addOrReplaceItem(methodList, item);
+            }
+
+        }
+    }
+
+    private void addOrReplaceItem(List<MethodItem> methodItemList, MethodItem itemToStore){
+
+        // if we have a method in-store which has the same name and same signature
+        // then replace it if we have a method with a higher distance to the super-class.
+        // For example: toString() is defined in java.lang.Object and java.lang.String
+        // therefore take the one from String.
+
+        MetaMethod methodToStore = itemToStore.getMethod();
+        int toStoreDistance = methodToStore.getDeclaringClass().getSuperClassDistance();
+
+        for (MethodItem methodItem : methodItemList) {
+            MetaMethod listMethod = methodItem.getMethod();
+
+            if (listMethod.getName().equals(methodToStore.getName()) &&
+                    listMethod.getSignature().equals(methodToStore.getSignature()) &&
+                    listMethod.getDeclaringClass().getSuperClassDistance() < toStoreDistance) {
+                    LOG.log(Level.FINEST, "Remove existing method: {0}", methodToStore.getName()); // NOI18N
+                    methodItemList.remove(methodItem);
+                    break; // it's unlikely that we have more then one Method with a smaller distance
+            }
+        }
+
+        methodItemList.add(itemToStore);
+    }
+
 
     public CodeCompletionResult complete(CodeCompletionContext context) {
         CompilationInfo info = context.getInfo();
@@ -2078,6 +2186,10 @@ public class CodeCompleter implements CodeCompletionHandler {
             methodElement = new AstMethodElement(new ASTNode(), clz, method, isGDK);
         }
 
+        public MetaMethod getMethod() {
+            return method;
+        }
+        
         @Override
         public String getName() {
             return method.getName() + "()";

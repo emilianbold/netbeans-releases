@@ -51,7 +51,6 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -104,7 +103,7 @@ public class HibernateMappingFindUsagesPlugin implements RefactoringPlugin {
             Project proj = FileOwnerQuery.getOwner(fo);
             HibernateEnvironment env = proj.getLookup().lookup(HibernateEnvironment.class);
             if (env == null) {
-                ErrorManager.getDefault().log(org.openide.ErrorManager.INFORMATIONAL, "No HibernateEnviroment found"); // NOI18N
+                // The project does not support Hibernate framework
                 return null;
             }
             List<FileObject> configFiles = env.getAllHibernateConfigFileObjects();

@@ -43,11 +43,19 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
+import org.netbeans.modules.php.editor.index.IndexedFunction;
+import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
@@ -60,8 +68,10 @@ import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
@@ -82,6 +92,7 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
         this.context = context;
         context.variableStack = varStack;
         context.path = getPath();
+        context.index = PHPIndex.get(context.compilationInfo.getIndex(PHPLanguage.PHP_MIME_TYPE));
         this.rules = rules;
     }
 
@@ -101,16 +112,49 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
         super.visit(node);
     }
 
-    /*
-    private <T extends ASTNode> void handleRules(T node){
+    @Override
+    public void visit(StaticFieldAccess node) {
         for (PHPRule rule : rules){
             rule.setContext(context);
             rule.visit(node);
             result.addAll(rule.getResult());
             rule.resetResult();
         }
-    }*/
+        
+        super.visit(node);
+    }
 
+    
+    @Override
+    public void visit(ClassDeclaration node) {
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
+        }
+        
+        super.visit(node);
+        for (PHPRule rule : rules){
+            rule.leavingClassDeclaration(node);
+        }        
+    }
+
+    @Override
+    public void visit(ClassInstanceCreation node) {
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
+        }
+        
+        super.visit(node);
+    }
+
+    
+    
+    
     @Override
     public void visit(IfStatement node) {
         for (PHPRule rule : rules){
@@ -197,7 +241,47 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
     }
 
     @Override
+    public void visit(MethodInvocation node) {
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
+        }
+        
+        super.visit(node);
+    }
+    
+
+    @Override
     public void visit(FunctionInvocation node) {
+        
+        if (node.getFunctionName().getName() instanceof Identifier) {
+            Identifier id = (Identifier) node.getFunctionName().getName();
+            String fname = id.getName();
+            
+            Collection<IndexedFunction> functions = context.index.getFunctions((PHPParseResult) context.parserResult, fname, NameKind.EXACT_NAME);
+            
+            boolean refParam[] = new boolean[node.getParameters().size()];
+           
+            for (IndexedFunction func : functions) {
+                for (int i = 0; i < func.getParameters().size() && i < refParam.length; i++) {
+                    String param = func.getParameters().get(i);
+                    
+                    if (param.startsWith("&")){
+                        refParam[i] = true;
+                    }
+                }
+            }
+            
+            for (int i = 0; i < node.getParameters().size(); i++) {
+                if (refParam[i]){
+                    Expression expr = node.getParameters().get(i);
+                    varStack.addVariableDefinition(expr);
+                }
+            }
+        }
+        
         for (PHPRule rule : rules){
             rule.setContext(context);
             rule.visit(node);
@@ -250,6 +334,8 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
         
         super.visit(node);
     }
+    
+    
 
     @Override
     public void visit(GlobalStatement node) {
@@ -356,7 +442,10 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
             if (variable != null && variable.getName() instanceof Identifier) {
                 Identifier identifier = (Identifier) variable.getName();
                 String varName = identifier.getName();
-                vars.getLast().put(new VariableWrapper(var), varName);
+                
+                if (!isVariableDefined(varName)){
+                    vars.getLast().put(new VariableWrapper(var), varName);
+                }
             }
         }
         

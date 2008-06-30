@@ -64,8 +64,8 @@ made subject to such option by the copyright holder.
     </folder>
     
     <folder name="Loaders">
-        <folder name="content">
-            <folder name="unknown">
+        <folder name="text">
+            <folder name="x-comp-palette+xml">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-visualweb-palette-PaletteItemDataObject$PaletteItemDataLoader.instance">
                         <attr name="position" intvalue="88"/>
@@ -92,7 +92,19 @@ made subject to such option by the copyright holder.
         <attr name="helpId" stringvalue="projrave_ui_elements_palette_palette"/>
         <attr name="isReadonly" boolvalue="false"/>
     </folder>
-    
+
+   <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="org-netbeans-modules-visualweb-palette-mime-resolver.xml"
+                  url="mime-resolver.xml">
+                <attr name="SystemFileSystem.localizingBundle"
+                      stringvalue="org.netbeans.modules.visualweb.palette.Bundle"/>
+                <!--<attr name="SystemFileSystem.icon"
+                      urlvalue="nbresloc:/org/netbeans/modules/visualweb/palette/resolver-icon.gif"/> -->
+                <attr name="position" intvalue="70001"/>
+            </file>
+        </folder>
+    </folder>
     <!-- Palette Item Lookup 
         Palette Components are located in their relavent modules.  The avoids unnessary dependencies and higher high cohesion.
         For example, when the sampleapp module is turned off, all codeclips will be automatically removed.

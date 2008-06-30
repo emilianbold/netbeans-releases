@@ -42,12 +42,7 @@ package org.netbeans.modules.php.project.classpath;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -58,7 +53,7 @@ import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathFactory;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider;
 import org.netbeans.modules.php.project.PhpSources;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
 import org.netbeans.modules.php.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -66,8 +61,6 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
@@ -83,9 +76,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
         PLATFORM,
         SOURCE,
     }
-
-    // GuardedBy(this)
-    private static FileObject internalFolder = null;
 
     private final AntProjectHelper helper;
     private final File projectDirectory;
@@ -138,57 +128,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
         return true;
     }
 
-    private synchronized FileObject getInternalPath() {
-        if (internalFolder == null) {
-            internalFolder = getInternalFolder();
-        }
-        return internalFolder;
-    }
-
-    // workaround because gsf uses toFile() and this causes NPE for SFS
-    // see #131401 for more information
-    private FileObject getInternalFolder() {
-        assert Thread.holdsLock(this);
-
-        // FS AtomicAction should not be needed (synchronized)
-        FileObject sfsFolder = Repository.getDefault().getDefaultFileSystem().findResource("PHP/RuntimeLibraries"); // NOI18N
-        for (FileObject fo : sfsFolder.getChildren()) {
-            // XXX need to handle file updates as well
-            if (FileUtil.toFile(fo) != null) {
-                continue;
-            }
-            InputStream is = null;
-            OutputStream os = null;
-            ByteArrayOutputStream bos = null;
-            try {
-                is = fo.getInputStream();
-                os = fo.getOutputStream();
-                bos = new ByteArrayOutputStream();
-                FileUtil.copy(is, bos);
-                os.write(bos.toByteArray());
-            } catch (IOException exc) {
-                Exceptions.printStackTrace(exc);
-            } finally {
-                closeStreams(is, os, bos);
-            }
-        }
-        File file = FileUtil.toFile(sfsFolder);
-        assert file != null : "Folder PHP/RuntimeLibraries cannot be resolved as a java.io.File";
-        return FileUtil.toFileObject(file);
-    }
-
-    private void closeStreams(Closeable... streams) {
-        for (Closeable stream : streams) {
-            try {
-                if (stream != null) {
-                    stream.close();
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }
-
     private List<FileObject> getPlatformPath() {
         return getDirs(PhpProjectProperties.INCLUDE_PATH);
     }
@@ -206,7 +145,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
     public FileType getFileType(FileObject file) {
         Parameters.notNull("file", file);
 
-        FileObject path = getInternalPath();
+        FileObject path = CommonPhpSourcePath.getInternalPath();
         if (path.equals(file) || FileUtil.isParentOf(path, file)) {
             return FileType.INTERNAL;
         }
@@ -228,13 +167,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
     }
 
     public FileObject resolveFile(FileObject directory, String fileName) {
-        Parameters.notNull("directory", directory);
-        Parameters.notNull("fileName", fileName);
-
-        if (!directory.isFolder()) {
-            throw new IllegalArgumentException("valid directory needed");
-        }
-
         FileObject resolved = directory.getFileObject(fileName);
         if (resolved != null) {
             return resolved;
@@ -276,7 +208,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
         if (cp == null) {
             ClassPath internalClassPath =
                     org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport.createClassPath(
-                    getInternalPath());
+                    CommonPhpSourcePath.getInternalPath());
             ClassPath includePath = ClassPathFactory.createClassPath(
                     ProjectClassPathSupport.createPropertyBasedClassPathImplementation(projectDirectory, evaluator,
                     new String[] {PhpProjectProperties.INCLUDE_PATH}));

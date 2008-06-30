@@ -96,6 +96,10 @@ public class SQLCompletionQueryTest extends NbTestCase {
         suite.addTest(new SQLCompletionQueryTest("selectFromSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectFromSchemaTableNotInFromClause"));
 
+        suite.addTest(new SQLCompletionQueryTest("selectQuotedSchema"));
+        suite.addTest(new SQLCompletionQueryTest("selectQuotedColumn"));
+        suite.addTest(new SQLCompletionQueryTest("selectQuote"));
+
         suite.addTest(new SQLCompletionQueryTest("fromAll"));
         suite.addTest(new SQLCompletionQueryTest("fromSimple"));
         suite.addTest(new SQLCompletionQueryTest("fromSchema"));

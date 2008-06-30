@@ -42,11 +42,9 @@ package org.netbeans.modules.cnd.remote.server;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
-import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.remote.support.SystemIncludesUtils;
 import org.openide.util.ChangeSupport;
 
 /**
@@ -90,6 +88,15 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         // creates the "localhost" record and make it active
         add("localhost", true); // NOI18N
         refresh();
+    }
+
+    public ServerRecord get(String key) {
+	for (RemoteServerRecord record : this) {
+            if (key.equals(record.getName())) {
+                return record;
+            }
+	}
+	return null;
     }
 
     public int getDefaultServerIndex() {

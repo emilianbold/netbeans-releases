@@ -194,6 +194,9 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("template_parameter2.cc", 9, 46, "template_parameter2.cc", 9, 10);
         performTest("template_parameter2.cc", 11, 11, "template_parameter2.cc", 11, 10);
         performTest("template_parameter2.cc", 11, 55, "template_parameter2.cc", 11, 10);
+        performTest("template_parameter2.cc", 13, 17, "template_parameter2.cc", 13, 10);
+        performTest("template_parameter2.cc", 13, 29, "template_parameter2.cc", 13, 22);
+        performTest("template_parameter2.cc", 13, 33, "template_parameter2.cc", 13, 22);
     }
 
     public void testIZ131625() throws Exception {

@@ -52,6 +52,7 @@ import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbModuleSuite;
@@ -96,7 +97,10 @@ public class AddNewBpelProcess extends PerformanceTestCase {
         Log.enableInstances(Logger.getLogger("TIMER.bpel"), "BPEL DesignView", Level.FINEST);
     }
     
-    public void prepare(){
+    public void prepare() {
+        
+        new EventTool().waitNoEvent(1000);
+
         new EPUtilities().getProcessFilesNode("BPELTestProject").select();
         
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();

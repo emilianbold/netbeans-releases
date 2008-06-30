@@ -44,18 +44,13 @@ package org.netbeans.modules.ruby.debugger;
 import java.awt.EventQueue;
 import java.io.File;
 import java.util.logging.Level;
-import javax.swing.JEditorPane;
-import javax.swing.text.Caret;
-import javax.swing.text.StyledDocument;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
-import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
-import org.openide.text.NbDocument;
 
 public final class EditorUtil {
     
@@ -126,7 +121,12 @@ public final class EditorUtil {
 
         LineCookie lineCookie = getLineCookie(fileObject);
         assert lineCookie != null;
-        return lineCookie.getLineSet().getCurrent(lineNumber);
+        try {
+            return lineCookie.getLineSet().getCurrent(lineNumber);
+        } catch (IndexOutOfBoundsException ioobe) {
+            // invalid line number for the document
+            return null;
+        }
     }
 
     public static LineCookie getLineCookie(final FileObject fo) {

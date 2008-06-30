@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.openide.util.Lookup;
 
@@ -48,11 +50,14 @@ import org.openide.util.Lookup;
  */
 public class DevelopmentHostConfiguration {
     
+    public static final String PROP_DEV_HOST = "devHost"; // NOI18N
+    
     private int def;
     private int value;
     private String[] names;
     private boolean modified;
     private boolean dirty = false;
+    private PropertyChangeSupport pcs;
     
     private static ServerList serverList = null;
     
@@ -60,6 +65,7 @@ public class DevelopmentHostConfiguration {
         names = getServerNames();
         value = 0;
         def = 0; // localost is always defined and should be considered the default
+        pcs = new PropertyChangeSupport(this);
     }
     
     public String getName() {
@@ -75,9 +81,16 @@ public class DevelopmentHostConfiguration {
     }
     
     public void setValue(String v) {
+        setValue(v, false);
+    }
+    
+    public void setValue(String v, boolean firePC) {
         for (int i = 0; i < names.length; i++) {
             if (v.equals(names[i])) {
                 value = i;
+                if (firePC) {
+                    pcs.firePropertyChange(PROP_DEV_HOST, null, v);
+                }
                 return;
             }
         }
@@ -122,6 +135,14 @@ public class DevelopmentHostConfiguration {
         DevelopmentHostConfiguration clone = new DevelopmentHostConfiguration();
         clone.setValue(getName());
         return clone;
+    }
+    
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        pcs.addPropertyChangeListener(l);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        pcs.removePropertyChangeListener(l);
     }
     
     public String[] getServerNames() {

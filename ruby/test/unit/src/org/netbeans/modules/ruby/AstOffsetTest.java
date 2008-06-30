@@ -49,6 +49,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ParserResult;
 
 /**
  * Check offsets for the JRuby AST
@@ -90,9 +91,9 @@ public class AstOffsetTest extends RubyTestBase {
     }
     
     @Override
-    protected void initializeNodes(CompilationInfo info, List<Object> validNodes,
+    protected void initializeNodes(CompilationInfo info, ParserResult result, List<Object> validNodes,
             Map<Object,OffsetRange> positions, List<Object> invalidNodes) throws Exception {
-        Node root = AstUtilities.getRoot(info);
+        Node root = AstUtilities.getRoot(result);
         assertNotNull(root);
         
         initialize(root, validNodes, invalidNodes, positions, null/*doc*/);

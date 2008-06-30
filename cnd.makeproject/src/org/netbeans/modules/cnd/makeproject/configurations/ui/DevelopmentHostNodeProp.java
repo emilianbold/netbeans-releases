@@ -84,7 +84,7 @@ public class DevelopmentHostNodeProp extends Node.Property {
     }
     
     public void setValue(Object value) {
-        configuration.setValue((String) value);
+        configuration.setValue((String) value, true);
 }
     
     @Override
@@ -133,7 +133,6 @@ public class DevelopmentHostNodeProp extends Node.Property {
         
         @Override
         public String[] getTags() {
-            System.err.println("DHNP$IntEditor.getTags: ");
             return configuration.getServerNames();
         }
     }
