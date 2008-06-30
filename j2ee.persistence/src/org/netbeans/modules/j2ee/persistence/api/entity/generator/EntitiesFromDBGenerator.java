@@ -193,6 +193,10 @@ public final class EntitiesFromDBGenerator {
             helper.setTableSource(getSchemaElement(), null);
             helper.setSelectedTables(selectedTables);
             helper.setGenerateFinderMethods(generateNamedQueries);
+            helper.setFullyQualifiedTableNames(fullyQualifiedTableNames);
+            helper.setRegenTablesAttrs(regenTableAttrs);
+            helper.setFetchType(fetchType);
+            helper.setCollectionType(collectionType);
             
             helper.buildBeans();
             
