@@ -37,14 +37,14 @@ import javax.swing.ListCellRenderer;
 public abstract class SharedRubyProjectProperties {
     
     public static final String JAVAC_CLASSPATH = "javac.classpath"; // NOI18N
-    public static final String INCLUDE_JAVA = "ruby.includejava"; // NOI18N
+    //public static final String INCLUDE_JAVA = "ruby.includejava"; // NOI18N
     public static final String RAKE_ARGS = "rake.args"; // NOI18N
     public static final String JRUBY_PROPS = "jruby.props"; // NOI18N
     public static final String SOURCE_ENCODING="source.encoding"; // NOI18N
 
     // External Java integration
     public DefaultListModel JAVAC_CLASSPATH_MODEL;
-    public ButtonModel INCLUDE_JAVA_MODEL;
+    //public ButtonModel INCLUDE_JAVA_MODEL;
     public ListCellRenderer CLASS_PATH_LIST_RENDERER;
 
     //public abstract DefaultListModel getListModel(String propertyName);
