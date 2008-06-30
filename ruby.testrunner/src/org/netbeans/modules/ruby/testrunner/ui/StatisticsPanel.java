@@ -58,7 +58,6 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.ruby.testrunner.TestRunnerSettings;
 import org.netbeans.modules.ruby.testrunner.TestExecutionManager;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
