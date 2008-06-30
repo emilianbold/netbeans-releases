@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee.jsps;
 
-import java.io.File;
-import javax.enterprise.deploy.spi.DeploymentManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -98,6 +96,26 @@ public class FindJSPServletImplTest {
         String expResult = "org/apache/jsp/test/index_jsp.java";
         String result = instance.getServletResourcePath(moduleContextPath, jspResourcePath);
         assertEquals(expResult, result);
+        jspResourcePath = "/index.jsp";
+        expResult = "org/apache/jsp/index_jsp.java";
+        result = instance.getServletResourcePath(moduleContextPath, jspResourcePath);
+        assertEquals(expResult, result);
+        jspResourcePath = "index.jsp";
+        expResult = "org/apache/jsp/index_jsp.java";
+        result = instance.getServletResourcePath(moduleContextPath, jspResourcePath);
+        assertEquals(expResult, result);
+        jspResourcePath = "a";
+        expResult = "org/apache/jsp/a.java";
+        result = instance.getServletResourcePath(moduleContextPath, jspResourcePath);
+        assertEquals(expResult, result);
+        try {
+            jspResourcePath = "";
+            expResult = "";
+            result = instance.getServletResourcePath(moduleContextPath, jspResourcePath);
+            fail("should have triggered an exception");            
+        } catch (StringIndexOutOfBoundsException sioobe) {
+            
+        }
         // TODO review the generated test code and remove the default call to fail.
         //fail("The test case is a prototype.");
     }
