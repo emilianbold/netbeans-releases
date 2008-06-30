@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 /*
- * JSFModuleTest.java
+ * JSFModuleMethods.java
  *
  * Created on May 15, 2006, 10:29 AM
  *
@@ -74,11 +74,11 @@ import org.openide.util.Task;
  *
  * @author Amanpreet
  */
-public class JSFModuleTest extends NbTestCase {
+public class JSFModuleMethods extends NbTestCase {
     
     private final int SLEEP = 10000;
     
-    public JSFModuleTest(String testName) {
+    public JSFModuleMethods(String testName) {
         super(testName);
     }
     
@@ -240,23 +240,23 @@ public class JSFModuleTest extends NbTestCase {
         
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("JSFModuleTest");
-        // TODO : Retouche migration
-        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
-        suite.addTest(new StartStopServerTest("startServer"));
-        suite.addTest(new JSFModuleTest("deployJSFModule"));
-        suite.addTest(new JSFModuleTest("executeJSFModule"));
-        suite.addTest(new JSFModuleTest("updateModule"));
-        //suite.addTest(new JSFModuleTest("verifyJSFModule"));
-        suite.addTest(new JSFModuleTest("disableJSFModule"));
-        suite.addTest(new JSFModuleTest("enableJSFModule"));
-        suite.addTest(new StartStopServerTest("restartServer"));
-        suite.addTest(new JSFModuleTest("executeJSFModule"));
-        suite.addTest(new JSFModuleTest("runJSFModule"));
-        suite.addTest(new JSFModuleTest("undeployJSFModule"));
-        suite.addTest(new StartStopServerTest("stopServer"));
-        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
-        return suite;
-    }
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite("JSFModuleMethods");
+//        // TODO : Retouche migration
+//        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
+//        suite.addTest(new StartStopServerTest("startServer"));
+//        suite.addTest(new JSFModuleMethods("deployJSFModule"));
+//        suite.addTest(new JSFModuleMethods("executeJSFModule"));
+//        suite.addTest(new JSFModuleMethods("updateModule"));
+//        //suite.addTest(new JSFModuleMethods("verifyJSFModule"));
+//        suite.addTest(new JSFModuleMethods("disableJSFModule"));
+//        suite.addTest(new JSFModuleMethods("enableJSFModule"));
+//        suite.addTest(new StartStopServerTest("restartServer"));
+//        suite.addTest(new JSFModuleMethods("executeJSFModule"));
+//        suite.addTest(new JSFModuleMethods("runJSFModule"));
+//        suite.addTest(new JSFModuleMethods("undeployJSFModule"));
+//        suite.addTest(new StartStopServerTest("stopServer"));
+//        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
+//        return suite;
+//    }
 }
