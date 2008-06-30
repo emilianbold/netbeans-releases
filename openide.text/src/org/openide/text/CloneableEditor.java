@@ -418,6 +418,10 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 return false;
             }
             tmp.setEditorKit(kit);
+            // #132669, do not fire prior setting the kit, which by itself sets a bogus document, etc.
+            // if this is a problem please revert the change and initialize QuietEditorPane.working = FIRE
+            // and reopen #132669
+            tmp.setWorking(QuietEditorPane.FIRE);
             tmp.setDocument(doc);
             return true;
         }
@@ -475,6 +479,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 if (caret != null) {
                     caret.setDot(cursorPosition);
                 }
+            }
+            //#134910: If editor TopComponent is already activated request focus
+            //to it again to get focus to correct subcomponent eg. QuietEditorPane which
+            //is added above.
+            if (CloneableEditor.this.equals(getRegistry().getActivated())) {
+                requestFocusInWindow();
             }
             isInInitVisual = false;
         }

@@ -68,7 +68,10 @@ public class DatabindingDataSerializationController extends DocumentSerializatio
 
     @Override
     public void postValidateDocument(DataObjectContext context, DesignDocument loadingDocument, String documentVersion, DocumentErrorHandler errorHandler) {
-        MidpDocumentSupport.getCategoryComponent(loadingDocument, DatabindingCategoryCD.TYPEID);
+        if (context.getProjectType().equals("vmd-midp")) { //NOI18N
+            MidpDocumentSupport.getCategoryComponent(loadingDocument, DatabindingCategoryCD.TYPEID);
+        }
+        
     }
 
 }

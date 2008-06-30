@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
+import java.util.Collection;
+import java.util.HashMap;
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.websvc.wsitconf.ui.security.listmodels.ServiceProviderElement;
 import org.netbeans.modules.websvc.wsitmodelext.policy.All;
@@ -72,11 +74,15 @@ import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.SCClientCon
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.TrustStore;
 import org.netbeans.modules.xml.wsdl.model.*;
 import java.util.List;
+import javax.xml.namespace.QName;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
+import org.netbeans.modules.websvc.wsitmodelext.addressing.AddressingAttribute;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.KerberosConfig;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.DisableStreamingSecurity;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.ServiceProvider;
 import org.netbeans.modules.websvc.wsitmodelext.trust.TrustQName;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPOperation;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 
 /**
  *
@@ -90,26 +96,26 @@ public class ProprietarySecurityPolicyModelHelper {
     public static final String DEFAULT_MAXCLOCKSKEW = "300000";                     //NOI18N
     public static final String DEFAULT_TIMESTAMPFRESHNESS = "300000";                     //NOI18N
     
-//    private static HashMap<ConfigVersion, ProprietarySecurityPolicyModelHelper> instances = 
-//            new HashMap<ConfigVersion, ProprietarySecurityPolicyModelHelper>();
-//
-//    private ConfigVersion configVersion = ConfigVersion.getDefault();
-//    
-//    /**
-//     * Creates a new instance of ProprietarySecurityPolicyModelHelper
-//     */
-//    private ProprietarySecurityPolicyModelHelper(ConfigVersion configVersion) {
-//        this.configVersion = configVersion;
-//    }
-//
-//    public static final synchronized ProprietarySecurityPolicyModelHelper getInstance(ConfigVersion configVersion) {
-//        ProprietarySecurityPolicyModelHelper instance = instances.get(ConfigVersion.CONFIG_1_0);
-//        if (instance == null) {
-//            instance = new ProprietarySecurityPolicyModelHelper(ConfigVersion.CONFIG_1_0);
-//            instances.put(configVersion, instance);
-//        }
-//        return instance;
-//    }
+    private static HashMap<ConfigVersion, ProprietarySecurityPolicyModelHelper> instances = 
+            new HashMap<ConfigVersion, ProprietarySecurityPolicyModelHelper>();
+
+    private ConfigVersion configVersion = ConfigVersion.getDefault();
+
+    /**
+     * Creates a new instance of ProprietarySecurityPolicyModelHelper
+     */
+    private ProprietarySecurityPolicyModelHelper(ConfigVersion configVersion) {
+        this.configVersion = configVersion;
+    }
+
+    public static final synchronized ProprietarySecurityPolicyModelHelper getInstance(ConfigVersion configVersion) {
+        ProprietarySecurityPolicyModelHelper instance = instances.get(configVersion);
+        if (instance == null) {
+            instance = new ProprietarySecurityPolicyModelHelper(configVersion);
+            instances.put(configVersion, instance);
+        }
+        return instance;
+    }
 
     private ProprietarySecurityPolicyModelHelper() { }
     
@@ -625,10 +631,44 @@ public class ProprietarySecurityPolicyModelHelper {
         return (ts == null) ? null : ts.getCertSelector();
     }
     
-    public static void enableSTS(Binding b, boolean enable) {
+    public void enableSTS(Binding b, boolean enable) {
         if (enable) {
             setSTSContractClass(b, DEFAULT_CONTRACT_CLASS);
             setSTSLifeTime(b, DEFAULT_LIFETIME);
+            Collection<BindingOperation> bOperations = b.getBindingOperations();
+            WSDLModel model = b.getModel();
+            boolean isTransaction = model.isIntransaction();
+            if (!isTransaction) {
+                model.startTransaction();
+            }
+            try {
+                for (BindingOperation bO : bOperations) {
+                    List<SOAPOperation> sOps = bO.getChildren(SOAPOperation.class);
+                    if (bO.getName().toLowerCase().startsWith("issue")) { //NOI18N
+                        sOps.get(0).setAttribute("soapAction", TrustQName.getNamespaceUri(configVersion) + "/RST/Issue");
+                        Operation pOp = bO.getOperation().get();
+                        if (pOp != null) {
+                            QName qname10 = new QName(TrustQName.getNamespaceUri(ConfigVersion.CONFIG_1_0), AddressingAttribute.ACTION.getName(), "wsam");
+                            QName qname13 = new QName(TrustQName.getNamespaceUri(ConfigVersion.CONFIG_1_3), AddressingAttribute.ACTION.getName(), "wsam");
+
+                            ((AbstractDocumentComponent) pOp.getInput()).setAnyAttribute(qname10, null);
+                            ((AbstractDocumentComponent) pOp.getOutput()).setAnyAttribute(qname10, null);
+                            ((AbstractDocumentComponent) pOp.getInput()).setAnyAttribute(qname13, null);
+                            ((AbstractDocumentComponent) pOp.getOutput()).setAnyAttribute(qname13, null);
+
+                            QName qname = new QName(TrustQName.getNamespaceUri(configVersion), AddressingAttribute.ACTION.getName(), "wsam");
+                            ((AbstractDocumentComponent) pOp.getInput()).setAnyAttribute(qname,
+                                    TrustQName.getNamespaceUri(configVersion) + "/RST/Issue");
+                            ((AbstractDocumentComponent) pOp.getOutput()).setAnyAttribute(qname,
+                                    TrustQName.getNamespaceUri(configVersion) + "/RSTR/Issue");
+                        }
+                    }
+                }
+            } finally {
+                if (!isTransaction) {
+                    model.endTransaction();
+                }
+            }
         } else {
             STSConfiguration stsConfig = getSTSConfiguration(b);
             if (stsConfig != null) {

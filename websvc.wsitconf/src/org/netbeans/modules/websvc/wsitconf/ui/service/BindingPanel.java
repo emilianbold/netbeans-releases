@@ -257,7 +257,12 @@ public class BindingPanel extends SectionInnerPanel {
 
         ConfigVersion userExpectedCfgVersion = getUserExpectedConfigVersion();
         if (source.equals(cfgVersionCombo)) {
-            PolicyModelHelper.setConfigVersion(binding, userExpectedCfgVersion, project);
+            doNotSync = true;
+            try {
+                PolicyModelHelper.setConfigVersion(binding, userExpectedCfgVersion, project);
+            } finally {
+                doNotSync = false;
+            }
         }
 
         RMModelHelper rmh = RMModelHelper.getInstance(userExpectedCfgVersion);
@@ -346,7 +351,8 @@ public class BindingPanel extends SectionInnerPanel {
 
         if (source.equals(stsChBox)) {
             if (stsChBox.isSelected() != ProprietarySecurityPolicyModelHelper.isSTSEnabled(binding)) {
-                ProprietarySecurityPolicyModelHelper.enableSTS(binding, stsChBox.isSelected());
+                ProprietarySecurityPolicyModelHelper.getInstance(getUserExpectedConfigVersion()).
+                        enableSTS(binding, stsChBox.isSelected());
                 inSync = true; fillProfileCombo(true); inSync = false;
             }
         }

@@ -50,14 +50,17 @@ import org.openide.util.Lookup;
  */
 public class JavaEEServerModule implements RemoveCookie {
 
-    private Lookup lookup;
-    private InstanceProperties instanceProperties;
+    private final Lookup lookup;
+    private final InstanceProperties instanceProperties;
     
     JavaEEServerModule(Lookup instanceLookup, InstanceProperties ip) {
         lookup = instanceLookup;
         instanceProperties = ip;
     }
 
+    public InstanceProperties getInstanceProperties() {
+        return instanceProperties;
+    }
     // ------------------------------------------------------------------------
     // RemoveCookie support
     // ------------------------------------------------------------------------

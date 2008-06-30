@@ -67,6 +67,8 @@ final class TokenListListUpdate<T extends TokenId> {
 
     int removedTokenListCount;
 
+    private EmbeddedTokenList<T>[] removedTokenLists;
+
     List<EmbeddedTokenList<T>> addedTokenLists;
 
     TokenListListUpdate(TokenListList<T> tokenListList) {
@@ -108,7 +110,8 @@ final class TokenListListUpdate<T extends TokenId> {
     void markChangedMember(EmbeddedTokenList<T> changedTokenList) {
         assert (modTokenListIndex == -1);
         modTokenListIndex = tokenListList.findIndex(changedTokenList.startOffset());
-        assert (tokenListList.get(modTokenListIndex) == changedTokenList);
+        assert (tokenListList.get(modTokenListIndex) == changedTokenList) :
+            "changedTokenList at index " + modTokenListIndex + "; TokenListList:\n" + tokenListList;
     }
 
     void markChageBetween(int offset) { // Nothing added/removed and mod outside of bounds of an ETL
@@ -125,18 +128,21 @@ final class TokenListListUpdate<T extends TokenId> {
      * on the corresponding embedding container.
      */
     void markRemovedMember(EmbeddedTokenList<T> removedTokenList, TokenHierarchyEventInfo eventInfo) {
+        removedTokenList.embeddingContainer().updateStatus();
         boolean indexWasMinusOne; // Used for possible exception cause debugging
 //            removedTokenList.embeddingContainer().checkStatusUpdated();
         if (modTokenListIndex == -1) {
+            assert (removedTokenListCount == 0);
             indexWasMinusOne = true;
             modTokenListIndex = tokenListList.findIndexDuringUpdate(removedTokenList, eventInfo);
             assert (modTokenListIndex >= 0) : "tokenListIndex=" + modTokenListIndex + " < 0"; // NOI18N
         } else { // tokenListIndex already initialized
             indexWasMinusOne = false;
         }
-        TokenList<T> markedForRemoveTokenList = tokenListList.getOrNull(modTokenListIndex + removedTokenListCount);
+        EmbeddedTokenList<T> markedForRemoveTokenList = tokenListList.getOrNull(modTokenListIndex + removedTokenListCount);
         if (markedForRemoveTokenList != removedTokenList) {
             int realIndex = tokenListList.indexOf(removedTokenList);
+            modTokenListIndex = tokenListList.findIndexDuringUpdate(removedTokenList, eventInfo);
             throw new IllegalStateException("Removing at tokenListIndex=" + modTokenListIndex + // NOI18N
                     " but real tokenListIndex is " + realIndex + // NOI18N
                     " (indexWasMinusOne=" + indexWasMinusOne + ").\n" + // NOI18N
@@ -169,20 +175,49 @@ final class TokenListListUpdate<T extends TokenId> {
         addedTokenLists.add(addedTokenList);
     }
 
-    void addRemoveTokenLists(TokenHierarchyUpdate update, boolean tllChildrenMayExist) {
+    void replaceTokenLists(int indexShift) {
         assert (removedTokenListCount > 0 || addedTokenLists != null);
-        EmbeddedTokenList<T>[] removedTokenLists = tokenListList.replace(
-                modTokenListIndex, removedTokenListCount, addedTokenLists);
-        if (tllChildrenMayExist) {
-            for (int i = 0; i < removedTokenLists.length; i++) {
-                update.collectRemovedEmbeddings(removedTokenLists[i]);
-            }
-            for (int i = 0; i < addedTokenLists.size(); i++) {
-                EmbeddedTokenList<T> addedEtl = addedTokenLists.get(i);
-                update.collectAddedEmbeddings(addedEtl, 0, addedEtl.tokenCountCurrent());
+        removedTokenLists = tokenListList.replace(
+                modTokenListIndex + indexShift, removedTokenListCount, addedTokenLists);
+    }
+    
+    /**
+     * Collect removed embeddings from all the removed ETLs.
+     */
+    void collectRemovedEmbeddings(TokenHierarchyUpdate.UpdateItem<T> updateItem) {
+        if (tokenListList.hasChildren()) {
+            if (removedTokenLists != null) {
+                for (int i = 0; i < removedTokenLists.length; i++) {
+                    updateItem.collectRemovedEmbeddings(removedTokenLists[i]);
+                }
             }
         }
     }
+
+    void collectAddedEmbeddings(TokenHierarchyUpdate.UpdateItem<T> updateItem) {
+        // The TLL is non-joining yet but that may also be because there were no ETLs yet
+        // and once new ETLs are added they may be joining and whole TLL becomes joining
+        boolean becomeJoining = false;
+        for (int i = 0; i < addedTokenLists.size(); i++) {
+            EmbeddedTokenList<T> addedEtl = addedTokenLists.get(i);
+            becomeJoining |= addedEtl.embedding().joinSections();
+        }
+        
+        if (becomeJoining) {
+            // Create JTL to init tokens
+            JoinTokenList.init(tokenListList, 0, tokenListList.size());
+        }
+        for (int i = 0; i < addedTokenLists.size(); i++) {
+            EmbeddedTokenList<T> addedEtl = addedTokenLists.get(i);
+            if (!becomeJoining) {
+                addedEtl.initAllTokens();
+            }
+            if (tokenListList.hasChildren()) {
+                updateItem.collectAddedEmbeddings(addedEtl, 0, addedEtl.tokenCountCurrent());
+            }
+        }
+    }
+
 
     TokenListChange<T> createTokenListChange(EmbeddedTokenList<T> etl) {
         assert (etl != null);

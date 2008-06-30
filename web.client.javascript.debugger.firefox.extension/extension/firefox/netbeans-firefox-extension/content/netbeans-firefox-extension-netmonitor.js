@@ -169,11 +169,13 @@
         onExamineResponse: function( aNsISupport ){
             
             var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
-            if( isRelevantWindow(request) ){
+            //if( isRelevantWindow(request) ){
                 var activity = getHttpResponseHeaders(request);
-                activity.time = nowTime();
-                sendExamineNetResponse(activity);
-            }
+                if ( activity ) {
+                  activity.time = nowTime();
+                  sendExamineNetResponse(activity);
+                }
+            //}
         }
         
         
@@ -182,6 +184,9 @@
     function isRelevantWindow(aRequest) {
         var webProgress = getRequestWebProgress(aRequest)
         var win = webProgress ? safeGetWindow(webProgress) : null;
+        if (!win){
+            return false;
+        }
         return (topWindow == win || topWindow == win.parent);
     }
 
@@ -397,7 +402,7 @@
     function getFileExtension( uri ){
         var ext = "";
         var index = uri.indexOf('.');
-        if ( index > -1 ) {
+        if ( index > -1 && uri.length) {
             ext = uri.substr(index,uri.length());
         }
         return ext;

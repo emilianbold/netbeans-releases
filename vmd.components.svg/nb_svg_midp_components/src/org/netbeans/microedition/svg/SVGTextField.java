@@ -23,15 +23,35 @@ import org.w3c.dom.svg.SVGLocatableElement;
 import org.w3c.dom.svg.SVGRect;
 
 /**
- *
+ * Suggested svg snippet :
+ * <pre>
+ * &lt;text id="textfield_name_title" x="20" y="30" stroke="gray" font-size="15">Name
+ * &lt;/text>
+ *   &lt;g id="textfield_name" transform="translate(20,40)">
+ *       &lt;!-- metadata definition-->
+ *       &lt;text display="none">readOnly="false" enabled="true" </text>
+ *       &lt;rect x="0" y="0" rx="5" ry="5" width="200" height="30" fill="none" stroke="black" stroke-width="2">
+ *           &lt;animate attributeName="stroke" attributeType="XML" begin="textfield_name.focusin" dur="0.25s" fill="freeze" to="rgb(255,165,0)"/>
+ *           &lt;animate attributeName="stroke" attributeType="XML" begin="textfield_name.focusout" dur="0.25s" fill="freeze" to="black"/>
+ *       &lt;/rect>
+ *       &lt;text  x="10" y="23" stroke="black" font-size="20" font-family="SunSansSemiBold">John Hilsworths
+ *       &lt;metadata>&lt;text>type=text&lt;/text>&lt;/metadata>
+ *       &lt;/text>
+ *       &lt;rect id="textfield_name_caret" visibility="visible" x="20" y="4" width="3" height="22" fill="black" stroke="black">
+ *       &lt;metadata>&lt;text>type=text&lt;/text>&lt;/metadata>
+ *       &lt;/rect>
+ *   &lt;/g>
+ * </pre>
  * @author Pavel Benes
+ * @author ads
  */
 public class SVGTextField extends SVGComponent {
-    private static final String TEXTELEM_SUFFIX   = "_text";
-    private static final String CARETELEM_SUFFIX  = "_caret";
-    private static final String TITLEELEM_SUFFIX  = "_title";
-    private static final String TRAIT_TEXT        = "#text";
-    private static final String TRAIT_FONT_SIZE   = "font-size";
+
+    protected static final String TRAIT_FONT_FAMILY = "font-family";      // NOI18N
+    protected static final String TEXT              = "text";             // NOI18N
+    private static final String CARETELEM           = "caret";            // NOI18N
+    private static final String TITLEELEM_SUFFIX    = "_title";           // NOI18N
+    protected static final String TRAIT_FONT_SIZE   = "font-size";        // NOI18N
     
     private final SVGLocatableElement textElement;
     private final SVGLocatableElement caretElement;
@@ -44,31 +64,35 @@ public class SVGTextField extends SVGComponent {
     private       int                 caretPos = -1;
     private       float               caretWidth = 0;
 
-    public SVGTextField( SVGForm form, String elemId) {
-        super(form, elemId);
-        textElement  = (SVGLocatableElement) getElementById( wrapperElement, elemId + TEXTELEM_SUFFIX);
-        caretElement = (SVGLocatableElement) getElementById( wrapperElement, elemId + CARETELEM_SUFFIX);
-        SVGLocatableElement telem = (SVGLocatableElement) form.getSVGElementById("textfield_name_title");
+    public SVGTextField( SVGForm form, SVGLocatableElement element ) {
+        super(form, element );
+        textElement  = (SVGLocatableElement) getElementByMeta(getElement(), 
+                TYPE , TEXT );
+        caretElement = (SVGLocatableElement) getElementByMeta(getElement(), 
+                TYPE , CARETELEM );
 
         SVGRect outlineBox = wrapperElement.getBBox();
         SVGRect textBox    = textElement.getBBox();
-        System.out.println("outline: " + outlineBox);
-        System.out.println("text: " + textBox);
+        
 
         if (textBox != null) {
-            String t = textElement.getTrait(TRAIT_TEXT);
             System.out.println("Text width: " + textBox.getWidth());
             elemWidth = (int) (outlineBox.getWidth() + 0.5f - (textBox.getX() - outlineBox.getX()) * 2);
         } else {
             elemWidth = 0;
         }
 
-        hiddenTextElement = (SVGLocatableElement) form.getDocument().createElementNS( SVG_NS, "text");
-        hiddenTextElement.setFloatTrait( TRAIT_X, textElement.getFloatTrait(TRAIT_X));
-        hiddenTextElement.setFloatTrait( TRAIT_Y, textElement.getFloatTrait(TRAIT_Y));
-        hiddenTextElement.setFloatTrait( TRAIT_FONT_SIZE, textElement.getFloatTrait(TRAIT_FONT_SIZE));
-        hiddenTextElement.setTrait( "font-family", "SunSansSemiBold");
-        hiddenTextElement.setTrait( TRAIT_VISIBILITY, "visible");
+        hiddenTextElement = (SVGLocatableElement) form.getDocument().
+                createElementNS( SVG_NS, TEXT);
+        hiddenTextElement.setFloatTrait( TRAIT_X, 
+                textElement.getFloatTrait(TRAIT_X));
+        hiddenTextElement.setFloatTrait( TRAIT_Y, 
+                textElement.getFloatTrait(TRAIT_Y));
+        hiddenTextElement.setFloatTrait( TRAIT_FONT_SIZE, 
+                textElement.getFloatTrait(TRAIT_FONT_SIZE));
+        hiddenTextElement.setTrait( TRAIT_FONT_FAMILY, 
+                textElement.getTrait( TRAIT_FONT_FAMILY));
+        hiddenTextElement.setTrait( TRAIT_VISIBILITY, TR_VALUE_HIDDEN);
         wrapperElement.appendChild(hiddenTextElement);
         
         if (caretElement != null) {
@@ -81,9 +105,14 @@ public class SVGTextField extends SVGComponent {
         showCaret( false);
         setText( getTextTrait());
     }
+    public SVGTextField( SVGForm form, String elemId ) {
+        this( form , (SVGLocatableElement) 
+                form.getDocument().getElementById(elemId));
+    }
     
     public String getTitle() {
-        SVGLocatableElement titleElement = form.getSVGLocatableElementById(elemId + TITLEELEM_SUFFIX);
+        SVGLocatableElement titleElement = form.getSVGLocatableElementById(
+                getElement().getId()+ TITLEELEM_SUFFIX);
         return titleElement != null ? titleElement.getTrait( TRAIT_TEXT) : null;
     }
     
@@ -154,12 +183,17 @@ public class SVGTextField extends SVGComponent {
         if ( caretElement != null) {
             form.invokeAndWaitSafely(new Runnable() {
                public void run() {
-                    caretElement.setTrait(TRAIT_VISIBILITY, showCaret ? "visible" : "hidden");
+                    caretElement.setTrait(TRAIT_VISIBILITY, 
+                            showCaret ? TR_VALUE_VISIBLE : TR_VALUE_HIDDEN);
                }
             });
         }
     }   
 
+    /*
+     * TODO : this is very non-efficient way to compute text width.
+     * Need somehow to improve it. 
+     */
     private float getTextWidth(String text) {
         if ( text.endsWith(" ")) {
             return getTextWidthImpl( text + "i") - getTextWidthImpl("i");

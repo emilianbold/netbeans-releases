@@ -38,6 +38,7 @@
  */
 package org.netbeans.api.ruby.platform;
 
+import java.awt.EventQueue;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
@@ -61,6 +62,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyPlatform.Info;
 import org.netbeans.modules.ruby.platform.RubyExecution;
+import org.netbeans.modules.ruby.platform.RubyPreferences;
 import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.platform.execution.ExecutionService;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
@@ -147,7 +149,7 @@ public final class RubyPlatformManager {
                 LOGGER.log(Level.WARNING, e.getLocalizedMessage(), e);
             }
         }
-        Util.setFirstPlatformTouch(false);
+        RubyPreferences.setFirstPlatformTouch(false);
         
     }
 
@@ -474,7 +476,16 @@ public final class RubyPlatformManager {
         return getPlatformsInternal().iterator();
     }
 
+    /**
+     * Might take longer time when detecting e.g. JRuby platform. So do not run
+     * from within EDT and similar threads.
+     *
+     * @param interpreter representing Ruby platform
+     * @return information about the platform or <tt>null</tt> if
+     *         <tt>interpreter</tt> is not recognized as platform
+     */
     static Info computeInfo(final File interpreter) {
+        assert !EventQueue.isDispatchThread() : "computeInfo should not be run from EDT";
         if (TEST_RUBY_PROPS != null && !RubyPlatformManager.getDefaultPlatform().getInterpreterFile().equals(interpreter)) { // tests
             return new Info(TEST_RUBY_PROPS);
         }
@@ -492,10 +503,34 @@ public final class RubyPlatformManager {
             pb.environment().remove("JRUBY_HOME"); // NOI18N
             pb.environment().put("JAVA_HOME", RubyExecution.getJavaHome()); // NOI18N
             ExecutionService.logProcess(pb);
-            Process proc = pb.start();
+            final Process proc = pb.start();
             // FIXME: set timeout
-            proc.waitFor();
-            if (proc.exitValue() == 0) {
+            Thread gatherer = new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        proc.waitFor();
+                    } catch (InterruptedException e) {
+                        LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
+                    }
+                }
+            }, "Ruby Platform Gatherer"); // NOI18N
+            gatherer.start();
+            try {
+                gatherer.join(30000); // 30s timeout for platform_info.rb
+            } catch (InterruptedException e) {
+                LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
+                return null;
+            }
+            int exitValue;
+            try {
+                exitValue = proc.exitValue();
+            } catch (IllegalThreadStateException e) {
+                // process is still running
+                LOGGER.warning("Detection of platform timeouted");
+                proc.destroy();
+                return null;
+            }
+            if (exitValue == 0) {
                 Properties props = new Properties();
                 if (LOGGER.isLoggable(Level.FINEST)) {
                     String stdout = Util.readAsString(proc.getInputStream());
@@ -517,8 +552,6 @@ public final class RubyPlatformManager {
             }
         } catch (IOException e) {
             LOGGER.log(Level.INFO, "Not a ruby platform: " + interpreter.getAbsolutePath()); // NOI18N
-        } catch (InterruptedException e) {
-            LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
         }
         return info;
     }

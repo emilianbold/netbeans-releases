@@ -47,31 +47,26 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.datatransfer.Transferable;
-import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.event.KeyEvent;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTree;
-import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeListener;
@@ -672,7 +667,7 @@ public class DefineCorrelationWizard implements WizardProperties {
                 
                 correlationMapper = new Mapper(mapperModel);
                 correlationMapper.setContext(new CorrelationMapperContext());                
-                defineCorrelationMapperKeyBindings();
+                // defineCorrelationMapperKeyBindings();
                 
                 wizardPanel.add(correlationMapper);
                 wizardPanel.revalidate();
@@ -814,7 +809,9 @@ public class DefineCorrelationWizard implements WizardProperties {
             }
             return (WizardUtils.getSchemaComponentTypeName(schemaComponent) == null);
         }
-        
+
+        /* Not used since Jun 2008 - method delete() of the class 
+        // CorrelationMapperModel is used now
         private void defineCorrelationMapperKeyBindings() {
             if (correlationMapper == null) return;
             InputMap inputMap = correlationMapper.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
@@ -822,6 +819,7 @@ public class DefineCorrelationWizard implements WizardProperties {
             ActionMap actionMap = correlationMapper.getActionMap();
             actionMap.put(ACTION_KEY_DELETE, new ActionDeleteKey());
         }
+        */
         
         @Override
         public boolean isValid() {
@@ -843,6 +841,17 @@ public class DefineCorrelationWizard implements WizardProperties {
         public void validate() throws WizardValidationException {
             try {
                 makeCorrelations();
+            } catch(CorrelationDefinitionException cde) {
+                Throwable t = cde.getCause();
+                if (t != null) {
+                    Logger.getLogger(DefineCorrelationWizard.class.getName()).log(
+                        Level.INFO, null, t);
+                }
+                String warningMsg = cde.getMessage();
+                if (warningMsg != null) {
+                    UserNotification.showMessage(warningMsg);
+                }
+                throw new WizardValidationException(wizardPanel, null, null);
             } finally {
                 CorrelationWizardWSDLWrapper.closeInstance();
             }
@@ -858,7 +867,6 @@ public class DefineCorrelationWizard implements WizardProperties {
             if (correlationLinkers.isEmpty()) {
                 return;
             }
-            //
             // group linkers by equivalence of [activity-message-part]
             // to combine appropriate properties in one correlation set
             CorrelationWizardWSDLWrapper wizardWsdlWrapper = 
@@ -867,27 +875,22 @@ public class DefineCorrelationWizard implements WizardProperties {
             if (wizardWsdlModel != null) {
                 WizardUtils.doInTransaction(wizardWsdlModel, new Runnable() {
                     public void run() {
-                        try {
-                            while (!correlationLinkers.isEmpty()) {
-                                List<CorrelationLinker> equalLinkerSublist = 
-                                        getSublistEqualCorrelationLinkers(correlationLinkers);
-                                if (equalLinkerSublist.isEmpty()) break;
-                                correlationLinkers.removeAll(equalLinkerSublist);
+                        while (!correlationLinkers.isEmpty()) {
+                            List<CorrelationLinker> equalLinkerSublist = 
+                                getSublistEqualCorrelationLinkers(correlationLinkers);
+                            if (equalLinkerSublist.isEmpty()) break;
+                            correlationLinkers.removeAll(equalLinkerSublist);
 
-                                createCorrelationPropertiesAndPropertyAliases(
-                                        equalLinkerSublist, wizardWsdlModel);
-                                CorrelationSet correlationSet = 
-                                        createCorrelationSet(equalLinkerSublist);
-                                equalLinkerSublist.get(0).
-                                        createActivityCorrelation(correlationSet);
-                            }
-                        } catch (WizardValidationException ex) {
-                            ErrorManager.getDefault().notify(ex);
+                            createCorrelationPropertiesAndPropertyAliases(
+                                equalLinkerSublist, wizardWsdlModel);
+                            CorrelationSet correlationSet = 
+                                createCorrelationSet(equalLinkerSublist);
+                            equalLinkerSublist.get(0).
+                                createActivityCorrelation(correlationSet);
                         }
                     }
                 });
             }
-            //
             wizardWsdlWrapper.importIntoBpelModel();
         }
 
@@ -984,7 +987,7 @@ public class DefineCorrelationWizard implements WizardProperties {
         }
         
         private void createCorrelationPropertiesAndPropertyAliases(
-            List<CorrelationLinker> linkerList, WSDLModel wizardWsdlModel) throws WizardValidationException {
+            List<CorrelationLinker> linkerList, WSDLModel wizardWsdlModel) {
             for (CorrelationLinker linker : linkerList) {
                 linker.createCorrelationProperty(wizardWsdlModel);
                 linker.createPropertyAlias(wizardWsdlModel);
@@ -1060,7 +1063,7 @@ public class DefineCorrelationWizard implements WizardProperties {
                 target.createPropertyAlias(wizardWsdlModel, correlationProperty);
             }
 
-            public void createCorrelationProperty(final WSDLModel wizardWsdlModel) throws WizardValidationException {
+            public void createCorrelationProperty(final WSDLModel wizardWsdlModel) {
                 String propertyName = getBasePropertyName();
                 
                 correlationProperty = (CorrelationProperty) wizardWsdlModel.getFactory().create(
@@ -1250,28 +1253,29 @@ public class DefineCorrelationWizard implements WizardProperties {
             }
             
             public void createPropertyAlias(final WSDLModel wizardWsdlModel, 
-                    final CorrelationProperty correlationProperty) {
-                if (! WizardUtils.wsdlContainsPropertyAlias(wizardWsdlModel, correlationProperty, message, part)) {
+                final CorrelationProperty correlationProperty) {
+                if (! WizardUtils.wsdlContainsPropertyAlias(wizardWsdlModel, 
+                    correlationProperty, message, part)) {
                     WizardUtils.doInTransaction(wizardWsdlModel, new Runnable() {
                         public void run() {
                             final PropertyAlias propertyAlias = 
-                                    (PropertyAlias) wizardWsdlModel.getFactory().create(
+                                (PropertyAlias) wizardWsdlModel.getFactory().create(
                                 wizardWsdlModel.getDefinitions(), BPELQName.PROPERTY_ALIAS.getQName());
-                            //
+
                             wizardWsdlModel.addChildComponent(
-                                    wizardWsdlModel.getRootComponent(), 
-                                    propertyAlias, 0);
-                            //
+                                wizardWsdlModel.getRootComponent(), 
+                                propertyAlias, 0);
+
                             NamedComponentReference<CorrelationProperty> correlationPropertyRef =
                                 propertyAlias.createReferenceTo(correlationProperty, CorrelationProperty.class);
                             propertyAlias.setPropertyName(correlationPropertyRef);
-                            //
+
                             NamedComponentReference<Message> messageTypeRef =
                                 propertyAlias.createReferenceTo(message, Message.class);
                             propertyAlias.setMessageType(messageTypeRef);
-                            //
+
                             propertyAlias.setPart(part.getName());
-                            //
+
                             Query query = getPropertyAliasQuery(wizardWsdlModel,
                                 propertyAlias);
                             if (query != null) propertyAlias.setQuery(query);
@@ -1373,6 +1377,8 @@ public class DefineCorrelationWizard implements WizardProperties {
             }
         }
         //====================================================================//
+        /* Not used since Jun 2008 - method delete() of the class 
+        // CorrelationMapperModel is used now
         private class ActionDeleteKey extends AbstractAction {
             public void actionPerformed(ActionEvent e) {
                 List<Link> selectedLinks =  correlationMapper.getSelectionModel().getSelectedLinks();
@@ -1385,6 +1391,7 @@ public class DefineCorrelationWizard implements WizardProperties {
                 }
             }
         }
+        */ 
         //====================================================================//
         private class CorrelationMapperTreeModel extends DefaultTreeModel {
             public CorrelationMapperTreeModel() {
@@ -1791,7 +1798,16 @@ public class DefineCorrelationWizard implements WizardProperties {
                 return true;
             }
 
-            public void delete(TreePath currentTreePath, GraphSubset graphGroup) {}
+            public void delete(TreePath currentTreePath, GraphSubset graphGroup) {
+                List<Link> selectedLinks =  correlationMapper.getSelectionModel().getSelectedLinks();
+                if ((selectedLinks != null) && (! selectedLinks.isEmpty())) {
+                    CorrelationMapperModel mapperModel = 
+                        (CorrelationMapperModel) correlationMapper.getModel();
+                    for (Link link : selectedLinks) {
+                        mapperModel.deleteLink(link);
+                    }
+                }
+            }
         }
     }
     //========================================================================//
@@ -2085,14 +2101,33 @@ class WizardUtils implements WizardConstants {
         List<PropertyAlias> propertyAliases = 
             baseWsdlModel.getRootComponent().getChildren(PropertyAlias.class);
         for (PropertyAlias existingPropertyAlias : propertyAliases) {
-            CorrelationProperty existingProperty = existingPropertyAlias.getPropertyName().get();
-            Message existingMessage = existingPropertyAlias.getMessageType().get();
-            String existingPart = existingPropertyAlias.getPart();
-            
-            if ((existingProperty.getName().equals(checkedProperty.getName())) &&
-                (existingMessage.getName().equals(checkedMessage.getName())) &&
-                (existingPart.equals(checkedPart.getName()))) {
-                return true;
+            CorrelationProperty existingProperty = null;
+            Message existingMessage = null;
+            String existingPart = null;
+            try {
+                existingProperty = existingPropertyAlias.getPropertyName().get();
+                existingMessage = existingPropertyAlias.getMessageType().get();
+                existingPart = existingPropertyAlias.getPart();
+
+                if ((existingProperty.getName().equals(checkedProperty.getName())) &&
+                    (existingMessage.getName().equals(checkedMessage.getName())) &&
+                    (existingPart.equals(checkedPart.getName()))) {
+                    return true;
+                }
+            } catch(Exception e) {
+                String warningMsg = (existingProperty == null) ? "propertyName" : null;
+                warningMsg = (warningMsg == null) && (existingMessage == null) ? "messageType" : warningMsg;
+                warningMsg = (warningMsg == null) && (existingPart == null) ? "part" : warningMsg;
+                if (warningMsg != null) {
+                    String wsdlFileName = baseWsdlModel.getDefinitions().getName(),
+                           xmlText = ((AbstractDocumentComponent) 
+                               existingPropertyAlias).getXmlFragmentInclusive();
+                    warningMsg = "[" + wsdlFileName + "]: " + 
+                        MessageFormat.format(NbBundle.getMessage(DefineCorrelationWizard.class, 
+                        "LBL_ErrMsg_Property_Alias_Wrong_Attribute_Value"), 
+                        new Object[] {warningMsg}) + "\n" + (xmlText != null ? xmlText : "");
+                }
+                throw new CorrelationDefinitionException(warningMsg, e);
             }
         }
         return false;
@@ -2587,4 +2622,10 @@ interface WizardProperties {
 
         PROPERTY_HELP_DISPLAYED = "WizardPanel_helpDisplayed", // NOI18N
         PROPERTY_HELP_URL = "WizardPanel_helpURL"; // NOI18N
+}
+//============================================================================//
+class CorrelationDefinitionException extends RuntimeException {
+    public CorrelationDefinitionException(String message, Throwable cause) {
+        super(message, cause);
+    } 
 }

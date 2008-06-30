@@ -232,6 +232,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.core.ui</friend>
                 <friend>org.netbeans.modules.settings</friend>
                 <friend>org.openide.compat</friend>
+                <friend>org.netbeans.modules.jellytools</friend>
                 <package>org.netbeans.beaninfo</package>
                 <package>org.netbeans.beaninfo.editors</package>
                 <package>org.netbeans.core</package>

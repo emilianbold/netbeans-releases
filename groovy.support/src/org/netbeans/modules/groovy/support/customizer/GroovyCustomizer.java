@@ -80,28 +80,31 @@ public final class GroovyCustomizer implements ProjectCustomizer.CompositeCatego
         if (project != null) {
             extender = project.getLookup().lookup(GroovyProjectExtender.class);
         }
-        return new GroovyCustomizerPanel(extender);
+        return extender.getPanel();
     }
-    
+
     private static final class StoreActionListener implements ActionListener {
 
         private final Lookup context;
-        
+
         public StoreActionListener(Lookup context) {
             this.context = context;
         }
-        
+
         public void actionPerformed(ActionEvent e) {
-            
+
             Project project = context.lookup(Project.class);
             if (project != null) {
                 GroovyProjectExtender extender = project.getLookup().lookup(GroovyProjectExtender.class);
                 if (extender != null) {
-                    extender.enableGroovy();
+                    GroovyCustomizerPanel panel = extender.getPanel();
+                    if (panel != null && panel.isEnablingCheckboxSelected()) {
+                        extender.enableGroovy();
+                    }
                 }
             }
         }
-        
+
     }
-    
+
 }

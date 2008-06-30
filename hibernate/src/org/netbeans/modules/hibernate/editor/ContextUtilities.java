@@ -136,6 +136,11 @@ public final class ContextUtilities {
             if(equalsToken == null)
                 return null;
             
+            //getTokenId() should not return null by JavaDoc. But in reality, it does reutrn null sometimes
+            // see issue 67661
+            if(equalsToken.getTokenID() == null) {
+                return null;
+            }
             while(equalsToken.getTokenID().getNumericID() != XMLDefaultTokenContext.OPERATOR_ID) {
                 equalsToken = equalsToken.getPrevious();
             }

@@ -77,4 +77,10 @@ public interface WinSysPrefs {
     
     public final String SNAPPING_ACTIVE_SIZE = "snapping.active.size";
     
+    /**
+     * If true then the most recent document is activate when some editor is closed.
+     * If false then the editor window to right of the document being closed is activated.
+     */
+    public final String EDITOR_CLOSE_ACTIVATES_RECENT = "editor.closing.activates.recent";
+    
 }

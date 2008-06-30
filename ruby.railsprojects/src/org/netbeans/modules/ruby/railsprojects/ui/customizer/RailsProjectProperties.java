@@ -192,7 +192,7 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
         EditableProperties projectProperties = updateHelper.getProperties( RakeProjectHelper.PROJECT_PROPERTIES_PATH );         
         String cp = projectProperties.get( JAVAC_CLASSPATH )  ;
         JAVAC_CLASSPATH_MODEL = /*ClassPathUiSupport.*/createListModel(cs.itemsIterator(cp) );
-        INCLUDE_JAVA_MODEL = projectGroup.createToggleButtonModel( evaluator, INCLUDE_JAVA );
+        //INCLUDE_JAVA_MODEL = projectGroup.createToggleButtonModel( evaluator, INCLUDE_JAVA );
         
         JAVAC_COMPILER_ARG_MODEL = projectGroup.createStringDocument( evaluator, JAVAC_COMPILER_ARG );
         

@@ -378,6 +378,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
 
         tableClosureCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(tableClosureCheckBox, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "HibernateRevengDatabaseTablesPanel_IncludeRelatedTables")); // NOI18N
+        tableClosureCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "HibernateRevengDatabaseTablesPanel_IncludeRelatedTables")); // NOI18N
         tableClosureCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         tableClosureCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         tableClosureCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -399,7 +400,6 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
         tableError.setOpaque(false);
         jScrollPane3.setViewportView(tableError);
 
-        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("Configuration_mnemonic").charAt(0));
         jLabel1.setLabelFor(cmbDatabaseConn);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "HibernateRevengDatabaseTablesPanel_Configuration")); // NOI18N
 

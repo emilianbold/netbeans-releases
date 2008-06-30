@@ -64,6 +64,7 @@ import org.netbeans.core.windows.model.DockingStatus;
 import org.netbeans.core.windows.model.Model;
 import org.netbeans.core.windows.model.ModelElement;
 import org.netbeans.core.windows.model.ModelFactory;
+import org.netbeans.core.windows.options.WinSysPrefs;
 import org.netbeans.core.windows.view.ControllerHandler;
 import org.netbeans.core.windows.view.View;
 import org.openide.windows.Mode;
@@ -794,6 +795,11 @@ final class Central implements ControllerHandler {
             return false;
         }
         
+        if( isViewMaximized() && mode.getKind() == Constants.MODE_KIND_SLIDING ) {
+            //134622 - unslide first if some other view is maximized, otherwise
+            //the view being closed will reopen in slidebar after restoring from maximized mode
+            mode = unSlide(tc, mode);
+        }
         // Validate the TopComponent was removed from other modes.
         removeTopComponentFromOtherModes(mode, tc);
         
@@ -917,7 +923,7 @@ final class Central implements ControllerHandler {
         TopComponent recentTc = null;
         if( mode.getKind() == Constants.MODE_KIND_EDITOR ) {
             //an editor document is being closed so let's find the most recent editor to select
-            recentTc = getRecentTopComponent( mode, tc );
+            recentTc = findTopComponentToActivateAfterClose( mode, tc );
         }
         model.removeModeTopComponent(mode, tc, recentTc);
 
@@ -1920,7 +1926,7 @@ final class Central implements ControllerHandler {
         TopComponent recentTc = null;
         if( mode.getKind() == Constants.MODE_KIND_EDITOR ) {
             //an editor document is being closed so let's find the most recent editor to select
-            recentTc = getRecentTopComponent( mode, tc );
+            recentTc = findTopComponentToActivateAfterClose( mode, tc );
         }
         boolean wasTcClosed = false;
         if (PersistenceHandler.isTopComponentPersistentWhenClosed(tc)) {
@@ -1932,9 +1938,62 @@ final class Central implements ControllerHandler {
                 wasTcClosed = removeModeTopComponent(mode, tc);
             }
         }
+        if( wasTcClosed 
+                && mode.getKind() == Constants.MODE_KIND_EDITOR 
+                && "editor".equals(mode.getName())  //NOI18N
+                && mode.getOpenedTopComponentsIDs().isEmpty() ) {
+            
+            //134945 - if user just closed the last topcomponent in the default
+            //and permanent "editor" mode then pick some other arbitrary editor mode
+            //and move its topcomponents to the default editor mode. otherwise opening
+            //of a new editor window will cause a split in the editor area.
+            ModeImpl otherEditorMode = findSomeOtherEditorModeImpl();
+            if( null != otherEditorMode ) {
+                for( String closedTcId : otherEditorMode.getClosedTopComponentsIDs() ) {
+                    mode.addUnloadedTopComponent(closedTcId);
+                }
+                List<TopComponent> tcs = otherEditorMode.getOpenedTopComponents();
+                for( TopComponent t : tcs ) {
+                    int index = otherEditorMode.getTopComponentTabPosition(t);
+                    mode.addOpenedTopComponent(t, index);
+                }
+                removeMode(otherEditorMode);
+            }
+        }
         if ((recentTc != null) && wasTcClosed) {
             recentTc.requestActive();
         }
+    }
+    
+    private TopComponent findTopComponentToActivateAfterClose( ModeImpl editorMode, TopComponent tcBeingClosed ) {
+        TopComponent result = null;
+        if( !WinSysPrefs.HANDLER.getBoolean(WinSysPrefs.EDITOR_CLOSE_ACTIVATES_RECENT, true)
+                && tcBeingClosed.equals( editorMode.getSelectedTopComponent() ) ) {
+            List<TopComponent> opened = editorMode.getOpenedTopComponents();
+            int index = opened.indexOf(tcBeingClosed)+1;
+            if( index >= opened.size() )
+                index = opened.size()-2;
+            if( index >= 0 && index < opened.size() ) {
+                result = opened.get(index);
+            }
+        } else {
+            result = getRecentTopComponent( editorMode, tcBeingClosed );
+        }
+        return result;
+    }
+    
+    /**
+     * @return ModeImpl with opened TopComponents which is 'editor' kind but 
+     * not the default and permanent one. Returns null if there is no such mode.
+     */
+    private ModeImpl findSomeOtherEditorModeImpl() {
+        for( ModeImpl m : getModes() ) {
+            if( m.getKind() == Constants.MODE_KIND_EDITOR 
+                    && !"editor".equals(m.getName()) //NOI18N
+                    && !m.getOpenedTopComponentsIDs().isEmpty() )
+                return m;
+        }
+        return null;
     }
     
     public void userClosedMode(ModeImpl mode) {
@@ -2218,7 +2277,7 @@ final class Central implements ControllerHandler {
     /**
      * Cancel the sliding mode of the given TopComponent.
      */
-    private void unSlide(TopComponent tc, ModeImpl source) {
+    private ModeImpl unSlide(TopComponent tc, ModeImpl source) {
         String tcID = WindowManagerImpl.getInstance().findTopComponentID(tc);        
         
         ModeImpl targetMode = model.getModeTopComponentPreviousMode(source, tcID);
@@ -2254,6 +2313,7 @@ final class Central implements ControllerHandler {
         }
         WindowManagerImpl.getInstance().doFirePropertyChange(
             WindowManagerImpl.PROP_ACTIVE_MODE, null, getActiveMode());
+        return targetMode;
     }
   
     

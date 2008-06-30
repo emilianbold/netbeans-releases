@@ -468,9 +468,6 @@ public class EjbJarProjectProperties {
         
         storeAdditionalProperties(projectProperties);
 
-        ProjectProperties.storeLibrariesLocations (project.getAntProjectHelper(), ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel()).iterator(), 
-                project.getAntProjectHelper().isSharableProject() ? projectProperties : privateProperties);
-        
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );        

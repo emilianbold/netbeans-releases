@@ -51,6 +51,8 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -149,8 +151,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 	
         boolean _const = initConst(ast);
         setFlags(FLAGS_CONST, _const);
-        returnType = initReturnType(ast, scope);
         initTemplate(ast);
+        returnType = initReturnType(ast);
 
         // set parameters, do it in constructor to have final fields
         List<CsmParameter> params = initParameters(ast);
@@ -436,7 +438,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
      */
     public CsmFunctionDefinition getDefinition() {
         if( isCStyleStatic() ) {
-            for( CsmDeclaration decl : getContainingFile().getDeclarations() ) {
+            CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(
+                               getName().toString(), true, true, false);
+            Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(getContainingFile(), filter);
+            while(it.hasNext()){
+                CsmDeclaration decl = it.next();
                 if( CsmKindUtilities.isFunctionDefinition(decl) ) {
                     if( getName().equals(decl.getName()) ) {
                         CsmFunctionDefinition fun = (CsmFunctionDefinition) decl;
@@ -525,7 +531,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 //        return false;
 //    }
     
-    private CsmType initReturnType(AST node, CsmScope scope) {
+    private CsmType initReturnType(AST node) {
         CsmType ret = null;
         AST token = getTypeToken(node);
         if( token != null ) {
@@ -534,7 +540,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         if( ret == null ) {
             ret = TypeFactory.createBuiltinType("int", (AST) null, 0,  null/*getAst().getFirstChild()*/, getContainingFile()); // NOI18N
         }
-        return TemplateUtils.checkTemplateType(ret, scope);
+        return TemplateUtils.checkTemplateType(ret, FunctionImpl.this);
     }
     
     public CsmType getReturnType() {
@@ -687,9 +693,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return scope;
     }
     
-    private Collection _getParameters() {
+    private Collection<CsmParameter> _getParameters() {
         if (this.parameters == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.<CsmParameter>emptyList();
         } else {
             Collection<CsmParameter> out = UIDCsmConverter.UIDsToDeclarations(parameters);
             return out;
@@ -728,6 +734,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         PersistentUtils.writeTemplateParameters(templateParams, output);
     }
 
+    @SuppressWarnings("unchecked")
     public FunctionImpl(DataInput input) throws IOException {
         super(input);
         this.name = QualifiedNameCache.getManager().getString(input.readUTF());

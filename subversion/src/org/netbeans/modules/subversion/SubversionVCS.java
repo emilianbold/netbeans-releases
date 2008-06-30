@@ -61,18 +61,56 @@ import java.beans.PropertyChangeEvent;
 /**
  * @author Maros Sandor
  */
-public class SubversionVCS extends VersioningSystem implements VersioningListener, PreferenceChangeListener, PropertyChangeListener, CollocationQueryImplementation {
+public class SubversionVCS extends VersioningSystem implements VersioningListener, PreferenceChangeListener, PropertyChangeListener {
+    
+    private static SubversionVCS instance;
 
+    static SubversionVCS getInstance() {
+        return instance;
+    }
+    
+    private final Set<File> unversionedParents = Collections.synchronizedSet(new HashSet<File>(20));
+    
     public SubversionVCS() {
         putProperty(PROP_DISPLAY_NAME, NbBundle.getMessage(SubversionVCS.class, "CTL_Subversion_DisplayName"));
         putProperty(PROP_MENU_LABEL, NbBundle.getMessage(SubversionVCS.class, "CTL_Subversion_MainMenu"));
-        Subversion.getInstance().getStatusCache().addVersioningListener(this);
-        Subversion.getInstance().addPropertyChangeListener(this);
         SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
+        instance = this;
     }
 
+    /**
+     * Tests whether the file is managed by this versioning system. If it is, the method should return the topmost 
+     * parent of the file that is still versioned.
+     *  
+     * @param file a file
+     * @return File the file itself or one of its parents or null if the supplied file is NOT managed by this versioning system
+     */
     public File getTopmostManagedAncestor(File file) {
-        return Subversion.getInstance().getTopmostManagedParent(file);
+        if(unversionedParents.contains(file)) return null;
+        if (SvnUtils.isPartOfSubversionMetadata(file)) {
+            for (;file != null; file = file.getParentFile()) {
+                if (SvnUtils.isAdministrative(file)) {
+                    file = file.getParentFile();
+                    break;
+                }
+            }
+        }
+        File topmost = null;
+        Set<File> done = new HashSet<File>();
+        for (; file != null; file = file.getParentFile()) {
+            if(unversionedParents.contains(file)) break;
+            if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
+            if (new File(file, SvnUtils.SVN_ENTRIES_DIR).canRead()) { // NOI18N
+                topmost = file;
+                done.clear();
+            } else {
+                done.add(file);
+            }
+        }
+        if(done.size() > 0) {
+            unversionedParents.addAll(done);
+        }
+        return topmost;
     }
 
     public VCSAnnotator getVCSAnnotator() {
@@ -87,24 +125,32 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
         Subversion.getInstance().getOriginalFile(workingCopy, originalFile);
     }
 
-    public boolean areCollocated(File a, File b) {
-        File fra = getTopmostManagedAncestor(a);
-        File frb = getTopmostManagedAncestor(b);
-        if (fra == null || !fra.equals(frb)) return false;
-        try {
-            SVNUrl ra = SvnUtils.getRepositoryRootUrl(a);
-            SVNUrl rb = SvnUtils.getRepositoryRootUrl(b);
-            SVNUrl rr = SvnUtils.getRepositoryRootUrl(fra);
-            return ra.equals(rb) && ra.equals(rr);
-        } catch (SVNClientException e) {
-            // root not found
-            return false;
-        }
+    @Override
+    public CollocationQueryImplementation getCollocationQueryImplementation() {
+        return collocationQueryImplementation;
     }
 
-    public File findRoot(File file) {
-        return getTopmostManagedAncestor(file);
-    }
+    private final CollocationQueryImplementation collocationQueryImplementation = new CollocationQueryImplementation() {
+        public boolean areCollocated(File a, File b) {
+            File fra = getTopmostManagedAncestor(a);
+            File frb = getTopmostManagedAncestor(b);
+            if (fra == null || !fra.equals(frb)) return false;
+            try {
+                SVNUrl ra = SvnUtils.getRepositoryRootUrl(a);
+                SVNUrl rb = SvnUtils.getRepositoryRootUrl(b);
+                SVNUrl rr = SvnUtils.getRepositoryRootUrl(fra);
+                return ra.equals(rb) && ra.equals(rr);
+            } catch (SVNClientException e) {
+                // root not found
+                return false;
+            }
+        }
+
+        public File findRoot(File file) {
+            // TODO: we should probably return the closest common ancestor
+            return getTopmostManagedAncestor(file);
+        }
+    };
     
     public void versioningEvent(VersioningEvent event) {
         if (event.getId() == FileStatusCache.EVENT_FILE_STATUS_CHANGED) {
@@ -123,6 +169,7 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
         if (evt.getPropertyName().equals(Subversion.PROP_ANNOTATIONS_CHANGED)) {
             fireAnnotationsChanged((Set<File>) evt.getNewValue());
         } else if (evt.getPropertyName().equals(Subversion.PROP_VERSIONED_FILES_CHANGED)) {
+            unversionedParents.clear();
             fireVersionedFilesChanged();
         }
     }

@@ -57,7 +57,6 @@ import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
-import org.netbeans.modules.websvc.saas.codegen.Constants.DropFileType;
 import org.netbeans.modules.websvc.saas.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.SaasClientCodeGenerator;
@@ -66,6 +65,7 @@ import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.codegen.java.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.RestClientSaasBean;
+import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SessionKeyAuthentication;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
@@ -82,11 +82,18 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
     private FileObject saasServiceFile = null;
     private JavaSource saasServiceJS = null;
     private FileObject serviceFolder = null;
-    private DropFileType dropFileType;
     private SaasClientJavaAuthenticationGenerator authGen;
 
     public RestClientPojoCodeGenerator() {
         setDropFileType(Constants.DropFileType.JAVA_CLIENT);
+    }
+
+    public boolean canAccept(SaasMethod method, Document doc) {
+        if (SaasBean.canAccept(method, WadlSaasMethod.class, getDropFileType()) &&
+                Util.isJava(doc)) {
+            return true;
+        }
+        return false;
     }
     
     @Override
@@ -134,14 +141,6 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
         }
         return serviceFolder;
     }
-
-    public DropFileType getDropFileType() {
-        return dropFileType;
-    }
-
-    public void setDropFileType(DropFileType dropFileType) {
-        this.dropFileType = dropFileType;
-    }
     
     @Override
     public RestClientSaasBean getBean() {
@@ -157,13 +156,6 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
         if (getBean().getMethod().getSaas().getLibraryJars().size() > 0) {
             Util.addClientJars(getBean(), getProject(), null);
         }
-    }
-
-    public boolean canAccept(SaasMethod method, Document doc) {
-        if (method instanceof WadlSaasMethod && Util.isJava(doc)) {
-            return true;
-        }
-        return false;
     }
 
     @Override

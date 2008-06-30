@@ -107,12 +107,7 @@ public class JoinTokenList<T extends TokenId> implements TokenList<T> {
                     // There may be empty ETLs and ETLs that will contain part tokens
                     activeTokenListIndex++;
                     activeTokenList = jtl.tokenList(activeTokenListIndex);
-                    assert (activeTokenList.embedding().joinSections()) :
-                        "Embedding not declared to join sections. " +
-                        activeTokenList.dumpInfo(null);
-                    assert (activeTokenList.tokenCountCurrent() == 0) :
-                        "Non-empty embedded token list in JoinTokenList initialization. " +
-                        activeTokenList.dumpInfo(null);
+                    checkEmbeddedTokenListStatus(activeTokenList);
                     activeTokenList.joinInfo = new EmbeddedJoinInfo(base, joinTokenCount, activeTokenListIndex);
                 } while (activeTokenListIndex < lexerInputOperation.activeTokenListIndex());
             }
@@ -156,21 +151,31 @@ public class JoinTokenList<T extends TokenId> implements TokenList<T> {
                     " with " + joinTokenCount + " tokens\n"); // NOI18N
         }
         // Init possible empty ETL at the end
-        if (activeTokenListIndex != -1) {
-            while (activeTokenListIndex < lexerInputOperation.activeTokenListIndex()) {
-                EmbeddedTokenList<T> etl = jtl.tokenList(activeTokenListIndex);
-                assert (etl.joinInfo == null);
-                etl.joinInfo = new EmbeddedJoinInfo(base, joinTokenCount, activeTokenListIndex);
-                activeTokenListIndex++;
-            }
+        while (++activeTokenListIndex < tokenListCount) {
+            // There may be empty ETLs that contain no tokens
+            activeTokenList = jtl.tokenList(activeTokenListIndex);
+            checkEmbeddedTokenListStatus(activeTokenList);
+            activeTokenList.joinInfo = new EmbeddedJoinInfo(base, joinTokenCount, activeTokenListIndex);
         }
         // Trim storage of all ETLs to their current size
         for (int i = tokenListCount - 1; i >= 0; i--) {
-            tokenListList.get(tokenListStartIndex + i).trimStorageToSize();
+            EmbeddedTokenList etl = tokenListList.get(tokenListStartIndex + i);
+            etl.trimStorageToSize();
+            assert (etl.joinInfo != null);
         }
         base.joinTokenCount = joinTokenCount;
         // Could possibly subtract gap lengths but should not be necessary
         return jtl;
+    }
+
+    private static void checkEmbeddedTokenListStatus(EmbeddedTokenList etl) {
+        assert (etl.embedding().joinSections()) :
+                "Embedding not declared to join sections. " +
+                etl.dumpInfo(null);
+        assert (etl.tokenCountCurrent() == 0) :
+                "Non-empty embedded token list in JoinTokenList initialization. " +
+                etl.dumpInfo(null);
+        assert (etl.joinInfo == null);
     }
     
     /** Backing token list list that holds ETLs. */
@@ -496,10 +501,12 @@ public class JoinTokenList<T extends TokenId> implements TokenList<T> {
                 activeTokenListIndex += lps;
                 fetchActiveTokenListData();
             } else { // Move to next ETL
-                activeTokenListIndex++;
-                fetchActiveTokenListData();
-                // Use first token but check for empty ETL and join token
-                adjustJoinedOrSkipEmpty();
+                if (activeTokenListIndex + 1 < tokenListCount()) {
+                    activeTokenListIndex++;
+                    fetchActiveTokenListData();
+                    // Use first token but check for empty ETL and join token
+                    adjustJoinedOrSkipEmpty();
+                }
             }
             
         } else if (joinIndex > activeEndJoinIndex) { // joinIndex > activeEndJoinIndex
@@ -512,7 +519,8 @@ public class JoinTokenList<T extends TokenId> implements TokenList<T> {
                 }
             }
         }
-        // The index is within bounds of activeTokenList
+        // The index is within bounds of activeTokenList or above its token count (which equals
+        // to the fact that joinIndex is above total token count).
     }
 
     private void positionToJoinIndex(int joinIndex, int low, int high) {

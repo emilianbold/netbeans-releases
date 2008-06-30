@@ -413,7 +413,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         JsParseResult parseResult = AstUtilities.getParseResult(info);
         doc.readLock(); // Read-lock due to Token hierarchy use
         try {
-            Node root = parseResult.getRootNode();
+            Node root = parseResult != null ? parseResult.getRootNode() : null;
             final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
             if (astOffset == -1) {
                 return CodeCompletionResult.NONE;

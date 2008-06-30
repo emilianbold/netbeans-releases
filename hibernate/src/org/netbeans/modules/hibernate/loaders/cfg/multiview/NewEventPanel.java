@@ -1,49 +1,81 @@
 /*
- * NewEventPanel.java
- *
- * Created on January 24, 2008, 2:52 PM
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * 
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * 
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.hibernate.loaders.cfg.multiview;
 
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JTextField;
 
 /**
  *
- * @author  dc151887
+ * @author  Dongmei Cao
  */
 public class NewEventPanel extends javax.swing.JPanel {
 
     // TODO: hard code here for now
     private static final String[] types = new String[]{
-        "auto-flush",
-        "merge",
-        "create",
-        "create-onflush",
-        "delete",
-        "dirty-check",
-        "evict",
-        "flush",
-        "flush-entity",
-        "load",
-        "load-collection",
-        "lock",
-        "refresh",
-        "replicate",
-        "save-update",
-        "save",
-        "update",
-        "pre-load",
-        "pre-update",
-        "pre-insert",
-        "pre-delete",
-        "post-load",
-        "post-update",
-        "post-insert",
-        "post-delete",
-        "post-commit-update",
-        "post-commit-insert",
-        "post-commit-delete"
+        "auto-flush", // NOI18N
+        "merge", // NOI18N
+        "create", // NOI18N
+        "create-onflush", // NOI18N
+        "delete", // NOI18N
+        "dirty-check", // NOI18N
+        "evict", // NOI18N
+        "flush", // NOI18N
+        "flush-entity", // NOI18N
+        "load", // NOI18N
+        "load-collection", // NOI18N
+        "lock", // NOI18N
+        "refresh", // NOI18N
+        "replicate", // NOI18N
+        "save-update", // NOI18N
+        "save", // NOI18N
+        "update", // NOI18N
+        "pre-load", // NOI18N
+        "pre-update", // NOI18N
+        "pre-insert", // NOI18N
+        "pre-delete", // NOI18N
+        "post-load", // NOI18N
+        "post-update", // NOI18N
+        "post-insert", // NOI18N
+        "post-delete", // NOI18N
+        "post-commit-update", // NOI18N
+        "post-commit-insert", // NOI18N
+        "post-commit-delete" // NOI18N
     };
 
     /** Creates new form NewEventPanel */
@@ -70,11 +102,14 @@ public class NewEventPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        eventTypeLabel.setText(org.openide.util.NbBundle.getMessage(NewEventPanel.class, "NewEventPanel.eventTypeLabel.text")); // NOI18N
+        eventTypeLabel.setLabelFor(eventTypeComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(eventTypeLabel, org.openide.util.NbBundle.getMessage(NewEventPanel.class, "NewEventPanel.eventTypeLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(eventTypeLabel, gridBagConstraints);
+        eventTypeLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NewEventPanel.class, "NewEventPanel.eventTypeLabel.text")); // NOI18N
+        eventTypeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewEventPanel.class, "NewEventPanel.eventTypeLabel.text")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;

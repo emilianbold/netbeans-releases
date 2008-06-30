@@ -61,8 +61,8 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
     private BufferedReader in;
     private ChannelExec echannel;
 
-    public RemoteNativeExecutionSupport(String host, String user, File dirf, String exe, String args, String[] envp, PrintWriter out) {
-        super(host, user);
+    public RemoteNativeExecutionSupport(String key, int port, File dirf, String exe, String args, String[] envp, PrintWriter out) {
+        super(key, port);
                 
         try {
             setChannelCommand(dirf, exe, args, envp);
@@ -81,6 +81,10 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
         }
     }
 
+    public RemoteNativeExecutionSupport(String key, File dirf, String exe, String args, String[] envp, PrintWriter out) {
+        this(key, 22, dirf, exe, args, envp, out);
+    }
+
     @Override
     protected Channel createChannel() throws JSchException {
         echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
@@ -89,7 +93,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
     
     private void setChannelCommand(File dirf, String exe, String args, String[] envp) throws JSchException {
         String dircmd;
-        String path = RemotePathMap.getMapper(host, user).getPath(dirf.getAbsolutePath());
+        String path = RemotePathMap.getMapper(key).getRemotePath(dirf.getAbsolutePath());
         
         if (path != null) {
             dircmd = "cd " + path + "; "; // NOI18N
@@ -107,6 +111,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
 //        }
         
         String cmdline = dircmd + exe + " " + args; // NOI18N
+        channel = createChannel();
         echannel.setCommand(cmdline.replace('\\', '/'));
         echannel.setInputStream(System.in);
         echannel.setErrStream(System.err);

@@ -44,31 +44,17 @@ package org.openide.loaders;
 
 import java.io.IOException;
 import org.openide.filesystems.*;
-import junit.framework.Test;
-import junit.framework.TestResult;
 import org.netbeans.junit.*;
 
 /** Check what can be done when registering loaders in layer. And how it works
  * on system file system.
  * @author Jaroslav Tulach
  */
+@RandomlyFails
 public class DataLoaderInLayerOnSFSTest extends DataLoaderInLayerTest {
 
     public DataLoaderInLayerOnSFSTest(String name) {
         super(name);
-    }
-    
-    public static Test suite() {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return new Test() {
-                public int countTestCases() {
-                    return 0;
-                }
-                public void run(TestResult arg0) {}
-            };
-        } else {
-            return new NbTestSuite(DataLoaderInLayerOnSFSTest.class);
-        }
     }
 
     @Override
@@ -79,6 +65,5 @@ public class DataLoaderInLayerOnSFSTest extends DataLoaderInLayerTest {
         }
         return sfs;
     }
-        
     
 }

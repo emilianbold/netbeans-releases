@@ -73,6 +73,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
 
 /**
  *
@@ -309,14 +310,15 @@ public class CsmContextUtilities {
     public static CsmFilter createFilter(final CsmDeclaration.Kind[] kinds, final String strPrefix,
             final boolean match, boolean caseSensitive, final boolean returnUnnamedMembers){
         CsmFilter filter = null;
+        CsmFilterBuilder builder = CsmSelect.getDefault().getFilterBuilder();
         if (kinds != null && strPrefix != null){
-            filter = CsmSelect.getDefault().getFilterBuilder().createCompoundFilter(
-                     CsmSelect.getDefault().getFilterBuilder().createKindFilter(kinds),
-                     CsmSelect.getDefault().getFilterBuilder().createNameFilter(strPrefix, match, caseSensitive, returnUnnamedMembers));
+            filter = builder.createCompoundFilter(
+                     builder.createKindFilter(kinds),
+                     builder.createNameFilter(strPrefix, match, caseSensitive, returnUnnamedMembers));
         } else if (kinds != null){
-            filter = CsmSelect.getDefault().getFilterBuilder().createKindFilter(kinds);
+            filter = builder.createKindFilter(kinds);
         } else if (strPrefix != null){
-            filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(strPrefix, match, caseSensitive, returnUnnamedMembers);
+            filter = builder.createNameFilter(strPrefix, match, caseSensitive, returnUnnamedMembers);
         }
         return filter;
     }
@@ -475,7 +477,7 @@ public class CsmContextUtilities {
             CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.next();
             if (CsmKindUtilities.isClass(elem.getScope())) {
                 clazz = (CsmClass)elem.getScope();
-                break;
+                // remember found class, but continue to possibly nested class
             }
         }        
         if (clazz == null && checkFunDefition) {

@@ -68,6 +68,7 @@ import org.netbeans.modules.xml.axi.Element;
 import org.netbeans.modules.xml.schema.abe.nodes.ABEAbstractNode;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.spi.palette.DragAndDropHandler;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
@@ -75,6 +76,7 @@ import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.datatransfer.ExTransferable;
 import org.openide.windows.TopComponent;
 
 /**
@@ -213,16 +215,19 @@ public class InstanceDesignerPanel extends ABEBaseDropPanel {
      *
      *
      */
-    public synchronized PaletteController getPaletteController() {
+    public static synchronized PaletteController getPaletteController() {
         if (paletteController!=null)
             return paletteController;
         
         PaletteActions actions=
                 new PaletteActionsImpl();
         
+        DragAndDropHandler dndHandler = 
+                new DragAndDropHandlerImpl();
+        
         try {
             paletteController=
-                    PaletteFactory.createPalette("xmlschema-abe-palette",actions);
+                    PaletteFactory.createPalette("xmlschema-abe-palette",actions, null, dndHandler);
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
@@ -390,7 +395,7 @@ public class InstanceDesignerPanel extends ABEBaseDropPanel {
     
     private SchemaModel schemaModel;
     private AXIModel axiModel;
-    private PaletteController paletteController;
+    private static PaletteController paletteController;
     GlobalElementsContainerPanel globalElementsChildrenPanel;
     List<Component> childrenList = new ArrayList<Component>();
     NamespacePanel namespacePanel;
@@ -422,4 +427,14 @@ class PaletteActionsImpl extends PaletteActions {
     
 }
 
+class DragAndDropHandlerImpl extends DragAndDropHandler {
 
+    public DragAndDropHandlerImpl() {
+        super( true );
+    }
+    
+    @Override
+    public void customize(ExTransferable t, Lookup item) {
+    }
+
+}

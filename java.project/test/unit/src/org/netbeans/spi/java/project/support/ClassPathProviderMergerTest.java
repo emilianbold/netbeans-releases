@@ -42,9 +42,7 @@ package org.netbeans.spi.java.project.support;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -66,21 +64,10 @@ public class ClassPathProviderMergerTest extends NbTestCase {
         super(testName);
     }            
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
    /**
      * Test of merge method, of class ClassPathProviderMerger.
      */
     public void testMerge() {
-        System.out.println("merge");
         InstanceContent ic = new InstanceContent();
         Lookup lookup = new AbstractLookup(ic);
         ProviderImpl defaultCP = new ProviderImpl();
@@ -92,7 +79,7 @@ public class ClassPathProviderMergerTest extends NbTestCase {
         ClassPathProviderMerger instance = new ClassPathProviderMerger(defaultCP);
         ClassPathProvider result = instance.merge(lookup);
         ClassPath cp = result.findClassPath(null, ClassPath.BOOT);
-        assertNotNull(cp);
+        assertNull(cp);
         
         ClassPath compile = result.findClassPath(null, ClassPath.COMPILE);
         assertNotNull(compile);

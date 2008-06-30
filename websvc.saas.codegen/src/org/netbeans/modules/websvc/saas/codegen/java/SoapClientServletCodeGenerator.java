@@ -42,6 +42,8 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 
 import javax.swing.text.Document;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.websvc.saas.codegen.Constants;
+import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
@@ -54,12 +56,12 @@ import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 public class SoapClientServletCodeGenerator extends SoapClientPojoCodeGenerator {
 
     public SoapClientServletCodeGenerator() {
-        super();
+        setDropFileType(Constants.DropFileType.SERVLET);
     }
     
     @Override
     public boolean canAccept(SaasMethod method, Document doc) {
-        if (method instanceof WsdlSaasMethod && 
+        if (SaasBean.canAccept(method, WsdlSaasMethod.class, getDropFileType()) &&
                 Util.isServlet(NbEditorUtilities.getDataObject(doc))) {
             return true;
         }

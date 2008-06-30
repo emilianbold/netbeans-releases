@@ -39,8 +39,11 @@
 package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.testrunner.ui.TestSession.SessionType;
 
 /**
  *
@@ -48,40 +51,72 @@ import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
  */
 public final class TestRecognizer extends OutputRecognizer {
 
+    private static final Logger LOGGER = Logger.getLogger(TestRecognizer.class.getName());
+    
     private final Manager manager;
     private TestSession session;
     private final FileLocator fileLocator;
+    private final SessionType sessionType;
             
     private final List<TestRecognizerHandler> handlers;
 
-    public TestRecognizer(Manager manager, FileLocator fileLocator, List<TestRecognizerHandler> handlers) {
+    public TestRecognizer(Manager manager, 
+            FileLocator fileLocator, 
+            List<TestRecognizerHandler> handlers, 
+            SessionType sessionType) {
+        
         this.manager = manager;
         this.fileLocator = fileLocator;
         this.handlers = handlers;
+        this.sessionType = sessionType;
+        this.session = new TestSession(fileLocator, sessionType);
     }
 
+    public void refreshSession() {
+        // workaround for making re-run work correctly, need to rethink
+        // when migrating to the new Execution API
+        this.session = new TestSession(fileLocator, sessionType);
+    }
+    
     @Override
     public void start() {
-        this.session = new TestSession(fileLocator);
-        manager.testStarted(session);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Session starting: " + session);
+        }
     }
 
     @Override
     public RecognizedOutput processLine(String line) {
-
+        
         for (TestRecognizerHandler handler : handlers) {
             if (handler.matches(line)) {
-                handler.updateUI(manager, session);
-                return handler.getRecognizedOutput();
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "Handler [" + handler + "] matched line: " + line);
+                }
+                try {
+                    handler.updateUI(manager, session);
+                    return handler.getRecognizedOutput();
+                } catch (IllegalStateException ise) {
+                    // ISE is thrown when mathing a group fails, should be enough to log a warning
+                    LOGGER.log(Level.WARNING, "Failed to process line: " + line + " with handler: " + handler, ise);
+                    return null;
+                }
             }
+        }
+
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "No handler for line: " + line);
         }
 
         manager.displayOutput(session, line, false);
         return null;
     }
-
+    
     @Override
     public void finish() {
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Session finished: " + session);
+        }
         manager.sessionFinished(session);
     }
 }

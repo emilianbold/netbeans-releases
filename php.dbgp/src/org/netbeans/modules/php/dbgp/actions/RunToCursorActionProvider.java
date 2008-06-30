@@ -29,6 +29,7 @@ import org.netbeans.modules.php.dbgp.packets.BrkpntCommandBuilder;
 import org.netbeans.modules.php.dbgp.packets.BrkpntSetCommand;
 import org.netbeans.modules.php.dbgp.packets.RunCommand;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.text.Line;
 
 
@@ -60,7 +61,7 @@ public class RunToCursorActionProvider extends AbstractActionProvider {
         Line line = Utils.getCurrentLine();
         BrkpntSetCommand command = BrkpntCommandBuilder.buildLineBreakpoint(
                 id, session.getTransactionId(), 
-                Utils.getCurrentFileObject( Utils.getCurrentNode()), 
+                EditorContextDispatcher.getDefault().getCurrentFile(), 
                 line.getLineNumber() );
         command.setTemporary( true );
         session.sendCommandLater(command);

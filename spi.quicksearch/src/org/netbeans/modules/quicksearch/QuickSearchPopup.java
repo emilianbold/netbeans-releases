@@ -41,9 +41,14 @@
 package org.netbeans.modules.quicksearch;
 
 import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JLayeredPane;
 import javax.swing.JList;
-import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.modules.quicksearch.recent.RecentSearches;
@@ -53,11 +58,27 @@ import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
  * Component representing drop down for quick search
  * @author  Jan Becicka
  */
-public class QuickSearchPopup extends javax.swing.JPanel implements ListDataListener {
+public class QuickSearchPopup extends javax.swing.JPanel implements ListDataListener, ActionListener {
     
     private QuickSearchComboBar comboBar;
     
     private ResultsModel rModel;
+
+    /* Rect to store repetitive bounds computation */
+    private Rectangle popupBounds = new Rectangle();
+
+    /** coalesce times varying according to lenght of input text for searching */
+    private static final int[] COALESCE_TIMES = new int[] { 
+        150, // time to wait before running search when input text has 0 characters
+        400, // ...when input text has 1 character
+        300, // ...2 characters
+        200// ...3 and more characters
+    };
+    
+    private Timer updateTimer;
+    
+    /** text to search for */
+    private String searchedText;
 
     /** Creates new form SilverPopup */
     public QuickSearchPopup (QuickSearchComboBar comboBar) {
@@ -89,12 +110,31 @@ public class QuickSearchPopup extends javax.swing.JPanel implements ListDataList
         return jList1;
     }
     
-    void update(String text) {
-        // TBD - fast coming evaluation requests coalescing
-        CommandEvaluator.evaluate(text, rModel);
+    public void maybeEvaluate (String text) {
+        this.searchedText = text;
+        
+        if (updateTimer == null) {
+            updateTimer = new Timer(200, this);
+        }
+        
+        if (!updateTimer.isRunning()) {
+            // first change in possible flurry, start timer with proper delay
+            updateTimer.setDelay(COALESCE_TIMES [ Math.min(text.length(), 3) ]);
+            updateTimer.start();
+        } else {
+            // text change came too fast, let's wait until user calms down :)
+            updateTimer.restart();
+        }
     }
     
-
+    /** implementation of ActionListener, called by timer,
+     * actually runs search */
+    public void actionPerformed(ActionEvent e) {
+        updateTimer.stop();
+        CommandEvaluator.evaluate(searchedText, rModel);
+    }
+        
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -111,10 +151,45 @@ public class QuickSearchPopup extends javax.swing.JPanel implements ListDataList
 
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+
+        jList1.setFocusable(false);
+        jList1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jList1MouseClicked(evt);
+            }
+        });
+        jList1.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseMoved(java.awt.event.MouseEvent evt) {
+                jList1MouseMoved(evt);
+            }
+        });
         jScrollPane1.setViewportView(jList1);
 
         add(jScrollPane1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
+
+private void jList1MouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jList1MouseMoved
+    // selection follows mouse move
+    Point loc = evt.getPoint();
+    int index = jList1.locationToIndex(loc);
+    if (index == -1) {
+        return;
+    }
+    Rectangle rect = jList1.getCellBounds(index, index);
+    if (rect != null && rect.contains(loc)) {
+        jList1.setSelectedIndex(index);
+    }
+    
+}//GEN-LAST:event_jList1MouseMoved
+
+private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jList1MouseClicked
+    if (!SwingUtilities.isLeftMouseButton(evt)) {
+        return;
+    }
+    // mouse left button click works the same as pressing Enter key
+    comboBar.invokeSelectedItem();
+    
+}//GEN-LAST:event_jList1MouseClicked
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -138,35 +213,57 @@ public class QuickSearchPopup extends javax.swing.JPanel implements ListDataList
     }
 
     /**
-     * Runnable implementation, updates popup.
-     * This "updatePopup" is invoked using SwingUtilities.invokeLater to let
-     * JList compute its preferred size well. 
+     * Updates size and visibility of this panel according to model content
      */
-    private void updatePopup() {
-        JWindow popup = comboBar.getPopup();
-        if (popup == null) {
-            return;
-        }
+    private void updatePopup () {
+        
+        // TBD - coalesce fast coming update requests to lower popup flickering
         
         int modelSize = rModel.getSize();
+        
         if (modelSize > 0) {
-            // hack to make jList.getpreferredSize work correctly
-            // JList is listening on ResultsModel same as us and order of listeners
-            // is undefined, so we have to force update of JList's layout data            
-            jList1.setFixedCellHeight(15);
-            jList1.setFixedCellHeight(-1);
-            // end of hack
-            jList1.setVisibleRowCount(modelSize);
-            Dimension preferredSize = jList1.getPreferredSize();
-            popup.setSize(preferredSize.width + 3, preferredSize.height + 3);
-            if (!popup.isVisible()) {
+            // plug this popup into layered pane if needed
+            JLayeredPane lPane = JLayeredPane.getLayeredPaneAbove(comboBar);
+            if (!isDisplayable()) {
+                lPane.add(this, new Integer(JLayeredPane.POPUP_LAYER-1) );
+            }
+
+            computePopupBounds(popupBounds, lPane, modelSize);
+            setBounds(popupBounds);
+            
+            if (!isVisible()) {
                 jList1.setSelectedIndex(0);
-                popup.setVisible(true);
+                setVisible(true);
                 comboBar.getCommand().requestFocus();
             }
+            // needed on JDK 1.5.x to repaint correctly
+            revalidate();
         } else {
-            popup.setVisible(false);
+            // empty model, so hide us
+            setVisible(false);
         }
     }
+    
+    private void computePopupBounds (Rectangle result, JLayeredPane lPane, int modelSize) {
+        Point location = new Point(-SearchResultRender.shift - 6, comboBar.getSize().height - 1);
+        location = SwingUtilities.convertPoint(comboBar, location, lPane);
+        result.setLocation(location);
+
+        // hack to make jList.getpreferredSize work correctly
+        // JList is listening on ResultsModel same as us and order of listeners
+        // is undefined, so we have to force update of JList's layout data
+        jList1.setFixedCellHeight(15);
+        jList1.setFixedCellHeight(-1);
+        // end of hack
+        
+        jList1.setVisibleRowCount(modelSize);
+        Dimension preferredSize = jList1.getPreferredSize();
+        
+        preferredSize.width += 3;
+        preferredSize.height += 3;
+        
+        result.setSize(preferredSize);
+    }
+    
 
 }

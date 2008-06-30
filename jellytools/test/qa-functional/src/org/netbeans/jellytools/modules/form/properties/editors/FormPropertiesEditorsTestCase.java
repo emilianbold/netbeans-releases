@@ -40,6 +40,8 @@
  */
 package org.netbeans.jellytools.modules.form.properties.editors;
 
+import java.io.IOException;
+import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.actions.PropertiesAction;
@@ -87,8 +89,9 @@ public class FormPropertiesEditorsTestCase extends JellyTestCase {
 
     
     /** Opens sample form, property sheet for Form node and custom editor for title property. */
-    protected void setUp() {
+    protected void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
+        openDataProjects("SampleProject");
         if(fceo == null) {
             Node sample1 = new Node(new SourcePackagesNode("SampleProject"), "sample1");  // NOI18N
             FormNode node = new FormNode(sample1, SAMPLE_FRAME_NAME);

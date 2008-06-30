@@ -125,6 +125,13 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("main.c", 34, 28, "main.c", 37, 1);
     }
     
+    public void testConstParameter() throws Exception {
+        // IZ#76032: ClassView component doubles function in some cases
+        // (partial fix: made const parameters resolve correctly)
+        performTest("const.cc", 5, 44, "const.cc", 1, 1);
+        performTest("const.cc", 5, 50, "const.cc", 2, 5);
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // K&R style
 
@@ -164,6 +171,56 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ136730.c", 2, 11, "IZ136730.c", 3, 1);
     }
     
+    public void testTemplateParameter() throws Exception {
+        performTest("template_parameter.cc", 2, 13, "template_parameter.cc", 1, 17);
+        performTest("template_parameter.cc", 3, 13, "template_parameter.cc", 1, 17);
+        performTest("template_parameter.cc", 6, 19, "template_parameter.cc", 1, 17);
+        performTest("template_parameter.cc", 7, 14, "template_parameter.cc", 1, 17);
+        performTest("template_parameter.cc", 7, 12, "template_parameter.cc", 1, 29);
+        performTest("template_parameter.cc", 7, 26, "template_parameter.cc", 1, 10);
+        performTest("template_parameter.cc", 8, 11, "template_parameter.cc", 1, 10);
+    }
+
+    public void testTemplateParameterBeforeFunction() throws Exception {
+        // IZ#138099 : unresolved identifier for functions' template parameter
+        performTest("template_parameter2.cc", 1, 18, "template_parameter2.cc", 1, 11);
+        performTest("template_parameter2.cc", 4, 22, "template_parameter2.cc", 4, 15);
+        performTest("template_parameter2.cc", 4, 66, "template_parameter2.cc", 4, 15);
+        performTest("template_parameter2.cc", 5, 15, "template_parameter2.cc", 5, 14);
+        performTest("template_parameter2.cc", 5, 41, "template_parameter2.cc", 5, 14);
+        performTest("template_parameter2.cc", 8, 20, "template_parameter2.cc", 8, 10);
+        performTest("template_parameter2.cc", 8, 46, "template_parameter2.cc", 8, 10);
+        performTest("template_parameter2.cc", 9, 20, "template_parameter2.cc", 9, 10);
+        performTest("template_parameter2.cc", 9, 46, "template_parameter2.cc", 9, 10);
+        performTest("template_parameter2.cc", 11, 11, "template_parameter2.cc", 11, 10);
+        performTest("template_parameter2.cc", 11, 55, "template_parameter2.cc", 11, 10);
+    }
+
+    public void testIZ131625() throws Exception {
+        performTest("IZ131625.cc",  4, 11, "IZ131625.cc", 10, 1);
+        performTest("IZ131625.cc",  7, 23, "IZ131625.cc", 10, 1);
+        performTest("IZ131625.cc",  7, 23, "IZ131625.cc", 10, 1);
+        performTest("IZ131625.cc", 14, 35, "IZ131625.cc", 12, 3);
+        performTest("IZ131625.cc", 18, 24, "IZ131625.cc", 10, 1);
+        performTest("IZ131625.cc", 20,  3, "IZ131625.cc", 10, 1);
+        performTest("IZ131625.cc", 21, 12, "IZ131625.cc", 13, 3);
+        performTest("IZ131625.cc", 22, 11, "IZ131625.cc", 13, 3);
+        performTest("IZ131625.cc", 10, 20, "IZ131625.cc",   4, 3);
+    }
+
+    public void testIZ136146() throws Exception {
+        performTest("IZ136146.cc", 20, 10, "IZ136146.cc", 15, 5);
+        performTest("IZ136146.cc", 21, 12, "IZ136146.cc", 15, 5);
+    }
+
+    public void testIZ132903() throws Exception {
+            performTest("IZ132903.cc", 16, 10, "IZ132903.cc",  9, 5);
+    }
+
+    public void testIZ136167() throws Exception {
+            performTest("IZ136167.cc", 21, 13, "IZ136167.cc",  3, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
@@ -172,7 +229,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         }
 
         public Failed(String testName) {
-            super(testName);
+            super(testName, true);
         }
 
         public void testKRFuncParamDecl() throws Exception {

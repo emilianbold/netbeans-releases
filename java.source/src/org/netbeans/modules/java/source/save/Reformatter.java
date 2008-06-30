@@ -547,8 +547,7 @@ public class Reformatter implements ReformatTask {
                 List<? extends Tree> impls = node.getImplementsClause();
                 if (impls != null && !impls.isEmpty()) {
                     wrapToken(cs.wrapExtendsImplementsKeyword(), 1, id == INTERFACE ? EXTENDS : IMPLEMENTS);
-                    spaces(1, true);
-                    wrapList(cs.wrapExtendsImplementsList(), cs.alignMultilineImplements(), impls);
+                    wrapList(cs.wrapExtendsImplementsList(), cs.alignMultilineImplements(), true, impls);
                 }
                 indent = old;
             }
@@ -750,7 +749,7 @@ public class Reformatter implements ReformatTask {
                     List<? extends ExpressionTree> args = nct.getArguments();
                     if (args != null && !args.isEmpty()) {
                         spaces(cs.spaceWithinMethodCallParens() ? 1 : 0, true);
-                        wrapList(cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs(), args);
+                        wrapList(cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs(), false, args);
                         spaces(cs.spaceWithinMethodCallParens() ? 1 : 0);            
                     }
                     if (id == LPAREN)
@@ -833,15 +832,14 @@ public class Reformatter implements ReformatTask {
             List<? extends VariableTree> params = node.getParameters();
             if (params != null && !params.isEmpty()) {
                 spaces(cs.spaceWithinMethodDeclParens() ? 1 : 0, true);
-                wrapList(cs.wrapMethodParams(), cs.alignMultilineMethodParams(), params);
+                wrapList(cs.wrapMethodParams(), cs.alignMultilineMethodParams(), false, params);
                 spaces(cs.spaceWithinMethodDeclParens() ? 1 : 0);
             }
             accept(RPAREN);
             List<? extends ExpressionTree> threxs = node.getThrows();
             if (threxs != null && !threxs.isEmpty()) {
                 wrapToken(cs.wrapThrowsKeyword(), 1, THROWS);
-                spaces(1, true);
-                wrapList(cs.wrapThrowsList(), cs.alignMultilineThrows(), threxs);
+                wrapList(cs.wrapThrowsList(), cs.alignMultilineThrows(), true, threxs);
             }
             Tree init = node.getDefaultValue();
             if (init != null) {
@@ -938,7 +936,7 @@ public class Reformatter implements ReformatTask {
             accept(LPAREN);
             if (args != null && !args.isEmpty()) {
                 spaces(cs.spaceWithinAnnotationParens() ? 1 : 0);
-                wrapList(cs.wrapAnnotationArgs(), cs.alignMultilineAnnotationArgs(), args);
+                wrapList(cs.wrapAnnotationArgs(), cs.alignMultilineAnnotationArgs(), false, args);
                 spaces(cs.spaceWithinAnnotationParens() ? 1 : 0);
             }
             accept(RPAREN);
@@ -1142,7 +1140,33 @@ public class Reformatter implements ReformatTask {
                 newline();
             indent = halfIndent;
             if (node instanceof FakeBlock) {
-                appendToDiff("\n" + getIndent() + "}"); //NOI18N
+                int i = tokens.index();
+                boolean loop = true;
+                while(loop) {
+                    switch (tokens.token().id()) {
+                        case WHITESPACE:
+                            if (tokens.token().text().toString().indexOf('\n') < 0) {
+                                tokens.moveNext();
+                            } else {
+                                loop = false;
+                                appendToDiff("\n"); //NOI18N
+                            }
+                            break;
+                        case LINE_COMMENT:
+                            loop = false;
+                        case BLOCK_COMMENT:
+                            tokens.moveNext();
+                            break;
+                        default:
+                            if (tokens.index() != i) {
+                                tokens.moveIndex(i);
+                                tokens.moveNext();
+                            }
+                            loop = false;
+                            appendToDiff("\n"); //NOI18N
+                    }
+                }
+                appendToDiff(getIndent() + "}"); //NOI18N
                 col = indent + 1;
                 lastBlankLines = -1;
                 lastBlankLinesTokenIndex = -1;
@@ -1232,7 +1256,7 @@ public class Reformatter implements ReformatTask {
             List<? extends ExpressionTree> args = node.getArguments();
             if (args != null && !args.isEmpty()) {
                 spaces(cs.spaceWithinMethodCallParens() ? 1 : 0, true);
-                wrapList(cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs(), args);
+                wrapList(cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs(), false, args);
                 spaces(cs.spaceWithinMethodCallParens() ? 1 : 0);            
             }
             accept(RPAREN);
@@ -1280,7 +1304,7 @@ public class Reformatter implements ReformatTask {
             List<? extends ExpressionTree> args = node.getArguments();
             if (args != null && !args.isEmpty()) {
                 spaces(cs.spaceWithinMethodCallParens() ? 1 : 0, true); 
-                wrapList(cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs(), args);
+                wrapList(cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs(), false, args);
                 spaces(cs.spaceWithinMethodCallParens() ? 1 : 0);
             }
             accept(RPAREN);
@@ -1829,7 +1853,7 @@ public class Reformatter implements ReformatTask {
                         newline();
                     else
                         spaces(cs.spaceWithinBraces() ? 1 : 0, true);
-                    wrapList(cs.wrapArrayInit(), cs.alignMultilineArrayInit(), inits);
+                    wrapList(cs.wrapArrayInit(), cs.alignMultilineArrayInit(), false, inits);
                     int index = tokens.index();
                     int c = col;
                     Diff d = diffs.isEmpty() ? null : diffs.getFirst();
@@ -2500,6 +2524,8 @@ public class Reformatter implements ReformatTask {
                         if (lastToken != null) {
                             int offset = tokens.offset() - lastToken.length();
                             String text = lastToken.text().toString();
+                            if (count >= 0 && tokens.index() > 1 && after != 1 && text.indexOf('\n') >= 0)
+                                count++;
                             int idx = 0;
                             int lastIdx = 0;
                             while(count != 0 && (idx = text.indexOf('\n', lastIdx)) >= 0) { //NOI18N
@@ -2695,17 +2721,19 @@ public class Reformatter implements ReformatTask {
             return false;
         }
 
-        private void wrapList(CodeStyle.WrapStyle wrapStyle, boolean align, List<? extends Tree> trees) {
+        private void wrapList(CodeStyle.WrapStyle wrapStyle, boolean align, boolean prependSpace, List<? extends Tree> trees) {
             boolean first = true;
             int old = indent;
             for (Iterator<? extends Tree> it = trees.iterator(); it.hasNext();) {
                 Tree impl = it.next();
                 if (first) {
-                    if (align)
-                        indent = col;
                     int index = tokens.index();
                     int c = col;
                     Diff d = diffs.isEmpty() ? null : diffs.getFirst();
+                    if (prependSpace)
+                        spaces(1, true);
+                    if (align)
+                        indent = col;
                     scan(impl, null);
                     if (wrapStyle != CodeStyle.WrapStyle.WRAP_NEVER && col > rightMargin && c > old && (wrapDepth == 0 || c <= rightMargin)) {
                         rollback(index, c, d);

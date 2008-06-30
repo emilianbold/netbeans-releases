@@ -40,8 +40,20 @@
  */
 package org.netbeans.microedition.svg;
 
+import org.w3c.dom.svg.SVGLocatableElement;
+
+
 
 /**
+ * Suggested SVG snippet :
+ * <pre>
+ *  &lt;g id="label" transform="translate(130,200)">
+ *   &lt;metadata> &lt;text>type=label&lt;/text> &lt;/metadata>
+ *   &lt;text x="5" y="5" stroke="black" font-size="15"  font-family="SunSansSemiBold">
+ *       Label
+ *   &lt;/text>
+ *   &lt;/g>
+ * </pre>
  * @author ads
  *
  */
@@ -50,5 +62,8 @@ public class SVGLabel extends SVGComponent {
     public SVGLabel( SVGForm form, String elemId ) {
         super(form, elemId);
     }
-
+    
+    public SVGLabel( SVGForm form, SVGLocatableElement element ) {
+        super(form, element);
+    }
 }

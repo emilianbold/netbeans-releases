@@ -293,7 +293,10 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             configFile = createFromTemplate("applicationContext.xml", webInfDO, "applicationContext"); // NOI18N
             addFileToOpen(configFile);
             newFiles.add(FileUtil.toFile(configFile));
-            configFile = createFromTemplate("dispatcher-servlet.xml", webInfDO, getComponent().getDispatcherName() + "-servlet"); // NOI18N
+            String indexUrlMappingKey = SpringWebFrameworkUtils.replaceExtensionInTemplates("index.htm", dispatcherMapping); // NOI18N
+            Map<String, String> params = new HashMap<String, String>(1);
+            params.put("indexUrlKey", indexUrlMappingKey); // NOI18N
+            configFile = createFromTemplate("dispatcher-servlet.xml", webInfDO, getComponent().getDispatcherName() + "-servlet", params); // NOI18N
             addFileToOpen(configFile);
             newFiles.add(FileUtil.toFile(configFile));
             addFileToOpen(createFromTemplate("index.jsp", DataFolder.findFolder(jsp), "index")); // NOI18N
@@ -339,6 +342,12 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             return filesToOpen;
         }
 
+        private FileObject createFromTemplate(String templateName, DataFolder targetDO, String fileName, Map<String, String> params) throws IOException {
+            FileObject templateFO = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("SpringFramework/Templates/" + templateName);
+            DataObject templateDO = DataObject.find(templateFO);
+            return templateDO.createFromTemplate(targetDO, fileName, params).getPrimaryFile();
+        }
+        
         private FileObject createFromTemplate(String templateName, DataFolder targetDO, String fileName) throws IOException {
             FileObject templateFO = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("SpringFramework/Templates/" + templateName);
             DataObject templateDO = DataObject.find(templateFO);

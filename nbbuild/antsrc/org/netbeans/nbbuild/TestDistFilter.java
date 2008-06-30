@@ -44,7 +44,6 @@ package org.netbeans.nbbuild;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,16 +52,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.StringTokenizer;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import org.apache.tools.ant.*;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Task;
 
 /**
  * It scans test distribution ant sets to property with name defined by param 
@@ -72,11 +64,7 @@ import org.xml.sax.SAXException;
  * 
  * Parameters :
  * <ul>
- *    <li>harness - type of harness (junit,xtest). For junit harness are 
- *     scanned only tests with unit tes type and 'code' executor name inside 
- *     cfg-unit.xml.
- *    <li>testtype - unit|qa-functional|all testtype  
- *    <li>attribs - xtest.attribs filter (attribs are declared in cfg-<xxx>.xml file  
+ *    <li>testtype - unit|qa-functional|etc. (required)
  *    <li>testlistproperty  - store to property path with test folders (separated by ':')
  *    <li>testdistdir - root folder with test distribution
  *    <li>requiredmodules - list of module names required on runtime classpath example:
@@ -85,21 +73,9 @@ import org.xml.sax.SAXException;
  * </ul>
  */
 public class TestDistFilter extends Task {
-    public static final String TYPE_ALL = "all";
-    public static final String TYPE_UNIT = "unit";
-    public static final String TYPE_QA_FUNCTIONAL = "qa-functional";
-  
-    public static final String HARNESS_JUNIT = "junit";
-    public static final String HARNESS_XTEST = "xtest";
-
     private File testDistDir;
     Set<TestConf> possibleTests = new HashSet<TestConf>();
-    // "unit|qa_functional|all
-    // default value is all
-    private String testtype = TYPE_ALL;
-    private String harness = HARNESS_XTEST;
-    // xtest attribs
-    private String attribs ;
+    private String testtype;
     private String testListProperty;
     private String requiredModules;
     // TODO customize method names to match custom task
@@ -109,10 +85,8 @@ public class TestDistFilter extends Task {
      */
     private static class TestConf {
         File moduleDir;
-        boolean unit;
-        TestConf(File moduleDir,boolean unit) {
+        TestConf(File moduleDir) {
             this.moduleDir = moduleDir;
-            this.unit = unit;
         }
 
         public int hashCode() {
@@ -123,66 +97,8 @@ public class TestDistFilter extends Task {
         }
       
         
-        /** check if cfg-<testtype>.xml contains xtest.attribs, 
-         *  ide executor is ignored for junit
-         */
-        boolean matchAttribs(String harness,String attribs) {
-            Element config;
-            try {
-                config = getConfig();
-            } catch (SAXException ex) {
-                throw new BuildException("Error in parsing " + getConfigFile(),ex);
-            } catch (ParserConfigurationException ex) {
-                throw new BuildException("Error in parsing " + getConfigFile(),ex);
-            } catch (IOException ex) {
-                throw new BuildException("Error in parsing " + getConfigFile(),ex);
-            }
-            if (config == null) {
-                return false;
-            }
-            boolean junit = HARNESS_JUNIT.equals(harness);
-            NodeList elements = config.getElementsByTagName("testbag");
-            for (int n  = 0 ; n < elements.getLength() ; n++) {
-                Element testbag = (Element) elements.item(n);
-                if (junit && "ide".equals(testbag.getAttribute("executor"))) {
-                    continue;
-                }
-                if (testAttr(testbag.getAttribute("testattribs"),attribs)) {
-                    return true;
-                }
-            } 
-            return false;
-        }
-        private static boolean testAttr(String xmlAttr,String userAttr) {
-            if (userAttr == null) {
-                return true;
-            }
-            if (xmlAttr == null) {
-                return false;
-            }
-            StringTokenizer tokenizer = new StringTokenizer(xmlAttr,"&|, ");
-            while (tokenizer.hasMoreTokens()) {
-                String token = tokenizer.nextToken().trim();
-                if (token.equals(userAttr)) {
-                    return true;
-                } 
-            }
-            return false;
-        }
         File getModuleDir() {
             return moduleDir;
-        }
-        
-        private File getConfigFile () {
-            String name = (unit) ? "cfg-unit.xml" : "cfg-qa-functional.xml";
-            return  new File(getModuleDir(),name);
-        }
-        private Element getConfig() throws ParserConfigurationException, SAXException, IOException {
-            File xml = getConfigFile();
-            if (!xml.exists()) {
-                return null;
-            }
-            return getDocumentBuilder().parse(xml).getDocumentElement();
         }
         
     }
@@ -196,20 +112,8 @@ public class TestDistFilter extends Task {
           if (getTestDistDir() == null || !getTestDistDir().exists()) {
               throw new BuildException("Param testdistdir is not defined.");
           }
-          if ("".equals(attribs)) {
-              attribs = null;
-          }
           String tt = getTesttype();
-          if (getHarness().equals(HARNESS_JUNIT)) { 
-              findCodeTests(HARNESS_JUNIT,TYPE_UNIT,getAttribs());
-          } else {
-              if (tt.equals(TYPE_QA_FUNCTIONAL) || tt.equals(TYPE_ALL)) {
-                  findCodeTests(HARNESS_XTEST,TYPE_QA_FUNCTIONAL,getAttribs());
-              }
-              if (tt.equals(TYPE_UNIT) || tt.equals(TYPE_ALL)) {
-                  findCodeTests(HARNESS_XTEST,TYPE_UNIT,getAttribs());
-              }
-          }
+          findCodeTests(tt);
           define(getTestListProperty(),getTestList());
     }
     /** get path with test dirs separated by :
@@ -246,22 +150,6 @@ public class TestDistFilter extends Task {
         this.testtype = testtype;
     }
 
-    public String getHarness() {
-        return harness;
-    }
-
-    public void setHarness(String harness) {
-        this.harness = harness;
-    }
-
-    public String getAttribs() {
-        return attribs;
-    }
-
-    public void setAttribs(String attribs) {
-        this.attribs = attribs;
-    }
-
     public String getTestListProperty() {
         return testListProperty;
     }
@@ -270,21 +158,17 @@ public class TestDistFilter extends Task {
         this.testListProperty = testListProperty;
     }
 
-    private void findCodeTests(String harness, String type, String string) {
-          List tests = getTestList(type);
-          for (int i = 0 ; i < tests.size() ; i++) {
-              TestConf test = (TestConf)tests.get(i);
-              if (test.matchAttribs(harness,attribs)) {
-                  possibleTests.add(test);
-              }
+    private void findCodeTests(String type) {
+          for (TestConf test : getTestList(type)) {
+              possibleTests.add(test);
           }
     }
 
-    private List getTestList(String testtype) {
+    private List<TestConf> getTestList(String testtype) {
         File root = new File (getTestDistDir(),testtype);
         List <TestConf> testList = new ArrayList<TestConf>();
         if (!root.exists()) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         File clusters[] = root.listFiles();
         for (int c = 0 ; c < clusters.length ; c++) {
@@ -293,8 +177,8 @@ public class TestDistFilter extends Task {
                 File modules[] = cluster.listFiles();
                 for (int m = 0 ; m < modules.length ; m++) {
                     File module = modules[m];
-                    if (module.isDirectory()) {
-                        testList.add(new TestConf(module,testtype.equals(TYPE_UNIT)));
+                    if (new File(module, "tests.jar").isFile()) {
+                        testList.add(new TestConf(module));
                     }
                 }
             }
@@ -303,22 +187,6 @@ public class TestDistFilter extends Task {
     }
 
     
-    // create document builder with empty EntityResolver
-    //
-    private static DocumentBuilder db;
-    private static DocumentBuilder getDocumentBuilder() throws ParserConfigurationException {
-        if (db == null) {
-           db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-           db.setEntityResolver(new EntityResolver() {
-               public InputSource resolveEntity(String publicId, String systemId) throws SAXException,IOException {
-                   return new InputSource(new StringReader(""));
-               }
-            
-           });
-        }
-        return db;
-    }
-
     public File getTestDistDir() {
         return testDistDir;
     }

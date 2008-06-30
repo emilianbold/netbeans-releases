@@ -52,7 +52,9 @@
     <group name="YouTube">
         <group name="Videos"/>
     </group>
-    
+    <code-gen>
+        <artifacts targets="java,servlet,resource,jsp"/>
+    </code-gen>
     <authentication profile="SaaSServices/YouTube/profile.properties">
         <api-key id="dev_id"/>
     </authentication>

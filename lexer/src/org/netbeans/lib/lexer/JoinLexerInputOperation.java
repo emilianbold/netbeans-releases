@@ -334,19 +334,12 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
             if (offset < tokenListEndOffset) {
                 return inputSourceText.charAt(offset);
             } else {
-                while (++tokenListIndex < tokenListCount()) {
-                    EmbeddedTokenList etl = tokenList(tokenListIndex);
-                    tokenListStartOffset = etl.startOffset();
-                    // Increase offset shift by the size of gap between ETLs
-                    readOffsetShift += tokenListStartOffset - tokenListEndOffset;
-                    // Also shift given offset value
-                    offset += tokenListStartOffset - tokenListEndOffset;
-                    tokenListEndOffset = etl.endOffset();
-                    if (readOffset < tokenListEndOffset) { // ETL might be empty
+                while (tokenListIndex + 1 < tokenListCount()) {
+                    offset += moveNextTokenList();
+                    if (offset < tokenListEndOffset) { // ETL might be empty
                         return inputSourceText.charAt(offset);
                     }
                 }
-                tokenListIndex--; // Return to (tokenListCount() - 1)
                 return LexerInput.EOF;
             }
         }
@@ -374,30 +367,16 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
             offset += readOffsetShift;
             if (offset < tokenListStartOffset) {
                 while (true) { // Char should exist
-                    tokenListIndex--;
-                    EmbeddedTokenList etl = tokenList(tokenListIndex);
-                    tokenListEndOffset = etl.endOffset();
-                    // Decrease offset shift by the size of gap between ETLs
-                    readOffsetShift -= tokenListStartOffset - tokenListEndOffset;
-                    // Also shift given offset value
-                    offset -= tokenListStartOffset - tokenListEndOffset;
-                    tokenListStartOffset = etl.startOffset();
-                    if (readOffset >= tokenListStartOffset) { // ETL might be empty
+                    offset -= movePreviousTokenList();
+                    if (offset >= tokenListStartOffset) { // ETL might be empty
                         return inputSourceText.charAt(offset);
                     }
                 }
                 
             } else if (offset >= tokenListEndOffset) {
                 while (true) { // Char should exist
-                    tokenListIndex++;
-                    EmbeddedTokenList etl = tokenList(tokenListIndex);
-                    tokenListStartOffset = etl.startOffset();
-                    // Increase offset shift by the size of gap between ETLs
-                    readOffsetShift += tokenListStartOffset - tokenListEndOffset;
-                    // Also shift given offset value
-                    offset += tokenListStartOffset - tokenListEndOffset;
-                    tokenListEndOffset = etl.endOffset();
-                    if (readOffset < tokenListEndOffset) { // ETL might be empty
+                    offset += moveNextTokenList();
+                    if (offset < tokenListEndOffset) { // ETL might be empty
                         return inputSourceText.charAt(offset);
                     }
                 }
@@ -405,6 +384,30 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
             }
             // Index within current bounds
             return inputSourceText.charAt(offset);
+        }
+        
+        private int movePreviousTokenList() {
+            tokenListIndex--;
+            EmbeddedTokenList etl = tokenList(tokenListIndex);
+            tokenListEndOffset = etl.endOffset();
+            // Decrease offset shift by the size of gap between ETLs
+            int shift = tokenListStartOffset - tokenListEndOffset;
+            readOffsetShift -= shift;
+            // Also shift given offset value
+            tokenListStartOffset = etl.startOffset();
+            return shift;
+        }
+        
+        private int moveNextTokenList() {
+            tokenListIndex++;
+            EmbeddedTokenList etl = tokenList(tokenListIndex);
+            tokenListStartOffset = etl.startOffset();
+            // Increase offset shift by the size of gap between ETLs
+            int shift = tokenListStartOffset - tokenListEndOffset;
+            readOffsetShift += shift;
+            // Also shift given offset value
+            tokenListEndOffset = etl.endOffset();
+            return shift;
         }
         
     }

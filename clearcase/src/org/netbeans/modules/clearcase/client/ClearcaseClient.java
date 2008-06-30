@@ -84,6 +84,24 @@ public class ClearcaseClient {
      */
     private final RequestProcessor  rp = new RequestProcessor("Clearcase commands", 1);
 
+    /**
+     * Indicates that the cleartool shell is meant only for one use as reusing 
+     * might cause errors with some commands - e.g. co, ci, ...
+     */
+    private boolean singleUse;
+
+    public ClearcaseClient() {
+        singleUse = false;
+    }
+    
+    public ClearcaseClient(boolean singleUse) {
+        this.singleUse = singleUse;
+    }
+
+    public static boolean isAvailable() {
+        return !notifiedUnavailable;
+    }    
+    
     public RequestProcessor getRequestProcessor() {
         return rp;
     }
@@ -100,9 +118,7 @@ public class ClearcaseClient {
         ProgressSupport ps = new ProgressSupport(rp, displayName) {            
             @Override
             protected void perform() {
-                CommandRunnable cr = new CommandRunnable(new ExecutionUnit(command), true);
-                setCancellableDelegate(cr);
-                cr.run();                
+                execImpl(new ExecutionUnit(command), true, this);
             }   
         };
         return ps.start();
@@ -140,7 +156,8 @@ public class ClearcaseClient {
         execImpl(new ExecutionUnit(command), notifyErrors, ps);        
     }
 
-    private void execImpl(ExecutionUnit eu, boolean notifyErrors, ProgressSupport ps) {
+    private synchronized void execImpl(ExecutionUnit eu, boolean notifyErrors, ProgressSupport ps) {
+        if(notifiedUnavailable) return;
         CommandRunnable commandRunnable = new CommandRunnable(eu, notifyErrors);
         if(ps != null) {
             ps.setCancellableDelegate(commandRunnable);
@@ -216,7 +233,11 @@ public class ClearcaseClient {
                 ClearcaseCommand firstCommand = eu.iterator().next();
                 firstCommand.setException(e);
                 eu.setFailedCommand(firstCommand);
-            } 
+            } finally {
+                if(singleUse) {
+                    ct.interrupt();
+                }
+            }
             if (eu.getFailedCommand() != null) {
                 handleCommandError(notifyErrors);
             }
@@ -380,7 +401,7 @@ public class ClearcaseClient {
     }
 
     private void ensureCleartool() throws ClearcaseException, IOException {
-        if (ct == null || !ct.isValid()) {
+        if (ct == null || !ct.isValid() || singleUse) {
             try {
                 ct = new Cleartool();
             } catch (IOException e) {

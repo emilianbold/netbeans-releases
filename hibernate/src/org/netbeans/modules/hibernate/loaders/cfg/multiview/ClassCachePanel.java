@@ -51,14 +51,14 @@ public class ClassCachePanel extends javax.swing.JPanel {
 
     // TODO: hard code here for now
     private static final String[] usageTypes = new String[]{
-        "read-only",
-        "read-write",
-        "nonstrict-read-write",
-        "transactional"
+        "read-only", // NOI18N
+        "read-write", // NOI18N
+        "nonstrict-read-write", // NOI18N
+        "transactional" // NOI18N
     };
     private static final String[] includeTypes = new String[]{
-        "all",
-        "non-lazy"
+        "all", // NOI18N
+        "non-lazy" // NOI18N
     };
 
     /** Creates new form ClassCachePanel */
@@ -132,7 +132,7 @@ public class ClassCachePanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        classLabel.setText(org.openide.util.NbBundle.getMessage(ClassCachePanel.class, "ClassCachePanel.classLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(classLabel, org.openide.util.NbBundle.getMessage(ClassCachePanel.class, "ClassCachePanel.classLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -150,7 +150,7 @@ public class ClassCachePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(classTextField, gridBagConstraints);
 
-        regionLabel.setText(org.openide.util.NbBundle.getMessage(ClassCachePanel.class, "ClassCachePanel.regionLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(regionLabel, org.openide.util.NbBundle.getMessage(ClassCachePanel.class, "ClassCachePanel.regionLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -167,7 +167,7 @@ public class ClassCachePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(regionTextField, gridBagConstraints);
 
-        usageLabel.setText(org.openide.util.NbBundle.getMessage(ClassCachePanel.class, "ClassCachePanel.usageLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(usageLabel, org.openide.util.NbBundle.getMessage(ClassCachePanel.class, "ClassCachePanel.usageLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -183,13 +183,15 @@ public class ClassCachePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(usageComboBox, gridBagConstraints);
 
-        includeLabel.setText(org.openide.util.NbBundle.getMessage(ClassCachePanel.class, "ClassCachePanel.includeLabel.text")); // NOI18N
+        includeLabel.setLabelFor(includeComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(includeLabel, org.openide.util.NbBundle.getMessage(ClassCachePanel.class, "ClassCachePanel.includeLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(includeLabel, gridBagConstraints);
+        includeLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClassCachePanel.class, "ClassCachePanel.includeLabel.text")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -199,13 +201,14 @@ public class ClassCachePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(includeComboBox, gridBagConstraints);
 
-        browseButton.setText(org.openide.util.NbBundle.getMessage(ClassCachePanel.class, "ClassCachePanel.browseButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ClassCachePanel.class, "ClassCachePanel.browseButton.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(browseButton, gridBagConstraints);
+        browseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClassCachePanel.class, "ClassCachePanel.browseButton.text")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;

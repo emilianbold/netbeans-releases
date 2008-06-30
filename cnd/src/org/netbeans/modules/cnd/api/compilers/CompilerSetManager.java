@@ -44,9 +44,11 @@ package org.netbeans.modules.cnd.api.compilers;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -97,60 +99,77 @@ public class CompilerSetManager {
     
     private ArrayList<CompilerSet> sets = new ArrayList();
     
-    private static CompilerSetManager instance = null;
-//    private static Set<CompilerSetChangeListener> listeners = new HashSet();
+    private static HashMap<String, CompilerSetManager> managers = new HashMap<String, CompilerSetManager>();
     
     public CompilerSetManager() {
-        initCompilerFilters();
-        initCompilerSets(Path.getPath());
+        this("localhost"); // NOI18N
     }
     
-    public CompilerSetManager(String host, String user) {
-        initRemoteCompilerSets();
+    public CompilerSetManager(String key) {
+        if (key.equals("localhost")) { // NOI18N
+            initCompilerFilters();
+            initCompilerSets(Path.getPath());
+        } else {
+            initRemoteCompilerSets(key);
+        }
     }
     
     public CompilerSetManager(ArrayList<CompilerSet> sets) {
         this.sets = sets;
     }
     
-    public CompilerSetManager deepCopy() {
-        // FIXUP: need a real deep copy..
-        CompilerSetManager copy = new CompilerSetManager(new ArrayList<CompilerSet>());
-        for (CompilerSet set : getCompilerSets()) {
-            copy.add(set.createCopy());
-        }
-        return copy;
-    }
-    
     public static CompilerSetManager getDefault() {
-	return getDefault(true);
+	return getDefault("localhost"); // NOI18N
     }
     
-    public static synchronized CompilerSetManager getDefault(boolean doCreate) {
-        if (instance == null && doCreate) {
-            instance = restoreFromDisk();
-            if (instance == null) {
-                instance = new CompilerSetManager();
-                if (instance.getCompilerSets().size() > 0 && instance.getCompilerSets().get(0).getName() != CompilerSet.None) {
-                    instance.saveToDisk();
-                } else {
-                    DialogDescriptor dialogDescriptor = new DialogDescriptor(
-                        new NoCompilersPanel(),
-                        getString("NO_COMPILERS_FOUND_TITLE"),
-                        true,
-                        new Object[]{DialogDescriptor.OK_OPTION},
-                        DialogDescriptor.OK_OPTION,
-                        DialogDescriptor.BOTTOM_ALIGN,
-                        null,
-                        null);
-                    DialogDisplayer.getDefault().notify(dialogDescriptor);
+    /** @deprecated User CompilerSetManger.getDefault() instead */
+    public static CompilerSetManager getDefault(boolean doCreate) {
+        return getDefault(null);
+    }
+    
+    /**
+     * Find or create a default CompilerSetManager for the given key. A default
+     * CSM is one which is active in the system. A non-default is one which gets
+     * created but has no affect unless its made default.
+     * 
+     * For instance, the Build Tools tab (on C/C++ Tools->Options) creates a non-Default
+     * CSM and only makes it default if the OK button is pressed. If Cancel is pressed,
+     * it never becomes default.
+     * 
+     * @param key Either user@host or localhost
+     * @return A default CompilerSetManager for the given key
+     */
+    public static synchronized CompilerSetManager getDefault(String key) {
+        CompilerSetManager csm = managers.get(key);
+        if (csm == null) {
+            if (key.equals("localhost")) { // NOI18N
+                csm = restoreFromDisk();
+                if (csm == null) {
+                    csm = new CompilerSetManager();
+                    if (csm.getCompilerSets().size() > 0 && !(csm.getCompilerSets().get(0).getName().equals(CompilerSet.None))) {
+                        csm.saveToDisk();
+                    } else {
+                        DialogDescriptor dialogDescriptor = new DialogDescriptor(
+                            new NoCompilersPanel(),
+                            getString("NO_COMPILERS_FOUND_TITLE"),
+                            true,
+                            new Object[]{DialogDescriptor.OK_OPTION},
+                            DialogDescriptor.OK_OPTION,
+                            DialogDescriptor.BOTTOM_ALIGN,
+                            null,
+                            null);
+                        DialogDisplayer.getDefault().notify(dialogDescriptor);
+                    }
                 }
+            } else {
+                csm = new CompilerSetManager(key);
             }
+            if (csm != null && csm.getCompilerSets().size() == 0) { // No compilers found
+                csm.add(CompilerSet.createEmptyCompilerSet());
+            }
+            managers.put(key, csm);
         }
-        if (instance != null && instance.getCompilerSets().size() == 0) { // No compilers found
-            instance.add(CompilerSet.createEmptyCompilerSet());
-        }
-        return instance;
+        return csm;
     }
     
     /**
@@ -160,8 +179,16 @@ public class CompilerSetManager {
         if (csm.getCompilerSets().size() == 0) { // No compilers found
             csm.add(CompilerSet.createEmptyCompilerSet());
         }
-        instance = csm;
-//        fireCompilerSetChangeNotification(csm);
+        managers.put("localhost", csm); // NOI18N
+    }
+    
+    public CompilerSetManager deepCopy() {
+        // FIXUP: need a real deep copy..
+        CompilerSetManager copy = new CompilerSetManager(new ArrayList<CompilerSet>());
+        for (CompilerSet set : getCompilerSets()) {
+            copy.add(set.createCopy());
+        }
+        return copy;
     }
     
     public String getUniqueCompilerSetName(String baseName) {
@@ -222,11 +249,30 @@ public class CompilerSetManager {
     }
     
     /** Initialize remote CompilerSets */
-    private void initRemoteCompilerSets() {
+    private void initRemoteCompilerSets(String key) {
         CompilerSetProvider provider = (CompilerSetProvider) Lookup.getDefault().lookup(CompilerSetProvider.class);
         if (provider != null) {
+            provider.init(key);
             while (provider.hasMoreCompilerSets()) {
-                add(provider.getNextCompilerSet());
+                String data = provider.getNextCompilerSetData();
+                int i1 = data.indexOf(';');
+                int i2 = data.indexOf(';', i1 + 1);
+                String flavor = data.substring(0, i1);
+                String path = data.substring(i1 + 1, i2);
+                String tools = data.substring(i2 + 1);
+                CompilerSet cs = new CompilerSet(CompilerFlavor.toFlavor(flavor), path, flavor);
+                StringTokenizer st = new StringTokenizer(tools, ";"); // NOI18N
+                while (st.hasMoreTokens()) {
+                    String name = st.nextToken();
+                    int kind;
+                    if (flavor.startsWith("Sun")) { // NOI18N
+                        kind = name.equals("CC") ? Tool.CCompiler : Tool.CCCompiler; // NOI18N
+                    } else {
+                        kind = name.equals("gcc") ? Tool.CCompiler : Tool.CCCompiler; // NOI18N
+                    }
+                    cs.addTool(name, path + '/' + name, kind);
+                }
+                add(cs);
             }
         } else {
             throw new IllegalStateException();
@@ -515,7 +561,7 @@ public class CompilerSetManager {
     public void add(CompilerSet cs) {
 //        String csdir = cs.getDirectory();
         
-        if (sets.size() == 1 && sets.get(0).getName() == CompilerSet.None) {
+        if (sets.size() == 1 && sets.get(0).getName().equals(CompilerSet.None)) {
             sets.remove(0);
         }
 //        if (cs.isAutoGenerated()) {

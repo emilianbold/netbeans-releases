@@ -165,7 +165,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      * This is necessary for finding definitions/declarations 
      * since file-level static functions (i.e. c-style static functions) aren't registered in project
      */
+    private ReadWriteLock  staticLock = new ReentrantReadWriteLock();
     private Collection<CsmUID<CsmFunction>> staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>();
+    private Collection<CsmUID<CsmVariable>> staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>();
     
     /** For test purposes only */
     public interface Hook {
@@ -533,14 +535,14 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     private final String tokStreamLock = new String("TokenStream lock"); // NOI18N
-    private Reference<OffsetTokenStream> ref = new SoftReference(null);
+    private Reference<OffsetTokenStream> ref = new SoftReference<OffsetTokenStream>(null);
     
     public TokenStream getTokenStream(int startOffset, int endOffset) {
         try {
             OffsetTokenStream stream;
             synchronized (tokStreamLock) {
                 stream = ref != null ? ref.get() : null;
-                ref = new SoftReference(null);
+                ref = new SoftReference<OffsetTokenStream>(null);
             }
             if (stream == null || stream.getStartOffset() > startOffset) {
                 if (stream == null) {
@@ -838,6 +840,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
     
+    @SuppressWarnings("unchecked")
     public void addInclude(IncludeImpl includeImpl) {
         CsmUID<CsmInclude> inclUID = RepositoryUtils.put(includeImpl);
         assert inclUID != null;
@@ -873,6 +876,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     };
         
     static final private Comparator<CsmUID> UID_START_OFFSET_COMPARATOR = new Comparator<CsmUID>() {
+        @SuppressWarnings("unchecked")
         public int compare(CsmUID o1, CsmUID o2) {
             if (o1 == o2) {
                 return 0;
@@ -935,6 +939,18 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return out;
     }
 
+    public Iterator<CsmInclude> getIncludes(CsmFilter filter) {
+        Iterator<CsmInclude> out;
+        try {
+            includesLock.readLock().lock();
+            out = UIDCsmConverter.UIDsToIncludes(includes, filter);
+
+        } finally {
+            includesLock.readLock().unlock();
+        }
+        return out;
+    }
+
     public Collection<CsmOffsetableDeclaration> getDeclarations() {
         if (!SKIP_UNNECESSARY_FAKE_FIXES) {
             fixFakeRegistrations();
@@ -964,6 +980,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
          return out;
     }
 
+    @SuppressWarnings("unchecked")
     public void addMacro(CsmMacro macro) {
         CsmUID<CsmMacro> macroUID = RepositoryUtils.put(macro);
         assert macroUID != null;
@@ -997,6 +1014,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
          return out;
     }
     
+    @SuppressWarnings("unchecked")
     public void addDeclaration(CsmOffsetableDeclaration decl) {
         CsmUID<CsmOffsetableDeclaration> uidDecl = RepositoryUtils.put(decl);
         try {
@@ -1010,18 +1028,35 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             VariableImpl v = (VariableImpl) decl;
 	    if( isOfFileScope(v) ) {
 		v.setScope(this);
+                addStaticVariableDeclaration(uidDecl);
 	    }
 	}
         if( CsmKindUtilities.isFunctionDeclaration(decl) ) {
             FunctionImpl fi = (FunctionImpl) decl;
             if( fi.isStatic() ) {
-                addStaticFunctionDeclaration(fi);
+                addStaticFunctionDeclaration(uidDecl);
             }
         }
     }
     
-    private void addStaticFunctionDeclaration(FunctionImpl func) {
-        staticFunctionDeclarationUIDs.add(func.getUID());
+    @SuppressWarnings("unchecked")
+    private void addStaticFunctionDeclaration(CsmUID uidDecl) {
+        try {
+            staticLock.writeLock().lock();
+            staticFunctionDeclarationUIDs.add(uidDecl);
+        } finally {
+            staticLock.writeLock().unlock();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void addStaticVariableDeclaration(CsmUID uidDecl) {
+        try {
+            staticLock.writeLock().lock();
+            staticVariableUIDs.add(uidDecl);
+        } finally {
+            staticLock.writeLock().unlock();
+        }
     }
 
     /** 
@@ -1030,7 +1065,47 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      * since file-level static functions (i.e. c-style static functions) aren't registered in project
      */
     public Collection<CsmFunction> getStaticFunctionDeclarations() {
-        return new LazyCsmCollection<CsmFunction, CsmFunction>(new ArrayList<CsmUID<CsmFunction>>(staticFunctionDeclarationUIDs), true);
+        Collection<CsmFunction> out;
+        try {
+            staticLock.readLock().lock();
+            out = UIDCsmConverter.UIDsToDeclarations(staticFunctionDeclarationUIDs);
+        } finally {
+            staticLock.readLock().unlock();
+        }
+        return out;
+    }
+
+    public Iterator<CsmFunction> getStaticFunctionDeclarations(CsmFilter filter) {
+        Iterator<CsmFunction> out;
+        try {
+            staticLock.readLock().lock();
+            out = UIDCsmConverter.UIDsToDeclarationsFiltered(staticFunctionDeclarationUIDs, filter);
+        } finally {
+            staticLock.readLock().unlock();
+        }
+        return out;
+    }
+
+    public Collection<CsmVariable> getStaticVariableDeclarations() {
+        Collection<CsmVariable> out;
+        try {
+            staticLock.readLock().lock();
+            out = UIDCsmConverter.UIDsToDeclarations(staticVariableUIDs);
+        } finally {
+            staticLock.readLock().unlock();
+        }
+        return out;
+    }
+
+    public Iterator<CsmVariable> getStaticVariableDeclarations(CsmFilter filter) {
+        Iterator<CsmVariable> out;
+        try {
+            staticLock.readLock().lock();
+            out = UIDCsmConverter.UIDsToDeclarationsFiltered(staticVariableUIDs, filter);
+        } finally {
+            staticLock.readLock().unlock();
+        }
+        return out;
     }
     
     public static boolean isOfFileScope(VariableImpl v) {
@@ -1168,7 +1243,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     public void fixFakeRegistrations() {
-        if (!isValid()) {
+        if (fakeRegistrationUIDs.size() == 0 || !isValid()) {
             return;
         }
         if (fakeRegistrationUIDs.size() > 0) {
@@ -1234,8 +1309,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	output.writeLong(lastParsed);
 	output.writeUTF(state.toString());
         UIDObjectFactory.getDefaultFactory().writeUIDCollection(staticFunctionDeclarationUIDs, output, false);
+        UIDObjectFactory.getDefaultFactory().writeUIDCollection(staticVariableUIDs, output, false);
     }
     
+    @SuppressWarnings("unchecked")
     public FileImpl(DataInput input) throws IOException {
         this.fileBuffer = PersistentUtils.readBuffer(input);
         
@@ -1258,6 +1335,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	lastParsed = input.readLong();
         state = State.valueOf(input.readUTF());
         UIDObjectFactory.getDefaultFactory().readUIDCollection(staticFunctionDeclarationUIDs, input);
+        UIDObjectFactory.getDefaultFactory().readUIDCollection(staticVariableUIDs, input);
     }
 
     public @Override int hashCode() {

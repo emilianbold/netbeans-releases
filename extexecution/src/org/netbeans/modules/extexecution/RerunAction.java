@@ -51,9 +51,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptor.RerunCondition;
 import org.netbeans.modules.extexecution.api.ExecutionService;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.openide.windows.InputOutput;
 
 
 /**
@@ -64,6 +65,8 @@ import org.openide.util.WeakListeners;
  */
 public final class RerunAction extends AbstractAction implements ChangeListener {
 
+    private InputOutput parent;
+
     private ExecutionService service;
 
     private RerunCondition condition;
@@ -72,9 +75,15 @@ public final class RerunAction extends AbstractAction implements ChangeListener 
 
     public RerunAction() {
         setEnabled(false); // initially, until ready
-        putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage(
+        putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(
                 "org/netbeans/modules/extexecution/resources/rerun.png"))); // NOI18N
         putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(RerunAction.class, "Rerun"));
+    }
+
+    public void setParent(InputOutput parent) {
+        synchronized (this) {
+            this.parent = parent;
+        }
     }
 
     public void setExecutionService(ExecutionService service) {
@@ -101,12 +110,14 @@ public final class RerunAction extends AbstractAction implements ChangeListener 
         setEnabled(false); // discourage repeated clicking
 
         ExecutionService actionService;
+        InputOutput required;
         synchronized (this) {
             actionService = service;
+            required = parent;
         }
 
         if (actionService != null) {
-            Accessor.getDefault().run(actionService);
+            Accessor.getDefault().run(actionService, required);
         }
     }
 
@@ -130,16 +141,14 @@ public final class RerunAction extends AbstractAction implements ChangeListener 
         }
     }
 
-    /**
-     * The accessor pattern class.
-     */
-    public abstract static class Accessor {
+    public static abstract class Accessor {
 
         private static volatile Accessor accessor;
 
         public static void setDefault(Accessor accessor) {
-            assert Accessor.accessor == null : "Already initialized accessor";
-
+            if (Accessor.accessor != null) {
+                throw new IllegalStateException("Already initialized accessor");
+            }
             Accessor.accessor = accessor;
         }
 
@@ -156,12 +165,11 @@ public final class RerunAction extends AbstractAction implements ChangeListener 
             } catch (ClassNotFoundException ex) {
                 assert false : ex;
             }
-
-            assert accessor != null : "The DEFAULT field must be initialized";
+            assert accessor != null : "The accessor field must be initialized";
             return accessor;
         }
 
-        public abstract Future<Integer> run(ExecutionService service);
-
+        public abstract Future<Integer> run(ExecutionService service, InputOutput required);
     }
+
 }

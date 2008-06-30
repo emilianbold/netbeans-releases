@@ -51,8 +51,9 @@ import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.junit.ide.ProjectSupport;
+//import org.netbeans.junit.ide.ProjectSupport;
 import org.openide.util.Exceptions;
 
 /**
@@ -112,7 +113,8 @@ public class TestKit {
         new NewProjectWizardOperator().finish();
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(project_name);
         // wait classpath scanning finished
-        ProjectSupport.waitScanFinished();
+        //ProjectSupport.waitScanFinished();
+        new EventTool().waitNoEvent(3000);
 
         return file;
     }

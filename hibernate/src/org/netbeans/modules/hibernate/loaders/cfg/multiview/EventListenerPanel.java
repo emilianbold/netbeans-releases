@@ -49,34 +49,34 @@ import javax.swing.JTextField;
 public class EventListenerPanel extends javax.swing.JPanel {
 
     private static final String[] listenerTypes = new String[]{
-        "auto-flush",
-        "merge",
-        "create",
-        "create-onflush",
-        "delete",
-        "dirty-check",
-        "evict",
-        "flush",
-        "flush-entity",
-        "load",
-        "load-collection",
-        "lock",
-        "refresh",
-        "replicate",
-        "save-update",
-        "save",
-        "update",
-        "pre-load",
-        "pre-update",
-        "pre-insert",
-        "pre-delete",
-        "post-load",
-        "post-update",
-        "post-insert",
-        "post-delete",
-        "post-commit-update",
-        "post-commit-insert",
-        "post-commit-delete"
+        "auto-flush", // NOI18N
+        "merge", // NOI18N
+        "create", // NOI18N
+        "create-onflush", // NOI18N
+        "delete", // NOI18N
+        "dirty-check", // NOI18N
+        "evict", // NOI18N
+        "flush", // NOI18N
+        "flush-entity", // NOI18N
+        "load", // NOI18N
+        "load-collection", // NOI18N
+        "lock", // NOI18N
+        "refresh", // NOI18N
+        "replicate", // NOI18N
+        "save-update", // NOI18N
+        "save", // NOI18N
+        "update", // NOI18N
+        "pre-load", // NOI18N
+        "pre-update", // NOI18N
+        "pre-insert", // NOI18N
+        "pre-delete", // NOI18N
+        "post-load", // NOI18N
+        "post-update", // NOI18N
+        "post-insert", // NOI18N
+        "post-delete", // NOI18N
+        "post-commit-update", // NOI18N
+        "post-commit-insert", // NOI18N
+        "post-commit-delete" // NOI18N
     };
 
     /** Creates new form ResRefPanel */
@@ -117,7 +117,7 @@ public class EventListenerPanel extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         listenerClassLabel.setLabelFor(listenerClassTextField);
-        listenerClassLabel.setText(org.openide.util.NbBundle.getMessage(EventListenerPanel.class, "LBL_Listener_Class")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(listenerClassLabel, org.openide.util.NbBundle.getMessage(EventListenerPanel.class, "LBL_Listener_Class")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -125,6 +125,8 @@ public class EventListenerPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(listenerClassLabel, gridBagConstraints);
+        listenerClassLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EventListenerPanel.class, "LBL_Listener_Class")); // NOI18N
+        listenerClassLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EventListenerPanel.class, "LBL_Listener_Class")); // NOI18N
 
         listenerClassTextField.setColumns(20);
         listenerClassTextField.setPreferredSize(new java.awt.Dimension(200, 19));
@@ -137,13 +139,14 @@ public class EventListenerPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(listenerClassTextField, gridBagConstraints);
 
-        browseButton.setText(org.openide.util.NbBundle.getMessage(EventListenerPanel.class, "LBL_Browse")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(EventListenerPanel.class, "LBL_Browse")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(browseButton, gridBagConstraints);
+        browseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EventListenerPanel.class, "LBL_Browse")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
