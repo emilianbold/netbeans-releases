@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,71 +37,71 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript.editing;
+package org.netbeans.modules.bpel.mapper.tree.actions;
+
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.DefaultEditorKit.PasteAction;
+import org.netbeans.modules.soa.mappercore.Mapper;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
  *
- * @author tor
+ * @author AlexanderPermyakov
  */
-public class JsSemanticAnalyzerTest extends JsTestBase {
-    
-    public JsSemanticAnalyzerTest(String testName) {
-        super(testName);
-    }           
-    
-    public void testSemantic1() throws Exception {
-        checkSemantic("testfiles/semantic1.js");
+public class BpelPasteAction extends NodeAction implements PropertyChangeListener {
+
+    private Mapper mapper;
+
+    public BpelPasteAction() {
+        super();
     }
 
-    public void testSemantic2() throws Exception {
-        checkSemantic("testfiles/semantic2.js");
+    public void initialize(Mapper mapper) {
+        if (this.mapper != mapper) {
+            if (this.mapper != null) {
+                this.mapper.getCanvas().removePropertyChangeListener(
+                        Mapper.BUFFER_PROPERTY, this);
+            }
+            this.mapper = mapper;
+            mapper.getCanvas().addPropertyChangeListener(Mapper.BUFFER_PROPERTY, this);
+            setEnabled(false);
+        }
     }
 
-    public void testSemantic3() throws Exception {
-        checkSemantic("testfiles/semantic3.js");
+    protected void performAction(Node[] activatedNodes) {
+        if (mapper == null) {return; }
+        mapper.getActionMap().get(DefaultEditorKit.pasteAction).
+                actionPerformed(new ActionEvent(mapper, 0, "Bpel-Paste-Action"));
     }
 
-    public void testSemantic4() throws Exception {
-        checkSemantic("testfiles/semantic4.js");
+    protected boolean enable(Node[] activatedNodes) {
+        return false;
     }
 
-    public void testSemantic5() throws Exception {
-        checkSemantic("testfiles/semantic5.js");
+    public String getName() {
+        return NbBundle.getMessage(PasteAction.class, "Paste");
     }
 
-    public void testSemantic6() throws Exception {
-        checkSemantic("testfiles/semantic6.js");
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(PasteAction.class);
     }
 
-    public void testSemantic7() throws Exception {
-        checkSemantic("testfiles/semantic7.js");
+    @Override
+    protected boolean asynchronous() {
+        return false;
     }
 
-    public void testSemantic8() throws Exception {
-        checkSemantic("testfiles/semantic8.js", "new^");
-    }
-
-    public void testSemanticE4x() throws Exception {
-        checkSemantic("testfiles/e4x.js", "order^");
-    }
-
-    public void testSemanticE4x2() throws Exception {
-        checkSemantic("testfiles/e4x2.js", "order^");
-    }
-
-    public void testSemanticTryCatch() throws Exception {
-        checkSemantic("testfiles/tryblocks.js");
-    }
-
-    public void testSemanticPrototype() throws Exception {
-        checkSemantic("testfiles/prototype.js");
-    }
-
-    public void testSemanticPrototypeNew() throws Exception {
-        checkSemantic("testfiles/prototype-new.js");
-    }
-
-    public void testDebuggerKeyword() throws Exception {
-        checkSemantic("testfiles/debugger.js");
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getNewValue() != null) {
+            setEnabled(true);
+            return;
+        }
+        setEnabled(false);
     }
 }

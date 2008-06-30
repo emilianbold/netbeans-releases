@@ -54,90 +54,90 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, ListDataListener {
-    
+
     public static final String COMPILE = "COMPILE";  //NOI18N
     public static final String RUN = "RUN";          //NOI18N
     public static final String COMPILE_TESTS = "COMPILE_TESTS"; //NOI18N
-    public final String RUN_TESTS = "RUN_TESTS";  //NOI18N        
-    
-    private final SharedRubyProjectProperties uiProperties;    
-    
+    public static final String RUN_TESTS = "RUN_TESTS";  //NOI18N
+
     public CustomizerLibraries(Project project, SharedRubyProjectProperties uiProperties,
             CustomizerProviderImpl.SubCategoryProvider subcat ) {
-        this.uiProperties = uiProperties;        
         initComponents();  
-        
+
         // hidden until it is possible to use them (issue 134386)
         jButtonAddArtifactC.setVisible(false);
         jButtonAddLibraryC.setVisible(false);
-        
+
+        // the checkbox is not used anywhere for now (issue -TODO-)
+        includeJavaCheckbox.setVisible(false);
+        includeJavaSeparator.setVisible(false);
+
         this.putClientProperty( "HelpID", "J2SE_CustomizerGeneral" ); // NOI18N
 
-        
         // Hide unused edit buttons
         jButtonEditC.setVisible( false );
-        
+
         jListCpC.setModel(uiProperties.JAVAC_CLASSPATH_MODEL);
         jListCpC.setCellRenderer(uiProperties.CLASS_PATH_LIST_RENDERER );
         RubyClassPathUi.EditMediator.register( project,
-                                               jListCpC, 
+                                               jListCpC,
                                                uiProperties.JAVAC_CLASSPATH_MODEL,
-                                               jButtonAddJarC.getModel(), 
-                                               jButtonAddLibraryC.getModel(), 
-                                               jButtonAddArtifactC.getModel(), 
-                                               jButtonRemoveC.getModel(), 
-                                               jButtonMoveUpC.getModel(), 
+                                               jButtonAddJarC.getModel(),
+                                               jButtonAddLibraryC.getModel(),
+                                               jButtonAddArtifactC.getModel(),
+                                               jButtonRemoveC.getModel(),
+                                               jButtonMoveUpC.getModel(),
                                                jButtonMoveDownC.getModel() );
-        
-        includeJavaCheckbox.setModel(uiProperties.INCLUDE_JAVA_MODEL);
+
+        //includeJavaCheckbox.setModel(uiProperties.INCLUDE_JAVA_MODEL);
         // XXX: the above call destroys mnemonic set in initComponents. Workarounding.
         Mnemonics.setLocalizedText(includeJavaCheckbox,
                 NbBundle.getMessage(CustomizerLibraries.class, "IncludeJava")); // NOI18N
 
 //        uiProperties.NO_DEPENDENCIES_MODEL.setMnemonic( jCheckBoxBuildSubprojects.getMnemonic() );
-//        jCheckBoxBuildSubprojects.setModel( uiProperties.NO_DEPENDENCIES_MODEL );                        
+//        jCheckBoxBuildSubprojects.setModel( uiProperties.NO_DEPENDENCIES_MODEL );
 
-//        if (uiProperties.PLATFORM_MODEL != null) {        
-//                jComboBoxTarget.setModel(uiProperties.PLATFORM_MODEL);               
+//        if (uiProperties.PLATFORM_MODEL != null) {
+//                jComboBoxTarget.setModel(uiProperties.PLATFORM_MODEL);
 //                jComboBoxTarget.setRenderer(uiProperties.PLATFORM_LIST_RENDERER);
 //        }
-        
+
         platformCombo.putClientProperty ("JComboBox.isTableCellEditor", Boolean.TRUE);    //NOI18N
-        platformCombo.addItemListener(new ItemListener() { 
-            public void itemStateChanged(ItemEvent e){ 
-                JComboBox combo = (JComboBox) e.getSource(); 
-                combo.setPopupVisible(false); 
-            } 
+        platformCombo.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e){
+                JComboBox combo = (JComboBox) e.getSource();
+                combo.setPopupVisible(false);
+            }
         });
 //        testBroken();
         if (subcat != null && RubyCompositePanelProvider.JAVA.equals(subcat.getCategory())) {
             showSubCategory(subcat.getSubcategory());
         }
-        
+
         hidePlatformComponents();
-        
+
 //        uiProperties.JAVAC_CLASSPATH_MODEL.addListDataListener( this );
     }
-    
+
     private void hidePlatformComponents() {
         platformButton.setVisible(false);
         platformCombo.setVisible(false);
         platformLabel.setVisible(false);
         jCheckBoxBuildSubprojects.setVisible(false);
     }
-    
+
     // Implementation of HelpCtx.Provider --------------------------------------
-    
+
     public HelpCtx getHelpCtx() {
         return new HelpCtx( CustomizerLibraries.class );
-    }        
+    }
 
-    
+
     // Implementation of ListDataListener --------------------------------------
-    
-    
+
+
     public void intervalRemoved( ListDataEvent e ) {
-//        testBroken(); 
+//        testBroken();
     }
 
     public void intervalAdded( ListDataEvent e ) {
@@ -147,12 +147,12 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
     public void contentsChanged( ListDataEvent e ) {
         // NOP
     }
-    
-    
+
+
     private void showSubCategory (String name) {
         if (name.equals(COMPILE)) {
             jTabbedPane1.setSelectedIndex (0);
-        }        
+        }
         else if (name.equals(COMPILE_TESTS)) {
             jTabbedPane1.setSelectedIndex (2);
         }
@@ -163,8 +163,8 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
             jTabbedPane1.setSelectedIndex (3);
         }
     }
-    
-    
+
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -175,7 +175,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         java.awt.GridBagConstraints gridBagConstraints;
 
         includeJavaCheckbox = new javax.swing.JCheckBox();
-        jSeparator1 = new javax.swing.JSeparator();
+        includeJavaSeparator = new javax.swing.JSeparator();
         platformLabel = new javax.swing.JLabel();
         platformCombo = new javax.swing.JComboBox();
         platformButton = new javax.swing.JButton();
@@ -208,7 +208,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
-        add(jSeparator1, gridBagConstraints);
+        add(includeJavaSeparator, gridBagConstraints);
 
         platformLabel.setLabelFor(platformCombo);
         org.openide.awt.Mnemonics.setLocalizedText(platformLabel, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeGeneral_Platform_JLabel")); // NOI18N
@@ -362,14 +362,15 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
 
     private void createNewPlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createNewPlatform
 //        Object selectedItem = this.platformCombo.getSelectedItem();
-//        JavaPlatform jp = (selectedItem == null ? null : PlatformUiSupport.getPlatform(selectedItem));
+//        JavaPlatform jp = (selectedItem == null ? null : PlatformUiSupport.getPlatform(selectedItem));                                  
 //        JavaPlatform jp = null;
-//        PlatformsCustomizer.showCustomizer(jp);        
-    }//GEN-LAST:event_createNewPlatform
-    
-    
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox includeJavaCheckbox;
+//        PlatformsCustomizer.showCustomizer(jp);
+    }
+
+
+    // Variables declaration - do not modify//GEN-HEADEREND:event_createNewPlatform
+    private javax.swing.JCheckBox includeJavaCheckbox;//GEN-LAST:event_createNewPlatform
+    private javax.swing.JSeparator includeJavaSeparator;//GEN-BEGIN:variables
     private javax.swing.JButton jButtonAddArtifactC;
     private javax.swing.JButton jButtonAddJarC;
     private javax.swing.JButton jButtonAddLibraryC;
@@ -381,7 +382,6 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
     private javax.swing.JLabel jLabelErrorMessage;
     private javax.swing.JList jListCpC;
     private javax.swing.JPanel jPanelCompile;
-    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JLabel librariesJLabel1;
     private javax.swing.JScrollPane librariesJScrollPane;
@@ -389,6 +389,6 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
     private javax.swing.JComboBox platformCombo;
     private javax.swing.JLabel platformLabel;
     // End of variables declaration//GEN-END:variables
-        
-        
+
+
 }
