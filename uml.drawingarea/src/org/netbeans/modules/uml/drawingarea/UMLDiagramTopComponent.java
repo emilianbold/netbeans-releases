@@ -1734,7 +1734,7 @@ public class UMLDiagramTopComponent extends TopComponent
                 QuestionResponse result = questionDialog.displaySimpleQuestionDialogWithCheckbox(MessageDialogKindEnum.SQDK_YESNO, MessageIconKindEnum.EDIK_ICONWARNING, question, checkQuestion, title, MessageResultKindEnum.SQDRK_RESULT_NO, false);
 
                 if (result.getResult() != MessageResultKindEnum.SQDRK_RESULT_NO && result.getResult() != MessageResultKindEnum.SQDRK_RESULT_CANCEL)
-                {   ((DiagramModelElementNode)nodesToDestroy[0]).getElementType();
+                {   
                     List<Node> a = Arrays.asList(nodesToDestroy);
                     for (Node node : a)
                     {

@@ -358,10 +358,29 @@ public class UMLClassWidget  extends SwitchableWidget
                 ResourceValue.initResources(getWidgetID() + "." + DEFAULT, widget);
                 list.addChild(widget);
             }
-
-            
         }
-       
+    }
+    
+    protected void removeRedefinedOperation(IOperation op)
+    {
+        ElementListWidget redefinedOperations = null;
+        List<IRedefinableElement> redefined = op.getRedefinedElements();
+        for (IRedefinableElement element : redefined)
+        {
+            if (element instanceof IFeature)
+            {
+                IFeature feature = (IFeature) element;
+                IClassifier classifier = feature.getFeaturingClassifier();
+                redefinedOperations = getRedefinedOperationsCompartment(classifier);
+                redefinedOperations.removeElement(op);
+                if (redefinedOperations.getSize() == 0)
+                {
+                    operationRedefinedMap.remove(classifier.getXMIID());
+                    // remove from classView
+                    classView.removeChild(redefinedOperations.getParentWidget());
+                }
+            }
+        }
     }
     
     protected void addRedefinedAttribute(IAttribute attr)
@@ -447,7 +466,14 @@ public class UMLClassWidget  extends SwitchableWidget
     
     protected void removeOperation(IOperation op)
     {
-        operations.removeElement(op);
+         if( !op.getIsRedefined())
+         {
+            operations.removeElement(op);
+         }
+         else //redefined operation
+         {
+            removeRedefinedOperation(op);
+         }
     }
     
     protected AttributeWidget addAttribute(IAttribute attr)
@@ -551,12 +577,15 @@ public class UMLClassWidget  extends SwitchableWidget
             }
 
             String propName = event.getPropertyName();
+            Object newVal = event.getNewValue();
+            Object oldVal = event.getOldValue();
             nameWidget.propertyChange(event);
+            
             if(propName.equals(ModelElementChangedKind.FEATUREADDED.toString()))
             {
-                if(event.getNewValue() instanceof IOperation)
+                if(newVal instanceof IOperation)
                 {
-                    IOperation op=(IOperation)event.getNewValue();
+                    IOperation op=(IOperation)newVal;
                     OperationWidget operW=addOperation(op);
                     if(operW!=null && op==operationToSelect)
                     {
@@ -564,9 +593,9 @@ public class UMLClassWidget  extends SwitchableWidget
                         operationToSelect=null;
                     }
                 }
-                else if(event.getNewValue() instanceof IAttribute)
+                else if(newVal instanceof IAttribute)
                 {
-                    IAttribute attr=(IAttribute)event.getNewValue();
+                    IAttribute attr=(IAttribute)newVal;
                     AttributeWidget attrW=addAttribute(attr);
                     if(attrW!=null && attr==attributeToSelect)
                     {
@@ -579,13 +608,13 @@ public class UMLClassWidget  extends SwitchableWidget
                     propName.equals(ModelElementChangedKind.DELETE.toString()) ||
                     propName.equals(ModelElementChangedKind.PRE_DELETE.toString()))
             {
-                if(event.getOldValue() instanceof IOperation)
+                if(oldVal instanceof IOperation)
                 {
-                    removeOperation((IOperation)event.getOldValue());
+                    removeOperation((IOperation)oldVal);
                 }
-                else if(event.getOldValue() instanceof IAttribute)
+                else if(oldVal instanceof IAttribute)
                 {
-                    removeAttribute((IAttribute)event.getOldValue());
+                    removeAttribute((IAttribute)oldVal);
                 }
             }
             else if(propName.equals(ModelElementChangedKind.TEMPLATE_PARAMETER.toString()))
@@ -596,7 +625,7 @@ public class UMLClassWidget  extends SwitchableWidget
             }
             else if(propName.equals(ModelElementChangedKind.REDEFINED_OWNER_NAME_CHANGED.toString()))
             {
-                updateRedefinesCompartment((IClassifier)event.getNewValue());
+                updateRedefinesCompartment((IClassifier)newVal);
             }
             updateSizeWithOptions();
         }
