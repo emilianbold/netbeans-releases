@@ -76,8 +76,7 @@ public class LeftTree extends JTree implements
     private LeftTreeEventHandler eventHandler;
     public JComponent scrollPaneWrapper;
     public JScrollPane scrollPane;
-    private boolean printMode = false;
-
+    
     /** Creates a new instance of LeftTree */
     public LeftTree(Mapper mapper) {
         super((TreeModel) null);
@@ -252,6 +251,15 @@ public class LeftTree extends JTree implements
     }
 
     @Override
+    protected void printComponent(Graphics g) {
+        mapper.setPrintMode(true);
+        super.printComponent(g);
+        mapper.setPrintMode(false);
+    }
+
+
+
+    @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
@@ -290,26 +298,28 @@ public class LeftTree extends JTree implements
                     Set<Link> linksForTreePath = edgeTreePathes.get(getPathForRow(row));
                     Color linkColor = MapperStyle.LINK_COLOR_UNSELECTED_NODE;
                     boolean hasSelectedLink = false;
-                    
-                    for (Link link : connectedEdges) {
-                        if (selectionModel.isSelected(rightTreePath, link) &&
-                                mapper.getNode(rightTreePath, true).isVisibleGraph()) {
-                            linkColor = MapperStyle.SELECTION_COLOR;
-                            hasSelectedLink = true;
-                            break;
-                        }
-                        
-                        if (linkColor != MapperStyle.LINK_COLOR_SELECTED_NODE) {
-                            if (selectionModel.getSelectedGraph() == link.getGraph() 
-                                    || parentPathIsSelected(mapper.
-                                    getRightTreePathForLink(link).getParentPath()))  
-                            {
-                                linkColor = MapperStyle.LINK_COLOR_SELECTED_NODE;
-                             
-                                linkColor = MapperStyle.LINK_COLOR_SELECTED_NODE;
+
+                    if (!mapper.getPrintMode()) {
+                        for (Link link : connectedEdges) {
+                            if (selectionModel.isSelected(rightTreePath, link) &&
+                                    mapper.getNode(rightTreePath, true).isVisibleGraph()) {
+                                linkColor = MapperStyle.SELECTION_COLOR;
+                                hasSelectedLink = true;
+                                break;
                             }
+
+                            if (linkColor != MapperStyle.LINK_COLOR_SELECTED_NODE) {
+                                if (selectionModel.getSelectedGraph() == link.getGraph()
+                                        || parentPathIsSelected(mapper.
+                                        getRightTreePathForLink(link).getParentPath()))
+                                {
+                                    linkColor = MapperStyle.LINK_COLOR_SELECTED_NODE;
+
+                                    linkColor = MapperStyle.LINK_COLOR_SELECTED_NODE;
+                                }
+                            }
+
                         }
-                        
                     }
                     
                     g2.setPaint(linkColor);
@@ -360,16 +370,12 @@ public class LeftTree extends JTree implements
 
     @Override
     public int getY() {
-        if (printMode) {
+        if (getMapper().getPrintMode()) {
             return 0;
         }
         return super.getY();
     }
     
-    public void setPrintMode(boolean printMode) {
-        this.printMode = printMode;
-    }
-
     private Set<Link> connectedEdges(int row, TreePath treePath,
             Map<TreePath, Set<Link>> edgeTreePathes, Object[][] edgePathes) {
         if (getModel().isLeaf(treePath.getLastPathComponent()) || isExpanded(row)) {
