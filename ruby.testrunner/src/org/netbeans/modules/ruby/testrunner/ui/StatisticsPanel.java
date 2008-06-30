@@ -53,13 +53,11 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.ruby.testrunner.TestRunnerSettings;
 import org.netbeans.modules.ruby.testrunner.TestExecutionManager;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -80,10 +78,6 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
      */
     private JButton rerunButton;
     
-    /**
-     * Toggles between vertical and horizontal orientation.
-     */
-    private JToggleButton splitOrientation;
     /** */
     private String tooltipShowAll;
     /** */
@@ -109,14 +103,12 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
      */
     private JComponent createToolbar() {
         createFilterButton();
-//        createSplitOrientationButton();
         createRerunButton();
 
         JToolBar toolbar = new JToolBar(SwingConstants.VERTICAL);
         toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.Y_AXIS));
         toolbar.add(rerunButton);
         toolbar.add(btnFilter);
-//        toolbar.add(splitOrientation);
         toolbar.add(Box.createHorizontalGlue());
         
         toolbar.setFocusable(false);
@@ -163,31 +155,6 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
         updateFilterButtonLabel();
     }
 
-    private void createSplitOrientationButton() {
-        splitOrientation = new JToggleButton(new ImageIcon(
-                ImageUtilities.loadImage(
-                    "org/netbeans/modules/ruby/testrunner/ui/res/empty.gif", //NOI18N
-                    true)));
-        splitOrientation.getAccessibleContext().setAccessibleName(
-                NbBundle.getMessage(getClass(), "ACSN_SplitOrientationButton"));  //NOI18N
-        
-        int orientation = TestRunnerSettings.getDefault().getDividerSettings(null).getOrientation();
-        splitOrientation.setSelected(orientation == JSplitPane.VERTICAL_SPLIT);
-        splitOrientation.addItemListener(new ItemListener() {
-
-            public void itemStateChanged(ItemEvent e) {
-                int orientation = splitOrientation.isSelected() ? JSplitPane.VERTICAL_SPLIT : JSplitPane.HORIZONTAL_SPLIT;
-                JSplitPane pane = displayHandler.getDisplayComponent();
-                pane.setOrientation(orientation);
-                ResultWindow.getDefault().addDisplayComponent(pane);
-                updateSplitOrientationLabel();
-
-            }
-        });
-        updateSplitOrientationLabel();
-        
-    }
-    
     /**
      */
     private void updateFilterButtonLabel() {
@@ -201,13 +168,6 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
         }
         btnFilter.setToolTipText(btnFilter.isSelected() ? tooltipShowAll
                                                         : tooltipShowFailures);
-    }
-    
-    private void updateSplitOrientationLabel() {
-        String key = splitOrientation.isSelected() 
-                ? "MultiviewPanel.splitOrientation.horizontal.tooltip" //NOI18N
-                : "MultiviewPanel.splitOrientation.vertical.tooltip"; //NOI18N
-        splitOrientation.setToolTipText(NbBundle.getMessage(StatisticsPanel.class, key));
     }
     
     /**
