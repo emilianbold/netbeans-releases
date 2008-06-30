@@ -66,6 +66,7 @@ import com.sun.tools.javac.tree.TreeInfo;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Map;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -105,21 +106,34 @@ public final class VeryPretty extends JCTree.Visitor {
     private int toOffset = -1;
     private boolean containsError = false;
     
+    private final Map<Tree, ?> tree2Tag;
+    private final Map<Object, int[]> tag2Span;
+    private int initialOffset = 0;
+    
     public VeryPretty(CompilationInfo cInfo) {
-        this(cInfo, CodeStyle.getDefault(null));
+        this(cInfo, CodeStyle.getDefault(null), null, null);
     }
 
     public VeryPretty(CompilationInfo cInfo, CodeStyle cs) {
-        this(JavaSourceAccessor.getINSTANCE().getJavacTask(cInfo).getContext(), cs);
+        this(cInfo, cs, null, null);
+    }
+    
+    public VeryPretty(CompilationInfo cInfo, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span) {
+        this(JavaSourceAccessor.getINSTANCE().getJavacTask(cInfo).getContext(), cs, tree2Tag, tag2Span);
         this.cInfo = cInfo;
         this.origUnit = (JCCompilationUnit) cInfo.getCompilationUnit();
     }
     
-    public VeryPretty(Context context) {
-        this(context, CodeStyle.getDefault(null));
+    public VeryPretty(CompilationInfo cInfo, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span, int initialOffset) {
+        this(cInfo, cs, tree2Tag, tag2Span);
+        this.initialOffset = initialOffset; //provide intial offset of this priter
     }
     
-    public VeryPretty(Context context, CodeStyle cs) {
+    public VeryPretty(Context context) {
+        this(context, CodeStyle.getDefault(null), null, null);
+    }
+    
+    public VeryPretty(Context context, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span) {
 	names = Name.Table.instance(context);
 	enclClassName = names.empty;
         commentHandler = CommentHandlerService.instance(context);
@@ -132,6 +146,16 @@ public final class VeryPretty extends JCTree.Visitor {
         this.cs = cs;
         out = new CharBuffer(cs.getRightMargin(), cs.getTabSize(), cs.expandTabToSpaces());
         this.indentSize = cs.getIndentSize();
+        this.tree2Tag = tree2Tag;
+        this.tag2Span = (Map<Object, int[]>) tag2Span;//XXX
+    }
+
+    public void setInitialOffset(int offset) {
+        initialOffset = offset < 0 ? 0 : offset;
+    }
+    
+    public int getInitialOffset() {
+        return initialOffset;
     }
 
     @Override
@@ -189,9 +213,25 @@ public final class VeryPretty extends JCTree.Visitor {
         blankLines(t, true);
         toLeftMargin();
 	printPrecedingComments(t, true);
-	t.accept(this);
+        doAccept(t);
         printTrailingComments(t, true);
         blankLines(t, false);
+    }
+    
+    private void doAccept(JCTree t) {
+        int start = toString().length();
+
+        t.accept(this);
+
+        int end = toString().length();
+
+//        System.err.println("t: " + t);
+//        System.err.println("thr=" + System.identityHashCode(t));
+        Object tag = tree2Tag != null ? tree2Tag.get(t) : null;
+
+        if (tag != null) {
+            tag2Span.put(tag, new int[]{start + initialOffset, end + initialOffset});
+        }    
     }
     
     public String reformat(JCTree t, int fromOffset, int toOffset, int indent) {
@@ -1499,7 +1539,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	} else {
 	    int prevPrec = this.prec;
 	    this.prec = prec;
-            tree.accept(this);
+            doAccept(tree);
 	    this.prec = prevPrec;
 	}
     }
@@ -1871,7 +1911,7 @@ public final class VeryPretty extends JCTree.Visitor {
 
     private void printComment(Comment comment, boolean preceding, boolean printWhitespace) {
         if (Comment.Style.WHITESPACE == comment.style()) {
-            if (printWhitespace) {
+            if (false && printWhitespace) {
                 char[] data = comment.getText().toCharArray();
                 int n = -1;
                 for (int i = 0; i < data.length; i++) {

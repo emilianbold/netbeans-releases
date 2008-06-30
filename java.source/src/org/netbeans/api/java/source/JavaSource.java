@@ -857,7 +857,7 @@ public final class JavaSource {
      * @see Task for information about implementation requirements
      * @param task The task which.
      */    
-    public ModificationResult runModificationTask(Task<WorkingCopy> task) throws IOException {        
+    public ModificationResult runModificationTask(Task<WorkingCopy> task) throws IOException {
         if (task == null) {
             throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
         }
@@ -914,7 +914,7 @@ public final class JavaSource {
                     assert currentInfo != null;                    
                     WorkingCopy copy = new WorkingCopy (currentInfo);
                     task.run (copy);
-                    List<Difference> diffs = copy.getChanges();
+                    List<Difference> diffs = copy.getChanges(result.tag2Span);
                     if (diffs != null && diffs.size() > 0)
                         result.diffs.put(currentInfo.getFileObject(), diffs);
                 }
@@ -965,7 +965,7 @@ public final class JavaSource {
                         if (!ci.needsRestart) {
                             jt = ci.getJavacTask();
                             Log.instance(jt.getContext()).nerrors = 0;
-                            List<Difference> diffs = copy.getChanges();
+                            List<Difference> diffs = copy.getChanges(result.tag2Span);
                             if (diffs != null && diffs.size() > 0)
                                 result.diffs.put(ci.getFileObject(), diffs);
                             activeFile = null;
