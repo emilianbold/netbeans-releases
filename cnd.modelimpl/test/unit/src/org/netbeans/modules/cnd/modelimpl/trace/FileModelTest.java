@@ -321,6 +321,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("attribute_in_constructor.cc"); // NOI18N
     }
 
+    public void testCastOperator() throws Exception {
+        // IZ 137094 : grammar do not support parenthesis in cast
+        performTest("cast.cc"); // NOI18N
+    }
+    
     public void testStringizeMacro() throws Exception {
         // IZ 137465 : wrong macro expansion for #x
         performPreprocessorTest("stringize_macro.cc"); // NOI18N
