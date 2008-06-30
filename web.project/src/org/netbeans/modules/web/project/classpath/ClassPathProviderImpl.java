@@ -260,7 +260,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             ClassPath cp = cache.get(ClassPathCache.SOURCE);
             if (cp == null)
             {
-                cp = ClassPathFactory.createClassPath(new SourcePathImplementation(this.sourceRoots,helper));
+                cp = ClassPathFactory.createClassPath(new SourcePathImplementation(this.sourceRoots,helper, evaluator));
                 cache.put(ClassPathCache.SOURCE, cp);
             }
             return cp;
@@ -270,7 +270,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             ClassPath cp = cache.get(ClassPathCache.TEST_SOURCE);
             if (cp == null)
             {
-                cp = ClassPathFactory.createClassPath(new SourcePathImplementation(this.testSourceRoots,helper));
+                cp = ClassPathFactory.createClassPath(new SourcePathImplementation(this.testSourceRoots,helper, evaluator));
                 cache.put(ClassPathCache.TEST_SOURCE, cp);
             }
             return cp;
@@ -282,7 +282,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             {
                 cp = ClassPathSupport.createProxyClassPath(new ClassPath[] {
                         ClassPathFactory.createClassPath(new JspSourcePathImplementation(helper, evaluator)),
-                        ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots, helper)),
+                        ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots, helper, evaluator)),
                     });
                 cache.put(ClassPathCache.WEB_SOURCE, cp);
 
