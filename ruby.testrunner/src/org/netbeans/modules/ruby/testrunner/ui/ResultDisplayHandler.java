@@ -312,10 +312,6 @@ final class ResultDisplayHandler {
         assert methodName != null;
         assert treePanel != null;
 
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "Displaying: " + param + " using method: " + methodName);
-        }
-        
         final Method method = prepareMethod(methodName);
         if (method == null) {
             LOGGER.log(Level.WARNING, "No such method: " + methodName);
@@ -326,6 +322,9 @@ final class ResultDisplayHandler {
 
             public void run() {
                 try {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "Invoking: " + methodName + " with param: " + param + ". RPT: " + treePanel);
+                    }
                     method.invoke(treePanel, new Object[]{param});
                 } catch (InvocationTargetException ex) {
                     ErrorManager.getDefault().notify(ex.getTargetException());
