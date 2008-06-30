@@ -210,6 +210,12 @@ public class ConfigurationMakefileWriter {
                 fortranCompilerName = fortranCompiler.getName();
         }
         
+        if (CompilerSetManager.useFakeRemoteCompilerSet) {
+            // XXX: temporary, all this should be done automatically from correct CS
+            cCompilerName = CompilerSetManager.fakeRemoteCS.getTool(Tool.CCompiler).getPath();
+            ccCompilerName = CompilerSetManager.fakeRemoteCS.getTool(Tool.CCCompiler).getPath();
+        }
+
         bw.write("#\n"); // NOI18N
         bw.write("# Generated Makefile - do not edit!\n"); // NOI18N
         bw.write("#\n"); // NOI18N
