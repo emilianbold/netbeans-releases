@@ -339,21 +339,25 @@ public class CsmBaseUtilities {
             }
         }
         CsmClassifier out = orig;
-        Set<CsmClassifier> set = new HashSet<CsmClassifier>(100);
-        set.add(orig);
-        while (CsmKindUtilities.isTypedef(out)) {
-            orig = ((CsmTypedef)out).getType().getClassifier();
-            if (orig == null) {
-                break;
-            }
-            if (set.contains(orig)) {
-                // try to recover from this error
-                CsmClassifier cls = findOtherClassifier(out);
-                out = cls == null ? out : cls;
-                break;
-            }
+        try {
+            Set<CsmClassifier> set = new HashSet<CsmClassifier>(100);
             set.add(orig);
-            out = orig;
+            while (CsmKindUtilities.isTypedef(out)) {
+                orig = ((CsmTypedef)out).getType().getClassifier();
+                if (orig == null) {
+                    break;
+                }
+                if (set.contains(orig)) {
+                    // try to recover from this error
+                    CsmClassifier cls = findOtherClassifier(out);
+                    out = cls == null ? out : cls;
+                    break;
+                }
+                set.add(orig);
+                out = orig;
+            }
+        } catch (StackOverflowError ex) {
+            ex.printStackTrace(System.err);
         }
         return out;
     }     

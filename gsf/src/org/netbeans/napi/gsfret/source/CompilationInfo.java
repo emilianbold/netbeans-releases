@@ -57,6 +57,7 @@ import org.netbeans.modules.gsfret.source.parsing.SourceFileObject;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.modules.gsf.api.EditHistory;
 import org.openide.filesystems.FileUtil;
 
 
@@ -79,6 +80,8 @@ public class CompilationInfo extends org.netbeans.modules.gsf.api.CompilationInf
     boolean needsRestart;
     private Language language;
     private Map<String,ParserResult> embeddedResults = new HashMap<String,ParserResult>();
+    private Set<String> unchanged;
+    private EditHistory history;
  
     CompilationInfo() throws IOException {
         super(null);
@@ -217,7 +220,17 @@ public class CompilationInfo extends org.netbeans.modules.gsf.api.CompilationInf
         ParserResult root = embeddedResults.get(embeddedMimeType);
         
         return root;
-    }    
+    }
+
+    public boolean hasUnchangedResults() {
+        for (ParserResult result : embeddedResults.values()) {
+            if (result.getUpdateState().isUnchanged()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
     
     @Override
     public List<Error> getErrors() {
@@ -233,6 +246,12 @@ public class CompilationInfo extends org.netbeans.modules.gsf.api.CompilationInf
     public String toString() {
         return "CompilationInfo for " + FileUtil.getFileDisplayName(getFileObject()) + "; phase=" + getPhase();
     }
-    
-    
+
+    public EditHistory getHistory() {
+        return history;
+    }
+
+    public void setHistory(EditHistory history) {
+        this.history = history;
+    }
 }

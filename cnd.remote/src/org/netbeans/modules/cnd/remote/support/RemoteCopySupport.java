@@ -58,16 +58,22 @@ import org.openide.util.Exceptions;
  */
 public class RemoteCopySupport extends RemoteConnectionSupport {
         
-    public RemoteCopySupport(String host, String user) {
-        super(host, user);
+    public RemoteCopySupport(String key, int port) {
+        super(key, port);
+        revitalize();
         
         // copy(remote, local);
+    }
+        
+    public RemoteCopySupport(String key) {
+        this(key, 22);
     }
     
     
     @Override
     protected Channel createChannel() throws JSchException {
         return session.openChannel("exec");
+        
     }
 
     private void setChannelCommand(String cmd) {

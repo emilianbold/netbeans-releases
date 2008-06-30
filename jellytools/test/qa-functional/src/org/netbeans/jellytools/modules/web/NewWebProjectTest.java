@@ -53,10 +53,12 @@ import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.actions.ViewAction;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
 
@@ -64,7 +66,7 @@ import org.netbeans.modules.project.ui.test.ProjectSupport;
  * Test of org.netbeans.jellytools.NewJspFileNameStepOperator.
  * @author Martin.Schovanek@sun.com
  */
-public class NewWebProjectTest extends JellyTestCase {
+public class NewWebProjectTest extends J2eeTestCase {
     
     /** Constructor required by JUnit.
      * @param testName method name to be used as testcase

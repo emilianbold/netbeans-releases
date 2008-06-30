@@ -90,6 +90,15 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         refresh();
     }
 
+    public ServerRecord get(String key) {
+	for (RemoteServerRecord record : this) {
+            if (key.equals(record.getName())) {
+                return record;
+            }
+	}
+	return null;
+    }
+
     public int getDefaultServerIndex() {
         int i = 0;
         

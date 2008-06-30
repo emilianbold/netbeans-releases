@@ -90,7 +90,7 @@ public class SystemIncludesUtils {
             return false;
         }
 
-        RemoteCopySupport rcs = new RemoteCopySupport(serverName, userName);
+        RemoteCopySupport rcs = new RemoteCopySupport(userName + '@' + serverName);
         for (Tool tool : cs.getTools()) {
             if (tool instanceof BasicCompiler) {
                 if (!load(rsf.getAbsolutePath(), rcs, (List<String>) ((BasicCompiler) tool).getSystemIncludeDirectories())) {

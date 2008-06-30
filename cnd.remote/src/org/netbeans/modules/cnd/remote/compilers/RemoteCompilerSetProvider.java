@@ -53,11 +53,8 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
     private CompilerSetScriptManager manager;
     
     public void init(String name) {
-        int pos = name.indexOf('@');
-        String user = name.substring(0, pos);
-        String host = name.substring(pos + 1);
         manager = new CompilerSetScriptManager();
-        support = new RemoteScriptSupport(host, user, manager);
+        support = new RemoteScriptSupport(name, manager);
     }
 
     public boolean hasMoreCompilerSets() {

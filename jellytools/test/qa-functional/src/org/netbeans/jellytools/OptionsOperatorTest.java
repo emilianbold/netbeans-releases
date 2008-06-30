@@ -53,7 +53,7 @@ public class OptionsOperatorTest extends JellyTestCase {
     // "IDE Configuration|System|File Types|HTML and XHTML files"
     private static String path1;
     // "IDE Configuration|System|Print Settings"
-    private static String path2;
+    //private static String path2;
     // "IDE Configuration|Look and Feel|Toolbars"
     private static String path3;
 
@@ -121,17 +121,17 @@ public class OptionsOperatorTest extends JellyTestCase {
     public void setUp() {
         System.out.println("### "+getName()+" ###");
     ideConfLabel =
-        Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration");
+        Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration");
     path1 = ideConfLabel+"|"+
-        Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration/System")+"|"+
+        Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration/System")+"|"+
         Bundle.getString("org.netbeans.core.Bundle", "Services/MIMEResolver")+"|"+
         Bundle.getString("org.netbeans.modules.html.Bundle", "Services/MIMEResolver/html.xml");
-    path2 = ideConfLabel+"|"+
-        Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration/System")+"|"+
-        Bundle.getString("org.netbeans.core.Bundle", "Services/org-openide-text-PrintSettings.settings");
+    //path2 = ideConfLabel+"|"+
+    //    Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration/System")+"|"+
+    //    Bundle.getString("org.netbeans.core.Bundle", "Services/org-openide-text-PrintSettings.settings");
     path3 = ideConfLabel+"|"+
-        Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration/LookAndFeel")+"|"+
-        Bundle.getString("org.netbeans.core.Bundle", "Toolbars");
+        Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration/LookAndFeel")+"|"+
+        Bundle.getString("org.netbeans.core.ui.resources.Bundle", "Toolbars");
         // opens Options window
         if(optionsOperator == null) {
             optionsOperator = OptionsOperator.invoke();
@@ -145,9 +145,9 @@ public class OptionsOperatorTest extends JellyTestCase {
     public void testTreeTable() {
         optionsOperator.switchToClassicView();
         optionsOperator.selectOption(path1);
-        optionsOperator.selectOption(path2);
+        //optionsOperator.selectOption(path2);
         optionsOperator.selectOption(path1);
-        optionsOperator.selectOption(path2);
+        //optionsOperator.selectOption(path2);
     }
 
     public void testLevelsShowing() {
@@ -159,17 +159,17 @@ public class OptionsOperatorTest extends JellyTestCase {
     
     public void testLevelChanging() {
         optionsOperator.setUserLevel(path1);
-        optionsOperator.setUserLevel(path2);
+        //optionsOperator.setUserLevel(path2);
         optionsOperator.setDefaultLevel(path1);
         optionsOperator.setUserLevel(path1);
-        optionsOperator.setDefaultLevel(path2);
-        optionsOperator.setUserLevel(path2);
+        //optionsOperator.setDefaultLevel(path2);
+        //optionsOperator.setUserLevel(path2);
     }
     
     public void testPopup() {
         // "Refresh Folder"
-        String refreshFolderLabel = Bundle.getString("org.openide.loaders.Bundle", "LAB_Refresh");
-        new Node(optionsOperator.treeTable().tree(), path3).performPopupAction(refreshFolderLabel);
+        //String refreshFolderLabel = Bundle.getString("org.openide.loaders.Bundle", "LAB_Refresh");
+        //new Node(optionsOperator.treeTable().tree(), path3).performPopupAction(refreshFolderLabel);
     }
     
     /** Test getPropertySheet() method. */
