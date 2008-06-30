@@ -115,6 +115,7 @@ public final class PropertiesLocaleNode extends FileEntryNode
      *
      * @return array of actions for this node
      */
+    @Override
     protected SystemAction[] createActions () {
         return new SystemAction[] {
             SystemAction.get(EditAction.class),
@@ -136,6 +137,7 @@ public final class PropertiesLocaleNode extends FileEntryNode
         };
     }
 
+    @Override
     public Action getPreferredAction() {
         return getActions(false)[0];
     }
@@ -146,6 +148,7 @@ public final class PropertiesLocaleNode extends FileEntryNode
      *
      * @return locale part of name
      */
+    @Override
     public String getName() {
         String localeName = "invalid"; // NOI18N
         if (getFileEntry().getFile().isValid() && !getFileEntry().getFile().isVirtual()) {
@@ -161,6 +164,7 @@ public final class PropertiesLocaleNode extends FileEntryNode
      *
      * @param name the new name
      */
+    @Override
     public void setName (String name) {
         if(!name.startsWith(getFileEntry().getDataObject().getPrimaryFile().getName())) {
             name = Util.assembleName (getFileEntry().getDataObject().getPrimaryFile().getName(), name);
@@ -181,12 +185,14 @@ public final class PropertiesLocaleNode extends FileEntryNode
     }
     
     /** This node can be renamed. Overrides superclass method. */
+    @Override
     public boolean canRename() {
         return getFileEntry().isDeleteAllowed ();
     }
 
     /** Returns all the item in addition to "normal" cookies. Overrides superclass method. */
     @SuppressWarnings("unchecked")
+    @Override
     public <T extends Node.Cookie> T getCookie(Class<T> cls) {
         if (cls.isInstance(getFileEntry())) return (T) getFileEntry();
         if (cls == PropertiesLocaleNode.class) return (T) this;
@@ -196,16 +202,19 @@ public final class PropertiesLocaleNode extends FileEntryNode
     /** List new types that can be created in this node. Overrides superclass method.
      * @return new types
      */
+    @Override
     public NewType[] getNewTypes () {
         return new NewType[] {
             new NewType() {
 
                 /** Getter for name property. */
+            @Override
                 public String getName() {
                     return NbBundle.getBundle(PropertiesLocaleNode.class).getString("LAB_NewPropertyAction");
                 }
                 
                 /** Gets help context. */ 
+            @Override
                 public HelpCtx getHelpCtx() {
                     return new HelpCtx(Util.HELP_ID_ADDING);
                 }
@@ -245,16 +254,19 @@ public final class PropertiesLocaleNode extends FileEntryNode
 
     /** Indicates if this node has a customizer. Overrides superclass method. 
      * @return true */
+    @Override
     public boolean hasCustomizer() {
         return true;
     }
     
     /** Gets node customizer. Overrides superclass method. */
+    @Override
     public Component getCustomizer() {
         return new LocaleNodeCustomizer((PropertiesFileEntry)getFileEntry());
     }
     
     /** Creates paste types for this node. Overrides superclass method. */
+    @Override
     protected void createPasteTypes(Transferable t, List<PasteType> s) {
         super.createPasteTypes(t, s);
         Element.ItemElem item;
@@ -313,6 +325,7 @@ public final class PropertiesLocaleNode extends FileEntryNode
 
         /** Gets name. 
          * @return human presentable name of this paste type. */
+        @Override
         public String getName() {
             String pasteKey = mode == 1 ? "CTL_PasteKeyValue" : "CTL_PasteKeyNoValue";
             return NbBundle.getBundle(PropertiesLocaleNode.class).getString(pasteKey);
