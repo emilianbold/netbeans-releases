@@ -47,6 +47,7 @@ import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
@@ -62,6 +63,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
@@ -101,16 +103,35 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
         super.visit(node);
     }
 
-    /*
-    private <T extends ASTNode> void handleRules(T node){
+    @Override
+    public void visit(StaticFieldAccess node) {
         for (PHPRule rule : rules){
             rule.setContext(context);
             rule.visit(node);
             result.addAll(rule.getResult());
             rule.resetResult();
         }
-    }*/
+        
+        super.visit(node);
+    }
 
+    
+    @Override
+    public void visit(ClassDeclaration node) {
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
+        }
+        
+        super.visit(node);
+        for (PHPRule rule : rules){
+            rule.leavingClassDeclaration(node);
+        }        
+    }
+
+    
     @Override
     public void visit(IfStatement node) {
         for (PHPRule rule : rules){
