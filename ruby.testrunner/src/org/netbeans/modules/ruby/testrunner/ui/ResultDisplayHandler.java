@@ -376,7 +376,7 @@ final class ResultDisplayHandler {
         /* Called from the EventDispatch thread */
 
         if (this.treePanel != null) {
-            assert false;
+            return;
         }
 
         this.treePanel = treePanel;
