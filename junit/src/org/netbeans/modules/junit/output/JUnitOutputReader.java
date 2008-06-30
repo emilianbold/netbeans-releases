@@ -76,7 +76,6 @@ import static java.util.Calendar.MILLISECOND;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
 import static org.netbeans.modules.junit.output.RegexpUtils.END_OF_TEST_PREFIX;
-import static org.netbeans.modules.junit.output.RegexpUtils.NESTED_EXCEPTION_PREFIX;
 import static org.netbeans.modules.junit.output.RegexpUtils.OUTPUT_DELIMITER_PREFIX;
 import static org.netbeans.modules.junit.output.RegexpUtils.START_OF_TEST_PREFIX;
 import static org.netbeans.modules.junit.output.RegexpUtils.TESTCASE_PREFIX;
