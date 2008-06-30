@@ -153,9 +153,11 @@ public final class PropertiesLocaleNode extends FileEntryNode
         String localeName = "invalid"; // NOI18N
         if (getFileEntry().getFile().isValid() && !getFileEntry().getFile().isVirtual()) {
             localeName = Util.getLocaleSuffix (getFileEntry());
-            if (localeName.length() > 0)
-                if (localeName.charAt(0) == PropertiesDataLoader.PRB_SEPARATOR_CHAR)
+            if (localeName.length() > 0) {
+                if (localeName.charAt(0) == PropertiesDataLoader.PRB_SEPARATOR_CHAR) {
                     localeName = localeName.substring(1);
+                }
+            }
         }
         return localeName;
     }
@@ -171,7 +173,9 @@ public final class PropertiesLocaleNode extends FileEntryNode
         }
         
         // new name is same as old one, do nothing
-        if (name.equals(super.getName())) return;
+        if (name.equals(super.getName())) {
+            return;
+        }
 
         super.setName (name);
         setDisplayName(Util.getLocaleLabel(getFileEntry()));
@@ -194,8 +198,12 @@ public final class PropertiesLocaleNode extends FileEntryNode
     @SuppressWarnings("unchecked")
     @Override
     public <T extends Node.Cookie> T getCookie(Class<T> cls) {
-        if (cls.isInstance(getFileEntry())) return (T) getFileEntry();
-        if (cls == PropertiesLocaleNode.class) return (T) this;
+        if (cls.isInstance(getFileEntry())) {
+            return (T) getFileEntry();
+        }
+        if (cls == PropertiesLocaleNode.class) {
+            return (T) this;
+        }
         return super.getCookie(cls);
     }
 
@@ -339,10 +347,11 @@ public final class PropertiesLocaleNode extends FileEntryNode
         public Transferable paste() throws IOException {
             PropertiesStructure ps = ((PropertiesFileEntry)getFileEntry()).getHandler().getStructure();
             String value;
-            if (mode == MODE_PASTE_WITH_VALUE)
+            if (mode == MODE_PASTE_WITH_VALUE) {
                 value = item.getValue();
-            else
+            } else {
                 value = "";
+            }
             if (ps != null) {
                 Element.ItemElem newItem = ps.getItem(item.getKey());
                 if (newItem == null) {
@@ -352,8 +361,9 @@ public final class PropertiesLocaleNode extends FileEntryNode
                     newItem.setValue(value);
                     newItem.setComment(item.getComment());
                 }
-                if (node != null)
+                if (node != null) {
                     node.destroy();
+                }
             }
 
             return null;
