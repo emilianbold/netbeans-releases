@@ -389,20 +389,6 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder> <!-- LookAndFeel -->
 
-                <folder name="System">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
-                    
-                    <file name="ObjectTypes.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createObjectTypes"/>
-                        <attr name="instanceClass" stringvalue="org.openide.nodes.Node"/>
-                    </file>
-                    
-                    <file name="MIMEResolver.shadow">
-                        <attr name="originalFile" stringvalue="Services/MIMEResolver"/>
-                    </file>
-                    
-                </folder> <!-- System -->
-
                 <folder name="ServerAndExternalToolSettings">
 
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
