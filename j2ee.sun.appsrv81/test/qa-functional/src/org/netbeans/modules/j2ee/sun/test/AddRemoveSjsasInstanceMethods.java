@@ -42,8 +42,10 @@
 package org.netbeans.modules.j2ee.sun.test;
 
 import java.io.File;
+import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
+//import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.PlatformValidator;
@@ -55,11 +57,11 @@ import org.openide.WizardDescriptor.Panel;
  *
  * @author Michal Mocnak
  */
-public class AddRemoveSjsasInstanceTest extends NbTestCase {
+public class AddRemoveSjsasInstanceMethods extends NbTestCase {
     
     private final int SLEEP = 10000;
     
-    public AddRemoveSjsasInstanceTest(String testName) {
+    public AddRemoveSjsasInstanceMethods(String testName) {
         super(testName);
     }
     
@@ -118,10 +120,13 @@ public class AddRemoveSjsasInstanceTest extends NbTestCase {
         }
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("AddRemoveSjsasInstanceTest");
-        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));        
-        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));        
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(AddRemoveSjsasInstanceMethods.class).
+                addTest("addSjsasInstance","removeSjsasInstance").enableModules(".*").clusters(".*"));
+//        NbTestSuite suite = new NbTestSuite("AddRemoveSjsasInstanceMethods");
+//        suite.addTest(new AddRemoveSjsasInstanceMethods("addSjsasInstance"));        
+//        suite.addTest(new AddRemoveSjsasInstanceMethods("removeSjsasInstance"));        
+//        return suite;
     }
 }

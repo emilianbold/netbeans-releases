@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 /*
- * DukeStatefulTest.java
+ * DukeStatefulMethods.java
  *
  * Created on June 8, 2006, 11:00 AM
  *
@@ -67,12 +67,12 @@ import org.netbeans.spi.project.ActionProvider;
  *
  * @author Amanpreet Kaur
  */
-public class DukeStatefulTest extends NbTestCase{
+public class DukeStatefulMethods extends NbTestCase{
     
-    /** Creates a new instance of DukeStatefulTest */
+    /** Creates a new instance of DukeStatefulMethods */
     private final int SLEEP = 10000;
     
-    public DukeStatefulTest(String testName) {
+    public DukeStatefulMethods(String testName) {
         super(testName);
     }
     /** calls the deploy api for the duke-stateful project*/
@@ -172,22 +172,22 @@ public class DukeStatefulTest extends NbTestCase{
             fail(e.getMessage());
         }
     }
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("DukeStatefulTest");
-        // TODO : Retouche migration
-//        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
-//        suite.addTest(new StartStopServerTest("startServer"));
-//        suite.addTest(new DukeStatefulTest("deployApplication"));
-//        suite.addTest(new DukeStatefulTest("runClient"));
-//        //suite.addTest(new DukeStatefulTest("verifyApplication"));
-//        suite.addTest(new DukeStatefulTest("disableApplication"));
-//        suite.addTest(new DukeStatefulTest("enableApplication"));
-//        suite.addTest(new StartStopServerTest("restartServer"));
-//        suite.addTest(new DukeStatefulTest("runClient"));
-//        suite.addTest(new DukeStatefulTest("undeployApplication"));
-//        suite.addTest(new StartStopServerTest("stopServer"));
-//        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
-        return suite;
-    }
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite("DukeStatefulMethods");
+//        // TODO : Retouche migration
+////        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
+////        suite.addTest(new StartStopServerTest("startServer"));
+////        suite.addTest(new DukeStatefulMethods("deployApplication"));
+////        suite.addTest(new DukeStatefulMethods("runClient"));
+////        //suite.addTest(new DukeStatefulMethods("verifyApplication"));
+////        suite.addTest(new DukeStatefulMethods("disableApplication"));
+////        suite.addTest(new DukeStatefulMethods("enableApplication"));
+////        suite.addTest(new StartStopServerTest("restartServer"));
+////        suite.addTest(new DukeStatefulMethods("runClient"));
+////        suite.addTest(new DukeStatefulMethods("undeployApplication"));
+////        suite.addTest(new StartStopServerTest("stopServer"));
+////        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
+//        return suite;
+//    }
 }
 

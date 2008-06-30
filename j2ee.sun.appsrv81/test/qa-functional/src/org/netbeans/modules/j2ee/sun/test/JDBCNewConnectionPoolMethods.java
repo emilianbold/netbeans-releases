@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 /*
- * JDBCNewConnectionPoolTest.java
+ * JDBCNewConnectionPoolMethods.java
  *
  * Created on March 21, 2006, 10:35 AM
  *
@@ -70,12 +70,12 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Amanpreet Kaur
  */
-public class JDBCNewConnectionPoolTest extends NbTestCase implements WizardConstants{
+public class JDBCNewConnectionPoolMethods extends NbTestCase implements WizardConstants{
     
     private static String CONNECTION_POOL_NAME = "poolTest";
     
     /** Creates a new instance of JDBCNewConnectionPoolResourcesTest */
-    public JDBCNewConnectionPoolTest(String testName) {
+    public JDBCNewConnectionPoolMethods(String testName) {
         super(testName);
     }
     
@@ -153,14 +153,14 @@ public class JDBCNewConnectionPoolTest extends NbTestCase implements WizardConst
         }
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("JDBCNewConnectionPoolTest");
-        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
-        suite.addTest(new StartStopServerTest("startServer"));
-        suite.addTest(new JDBCNewConnectionPoolTest("registerConnectionPool"));
-        suite.addTest(new JDBCNewConnectionPoolTest("unregisterConnectionPool"));
-        suite.addTest(new StartStopServerTest("stopServer"));
-        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
-        return suite;
-    }
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite("JDBCNewConnectionPoolMethods");
+//        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
+//        suite.addTest(new StartStopServerTest("startServer"));
+//        suite.addTest(new JDBCNewConnectionPoolMethods("registerConnectionPool"));
+//        suite.addTest(new JDBCNewConnectionPoolMethods("unregisterConnectionPool"));
+//        suite.addTest(new StartStopServerTest("stopServer"));
+//        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
+//        return suite;
+//    }
 }

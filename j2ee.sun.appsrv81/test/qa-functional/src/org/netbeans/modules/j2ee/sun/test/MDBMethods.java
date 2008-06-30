@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 /*
- * MDBTest.java
+ * MDBMethods.java
  *
  * Created on May 15, 2006, 10:29 AM
  *
@@ -69,11 +69,11 @@ import org.netbeans.spi.project.ActionProvider;
  *
  * @author Amanpreet Kaur
  */
-public class MDBTest extends NbTestCase {
+public class MDBMethods extends NbTestCase {
     
     private final int SLEEP = 10000;
     
-    public MDBTest(String testName) {
+    public MDBMethods(String testName) {
         super(testName);
     }
     
@@ -173,20 +173,20 @@ public class MDBTest extends NbTestCase {
         
         
     }
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("MDBTest");
-        // TODO : Retouche migration
-//        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
-//        suite.addTest(new StartStopServerTest("startServer"));
-//        suite.addTest(new MDBTest("deployMDB"));
-//        //suite.addTest(new MDBTest("verifyMDB"));
-//        suite.addTest(new MDBTest("updateMDB"));
-//        suite.addTest(new MDBTest("disableMDB"));
-//        suite.addTest(new MDBTest("enableMDB"));
-//        suite.addTest(new MDBTest("undeployMDB"));
-//        suite.addTest(new StartStopServerTest("stopServer"));
-//        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
-        return suite;
-    }
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite("MDBMethods");
+//        // TODO : Retouche migration
+////        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
+////        suite.addTest(new StartStopServerTest("startServer"));
+////        suite.addTest(new MDBMethods("deployMDB"));
+////        //suite.addTest(new MDBMethods("verifyMDB"));
+////        suite.addTest(new MDBMethods("updateMDB"));
+////        suite.addTest(new MDBMethods("disableMDB"));
+////        suite.addTest(new MDBMethods("enableMDB"));
+////        suite.addTest(new MDBMethods("undeployMDB"));
+////        suite.addTest(new StartStopServerTest("stopServer"));
+////        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
+//        return suite;
+//    }
     
 }

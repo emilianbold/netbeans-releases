@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 /*
- * WebServiceTest.java
+ * WebServiceMethods.java
  *
  * Created on May 29, 2006, 10:20 AM
  *
@@ -69,11 +69,11 @@ import org.netbeans.spi.project.ActionProvider;
  *
  * @author Amanpreet Kaur
  */
-public class WebServiceTest extends NbTestCase{
+public class WebServiceMethods extends NbTestCase{
     
     private final int SLEEP = 10000;
     
-    public WebServiceTest(String testName) {
+    public WebServiceMethods(String testName) {
         super(testName);
     }
      /** calls the deploy api for the CalculatorWSApplication project*/
@@ -182,22 +182,22 @@ public class WebServiceTest extends NbTestCase{
         }
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("WebServiceTest");
-        // TODO : Retouche migration
-//        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
-//        suite.addTest(new StartStopServerTest("startServer"));
-//        suite.addTest(new WebServiceTest("deployWebService"));
-//        suite.addTest(new WebServiceTest("testWebService"));
-//        //suite.addTest(new WebServiceTest("verifyModule"));
-//        suite.addTest(new WebServiceTest("disableWebService"));
-//        suite.addTest(new WebServiceTest("enableWebService"));
-//        suite.addTest(new StartStopServerTest("restartServer"));
-//        suite.addTest(new WebServiceTest("testWebService"));
-//        suite.addTest(new WebServiceTest("undeployWebService"));
-//        suite.addTest(new StartStopServerTest("stopServer"));
-//        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
-        return suite;
-    }
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite("WebServiceMethods");
+//        // TODO : Retouche migration
+////        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
+////        suite.addTest(new StartStopServerTest("startServer"));
+////        suite.addTest(new WebServiceMethods("deployWebService"));
+////        suite.addTest(new WebServiceMethods("testWebService"));
+////        //suite.addTest(new WebServiceMethods("verifyModule"));
+////        suite.addTest(new WebServiceMethods("disableWebService"));
+////        suite.addTest(new WebServiceMethods("enableWebService"));
+////        suite.addTest(new StartStopServerTest("restartServer"));
+////        suite.addTest(new WebServiceMethods("testWebService"));
+////        suite.addTest(new WebServiceMethods("undeployWebService"));
+////        suite.addTest(new StartStopServerTest("stopServer"));
+////        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
+//        return suite;
+//    }
     
 }

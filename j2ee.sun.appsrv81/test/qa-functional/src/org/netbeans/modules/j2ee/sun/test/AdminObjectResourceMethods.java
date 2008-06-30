@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 /*
- * AdminObjectResourceTest.java
+ * AdminObjectResourceMethods.java
  *
  * Created on March 14, 2006, 4:33 PM
  *
@@ -51,11 +51,12 @@ package org.netbeans.modules.j2ee.sun.test;
 
 import java.io.File;
 import java.util.Vector;
+import junit.framework.Test;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.sun.api.ServerInterface;
@@ -71,13 +72,13 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Amanpreet Kaur
  */
-public class AdminObjectResourceTest extends NbTestCase implements WizardConstants{
+public class AdminObjectResourceMethods extends NbTestCase implements WizardConstants{
     
     private static String JMS_QUEUE_RESOURCE_NAME = "jmsqResourceTest";
     private static String JMS_TOPIC_RESOURCE_NAME = "jmstResourceTest";
     
     /** Creates a new instance of AdminObjectResourcesTest */
-    public AdminObjectResourceTest(String testName) {
+    public AdminObjectResourceMethods(String testName) {
         super(testName);
     }
     
@@ -193,16 +194,23 @@ public class AdminObjectResourceTest extends NbTestCase implements WizardConstan
             fail(e.getMessage());
         }
     }
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("JMSAdminObjectResourcesTest");
-        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
-        suite.addTest(new StartStopServerTest("startServer"));
-        suite.addTest(new AdminObjectResourceTest("registerJMSQueueResource"));
-        suite.addTest(new AdminObjectResourceTest("registerJMSTopicResource"));
-        suite.addTest(new AdminObjectResourceTest("unregisterJMSQueueResource"));
-        suite.addTest(new AdminObjectResourceTest("unregisterJMSTopicResource"));
-        suite.addTest(new StartStopServerTest("stopServer"));
-        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(AdminObjectResourceMethods.class).
+                addTest(AddRemoveSjsasInstanceMethods.class, new String[] {"addSjsasInstance"}).
+                addTest(ServerTest.class, new String[] {"startServer"}).
+                addTest(AdminObjectResourceMethods.class, new String[] {"registerJMSQueueResource","registerJMSTopicResource","unregisterJMSQueueResource","unregisterJMSTopicResource"}).
+                addTest(ServerTest.class, new String[] {"stopServer"}).
+                addTest(AddRemoveSjsasInstanceMethods.class, new String[] {"RemoveSjsasInstance"}).enableModules(".*").clusters(".*"));
+//        NbTestSuite suite = new NbTestSuite("JMSAdminObjectResourcesTest");
+//        suite.addTest(new AddRemoveSjsasInstanceMethods("addSjsasInstance"));
+//        suite.addTest(new ServerTest("startServer"));
+//        suite.addTest(new AdminObjectResourceMethods("registerJMSQueueResource"));
+//        suite.addTest(new AdminObjectResourceMethods("registerJMSTopicResource"));
+//        suite.addTest(new AdminObjectResourceMethods("unregisterJMSQueueResource"));
+//        suite.addTest(new AdminObjectResourceMethods("unregisterJMSTopicResource"));
+//        suite.addTest(new ServerTest("stopServer"));
+//        suite.addTest(new AddRemoveSjsasInstanceMethods("removeSjsasInstance"));
+//        return suite;
     }
 }

@@ -58,11 +58,11 @@ import org.w3c.dom.Document;
  *
  * @author Michal Mocnak
  */
-public class DomainEditorTest extends NbTestCase {
+public class DomainEditorMethods extends NbTestCase {
     
     private final int SLEEP = 10000;
     
-    public DomainEditorTest(String testName) {
+    public DomainEditorMethods(String testName) {
         super(testName);
     }
     
@@ -110,12 +110,12 @@ public class DomainEditorTest extends NbTestCase {
         de.removeProfilerElements(doc);        
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("DomainEditorTest");
-        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));  
-        suite.addTest(new DomainEditorTest("poundOnEditor"));
-        suite.addTest(new DomainEditorTest("checkProfilerInsertion"));
-        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));        
-        return suite;
-    }
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite("DomainEditorMethods");
+//        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));  
+//        suite.addTest(new DomainEditorMethods("poundOnEditor"));
+//        suite.addTest(new DomainEditorMethods("checkProfilerInsertion"));
+//        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));        
+//        return suite;
+//    }
 }

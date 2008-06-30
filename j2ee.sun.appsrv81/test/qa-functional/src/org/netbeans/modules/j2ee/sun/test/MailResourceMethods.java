@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 /*
- * MailResourceTest.java
+ * MailResourceMethods.java
  *
  * Created on March 15, 2006, 1:49 PM
  *
@@ -69,14 +69,14 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Amanpreet Kaur
  */
-public class MailResourceTest extends NbTestCase implements WizardConstants{
+public class MailResourceMethods extends NbTestCase implements WizardConstants{
     
     private static String MAIL_RESOURCE_NAME = "mailResourceTest";
     private static String MAIL_USER= "default";
     private static String MAIL_FROM = "default@sun.com";
     
     /** Creates a new instance of MailResourcesTest */
-    public MailResourceTest(String testName) {
+    public MailResourceMethods(String testName) {
         super(testName);
     }
     
@@ -151,14 +151,14 @@ public class MailResourceTest extends NbTestCase implements WizardConstants{
             fail(e.getMessage());
         }
     }
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("MailResourcesTest");
-        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
-        suite.addTest(new StartStopServerTest("startServer"));
-        suite.addTest(new MailResourceTest("registerMailResource"));
-        suite.addTest(new MailResourceTest("unregisterMailResource"));
-        suite.addTest(new StartStopServerTest("stopServer"));
-        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
-        return suite;
-    }
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite("MailResourcesTest");
+//        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
+//        suite.addTest(new StartStopServerTest("startServer"));
+//        suite.addTest(new MailResourceMethods("registerMailResource"));
+//        suite.addTest(new MailResourceMethods("unregisterMailResource"));
+//        suite.addTest(new StartStopServerTest("stopServer"));
+//        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
+//        return suite;
+//    }
 }

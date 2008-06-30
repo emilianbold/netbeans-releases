@@ -52,11 +52,11 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
  *
  * @author Michal Mocnak
  */
-public class EjbModuleTest extends NbTestCase {
+public class EjbModuleMethods extends NbTestCase {
     
     private final int SLEEP = 10000;
     
-    public EjbModuleTest(String testName) {
+    public EjbModuleMethods(String testName) {
         super(testName);
     }
     
@@ -82,14 +82,14 @@ public class EjbModuleTest extends NbTestCase {
         }
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("EjbModuleTest");
-        // TODO : Retouche migration
-        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
-        suite.addTest(new EjbModuleTest("deployEjbModule"));
-        suite.addTest(new EjbModuleTest("undeployEjbModule"));
-        suite.addTest(new StartStopServerTest("stopServer"));
-        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
-        return suite;
-    }
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite("EjbModuleMethods");
+//        // TODO : Retouche migration
+//        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
+//        suite.addTest(new EjbModuleMethods("deployEjbModule"));
+//        suite.addTest(new EjbModuleMethods("undeployEjbModule"));
+//        suite.addTest(new StartStopServerTest("stopServer"));
+//        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
+//        return suite;
+//    }
 }

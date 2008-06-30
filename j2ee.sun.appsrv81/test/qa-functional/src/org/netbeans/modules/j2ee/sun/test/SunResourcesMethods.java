@@ -62,12 +62,12 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Michal Mocnak
  */
-public class SunResourcesTest extends NbTestCase implements WizardConstants{
+public class SunResourcesMethods extends NbTestCase implements WizardConstants{
     
     private static String CONNECTION_POOL_NAME = "connectionPoolTest";
     
-    /** Creates a new instance of SunResourcesTest */
-    public SunResourcesTest(String testName) {
+    /** Creates a new instance of SunResourcesMethods */
+    public SunResourcesMethods(String testName) {
         super(testName);
     }
     
@@ -152,14 +152,14 @@ public class SunResourcesTest extends NbTestCase implements WizardConstants{
         }
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("SunResourcesTest");
-        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
-        suite.addTest(new StartStopServerTest("startServer"));
-        suite.addTest(new SunResourcesTest("registerConnectionPool"));
-        suite.addTest(new SunResourcesTest("unregisterConnectionPool"));
-        suite.addTest(new StartStopServerTest("stopServer"));
-        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
-        return suite;
-    }
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite("SunResourcesMethods");
+//        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
+//        suite.addTest(new StartStopServerTest("startServer"));
+//        suite.addTest(new SunResourcesMethods("registerConnectionPool"));
+//        suite.addTest(new SunResourcesMethods("unregisterConnectionPool"));
+//        suite.addTest(new StartStopServerTest("stopServer"));
+//        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
+//        return suite;
+//    }
 }

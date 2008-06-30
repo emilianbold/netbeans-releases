@@ -54,12 +54,12 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
  *
  * @author Michal Mocnak
  */
-public class WebModuleTest extends NbTestCase {
+public class WebModuleMethods extends NbTestCase {
     
     private final int SLEEP = 10000;
     static private Project p = null;
     
-    public WebModuleTest(String testName) {
+    public WebModuleMethods(String testName) {
         super(testName);
     }
     
@@ -99,78 +99,78 @@ public class WebModuleTest extends NbTestCase {
         Util.closeProject(Util.WEB_PROJECT_NAME);
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("WebModuleTest");
-        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
-        suite.addTest(new WebModuleTest("openProject"));
-        
-        // deploy, then redeploy 19 time
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("undeployWebModule"));
-        
-        // deploy+undeploy 20 times
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("undeployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("undeployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("undeployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("undeployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("undeployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("undeployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("undeployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("undeployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("undeployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("undeployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("undeployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("undeployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("undeployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("undeployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("undeployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("undeployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("undeployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("undeployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("undeployWebModule"));
-        suite.addTest(new WebModuleTest("deployWebModule"));
-        suite.addTest(new WebModuleTest("undeployWebModule"));
-        suite.addTest(new WebModuleTest("closeProject"));
-        suite.addTest(new StartStopServerTest("stopServer"));
-        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
-        return suite;
-    }
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite("WebModuleMethods");
+//        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
+//        suite.addTest(new WebModuleMethods("openProject"));
+//        
+//        // deploy, then redeploy 19 time
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("undeployWebModule"));
+//        
+//        // deploy+undeploy 20 times
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("undeployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("undeployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("undeployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("undeployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("undeployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("undeployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("undeployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("undeployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("undeployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("undeployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("undeployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("undeployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("undeployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("undeployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("undeployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("undeployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("undeployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("undeployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("undeployWebModule"));
+//        suite.addTest(new WebModuleMethods("deployWebModule"));
+//        suite.addTest(new WebModuleMethods("undeployWebModule"));
+//        suite.addTest(new WebModuleMethods("closeProject"));
+//        suite.addTest(new StartStopServerTest("stopServer"));
+//        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
+//        return suite;
+//    }
 }

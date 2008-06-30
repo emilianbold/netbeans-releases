@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 /*
- * SunConfigurationTest.java
+ * SunConfigurationMethods.java
  *
  * Created on April 19, 2006, 4:36 PM
  *
@@ -72,9 +72,9 @@ import java.io.FileOutputStream;
  *
  * @author Peter Williams
  */
-public class SunConfigurationTest extends NbTestCase {
+public class SunConfigurationMethods extends NbTestCase {
     
-    public SunConfigurationTest(String testName) {
+    public SunConfigurationMethods(String testName) {
         super(testName);
     }
     
@@ -233,22 +233,22 @@ public class SunConfigurationTest extends NbTestCase {
     }
     
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("SunConfigurationTest");
-//        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
-//        suite.addTest(new StartStopServerTest("startServer"));
-//        suite.addTest(new SunConfigurationTest("loadSunWebConfigVersion"));
-//        suite.addTest(new SunConfigurationTest("loadSunEjbJarConfigVersion"));
-//        suite.addTest(new SunConfigurationTest("loadSunApplicationConfigVersion"));
-//        suite.addTest(new SunConfigurationTest("loadSunAppClientConfigVersion"));
-//        suite.addTest(new SunConfigurationTest("changeSunWebConfigVersion"));
-//        suite.addTest(new SunConfigurationTest("changeSunEjbJarConfigVersion"));
-//        suite.addTest(new SunConfigurationTest("changeSunApplicationConfigVersion"));
-//        suite.addTest(new SunConfigurationTest("changeSunAppClientConfigVersion"));
-//        suite.addTest(new StartStopServerTest("stopServer"));
-//        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
-        return suite;
-    }
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite("SunConfigurationMethods");
+////        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
+////        suite.addTest(new StartStopServerTest("startServer"));
+////        suite.addTest(new SunConfigurationMethods("loadSunWebConfigVersion"));
+////        suite.addTest(new SunConfigurationMethods("loadSunEjbJarConfigVersion"));
+////        suite.addTest(new SunConfigurationMethods("loadSunApplicationConfigVersion"));
+////        suite.addTest(new SunConfigurationMethods("loadSunAppClientConfigVersion"));
+////        suite.addTest(new SunConfigurationMethods("changeSunWebConfigVersion"));
+////        suite.addTest(new SunConfigurationMethods("changeSunEjbJarConfigVersion"));
+////        suite.addTest(new SunConfigurationMethods("changeSunApplicationConfigVersion"));
+////        suite.addTest(new SunConfigurationMethods("changeSunAppClientConfigVersion"));
+////        suite.addTest(new StartStopServerTest("stopServer"));
+////        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
+//        return suite;
+//    }
 }
 
 

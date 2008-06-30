@@ -41,8 +41,9 @@
 
 package org.netbeans.modules.j2ee.sun.test;
 
+import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
@@ -51,12 +52,16 @@ import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
  *
  * @author Michal Mocnak
  */
-public class StartStopServerTest extends NbTestCase {
+public class ServerTest extends NbTestCase {
     
     private final int SLEEP = 10000;
     
-    public StartStopServerTest(String testName) {
+    public ServerTest(String testName) {
         super(testName);
+    }
+    
+    public void testBogus() {
+        
     }
     
     public void startServer() {
@@ -149,19 +154,30 @@ public class StartStopServerTest extends NbTestCase {
         }
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("StartStopServerTest");
-        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
-        // detect 88916 regression
-        suite.addTest(new StartStopServerTest("startDebugServer"));
-        suite.addTest(new StartStopServerTest("restartServer"));
-        suite.addTest(new StartStopServerTest("stopServer"));
-        suite.addTest(new StartStopServerTest("startServer"));
-        suite.addTest(new StartStopServerTest("restartServer"));
-        suite.addTest(new StartStopServerTest("stopServer"));
-        // detect 88608 regression
-        suite.addTest(new StartStopServerTest("startServer"));
-        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(ServerTest.class).
+                addTest(AddRemoveSjsasInstanceMethods.class, new String[] {"addSjsasInstance"}).
+                addTest(DomainEditorMethods.class, new String [] {"poundOnEditor", "checkProfilerInsertion"}).
+                addTest(ServerTest.class, new String[] { "startDebugServer","restartServer","stopServer","startServer","stopServer","startServer"}).
+                addTest(AdminObjectResourceMethods.class, new String[] {"registerJMSQueueResource","registerJMSTopicResource","unregisterJMSQueueResource","unregisterJMSTopicResource"}).
+                addTest(JDBCResourceMethods.class, new String[] {"registerConnectionPool","registerDataResource","unregisterDataResource","unregisterConnectionPool"}).
+                addTest(MailResourceMethods.class, new String[] {"registerMailResource","unregisterMailResource"}).
+                addTest(WebModuleMethods.class,new String[] {
+            "openProject", "deployWebModule", "undeployWebModule", "closeProject" }).
+                addTest(AddRemoveSjsasInstanceMethods.class, new String[] {"removeSjsasInstance"}).enableModules(".*").clusters(".*"));
+//        NbTestSuite suite = new NbTestSuite("ServerTest");
+//        suite.addTest(new AddRemoveSjsasInstanceMethods("addSjsasInstance"));
+//        // detect 88916 regression
+//        suite.addTest(new ServerTest("startDebugServer"));
+//        suite.addTest(new ServerTest("restartServer"));
+//        suite.addTest(new ServerTest("stopServer"));
+//        suite.addTest(new ServerTest("startServer"));
+//        suite.addTest(new ServerTest("restartServer"));
+//        suite.addTest(new ServerTest("stopServer"));
+//        // detect 88608 regression
+//        suite.addTest(new ServerTest("startServer"));
+//        suite.addTest(new AddRemoveSjsasInstanceMethods("removeSjsasInstance"));
+//        return suite;
     }
 }

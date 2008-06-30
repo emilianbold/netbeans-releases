@@ -71,7 +71,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Amanpreet Kaur
  */
-public class PersistenceResourceTest extends NbTestCase implements WizardConstants{
+public class PersistenceResourceMethods extends NbTestCase implements WizardConstants{
     
     private static String CONNECTION_POOL_NAME = "poolTest";
     private static String DATA_RESOURCE_NAME="resourceTest";
@@ -79,7 +79,7 @@ public class PersistenceResourceTest extends NbTestCase implements WizardConstan
     
     
     /** Creates a new instance of PersistenceResourcesTest */
-    public PersistenceResourceTest(String testName) {
+    public PersistenceResourceMethods(String testName) {
         super(testName);
     }
     public void registerConnectionPool() {
@@ -282,18 +282,18 @@ public class PersistenceResourceTest extends NbTestCase implements WizardConstan
             fail(e.getMessage());
         }
     }
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("PersistenceResourceTest");
-        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
-        suite.addTest(new StartStopServerTest("startServer"));
-        suite.addTest(new PersistenceResourceTest("registerConnectionPool"));
-        suite.addTest(new PersistenceResourceTest("registerDataResource"));
-        suite.addTest(new PersistenceResourceTest("registerPersistenceResource"));
-        suite.addTest(new PersistenceResourceTest("unregisterPersistenceResource"));
-        suite.addTest(new PersistenceResourceTest("unregisterDataResource"));
-        suite.addTest(new PersistenceResourceTest("unregisterConnectionPool"));
-        suite.addTest(new StartStopServerTest("stopServer"));
-        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
-        return suite;
-    }
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite("PersistenceResourceMethods");
+//        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
+//        suite.addTest(new StartStopServerTest("startServer"));
+//        suite.addTest(new PersistenceResourceMethods("registerConnectionPool"));
+//        suite.addTest(new PersistenceResourceMethods("registerDataResource"));
+//        suite.addTest(new PersistenceResourceMethods("registerPersistenceResource"));
+//        suite.addTest(new PersistenceResourceMethods("unregisterPersistenceResource"));
+//        suite.addTest(new PersistenceResourceMethods("unregisterDataResource"));
+//        suite.addTest(new PersistenceResourceMethods("unregisterConnectionPool"));
+//        suite.addTest(new StartStopServerTest("stopServer"));
+//        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
+//        return suite;
+//    }
 }

@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 /*
- * JDBCResourceTest.java
+ * JDBCResourceMethods.java
  *
  * Created on March 8, 2006, 10:23 AM
  *
@@ -70,12 +70,12 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Amanpreet Kaur
  */
-public class JDBCResourceTest extends NbTestCase implements WizardConstants{
+public class JDBCResourceMethods extends NbTestCase implements WizardConstants{
     
     private static String CONNECTION_POOL_NAME = "poolTest";
     private static String DATA_RESOURCE_NAME="resourceTest";
     /** Creates a new instance of JDBCResourcesTest */
-    public JDBCResourceTest(String testName) {
+    public JDBCResourceMethods(String testName) {
         
         super(testName);
     }
@@ -214,16 +214,16 @@ public class JDBCResourceTest extends NbTestCase implements WizardConstants{
             fail(e.getMessage());
         }
     }
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("JDBCResourceTest");
-        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
-        suite.addTest(new StartStopServerTest("startServer"));
-        suite.addTest(new JDBCResourceTest("registerConnectionPool"));
-        suite.addTest(new JDBCResourceTest("registerDataResource"));
-        suite.addTest(new JDBCResourceTest("unregisterDataResource"));
-        suite.addTest(new JDBCResourceTest("unregisterConnectionPool"));
-        suite.addTest(new StartStopServerTest("stopServer"));
-        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
-        return suite;
-    }
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite("JDBCResourceMethods");
+//        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
+//        suite.addTest(new StartStopServerTest("startServer"));
+//        suite.addTest(new JDBCResourceMethods("registerConnectionPool"));
+//        suite.addTest(new JDBCResourceMethods("registerDataResource"));
+//        suite.addTest(new JDBCResourceMethods("unregisterDataResource"));
+//        suite.addTest(new JDBCResourceMethods("unregisterConnectionPool"));
+//        suite.addTest(new StartStopServerTest("stopServer"));
+//        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
+//        return suite;
+//    }
 }

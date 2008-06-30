@@ -65,12 +65,12 @@ import org.netbeans.spi.project.ActionProvider;
  *
  * @author Amanpreet Kaur
  */
-public class CustomerCMPSampleTest extends NbTestCase{
+public class CustomerCMPSampleMethods extends NbTestCase{
     
     /** Creates a new instance of CustomerCmpSampleTest */
     private final int SLEEP = 10000;
     
-    public CustomerCMPSampleTest(String testName) {
+    public CustomerCMPSampleMethods(String testName) {
         super(testName);
     }
     /** calls the deploy api for the customer-cmp-ear project*/
@@ -175,22 +175,22 @@ public class CustomerCMPSampleTest extends NbTestCase{
         }
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("CustomerSampleTest");
-        // TODO : Retouche migration
-//        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
-//        suite.addTest(new StartStopServerTest("startServer"));
-//        suite.addTest(new CustomerCMPSampleTest("deployCustomerApplication"));
-//        suite.addTest(new CustomerCMPSampleTest("runCustomerClient"));
-//        //suite.addTest(new CustomerCMPSampleTest("verifyCustomerApplication"));
-//        suite.addTest(new CustomerCMPSampleTest("disableCustomerApplication"));
-//        suite.addTest(new CustomerCMPSampleTest("enableCustomerApplication"));
-//        suite.addTest(new StartStopServerTest("restartServer"));
-//        suite.addTest(new CustomerCMPSampleTest("runCustomerClient"));
-//        suite.addTest(new CustomerCMPSampleTest("undeployCustomerApplication"));
-//        suite.addTest(new StartStopServerTest("stopServer"));
-//        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
-        return suite;
-    }
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite("CustomerSampleTest");
+//        // TODO : Retouche migration
+////        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
+////        suite.addTest(new StartStopServerTest("startServer"));
+////        suite.addTest(new CustomerCMPSampleMethods("deployCustomerApplication"));
+////        suite.addTest(new CustomerCMPSampleMethods("runCustomerClient"));
+////        //suite.addTest(new CustomerCMPSampleMethods("verifyCustomerApplication"));
+////        suite.addTest(new CustomerCMPSampleMethods("disableCustomerApplication"));
+////        suite.addTest(new CustomerCMPSampleMethods("enableCustomerApplication"));
+////        suite.addTest(new StartStopServerTest("restartServer"));
+////        suite.addTest(new CustomerCMPSampleMethods("runCustomerClient"));
+////        suite.addTest(new CustomerCMPSampleMethods("undeployCustomerApplication"));
+////        suite.addTest(new StartStopServerTest("stopServer"));
+////        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
+//        return suite;
+//    }
 }
 

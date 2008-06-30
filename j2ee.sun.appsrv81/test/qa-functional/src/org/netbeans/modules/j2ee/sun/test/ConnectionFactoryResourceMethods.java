@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 /*
- * ConnectionFactoryResourceTest.java
+ * ConnectionFactoryResourceMethods.java
  *
  * Created on March 23, 2006, 3:17 PM
  *
@@ -67,11 +67,11 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Amanpreet Kaur
  */
-public class ConnectionFactoryResourceTest extends NbTestCase implements WizardConstants{
+public class ConnectionFactoryResourceMethods extends NbTestCase implements WizardConstants{
     private static String JMS_QUEUE_RESOURCE_NAME = "jmsqResourceTest";
     private static String JMS_TOPIC_RESOURCE_NAME = "jmstResourceTest";
     /** Creates a new instance of ConnectionFactoryResourcesTest */
-    public ConnectionFactoryResourceTest(String testName) {
+    public ConnectionFactoryResourceMethods(String testName) {
         super(testName);
     }
     
@@ -184,16 +184,16 @@ public class ConnectionFactoryResourceTest extends NbTestCase implements WizardC
             fail(e.getMessage());
         }
     }
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("JMSConnectionFactoryResourcesTest");
-        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
-        suite.addTest(new StartStopServerTest("startServer"));
-        suite.addTest(new ConnectionFactoryResourceTest("registerJMSQueueResource"));
-        suite.addTest(new ConnectionFactoryResourceTest("registerJMSTopicResource"));
-        suite.addTest(new ConnectionFactoryResourceTest("unregisterJMSQueueResource"));
-        suite.addTest(new ConnectionFactoryResourceTest("unregisterJMSTopicResource"));
-        suite.addTest(new StartStopServerTest("stopServer"));
-        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
-        return suite;
-    }
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite("JMSConnectionFactoryResourcesTest");
+//        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
+//        suite.addTest(new StartStopServerTest("startServer"));
+//        suite.addTest(new ConnectionFactoryResourceMethods("registerJMSQueueResource"));
+//        suite.addTest(new ConnectionFactoryResourceMethods("registerJMSTopicResource"));
+//        suite.addTest(new ConnectionFactoryResourceMethods("unregisterJMSQueueResource"));
+//        suite.addTest(new ConnectionFactoryResourceMethods("unregisterJMSTopicResource"));
+//        suite.addTest(new StartStopServerTest("stopServer"));
+//        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
+//        return suite;
+//    }
 }

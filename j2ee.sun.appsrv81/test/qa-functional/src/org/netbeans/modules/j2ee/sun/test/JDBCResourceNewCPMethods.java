@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 /*
- * JDBCResourceNewCPTest.java
+ * JDBCResourceNewCPMethods.java
  *
  * Created on March 21, 2006, 4:35 PM
  *
@@ -71,15 +71,15 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Amanpreet Kaur
  */
-public class JDBCResourceNewCPTest extends NbTestCase implements WizardConstants{
+public class JDBCResourceNewCPMethods extends NbTestCase implements WizardConstants{
     
     private static String CONNECTION_POOL_NAME = "poolTest";
     private static String DATA_RESOURCE_NAME="resourceTest";
     
     
     
-    /** Creates a new instance of JDBCResourceNewCPTest */
-    public JDBCResourceNewCPTest(String testName) {
+    /** Creates a new instance of JDBCResourceNewCPMethods */
+    public JDBCResourceNewCPMethods(String testName) {
         
         super(testName);
     }
@@ -177,14 +177,14 @@ public class JDBCResourceNewCPTest extends NbTestCase implements WizardConstants
             fail(e.getMessage());
         }
     }
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("JDBCResourceNewCPTest");
-        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
-        suite.addTest(new StartStopServerTest("startServer"));
-        suite.addTest(new JDBCResourceNewCPTest("registerDataResource"));
-        suite.addTest(new JDBCResourceNewCPTest("unregisterDataResource"));
-        suite.addTest(new StartStopServerTest("stopServer"));
-        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
-        return suite;
-    }
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite("JDBCResourceNewCPMethods");
+//        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
+//        suite.addTest(new StartStopServerTest("startServer"));
+//        suite.addTest(new JDBCResourceNewCPMethods("registerDataResource"));
+//        suite.addTest(new JDBCResourceNewCPMethods("unregisterDataResource"));
+//        suite.addTest(new StartStopServerTest("stopServer"));
+//        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
+//        return suite;
+//    }
 }

@@ -65,12 +65,12 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Amanpreet Kaur
  */
-public class JDBCDefaultConnectionPoolTest extends NbTestCase implements WizardConstants{
+public class JDBCDefaultConnectionPoolMethods extends NbTestCase implements WizardConstants{
     
     private static String CONNECTION_POOL_NAME = "poolTest";
     
     /** Creates a new instance of JDBCDefaultConnectionPoolResourcesTest */
-    public JDBCDefaultConnectionPoolTest(String testName) {
+    public JDBCDefaultConnectionPoolMethods(String testName) {
         super(testName);
     }
     
@@ -152,14 +152,14 @@ public class JDBCDefaultConnectionPoolTest extends NbTestCase implements WizardC
         }
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("JDBCDefaultConnectionPoolResourcesTest");
-        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
-        suite.addTest(new StartStopServerTest("startServer"));
-        suite.addTest(new JDBCDefaultConnectionPoolTest("registerConnectionPool"));
-        suite.addTest(new JDBCDefaultConnectionPoolTest("unregisterConnectionPool"));
-        suite.addTest(new StartStopServerTest("stopServer"));
-        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
-        return suite;
-    }
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite("JDBCDefaultConnectionPoolResourcesTest");
+//        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
+//        suite.addTest(new StartStopServerTest("startServer"));
+//        suite.addTest(new JDBCDefaultConnectionPoolMethods("registerConnectionPool"));
+//        suite.addTest(new JDBCDefaultConnectionPoolMethods("unregisterConnectionPool"));
+//        suite.addTest(new StartStopServerTest("stopServer"));
+//        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
+//        return suite;
+//    }
 }
