@@ -570,6 +570,10 @@ public class LeftTree extends JTree implements
         return getParentsRowForPath(treePath.getParentPath());
     }
 
+    public TreePath getParentVisiblePathForPath(TreePath treePath) {
+        return getPathForRow(getParentsRowForPath(treePath));
+    }
+
     public Insets getAutoscrollInsets() {
         Rectangle rect = scrollPane.getViewport().getViewRect();
         return new Insets(rect.y + 16, rect.x + 16,
