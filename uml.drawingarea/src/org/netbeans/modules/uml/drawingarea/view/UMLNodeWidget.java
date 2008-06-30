@@ -102,7 +102,8 @@ public abstract class UMLNodeWidget extends Widget
     private static final int RESIZE_SIZE = 5;
     private boolean resizedManually=false;
     private boolean initialized;
-        
+    private boolean resizable = true;    
+    
     protected enum ButtonLocation {Left, op, Right, Bottom};
     public enum RESIZEMODE{PREFERREDBOUNDS,PREFERREDSIZE,MINIMUMSIZE};
     private static final String RESIZEMODEPROPERTY = "ResizeMode";
@@ -290,6 +291,12 @@ public abstract class UMLNodeWidget extends Widget
         };
     }
     
+    
+    public void setResizable(boolean resizable)
+    {
+        this.resizable = resizable;
+    }
+    
     @Override
     protected void notifyStateChanged(ObjectState previousState, ObjectState state)
     {
@@ -298,6 +305,11 @@ public abstract class UMLNodeWidget extends Widget
 
         if (select && !wasSelected)
         {
+            if (!resizable)
+            {
+                setBorder(UMLWidget.NON_RESIZABLE_BORDER);
+                return;
+            }
             // Allow subclasses to change the resize strategy and provider.
             ResizeStrategyProvider stratProv=getResizeStrategyProvider();
             //getActions().addAction(0, ActionFactory.createResizeAction(stratProv, stratProv));
@@ -334,6 +346,11 @@ public abstract class UMLNodeWidget extends Widget
         }
         else if (!select && wasSelected)
         {
+            if (!resizable)
+            {
+                setBorder(BorderFactory.createEmptyBorder());
+                return;
+            }
             //Do not have access to the class to recheck, will consider if was selected is here
             //TBD add some additional possibility to check
             //if(getActions().getActions().get(0) instanceof ResizeAction)
@@ -690,7 +707,7 @@ public abstract class UMLNodeWidget extends Widget
     protected Cursor getCursorAt(Point location)
     {
         Border border = getBorder();
-        if (! (border instanceof ResizeBorder))
+        if (! (border instanceof ResizeBorder) || !resizable)
             return getCursor();
         
         Rectangle bounds = getBounds();
