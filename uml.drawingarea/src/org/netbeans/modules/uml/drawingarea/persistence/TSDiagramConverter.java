@@ -629,6 +629,14 @@ public class TSDiagramConverter
             //
             return null;//target or source is missed from model
         }
+        
+        if(NESTEDLINKENGINE.equals(edgeReader.getProperty(ENGINE)))
+        {//nested link need reverse order in new diagram
+            IPresentationElement tmp=sourcePE;
+            sourcePE=targetPE;
+            targetPE=tmp;
+        }
+        //
         edgeReader.setSourcePE(sourcePE);
         edgeReader.setTargetPE(targetPE);
         if(elt instanceof Message)
