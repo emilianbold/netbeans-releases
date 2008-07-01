@@ -36,6 +36,9 @@
 
 package org.netbeans.installer.wizard.containers;
 
+import com.apple.eawt.Application;
+import com.apple.eawt.ApplicationAdapter;
+import com.apple.eawt.ApplicationEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -312,13 +315,11 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent event) {
-                    if (currentUi != null) {
-                        if (contentPane.getCancelButton().isEnabled()) {
-                            currentUi.evaluateCancelButtonClick();
-                        }
-                    }
+                    cancelContainer();
                 }
             });
+            // perform some additional intiialization for Mac OS
+            initializeMacOS();
         } catch (SecurityException e) {
             // we might fail here with a custom security manager (e.g. the netbeans
             // one); in this case just log the exception and "let it be" (c)
@@ -370,6 +371,27 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         });
     }
     
+    private void initializeMacOS() {
+        if (SystemUtils.isMacOS()) {
+            final Application application = Application.getApplication();
+            application.removeAboutMenuItem();
+            application.removePreferencesMenuItem();
+            application.addApplicationListener(new ApplicationAdapter() {
+
+                @Override
+                public void handleQuit(ApplicationEvent event) {
+                    cancelContainer();
+                }
+            });
+        }
+    }
+    private void cancelContainer() {
+        if (currentUi != null) {
+            if (contentPane.getCancelButton().isEnabled()) {
+                currentUi.evaluateCancelButtonClick();
+            }
+        }
+    }
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
     /**
@@ -889,12 +911,6 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             "SFC.frame.title.pattern"); // NOI18N
     
     // private //////////////////////////////////////////////////////////////////////
-    /**
-     * Name of a resource bundle entry.
-     */
-    private static final String RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY =
-            "SFC.error.failed.to.parse.property"; // NOI18N
-    
     /**
      * Name of a resource bundle entry.
      */
