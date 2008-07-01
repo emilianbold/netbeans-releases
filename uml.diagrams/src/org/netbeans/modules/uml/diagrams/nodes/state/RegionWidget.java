@@ -66,6 +66,8 @@ import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IRegio
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.ITransition;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.diagrams.nodes.CompartmentWidget;
+import org.netbeans.modules.uml.diagrams.nodes.CompositeWidget;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramPopupMenuProvider;
@@ -83,7 +85,7 @@ import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
  *
  * @author Sheryl Su
  */
-public class RegionWidget extends Widget implements PropertyChangeListener, DiagramNodeWriter, DiagramNodeReader
+public class RegionWidget extends CompartmentWidget implements PropertyChangeListener, DiagramNodeWriter, DiagramNodeReader
 {
 
     private Scene scene;
@@ -96,12 +98,10 @@ public class RegionWidget extends Widget implements PropertyChangeListener, Diag
     private BasicStroke stroke =
             new BasicStroke(STROKE_THICKNESS, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 1.0f, new float[]{5, 5}, 0);
 
+    private boolean selected;
     private Rectangle mininumBounds;
     private int BORDER_THICKNESS = 1;
-    private ResizeStrategy RESIZE_STRATEGY;
-//    private static SelectProvider provider = new RegionSelectProvider();
-//    private static RegionWidgetSelectAction regionSelectAction = new RegionWidgetSelectAction(provider, true);
-    
+    private ResizeStrategy RESIZE_STRATEGY;    
     
     public RegionWidget(Scene scene, IRegion region, CompositeStateWidget compositeStateWidget)
     {
@@ -113,13 +113,9 @@ public class RegionWidget extends Widget implements PropertyChangeListener, Diag
         this.compositeStateWidget = compositeStateWidget;
         init(region);
 
-//        DiagramPopupMenuProvider menuProvider = new DiagramPopupMenuProvider();
         WidgetAction.Chain selectTool = createActions(DesignerTools.SELECT);
-        selectTool.addAction(ActionFactory.createResizeAction(RESIZE_STRATEGY, new RegionResizeControlPointResolver(), RESIZE_PROVIDER));               
-//        
-//        selectTool.addAction(regionSelectAction);
-//        selectTool.addAction(ActionFactory.createPopupMenuAction(menuProvider));
-        
+        selectTool.addAction(ActionFactory.createResizeAction(RESIZE_STRATEGY, 
+                new RegionResizeControlPointResolver(), RESIZE_PROVIDER));                      
     }
 
     private void init(IRegion region)
@@ -298,14 +294,6 @@ public class RegionWidget extends Widget implements PropertyChangeListener, Diag
         return clientArea;
     }
     
-
-    protected void notifyStateChanged(ObjectState previousState, ObjectState state)
-    {
-        if (state.isSelected())
-            setBorder(BorderFactory.createLineBorder(0, UMLWidget.BORDER_HILIGHTED_COLOR));
-        else
-            setBorder(BorderFactory.createEmptyBorder());
-    }
     
     protected UMLNameWidget getNameWidget()
     {
@@ -346,126 +334,7 @@ public class RegionWidget extends Widget implements PropertyChangeListener, Diag
             }
         }
     }
-    
-    
-    // todo: need to find a better way to address region selection and move behavior
-    private static class RegionWidgetSelectAction extends WidgetAction.LockedAdapter {
 
-    private boolean aiming = false;
-    private Widget aimedWidget = null;
-    private boolean invertSelection;
-    private SelectProvider provider;
-    private boolean trapRightClick = false ;
-
-    public RegionWidgetSelectAction (SelectProvider provider, boolean trapRightClick) {
-        this.provider = provider ;
-        this.trapRightClick = trapRightClick ;
-    }
-    
-    public RegionWidgetSelectAction (SelectProvider provider) {
-        this.provider = provider;
-    }
-
-    protected boolean isLocked () {
-        return aiming;
-    }
-
-    public State mousePressed(Widget widget, WidgetMouseEvent event) {
-        
-        if (isLocked()) {
-            return State.createLocked(widget, this);
-        }
-        
-        Point localLocation = event.getPoint();
-        
-        if (event.getButton() == MouseEvent.BUTTON1 || event.getButton() == MouseEvent.BUTTON2) {
-            invertSelection = (event.getModifiersEx() & MouseEvent.CTRL_DOWN_MASK) != 0;
-            
-            if (!invertSelection && widget.getState().isSelected())
-                return State.REJECTED;
-                
-            if (provider.isSelectionAllowed(widget, localLocation, invertSelection)) {
-                aiming = provider.isAimingAllowed(widget, localLocation, invertSelection);
-                if (aiming) {
-                    updateState(widget, localLocation);
-                    return State.createLocked(widget, this);
-                } else {
-                    provider.select(widget, localLocation, invertSelection);
-                    return State.CHAIN_ONLY;
-                }
-            }
-        } else if (trapRightClick && event.getButton() == MouseEvent.BUTTON3) {
-            provider.select(widget, localLocation, invertSelection);
-            return State.CHAIN_ONLY;
-        }
-        
-        return State.REJECTED;
-    }
-
-    public State mouseReleased (Widget widget, WidgetMouseEvent event) {
-        if (aiming) {
-            Point point = event.getPoint ();
-            updateState (widget, point);
-            if (aimedWidget != null)
-                provider.select (widget, point, invertSelection);
-            updateState (null, null);
-            aiming = false;
-            return State.CONSUMED;
-        }
-        return super.mouseReleased (widget, event);
-    }
-
-    private void updateState (Widget widget, Point localLocation) {
-        if (widget != null  &&  ! widget.isHitAt (localLocation))
-            widget = null;
-        if (widget == aimedWidget)
-            return;
-        if (aimedWidget != null)
-            aimedWidget.setState (aimedWidget.getState ().deriveWidgetAimed (false));
-        aimedWidget = widget;
-        if (aimedWidget != null)
-            aimedWidget.setState (aimedWidget.getState ().deriveWidgetAimed (true));
-    }
-
-    public State keyTyped (Widget widget, WidgetKeyEvent event) {
-        if (! aiming  &&  event.getKeyChar () == KeyEvent.VK_SPACE) {
-            provider.select (widget, null, (event.getModifiersEx () & MouseEvent.CTRL_DOWN_MASK) != 0);
-            return State.CONSUMED;
-        }
-        return State.REJECTED;
-    }
-    }
-    
-    private static class RegionSelectProvider implements SelectProvider {
-
-        public boolean isAimingAllowed (Widget widget, Point localLocation, boolean invertSelection) {
-            return false;
-        }
-
-        public boolean isSelectionAllowed (Widget widget, Point localLocation, boolean invertSelection) {
-            return true;
-        }
-
-        public void select (Widget widget, Point localLocation, boolean invertSelection) {
-            ObjectScene objectScene = null;
-            
-            Scene scene = widget.getScene();
-            if (scene instanceof ObjectScene)
-                objectScene = (ObjectScene)scene;
-            
-            if (objectScene == null)
-                return;
-            Object object = objectScene.findObject (widget);
-
-            objectScene.setFocusedObject (object);
-            if (object != null) {
-                if (! invertSelection  &&  objectScene.getSelectedObjects ().contains (object))
-                    return;
-                objectScene.userSelectionSuggested (Collections.singleton (object), invertSelection);
-            } else
-                objectScene.userSelectionSuggested (Collections.emptySet (), invertSelection);
-        }
-    }
 
     public void save(NodeWriter nodeWriter) {
         setNodeWriterValues(nodeWriter, this);
@@ -513,4 +382,15 @@ public class RegionWidget extends Widget implements PropertyChangeListener, Diag
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
+        
+    public boolean isSelected()
+    {
+        return selected;
+    }
+    
+    
+    public void setSelected(boolean val)
+    {
+        this.selected = val;
+    }
 }

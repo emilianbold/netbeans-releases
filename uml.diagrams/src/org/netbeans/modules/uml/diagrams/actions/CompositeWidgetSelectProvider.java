@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,24 +31,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.uml.diagrams.nodes;
+package org.netbeans.modules.uml.diagrams.actions;
+
+import java.awt.Point;
+import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.diagrams.nodes.CompartmentWidget;
+import org.netbeans.modules.uml.diagrams.nodes.CompositeWidget;
+import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
 
 /**
  *
- * @author sp153251
+ * This select provider is used to set a flag on inner widget that 
+ * is designed to be "unselectable" (see issue 138533), e.g. state region, sub partition, which does not
+ * provide its own context menu, but rather attached to its outer node widget. However, some attached popup
+ * menu items, for instance, 'Delete Region', still need the context as which inner widget is targeted.
  */
-public interface LabeledWidget {
-    public enum TYPE{NAME,OPERATION,STEREOTYPE,BODY};
+public class CompositeWidgetSelectProvider extends DiagramEngine.DesignSelectProvider
+{
+    private CompositeWidget compositeWidget;
     
-    /**
-     * @return all label types possible for current connection
-     */
-    TYPE[] getAllTypes();
+    public CompositeWidgetSelectProvider(CompositeWidget w)
+    {
+        compositeWidget = w;
+    }
     
-    boolean isShown(TYPE type);
-    
-    void show(TYPE type);
-    
-    void hide(TYPE type);
+    public void select(Widget widget, Point localLocation, boolean invertSelection)
+    {
+        super.select(widget, localLocation, invertSelection);
+        
+        for (CompartmentWidget w : compositeWidget.getCompartmentWidgets())
+        {
+            if (w.isHitAt(w.convertSceneToLocal(widget.convertLocalToScene(localLocation))))
+                w.setSelected(true);
+            else
+                w.setSelected(false);
+        }
+    }
 }

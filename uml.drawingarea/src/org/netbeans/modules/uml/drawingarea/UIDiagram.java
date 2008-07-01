@@ -229,6 +229,7 @@ public class UIDiagram extends Diagram {
      * Saves the diagram as a graphic
      */
     public IGraphicExportDetails saveAsGraphic(String sFilename, int nKind, double scale) {
+        
         IGraphicExportDetails retVal = new GraphicExportDetails();
         
         retVal.setFrameBoundingRect(new ETRect(scene.getBounds()));
@@ -236,7 +237,11 @@ public class UIDiagram extends Diagram {
         ETArrayList<IGraphicMapLocation> locations = new ETArrayList<IGraphicMapLocation>();
 
         ArrayList<Widget> list = new ArrayList<Widget>();
-        for (Widget w: getNodes(scene, scene, list))
+        getNodes(scene, scene, list);
+        // put the top widget at the front of list
+        Collections.reverse(list);
+        
+        for (Widget w: list)
         {
             IPresentationElement pe = (IPresentationElement)scene.findObject(w);
             IElement e = pe.getFirstSubject();
@@ -285,13 +290,12 @@ public class UIDiagram extends Diagram {
     {
         for (Widget w: widget.getChildren())
         {
-            if (scene.isNode(scene.findObject(w)))
+            if (scene.isNode(scene.findObject(w)) && w instanceof UMLNodeWidget)
             {
                 list.add(w);             
             }
             getNodes(scene, w, list);
-        }
-        Collections.reverse(list);
+        }       
         return list;
     }
     

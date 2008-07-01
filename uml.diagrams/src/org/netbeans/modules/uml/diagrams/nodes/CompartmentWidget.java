@@ -36,40 +36,23 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.uml.diagrams.actions.state;
+package org.netbeans.modules.uml.diagrams.nodes;
 
-import org.netbeans.modules.uml.diagrams.nodes.state.CompositeStateWidget;
-import org.openide.nodes.Node;
+import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.widget.Widget;
 
 /**
  *
  * @author Sheryl Su
  */
-public class AddRegionRowAction extends AddRegionColumnAction
+public abstract class CompartmentWidget extends Widget
 {
-
-    protected void setLayout(CompositeStateWidget w)
+    public CompartmentWidget(Scene scene)
     {
-        w.setHorizontalLayout(false);
+        super(scene);
     }
-
-    protected boolean enable(Node[] activatedNodes)
-    {
-        if (activatedNodes.length == 1)
-        {
-            CompositeStateWidget w = getCompositeStateWidget(activatedNodes[0]);
-            if (w != null)
-            {
-                return ((CompositeStateWidget)w).getRegionWidgets().size() == 1 || 
-                        !((CompositeStateWidget)w).isHorizontalLayout();
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public String getName()
-    {
-        return loc("CTL_AddRegionRow");
-    }
+    
+    public abstract void setSelected(boolean val);
+    
+    public abstract boolean isSelected();
 }
