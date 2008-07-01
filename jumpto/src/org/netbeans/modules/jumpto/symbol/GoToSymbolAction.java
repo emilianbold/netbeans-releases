@@ -58,6 +58,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.CharConversionException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -97,6 +98,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
+import org.openide.xml.XMLUtil;
 
 /** 
  * @author Petr Hrebejk
@@ -473,7 +475,6 @@ public class GoToSymbolAction extends AbstractAction implements GoToPanel.Conten
          
         private MyPanel rendererComponent;
         private JLabel jlName = new JLabel();
-        private JLabel jlOwner = new JLabel();
         private JLabel jlPrj = new JLabel();
         private int DARKER_COLOR_COMPONENT = 5;
         private int LIGHTER_COLOR_COMPONENT = 80;        
@@ -498,17 +499,14 @@ public class GoToSymbolAction extends AbstractAction implements GoToPanel.Conten
             
             rendererComponent = new MyPanel();
             rendererComponent.setLayout(new BorderLayout());
-            rendererComponent.add( jlName, BorderLayout.WEST );
-            rendererComponent.add( jlOwner, BorderLayout.CENTER);
+            rendererComponent.add( jlName, BorderLayout.CENTER);
             rendererComponent.add( jlPrj, BorderLayout.EAST );
             
             
             jlName.setOpaque(false);
-            jlOwner.setOpaque(false);
             jlPrj.setOpaque(false);
             
             jlName.setFont(list.getFont());
-            jlOwner.setFont(list.getFont());
             jlPrj.setFont(list.getFont());
             
             
@@ -552,16 +550,14 @@ public class GoToSymbolAction extends AbstractAction implements GoToPanel.Conten
             rendererComponent.setMaximumSize(size);
             rendererComponent.setPreferredSize(size);
                         
+            Color c, sc;
             if ( isSelected ) {
-                jlName.setForeground(fgSelectionColor);
-                jlOwner.setForeground(fgSelectionColor);
-                jlPrj.setForeground(fgSelectionColor);
+                c = sc = fgSelectionColor;
                 rendererComponent.setBackground(bgSelectionColor);
             }
             else {
-                jlName.setForeground(fgColor);
-                jlOwner.setForeground(fgColorLighter);
-                jlPrj.setForeground(fgColor);                
+                c = fgColor;
+                sc = fgColorLighter;
                 rendererComponent.setBackground( index % 2 == 0 ? bgColor : bgColorDarker );
             }
             
@@ -569,10 +565,24 @@ public class GoToSymbolAction extends AbstractAction implements GoToPanel.Conten
                 long time = System.currentTimeMillis();
                 SymbolDescriptor td = (SymbolDescriptor)value;                
                 jlName.setIcon(td.getIcon());
-                jlName.setText(td.getSymbolName());
-                jlOwner.setText(" "+td.getOwnerName());
+                String val;
+                try {
+                    val = String.format("<html><FONT COLOR=\"#%02x%02x%02x\">%s</FONT> <FONT COLOR=\"#%02x%02x%02x\">%s</FONT>",    //NOI18N
+                            c.getRed(),
+                            c.getGreen(),
+                            c.getBlue(),
+                            XMLUtil.toElementContent(td.getSymbolName()),
+                            sc.getRed(),
+                            sc.getGreen(),
+                            sc.getBlue(),
+                            XMLUtil.toElementContent(td.getOwnerName()));
+                } catch (CharConversionException e) {
+                    val = td.getSymbolName() + " " + td.getOwnerName(); //NOI18N
+                }
+                jlName.setText(val);
                 jlPrj.setText(td.getProjectName());
                 jlPrj.setIcon(td.getProjectIcon());
+                jlPrj.setForeground(c);
 		rendererComponent.setDescriptor(td);
                 FileObject fo = td.getFileObject();
                 if (fo != null) {
@@ -582,6 +592,7 @@ public class GoToSymbolAction extends AbstractAction implements GoToPanel.Conten
             }
             else {
                 jlName.setText( value.toString() );
+                jlName.setForeground(c);
             }
             
             return rendererComponent;
