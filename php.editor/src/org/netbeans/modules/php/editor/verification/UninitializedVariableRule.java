@@ -47,6 +47,7 @@ import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
@@ -95,6 +96,10 @@ public class UninitializedVariableRule  extends PHPRule {
             ForEachStatement forEachStatement = (ForEachStatement) parent;
             
             if (forEachStatement.getExpression() != variable){
+                return;
+            }
+        } else if (parent instanceof ArrayAccess) {
+            if (context.path.size() > 1 && context.path.get(1) instanceof FieldAccess){
                 return;
             }
         }
