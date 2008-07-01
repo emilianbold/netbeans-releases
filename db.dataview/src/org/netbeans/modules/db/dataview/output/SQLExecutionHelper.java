@@ -277,7 +277,7 @@ class SQLExecutionHelper {
                     if (rows == 0) {
                         error = true;
                         String nbBundle48 = mLoc.t("RESC048: No matching row(s) to delete.\n");
-                        errorMsg = errorMsg + nbBundle48.substring(15);;
+                        errorMsg = errorMsg + nbBundle48.substring(15);
                     } else if (rows > 1) {
                         error = true;
                         String nbBundle49 = mLoc.t("RESC049: No unique row for the matching condition.\n");
@@ -427,12 +427,19 @@ class SQLExecutionHelper {
             // Skip till current position
             boolean lastRowPicked = rs.next();
             while (lastRowPicked && rs.getRow() < (startFrom + 1)) {
+                if (Thread.currentThread().isInterrupted()) {
+                    return;
+                }
                 lastRowPicked = rs.next();
             }
 
             // Get next page
             int rowCnt = 0;
             while (((pageSize == -1) || (pageSize > rowCnt)) && (lastRowPicked || rs.next())) {
+                if (Thread.currentThread().isInterrupted()) {
+                    return;
+                }
+                
                 Object[] row = new Object[colCnt];
                 for (int i = 0; i < colCnt; i++) {
                     int type = tblMeta.getColumn(i).getJdbcType();
