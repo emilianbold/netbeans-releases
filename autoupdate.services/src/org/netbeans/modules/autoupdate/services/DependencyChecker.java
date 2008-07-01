@@ -59,28 +59,15 @@ class DependencyChecker extends Object {
             err.log(Level.FINE, "Dependency[" + dep.getType () + "]: " + dep);
             switch (dep.getType ()) {
                 case (Dependency.TYPE_REQUIRES) :
-                    if (findModuleMatchesDependencyRequires (dep, modules) != null) {
-                        // ok
-                    } else {
-                        // bad, report missing module
-                        res.add (dep);
-                    }
-                    break;
                 case (Dependency.TYPE_NEEDS) :
-                    if (findModuleMatchesDependencyRequires (dep, modules) != null) {
-                        // ok
-                    } else {
+                    if (findModuleMatchesDependencyRequires (dep, modules).isEmpty ()) {
                         // bad, report missing module
                         res.add (dep);
+                    } else {
+                        // ok
                     }
                     break;
                 case (Dependency.TYPE_RECOMMENDS) :
-                    if (findModuleMatchesDependencyRequires (dep, modules) != null) {
-                        // ok
-                    } else {
-                        // bad, report missing module
-                        res.add (dep);
-                    }
                     break;
                 case (Dependency.TYPE_MODULE) :
                     if (matchDependencyModule (dep, modules) != null) {
@@ -120,37 +107,23 @@ class DependencyChecker extends Object {
         Set<Dependency> res = new HashSet<Dependency> ();
         for (Dependency dep : filterTypeRecommends (info.getDependencies ())) {
             err.log(Level.FINE, "Dependency[" + dep.getType () + "]: " + dep);
-            ModuleInfo m = null;
+            Collection<ModuleInfo> providers = null;
             switch (dep.getType ()) {
                 case (Dependency.TYPE_REQUIRES) :
-                    m = findModuleMatchesDependencyRequires (dep, modules);
-                    if (m != null) {
-                        res.addAll (findBrokenDependenciesTransitive (m, modules, seen));
-                    } else {
-                        // bad, report missing module
-                        res.add (dep);
-                    }
-                    break;
                 case (Dependency.TYPE_NEEDS) :
-                    m = findModuleMatchesDependencyRequires (dep, modules);
-                    if (m != null) {
-                        res.addAll (findBrokenDependenciesTransitive (m, modules, seen));
-                    } else {
-                        // bad, report missing module
-                        res.add (dep);
-                    }
-                    break;
                 case (Dependency.TYPE_RECOMMENDS) :
-                    m = findModuleMatchesDependencyRequires (dep, modules);
-                    if (m != null) {
-                        res.addAll (findBrokenDependenciesTransitive (m, modules, seen));
+                    providers = findModuleMatchesDependencyRequires (dep, modules);
+                    if (providers.size () > 0) {
+                        for (ModuleInfo m : providers) {
+                            res.addAll (findBrokenDependenciesTransitive (m, modules, seen));
+                        }
                     } else {
                         // bad, report missing module
                         res.add (dep);
                     }
                     break;
                 case (Dependency.TYPE_MODULE) :
-                    m = matchDependencyModule (dep, modules);
+                    ModuleInfo m = matchDependencyModule (dep, modules);
                     if (m != null) {
                         res.addAll (findBrokenDependenciesTransitive (m, modules, seen));
                     } else {
@@ -190,13 +163,20 @@ class DependencyChecker extends Object {
         return res;
     }
     
-    static ModuleInfo findModuleMatchesDependencyRequires (Dependency dep, Collection<ModuleInfo> modules) {
-        for (ModuleInfo info : modules) {
-            if (Arrays.asList (info.getProvides ()).contains (dep.getName ())) {
-                return info;
+    static Collection<ModuleInfo> findModuleMatchesDependencyRequires (Dependency dep, Collection<ModuleInfo> modules) {
+        UpdateManagerImpl mgr = UpdateManagerImpl.getInstance ();
+        Set<ModuleInfo> providers = new HashSet<ModuleInfo> ();
+        providers.addAll (mgr.getAvailableProviders (dep.getName ()));
+        providers.addAll (mgr.getInstalledProviders (dep.getName ()));
+        Set<ModuleInfo> res = new HashSet<ModuleInfo> (providers);
+        for (ModuleInfo mi : providers) {
+            for (ModuleInfo input : modules) {
+                if (mi.getCodeName ().equals (input.getCodeName ())) {
+                    res.add (mi);
+                }
             }
         }
-        return null;
+        return res;
     }
     
     private static ModuleInfo matchDependencyModule (Dependency dep, Collection<ModuleInfo> modules) {
