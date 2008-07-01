@@ -98,7 +98,6 @@ public class DataSetAbstractCD extends ComponentDescriptor {
                 // code
                 MidpCodePresenterSupport.createAddImportPresenter("org.netbeans.microedition.databinding.DataBindingException", //NOI18N
                                                                   "org.netbeans.microedition.databinding.DataBinder"), //NOI18N
-                //MIDPDataSetBodyCodePresenter.create("/org/netbeans/modules/vmd/midp/codegen/dataset_java.code"), //NOI18N
                 //inspector
                 new InspectorFolderComponentPresenter(true),
                 InspectorPositionPresenter.create(InspectorPositionControllerSupport.createHierarchical(DatabindingCategoryCD.TYPEID)));   

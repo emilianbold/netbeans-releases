@@ -38,8 +38,6 @@
  */
 package org.netbeans.modules.javascript.libraries.ui.customizer;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -62,18 +60,16 @@ import org.openide.util.NbBundle;
  *
  * @author  Quy Nguyen <quynguyen@netbeans.org>
  */
-public final class CustomizerJSLibraries extends JPanel implements ActionListener {
+public final class CustomizerJSLibraries extends JPanel {
 
     private final ProjectCustomizer.Category category;
     private final Project project;
     private final DefaultListModel libraryListModel;
-    private final Set<Library> originalLibraries;
 
     /** Creates new form JavaScriptLibrariesCustomizer */
     public CustomizerJSLibraries(ProjectCustomizer.Category category, Project project) {
         this.category = category;
         this.project = project;
-        this.originalLibraries = new LinkedHashSet<Library>();
         this.libraryListModel = new DefaultListModel();
         
         initComponents();
@@ -83,7 +79,6 @@ public final class CustomizerJSLibraries extends JPanel implements ActionListene
         for (Library library : libraries) {
             NamedLibrary namedLib = new NamedLibrary(library);
             libraryListModel.addElement(namedLib);
-            originalLibraries.add(library);
         }
 
         librariesJList.setModel(libraryListModel);
@@ -96,7 +91,6 @@ public final class CustomizerJSLibraries extends JPanel implements ActionListene
                 });
 
         updateRemoveButtonState();
-        category.setStoreListener(this);
     }
 
     /** This method is called from within the constructor to
@@ -187,7 +181,6 @@ public final class CustomizerJSLibraries extends JPanel implements ActionListene
 
 private void addLibraryJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addLibraryJButtonActionPerformed
 
-    // TODO don't recompute this every time
     Object[] objs = libraryListModel.toArray();
     Set<Library> currentLibs = new LinkedHashSet<Library>();
     for (Object o : objs) {
@@ -201,8 +194,26 @@ private void addLibraryJButtonActionPerformed(java.awt.event.ActionEvent evt) {/
     Set<Library> addedLibraries = LibraryChooser.showDialog(manager, filter, sharedLibHandler);
     
     if (addedLibraries != null) {
+        List<Library> confirmedLibraries = new ArrayList<Library>();
+        
         for (Library library : addedLibraries) {
-            libraryListModel.addElement(new NamedLibrary(library));
+            boolean addLibrary = true;
+            if (!JSLibraryProjectUtils.isLibraryFolderEmpty(project, library)) {
+                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(NbBundle.getMessage(CustomizerJSLibraries.class, "ExtractLibraries_Overwrite_Msg"), NbBundle.getMessage(CustomizerJSLibraries.class, "ExtractLibraries_Overwrite_Title"), NotifyDescriptor.YES_NO_OPTION);
+
+                Object result = DialogDisplayer.getDefault().notify(nd);
+                addLibrary = (result == NotifyDescriptor.YES_OPTION);
+            }
+
+            if (addLibrary) {
+                libraryListModel.addElement(new NamedLibrary(library));
+                confirmedLibraries.add(library);
+            }
+        }
+
+        if (confirmedLibraries.size() > 0) {
+            JSLibraryProjectUtils.addJSLibraryMetadata(project, confirmedLibraries);
+            JSLibraryProjectUtils.extractLibrariesWithProgress(project, addedLibraries, JSLibraryProjectUtils.getJSLibrarySourcePath(project));
         }
     }
 }//GEN-LAST:event_addLibraryJButtonActionPerformed
@@ -212,9 +223,13 @@ private void removeLibraryJButtonActionPerformed(java.awt.event.ActionEvent evt)
     int[] removedLibIndices = librariesJList.getSelectedIndices();
     assert removedLibIndices.length > 0;
     
+    List<Library> removedLibraries = new ArrayList<Library>();
     for (int i = removedLibIndices.length-1; i >= 0; i--) {
-        libraryListModel.remove(removedLibIndices[i]);
+        removedLibraries.add(((NamedLibrary)libraryListModel.remove(removedLibIndices[i])).getLibrary());
     }
+    
+    JSLibraryProjectUtils.removeJSLibraryMetadata(project, removedLibraries);
+    JSLibraryProjectUtils.deleteLibrariesWithProgress(project, removedLibraries, JSLibraryProjectUtils.getJSLibrarySourcePath(project));
 }//GEN-LAST:event_removeLibraryJButtonActionPerformed
 
     private static final class NamedLibrary {
@@ -243,54 +258,6 @@ private void removeLibraryJButtonActionPerformed(java.awt.event.ActionEvent evt)
     private javax.swing.JLabel librariesListLabel;
     private javax.swing.JButton removeLibraryJButton;
     // End of variables declaration//GEN-END:variables
-
-    public void actionPerformed(ActionEvent e) {
-        Set<Library> removedLibraries = originalLibraries;
-        Set<Library> addedLibraries = new LinkedHashSet<Library>();
-        List<Library> allLibraries = new ArrayList<Library>();
-
-        for (int i = 0; i < libraryListModel.getSize(); i++) {
-            Library currentLib = ((NamedLibrary) libraryListModel.getElementAt(i)).getLibrary();
-            allLibraries.add(currentLib);
-
-            if (!originalLibraries.contains(currentLib)) {
-                addedLibraries.add(currentLib);
-            } else {
-                originalLibraries.remove(currentLib);
-            }
-        }
-
-        if (addedLibraries.size() > 0 || removedLibraries.size() > 0) {
-            Library[] libsArray = allLibraries.toArray(new Library[allLibraries.size()]);
-            JSLibraryProjectUtils.setJSLibraries(project, libsArray);
-        }
-
-        // TODO extract/delete need to be done asynchronously with a progress bar
-        for (Library library : addedLibraries) {
-            boolean addLibrary = true;
-            
-            if (!JSLibraryProjectUtils.isLibraryFolderEmpty(project, library)) {
-                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                        NbBundle.getMessage(CustomizerJSLibraries.class, "ExtractLibraries_Overwrite_Msg"),
-                        NbBundle.getMessage(CustomizerJSLibraries.class, "ExtractLibraries_Overwrite_Title"),
-                        NotifyDescriptor.YES_NO_OPTION);
-                
-                Object result = DialogDisplayer.getDefault().notify(nd);
-                addLibrary = (result == NotifyDescriptor.YES_OPTION);
-            }
-            
-            if (addLibrary) {
-                JSLibraryProjectUtils.extractLibraryToProject(project, library);
-            }
-        }
-        
-        for (Library library : removedLibraries) {
-            JSLibraryProjectUtils.deleteLibraryFromProject(project, library);
-        }
-        
-    }
-
-    
     
     private void updateRemoveButtonState() {
         removeLibraryJButton.setEnabled(librariesJList.getSelectedIndex() >= 0);

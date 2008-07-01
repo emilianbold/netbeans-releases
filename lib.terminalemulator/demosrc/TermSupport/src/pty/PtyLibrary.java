@@ -48,10 +48,18 @@ import com.sun.jna.Structure;
 interface PtyLibrary extends Library {
 
     public static class WinSize extends Structure {
+        // JNA cannot figure sizeof structure if members aren't public
         public short ws_row;
         public short ws_col;
         public short ws_xpixel;
         public short ws_ypixel;
+
+        public WinSize(int rows, int cols, int height, int width) {
+            this.ws_row = (short) rows;
+            this.ws_col = (short) cols;
+            this.ws_xpixel = (short) width;
+            this.ws_ypixel = (short) height;
+        }
     }
 
     PtyLibrary INSTANCE = (PtyLibrary) Native.loadLibrary("c", PtyLibrary.class);

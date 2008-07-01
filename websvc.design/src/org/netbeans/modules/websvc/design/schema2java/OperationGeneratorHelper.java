@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.design.schema2java;
 
 import java.io.File;
@@ -54,7 +53,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
 import org.netbeans.modules.websvc.design.util.WSDLUtils;
@@ -108,34 +106,37 @@ import org.netbeans.modules.websvc.design.javamodel.MethodModel;
 import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
 import org.netbeans.modules.xml.schema.model.ComplexType;
 import org.netbeans.modules.xml.schema.model.ComplexTypeDefinition;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaComponentFactory;
 import org.netbeans.modules.xml.schema.model.SequenceDefinition;
-
+import org.netbeans.modules.xml.schema.model.visitor.FindUsageVisitor;
+import org.netbeans.modules.xml.schema.model.visitor.Preview;
 
 /**
  *
  * @author mkuchtiak, rcruz
  */
 public class OperationGeneratorHelper {
+
     File wsdlFile;
     Map<String, String> types;
     Collection<GlobalSimpleType> primitives;
     WSDLModel wsdlModel;
-    
+
     /** Creates a new instance of MethodGeneratorHelper */
     public OperationGeneratorHelper(File wsdlFile) {
-        this.wsdlFile=wsdlFile;
+        this.wsdlFile = wsdlFile;
         wsdlModel = WSDLUtils.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
-        
+
     }
-    
+
     public Operation addWsOperation(
             String portTypeName,
             String operationName,
             List<ParamModel> parameterTypes,
             ReferenceableSchemaComponent returnType,
             List<ParamModel> faultTypes) {
-        
+
         boolean isDocOriented = WSDLUtils.isDocumentOriented(wsdlModel);
         Definitions definitions = wsdlModel.getDefinitions();
         Collection<Binding> bindings = definitions.getBindings();
@@ -148,7 +149,7 @@ public class OperationGeneratorHelper {
             SchemaModel schemaModel = null;
             Schema schema = null;
             Types types = wsdlModel.getDefinitions().getTypes();
-            if(types != null){
+            if (types != null) {
                 Collection<Schema> schemas = types.getSchemas();
                 Iterator<Schema> it = schemas.iterator();
                 if (it.hasNext()) {
@@ -156,11 +157,11 @@ public class OperationGeneratorHelper {
                     schemaModel = schema.getModel();
                 }
             }
-            if(schemaModel == null) {
+            if (schemaModel == null) {
                 schemaModel = createSchemaModel(factory, definitions, types);
                 schema = schemaModel.getSchema();
             }
-            
+
             String schemaNamespace = schema.getTargetNamespace();
             if (schemaNamespace == null) {
                 String parentTns = wsdlModel.getDefinitions().getTargetNamespace();
@@ -168,196 +169,269 @@ public class OperationGeneratorHelper {
                     schema.setTargetNamespace(parentTns);
                 }
             }
-            
-            Message inputMessage =  addInputMessageToOperation(operation, parameterTypes,
-                    schemaModel,  isDocOriented);
+
+            Message inputMessage = addInputMessageToOperation(operation, parameterTypes,
+                    schemaModel, isDocOriented);
             Message outputMessage = addOutputMessageToOperation(operation, returnType,
                     schemaModel, isDocOriented);
             List<Message> faultMessages = addFaultsToOperation(operation, faultTypes, schemaModel);
-            
+
             Collection<PortType> portTypes = definitions.getPortTypes();
             PortType portType = null;
-            for(PortType p : portTypes){
-                if(p.getName().equals(portTypeName)){
+            for (PortType p : portTypes) {
+                if (p.getName().equals(portTypeName)) {
                     portType = p;
                     break;
                 }
             }
             //Add binding section for operation, if there is a binding section
-            if(portType != null ){
-                if(bindings.size() > 0){
+            if (portType != null) {
+                if (bindings.size() > 0) {
                     addSOAPBindingForOperation(operation, portType, isDocOriented,
                             inputMessage, outputMessage, faultMessages);
                 }
                 portType.addOperation(operation);
             }
-            
-        }finally{
+
+        } finally {
             wsdlModel.endTransaction();
         }
         return operation;
     }
-    
-    
-    
-    private boolean isPrimitiveType(ParamModel parameterType){
+
+    private boolean isPrimitiveType(ParamModel parameterType) {
         return (Utils.getPrimitiveType(parameterType.getParamType().getName()) != null);
     }
-    
-    private boolean isPrimitiveType(ReferenceableSchemaComponent comp){
-        return (Utils.getPrimitiveType(comp.getName()) !=  null);
+
+    private boolean isPrimitiveType(ReferenceableSchemaComponent comp) {
+        return (Utils.getPrimitiveType(comp.getName()) != null);
     }
-    
-    
+
     private void addElementToSequence(Sequence sequence, SchemaModel schemaModel, ParamModel param) {
-        
+
         ReferenceableSchemaComponent paramType = param.getParamType();
         if (paramType instanceof GlobalType) {
             LocalElement el = schemaModel.getFactory().createLocalElement();
-            NamedComponentReference<GlobalType> typeRef = schemaModel.getSchema().createReferenceTo((GlobalType)paramType, GlobalType.class);
+            NamedComponentReference<GlobalType> typeRef = schemaModel.getSchema().createReferenceTo((GlobalType) paramType, GlobalType.class);
             el.setName(param.getParamName());
             el.setType(typeRef);
             sequence.appendContent(el);
         } else if (paramType instanceof GlobalElement) {
             ElementReference el = schemaModel.getFactory().createElementReference();
-            NamedComponentReference<GlobalElement> typeRef = schemaModel.getSchema().createReferenceTo((GlobalElement)paramType, GlobalElement.class);
+            NamedComponentReference<GlobalElement> typeRef = schemaModel.getSchema().createReferenceTo((GlobalElement) paramType, GlobalElement.class);
             el.setRef(typeRef);
             sequence.appendContent(el);
         }
     }
-    
-    
-  
-    private Binding findBindingForPortType(Collection<Binding> bindings, PortType portType){
-        for(Binding b : bindings){
+
+    private Binding findBindingForPortType(Collection<Binding> bindings, PortType portType) {
+        for (Binding b : bindings) {
             NamedComponentReference<PortType> portTypeRef = b.getType();
-            if(portTypeRef.references(portType)){
+            if (portTypeRef.references(portType)) {
                 return b;
             }
         }
         return null;
     }
-    
+
+    private void removeGlobalElementReferences(Definitions definitions, GlobalElement gb) {
+        NamedComponentReference<? extends GlobalType> ref = gb.getType();
+        GlobalType type = ref.get();
+        if (type instanceof GlobalComplexType) {
+            Collection<Schema> schemas = definitions.getTypes().getSchemas();
+            Preview preview = new FindUsageVisitor().findUsages(schemas, type);
+            Map<SchemaComponent, List<SchemaComponent>> usages = preview.getUsages();
+            if (usages.size() == 1) {
+                Schema schema = gb.getModel().getSchema();
+                schema.removeComplexType((GlobalComplexType) type);
+            }
+        }
+    }
+
+    private void removeMessageReferences(Message message) {
+        Definitions definitions = wsdlModel.getDefinitions();
+        Collection<Part> parts = message.getParts();
+        for (Part part : parts) {
+            NamedComponentReference<GlobalElement> ref = part.getElement();
+            if (ref != null) {
+                GlobalElement gb = ref.get();
+                List<WSDLRefactoringElement> usages = new FindSchemaUsageVisitor().findUsages(gb, definitions);
+                if (usages.size() == 1) {
+                    removeGlobalElementReferences(definitions, gb);
+                    gb.getModel().getSchema().removeElement(gb);
+                }
+            }
+        }
+    }
+
+    private void removeOperationReferences(Operation operation) {
+        Definitions definitions = wsdlModel.getDefinitions();
+        Input input = operation.getInput();
+        NamedComponentReference<Message> messageRef = input.getMessage();
+        Message message = messageRef.get();
+
+        List<WSDLRefactoringElement> usages = new FindWSDLUsageVisitor().findUsages(message, definitions);
+        if (usages.size() == 1) {
+            removeMessageReferences(message);
+            definitions.removeMessage(message);
+        }
+        Output output = operation.getOutput();
+        if (output != null) {
+            messageRef = output.getMessage();
+            message = messageRef.get();
+
+            usages = new FindWSDLUsageVisitor().findUsages(message, definitions);
+            if (usages.size() == 1) {
+                removeMessageReferences(message);
+                definitions.removeMessage(message);
+            }
+        }
+
+        Collection<Fault> faults = operation.getFaults();
+        for (Fault fault : faults) {
+            messageRef = fault.getMessage();
+            message = messageRef.get();
+            usages = new FindWSDLUsageVisitor().findUsages(message, definitions);
+            if (usages.size() == 1) {
+                removeMessageReferences(message);
+                definitions.removeMessage(message);
+            }
+
+        }
+    }
+
     public void removeWSOperation(WSDLModel wsdlModel,
             String portTypeName,
-            String operationName){
-        
+            String operationName) {
+
         PortType portType = null;
         Operation operation = null;
-        try{
+        try {
             wsdlModel.startTransaction();
             Definitions definitions = wsdlModel.getDefinitions();
             Collection<PortType> portTypes = definitions.getPortTypes();
-            for(PortType pt : portTypes){
-                if(pt.getName().equals(portTypeName)){
+            for (PortType pt : portTypes) {
+                if (pt.getName().equals(portTypeName)) {
                     portType = pt;
                     break;
                 }
             }
-            if(portType != null){
+            if (portType != null) {
                 Collection<Operation> operations = portType.getOperations();
-                for(Operation op : operations){
-                    String opName = convertOperationName(op.getName());
-                    if(opName.equals(operationName)){
+                for (Operation op : operations) {
+                    if (op.getName().equals(operationName)) {
                         operation = op;
                         break;
                     }
                 }
-                if(operation != null){
+                if (operation != null) {
+                    removeOperationReferences(operation);
                     portType.removeOperation(operation);
-                    
+
                     Collection<Binding> bindings = definitions.getBindings();
                     Binding binding = null;
-                    if(bindings.size() > 0){
+                    if (bindings.size() > 0) {
                         //find binding for portType
                         binding = findBindingForPortType(bindings, portType);
-                        if(binding != null){
+                        if (binding != null) {
                             Collection<BindingOperation> bindingOperations = binding.getBindingOperations();
                             BindingOperation bindingOperation = null;
-                            for(BindingOperation bindingOp : bindingOperations){
+                            for (BindingOperation bindingOp : bindingOperations) {
                                 //TODO: Is this enough??
                                 //TODO: should we resolve the binding operation reference??
-                                if(operationName.equals(bindingOp.getName())){
+                                if (operationName.equals(bindingOp.getName())) {
                                     bindingOperation = bindingOp;
                                     break;
                                 }
                             }
-                            if(bindingOperation != null){
+                            if (bindingOperation != null) {
                                 binding.removeBindingOperation(bindingOperation);
                             }
                         }
                     }
                 }
             }
-        }finally{
+        } finally {
             wsdlModel.endTransaction();
         }
-        
+
     }
-    
+
     private Message addInputMessageToOperation(Operation operation, List<ParamModel> parameterTypes,
-            SchemaModel schemaModel, boolean isDocOriented){
+            SchemaModel schemaModel, boolean isDocOriented) {
         Schema schema = schemaModel.getSchema();
         WSDLComponentFactory factory = wsdlModel.getFactory();
         SchemaComponentFactory schemaFactory = schemaModel.getFactory();
+        Definitions definitions = wsdlModel.getDefinitions();
         GlobalComplexType paramComplexType = null;
-        
+
         GlobalElement paramElement = null;
         String operationName = operation.getName();
-        String paramTypeName = operationName+"Type"; //NOI18N
-        String inputMessageName = operationName+"Message"; //NOI18N
-        String partName = operationName+"Part"; //NOI18N
-        Message inputMessage=null;
-        Definitions definitions = wsdlModel.getDefinitions();
         
-        if(isDocOriented){  //document/literal/wrapped
-            if (parameterTypes.size()==0 || parameterTypes.size() > 1 || (parameterTypes.size() == 1 && isPrimitiveType(parameterTypes.get(0)))) {
-                
+        String paramTypeName = operationName + "Type"; //NOI18N
+        paramTypeName = getUniqueGlobalComplexTypeName(schema, paramTypeName);
+
+        String inputMessageName = operationName + "Message"; //NOI18N
+        inputMessageName = getUniqueMessageName(definitions, inputMessageName);
+
+        String partName = operationName + "Part"; //NOI18N
+
+        Message inputMessage = null;
+        
+
+        if (isDocOriented) {  //document/literal/wrapped
+
+            if (parameterTypes.size() == 0 || parameterTypes.size() > 1 || (parameterTypes.size() == 1 && isPrimitiveType(parameterTypes.get(0)))) {
+
                 paramComplexType = schemaFactory.createGlobalComplexType();
                 paramComplexType.setName(paramTypeName);
                 Sequence seq = schemaFactory.createSequence();
-                for(ParamModel param : parameterTypes) {
+                for (ParamModel param : parameterTypes) {
                     addElementToSequence(seq, schemaModel, param);
                 }
                 paramComplexType.setDefinition(seq);
                 schema.addComplexType(paramComplexType);
                 paramElement = schemaFactory.createGlobalElement();
                 paramElement.setName(getUniqueGlobalElementName(schema, operationName)); //NOI18N
-                NamedComponentReference<GlobalType> complexTypeRef = schema.createReferenceTo((GlobalType)paramComplexType, GlobalType.class);
+
+                NamedComponentReference<GlobalType> complexTypeRef = schema.createReferenceTo((GlobalType) paramComplexType, GlobalType.class);
                 paramElement.setType(complexTypeRef);
-            } else{ //there is only one parameter and it is not primitive
+            } else { //there is only one parameter and it is not primitive
+
                 ParamModel paramModel = parameterTypes.get(0);
                 ReferenceableSchemaComponent ref = paramModel.getParamType();
-                if (ref instanceof GlobalElement){
-                    paramElement = (GlobalElement)ref;
+                if (ref instanceof GlobalElement) {
+                    paramElement = (GlobalElement) ref;
                 } else if (ref instanceof GlobalType) {
                     paramElement = schemaFactory.createGlobalElement();
                     paramElement.setName(getUniqueGlobalElementName(schema, operationName)); //NOI18N
-                    NamedComponentReference<GlobalType> typeRef = schema.createReferenceTo((GlobalType)ref, GlobalType.class);
+
+                    NamedComponentReference<GlobalType> typeRef = schema.createReferenceTo((GlobalType) ref, GlobalType.class);
                     paramElement.setType(typeRef);
                 }
             }
-            
-            if (paramElement!=null) {
+
+            if (paramElement != null) {
                 schema.addElement(paramElement);
                 inputMessage = factory.createMessage();
                 inputMessage.setName(inputMessageName);
                 definitions.addMessage(inputMessage);
                 Part part = factory.createPart();
-                part.setName(partName);
+                part.setName(getUniquePartName(inputMessage, partName));
                 NamedComponentReference<GlobalElement> ref = part.createSchemaReference(paramElement, GlobalElement.class);
                 part.setElement(ref);
                 inputMessage.addPart(part);
-                
+
             }
-        }else{  //rpc/literal
+        } else {  //rpc/literal
+
             inputMessage = factory.createMessage();
             inputMessage.setName(inputMessageName);
             definitions.addMessage(inputMessage);
             Part part = null;
-            for(ParamModel param : parameterTypes) {
+            for (ParamModel param : parameterTypes) {
                 ReferenceableSchemaComponent ref = param.getParamType();
-                NamedComponentReference<GlobalType> typeRef = schema.createReferenceTo((GlobalType)ref, GlobalType.class);
+                NamedComponentReference<GlobalType> typeRef = schema.createReferenceTo((GlobalType) ref, GlobalType.class);
                 part = factory.createPart();
                 part.setName(getUniquePartName(inputMessage, partName));
                 part.setType(typeRef);
@@ -369,70 +443,86 @@ public class OperationGeneratorHelper {
         input.setName(operationName);
         input.setMessage(inputRef);
         operation.setInput(input);
-        
+
         return inputMessage;
     }
-    
-    private Message addOutputMessageToOperation(Operation operation,  ReferenceableSchemaComponent returnType,
-            SchemaModel schemaModel, boolean isDocOriented){
+
+    private Message addOutputMessageToOperation(Operation operation, ReferenceableSchemaComponent returnType,
+            SchemaModel schemaModel, boolean isDocOriented) {
         WSDLComponentFactory factory = wsdlModel.getFactory();
         SchemaComponentFactory schemaFactory = schemaModel.getFactory();
         GlobalComplexType responseComplexType = null;
         String operationName = operation.getName();
-        String responseTypeName = operationName+"ResponseType"; //NOI18N
-        String responseElementName = operationName+"Response"; //NOI18N
-        String responseMessageName = operationName+"ResponseMessage"; //NOI18N
-        String responsePartName = operationName+"ResponsePart"; //NOI18N
+         Definitions definitions = wsdlModel.getDefinitions();
         Schema schema = schemaModel.getSchema();
+        String responseTypeName = operationName + "ResponseType"; //NOI18N
+        responseTypeName = getUniqueGlobalComplexTypeName(schema, responseTypeName);
+
+        String responseElementName = operationName + "Response"; //NOI18N
+        responseElementName = getUniqueGlobalElementName(schema, responseElementName);
+
+        String responseMessageName = operationName + "ResponseMessage"; //NOI18N
+        responseMessageName = getUniqueMessageName(definitions, responseMessageName);
+
+        String responsePartName = operationName + "ResponsePart"; //NOI18N
+
+
         GlobalElement responseElement = null;
-        Message outputMessage=null;
-        Definitions definitions = wsdlModel.getDefinitions();
-        
-        if(isDocOriented){ //document/literal/wrapped
-            if(returnType != null) {
+        Message outputMessage = null;
+       
+
+        if (isDocOriented) { //document/literal/wrapped
+
+            if (returnType != null) {
                 responseComplexType = schemaModel.getFactory().createGlobalComplexType();
                 responseComplexType.setName(responseTypeName); //NOI18N
-                if (isPrimitiveType(returnType)){
+
+                if (isPrimitiveType(returnType)) {
                     Sequence seq1 = schemaFactory.createSequence();
                     responseComplexType.setDefinition(seq1);
                     schema.addComplexType(responseComplexType);
                     LocalElement el = schemaFactory.createLocalElement();
-                    NamedComponentReference<GlobalType> typeRef = schema.createReferenceTo((GlobalType)returnType, GlobalType.class);
+                    NamedComponentReference<GlobalType> typeRef = schema.createReferenceTo((GlobalType) returnType, GlobalType.class);
                     el.setName("result"); //NOI18N
+
                     el.setType(typeRef);
                     seq1.appendContent(el);
                     responseElement = schemaFactory.createGlobalElement();
-                    responseElement.setName(this.getUniqueGlobalElementName(schema, responseElementName));
-                    NamedComponentReference<GlobalType> responseTypeRef = schema.createReferenceTo((GlobalType)responseComplexType, GlobalType.class);
+                    responseElement.setName(responseElementName);
+                    NamedComponentReference<GlobalType> responseTypeRef = schema.createReferenceTo((GlobalType) responseComplexType, GlobalType.class);
                     responseElement.setType(responseTypeRef);
                     schema.addElement(responseElement);
                 } else if (returnType instanceof GlobalElement) {
-                    responseElement = (GlobalElement)returnType;
-                } else if (returnType instanceof  GlobalType) {
+                    responseElement = (GlobalElement) returnType;
+                } else if (returnType instanceof GlobalType) {
                     responseElement = schemaModel.getFactory().createGlobalElement(); //NOI18N
-                    responseElement.setName(getUniqueGlobalElementName(schema, responseElementName)); //NOI18N
-                    NamedComponentReference<GlobalType> typeRef = schema.createReferenceTo((GlobalType)returnType, GlobalType.class);
+
+                    responseElement.setName(responseElementName); //NOI18N
+
+                    NamedComponentReference<GlobalType> typeRef = schema.createReferenceTo((GlobalType) returnType, GlobalType.class);
                     responseElement.setType(typeRef);
                     schema.addElement(responseElement);
                 }
             } else {// return type == null
+
                 responseComplexType = schemaModel.getFactory().createGlobalComplexType();
                 responseComplexType.setName(responseTypeName); //NOI18N
+
                 Sequence seq1 = schemaModel.getFactory().createSequence();
                 responseComplexType.setDefinition(seq1);
                 schema.addComplexType(responseComplexType);
                 responseElement = schemaModel.getFactory().createGlobalElement();
-                responseElement.setName(this.getUniqueGlobalElementName(schema, responseElementName));
-                NamedComponentReference<GlobalType> responseTypeRef = schema.createReferenceTo((GlobalType)responseComplexType, GlobalType.class);
+                responseElement.setName(responseElementName);
+                NamedComponentReference<GlobalType> responseTypeRef = schema.createReferenceTo((GlobalType) responseComplexType, GlobalType.class);
                 responseElement.setType(responseTypeRef);
                 schema.addElement(responseElement);
             }
-            
-            if (responseElement!=null) {
+
+            if (responseElement != null) {
                 outputMessage = factory.createMessage();
                 outputMessage.setName(responseMessageName);
                 Part outpart = factory.createPart();
-                outpart.setName(responsePartName);
+                outpart.setName(getUniquePartName(outputMessage,responsePartName) );
                 NamedComponentReference<GlobalElement> outref = outpart.createSchemaReference(responseElement, GlobalElement.class);
                 outpart.setElement(outref);
                 outputMessage.addPart(outpart);
@@ -443,14 +533,15 @@ public class OperationGeneratorHelper {
                 output.setMessage(outputRef);
                 operation.setOutput(output);
             }
-        }else{  //rpc/literal
-            if(returnType != null){
+        } else {  //rpc/literal
+
+            if (returnType != null) {
                 outputMessage = factory.createMessage();
                 outputMessage.setName(responseMessageName);
                 definitions.addMessage(outputMessage);
                 Part part = factory.createPart();
-                part.setName(responsePartName);
-                NamedComponentReference<GlobalType> typeRef = schema.createReferenceTo((GlobalType)returnType, GlobalType.class);
+                part.setName(getUniquePartName(outputMessage,responsePartName) );
+                NamedComponentReference<GlobalType> typeRef = schema.createReferenceTo((GlobalType) returnType, GlobalType.class);
                 part.setType(typeRef);
                 outputMessage.addPart(part);
                 Output output = factory.createOutput();
@@ -461,87 +552,90 @@ public class OperationGeneratorHelper {
             }
         }
         return outputMessage;
-        
+
     }
-    
+
     private List<Message> addFaultsToOperation(Operation operation, List<ParamModel> faultTypes,
-            SchemaModel schemaModel){
+            SchemaModel schemaModel) {
         List<GlobalElement> faultElements = new ArrayList<GlobalElement>();
         List<Message> faultMessages = new ArrayList<Message>();
         Schema schema = schemaModel.getSchema();
         WSDLComponentFactory factory = wsdlModel.getFactory();
         SchemaComponentFactory schemaFactory = schemaModel.getFactory();
         Definitions definitions = wsdlModel.getDefinitions();
-        
+
         // create schema elements for faults
-        for(ParamModel faultModel : faultTypes) {
+        for (ParamModel faultModel : faultTypes) {
             ReferenceableSchemaComponent faultType = faultModel.getParamType();
             if (faultType instanceof GlobalType) {
                 GlobalElement faultElement = schemaFactory.createGlobalElement();
-                NamedComponentReference<GlobalType> typeRef = schemaModel.getSchema().createReferenceTo((GlobalType)faultType, GlobalType.class);
-                faultElement.setName(getUniqueGlobalElementName(schema,faultModel.getParamName()));
+                NamedComponentReference<GlobalType> typeRef = schemaModel.getSchema().createReferenceTo((GlobalType) faultType, GlobalType.class);
+                faultElement.setName(getUniqueGlobalElementName(schema, faultModel.getParamName()));
                 faultElement.setType(typeRef);
                 schema.addElement(faultElement);
                 faultElements.add(faultElement);
             } else if (faultType instanceof GlobalElement) {
-                faultElements.add((GlobalElement)faultType);
+                faultElements.add((GlobalElement) faultType);
             }
         }
-        for (GlobalElement faultElement:faultElements) {
+        for (GlobalElement faultElement : faultElements) {
             Message faultMessage = factory.createMessage();
             faultMessage.setName(faultElement.getName());
             definitions.addMessage(faultMessage);
-            
+
             Part part = factory.createPart();
-            part.setName("fault"); //NOI18N
+            String faultName = getUniquePartName(faultMessage, "fault");  //NOI18N
+            part.setName(faultName); 
+
             NamedComponentReference<GlobalElement> ref = part.createSchemaReference(faultElement, GlobalElement.class);
             part.setElement(ref);
-            
+
             faultMessage.addPart(part);
             faultMessages.add(faultMessage);
         }
-        
-        for (Message faultMessage:faultMessages) {
+
+        for (Message faultMessage : faultMessages) {
             Fault fault = factory.createFault();
             NamedComponentReference<Message> ref = fault.createReferenceTo(faultMessage, Message.class);
             fault.setName(faultMessage.getName());
             fault.setMessage(ref);
             operation.addFault(fault);
         }
-        
+
         return faultMessages;
     }
-    
+
     private void addSOAPBindingForOperation(Operation operation, PortType portType, boolean isDocOriented,
-            Message inputMessage, Message outputMessage, List<Message> faultMessages){
+            Message inputMessage, Message outputMessage, List<Message> faultMessages) {
         Definitions definitions = wsdlModel.getDefinitions();
         Collection<Binding> bindings = definitions.getBindings();
         WSDLComponentFactory factory = wsdlModel.getFactory();
-        
-        
+
+
         //Assume SOAP binding only
         Binding binding = null;
         //find binding for portType
         binding = findBindingForPortType(bindings, portType);
-        if(binding != null){
+        if (binding != null) {
             //determine if it is soap binding
             List<SOAPBinding> soapBindings = binding.getExtensibilityElements(SOAPBinding.class);
-            if(soapBindings.size() > 0){  //it is SOAP binding
+            if (soapBindings.size() > 0) {  //it is SOAP binding
                 //get the SOAP Binding
+
                 SOAPBinding soapBinding = soapBindings.iterator().next();
                 //is style specified at the soap binding level?
                 Style style = soapBinding.getStyle();
                 BindingOperation bOp = factory.createBindingOperation();
                 bOp.setName(operation.getName());
-                
+
                 SOAPOperation soapOperation = factory.createSOAPOperation();
                 soapOperation.setSoapAction("");
-                if(style == null){
+                if (style == null) {
                     soapOperation.setStyle(Style.DOCUMENT);
                 }
                 bOp.addExtensibilityElement(soapOperation);
                 //create input binding to SOAP
-                if(inputMessage != null){
+                if (inputMessage != null) {
                     //For now, assume all parms are to be put in the body
                     //TODO: based on the WebParm annotation, we need to determine
                     //if a certain part is for a header
@@ -550,26 +644,26 @@ public class OperationGeneratorHelper {
                     //TODO: for multiple messages, need to specify parts
                     //Always has to be literal
                     soapBody.setUse(SOAPMessageBase.Use.LITERAL);
-                    if(!isDocOriented){
+                    if (!isDocOriented) {
                         soapBody.setNamespace(wsdlModel.getDefinitions().getTargetNamespace());
                     }
                     bindingInput.addExtensibilityElement(soapBody);
                     bOp.setBindingInput(bindingInput);
                 }
                 //create output binding to SOAP
-                if(outputMessage != null){
+                if (outputMessage != null) {
                     //TODO: same comments as in InputMessage
                     BindingOutput bindingOutput = factory.createBindingOutput();
                     SOAPBody soapBody = factory.createSOAPBody();
                     soapBody.setUse(SOAPMessageBase.Use.LITERAL);
-                    if(!isDocOriented){
+                    if (!isDocOriented) {
                         soapBody.setNamespace(wsdlModel.getDefinitions().getTargetNamespace());
                     }
                     bindingOutput.addExtensibilityElement(soapBody);
                     bOp.setBindingOutput(bindingOutput);
                 }
                 //create fault binding to SOAP
-                for (Message faultMessage:faultMessages) {
+                for (Message faultMessage : faultMessages) {
                     BindingFault bindingFault = factory.createBindingFault();
                     bindingFault.setName(faultMessage.getName());
                     SOAPFault soapFault = factory.createSOAPFault();
@@ -582,85 +676,72 @@ public class OperationGeneratorHelper {
             }
         }
     }
-    
-    //converts the wsdlOperation name to Java name according to JAXWS rules
-    private String convertOperationName(final String wsdlOperation){
-        String name = wsdlOperation;
-        String firstChar = name.substring(0,1);
-        firstChar = firstChar.toLowerCase();
-        name= firstChar.concat(name.substring(1));
-        return name;
-    }
-    
+
     /** call wsimport to generate java artifacts
      * generate WsdlModel to find information about the new operation
      * add new menthod to implementation class
      */
     public void generateJavaArtifacts(String serviceName,
-            final FileObject implementationClass, final String operationName, final boolean remove) throws IOException{
+            final FileObject implementationClass, final String operationName, final boolean remove) throws IOException {
         Project project = FileOwnerQuery.getOwner(implementationClass);
-       org.netbeans.modules.websvc.design.javamodel.Utils.invokeWsImport(project,serviceName);
-        
+        org.netbeans.modules.websvc.design.javamodel.Utils.invokeWsImport(project, serviceName);
+
         try {
             WsdlModeler modeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlFile.toURI().toURL());
             modeler.generateWsdlModel(new WsdlModelListener() {
+
                 public void modelCreated(WsdlModel wsdlModel) {
-                    MethodGenerator generator = new MethodGenerator(wsdlModel,implementationClass);
-                    if(!remove){
+                    MethodGenerator generator = new MethodGenerator(wsdlModel, implementationClass);
+                    if (!remove) {
                         generator.generateMethod(operationName);
-                    }else{
-                        try                     {
-                            org.netbeans.modules.websvc.core.MethodGenerator.
-                                    deleteMethod(implementationClass,operationName);
+                    } else {
+                        try {
+                            org.netbeans.modules.websvc.core.MethodGenerator.deleteMethod(implementationClass, operationName);
                         } catch (IOException ex) {
                             ErrorManager.getDefault().notify(ex);
                         }
                     }
                 }
-            },true);
+            }, true);
         } catch (MalformedURLException ex) {
             ErrorManager.getDefault().notify(ex);
         }
     }
-    
-    
-    
-    public static String getServiceEndpointInterfaceFromAnnotation(FileObject implBean){
-        return  org.netbeans.modules.websvc.design.javamodel.Utils
-                .getAttributeValue(implBean, "javax.jws.WebService", "endpointInterface");
+
+    public static String getServiceEndpointInterfaceFromAnnotation(FileObject implBean) {
+        return org.netbeans.modules.websvc.design.javamodel.Utils.getAttributeValue(implBean, "javax.jws.WebService", "endpointInterface");
     }
-    
-    public static String getPortTypeNameFromInterface(FileObject interfaceClass){
+
+    public static String getPortTypeNameFromInterface(FileObject interfaceClass) {
         //if interface, use the @WebService.name attribute. If no such attribute
         //use the simple name of the interface
-        String portTypeName = 
+        String portTypeName =
                 org.netbeans.modules.websvc.design.javamodel.Utils.getAttributeValue(interfaceClass, "javax.jws.WebService", "name");
-        if(portTypeName.equals("")){
+        if (portTypeName.equals("")) {
             portTypeName = interfaceClass.getName();
         }
         return portTypeName;
     }
-    
-    public static String getPortTypeNameFromImpl(FileObject implClass){
-        
+
+    public static String getPortTypeNameFromImpl(FileObject implClass) {
+
         String seiName = getServiceEndpointInterfaceFromAnnotation(implClass);
-        if(!seiName.equals("")){
+        if (!seiName.equals("")) {
             ClassPath classPath = ClassPath.getClassPath(implClass, ClassPath.SOURCE);
             FileObject seiFile = classPath.findResource(seiName.replace('.', '/') + ".java");
-            if(seiFile != null){
+            if (seiFile != null) {
                 return getPortTypeNameFromInterface(seiFile);
             }
-        }else{
-            String portTypeName = 
+        } else {
+            String portTypeName =
                     org.netbeans.modules.websvc.design.javamodel.Utils.getAttributeValue(implClass, "javax.jws.WebService", "name");
-            if(!portTypeName.equals("")){
+            if (!portTypeName.equals("")) {
                 return portTypeName;
             }
         }
         return implClass.getName();
     }
-    
-    
+
     //TODO: This is a temporary utility. This will go away when the copying of the
     //modified wsdl from the src/conf directory to the WEB-INF/wsdl directory is
     //done in the build script.
@@ -668,7 +749,7 @@ public class OperationGeneratorHelper {
         JAXWSSupport jaxwssupport = JAXWSSupport.getJAXWSSupport(fo);
         FileObject globalWsdlFolder = jaxwssupport.getWsdlFolder(true);
         FileObject oldWsdlFolder = globalWsdlFolder.getFileObject(name);
-        if (oldWsdlFolder!=null) {
+        if (oldWsdlFolder != null) {
             FileLock lock = oldWsdlFolder.lock();
             try {
                 oldWsdlFolder.delete(lock);
@@ -678,39 +759,63 @@ public class OperationGeneratorHelper {
         }
         return globalWsdlFolder.createFolder(name);
     }
-    
+
     //TODO: This is a temporary utility. This will go away when the copying of the
     //modified wsdl from the src/conf directory to the WEB-INF/wsdl directory is
     //done in the build script.
-    public static FileObject getLocalWsdlFolderForService(FileObject fo, String serviceName){
+    public static FileObject getLocalWsdlFolderForService(FileObject fo, String serviceName) {
         JAXWSSupport jaxwssupport = JAXWSSupport.getJAXWSSupport(fo);
         return jaxwssupport.getLocalWsdlFolderForService(serviceName, false);
     }
     
-    private String getUniqueGlobalElementName(Schema schema, String baseName){
+    private String getUniqueGlobalComplexTypeName(Schema schema, String baseName){
         String bName = baseName;
         int suffix = 0;
-        Collection<GlobalElement> elements = schema.getElements();
-        for(GlobalElement element : elements){
-            if(element.getName().equals(bName)){
+        Collection<GlobalComplexType> complexTypes = schema.getComplexTypes();
+        for(GlobalComplexType complexType : complexTypes){
+            if(complexType.getName().equals(bName)){
                 bName = baseName + "_" + ++suffix;
             }
         }
         return bName;
     }
-    
-    private String getUniquePartName(Message message, String baseName){
+
+    private String getUniqueGlobalElementName(Schema schema, String baseName) {
         String bName = baseName;
         int suffix = 0;
-        Collection<Part> parts = message.getParts();
-        for(Part part : parts){
-            if(part.getName().equals(bName)){
+        Collection<GlobalElement> elements = schema.getElements();
+        for (GlobalElement element : elements) {
+            if (element.getName().equals(bName)) {
+                bName = baseName + "_" + ++suffix;
+            }
+        }
+        return bName;
+    }
+
+    private String getUniqueMessageName(Definitions definitions, String baseName) {
+        String bName = baseName;
+        int suffix = 0;
+        Collection<Message> messages = definitions.getMessages();
+        for (Message message : messages) {
+            if (message.getName().equals(bName)) {
                 bName = baseName + ++suffix;
             }
         }
         return bName;
     }
-    
+
+    private String getUniquePartName(Message message, String baseName) {
+        String bName = baseName;
+        int suffix = 0;
+        Collection<Part> parts = message.getParts();
+        for (Part part : parts) {
+            if (part.getName().equals(bName)) {
+                bName = baseName + ++suffix;
+            }
+        }
+        return bName;
+    }
+
     private SchemaModel createSchemaModel(WSDLComponentFactory factory, Definitions definitions, Types types) {
         WSDLSchema wsdlSchema = factory.createWSDLSchema();
         types.addExtensibilityElement(wsdlSchema);
@@ -718,18 +823,20 @@ public class OperationGeneratorHelper {
         schemaModel.getSchema().setTargetNamespace(definitions.getTargetNamespace());
         return schemaModel;
     }
-    
-    public static void changeWSDLOperationName(final ServiceModel serviceModel, final Service service, MethodModel methodModel, String newOperationName){
+
+    public static void changeWSDLOperationName(final ServiceModel serviceModel, final Service service, MethodModel methodModel, String newOperationName) {
         String oldOperationName = methodModel.getOperationName();
-        if(oldOperationName.equals(newOperationName)) return;
-        
+        if (oldOperationName.equals(newOperationName)) {
+            return;
         //before making the change, make sure SEI is generated.
+        }
         FileObject implClass = serviceModel.getImplementationClass();
         ClassPath classPath = ClassPath.getClassPath(implClass, ClassPath.SOURCE);
         final Project project = FileOwnerQuery.getOwner(implClass);
         String seiPath = "build/generated/wsimport/service/" + serviceModel.getEndpointInterface().replace('.', '/') + ".java"; //NOI18N
+
         FileObject seiClass = project.getProjectDirectory().getFileObject(seiPath);
-        if(seiClass == null){
+        if (seiClass == null) {
             org.netbeans.modules.websvc.design.javamodel.Utils.invokeWsImport(project, service.getName());
         }
         File wsdlFile = getWSDLFile(service, methodModel);
@@ -739,32 +846,32 @@ public class OperationGeneratorHelper {
         String portTypeName = getPortTypeNameFromImpl(methodModel.getImplementationClass());
         Definitions definitions = wsdlModel.getDefinitions();
         Collection<PortType> portTypes = definitions.getPortTypes();
-        for(PortType pt : portTypes){
-            if( pt.getName().equals(portTypeName)){
+        for (PortType pt : portTypes) {
+            if (pt.getName().equals(portTypeName)) {
                 portType = pt;
                 break;
             }
         }
-        if(portType != null){
+        if (portType != null) {
             Collection<Operation> operations = portType.getOperations();
-            for(Operation op : operations){
-                if(op.getName().equals(oldOperationName)){
+            for (Operation op : operations) {
+                if (op.getName().equals(oldOperationName)) {
                     operation = op;
-                    try{
+                    try {
                         wsdlModel.startTransaction();
                         operation.setName(newOperationName);
-                    }finally{
+                    } finally {
                         wsdlModel.endTransaction();
                     }
                     break;
                 }
             }
-            
+
             //Need to maintain wrapped style
-            if(operation != null){
-                if(isWrapperQualified(operation, oldOperationName)){
+            if (operation != null) {
+                if (isWrapperQualified(operation, oldOperationName)) {
                     Input input = operation.getInput();
-                    if(input != null){
+                    if (input != null) {
                         NamedComponentReference<Message> messageRef = input.getMessage();
                         Message message = messageRef.get();
                         Part part = message.getParts().iterator().next();
@@ -772,11 +879,11 @@ public class OperationGeneratorHelper {
                         GlobalElement element = elementRef.get();
                         SchemaModel schemaModel = element.getModel();
                         //TODO: global elements in schemas that import other schemas
-                        
+
                         //create a new Global Element
                         GlobalElement gb = getGlobalElement(schemaModel.getSchema(), newOperationName);
-                        if(gb == null){
-                            try{
+                        if (gb == null) {
+                            try {
                                 schemaModel.startTransaction();
                                 gb = schemaModel.getFactory().createGlobalElement();
                                 gb.setName(newOperationName);
@@ -786,11 +893,11 @@ public class OperationGeneratorHelper {
                                 NamedComponentReference<GlobalType> gtRef = gb.createReferenceTo(gt, GlobalType.class);
                                 gb.setType(gtRef);
                                 schemaModel.getSchema().addElement(gb);
-                            }finally{
+                            } finally {
                                 schemaModel.endTransaction();
                             }
                         }
-                        try{
+                        try {
                             wsdlModel.startTransaction();
                             message.removePart(part);
                             Part newPart = wsdlModel.getFactory().createPart();
@@ -798,136 +905,141 @@ public class OperationGeneratorHelper {
                             NamedComponentReference<GlobalElement> gbRef = newPart.createSchemaReference(gb, GlobalElement.class);
                             newPart.setElement(gbRef);
                             message.addPart(newPart);
-                        }finally{
+                        } finally {
                             wsdlModel.endTransaction();
                         }
                     }
                 }
             }
-            
+
             //add Customization to maintain generated Java method name
             String javaName = org.netbeans.modules.websvc.design.javamodel.Utils.getCurrentJavaName(methodModel);
             addMethodCustomization(wsdlModel, operation, javaName);
-            
+
             //Change the names in the binding section too
             Collection<Binding> bindings = definitions.getBindings();
-            if(bindings.size() == 0) return;
+            if (bindings.size() == 0) {
+                return;
+            }
             Binding binding = null;
-            for(Binding b: bindings){
+            for (Binding b : bindings) {
                 NamedComponentReference<PortType> portTypeRef = b.getType();
                 PortType pt = portTypeRef.get();
-                if(portType.getName().equals(pt.getName())){
+                if (portType.getName().equals(pt.getName())) {
                     binding = b;
                     break;
                 }
             }
-            if(binding != null){
-                Collection<BindingOperation>bindingOps = binding.getBindingOperations();
-                for(BindingOperation bindingOp : bindingOps){
-                    if(bindingOp.getName().equals(oldOperationName)){
-                        try{
+            if (binding != null) {
+                Collection<BindingOperation> bindingOps = binding.getBindingOperations();
+                for (BindingOperation bindingOp : bindingOps) {
+                    if (bindingOp.getName().equals(oldOperationName)) {
+                        try {
                             wsdlModel.startTransaction();
                             bindingOp.setName(newOperationName);
-                        }finally{
+                        } finally {
                             wsdlModel.endTransaction();
                         }
                         break;
                     }
                 }
             }
-            
+
         }
     }
-    
-    private static GlobalElement getGlobalElement(Schema schema, String elementName){
+
+    private static GlobalElement getGlobalElement(Schema schema, String elementName) {
         Collection<GlobalElement> elements = schema.getElements();
-        for(GlobalElement element : elements ){
-            if(element.getName().equals(elementName)){
+        for (GlobalElement element : elements) {
+            if (element.getName().equals(elementName)) {
                 return element;
             }
         }
         return null;
     }
-    
-    private static boolean isWrapperQualified(Operation operation, String oldName){
+
+    private static boolean isWrapperQualified(Operation operation, String oldName) {
         Input input = operation.getInput();
         Output output = operation.getOutput();
-        if(input == null && output == null) return true;
-        if(input != null){
+        if (input == null && output == null) {
+            return true;
+        }
+        if (input != null) {
             Message inputMessage = operation.getInput().getMessage().get();
-            if(inputMessage != null){
-                if(! isWrapperQualified(inputMessage, oldName, true)){
+            if (inputMessage != null) {
+                if (!isWrapperQualified(inputMessage, oldName, true)) {
                     return false;
                 }
             }
         }
-        if(output != null){
+        if (output != null) {
             Message outputMessage = operation.getOutput().getMessage().get();
-            if(outputMessage != null){
-                if(! isWrapperQualified(outputMessage, oldName, false)){
+            if (outputMessage != null) {
+                if (!isWrapperQualified(outputMessage, oldName, false)) {
                     return false;
                 }
             }
         }
         return true;
     }
-    
-    private static boolean isWrapperQualified(Message message, String oldName, boolean isInput){
-        if(message.getParts().size() != 1){
+
+    private static boolean isWrapperQualified(Message message, String oldName, boolean isInput) {
+        if (message.getParts().size() != 1) {
             return false;
         }
         NamedComponentReference<GlobalElement> geRef = message.getParts().iterator().next().getElement();
         GlobalElement ge = geRef.get();
-        if(isInput){
-            if(!ge.getName().equals(oldName)){
+        if (isInput) {
+            if (!ge.getName().equals(oldName)) {
                 return false;
             }
         }
         NamedComponentReference<? extends GlobalType> typeRef = ge.getType();
         GlobalType gt = typeRef.get();
-        if(!( gt  instanceof ComplexType)){
+        if (!(gt instanceof ComplexType)) {
             return false;
         }
-        ComplexType ct = (ComplexType)gt;
+        ComplexType ct = (ComplexType) gt;
         ComplexTypeDefinition ctdef = ct.getDefinition();
-        if(!(ctdef instanceof SequenceDefinition)){
+        if (!(ctdef instanceof SequenceDefinition)) {
             return false;
         }
         return true;
     }
-    
-    private static File getWSDLFile(Service service, MethodModel methodModel){
+
+    private static File getWSDLFile(Service service, MethodModel methodModel) {
         String localWsdlUrl = service.getLocalWsdlFile();
-        if (localWsdlUrl!=null) { //WS from e
+        if (localWsdlUrl != null) { //WS from e
+
             JAXWSSupport support = JAXWSSupport.getJAXWSSupport(methodModel.getImplementationClass());
-            if (support!=null) {
-                FileObject localWsdlFolder = support.getLocalWsdlFolderForService(service.getName(),false);
-                if (localWsdlFolder!=null) {
+            if (support != null) {
+                FileObject localWsdlFolder = support.getLocalWsdlFolderForService(service.getName(), false);
+                if (localWsdlFolder != null) {
                     File wsdlFolder = FileUtil.toFile(localWsdlFolder);
-                    return  new File(wsdlFolder.getAbsolutePath()+File.separator+localWsdlUrl);
+                    return new File(wsdlFolder.getAbsolutePath() + File.separator + localWsdlUrl);
                 }
             }
         }
         return null;
     }
-    
-    private static void addMethodCustomization(WSDLModel wsdlModel, Operation operation, String javaName){
+
+    private static void addMethodCustomization(WSDLModel wsdlModel, Operation operation, String javaName) {
         //if there is an existing customization, reset it if necessary
         List<PortTypeOperationCustomization> operationBindings = operation.getExtensibilityElements(PortTypeOperationCustomization.class);
-        if(operationBindings.size() > 0){
+        if (operationBindings.size() > 0) {
             PortTypeOperationCustomization operationBinding = operationBindings.get(0);
             JavaMethod javaMethod = operationBinding.getJavaMethod();
-            if(!javaMethod.getName().equals(javaName)){
-                try{
+            if (!javaMethod.getName().equals(javaName)) {
+                try {
                     wsdlModel.startTransaction();
                     javaMethod.setName(javaName);
-                }finally{
+                } finally {
                     wsdlModel.endTransaction();
                 }
             }
             return;
         }
-        try{
+        try {
             wsdlModel.startTransaction();
             CustomizationComponentFactory factory = CustomizationComponentFactory.getDefault();
             PortTypeOperationCustomization ptoCustom = factory.createPortTypeOperationCustomization(wsdlModel);
@@ -935,12 +1047,9 @@ public class OperationGeneratorHelper {
             javaMethod.setName(javaName);
             ptoCustom.setJavaMethod(javaMethod);
             operation.addExtensibilityElement(ptoCustom);
-        }finally{
+        } finally {
             wsdlModel.endTransaction();
         }
     }
-    
-    
-    
 }
 
