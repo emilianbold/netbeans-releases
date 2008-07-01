@@ -176,7 +176,7 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "0.4.4"; // NOI18N
+        return "0.4.5"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -419,10 +419,18 @@ public class PHPIndexer implements Indexer {
         private String getBaseSignatureForFunctionDeclaration(FunctionDeclaration functionDeclaration){
             StringBuilder signature = new StringBuilder();
             signature.append(functionDeclaration.getFunctionName().getName() + ";");
+            int defaultParamCount = 0;
 
             for (Iterator<FormalParameter> it = functionDeclaration.getFormalParameters().iterator(); it.hasNext();) {
 
                 FormalParameter param = it.next();
+                
+                if (param.getDefaultValue() == null){
+                    defaultParamCount = 0;
+                } else {
+                    defaultParamCount ++;
+                }
+                
                 Expression paramNameExpr = param.getParameterName();
                 String paramName = null;
 
@@ -458,6 +466,7 @@ public class PHPIndexer implements Indexer {
             
             signature.append(";");
             signature.append(functionDeclaration.getStartOffset() + ";"); //NOI18N
+            signature.append(defaultParamCount + ";");
             return signature.toString();
         }
     }

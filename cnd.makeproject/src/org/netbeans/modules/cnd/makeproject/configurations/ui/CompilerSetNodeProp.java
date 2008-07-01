@@ -65,6 +65,7 @@ public class CompilerSetNodeProp extends Node.Property {
 	this.txt2 = txt2;
 	this.txt3 = txt3;
         oldname = configuration.getOption();
+        configuration.setCompilerSetNodeProp(this);
     }
     
     public String getOldname() {
@@ -119,13 +120,17 @@ public class CompilerSetNodeProp extends Node.Property {
     public boolean canRead() {
         return true;
     }
+    
+    public void repaint() {
+        ((CompilerSetEditor) getPropertyEditor()).repaint();
+    }
 
     @Override
     public PropertyEditor getPropertyEditor() {
-	return new IntEditor();
+	return new CompilerSetEditor();
     }
 
-    private class IntEditor extends PropertyEditorSupport {
+    private class CompilerSetEditor extends PropertyEditorSupport {
         @Override
         public String getJavaInitializationString() {
             return getAsText();
@@ -150,6 +155,10 @@ public class CompilerSetNodeProp extends Node.Property {
             }
             list.addAll(CompilerSetManager.getDefault().getCompilerSetNames());
             return (String[]) list.toArray(new String[list.size()]);
+        }
+        
+        public void repaint() {
+            firePropertyChange();
         }
     }
 }
