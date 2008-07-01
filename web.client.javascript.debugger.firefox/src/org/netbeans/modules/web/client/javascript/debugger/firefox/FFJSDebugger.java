@@ -339,6 +339,8 @@ public class FFJSDebugger extends JSAbstractDebugger {
             if (message instanceof HttpMessage) {
                 handleHttpMessage((HttpMessage) message);
                 return;
+            } else {
+                Logger.getLogger(this.getName()).info("Somethign Seems Wronge");
             }
         }
 
