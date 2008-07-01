@@ -40,7 +40,7 @@
 
 (function() {
     const ignoreThese = /about:|javascript:|resource:|chrome:|jar:/;
-    const DEBUG = false;
+    const DEBUG = true;
     
     //Should we move this to constants.js?
     const STATE_IS_WINDOW = NetBeans.Constants.WebProgressListenerIF.STATE_IS_WINDOW;
@@ -209,8 +209,8 @@
         var win = null;
         if( webProgress){
             win = safeGetWindow(webProgress)
-        } else if (DEBUG) {
-            NetBeans.Logger.log("net.isRelevantWindow - Your webprogress value is no good.");
+        } else {
+            //NetBeans.Logger.log("net.isRelevantWindow - Your webprogress value is no good.");
             return false;
         }
         
@@ -474,7 +474,7 @@
             NetBeans.Logger.log(netActivity.toXMLString());
         }
 
-    //socket.send(breakpointSetResponse);
+        socket.send(netActivity);
     }
     /*
      * On Observe when topic is "http-on-examine-request"
@@ -498,7 +498,7 @@
         if(DEBUG){
             NetBeans.Logger.log(netActivity.toXMLString());
         }
-    //socket.send(netActivity);
+        socket.send(netActivity);
     }
     
     function sendProgressUpdate(progress, aRequest, current, max, total, maxTotal) {
@@ -518,7 +518,7 @@
         if( DEBUG ){
             NetBeans.Logger.log(netActivity.toXMLString());
         }
-    //socket.send(netActivity);
+        socket.send(netActivity);
     }
     
     
@@ -535,13 +535,11 @@
             var myInterface = null;
             if (aRequest.notificationCallbacks)
             {
-                //NetBeans.Logger.log(i++ + "   a. net.getRequestWebProgress request has notificationCallBacks");
                 var bypass = false;
-                //if (aRequest.notificationCallbacks instanceof XMLHttpRequest)
                 if (getRequestCategory(aRequest) == "xhr")
                 {
-                    //                    NetBeans.Logger.log(i++ + "a. net.getRequestWebProgress    the notificationCallbacks is a XMLHttpRequest");
                     aRequest.notificationCallbacks.channel.visitRequestHeaders(
+
                     {
                         visitHeader: function(header, value)
                         {
@@ -566,8 +564,8 @@
                 myInterface = aRequest.loadGroup.groupObserver.QueryInterface(NetBeans.Constants.WebProgressIF);
                 return myInterface;
             }
-            if( DEBUG )
-                NetBeans.Logger.log("net.getRequestWebProgress does not have loadGropu or groupObserver properties.")
+//            if( DEBUG )
+//                NetBeans.Logger.log("net.getRequestWebProgress does not have loadGropu or groupObserver properties.")
         }
         catch (exc) {
             NetBeans.Logger.log(i++ + "2XXXX. net.getRequestWebProgress - Exception occurred: " + exc);

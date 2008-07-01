@@ -246,7 +246,7 @@ public class DebuggerProxy {
         return null;
     }
     
-    public Message getHttpPoint() {
+    public Message getHttpMessage() {
         try {
             return httpQueue.take();
         } catch (InterruptedException ie) {

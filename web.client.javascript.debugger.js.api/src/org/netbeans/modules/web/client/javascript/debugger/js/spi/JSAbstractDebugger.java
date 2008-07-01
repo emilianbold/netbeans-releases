@@ -147,6 +147,7 @@ public abstract class JSAbstractDebugger implements JSDebugger {
                 this.windows);
     }
 
+
     // Sources
     public JSSource[] getSources() {
         return sources;

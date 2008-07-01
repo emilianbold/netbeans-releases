@@ -39,7 +39,12 @@
 
 package org.netbeans.modules.web.client.javascript.debugger.js.dbgp;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  *
@@ -50,5 +55,36 @@ public class HttpMessage extends Message {
     HttpMessage( Node node ) {
         super(node);
     }
+
+    public String getId() {
+        return getAttribute(getNode(), "id");
+    }
+
+    public String getTimeStamp() {
+        //Joelle: We should change this to a Date
+        return getAttribute(getNode(), "timestamp");
+    }
+
+        // Format of the message is:
+    // <sources>
+    //   <source fileuri="http://..." />
+    //   <source fileuri="http://..." />
+    //   :
+    // </sources>
+    public Map getHeader() {
+        Node header = getChild(getNode(), "header");
+        NodeList nodeList;
+        if( header != null ) {
+            return new HashMap();
+        }
+        nodeList = header.getChildNodes();
+        Map map = new HashMap<String,String>();
+        for( int i = 0; i < nodeList.getLength(); i++){
+            Node _node = nodeList.item(i);
+            map.put( _node.getNodeName(), _node.getNodeValue());
+        }
+        return getHeader();
+    }
+
 
 }

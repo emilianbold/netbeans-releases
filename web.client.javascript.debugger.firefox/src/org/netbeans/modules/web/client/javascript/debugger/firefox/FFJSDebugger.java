@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.client.javascript.debugger.firefox;
 
 import java.io.ByteArrayInputStream;
@@ -77,9 +76,11 @@ import org.openide.util.Exceptions;
  * @author Sandip V. Chitale <sandipchitale@netbeans.org>, jdeva
  */
 public class FFJSDebugger extends JSAbstractDebugger {
+
     private String ID;
     private DebuggerProxy proxy;
     private SuspensionPointHandler suspensionPointHandler;
+    private HttpMessageHandler httpMessageHandler;
 
     public FFJSDebugger(URI uri, HtmlBrowser.Factory browser) {
         super(uri, browser);
@@ -115,7 +116,9 @@ public class FFJSDebugger extends JSAbstractDebugger {
 
         //Start the suspension point handler thread
         suspensionPointHandler = new SuspensionPointHandler(proxy, getID());
+        httpMessageHandler = new HttpMessageHandler(proxy, getID());
         suspensionPointHandler.start();
+        httpMessageHandler.start();
     }
 
     public String getID() {
@@ -131,23 +134,23 @@ public class FFJSDebugger extends JSAbstractDebugger {
 
     public void openURI(URI uri) throws URISyntaxException {
         // Now enable the debugger
-         setBooleanFeature(Feature.Name.ENABLE, true);
+        setBooleanFeature(Feature.Name.ENABLE, true);
 
         // Now ask to open the URI
         proxy.openURI(uri);
         fireJSDebuggerEvent(new JSDebuggerEvent(FFJSDebugger.this, JSDebuggerState.STARTING_READY));
     }
-    
+
     @Override
     protected InputStream getInputStreamForURLImpl(URL url) {
-        if (proxy != null && url != null) {        
+        if (proxy != null && url != null) {
             try {
                 String source = proxy.getSource(url.toURI());
                 if (source != null) {
                     return new ByteArrayInputStream(source.getBytes());
                 }
             } catch (URISyntaxException use) {
-                Log.getLogger().log(Level.INFO, use.getMessage(), use);  
+                Log.getLogger().log(Level.INFO, use.getMessage(), use);
             }
         }
         return null;
@@ -156,10 +159,10 @@ public class FFJSDebugger extends JSAbstractDebugger {
     public void resume() {
         proxy.run();
     }
-    
+
     public void pause() {
         proxy.pause();
-    }    
+    }
 
     public void stepInto() {
         proxy.stepInto();
@@ -177,11 +180,11 @@ public class FFJSDebugger extends JSAbstractDebugger {
         proxy.runToCursor();
     }
 
-    private void fireDebuggerEvent(StatusResponse response){
-        if(DbgpUtils.isStepSuccessfull(response)) {
+    private void fireDebuggerEvent(StatusResponse response) {
+        if (DbgpUtils.isStepSuccessfull(response)) {
             JSBreakpoint breakpoint = DbgpUtils.getBreakpoint(response);
             JSDebuggerState.Reason reason = JSDebuggerState.Reason.STEP;
-            if(breakpoint.getId() != null) {
+            if (breakpoint.getId() != null) {
                 reason = JSDebuggerState.Reason.BREAKPOINT;
             }
             JSDebuggerState state = JSDebuggerState.getDebuggerState(breakpoint, reason);
@@ -216,11 +219,11 @@ public class FFJSDebugger extends JSAbstractDebugger {
     public String setBreakpoint(JSBreakpoint breakpoint) {
         return proxy.setBreakpoint(DbgpUtils.getDbgpBreakpointCommand(proxy, breakpoint));
     }
-    
+
     public boolean removeBreakpoint(String id) {
         return proxy.removeBreakpoint(id);
     }
-    
+
     public boolean updateBreakpoint(String id, Boolean enabled, int line, int hitValue, HIT_COUNT_FILTERING_STYLE hitCondition, String condition) {
         return proxy.updateBreakpoint(id,
                 enabled,
@@ -242,16 +245,16 @@ public class FFJSDebugger extends JSAbstractDebugger {
         return DbgpUtils.getJSBreakpoints(proxy.getBreakpoints());
     }
 
-    public JSCallStackFrame getCallStackFrame(){
+    public JSCallStackFrame getCallStackFrame() {
         return getCallStackFrame(-1);
     }
 
-    public JSCallStackFrame getCallStackFrame(int depth){
+    public JSCallStackFrame getCallStackFrame(int depth) {
         return DbgpUtils.getJSCallStackFrame(this, proxy.getCallStack(depth));
     }
 
     @Override
-    protected JSCallStackFrame[] getCallStackFramesImpl(){
+    protected JSCallStackFrame[] getCallStackFramesImpl() {
         return DbgpUtils.getJSCallStackFrames(this, proxy.getCallStacks()).toArray(JSCallStackFrame.EMPTY_ARRAY);
     }
 
@@ -264,16 +267,16 @@ public class FFJSDebugger extends JSAbstractDebugger {
     protected JSProperty getThisImpl(JSCallStackFrame callStackFrame) {
         return getPropertyImpl(callStackFrame, "this");
     }
-    
+
     @Override
     protected JSProperty evalImpl(JSCallStackFrame callStackFrame, String expression) {
         return DbgpUtils.getJSProperty(callStackFrame, proxy.eval(expression, callStackFrame.getDepth()));
-    }        
-    
+    }
+
     @Override
     protected JSProperty getPropertyImpl(JSCallStackFrame callStackFrame, String fullName) {
         return DbgpUtils.getJSProperty(callStackFrame, proxy.getProperty(fullName, callStackFrame.getDepth()));
-    }    
+    }
 
     @Override
     protected JSProperty[] getPropertiesImpl(JSCallStackFrame callStackFrame, String fullName) {
@@ -287,20 +290,59 @@ public class FFJSDebugger extends JSAbstractDebugger {
     private void handleWindowsMessage(WindowsMessage windowsMessage) {
         setWindows(JSFactory.getJSWindows(windowsMessage.getWindows()));
     }
-    
+
     private void handleStreamMessage(StreamMessage streamMessage) {
         JSDebuggerConsoleEvent consoleEvent = null;
         try {
-            consoleEvent = new JSDebuggerConsoleEvent(this, 
-                    JSDebuggerConsoleEvent.ConsoleType.valueOf(streamMessage.getType().toUpperCase()), 
+            consoleEvent = new JSDebuggerConsoleEvent(this,
+                    JSDebuggerConsoleEvent.ConsoleType.valueOf(streamMessage.getType().toUpperCase()),
                     streamMessage.getStringValue());
         } catch (UnsufficientValueException ex) {
             Log.getLogger().log(Level.INFO, "Unable to get the console message", ex);   //NOI18N
         }
         fireJSDebuggerConsoleEvent(consoleEvent);
-    }    
+    }
+
+    private void handleHttpMessage(HttpMessage httpMessage) {
+        Logger.getLogger(this.getClass().getName()).info("HttpMessage Found");
+    }
+
+    private class HttpMessageHandler extends Thread {
+        DebuggerProxy proxy;
+
+        HttpMessageHandler(DebuggerProxy proxy, String id) {
+            super("Http Mesasge Handler");  //NOI18N
+            this.setDaemon(true);
+            this.proxy = proxy;
+        }
+         @Override
+        public void run() {
+            Log.getLogger().log(Level.FINEST, "Starting " + getName()); //NOI18N
+            while (proxy.isActive()) {
+                Message message = getNextMessage();
+                if (message != null) {
+                    handle(message);
+                }
+            }
+            Log.getLogger().log(Level.FINEST, "Ending " + getName());   //NOI18N
+        }
+
+        private Message getNextMessage() {
+            return  proxy.getHttpMessage();
+        }
+
+        private void handle(Message message) {
+            // Spontaneous messages
+            if (message instanceof HttpMessage) {
+                handleHttpMessage((HttpMessage) message);
+                return;
+            }
+        }
+
+    }
 
     private class SuspensionPointHandler extends Thread {
+
         DebuggerProxy proxy;
 
         SuspensionPointHandler(DebuggerProxy proxy, String id) {
@@ -313,40 +355,33 @@ public class FFJSDebugger extends JSAbstractDebugger {
         public void run() {
             Log.getLogger().log(Level.FINEST, "Starting " + getName()); //NOI18N
             while (proxy.isActive()) {
-               Message message = getNextMessage();
-               if ( message != null ){
-                   handle(message);
-               }
+                Message message = getNextMessage();
+                if (message != null) {
+                    handle(message);
+                }
             }
             Log.getLogger().log(Level.FINEST, "Ending " + getName());   //NOI18N
         }
-        
+
         private Message getNextMessage() {
-             Message message = proxy.getSuspensionPoint();
-                if(message == null ) {
-                    message = proxy.getHttpPoint();
-                }
-             return message;
+            return proxy.getSuspensionPoint();
         }
 
         private void handle(Message message) {
             // Spontaneous messages
             if (message instanceof SourcesMessage) {
-                handleSourcesMessage((SourcesMessage)message);
+                handleSourcesMessage((SourcesMessage) message);
                 return;
             } else if (message instanceof WindowsMessage) {
-                handleWindowsMessage((WindowsMessage)message);
+                handleWindowsMessage((WindowsMessage) message);
                 return;
-            }else if (message instanceof StreamMessage) {
-                handleStreamMessage((StreamMessage)message);
-            } else if ( message instanceof HttpMessage ){
-                Logger.getLogger(this.getClass().getName()).info("HttpMessage Found");
-                return;
-            }
+            } else if (message instanceof StreamMessage) {
+                handleStreamMessage((StreamMessage) message);
+            } 
             // State oriented
             JSDebuggerState messageDebuggerState = DbgpUtils.getDebuggerState(message);
             setDebuggerState(messageDebuggerState);
-            if(messageDebuggerState.getReason().equals(JSDebuggerState.Reason.INIT)) {
+            if (messageDebuggerState.getReason().equals(JSDebuggerState.Reason.INIT)) {
                 // Now request to open the debug URI
                 try {
                     openURI(getURI());
