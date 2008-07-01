@@ -230,7 +230,7 @@ public class GeneratorUtils {
             ElementUtilities elemUtils = wc.getElementUtilities();
             for(ExecutableElement element : elemUtils.findUnimplementedMethods(te))
                 members.add(gu.createAbstractMethodImplementation(te, element));
-            ClassTree nue = make.Class(clazz.getModifiers(), clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), (List<ExpressionTree>)clazz.getImplementsClause(), members);
+            ClassTree nue = gu.insertClassMembers(clazz, members);
             wc.rewrite(clazz, nue);
         }
     }

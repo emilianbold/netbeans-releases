@@ -176,7 +176,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     
     private Type newArrayType;
     private Expression2 expression;
-    
+
     public EvaluatorVisitor(Expression2 expression) {
         this.expression = expression;
     }
@@ -2631,6 +2631,34 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         if (type instanceof DoubleType) return invokeUnboxingMethod(val, "doubleValue", thread);
         throw new RuntimeException("Invalid type while unboxing: " + type.signature());    // never happens
     }
+
+    private static ReferenceType adjustBoxingType(ReferenceType type, PrimitiveType primitiveType) {
+        if (primitiveType instanceof BooleanType) {
+            type = type.virtualMachine().classesByName(Boolean.class.getName()).get(0);
+        } else
+        if (primitiveType instanceof ByteType) {
+            type = type.virtualMachine().classesByName(Byte.class.getName()).get(0);
+        } else
+        if (primitiveType instanceof CharType) {
+            type = type.virtualMachine().classesByName(Character.class.getName()).get(0);
+        } else
+        if (primitiveType instanceof ShortType) {
+            type = type.virtualMachine().classesByName(Short.class.getName()).get(0);
+        } else
+        if (primitiveType instanceof IntegerType) {
+            type = type.virtualMachine().classesByName(Integer.class.getName()).get(0);
+        } else
+        if (primitiveType instanceof LongType) {
+            type = type.virtualMachine().classesByName(Long.class.getName()).get(0);
+        } else
+        if (primitiveType instanceof FloatType) {
+            type = type.virtualMachine().classesByName(Float.class.getName()).get(0);
+        } else
+        if (primitiveType instanceof DoubleType) {
+            type = type.virtualMachine().classesByName(Double.class.getName()).get(0);
+        }
+        return type;
+    }
     
     public static ObjectReference box(PrimitiveValue v, ReferenceType type,
                                        ThreadReference thread) throws InvalidTypeException,
@@ -2639,6 +2667,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                                                                       InvocationException {
         try {
             Method constructor = null;
+            type = adjustBoxingType(type, (PrimitiveType) v.type());
             List<Method> methods = type.methodsByName("<init>");
             String signature = "("+v.type().signature()+")";
             for (Method method : methods) {
