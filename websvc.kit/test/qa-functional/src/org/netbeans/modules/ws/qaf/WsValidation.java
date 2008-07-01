@@ -417,8 +417,8 @@ public class WsValidation extends WebServicesTestBase {
     }
 
     protected void addWsOperation(EditorOperator eo, String opName, String opRetVal) {
-        //Add Operation...
-        String actionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.webservices.action.Bundle", "LBL_OperationAction");
+        //Add Operation
+        String actionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.webservices.action.Bundle", "TITLE_OperationAction");
         addMethod(eo, actionName, opName, opRetVal);
     }
 
