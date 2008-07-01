@@ -689,7 +689,7 @@ made subject to such option by the copyright holder.
             <file name="MultiFlow.context_palette_item" url="resources/context/MultiFlow.context_palette_item">
                 <attr name="factory" newvalue="org.netbeans.modules.uml.diagrams.edges.factories.ActivityEdgeFactory"/>
             </file>
-            <file name="StateTransition.context_palette_item" url="resources/context/StateTransition.context_palette_item">
+            <file name="Transition.context_palette_item" url="resources/context/Transition.context_palette_item">
                 <attr name="factory" newvalue="org.netbeans.modules.uml.diagrams.edges.factories.StateTransitionFactory"/>
             </file>
             <file name="Include.context_palette_item" url="resources/context/Include.context_palette_item">
@@ -1477,7 +1477,7 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="State">
                 <file name="StateTransition.shadow">
-                    <attr name="originalFile" stringvalue="modeling/relationships/StateTransition.context_palette_item"/>
+                    <attr name="originalFile" stringvalue="modeling/relationships/Transition.context_palette_item"/>
                     <attr name="default-node" stringvalue="State"/>
                     <attr name="position" intvalue="100"/>
                 </file>
@@ -1522,7 +1522,7 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="ForkState">
                 <file name="StateTransition.shadow">
-                    <attr name="originalFile" stringvalue="modeling/relationships/StateTransition.context_palette_item"/>
+                    <attr name="originalFile" stringvalue="modeling/relationships/Transition.context_palette_item"/>
                     <attr name="default-node" stringvalue="State"/>
                     <attr name="position" intvalue="100"/>
                 </file>
