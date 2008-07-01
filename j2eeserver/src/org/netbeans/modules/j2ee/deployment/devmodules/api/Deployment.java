@@ -63,6 +63,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.impl.CompileOnSaveManager;
 import org.netbeans.modules.j2ee.deployment.impl.ProgressObjectUtil;
 import org.netbeans.modules.j2ee.deployment.impl.Server;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
@@ -546,21 +547,6 @@ public final class Deployment {
                     if (url != null) {
                         urls.add(url);
                     }
-//                    try {
-//                        URL[] binaries = BinaryForSourceQuery.findBinaryRoots(file.getURL()).getRoots();
-//                        for (URL binary : binaries) {
-//                            FileObject object = URLMapper.findFileObject(binary);
-//                            if (object != null) {
-//                                URL url = URLMapper.findURL(file, URLMapper.EXTERNAL);
-//                                if (url != null) {
-//                                    urls.add(url);
-//                                }
-//                            }
-//                            urls.add(binary);
-//                        }
-//                    } catch (IOException ex) {
-//                        Exceptions.printStackTrace(ex);
-//                    }
                 }
             }
 
@@ -614,29 +600,30 @@ public final class Deployment {
         }
 
         public void artifactsUpdated(Iterable<File> artifacts) {
-            if (LOGGER.isLoggable(Level.FINEST)) {
-                StringBuilder builder = new StringBuilder("Artifacts updated: [");
-                for (File file : artifacts) {
-                    builder.append(file.getAbsolutePath()).append(",");
-                }
-                builder.setLength(builder.length() - 1);
-                builder.append("]");
-                LOGGER.log(Level.FINEST, builder.toString());
-            }
-
-            DeploymentTargetImpl deploymentTarget = new DeploymentTargetImpl(provider, null);
-            TargetServer server = new TargetServer(deploymentTarget);
-            boolean keep = server.notifyArtifactsUpdated(artifacts);
-//            if (!keep) {
-//                for (URL url : registered) {
-//                    BuildArtifactMapper.removeArtifactsUpdatedListener(url, this);
+            CompileOnSaveManager.getDefault().submitChangedArtifacts(provider, artifacts);
+//            if (LOGGER.isLoggable(Level.FINEST)) {
+//                StringBuilder builder = new StringBuilder("Artifacts updated: [");
+//                for (File file : artifacts) {
+//                    builder.append(file.getAbsolutePath()).append(",");
 //                }
-//
-//                J2eeModuleProvider.DeployOnSaveSupport support = provider.getDeployOnSaveSupport();
-//                if (support != null) {
-//                    support.removeArtifactListener(this);
-//                }
+//                builder.setLength(builder.length() - 1);
+//                builder.append("]");
+//                LOGGER.log(Level.FINEST, builder.toString());
 //            }
+//
+//            DeploymentTargetImpl deploymentTarget = new DeploymentTargetImpl(provider, null);
+//            TargetServer server = new TargetServer(deploymentTarget);
+//            boolean keep = server.notifyArtifactsUpdated(artifacts);
+////            if (!keep) {
+////                for (URL url : registered) {
+////                    BuildArtifactMapper.removeArtifactsUpdatedListener(url, this);
+////                }
+////
+////                J2eeModuleProvider.DeployOnSaveSupport support = provider.getDeployOnSaveSupport();
+////                if (support != null) {
+////                    support.removeArtifactListener(this);
+////                }
+////            }
         }
     }
 }
