@@ -251,10 +251,10 @@
             throw NetBeans.Constants.NS_NOINTERFACE;
         },
         //void onProgressChange ( nsIWebProgress webProgress , nsIRequest request , PRInt32 curSelfProgress , PRInt32 maxSelfProgress , PRInt32 curTotalProgress , PRInt32 maxTotalProgress )
-        onProgressChange : function(progress, request, current, max, total, maxTotal)
+        onProgressChange : function(progress, request, current, max, total, maxTotal )
         {
             if ( requests.indexOf(request) != -1){
-                sendProgressUpdate(progress, request, current, max, total, maxTotal);
+                sendProgressUpdate(progress, request, current, max, total, maxTotal, notTime());
             }
         },
         //void onLocationChange ( nsIWebProgress webProgress , nsIRequest request , nsIURI location )
@@ -501,7 +501,7 @@
         socket.send(netActivity);
     }
     
-    function sendProgressUpdate(progress, aRequest, current, max, total, maxTotal) {
+    function sendProgressUpdate(progress, aRequest, current, max, total, maxTotal, time) {
 
         var request = aRequest.QueryInterface(NetBeans.Constants.HttpChannelIF);
         var index = requests.indexOf(request);
@@ -509,6 +509,7 @@
 
 
         var netActivity = <http />;
+        netActivity.timestamp = time;
         netActivity.type ="progress";
         netActivity.id = uuid;
         netActivity.current = current;

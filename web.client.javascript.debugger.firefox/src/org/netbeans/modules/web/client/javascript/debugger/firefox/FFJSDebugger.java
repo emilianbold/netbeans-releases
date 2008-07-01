@@ -64,6 +64,7 @@ import org.netbeans.modules.web.client.javascript.debugger.js.api.JSCallStackFra
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSDebuggerConsoleEvent;
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSDebuggerEvent;
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSDebuggerState;
+import org.netbeans.modules.web.client.javascript.debugger.js.api.JSHttpMessage;
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSProperty;
 import org.netbeans.modules.web.client.javascript.debugger.js.dbgp.HttpMessage;
 import org.netbeans.modules.web.client.javascript.debugger.js.impl.JSFactory;
@@ -304,7 +305,8 @@ public class FFJSDebugger extends JSAbstractDebugger {
     }
 
     private void handleHttpMessage(HttpMessage httpMessage) {
-        Logger.getLogger(this.getClass().getName()).info("HttpMessage Found");
+        JSHttpMessage jsHttpMessage = JSFactory.createJSHttpMessage(httpMessage);
+        setHttpMessage(jsHttpMessage);
     }
 
     private class HttpMessageHandler extends Thread {
@@ -315,7 +317,8 @@ public class FFJSDebugger extends JSAbstractDebugger {
             this.setDaemon(true);
             this.proxy = proxy;
         }
-         @Override
+
+        @Override
         public void run() {
             Log.getLogger().log(Level.FINEST, "Starting " + getName()); //NOI18N
             while (proxy.isActive()) {

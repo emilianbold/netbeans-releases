@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,85 +31,73 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.web.client.javascript.debugger.js.dbgp;
+package org.netbeans.modules.web.client.javascript.debugger.js.impl;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.netbeans.modules.web.client.javascript.debugger.js.api.JSHttpMessage;
+import org.netbeans.modules.web.client.javascript.debugger.js.dbgp.HttpMessage;
 
 /**
  *
- * @author joelle
+ * @author jdeva
  */
-public class HttpMessage extends Message {
-    
-    HttpMessage( Node node ) {
-        super(node);
+public class JSHttpRequest implements JSHttpMessage {
+
+    private final String id;
+    private final MethodType method;
+    private final String timeStamp;
+    private final Map<String, String> urlParams;
+    private final Map<String, String> headerData;
+    private final String mimeType;
+
+    public JSHttpRequest(HttpMessage message) {
+        id = message.getId();
+        method = JSFactory.getHttpMessageMethodType(message.getMethodType());
+        timeStamp = message.getTimeStamp();
+        urlParams = Collections.<String,String>unmodifiableMap(message.getUrlParams());
+        headerData = Collections.<String,String>unmodifiableMap(message.getHeader());
+        mimeType = message.getChildValue("mimeType");
+    }
+
+    public final static Type getType() {
+        return Type.REQUEST;
     }
 
     public String getId() {
-        return getChild(getNode(), "id").getChildNodes().item(0).getNodeValue();
+        return id;
+    }
+
+    public Map<String,String> getHeader() {
+        //Joelle: You should return an Unmodifiable HashMap or a copy of it.
+        return headerData;
     }
 
     public String getTimeStamp() {
-        //Joelle: We should change this to a Date
-        Node node = getChild(getNode(), "timestamp");
-        return node.getChildNodes().item(0).getNodeValue();
+        return timeStamp;
     }
 
-    public String getType(){
-        return getChild(getNode(),"type").getFirstChild().getNodeValue();
+    public MethodType getMethod() {
+        return method;
     }
 
-    public String getMethodType() {
-        return getChild(getNode(), "method").getFirstChild().getNodeValue();
+    /**
+     * @return the mimeType
+     */
+    public String getMimeType() {
+        return mimeType;
     }
 
+    /**
+     * @return the urlParams
+     */
     public Map<String,String> getUrlParams() {
-        /* Joelle: Come back and do this part */
-        Map<String,String> map = Collections.emptyMap();
-        return map;
+        return urlParams;
     }
-
-    public String getChildValue( String attributeName ){
-        return getChild( getNode(), attributeName).getFirstChild().getNodeValue();
-    }
-        // Format of the message is:
-    // <sources>
-    //   <source fileuri="http://..." />
-    //   <source fileuri="http://..." />
-    //   :
-    // </sources>
-    public Map<String,String> getHeader() {
-        Node header = getChild(getNode(), "header");
-        if( header == null ) {
-            return Collections.<String,String>emptyMap();
-        }
-
-        NodeList nodeList = header.getChildNodes();
-        Map<String, String> map = new HashMap<String,String>();
-
-//        while(nextNode != null ){
-//            map.put(nextNode.getNodeName(),nextNode.getFirstChild().getNodeValue());
-//            nextNode = nextNode.getNextSibling();
-//        }
-        for( int i = 0; i < nodeList.getLength(); i++){
-            Node node = nodeList.item(i);
-            Node firstChildNode = node.getFirstChild();
-            if( firstChildNode != null ){
-                map.put(node.getNodeName(), firstChildNode.getNodeValue());
-            }
-        }
-        return map;
-    }
-
 
 }
