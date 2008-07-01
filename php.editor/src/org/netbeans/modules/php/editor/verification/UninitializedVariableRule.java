@@ -54,6 +54,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.openide.util.NbBundle;
 
@@ -99,8 +100,12 @@ public class UninitializedVariableRule  extends PHPRule {
                 return;
             }
         } else if (parent instanceof ArrayAccess) {
-            if (context.path.size() > 1 && context.path.get(1) instanceof FieldAccess){
-                return;
+            if (context.path.size() > 1) {
+                ASTNode grandpa = context.path.get(1);
+                
+                if (grandpa instanceof FieldAccess || grandpa instanceof StaticFieldAccess) {
+                    return;
+                }
             }
         }
         
