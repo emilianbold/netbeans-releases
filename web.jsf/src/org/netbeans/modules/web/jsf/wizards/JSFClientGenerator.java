@@ -234,8 +234,7 @@ public class JSFClientGenerator {
             addImplementsClause(arrEntityClassFO[0], entityClass, "java.io.Serializable"); //NOI18N
         }
             
-        JEditorPane ep = new JEditorPane("text/x-jsp", "");
-        final BaseDocument doc = new BaseDocument(ep.getEditorKit().getClass(), false);
+        final BaseDocument doc = new BaseDocument(false, "text/x-jsp");
         WebModule wm = WebModule.getWebModule(jsfRoot);
         
         //automatically add JSF framework if it is not added
@@ -382,7 +381,7 @@ public class JSFClientGenerator {
                 + "&nbsp;\n"
                 + "<h:commandLink action=\"#'{'{0}.next'}'\" value=\"Remaining #'{'{0}.itemCount - {0}.lastItem'}'\"\n"
                 + "rendered=\"#'{'{0}.lastItem < {0}.itemCount && {0}.lastItem + {0}.batchSize > {0}.itemCount'}'\"/>\n", managedBean));
-        listSb.append("<h:dataTable value=\"#'{'" + managedBean + "." + fieldName + "s'}'\" var=\"" + tableVarName + "\" border=\"0\" cellpadding=\"2\" cellspacing=\"0\" rowClasses=\"jsfcrud_odd_row,jsfcrud_even_row\" rules=\"all\" style=\"border:solid 1px\">\n");
+        listSb.append("<h:dataTable value=\"#{" + managedBean + "." + fieldName + "s}\" var=\"" + tableVarName + "\" border=\"0\" cellpadding=\"2\" cellspacing=\"0\" rowClasses=\"jsfcrud_odd_row,jsfcrud_even_row\" rules=\"all\" style=\"border:solid 1px\">\n");
         final  String commands = "<h:column>\n <f:facet name=\"header\">\n <h:outputText escape=\"false\" value=\"&nbsp;\"/>\n </f:facet>\n"
                 + "<h:commandLink value=\"Show\" action=\"#'{'" + managedBean + ".detailSetup'}'\">\n" 
                 + "<f:param name=\"jsfcrud.current" + simpleEntityName +"\" value=\"#'{'" + managedBean + ".asString[{0}]'}'\"/>\n"               
@@ -724,7 +723,7 @@ public class JSFClientGenerator {
         final String[] idClassSimpleName = new String[1];
         final String[] idPropertyType = new String[1];
         final ArrayList<MethodModel> paramSetters = new ArrayList<MethodModel>();
-        final boolean[] fieldAccess = new boolean[] { false };
+        //final boolean[] fieldAccess = new boolean[] { false };
         final String[] idGetterName = new String[1];
         JavaSource controllerJavaSource = JavaSource.forFileObject(controllerFileObject);
         controllerJavaSource.runUserActionTask(new Task<CompilationController>() {
@@ -739,7 +738,6 @@ public class JSFClientGenerator {
                     embeddable[0] = idClass != null && JsfForm.isEmbeddableClass(idClass);
                     idClassSimpleName[0] = idClass.getSimpleName().toString();
                     idPropertyType[0] = idClass.getQualifiedName().toString();
-                    fieldAccess[0] = JsfForm.isFieldAccess(idClass);
                     for (ExecutableElement method : ElementFilter.methodsIn(idClass.getEnclosedElements())) {
                         if (method.getSimpleName().toString().startsWith("set")) {
                             paramSetters.add(MethodModelSupport.createMethodModel(compilationController, method));

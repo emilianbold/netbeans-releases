@@ -278,17 +278,22 @@ public final class JsfForm implements ActiveEditorDrop {
             if (isAnnotatedWith(typeElement, "javax.persistence.Entity") || isAnnotatedWith(typeElement, "javax.persistence.MappedSuperclass")) { // NOI18N
                 result.addAll(ElementFilter.methodsIn(typeElement.getEnclosedElements()));
             }
-            TypeMirror superclassMirror = typeElement.getSuperclass();
-            typeElement = null;
-            if (superclassMirror.getKind() == TypeKind.DECLARED) {
-                DeclaredType superclassDeclaredType = (DeclaredType)superclassMirror;
-                Element superclassElement = superclassDeclaredType.asElement();
-                if (superclassElement.getKind() == ElementKind.CLASS && (superclassElement instanceof TypeElement) ) {
-                    typeElement = (TypeElement)superclassElement;
-                }
-            }
+            typeElement = getSuperclassTypeElement(typeElement);
         }
         return result.toArray(new ExecutableElement[result.size()]);
+    }
+    
+    private static TypeElement getSuperclassTypeElement(TypeElement typeElement) {
+        TypeElement superclass = null;
+        TypeMirror superclassMirror = typeElement.getSuperclass();
+        if (superclassMirror.getKind() == TypeKind.DECLARED) {
+            DeclaredType superclassDeclaredType = (DeclaredType)superclassMirror;
+            Element superclassElement = superclassDeclaredType.asElement();
+            if (superclassElement.getKind() == ElementKind.CLASS && (superclassElement instanceof TypeElement) ) {
+                superclass = (TypeElement)superclassElement;
+            }
+        }
+        return superclass;
     }
     
     static boolean isId(CompilationController controller, ExecutableElement method, boolean isFieldAccess) {
@@ -372,22 +377,25 @@ public final class JsfForm implements ActiveEditorDrop {
         boolean fieldAccess = false;
         boolean accessTypeDetected = false;
         TypeElement typeElement = clazz;
-//        while (typeElement != null) {
-        if (typeElement != null) {
-            for (Element element : typeElement.getEnclosedElements()) {
-                if (isAnnotatedWith(element, "javax.persistence.Id") || isAnnotatedWith(element, "javax.persistence.EmbeddedId")) {
-                    if (ElementKind.FIELD == element.getKind()) {
-                        fieldAccess = true;
+        Name qualifiedName = typeElement.getQualifiedName();
+        whileloop:
+        while (typeElement != null) {
+            if (isAnnotatedWith(typeElement, "javax.persistence.Entity") || isAnnotatedWith(typeElement, "javax.persistence.MappedSuperclass")) { // NOI18N
+                for (Element element : typeElement.getEnclosedElements()) {
+                    if (isAnnotatedWith(element, "javax.persistence.Id") || isAnnotatedWith(element, "javax.persistence.EmbeddedId")) {
+                        if (ElementKind.FIELD == element.getKind()) {
+                            fieldAccess = true;
+                        }
+                        accessTypeDetected = true;
+                        break whileloop;
                     }
-                    accessTypeDetected = true;
                 }
             }
-            if (!accessTypeDetected) {
-                Logger.getLogger("global").log(Level.WARNING, "Failed to detect correct access type for class:" + typeElement.getQualifiedName()); // NOI18N
-            }
+            typeElement = getSuperclassTypeElement(typeElement);
         }
-//            typeElement = (TypeElement) typeElement.getEnclosingElement();
-//        }
+        if (!accessTypeDetected) {
+            Logger.getLogger("global").log(Level.WARNING, "Failed to detect correct access type for class: " + qualifiedName); // NOI18N
+        }
         return fieldAccess;
     }
 
