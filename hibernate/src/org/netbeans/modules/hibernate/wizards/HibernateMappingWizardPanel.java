@@ -139,7 +139,7 @@ public class HibernateMappingWizardPanel extends javax.swing.JPanel {
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "LBL_HibernateMappingPanel_Name");
+        return NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "LBL_HibernateMappingPanel_Name"); // NOI18N
     }
 
     public String getClassName() {
