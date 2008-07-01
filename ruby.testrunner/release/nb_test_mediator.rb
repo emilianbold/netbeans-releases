@@ -105,12 +105,12 @@ class NbTestMediator
     end
     if (instance.respond_to?(:suite))
       @suites << instance.suite
-    else
+    elsif instance.kind_of? Test::Unit::TestSuite
       @suites << instance
     end
-    
+
   end
-  
+
   def get_filename class_name
     class_name.to_s.gsub(/::/, '/').
       gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').
