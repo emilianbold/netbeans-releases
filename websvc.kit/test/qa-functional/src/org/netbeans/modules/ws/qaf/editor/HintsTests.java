@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -49,11 +49,12 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.JemmyException;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.editor.hints.AnnotationHolder;
 import org.netbeans.modules.ws.qaf.WebServicesTestBase;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -182,17 +183,17 @@ public class HintsTests extends WebServicesTestBase {
         });
         return problems;
     }
-
-    public static TestSuite suite() {
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new HintsTests("testEndpointInterface")); //NOI18N
-        suite.addTest(new HintsTests("testExceptions")); //NOI18N
-        suite.addTest(new HintsTests("testHandlers")); //NOI18N
-        suite.addTest(new HintsTests("testHandlers2")); //NOI18N
-        suite.addTest(new HintsTests("testIOParameters")); //NOI18N
-        suite.addTest(new HintsTests("testReturnValue")); //NOI18N
-        suite.addTest(new HintsTests("testServiceName")); //NOI18N
-        return suite;
+    
+    public static Test suite() {
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(HintsTests.class),
+                "testEndpointInterface",
+                "testExceptions", 
+                "testHandlers",
+                "testHandlers2",
+                "testIOParameters",
+                "testReturnValue",
+                "testServiceName"
+                ).enableModules(".*").clusters(".*"));
     }
 
     private static class HintsHandler extends Handler {

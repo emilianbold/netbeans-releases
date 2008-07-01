@@ -71,12 +71,12 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     private final boolean reference;
     private final byte arrayDepth;
     private final boolean _const;
-    private final CharSequence classifierText;
-    
-    private final List<CsmType> instantiationParams = new ArrayList();
-    
+    CharSequence classifierText;
+
+    final List<CsmType> instantiationParams = new ArrayList();
+
     // FIX for lazy resolver calls
-    private CharSequence[] qname = null;
+    CharSequence[] qname = null;
     private CsmUID<CsmClassifier> classifierUID;
 
     // package-local - for facory only
@@ -99,13 +99,21 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
             }
         }
     }
-    
+
     // package-local - for facory only
-    TypeImpl(AST ast, CsmFile file, int pointerDepth, boolean reference, int arrayDepth) {
-        this(null, pointerDepth, reference, arrayDepth, ast, file, null);
+    TypeImpl(CsmFile file, int pointerDepth, boolean reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
+        super(file, startOffset, endOffset);
+        this.pointerDepth = (byte) pointerDepth;
+        this.reference = reference;
+        this.arrayDepth = (byte) arrayDepth;
+        this._const = _const;
     }
-    
-    protected static int getEndOffset(AST node) {
+
+     /*TypeImpl(AST ast, CsmFile file, int pointerDepth, boolean reference, int arrayDepth) {
+        this(null, pointerDepth, reference, arrayDepth, ast, file, null);
+     }*/
+
+    public static int getEndOffset(AST node) {
         AST ast = node;
         if( ast == null ) {
             return 0;
@@ -116,7 +124,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
         }
         return OffsetableBase.getEndOffset(node);
     }
-    
+
     private static AST getLastNode(AST first) {
         AST last = first;
         for( AST token = last; token != null; token = token.getNextSibling() ) {
@@ -131,7 +139,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
         }
         return null;
     }
-    
+
     public boolean isReference() {
         return reference;
     }
@@ -147,7 +155,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     public boolean isInstantiation() {
         return !instantiationParams.isEmpty();
     }
-    
+
     public static boolean initIsConst(AST node) {
         if( node != null ) {
             for( AST token = node; token != null; token = token.getNextSibling() ) {
@@ -162,7 +170,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
         }
         return false;
     }
-    
+
     public boolean isConst() {
         return _const;
     }
@@ -170,17 +178,17 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     public String getCanonicalText() {
 	return decorateText(getClassifierText(), this, true, null).toString();
     }
-    
+
     @Override
     public CharSequence getText() {
 	// TODO: resolve typedefs
 	return decorateText(getClassifierText().toString() + getInstantiationText(this), this, false, null).toString();
     }
-    
+
     protected StringBuilder getText(boolean canonical, CharSequence variableNameToInsert) {
         return decorateText(getClassifierText().toString()  + getInstantiationText(this), this, canonical, variableNameToInsert);
     }
-    
+
     public StringBuilder decorateText(CharSequence classifierText, CsmType decorator, boolean canonical, CharSequence variableNameToInsert) {
 	StringBuilder sb = new StringBuilder();
 	if( decorator.isConst() ) {
@@ -202,8 +210,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
 	}
 	return sb;
     }
-    
-    private CharSequence initClassifierText(AST node) {
+
+    CharSequence initClassifierText(AST node) {
         if( node == null ) {
             CsmClassifier classifier = _getClassifier();
             return classifier == null ? "" : classifier.getName();
@@ -215,7 +223,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
 //            return sb.toString();
         }
     }
-    
+
     /*
      * Add text without instantiation params
      */
@@ -244,7 +252,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     public CsmClassifier getClassifier() {
         return getClassifier(null);
     }
-    
+
     public static CharSequence getInstantiationText(CsmType type) {
         StringBuilder sb = new StringBuilder();
         if (!type.getInstantiationParams().isEmpty()) {
@@ -266,7 +274,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     public CharSequence getClassifierText() {
         return classifierText;
     }
-    
+
     public CsmClassifier getClassifier(Resolver parent) {
         CsmClassifier classifier = _getClassifier();
         if (classifier != null && (!(classifier instanceof CsmValidable) || (((CsmValidable)classifier).isValid()))) {
@@ -285,8 +293,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
         }
         return classifier;
     }
-    
-    private CsmClassifier renderClassifier(CharSequence[] qname, Resolver parent) {
+
+    protected CsmClassifier renderClassifier(CharSequence[] qname, Resolver parent) {
         CsmClassifier result = null;
         Resolver resolver = ResolverFactory.createResolver(getContainingFile(), getStartOffset(), parent);
         CsmObject o = resolver.resolve(qname, Resolver.CLASSIFIER);
@@ -298,11 +306,11 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
         }
         return result;
     }
-        
+
     private CsmClassifier initClassifier(AST node) {
         AST tokType = AstRenderer.getFirstSiblingSkipQualifiers(node);
-        if( tokType == null ||  
-            (tokType.getType() != CPPTokenTypes.CSM_TYPE_BUILTIN && 
+        if( tokType == null ||
+            (tokType.getType() != CPPTokenTypes.CSM_TYPE_BUILTIN &&
             tokType.getType() != CPPTokenTypes.CSM_TYPE_COMPOUND) &&
             tokType.getType() != CPPTokenTypes.CSM_QUALIFIED_ID ) {
             return null;
@@ -318,11 +326,11 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
 		    // this is unnormal; but we should be able to work even on incorrect AST
 		    return null;
 		}
-                        
+
                 //Resolver resolver = ResolverFactory.createResolver(getContainingFile(), firstOffset);
-                // gather name components into string array 
+                // gather name components into string array
                 // for example, for std::vector new String[] { "std", "vector" }
-                
+
                 //TODO: we have AstRenderer.getNameTokens, it is better to use it here
                 List l = new ArrayList();
 		int templateDepth = 0;
@@ -388,18 +396,18 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     public int getArrayDepth() {
         return arrayDepth;
     }
-    
+
     public int getPointerDepth() {
         return pointerDepth;
     }
 
-    private CsmClassifier _getClassifier() {
+    protected CsmClassifier _getClassifier() {
         CsmClassifier classifier = UIDCsmConverter.UIDtoDeclaration(classifierUID);
-        // can be null if cached one was removed 
+        // can be null if cached one was removed
         return classifier;
     }
 
-    private void _setClassifier(CsmClassifier classifier) {
+    void _setClassifier(CsmClassifier classifier) {
         this.classifierUID = UIDCsmConverter.declarationToUID(classifier);
         assert (classifierUID != null || classifier == null);
     }
@@ -416,13 +424,13 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
         }
         return CsmKindUtilities.isBuiltIn(classifier);
     }
-    
+
 
     @Override
     public String toString() {
         return "TYPE " + getText()  + getOffsetString(); // NOI18N
-    }    
-    
+    }
+
     //package-local
     /**
      * Return display text for a variable of this type
@@ -431,10 +439,10 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     String getVariableDisplayName(String variableName) {
 	return decorateText(getClassifierText(), this, false, variableName).toString();
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
-    
+
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
@@ -444,7 +452,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
         output.writeBoolean(_const);
         assert this.classifierText != null;
         output.writeUTF(classifierText.toString());
-        
+
         PersistentUtils.writeStrings(qname, output);
         PersistentUtils.writeTypes(instantiationParams, output);
         UIDObjectFactory.getDefaultFactory().writeUID(classifierUID, output);
@@ -458,7 +466,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
         this._const = input.readBoolean();
         this.classifierText = NameCache.getManager().getString(input.readUTF());
         assert this.classifierText != null;
-        
+
         this.qname = PersistentUtils.readStrings(input, NameCache.getManager());
         PersistentUtils.readTypes(this.instantiationParams, input);
         this.classifierUID = UIDObjectFactory.getDefaultFactory().readUID(input);

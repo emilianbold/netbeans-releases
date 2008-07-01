@@ -98,7 +98,7 @@ final class QuietEditorPane extends JEditorPane {
     private int lastPosition = -1;
 
     /** is firing of events enabled? */
-    int working = FIRE; // [Mila] firing since begining, otherwise doesn't work well
+    int working = 0; // #132669, see CloneableEditor.DoInitialize.initDocument (line 424)
     
     /** determines scroll unit */
     private int fontHeight;

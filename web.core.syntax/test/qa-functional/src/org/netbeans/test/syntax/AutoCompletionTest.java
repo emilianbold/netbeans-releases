@@ -51,6 +51,8 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.web.FileObjectFilter;
 import org.netbeans.test.web.RecurrentSuiteFactory;
 import org.netbeans.test.syntax.CompletionTest.TestStep;
@@ -71,25 +73,29 @@ public class AutoCompletionTest extends CompletionTest {
     }
     
     public static Test suite() {
-        // find folder with test projects and define file objects filter
-        File datadir = new AutoCompletionTest(null, null).getDataDir();
-        File projectsDir = new File(datadir, "AutoCompletionTestProjects");
-        FileObjectFilter filter = new FileObjectFilter() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf.addTest(SuiteCreator.class));
+    }
 
-            public boolean accept(FileObject fo) {
-                String ext = fo.getExt();
-                String name = fo.getName();
-                return (name.startsWith("test") || name.startsWith("Test")) && (XML_EXTS.contains(ext) || JSP_EXTS.contains(ext) || ext.equals("java"));
-            }
-        };
-        return RecurrentSuiteFactory.createSuite(AutoCompletionTest.class, projectsDir, filter);
+    public static final class SuiteCreator extends NbTestSuite {
+
+        public SuiteCreator() {
+            super();
+            File datadir = new AutoCompletionTest(null, null).getDataDir();
+            File projectsDir = new File(datadir, "AutoCompletionTestProjects");
+            FileObjectFilter filter = new FileObjectFilter() {
+
+                public boolean accept(FileObject fo) {
+                    String ext = fo.getExt();
+                    String name = fo.getName();
+                    return (name.startsWith("test") || name.startsWith("Test")) && (XML_EXTS.contains(ext) || JSP_EXTS.contains(ext) || ext.equals("java"));
+                }
+            };
+            addTest(RecurrentSuiteFactory.createSuite(AutoCompletionTest.class, projectsDir, filter));
+        }
     }
-    
-    @Override
-    public void setUp() {
-        super.setUp();
-    }
-        
+
     @Override
     protected void exec(JEditorPane editor, TestStep step) throws Exception {
         try {

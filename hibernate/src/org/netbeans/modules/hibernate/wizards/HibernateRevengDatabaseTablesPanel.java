@@ -400,7 +400,6 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
         tableError.setOpaque(false);
         jScrollPane3.setViewportView(tableError);
 
-        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("Configuration_mnemonic").charAt(0));
         jLabel1.setLabelFor(cmbDatabaseConn);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "HibernateRevengDatabaseTablesPanel_Configuration")); // NOI18N
 

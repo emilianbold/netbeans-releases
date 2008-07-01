@@ -46,15 +46,13 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
-import org.netbeans.modules.ruby.platform.execution.ExecutionService;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
-import org.netbeans.modules.ruby.testrunner.ui.TestSession;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
 import org.netbeans.modules.ruby.testrunner.ui.TestRecognizer;
+import org.netbeans.modules.ruby.testrunner.ui.TestSession.SessionType;
 import org.netbeans.modules.ruby.testrunner.ui.TestUnitHandlerFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -83,7 +81,16 @@ public final class TestUnitRunner implements TestRunner {
     }
 
     public void runTest(FileObject testFile, boolean debug) {
-        run(FileOwnerQuery.getOwner(testFile), getTestFileArgs(testFile), testFile.getName(), debug);
+        Project project = FileOwnerQuery.getOwner(testFile);
+        if (!testFile.isFolder()) {
+            run(project, getTestFileArgs(testFile), testFile.getName(), debug);
+        } else {
+            List<String> additionalArgs = new ArrayList<String>();
+            additionalArgs.add("-d"); //NOI18N
+            additionalArgs.add(FileUtil.toFile(testFile).getAbsolutePath());
+            String name = ProjectUtils.getInformation(project).getDisplayName();
+            run(project, additionalArgs, name, debug);
+        }
     }
 
     private List<String> getTestFileArgs(FileObject testFile) {
@@ -109,7 +116,8 @@ public final class TestUnitRunner implements TestRunner {
     public void runAllTests(Project project, boolean debug) {
         List<String> additionalArgs = new ArrayList<String>();
         additionalArgs.add("-d"); //NOI18N
-        additionalArgs.add(FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath());
+        FileObject testFolder = project.getProjectDirectory().getFileObject("test/"); //NOI18N
+        additionalArgs.add(FileUtil.toFile(testFolder).getAbsolutePath());
         
         String name = ProjectUtils.getInformation(project).getDisplayName();
         
@@ -131,12 +139,11 @@ public final class TestUnitRunner implements TestRunner {
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
-        final ExecutionService execution = new RubyExecution(desc, charsetName);
         TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(), 
                 locator, 
-                TestUnitHandlerFactory.getHandlers());
-        desc.addOutputRecognizer(recognizer);
-        TestExecutionManager.getInstance().start(execution);
+                TestUnitHandlerFactory.getHandlers(),
+                debug ? SessionType.DEBUG : SessionType.TEST);
+        TestExecutionManager.getInstance().start(desc, recognizer);
     }
 
     public boolean supports(TestType type) {

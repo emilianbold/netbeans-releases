@@ -56,16 +56,23 @@ import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Vector;
 import javax.swing.JDialog;
 
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.jellytools.modules.j2ee.nodes.GlassFishV2ServerNode;
 import org.netbeans.junit.*;
 
 import org.netbeans.jemmy.*;
-import org.netbeans.jemmy.operators.*;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.jemmy.util.Dumper;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /** JUnit test case with implemented Jemmy/Jelly2 support stuff
  *
@@ -272,6 +279,81 @@ public class JellyTestCase extends NbTestCase {
         testStatus = true;
     }
     
+    private Vector<Project> openedProjects;
+
+    /**
+     * Open projects.
+     * All newly opened projects are remembered and could later be closed by 
+     * closeOpenedProjects() method.
+     * The method could be executed many times for one project - nothing
+     * happens if project is opened already.
+     * @param projects - paths to the project directories.
+     * @throws IOException
+     */
+    public void openProjects(String... projects) throws IOException {
+        if(openedProjects == null) {
+            openedProjects = new Vector<Project>();
+        }
+        Vector<Project> newProjects = new Vector<Project>();
+        Project pr;
+        for(String p : projects) {
+            pr = ProjectManager.getDefault().findProject(FileUtil.toFileObject(new File(p)));
+            boolean alreadyOpened = false;
+            for(Project prr : OpenProjects.getDefault().getOpenProjects()) {
+                if(prr.equals(pr)) {
+                    alreadyOpened = true;
+                }
+            }
+            if(!alreadyOpened) {
+                    newProjects.add(pr);
+            }
+        }
+        OpenProjects.getDefault().open(newProjects.toArray(new Project[0]), false);
+        openedProjects.addAll(newProjects);
+        try {
+            ClassLoader l = Thread.currentThread().getContextClassLoader();
+            if (l == null) {
+                l = getClass().getClassLoader();
+            }
+//            SourceUtils.waitScanFinished();
+            Class<?> sourceUtils = Class.forName("org.netbeans.api.java.source.SourceUtils", true, l);
+            sourceUtils.getMethod("waitScanFinished").invoke(null);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    /**
+     * Open projects located within <code>NbTestCase.getDataDir();</code>
+     * @param projects - relative to dataDir (test/qa-functional/data) path names. 
+     * @throws IOException
+     */
+    public void openDataProjects(String... projects) throws IOException {
+        String[] fullPaths = new String[projects.length];
+        for (int i = 0; i < projects.length; i++) {
+            fullPaths[i] = getDataDir().getAbsolutePath() + File.separator + projects[i];            
+        }
+        openProjects(fullPaths);
+    }
+    
+    /**
+     * Close projects opened by openProjects(String ...) or openDataProjects(String ...)
+     */
+    public void closeOpenedProjects() {
+        OpenProjects.getDefault().close(openedProjects.toArray(new Project[0]));
+        openedProjects.clear();
+    }
+    
+    protected static junit.framework.Test createModuleTest(String modules, String clusters, Class testClass, String... testNames) {
+        return NbModuleSuite.create(testClass, clusters, modules, testNames);
+    }
+    protected static junit.framework.Test createModuleTest(Class testClass, String... testNames) {
+        return createModuleTest(".*", ".*", testClass, testNames);
+    }
+    
+    public void closeProject(Project... projects) {
+        OpenProjects.getDefault().close(projects);
+    }
+
     /* Workaround for JDK bug http://developer.java.sun.com/developer/bugParade/bugs/4924516.html.
      * Also see issue http://www.netbeans.org/issues/show_bug.cgi?id=32466.
      * ------------------------------------------------------------------------------------------
@@ -281,6 +363,10 @@ public class JellyTestCase extends NbTestCase {
      */
     private static final DistributingHierarchyListener 
                 distributingHierarchyListener = new DistributingHierarchyListener();
+
+    public GlassFishV2ServerNode getGlassFishV2Node() {
+        return GlassFishV2ServerNode.getGlassFishV2Node(System.getProperty("com.sun.aas.installRoot"));
+    }
     
     private static class DistributingHierarchyListener implements AWTEventListener {
         

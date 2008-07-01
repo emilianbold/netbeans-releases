@@ -192,10 +192,11 @@ tokens {
     LITERAL___attribute__="__attribute__"; // NOI18N
     LITERAL_restrict="restrict"; // NOI18N
     LITERAL___restrict="__restrict"; // NOI18N
-    LITERAL___complex="__complex__"; // NOI18N
+    LITERAL___complex__="__complex__"; // NOI18N
     LITERAL___imag="__imag__"; // NOI18N
     LITERAL___real="__real__"; // NOI18N          
-    LITERAL___global="__global"; // NOI18N   
+    LITERAL___global="__global"; // NOI18N
+    LITERAL__Complex="_Complex"; // NOI18N
 
 	ASSIGNEQUAL;
 	COLON;

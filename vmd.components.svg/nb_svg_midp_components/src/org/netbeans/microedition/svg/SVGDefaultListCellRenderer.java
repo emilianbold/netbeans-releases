@@ -41,32 +41,44 @@
 package org.netbeans.microedition.svg;
 
 import org.w3c.dom.svg.SVGLocatableElement;
-import org.w3c.dom.svg.SVGRect;
 
 
 /**
  * Suggested svg list tag :
  * <pre>
  * &lt;g ...&gt;
+ *      &lt;rect id="MAIN_ID_selection" x="x_arg" y="y_arg" stroke="black" stroke-width="1" 
+ *          fill="rgb(200,200,255)" visibility="inherit"
+ *          width="list_width" height="0"/&gt;
  *      &lt;text visibility="hidden" font-size="font_size_value"  
- *          font-family="font_family_value" x="x_arg" y="y_arg"&gt; 
+ *          font-family="font_family_value" x="x_arg" y="y_arg"&gt;
+ *          HIDDEN TEXT 
+ *      &lt;/text>
+ *      &lt;g id="MAIN_ID_content"/>
+ *      &lt;rect id="MAIN_ID_bound" x="5.0" y="0.0" width="80" height="60" 
+ *          fill="none" stroke="black" stroke-width="2"/>
  * &lt;/g&gt;
- * &lt;rect id="MAIN_ID_selection" x="x_arg" y="y_arg" stroke="black" stroke-width="1" 
- *  fill="rgb(200,200,255)" visibility="inherit"
-        width="list_width" height="0"/&gt;
  * </pre>
  * Absence of inner "text" node will lead to IllegalArgumentException. 
- * Second inner tag ( rectangle ) represent selection figure on the screen.
+ * Rectangle ( first "rect" tag ) represents selection figure on the screen.
+ * Group tag represent content that will be used as area for rendering
+ * in this class. It should be present ( NPE will be thrown otherwise ).  
  * @author ads
  *
  */
 public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
     
-    private static final String HIDDEN_TEXT_SUFFIX = "_hidden_text";
-    private static final String SELECTION_SUFFIX   = "_selection";
+    static final String HIDDEN_TEXT         = "hidden_text";        // NOI18N
+    static final String BOUNDS              = "bound";              // NOi18N
+    private static final String SELECTION   = "selection";          // NOI18N
     
-    private static final float ASCENT_SELECTION   = 1;
+    
+    private static final float ASCENT_SELECTION   = 2;
     private static final float DESCENT_SELECTION   = 2;
+    
+    SVGDefaultListCellRenderer( float height){
+        myHeight = height;
+    }
 
     /* (non-Javadoc)
      * @see org.netbeans.microedition.svg.SVGListCellRenderer#getCellRendererComponent(org.netbeans.microedition.svg.SVGList, java.lang.Object, int, boolean)
@@ -75,96 +87,55 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
             int index, boolean isSelected )
     {
         SVGLocatableElement xmlElement = list.getElement();
+        SVGLocatableElement content = (SVGLocatableElement)
+            SVGComponent.getElementByMeta(xmlElement, 
+                    SVGList.TYPE,  SVGList.CONTENT );
         
-        SVGRect rect = xmlElement.getBBox();
-        float width = rect.getWidth();
-        float height = rect.getHeight();
-        
-        //float y;
-        
-        /*SVGLocatableElement lastText = getLastChildElement( xmlElement, "text");
-        if ( lastText != null ){
-            y=lastText.getBBox().getY()+lastText.getBBox().getHeight();
+        SVGLocatableElement lastText;
+        SVGLocatableElement hiddenText = (SVGLocatableElement) SVGComponent
+                .getElementByMeta(xmlElement, SVGList.TYPE, HIDDEN_TEXT);
+        if (hiddenText == null) {
+            throw new IllegalArgumentException("List argument "
+                    + "doesn't contain hidden text for access to font"
+                    + "characteristics. Unable render any value."); // NOI18N
         }
-        else {*/
-            SVGLocatableElement lastText;
-            SVGLocatableElement hiddenText = (SVGLocatableElement)
-            SVGComponent.getElementById( xmlElement, 
-                    xmlElement.getId() + HIDDEN_TEXT_SUFFIX );
-            if ( hiddenText == null ){
-                throw new IllegalArgumentException("List argument " +
-                		"doesn't contain hidden text for access to font" +
-                		"characteristics. Unable render any value.");
-            }
-            rect = hiddenText.getBBox();
-            myX = rect.getX();
-            myY = rect.getY() ;
-            myHeight = rect.getHeight();
-            lastText = hiddenText;
-        //}
-        
+        myX = hiddenText.getFloatTrait(SVGComponent.TRAIT_X);
+        myY = hiddenText.getFloatTrait(SVGComponent.TRAIT_Y);
+        lastText = hiddenText;
+            
         SVGLocatableElement textElement = (SVGLocatableElement) list.getForm().
-            getDocument().createElementNS( SVGComponent.SVG_NS, "text");
+            getDocument().createElementNS( SVGComponent.SVG_NS, SVGTextField.TEXT);
         textElement.setFloatTrait( SVGComponent.TRAIT_X, myX );
-        textElement.setFloatTrait( SVGComponent.TRAIT_Y, myY + 
-                (index+1)*myHeight ) ;
-        textElement.setFloatTrait( "font-size", lastText.getFloatTrait("font-size"));
-        textElement.setTrait( "font-family", lastText.getTrait("font-family"));
-        textElement.setTrait( SVGComponent.TRAIT_VISIBILITY, "visible");
+        textElement.setFloatTrait( SVGComponent.TRAIT_Y, myY + index*myHeight ) ;
+        textElement.setFloatTrait( SVGTextField.TRAIT_FONT_SIZE, 
+                lastText.getFloatTrait(SVGTextField.TRAIT_FONT_SIZE));
+        textElement.setTrait( SVGTextField.TRAIT_FONT_FAMILY, 
+                lastText.getTrait(SVGTextField.TRAIT_FONT_FAMILY));
+        textElement.setTrait( SVGComponent.TRAIT_VISIBILITY, 
+                SVGComponent.TR_VALUE_INHERIT);
         if ( value == null ){
-            textElement.setTrait( "#text","");
+            textElement.setTrait( SVGComponent.TRAIT_TEXT,"");
         }
         else {
-            textElement.setTrait("#text",  value.toString());
+            textElement.setTrait(SVGComponent.TRAIT_TEXT,  value.toString());
         }
-        xmlElement.appendChild(textElement);
+        content.appendChild(textElement);
         
         if ( isSelected ) {
             showSelection( list , index );
         }
         
-        /* 
-         * TODO: currently there is no need to use returned component.
-         * One only need to render ( via mechanism of SVG ) content.
-         * This should be done via code above.
-         * But may be later one will need to use rendered component.
-         * But CTOR of SVGComponent should be changed or added 
-         * new one without need of <code>elemId</code>.
-         */
-        return null;
+        return new SVGLabel( list.getForm() ,textElement );
     }
-    
-    /*private SVGLocatableElement getLastChildElement( SVGLocatableElement element,
-            String tagName )
-    {
-        SVGLocatableElement ret = null;
-        Element child = element.getFirstElementChild();
-        do {
-            if ( child instanceof SVGLocatableElement && 
-                    tagName.equals( child.getLocalName()) 
-                    && ((SVGLocatableElement)child).getId() == null)
-            {
-                ret = (SVGLocatableElement) child;
-            }
-            if ( child instanceof SVGElement ){
-                child = ((SVGElement)child).getNextElementSibling();
-            }
-            else {
-                child = null;
-            }
-        }
-        while( child != null );
-        return ret;
-    }*/
     
     private void showSelection( SVGList list, int index ) {
         // TODO : modify a whole code for enabling multiple selection.
         SVGLocatableElement xmlElement = list.getElement();
         SVGLocatableElement selection = 
-            (SVGLocatableElement)SVGComponent.getElementById( xmlElement,
-                xmlElement.getId() + SELECTION_SUFFIX );
-        selection.setFloatTrait(SVGComponent.TRAIT_Y, myY + index*myHeight 
-                -ASCENT_SELECTION);
+            (SVGLocatableElement)SVGComponent.getElementByMeta(xmlElement,
+                SVGList.TYPE,  SELECTION );
+        selection.setFloatTrait(SVGComponent.TRAIT_Y, myY + (index-1)*myHeight 
+                +ASCENT_SELECTION);
         selection.setFloatTrait( "height", myHeight +DESCENT_SELECTION);
     }
 

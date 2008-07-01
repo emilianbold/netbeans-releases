@@ -46,6 +46,8 @@ import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.ddloaders.multiview.EjbJarDetailsNode;
@@ -72,7 +74,7 @@ import org.openide.nodes.Node;
  *
  * @author blaha
  */
-public class EjbModuleTest extends JellyTestCase {
+public class EjbModuleTest extends J2eeTestCase {
     
     private static Project project;
     private static EjbJarMultiViewDataObject ddObj;
@@ -93,13 +95,11 @@ public class EjbModuleTest extends JellyTestCase {
     }
     
     public static Test suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new EjbModuleTest("testOpenProject"));
-        suite.addTest(new EjbModuleTest("testRenameDisplayName"));
-        suite.addTest(new EjbModuleTest("testChangeDescription"));
-        suite.addTest(new EjbModuleTest("testAddSmallIcon"));
-        suite.addTest(new EjbModuleTest("testAddLargeIcon"));
-        return suite;
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(EjbModuleTest.class);
+        conf = addServerTests(conf,"testOpenProject","testRenameDisplayName",
+        "testChangeDescription","testAddSmallIcon","testAddLargeIcon");
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
     }
     
     /** Use for execution inside IDE */

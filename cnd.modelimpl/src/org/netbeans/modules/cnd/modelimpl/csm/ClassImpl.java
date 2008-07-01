@@ -73,7 +73,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     
     private final List<CsmInheritance> inheritances = new ArrayList<CsmInheritance>();
     
-    private List<CsmTemplateParameter> templateParams = Collections.emptyList();
+    private List<CsmTemplateParameter> templateParams = Collections.<CsmTemplateParameter>emptyList();
     private CharSequence templateSuffix;
     private boolean template;
     
@@ -111,7 +111,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                         templateParams = TemplateUtils.getTemplateParameters(token, ClassImpl.this.getContainingFile(), ClassImpl.this);
                         break;
                     case CPPTokenTypes.CSM_BASE_SPECIFIER:
-                        inheritances.add(new InheritanceImpl(token, getContainingFile()));
+                        inheritances.add(new InheritanceImpl(token, getContainingFile(), ClassImpl.this));
                         break;
                     // class / struct / union
                     case CPPTokenTypes.LITERAL_class:
@@ -211,6 +211,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                             if( renderBitField(token) ) {
                                 break;
                             }
+                            ClassMemberForwardDeclaration fd = renderClassForwardDeclaration(token);
+                            if (fd != null){
+                                addMember(fd);
+                                break;
+                            }
                         }
                         break;
                     case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
@@ -299,6 +304,20 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
             }
         }
 
+        private ClassMemberForwardDeclaration renderClassForwardDeclaration(AST token){
+	    AST typeAST = token.getFirstChild();
+	    if( typeAST == null || 
+                    (typeAST.getType() != CPPTokenTypes.LITERAL_struct &&
+                     typeAST.getType() != CPPTokenTypes.LITERAL_class)) {
+		return null;
+	    }
+	    AST idAST = typeAST.getNextSibling();
+	    if( idAST == null || idAST.getType() != CPPTokenTypes.CSM_QUALIFIED_ID ) {
+		return null;
+	    }
+            return new ClassMemberForwardDeclaration(ClassImpl.this, token, curentVisibility);
+        }
+        
 	private boolean renderBitField(AST token) {
 	    
 	    AST typeAST = token.getFirstChild();
@@ -369,6 +388,102 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         }           
     }    
 
+    public static class ClassMemberForwardDeclaration extends ClassForwardDeclarationImpl
+            implements CsmMember<CsmClassForwardDeclaration>, CsmClassifier<CsmClassForwardDeclaration> {
+        private CsmVisibility visibility;
+        private CsmUID<CsmClass> classDefinition;
+        private final CsmUID<CsmIdentifiable> containerUID;
+
+        public ClassMemberForwardDeclaration(CsmClass containingClass, AST ast, CsmVisibility curentVisibility) {
+            super(ast, containingClass.getContainingFile());
+            visibility = curentVisibility;
+	    containerUID = UIDCsmConverter.identifiableToUID((CsmIdentifiable) containingClass);
+            registerInProject();
+        }
+
+        protected final void registerInProject() {
+            CsmProject project = getContainingFile().getProject();
+            if( project instanceof ProjectBase ) {
+                ((ProjectBase) project).registerDeclaration(this);
+            }
+        }
+    
+        private void unregisterInProject() {
+            CsmProject project = getContainingFile().getProject();
+            if( project instanceof ProjectBase ) {
+                ((ProjectBase) project).unregisterDeclaration(this);
+                this.cleanUID();
+            }
+        }
+
+        @Override
+        public void dispose() {
+            super.dispose();
+            CsmScope scope = getScope();
+            if(scope instanceof MutableDeclarationsContainer ) {
+                ((MutableDeclarationsContainer) scope).removeDeclaration(this);
+            }
+            unregisterInProject();
+        }
+
+        public boolean isStatic() {
+            return false;
+        }
+
+        public CsmVisibility getVisibility() {
+            return visibility;
+        }
+
+        public CsmClass getContainingClass() {
+            return (CsmClass) UIDCsmConverter.UIDtoIdentifiable(containerUID);
+        }
+
+        @Override
+        public CsmScope getScope() {
+            return getContainingClass();
+        }
+
+        @Override
+        public CsmClass getCsmClass() {
+            if (classDefinition != null){
+                return classDefinition.getObject();
+            }
+            return  super.getCsmClass();
+        }
+
+        public void setCsmClass(CsmClass cls) {
+            classDefinition = cls.getUID();
+        }
+
+        @Override
+        public CharSequence getQualifiedName() {
+            CsmClass cls =  getContainingClass();
+            return CharSequenceKey.create(cls.getQualifiedName() + "::" + getName()); // NOI18N
+        }
+
+        ////////////////////////////////////////////////////////////////////////////
+        // impl of SelfPersistent
+
+        @Override
+        public void write(DataOutput output) throws IOException {
+            super.write(output);
+            assert visibility != null;
+            PersistentUtils.writeVisibility(visibility, output);
+            assert containerUID != null;
+            UIDObjectFactory.getDefaultFactory().writeUID(containerUID, output);    
+            UIDObjectFactory.getDefaultFactory().writeUID(classDefinition, output);    
+        }  
+
+        public ClassMemberForwardDeclaration(DataInput input) throws IOException {
+            super(input);
+            visibility = PersistentUtils.readVisibility(input);
+            assert visibility != null;
+            containerUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+            assert containerUID != null;
+            classDefinition = UIDObjectFactory.getDefaultFactory().readUID(input);
+        }
+    }
+        
 //    public ClassImpl(CsmDeclaration.Kind kind, String name, NamespaceImpl namespace, CsmFile file) {
 //        this(kind, name, namespace, file, null);
 //    }
@@ -392,11 +507,15 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
         new ClassAstRenderer().render(ast);
         leftBracketPos = initLeftBracketPos(ast);
-        register(scope, false);
+        register(getScope(), false);
     }
     
     public static ClassImpl create(AST ast, CsmScope scope, CsmFile file) {
 	ClassImpl impl = new ClassImpl(ast, file);
+        //CsmClass fd = impl.isClassDefinition(scope, ast);
+        //if (fd instanceof ClassImpl) {
+        //    return (ClassImpl) fd;
+        //}
 	impl.init(scope, ast);
 	return impl;
     }

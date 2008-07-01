@@ -43,9 +43,11 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
+import java.util.Collections;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -57,11 +59,12 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  *
  * @author Vladimir Kvasihn
  */
-public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmClassForwardDeclaration> implements CsmClassForwardDeclaration {
+public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmClassForwardDeclaration> 
+                                         implements CsmClassForwardDeclaration, CsmTemplate {
     private final CharSequence name;
     private final CharSequence[] nameParts;
     
-    public ClassForwardDeclarationImpl(AST ast, FileImpl file) {
+    public ClassForwardDeclarationImpl(AST ast, CsmFile file) {
         super(ast, file);
         AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
         name = (qid == null) ? CharSequenceKey.empty() : QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
@@ -73,7 +76,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
     }
 
     public CharSequence getName() {
-        return getQualifiedName();
+        return name;
     }
 
     public CharSequence getQualifiedName() {
@@ -97,7 +100,22 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         CsmObject o = resolve(resolver);
         return (o instanceof CsmClass) ? (CsmClass) o : (CsmClass) null;
     }
-    
+
+    public boolean isTemplate() {
+        // TODO
+        return false;
+    }
+
+    public List<CsmTemplateParameter> getTemplateParameters() {
+        // TODO
+        return Collections.<CsmTemplateParameter>emptyList();
+    }
+
+    public CharSequence getDisplayName() {
+        // TODO
+        return getName();
+    }
+
     private String[] initNameParts(AST qid) {
         if( qid != null ) {
             return AstRenderer.getNameTokens(qid);

@@ -57,6 +57,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.usages.ClassFileUtil;
+import org.openide.util.Parameters;
 
 /**
  * Represents a handle for {@link Element} which can be kept and later resolved
@@ -121,7 +122,7 @@ public final class ElementHandle<T extends Element> {
      */
     @SuppressWarnings ("unchecked")     // NOI18N
     public T resolve (final CompilationInfo compilationInfo) {
-        assert compilationInfo != null;
+        Parameters.notNull("compilationInfo", compilationInfo);
         return resolveImpl (compilationInfo.impl.getJavacTask());
     }
     
@@ -352,7 +353,7 @@ public final class ElementHandle<T extends Element> {
      * @throws IllegalArgumentException if the element is of an unsupported {@link ElementKind}
      */
     public static<T extends Element> ElementHandle<T> create (final T element) throws IllegalArgumentException {
-        assert element != null;
+        Parameters.notNull("element", element);
         ElementKind kind = element.getKind();
         String[] signatures;
         switch (kind) {
@@ -415,7 +416,10 @@ public final class ElementHandle<T extends Element> {
      * @since 0.29.0
      */
     public static ElementHandle<? extends TypeElement> from (final TypeMirrorHandle<? extends DeclaredType> typeMirrorHandle) {
-        assert typeMirrorHandle.getKind() == TypeKind.DECLARED;
+        Parameters.notNull("typeMirrorHandle", typeMirrorHandle);
+        if (typeMirrorHandle.getKind() != TypeKind.DECLARED) {
+            throw new IllegalStateException("Incorrect kind: " + typeMirrorHandle.getKind());
+        }
         return (ElementHandle<TypeElement>)typeMirrorHandle.getElementHandle();
     }
     

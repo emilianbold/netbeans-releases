@@ -44,6 +44,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hibernate.cfg.model.Event;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
+import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
@@ -192,6 +193,10 @@ public class HibernateCfgToolBarMVElement extends ToolBarMultiViewElement {
         void initialize() {
 
             HibernateConfiguration configuration = configDataObject.getHibernateConfiguration();
+            if(configuration == null) {
+                // Should never happen
+                return;
+            }
 
             // Node for JDBC properties
             Node jdbcPropsNode = new ElementLeafNode(NbBundle.getMessage(HibernateCfgToolBarMVElement.class, "LBL_Jdbc_Properties"));
@@ -242,6 +247,10 @@ public class HibernateCfgToolBarMVElement extends ToolBarMultiViewElement {
             cacheCont.addSection(new SectionPanel(this, collectionCacheNode, collectionCacheNode.getDisplayName(), HibernateCfgToolBarMVElement.COLLECTION_CACHE, false, false));
 
             // Nodes for events. One per event
+            if(configuration.getSessionFactory() == null) {
+                // Deal with a bad xml - missing <session-factory>. see issue 138154
+                configuration.setSessionFactory( new SessionFactory());
+            }
             Event events[] = configuration.getSessionFactory().getEvent();
             Node eventNodes[] = new Node[events.length];
             for (int i = 0; i < events.length; i++) {

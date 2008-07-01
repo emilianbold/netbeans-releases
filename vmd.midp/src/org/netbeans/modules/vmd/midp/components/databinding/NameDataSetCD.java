@@ -54,14 +54,7 @@ import org.netbeans.modules.vmd.api.model.VersionDescriptor;
  */
 public class NameDataSetCD extends ComponentDescriptor {
 
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/dataset_16.gif"; // NOI18N
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.databinding.pim.NameDataSet"); //NOI18N
-    
-    public static final String PROP_NAMES = "names"; 
-
-    static {
-        MidpTypes.registerIconResource(TYPEID, ICON_PATH);
-    }
 
     @Override
     public TypeDescriptor getTypeDescriptor() {

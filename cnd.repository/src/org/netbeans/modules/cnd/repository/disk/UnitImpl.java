@@ -81,7 +81,9 @@ public class UnitImpl implements Unit {
 
     public Persistent get(Key key) throws IOException {
         assert key != null;
-        assert getName().equals(key.getUnit().toString());
+        // I commented a next assertion because it is too expensive.
+        // Use another way to control the assertion. For example by flag in unit tests.
+        //assert getName().equals(key.getUnit().toString());
         Persistent data = cache.get(key);
         if (data == null) {
             data = getStorage(key).read(key);

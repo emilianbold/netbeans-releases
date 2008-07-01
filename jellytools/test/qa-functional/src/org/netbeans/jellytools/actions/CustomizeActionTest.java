@@ -40,6 +40,7 @@
  */
 package org.netbeans.jellytools.actions;
 
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -67,10 +68,13 @@ public class CustomizeActionTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new CustomizeActionTest("testPerformPopup"));
         suite.addTest(new CustomizeActionTest("testPerformAPI"));
         return suite;
+         */
+        return createModuleTest(CustomizeActionTest.class, "testPerformPopup", "testPerformAPI");
     }
     
     /** Use for internal test execution inside IDE
@@ -81,11 +85,13 @@ public class CustomizeActionTest extends JellyTestCase {
     }
     
     // "Customizer Dialog"
-    private final static String CUSTOMIZER_DIALOG_TITLE = Bundle.getString("org.netbeans.core.windows.services.Bundle", "CTL_Customizer_dialog_title");
+    private static String CUSTOMIZER_DIALOG_TITLE;
     private static Node node;
 
-    public void setUp() {
+    public void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");  // NOI18N
+        CUSTOMIZER_DIALOG_TITLE = Bundle.getString("org.netbeans.core.windows.services.Bundle", "CTL_Customizer_dialog_title");
+        openDataProjects("SampleProject");
         if(node == null) {
             node = new Node(new SourcePackagesNode("SampleProject"), "sample1|properties.properties"); // NOI18N
         }

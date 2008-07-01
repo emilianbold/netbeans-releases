@@ -650,6 +650,10 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     return PHPTokenId.PHP_TRUE;
 }
 
+<ST_PHP_IN_SCRIPTING>"null" {
+    return PHPTokenId.PHP_NULL;
+}
+
 <ST_PHP_IN_SCRIPTING>"false" {
     return PHPTokenId.PHP_FALSE;
 }

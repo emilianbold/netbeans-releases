@@ -198,10 +198,12 @@ public class ShorterPaths extends Task {
                            simplyPath(path,externalLibBuf,outProp);
                        }
                        pw.println(name + "=" + outProp);          
+                    } else if (name.startsWith("test.config")) {
+                        pw.println(name + "=" + properties.get(name));
                     }
                 }
-                pw.println("extra.test.libs.dir=" + externalLibBuf.toString());
-                pw.println("test.unit.run.cp=" + nbLibBuff.toString());
+                pw.println("extra.test.libs=" + externalLibBuf.toString());
+                pw.println("test.run.cp=" + nbLibBuff.toString());
                 pw.close();
             }
         } catch (IOException ex) {
@@ -236,7 +238,7 @@ public class ShorterPaths extends Task {
                     if (externalLibBuf.length() > 0 ) {
                         externalLibBuf.append(":\\\n");
                     }
-                   externalLibBuf.append("${extra.test.libs}/" + fName);
+                   externalLibBuf.append("${extra.test.libs.dir}/" + fName);
                 }
             }
            

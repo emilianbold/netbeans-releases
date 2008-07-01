@@ -18,15 +18,15 @@
  */
 package org.netbeans.microedition.svg;
 
-import java.util.Hashtable;
+import java.util.Enumeration;
 import java.util.Vector;
+
 import javax.microedition.lcdui.Display;
 import javax.microedition.m2g.SVGEventListener;
 import javax.microedition.m2g.SVGImage;
+
 import org.netbeans.microedition.svg.input.InputHandler;
 import org.netbeans.microedition.svg.input.NumPadInputHandler;
-import org.w3c.dom.Node;
-import org.w3c.dom.svg.SVGElement;
 
 /**
  *
@@ -50,55 +50,14 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
         setSVGEventListener(new SvgFormEventListener()); // set menu listener        
         setFullScreenMode(true); // menu is usually full screen
     }
+    
+    public void add(SVGComponent component ){
+        components.addElement( component );
+        if ( components.size() == 1 ){
+            component.requestFocus();
+        }
+    }
          
-    public SVGTextField addTextField(String elemId) {
-        SVGTextField fld = new SVGTextField( this, elemId);
-        components.addElement(fld);
-        return fld;
-    }
-
-    public SVGButton addButton(String elemId) {
-        SVGButton button = new SVGButton( this, elemId);
-        components.addElement(button);
-        return button;
-    }
-
-    public SVGCheckBox addCheckBox(String elemId) {
-        SVGCheckBox checkBox = new SVGCheckBox( this, elemId);
-        components.addElement(checkBox);
-        return checkBox;
-    }
-
-    public SVGRadioButton addRadioButton(String elemId) {
-        SVGRadioButton button = new SVGRadioButton( this, elemId);
-        components.addElement(button);
-        return button;
-    }
-    
-    public SVGSlider addSlider( String elemId){
-        SVGSlider slider = new SVGSlider( this , elemId);
-        components.addElement( slider );
-        return slider;
-    }
-    
-    public SVGSpinner addSpinner( String elemId ){
-        SVGSpinner spinner = new SVGSpinner(this, elemId);
-        components.addElement( spinner );
-        return spinner;
-    }
-    
-    public SVGComboBox addComboBox( String elemId){
-        SVGComboBox box = new SVGComboBox( this , elemId);
-        components.addElement( box );
-        return box;
-    }
-    
-    public SVGList addList( String elemId ){
-        SVGList list = new SVGList( this , elemId );
-        components.addElement( list );
-        return list;
-    }
-    
     public SVGComponent getFocusedField() {
         return focusedComponent;
     }    
@@ -124,12 +83,15 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
     }
     
     public void setCaretVisible(boolean isVisible) {
-        if (focusedComponent != null && focusedComponent instanceof SVGTextField) {
+        if (focusedComponent instanceof SVGTextField  ) {
             ((SVGTextField)focusedComponent).setCaretVisible(isVisible);
+        }
+        if ( focusedComponent instanceof SVGTextArea ){
+            ((SVGTextArea)focusedComponent).setCaretVisible(isVisible);
         }
     }
      
-    private final Hashtable groups = new Hashtable(10);
+    /*private final Hashtable groups = new Hashtable(10);
     
     private SVGButtonGroup getGroup(String id) {
         synchronized(groups) {
@@ -158,7 +120,7 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
         }
         
         return true;
-    }
+    }*/
     
     public synchronized NumPadInputHandler getNumPadInputHandler() {
         if ( inputHandler == null) {
@@ -166,6 +128,21 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
             inputHandler.addVisibilityListener(this);            
         }
         return inputHandler;
+    }
+    
+    SVGLabel getLabelFor( SVGComponent component ){
+        Enumeration en = components.elements();
+        while ( en.hasMoreElements() ){
+            SVGComponent comp = (SVGComponent)en.nextElement();
+            if ( comp instanceof SVGLabel ){
+                SVGLabel label = (SVGLabel) comp;
+                SVGComponent labelFor = label.getLabelFor();
+                if ( labelFor == component ){
+                    return label;
+                }
+            }
+        }
+        return null;
     }
     
     private class SvgFormEventListener implements SVGEventListener {

@@ -55,6 +55,8 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.DevelopmentHostNodeProp;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.PlatformNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNodeProp;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.nodes.Sheet;
@@ -86,8 +88,8 @@ public class MakeConfiguration extends Configuration {
     private LanguageBooleanConfiguration cRequired;
     private LanguageBooleanConfiguration cppRequired;
     private LanguageBooleanConfiguration fortranRequired;
-    private IntConfiguration developmentHost;
-    private IntConfiguration platform;
+    private DevelopmentHostConfiguration developmentHost;
+    private PlatformConfiguration platform;
     private BooleanConfiguration dependencyChecking;
     private CCompilerConfiguration cCompilerConfiguration;
     private CCCompilerConfiguration ccCompilerConfiguration;
@@ -111,7 +113,7 @@ public class MakeConfiguration extends Configuration {
         cRequired = new LanguageBooleanConfiguration();
         cppRequired = new LanguageBooleanConfiguration();
         fortranRequired = new LanguageBooleanConfiguration();
-        platform = new IntConfiguration(null, MakeOptions.getInstance().getPlatform(), Platforms.getPlatformDisplayNames(), null);
+        platform = new PlatformConfiguration(MakeOptions.getInstance().getPlatform(), Platforms.getPlatformDisplayNames());
         makefileConfiguration = new MakefileConfiguration(this);
         dependencyChecking = new BooleanConfiguration(null, isMakefileConfiguration() ? false : MakeOptions.getInstance().getDepencyChecking());
         cCompilerConfiguration = new CCompilerConfiguration(baseDir, null);
@@ -121,6 +123,9 @@ public class MakeConfiguration extends Configuration {
         archiverConfiguration = new ArchiverConfiguration(this);
         packagingConfiguration = new PackagingConfiguration(this);
         requiredProjectsConfiguration = new RequiredProjectsConfiguration();
+        
+        developmentHost.addPropertyChangeListener(compilerSet);
+        developmentHost.addPropertyChangeListener(platform);
     }
 
     public void setMakefileConfiguration(MakefileConfiguration makefileConfiguration) {
@@ -179,19 +184,19 @@ public class MakeConfiguration extends Configuration {
         this.fortranRequired = fortranRequired;
     }
 
-    public IntConfiguration getDevelopmentHost() {
+    public DevelopmentHostConfiguration getDevelopmentHost() {
         return developmentHost;
     }
 
-    public void setDevelopmentHost(IntConfiguration developmentHost) {
+    public void setDevelopmentHost(DevelopmentHostConfiguration developmentHost) {
         this.developmentHost = developmentHost;
     }
 
-    public IntConfiguration getPlatform() {
+    public PlatformConfiguration getPlatform() {
         return platform;
     }
 
-    public void setPlatform(IntConfiguration platform) {
+    public void setPlatform(PlatformConfiguration platform) {
         this.platform = platform;
     }
 
@@ -346,12 +351,15 @@ public class MakeConfiguration extends Configuration {
         super.cloneConf(clone);
         clone.setCloneOf(this);
 
-        clone.setDevelopmentHost((IntConfiguration) getDevelopmentHost().clone());
-        clone.setCompilerSet((CompilerSet2Configuration) getCompilerSet().clone());
+        DevelopmentHostConfiguration dhconf = (DevelopmentHostConfiguration) getDevelopmentHost().clone();
+        clone.setDevelopmentHost(dhconf);
+        CompilerSet2Configuration csconf = (CompilerSet2Configuration) getCompilerSet().clone();
+        clone.setCompilerSet(csconf);
         clone.setCRequired((LanguageBooleanConfiguration) getCRequired().clone());
         clone.setCppRequired((LanguageBooleanConfiguration) getCppRequired().clone());
         clone.setFortranRequired((LanguageBooleanConfiguration) getFortranRequired().clone());
-        clone.setPlatform((IntConfiguration) getPlatform().clone());
+        PlatformConfiguration pconf = (PlatformConfiguration) getPlatform().clone();
+        clone.setPlatform(pconf);
         clone.setMakefileConfiguration((MakefileConfiguration) getMakefileConfiguration().clone());
         clone.setDependencyChecking((BooleanConfiguration) getDependencyChecking().clone());
         clone.setCCompilerConfiguration((CCompilerConfiguration) getCCompilerConfiguration().clone());
@@ -361,6 +369,9 @@ public class MakeConfiguration extends Configuration {
         clone.setArchiverConfiguration((ArchiverConfiguration) getArchiverConfiguration().clone());
         clone.setPackagingConfiguration((PackagingConfiguration) getPackagingConfiguration().clone());
         clone.setRequiredProjectsConfiguration((RequiredProjectsConfiguration) getRequiredProjectsConfiguration().clone());
+        
+        dhconf.addPropertyChangeListener(csconf);
+        dhconf.addPropertyChangeListener(pconf);
 
         // Clone all the aux objects
         //Vector clonedAuxObjects = new Vector();
@@ -385,14 +396,14 @@ public class MakeConfiguration extends Configuration {
         set.setName("ProjectDefaults"); // NOI18N
         set.setDisplayName(getString("ProjectDefaultsTxt"));
         set.setShortDescription(getString("ProjectDefaultsHint"));
-        set.put(new IntNodeProp(getDevelopmentHost(), true, null, getString("DevelopmentHostTxt"), getString("DevelopmentHostHint"))); // NOI18N
+        set.put(new DevelopmentHostNodeProp(getDevelopmentHost(), true, getString("DevelopmentHostTxt"), getString("DevelopmentHostHint"))); // NOI18N
         set.put(new CompilerSetNodeProp(getCompilerSet(), true, "CompilerSCollection2", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
+        set.put(new PlatformNodeProp(getPlatform(), false, getString("PlatformTxt"), getString("PlatformHint"))); // NOI18N
         set.put(new BooleanNodeProp(getCRequired(), true, "cRequired", getString("CRequiredTxt"), getString("CRequiredHint"))); // NOI18N
         set.put(new BooleanNodeProp(getCppRequired(), true, "cppRequired", getString("CppRequiredTxt"), getString("CppRequiredHint"))); // NOI18N
         if (CppSettings.getDefault().isFortranEnabled()) {
             set.put(new BooleanNodeProp(getFortranRequired(), true, "fortranRequired", getString("FortranRequiredTxt"), getString("FortranRequiredHint"))); // NOI18N
         }
-        set.put(new IntNodeProp(getPlatform(), true, "Platform", getString("PlatformTxt"), getString("PlatformHint"))); // NOI18N
         set.put(new IntNodeProp(getConfigurationType(), true, "ConfigurationType", getString("ConfigurationTypeTxt"), getString("ConfigurationTypeHint"))); // NOI18N
         sheet.put(set);
 

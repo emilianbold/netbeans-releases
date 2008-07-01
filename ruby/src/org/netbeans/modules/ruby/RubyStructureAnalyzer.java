@@ -59,7 +59,6 @@ import org.jruby.ast.CallNode;
 import org.jruby.ast.ClassNode;
 import org.jruby.ast.Colon2Node;
 import org.jruby.ast.CommentNode;
-import org.jruby.ast.ConstDeclNode;
 import org.jruby.ast.ConstNode;
 import org.jruby.ast.DefnNode;
 import org.jruby.ast.DefsNode;
@@ -93,21 +92,15 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.elements.AstAttributeElement;
 import org.netbeans.modules.ruby.elements.AstClassElement;
-import org.netbeans.modules.ruby.elements.AstConstantElement;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.AstFieldElement;
 import org.netbeans.modules.ruby.elements.AstMethodElement;
 import org.netbeans.modules.ruby.elements.AstModuleElement;
+import org.netbeans.modules.ruby.elements.AstNameElement;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.util.Exceptions;
 
 /**
- * @todo Access modifiers
- * @todo Fields
- * @todo Statics
- * @todo Properties (attr_accessor etc.)
- * @todo Recognize specs in rspec files and list them separately?
- *
  * @todo Rewrite various other helper classes to use the scanned structure
  *   for the file instead of searching from scratch. For example, the code
  *   completion scanner should rely on the structure view to add local
@@ -115,7 +108,6 @@ import org.openide.util.Exceptions;
  *   for local variables. Similarly, the declaration finder should use it
  *   to locate local classes, method definitions and such. And obviously,
  *   the semantic analyzer should use it to find private methods.
- * @todo Scan rspec files and itemize it's and contexts
  *
  * @author Tor Norbye
  */
@@ -129,6 +121,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
     private Map<AstClassElement, Set<AstAttributeElement>> attributes;
     private HtmlFormatter formatter;
     private CompilationInfo info;
+    private boolean isTestFile;
 
     private static final String RUBY_KEYWORD = "org/netbeans/modules/ruby/jruby.png"; //NOI18N
     private static ImageIcon keywordIcon;
@@ -141,7 +134,6 @@ public class RubyStructureAnalyzer implements StructureScanner {
             return scanRhtml(info, formatter);
         }
 
-        
         RubyParseResult result = AstUtilities.getParseResult(info);
         this.info = info;
         this.formatter = formatter;
@@ -156,7 +148,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
         return itemList;
     }
-    
+
     public static class AnalysisResult {
         private List<?extends AstElement> elements;
         private Map<AstClassElement, Set<AstAttributeElement>> attributes;
@@ -200,6 +192,18 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
         if (root == null) {
             return analysisResult;
+        }
+
+        isTestFile = false;
+        String name = result.getFile().getNameExt();
+        int dot = name.lastIndexOf('.');
+        if (dot != -1) {
+            name = name.substring(0, dot);
+        }
+        if (name.startsWith("test_") ||  // NOI18N
+                name.endsWith("_test") || // NOI18N
+                name.endsWith("_spec")) { // NOI18N
+            isTestFile = true;
         }
 
         structure = new ArrayList<AstElement>();
@@ -349,7 +353,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             case METHOD:
             case CONSTRUCTOR:
             case CLASS:
-            case MODULE:
+            case MODULE: {
                 Node node = element.getNode();
                 OffsetRange range = AstUtilities.getRange(node);
                 
@@ -367,6 +371,21 @@ public class RubyStructureAnalyzer implements StructureScanner {
                     }
                 }
                 break;
+            }
+            case TEST: {
+                Node node = element.getNode();
+                OffsetRange range = AstUtilities.getRange(node);
+
+                int start = range.getStart();
+                // Start the fold at the END of the line
+                start = org.netbeans.editor.Utilities.getRowEnd(doc, start);
+                int end = range.getEnd();
+                if (start != (-1) && end != (-1) && start < end && end <= doc.getLength()) {
+                    range = new OffsetRange(start, end);
+                    codeblocks.add(range);
+                }
+                break;
+            }
             }
             
             List<? extends AstElement> children = element.getChildren();
@@ -486,7 +505,8 @@ public class RubyStructureAnalyzer implements StructureScanner {
             break;
         }
         case CONSTDECLNODE: {
-            AstConstantElement co = new AstConstantElement(info, (ConstDeclNode)node);
+            AstElement co = new AstNameElement(info, node, ((INameNode)node).getName(),
+                    ElementKind.CONSTANT);
             co.setIn(in);
 
             if (parent != null) {
@@ -663,6 +683,53 @@ public class RubyStructureAnalyzer implements StructureScanner {
                                 }
                             }
                         }
+                    }
+                }
+            } else if (isTestFile) {
+                if (name.equals("test") || name.equals("describe") || // NOI18N
+                        name.equals("specify") || name.equals("context") || // NOI18N
+                        name.equals("should") || name.equals("it")) { // NOI18N
+                    String desc = name;
+                    FCallNode fc = (FCallNode)node;
+                    if (fc.getIterNode() != null) {
+                        Node argsNode = fc.getArgsNode();
+
+                        if (argsNode instanceof ListNode) {
+                            ListNode args = (ListNode)argsNode;
+
+                            // TODO handle
+                            //  describe  ThingsController, "GET #index" do
+                            // e.g. where the desc string is not first
+                            for (int i = 0, max = args.size(); i < max; i++) {
+                                Node n = args.get(i);
+
+                                // For dynamically computed strings, we have n instanceof DStrNode
+                                // but I can't handle these anyway
+                                if (n instanceof StrNode) {
+                                    ByteList descBl = ((StrNode)n).getValue();
+
+                                    if ((descBl != null) && (descBl.length() > 0)) {
+                                        // No truncation? See 138259
+                                        //desc = RubyUtils.truncate(descBl.toString(), MAX_RUBY_LABEL_LENGTH);
+                                        desc = descBl.toString();
+                                        // Prepend the function type (unless it's test - see 138260
+                                        if (!name.equals("test")) { // NOI18N
+                                            desc = name+": " + desc; // NOI18N
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                        AstElement co = new AstNameElement(info, node, desc,
+                                ElementKind.TEST);
+
+                        if (parent != null) {
+                            parent.addChild(co);
+                        } else {
+                            structure.add(co);
+                        }
+                        parent = co;
                     }
                 }
             }
@@ -901,6 +968,11 @@ public class RubyStructureAnalyzer implements StructureScanner {
             case MODULE:
             case CLASS:
                 return false;
+
+            case TEST: {
+                List<AstElement> nested = node.getChildren();
+                return nested == null || nested.size() == 0;
+            }
 
             default:
                 throw new RuntimeException("Unhandled kind: " + kind);

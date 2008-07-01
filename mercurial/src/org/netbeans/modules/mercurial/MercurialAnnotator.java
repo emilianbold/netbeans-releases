@@ -46,7 +46,6 @@ import org.netbeans.modules.mercurial.ui.create.CreateAction;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
-import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.api.project.Project;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -70,31 +69,15 @@ import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffChangesAction;
 import org.netbeans.modules.mercurial.ui.diff.ImportDiffAction;
 import org.netbeans.modules.mercurial.ui.ignore.IgnoreAction;
-import org.netbeans.modules.mercurial.ui.log.IncomingAction;
 import org.netbeans.modules.mercurial.ui.log.LogAction;
-import org.netbeans.modules.mercurial.ui.log.OutAction;
-import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.netbeans.modules.mercurial.ui.properties.PropertiesAction;
 import org.netbeans.modules.mercurial.ui.pull.FetchAction;
-import org.netbeans.modules.mercurial.ui.pull.PullAction;
-import org.netbeans.modules.mercurial.ui.pull.PullOtherAction;
-import org.netbeans.modules.mercurial.ui.push.PushAction;
-import org.netbeans.modules.mercurial.ui.push.PushOtherAction;
-import org.netbeans.modules.mercurial.ui.rollback.BackoutAction;
-import org.netbeans.modules.mercurial.ui.rollback.RollbackAction;
-import org.netbeans.modules.mercurial.ui.rollback.StripAction;
 import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
 import org.netbeans.modules.mercurial.ui.status.StatusAction;
 import org.netbeans.modules.mercurial.ui.update.ConflictResolvedAction;
 import org.netbeans.modules.mercurial.ui.update.ResolveConflictsAction;
 import org.netbeans.modules.mercurial.ui.update.UpdateAction;
-import org.netbeans.modules.mercurial.ui.view.ViewAction;
-import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.mercurial.util.HgCommand;
-import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 
 /**
  * Responsible for coloring file labels and file icons in the IDE and providing IDE with menu items.
@@ -140,6 +123,7 @@ public class MercurialAnnotator extends VCSAnnotator {
     private String emptyFormat;
     private File folderToScan;
     private ConcurrentLinkedQueue<File> dirsToScan = new ConcurrentLinkedQueue<File>();
+    private Map<File, FileInformation> modifiedFiles = null;
     private RequestProcessor.Task scanTask;
     private static final RequestProcessor rp = new RequestProcessor("MercurialAnnotateScan", 1, true); // NOI18N
     
@@ -207,7 +191,7 @@ public class MercurialAnnotator extends VCSAnnotator {
         FileInformation mostImportantInfo = null;
         File mostImportantFile = null;
         boolean folderAnnotation = false;
-        
+                
         for (final File file : context.getRootFiles()) {
             FileInformation info = cache.getCachedStatus(file, true);
             if (info == null) {
@@ -235,10 +219,10 @@ public class MercurialAnnotator extends VCSAnnotator {
         
         if (mostImportantInfo == null) return null;
         return folderAnnotation ?
-            annotateFolderNameHtml(name, mostImportantInfo, mostImportantFile) :
+            annotateFolderNameHtml(name, context, mostImportantInfo, mostImportantFile) :
             annotateNameHtml(name, mostImportantInfo, mostImportantFile);
     }
-    
+                
     public Image annotateIcon(Image icon, VCSContext context) {
         boolean folderAnnotation = false;
         for (File file : context.getRootFiles()) {
@@ -273,21 +257,15 @@ public class MercurialAnnotator extends VCSAnnotator {
         boolean allExcluded = true;
         boolean modified = false;
         
-        Map<File, FileInformation> map = cache.getAllModifiedFiles();
-        Map<File, FileInformation> modifiedFiles = new HashMap<File, FileInformation>();
-        for (Iterator i = map.keySet().iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            FileInformation info = map.get(file);
-            if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) modifiedFiles.put(file, info);
-        }
+        Map<File, FileInformation> locallyChangedFiles = getLocallyChangedFiles();
         
         for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
             File file = (File) i.next();
             if (VersioningSupport.isFlat(file)) {
-                for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
+                for (Iterator j = locallyChangedFiles.keySet().iterator(); j.hasNext();) {
                     File mf = (File) j.next();
                     if (mf.getParentFile().equals(file)) {
-                        FileInformation info = modifiedFiles.get(mf);
+                        FileInformation info = locallyChangedFiles.get(mf);
                         if (info.isDirectory()) continue;
                         int status = info.getStatus();
                         if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
@@ -299,10 +277,10 @@ public class MercurialAnnotator extends VCSAnnotator {
                     }
                 }
             } else {
-                for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
+                for (Iterator j = locallyChangedFiles.keySet().iterator(); j.hasNext();) {
                     File mf = (File) j.next();
                     if (Utils.isAncestorOrEqual(file, mf)) {
-                        FileInformation info = modifiedFiles.get(mf);
+                        FileInformation info = locallyChangedFiles.get(mf);
                         int status = info.getStatus();
                         if ((status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY || status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) && file.equals(mf)) {
                             continue;
@@ -326,6 +304,21 @@ public class MercurialAnnotator extends VCSAnnotator {
         }
     }
     
+    private synchronized Map<File, FileInformation> getLocallyChangedFiles() {
+        if(modifiedFiles == null || cache.modifiedFilesChanged()) {
+            Map<File, FileInformation> map = cache.getAllModifiedFiles();
+            modifiedFiles = new HashMap<File, FileInformation>();
+            for (Iterator i = map.keySet().iterator(); i.hasNext();) {
+                File file = (File) i.next();
+               FileInformation info = map.get(file);
+                if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
+                    modifiedFiles.put(file, info);
+                }
+            }
+        }
+        return modifiedFiles;
+    }
+
     public Action[] getActions(VCSContext ctx, VCSAnnotator.ActionDestination destination) {
         // TODO: get resource strings for all actions:
         ResourceBundle loc = NbBundle.getBundle(MercurialAnnotator.class);
@@ -526,7 +519,7 @@ public class MercurialAnnotator extends VCSAnnotator {
         return lessThan.matcher(name).replaceAll("&lt;"); // NOI18N
     }
     
-    private String annotateFolderNameHtml(String name, FileInformation mostImportantInfo, File mostImportantFile) {
+    private String annotateFolderNameHtml(String name, VCSContext context, FileInformation mostImportantInfo, File mostImportantFile) {
         String nameHtml = htmlEncode(name);
         if (mostImportantInfo.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED){
             return excludedFormat.format(new Object [] { nameHtml, ""}); // NOI18N
@@ -535,20 +528,52 @@ public class MercurialAnnotator extends VCSAnnotator {
         if (fileName.equals(name)){
             return uptodateFormat.format(new Object [] { nameHtml, "" }); // NOI18N
         }
+
+        final Set<File> rootFiles = context.getRootFiles();
+        File repo = null;        
+        String folderAnotation = null;
+        if(rootFiles.size() == 1) {
+            File root = null; 
+            for (File file : rootFiles) {
+                root = file;
+                repo = Mercurial.getInstance().getTopmostManagedParent(root);
+                break;
+            }
+            if (!repo.getAbsolutePath().equals(root.getAbsolutePath())) {
+                // not from repo root => do not annnotate with folder name 
+                return uptodateFormat.format(new Object [] { nameHtml, ""});
+            }             
+        } else {
         
-        // Label top level repository nodes with a repository name label when:
-        // Display Name (name) is different from its repo name (repo.getName())
-        fileName = null;
-        File repo = Mercurial.getInstance().getTopmostManagedParent(mostImportantFile);
-        if(repo != null && repo.equals(mostImportantFile)){
-            if (!repo.getName().equals(name)){
-                fileName = repo.getName();
-            }          
+            // Label top level repository nodes with a repository name label when:
+            // Display Name (name) is different from its repo name (repo.getName())        
+            File parentFile = null;
+            for (File file : rootFiles) {            
+                if(parentFile == null) {
+                    parentFile = file.getParentFile();
+                } else {
+                    File p = file.getParentFile();
+                    if(p == null || !parentFile.getAbsolutePath().equals(p.getAbsolutePath())) {
+                        // not comming from the same parent => do not annnotate with folder name
+                        return uptodateFormat.format(new Object [] { nameHtml, ""});
+                    }
+                }
+            }
+            for (File file : rootFiles) {            
+                repo = Mercurial.getInstance().getTopmostManagedParent(file);
+                if (!repo.getAbsolutePath().equals(parentFile.getAbsolutePath())) {
+                    // not from repo root => do not annnotate with folder name 
+                    return uptodateFormat.format(new Object [] { nameHtml, ""});
+                } 
+                break;
+            }
         }
-        if (fileName != null)
-            return uptodateFormat.format(new Object [] { nameHtml, " [" + fileName + "]" }); // NOI18N
-        else
-            return uptodateFormat.format(new Object [] { nameHtml, "" }); // NOI18N
+        
+        if (!repo.getName().equals(name)){
+            folderAnotation = repo.getName();
+        }                
+
+        return uptodateFormat.format(new Object [] { nameHtml, folderAnotation != null ? " [" + folderAnotation + "]" : ""}); // NOI18N
     }
     
     private boolean isMoreImportant(FileInformation a, FileInformation b) {

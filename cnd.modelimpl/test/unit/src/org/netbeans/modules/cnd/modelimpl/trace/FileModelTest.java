@@ -291,9 +291,59 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("conversion_operator.cc"); // NOI18N
     }
 
+    public void testClassQualifiers() throws Exception {
+        // IZ 136821 : Keyword volatile breakes classifier content
+        performTest("class_qualifiers.cc"); // NOI18N
+    }
+
+    public void testExtensions() throws Exception {
+        // IZ 137118 : IDE highlights GTK_WIDGET_SET_FLAGS and GTK_CAN_DEFAULT macros
+        performTest("extensions.cc"); // NOI18N
+    }
+
+    public void testClassTemplateMethodCall() throws Exception {
+        // IZ 137531 : IDE highlights db.template cursor<T> line as error
+        performTest("class_template_method_call.cc"); // NOI18N
+    }
+
+    public void testGccAttribute() throws Exception {
+        // IZ 136947 : IDE highlights code with 'typedef' as wrong
+        performTest("gcc_attribute.c"); // NOI18N
+    }
+
+    public void testComplex() throws Exception {
+        // IZ 136729 : Code model is broken by _Complex keyword
+        performTest("complex.c"); // NOI18N
+    }
+
+    public void testAttributeInConstructor() throws Exception {
+        // IZ 136239 : C++ grammar does not allow attributes after constructor
+        performTest("attribute_in_constructor.cc"); // NOI18N
+    }
+
+    public void testCastOperator() throws Exception {
+        // IZ 137094 : grammar do not support parenthesis in cast
+        performTest("cast.cc"); // NOI18N
+    }
+
+    public void testIZ138320() throws Exception {
+        // IZ 138320 : IDE doesn't recognize 'class P = V const *' line in template
+        performTest("IZ138320.cc"); // NOI18N
+    }
+
+    public void testIZ138551() throws Exception {
+        // IZ 138551 : parser fails on "template class A::B<1>;"
+        performTest("IZ138551.cc"); // NOI18N
+    }
+
     public void testStringizeMacro() throws Exception {
         // IZ 137465 : wrong macro expansion for #x
         performPreprocessorTest("stringize_macro.cc"); // NOI18N
+    }
+
+    public void testTemplateParams() throws Exception {
+        // IZ 138551 : parser fails on "template class A::B<1>;"
+        performTest("templateParams.h"); // NOI18N
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -329,3 +379,5 @@ public class FileModelTest extends TraceModelTestBase {
    }
     
 }
+
+

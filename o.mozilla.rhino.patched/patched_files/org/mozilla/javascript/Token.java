@@ -285,7 +285,10 @@ public class Token
         // For syntax highlighting purposes, "undefined" should be treated as a keyword
         UNDEFINED      = 165,
 
-        LAST_TOKEN     = 166;
+        // For E4X (XML literal) nodes
+        E4X            = 166,
+
+        LAST_TOKEN     = 167;
 // </netbeans>
         
 
@@ -468,6 +471,7 @@ public class Token
           case REGEXP_ERROR:    return "REGEXP_ERROR";
           case MISSING_DOT:     return "MISSING_DOT";
           case UNDEFINED:       return "UNDEFINED";
+          case E4X:             return "E4X";
 // </netbeans>
         }
 

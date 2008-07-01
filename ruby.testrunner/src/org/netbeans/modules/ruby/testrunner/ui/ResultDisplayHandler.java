@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.ruby.testrunner.TestRunnerSettings;
@@ -59,6 +61,8 @@ import org.netbeans.modules.ruby.testrunner.TestRunnerSettings.DividerSettings;
  */
 final class ResultDisplayHandler {
 
+    private static final Logger LOGGER = Logger.getLogger(ResultDisplayHandler.class.getName());
+    
     /** */
     private static java.util.ResourceBundle bundle = org.openide.util.NbBundle.getBundle(
             ResultDisplayHandler.class);
@@ -68,8 +72,6 @@ final class ResultDisplayHandler {
     private ResultPanelOutput outputListener;
     /** */
     private JSplitPane displayComp;
-    private Component left;
-    private Component right;
     
     /** Creates a new instance of ResultDisplayHandler */
     ResultDisplayHandler() {
@@ -87,10 +89,8 @@ final class ResultDisplayHandler {
     /**
      */
     private JSplitPane createDisplayComp() {
-        left = new StatisticsPanel(this);
-        right = new ResultPanelOutput(this);
         DividerSettings dividerSettings = TestRunnerSettings.getDefault().getDividerSettings(null);
-        return createDisplayComp(left, right, dividerSettings.getOrientation(), dividerSettings.getLocation());
+        return createDisplayComp(new StatisticsPanel(this), new ResultPanelOutput(this), dividerSettings.getOrientation(), dividerSettings.getLocation());
     }
 
     private JSplitPane createDisplayComp(Component left, Component right, int orientation, final int location) {
@@ -210,7 +210,7 @@ final class ResultDisplayHandler {
      * {@link #treePanel} once it is initialized
      */
     private String runningSuite;
-    private List<Report> reports;
+    private final List<Report> reports = new ArrayList<Report>();
     private String message;
     private boolean sessionFinished;
 
@@ -221,16 +221,12 @@ final class ResultDisplayHandler {
      */
     void displaySuiteRunning(String suiteName) {
 
-        /* Called from the AntLogger's thread */
-
-//        assert runningSuite == null;
-        if (runningSuite != null && runningSuite.equals(suiteName)) {
-            return;
-        }
-
-        suiteName = (suiteName != null) ? suiteName : ANONYMOUS_SUITE;
-
         synchronized (this) {
+
+            assert runningSuite == null;
+
+            suiteName = (suiteName != null) ? suiteName : ANONYMOUS_SUITE;
+
             if (treePanel == null) {
                 runningSuite = suiteName;
                 return;
@@ -245,22 +241,17 @@ final class ResultDisplayHandler {
      */
     void displayReport(final Report report) {
 
-        /* Called from the AntLogger's thread */
-
         synchronized (this) {
             if (treePanel == null) {
-                if (reports == null) {
-                    reports = new ArrayList<Report>(10);
-                }
                 reports.add(report);
                 runningSuite = null;
                 return;
             }
+            assert runningSuite == null;
         }
 
         displayInDispatchThread("displayReport", report);               //NOI18N
 
-        assert runningSuite == null;
     }
 
     /**
@@ -310,18 +301,28 @@ final class ResultDisplayHandler {
     private void displayInDispatchThread(final String methodName,
             final Object param) {
         assert methodName != null;
-        assert treePanel != null;
+        
+        Method method = null;
+        synchronized (this) {
+            assert treePanel != null;
 
-        final Method method = prepareMethod(methodName);
-        if (method == null) {
-            return;
+            method = prepareMethod(methodName);
+            if (method == null) {
+                LOGGER.log(Level.WARNING, "No such method: " + methodName);
+                return;
+            }
         }
 
+        final Method finalMethod = method;
+        
         EventQueue.invokeLater(new Runnable() {
 
             public void run() {
                 try {
-                    method.invoke(treePanel, new Object[]{param});
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "Invoking: " + methodName + " with param: " + param);
+                    }
+                    finalMethod.invoke(treePanel, new Object[]{param});
                 } catch (InvocationTargetException ex) {
                     ErrorManager.getDefault().notify(ex.getTargetException());
                 } catch (Exception ex) {
@@ -369,26 +370,24 @@ final class ResultDisplayHandler {
 
     /**
      */
-    void setTreePanel(final ResultPanelTree treePanel) {
+    synchronized void setTreePanel(final ResultPanelTree treePanel) {
         assert EventQueue.isDispatchThread();
 
         /* Called from the EventDispatch thread */
 
-        synchronized (this) {
-            if (this.treePanel != null) {
-                return;
-            }
-
-            this.treePanel = treePanel;
+        if (this.treePanel != null) {
+            return;
         }
+
+        this.treePanel = treePanel;
 
         if (message != null) {
             treePanel.displayMsg(message);
             message = null;
         }
-        if (reports != null) {
+        if (!reports.isEmpty()) {
             treePanel.displayReports(reports);
-            reports = null;
+            reports.clear();
         }
         if (runningSuite != null) {
             treePanel.displaySuiteRunning(runningSuite != ANONYMOUS_SUITE

@@ -73,7 +73,7 @@ public class DumpTokens {
             try{
                 tokens = dumpTokens();
             }catch(IOException e){
-                AssertionError error = new AssertionError("DUMPING ERROR");
+                AssertionError error = new AssertionError("Dumping error");
                 error.initCause(e);
                 throw error;
             }
@@ -83,7 +83,7 @@ public class DumpTokens {
 
     @SuppressWarnings("unchecked")
     private List<Token> dumpTokens() throws IOException {
-        Logger.getLogger(DumpTokens.class.getName()).info("DUMPING TOKNES");
+        Logger.getLogger(DumpTokens.class.getName()).info("Dumping tokens");
         DataObject dataObj = DataObject.find(FileUtil.toFileObject(file));
         EditorCookie ed = dataObj.getCookie(EditorCookie.class);
 
@@ -108,7 +108,7 @@ public class DumpTokens {
             }
             roundCount++;
             if (roundCount > 50){
-                throw new AssertionError("IMPOSSIBLE TO GET TOKEN HIERARCHY " +roundCount+ "times");
+                throw new AssertionError("Impossible to get token hierarchy " +roundCount+ "times");
             }
             try {
                 Thread.sleep(1000);
@@ -127,10 +127,10 @@ public class DumpTokens {
     }
     
     private List<Token> dumpTokens(TokenSequence ts){
-        Logger.getLogger(DumpTokens.class.getName()).info("PARSING TOKEN SEQUENCE");
+        Logger.getLogger(DumpTokens.class.getName()).info("Parsing token sequence");
         List<Token> result = null;
         if (ts == null) {
-            throw new AssertionError("No TOKEN SEQUENCE");
+            throw new AssertionError("No token sequence");
         }
         ts.move(0);
 

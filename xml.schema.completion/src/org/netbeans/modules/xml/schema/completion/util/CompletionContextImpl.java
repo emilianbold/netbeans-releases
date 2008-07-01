@@ -203,13 +203,20 @@ public class CompletionContextImpl extends CompletionContext {
                 //user enters < character
                 case XMLDefaultTokenContext.TEXT_ID:
                     String chars = token.getImage().trim();
+                    if(chars != null && chars.startsWith("&")) {
+                        completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
+                        break;
+                    }                    
                     if(chars != null && chars.equals("") &&
                        token.getPrevious().getImage().trim().equals("/>")) {
                         completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
                         break;
                     }                    
-                    if(chars != null && chars.equals("") &&
+                    if(chars != null &&
                        token.getPrevious().getImage().trim().equals(">")) {
+                        if(!chars.equals("") && !chars.equals(">"))
+                            typedChars = chars;
+                        pathFromRoot = getPathFromRoot(element);
                         completionType = CompletionType.COMPLETION_TYPE_ELEMENT_VALUE;
                         break;
                     }
@@ -291,11 +298,28 @@ public class CompletionContextImpl extends CompletionContext {
                 //user enters = character, we should ignore all other operators
                 case XMLDefaultTokenContext.OPERATOR_ID:
                 //user enters either ' or "
-                case XMLDefaultTokenContext.VALUE_ID:
-                    attribute = element.getPrevious().toString();
+                case XMLDefaultTokenContext.VALUE_ID: {
+                    //user enters start quote and no end quote exists
+                    if(token.getNext() == null) {
+                        if(lastTypedChar == '\'' || lastTypedChar == '\"')
+                            typedChars = null;
+                        else 
+                            typedChars = token.getImage().substring(1, token.getImage().indexOf(">"));
+                    }                    
+                    
+                    //user is inside start/end quotes
+                    if(lastTypedChar != '\'' && lastTypedChar != '\"') {
+                        String str = token.getImage();
+                        if( str != null && !str.equals("\"\"") && !str.equals("\'\'") &&
+                            (str.startsWith("\"") || str.startsWith("\'")) &&
+                            (str.endsWith("\"") || str.endsWith("\'")) ) {
+                            typedChars = str.substring(1, str.length()-1);
+                        }
+                    }
+                    attribute = element.getPrevious().toString();                    
                     completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE_VALUE;
                     pathFromRoot = getPathFromRoot(element);
-                    TokenItem t = token;                    
+                    TokenItem t = token;
                     while(t != null) {
                         int nId = t.getTokenID().getNumericID();
                         if(nId == XMLDefaultTokenContext.ARGUMENT_ID) {
@@ -305,6 +329,7 @@ public class CompletionContextImpl extends CompletionContext {
                         t = t.getPrevious();
                     }
                     break;
+                }
 
                 //user enters white-space character
                 case XMLDefaultTokenContext.WS_ID:
@@ -313,9 +338,12 @@ public class CompletionContextImpl extends CompletionContext {
                     while( prev != null &&
                            (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.WS_ID) ) {
                             prev = prev.getPrevious();
-                    }                    
+                    }
                     if( (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.VALUE_ID) ||
                         (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.TAG_ID) ) {
+                        //no attr completion for end tags
+                        if(prev.getImage().startsWith("</"))
+                            break;
                         completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
                         pathFromRoot = getPathFromRoot(element);
                     }

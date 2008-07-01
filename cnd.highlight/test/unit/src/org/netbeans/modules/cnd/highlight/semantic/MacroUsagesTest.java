@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.highlight.semantic.SemanticHighlighter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 
 /**

@@ -11,16 +11,14 @@ package org.netbeans.test.mercurial.main.commit;
 
 import java.io.File;
 import javax.swing.table.TableModel;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.mercurial.operators.CommitOperator;
-import org.netbeans.test.mercurial.utils.RepositoryMaintenance;
 import org.netbeans.test.mercurial.utils.TestKit;
 
 /**
@@ -39,6 +37,7 @@ public class CommitUiTest extends JellyTestCase{
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {        
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
@@ -54,15 +53,9 @@ public class CommitUiTest extends JellyTestCase{
         return unix;
     }
     
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CommitUiTest("testInvokeCloseCommit"));
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(CommitUiTest.class).addTest("testInvokeCloseCommit").enableModules(".*").clusters(".*"));
     }
     
     public void testInvokeCloseCommit() throws Exception {
@@ -81,21 +74,26 @@ public class CommitUiTest extends JellyTestCase{
         }
         
         try {
-            TestKit.closeProject(PROJECT_NAME);
-            
             TestKit.loadOpenProject(PROJECT_NAME, getDataDir());
             TestKit.createNewElements(PROJECT_NAME, "xx", "NewClass");
             TestKit.createNewElement(PROJECT_NAME, "xx", "NewClass2");
             TestKit.createNewElement(PROJECT_NAME, "xx", "NewClass3");
             Node packNode = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
             CommitOperator co = CommitOperator.invoke(packNode);
+            Thread.sleep(2000);
             
             co.selectCommitAction("NewClass.java", "Commit");
+            Thread.sleep(500);
             co.selectCommitAction("NewClass.java", "Commit");
+            Thread.sleep(500);
             co.selectCommitAction("NewClass.java", "Exclude from Commit");
+            Thread.sleep(500);
             co.selectCommitAction(2, "Commit");
+            Thread.sleep(500);
             co.selectCommitAction(2, "Commit");
+            Thread.sleep(500);
             co.selectCommitAction(2, "Exclude from Commit");
+            Thread.sleep(500);
             
             JTableOperator table = co.tabFiles();
             TableModel model = table.getModel();
@@ -110,11 +108,10 @@ public class CommitUiTest extends JellyTestCase{
             co.verify();
             co.cancel();
             //TestKit.removeAllData(PROJECT_NAME);
-            
+            TestKit.closeProject(PROJECT_NAME);
         } catch (Exception e) {
+            TestKit.closeProject(PROJECT_NAME);
             throw new Exception("Test failed: " + e);
-        } finally {
-            TestKit.closeProject(PROJECT_NAME);    
         }
     }
 }

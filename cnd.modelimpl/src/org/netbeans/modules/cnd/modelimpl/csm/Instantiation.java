@@ -191,7 +191,7 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         }
 
         public boolean isTemplate() {
-            return ((CsmClass)declaration).isTemplate();
+            return ((CsmTemplate)declaration).isTemplate();
         }
 
         private CsmMember createMember(CsmMember member) {
@@ -203,6 +203,11 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
                 return new Typedef((CsmTypedef)member, this);
             } else if (member instanceof CsmClass) {
                 return new Class((CsmClass)member, getMapping());
+            } else if (member instanceof CsmClassForwardDeclaration) {
+                return new ClassForward((CsmClassForwardDeclaration)member, this);
+            } else if (member instanceof CsmEnum) {
+                // no need to instantiate enums?
+                return member;
             }
             assert false : "Unknown class for member instantiation:" + member + " of class:" + member.getClass(); // NOI18N
             return member;
@@ -225,7 +230,11 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         }
 
         public Collection<CsmInheritance> getBaseClasses() {
-            return ((CsmClass)declaration).getBaseClasses();
+            Collection<CsmInheritance> res = new ArrayList<CsmInheritance>();
+            for (CsmInheritance inh : ((CsmClass)declaration).getBaseClasses()) {
+                res.add(new Inheritance(inh, this));
+            }
+            return res;
         }
 
         @Override
@@ -253,6 +262,70 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
             return ((CsmTemplate)declaration).getTemplateParameters();
         }
     }
+
+    private static class Inheritance implements CsmInheritance, Resolver.SafeClassifierProvider {
+        private final CsmInheritance inheritance;
+        private final CsmType type;
+        private CsmClassifier resolvedClassifier;
+
+        public Inheritance(CsmInheritance inheritance, Instantiation instantiation) {
+            this.inheritance = inheritance;
+            this.type = createType(inheritance.getAncestorType(), instantiation);
+        }
+
+        public CsmType getAncestorType() {
+            return type;
+        }
+
+        public CharSequence getText() {
+            return inheritance.getText();
+        }
+
+        public Position getStartPosition() {
+            return inheritance.getStartPosition();
+        }
+
+        public int getStartOffset() {
+            return inheritance.getStartOffset();
+        }
+
+        public Position getEndPosition() {
+            return inheritance.getEndPosition();
+        }
+
+        public int getEndOffset() {
+            return inheritance.getEndOffset();
+        }
+
+        public CsmFile getContainingFile() {
+            return inheritance.getContainingFile();
+        }
+
+        public boolean isVirtual() {
+            return inheritance.isVirtual();
+        }
+
+        public CsmVisibility getVisibility() {
+            return inheritance.getVisibility();
+        }
+
+        public CsmClassifier getClassifier() {
+            return getClassifier(null);
+        }
+
+        public CsmClassifier getClassifier(Resolver parent) {
+            if (resolvedClassifier == null) {
+                CsmType t= getAncestorType();
+                if (t instanceof Resolver.SafeClassifierProvider) {
+                    resolvedClassifier = ((Resolver.SafeClassifierProvider)t).getClassifier(parent);
+                } else {
+                    resolvedClassifier = t.getClassifier();
+                }
+            }
+            return resolvedClassifier;
+        }
+
+    }
     
     private static class Function extends Instantiation implements CsmFunction {
         private final CsmType retType;
@@ -273,7 +346,7 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         }
 
         public boolean isTemplate() {
-            return ((CsmFunction)declaration).isTemplate();
+            return ((CsmTemplate)declaration).isTemplate();
         }
 
         public boolean isInline() {
@@ -407,6 +480,36 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         }
     }
     
+    private static class ClassForward extends Instantiation<CsmClassForwardDeclaration> implements CsmClassForwardDeclaration, CsmMember<CsmClassForwardDeclaration> {
+        private CsmClassForwardDeclaration forward;
+
+        public ClassForward(CsmClassForwardDeclaration forward, CsmInstantiation instantiation) {
+            super(forward, instantiation.getMapping());
+            this.forward = forward;
+        }
+
+        public CsmClass getContainingClass() {
+            return ((CsmMember)declaration).getContainingClass();
+        }
+
+        public CsmVisibility getVisibility() {
+            return ((CsmMember)declaration).getVisibility();
+        }
+
+        public boolean isStatic() {
+            return ((CsmMember)declaration).isStatic();
+        }
+
+        @Override
+        public String toString() {
+            return "INSTANTIATION OF TYPEDEF: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
+        }
+
+        public CsmClass getCsmClass() {
+            return forward.getCsmClass();
+        }
+    }
+
     private static class Method extends Instantiation implements CsmMethod, CsmFunctionDefinition {
         private final CsmInstantiation instantiation;
         private final CsmType retType;
@@ -434,7 +537,7 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         }
 
         public boolean isTemplate() {
-            return ((CsmMethod)declaration).isTemplate();
+            return ((CsmTemplate)declaration).isTemplate();
         }
 
         public boolean isInline() {
@@ -575,7 +678,8 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         private final CsmInstantiation instantiation;
         protected final CsmType instantiatedType;
         private final boolean inst;
-        
+        private CsmClassifier resolved;
+
         private Type(CsmType type, CsmInstantiation instantiation) {
             this.instantiation = instantiation;
             inst = type.isInstantiation();
@@ -680,30 +784,36 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         }
 
         public CsmClassifier getClassifier(Resolver resolver) {
-            CsmClassifier res;
-            
-            if (inst) {
-                CsmClassifier classifier = originalType.getClassifier();
-                if (CsmKindUtilities.isTemplate(classifier)) {
-                    res = (CsmClassifier)Class.create(
-                            (CsmTemplate)classifier, instantiation.getMapping());
-                    return res;
+            if (resolved == null) {
+                if (inst) {
+                    CsmClassifier classifier;
+                    if (originalType instanceof Resolver.SafeClassifierProvider) {
+                        classifier = ((Resolver.SafeClassifierProvider)originalType).getClassifier(resolver);
+                    } else {
+                        classifier = originalType.getClassifier();
+                    }
+                    if (CsmKindUtilities.isTemplate(classifier)) {
+                        resolved = (CsmClassifier)Class.create(
+                                (CsmTemplate)classifier, instantiation.getMapping());
+                        return resolved;
+                    }
+                }
+
+                if (instantiatedType instanceof Resolver.SafeClassifierProvider) {
+                    resolved = ((Resolver.SafeClassifierProvider)instantiatedType).getClassifier(resolver);
+                } else {
+                    resolved = instantiatedType.getClassifier();
+                }
+
+                if (CsmKindUtilities.isTypedef(resolved) && CsmKindUtilities.isClassMember(resolved)) {
+                    CsmMember tdMember = (CsmMember)resolved;
+                    if (CsmKindUtilities.isTemplate(tdMember.getContainingClass())) {
+                        resolved = new Typedef((CsmTypedef)resolved, instantiation);
+                        return resolved;
+                    }
                 }
             }
-            
-            if (instantiatedType instanceof Resolver.SafeClassifierProvider) {
-                res = ((Resolver.SafeClassifierProvider)instantiatedType).getClassifier(resolver);
-            } else {
-                res = instantiatedType.getClassifier();
-            }
-            
-            if (CsmKindUtilities.isTypedef(res) && CsmKindUtilities.isClassMember(res)) {
-                CsmMember tdMember = (CsmMember)res;
-                if (CsmKindUtilities.isTemplate(tdMember.getContainingClass())) {
-                    return new Typedef((CsmTypedef)res, instantiation);
-                }
-            }
-            return res;
+            return resolved;
         }
         
         public CsmClassifier getClassifier() {

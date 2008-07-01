@@ -646,7 +646,7 @@ public final class CsmProjectContentResolver {
             }
         }
         if (!first) {
-            Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(file, filter);
+            Iterator<CsmVariable> it = CsmSelect.getDefault().getStaticVariables(file, filter);
             while(it.hasNext()) {
                 CsmOffsetableDeclaration decl = it.next();
                  if (CsmKindUtilities.isFileLocalVariable(decl)) {
@@ -758,6 +758,7 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.UNION,
             CsmDeclaration.Kind.STRUCT,
             CsmDeclaration.Kind.CLASS,
+            CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION,
             CsmDeclaration.Kind.ENUM
         };
         List res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, false, match, inspectParentClasses, true, false);
@@ -949,7 +950,7 @@ public final class CsmProjectContentResolver {
                 // handle base classes in context of original class/function
                 for (Iterator<CsmInheritance> it2 = csmClass.getBaseClasses().iterator(); it2.hasNext();) {
                     CsmInheritance inherit = it2.next();
-                    CsmClass baseClass = inherit.getCsmClass();
+                    CsmClass baseClass = CsmInheritanceUtilities.getCsmClass(inherit);
                     if (baseClass != null) {
                         CsmVisibility nextMinVisibility;
                         int nextInheritanceLevel = inheritanceLevel;

@@ -39,16 +39,22 @@
 
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.Collection;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.php.editor.index.IndexedConstant;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.openide.util.NbBundle;
 
@@ -93,6 +99,14 @@ public class UninitializedVariableRule  extends PHPRule {
             if (forEachStatement.getExpression() != variable){
                 return;
             }
+        } else if (parent instanceof ArrayAccess) {
+            if (context.path.size() > 1) {
+                ASTNode grandpa = context.path.get(1);
+                
+                if (grandpa instanceof FieldAccess || grandpa instanceof StaticFieldAccess) {
+                    return;
+                }
+            }
         }
         
         check(variable);
@@ -104,6 +118,16 @@ public class UninitializedVariableRule  extends PHPRule {
             String varName = identifier.getName();
             
             if (varName != null && !context.variableStack.isVariableDefined(varName)) {
+                // check the globals from included files
+                Collection<IndexedConstant> topLevelVars = context.index.getTopLevelVariables((PHPParseResult) context.parserResult,
+                        "$" + varName, NameKind.EXACT_NAME); //NOI18N
+                
+                for (IndexedConstant topLevelVar : topLevelVars) {
+                    if (topLevelVar.isResolved()){
+                        return;
+                    }
+                }
+                
                 OffsetRange range = new OffsetRange(var.getStartOffset(), var.getEndOffset());
 
                 Hint hint = new Hint(UninitializedVariableRule.this, getDescription(),

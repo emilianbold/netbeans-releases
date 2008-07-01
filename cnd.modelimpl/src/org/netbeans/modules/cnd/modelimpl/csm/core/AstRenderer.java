@@ -1115,7 +1115,7 @@ public class AstRenderer {
     
     protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, 
 	    MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope) {
-	
+	type = TemplateUtils.checkTemplateType(type, scope);
         VariableImpl var = new VariableImpl(offsetAst, file, type, name, scope, (container1 != null) || (container2 != null));
         var.setStatic(_static);
         return var;

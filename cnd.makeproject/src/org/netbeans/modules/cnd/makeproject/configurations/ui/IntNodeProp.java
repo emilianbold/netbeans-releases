@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.PlatformConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.openide.nodes.Node;
 
 public class IntNodeProp extends Node.Property {
@@ -62,14 +64,17 @@ public class IntNodeProp extends Node.Property {
 	this.txt3 = txt3;
     }
 
+    @Override
     public String getName() {
 	return txt2;
     }
 
+    @Override
     public String getShortDescription() {
 	return txt3;
     }
     
+    @Override
     public String getHtmlDisplayName() {
         if (intConfiguration.getModified())
             return "<b>" + getDisplayName(); // NOI18N
@@ -85,14 +90,17 @@ public class IntNodeProp extends Node.Property {
         intConfiguration.setValue((String)v);
     }
     
+    @Override
     public void restoreDefaultValue() {
         intConfiguration.reset();
     }
     
+    @Override
     public boolean supportsDefaultValue() {
         return true;
     }
     
+    @Override
     public boolean isDefaultValue() {
         return !intConfiguration.getModified();
     }
@@ -105,23 +113,28 @@ public class IntNodeProp extends Node.Property {
         return true;
     }
 
+    @Override
     public PropertyEditor getPropertyEditor() {
 	return new IntEditor();
     }
 
     private class IntEditor extends PropertyEditorSupport {
+        @Override
         public String getJavaInitializationString() {
             return getAsText();
         }
         
+        @Override
         public String getAsText() {
             return intConfiguration.getName();
         }
         
+        @Override
         public void setAsText(String text) throws java.lang.IllegalArgumentException {
             setValue(text);
         }
         
+        @Override
         public String[] getTags() {
             return intConfiguration.getNames();
         }

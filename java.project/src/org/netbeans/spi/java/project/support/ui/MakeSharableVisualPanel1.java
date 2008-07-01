@@ -94,7 +94,7 @@ final class MakeSharableVisualPanel1 extends JPanel {
                     org.openide.util.NbBundle.getMessage(MakeSharableVisualPanel1.class, "WARN_MakeSharable.absolutePath"));
             wrong = true;
         } else {
-            File projectLoc = helper.resolveFile(location);
+            File projectLoc = FileUtil.toFile(helper.getProjectDirectory());
             File libLoc = PropertyUtils.resolveFile(projectLoc, location);
             if (!CollocationQuery.areCollocated(projectLoc, libLoc)) {
                 settings.putProperty("WizardPanel_errorMessage", // NOI18N

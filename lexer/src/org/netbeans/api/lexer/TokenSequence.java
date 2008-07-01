@@ -41,7 +41,9 @@
 
 package org.netbeans.api.lexer;
 
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
+import java.util.Set;
 import org.netbeans.lib.lexer.EmbeddedTokenList;
 import org.netbeans.lib.lexer.EmbeddingContainer;
 import org.netbeans.lib.lexer.JoinTokenList;
@@ -310,7 +312,7 @@ public final class TokenSequence<T extends TokenId> {
      */
     public <ET extends TokenId> TokenSequence<ET> embedded(Language<ET> embeddedLanguage) {
         checkTokenNotNull();
-        return embeddedImpl(embeddedLanguage, false);
+        return embeddedImpl(Collections.<Language<?>>singleton(embeddedLanguage), false);
     }
 
     /**
@@ -343,15 +345,15 @@ public final class TokenSequence<T extends TokenId> {
      */
     public <ET extends TokenId> TokenSequence<ET> embeddedJoined(Language<ET> embeddedLanguage) {
         checkTokenNotNull();
-        return embeddedImpl(embeddedLanguage, true);
+        return embeddedImpl(Collections.<Language<?>>singleton(embeddedLanguage), true);
     }
 
-    private <ET extends TokenId> TokenSequence<ET> embeddedImpl(Language<ET> embeddedLanguage, boolean joined) {
+    private <ET extends TokenId> TokenSequence<ET> embeddedImpl(Set<Language<?>> embeddedLanguagesSet, boolean joined) {
         if (token.isFlyweight())
             return null;
 
         EmbeddedTokenList<ET> embeddedTokenList
-                = EmbeddingContainer.embeddedTokenList(tokenList, tokenIndex, embeddedLanguage, true);
+                = EmbeddingContainer.embeddedTokenList(tokenList, tokenIndex, embeddedLanguagesSet, true);
         if (embeddedTokenList != null) {
             embeddedTokenList.embeddingContainer().updateStatus();
             TokenSequence<ET> tse;
@@ -413,9 +415,8 @@ public final class TokenSequence<T extends TokenId> {
     int startSkipLength, int endSkipLength, boolean joinSections) {
         checkTokenNotNull();
         // Write-lock presence checked in the impl
-        return false;
-//        return EmbeddingContainer.createEmbedding(tokenList, tokenIndex,
-//                embeddedLanguage, startSkipLength, endSkipLength, joinSections);
+        return EmbeddingContainer.createEmbedding(tokenList, tokenIndex,
+                embeddedLanguage, startSkipLength, endSkipLength, joinSections);
     }
     
     /**
@@ -709,8 +710,14 @@ public final class TokenSequence<T extends TokenId> {
     
     @Override
     public String toString() {
-        return LexerUtilsConstants.appendTokenList(null, tokenList,
-                tokenIndex, 0, Integer.MAX_VALUE, true, 0, true).toString();
+        StringBuilder sb = new StringBuilder(200);
+        sb.append("TokenSequence for ").append(tokenList.languagePath().mimePath()); // NOI18N
+        sb.append(" at tokenIndex=").append(tokenIndex); // NOI18N
+        sb.append(". TokenList contains ").append(tokenList.tokenCount()).append(" tokens:\n"); // NOI18N
+        LexerUtilsConstants.appendTokenList(sb, tokenList,
+                tokenIndex, 0, Integer.MAX_VALUE, true, 0, true);
+        sb.append('\n');
+        return sb.toString();
     }
     
     private void resetTokenIndex(int index, int offset) {
@@ -723,9 +730,9 @@ public final class TokenSequence<T extends TokenId> {
     private void checkTokenNotNull() {
         if (token == null) {
             throw new IllegalStateException(
-                "Caller of TokenSequence forgot to call moveNext/Previous() " +
-                "or it returned false (no more tokens): tokenIndex=" + tokenIndex
-            ); // NOI18N
+                "Caller of TokenSequence forgot to call moveNext/Previous() " + // NOI18N
+                "or it returned false (no more tokens)\n" + this // NOI18N
+            );
         }
     }
     

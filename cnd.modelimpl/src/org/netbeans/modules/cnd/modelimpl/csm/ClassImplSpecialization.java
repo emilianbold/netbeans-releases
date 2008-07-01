@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
@@ -62,6 +61,7 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
 	super(ast, file);
     }
     
+    @Override
     protected void init(CsmScope scope, AST ast) {
 	AST qIdToken = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
 	assert qIdToken != null;
@@ -76,6 +76,7 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
 	return impl;
     }
     
+    @Override
     public boolean isTemplate() {
 	return true;
     }
@@ -89,10 +90,6 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
 //	return qualifiedNameSuffix;
 //    }
 
-    public List<CsmTemplateParameter> getTemplateParameters() {
-	return Collections.EMPTY_LIST;
-    }
-
   
 // This does not work since the method is called from base class' constructor    
 //    protected String getQualifiedNamePostfix() {
@@ -103,6 +100,7 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
 //	return qName;
 //    }
 
+    @Override
     protected String getQualifiedNamePostfix() {
 	return super.getQualifiedNamePostfix() + qualifiedNameSuffix;
     }
@@ -110,6 +108,7 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
 	output.writeUTF(qualifiedNameSuffix);
@@ -120,6 +119,7 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
 	qualifiedNameSuffix = input.readUTF();
     }
     
+    @Override
     public String getDisplayName() {
 	return getName() + qualifiedNameSuffix;
     }

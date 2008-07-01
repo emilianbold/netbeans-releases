@@ -47,6 +47,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,6 +66,7 @@ import junit.framework.Test;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.CompletionQuery.ResultItem;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.util.PNGEncoder;
@@ -74,6 +76,8 @@ import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.test.web.FileObjectFilter;
 import org.netbeans.test.web.RecurrentSuiteFactory;
@@ -116,15 +120,21 @@ import org.openide.util.actions.SystemAction;
  * @author ms113234
  *
  */
-public class CompletionTest extends JellyTestCase {
+public class CompletionTest extends J2eeTestCase {
 
-    private static boolean GENERATE_GOLDEN_FILES = false;//generate golden files, or test
-    protected FileObject testFileObj;
-    protected boolean debug = false;
-    protected final static List XML_EXTS = Arrays.asList(new String[]{"html", "tld", "xhtml"});
-    protected final static List JSP_EXTS = Arrays.asList(new String[]{"jsp", "tag", "jspf", "tagf", "jspx", "tagx"});
+    private static final boolean GENERATE_GOLDEN_FILES = false;//generate golden files, or test
+    private static boolean projectsOpened = false;//open test projects
+    protected final static List XML_EXTS = Arrays.asList(new String[]{"html", "tld", "jspx", "tagx", "xhtml"});
+    protected final static List JSP_EXTS = Arrays.asList(new String[]{"jsp", "tag", "jspf", "tagf"});
     protected final static List JS_EXTS = Arrays.asList(new String[]{"js"/*,"java"*/});
 
+    protected FileObject testFileObj;
+    protected boolean debug = false;
+    
+    public CompletionTest() {
+        super("CompletionTest");
+    }
+    
     /** Need to be defined because of JUnit */
     public CompletionTest(String name, FileObject testFileObj) {
         super(name);
@@ -132,29 +142,53 @@ public class CompletionTest extends JellyTestCase {
     }
 
     @Override
-    public void setUp() {
+    public void setUp() throws IOException {
+        if (!projectsOpened){
+            for (File file : getProjectsDir().listFiles()) {
+                openProjects(file.getAbsolutePath());
+                RecurrentSuiteFactory.resolveServer(file.getName());
+            }
+            projectsOpened = true;
+        }
         System.out.println("########  " + getName() + "  #######");
     }
 
     public static Test suite() {
-        // find folder with test projects and define file objects filter
-        File datadir = new CompletionTest(null, null).getDataDir();
-        File projectsDir = new File(datadir, "CompletionTestProjects");
-        FileObjectFilter filter = new FileObjectFilter() {
-
-            public boolean accept(FileObject fo) {
-                String ext = fo.getExt();
-                String name = fo.getName();
-                return (name.startsWith("test") || name.startsWith("Test")) &&
-                        (XML_EXTS.contains(ext) || JSP_EXTS.contains(ext) || JS_EXTS.contains(ext));
-            }
-        };
-        return RecurrentSuiteFactory.createSuite(CompletionTest.class,
-                projectsDir, filter);
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(CompletionTest.class);
+        addServerTests(conf, new String[0]);//register server
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf.addTest(SuiteCreator.class));
     }
 
+    public static final class SuiteCreator extends NbTestSuite {
+
+        public SuiteCreator() {
+            super();
+            FileObjectFilter filter = new FileObjectFilter() {
+
+                public boolean accept(FileObject fo) {
+                    String ext = fo.getExt();
+                    String name = fo.getName();
+                    return (name.startsWith("test") || name.startsWith("Test")) &&
+                            (XML_EXTS.contains(ext) || JSP_EXTS.contains(ext) || JS_EXTS.contains(ext));
+                }
+            };
+            addTest(RecurrentSuiteFactory.createSuite(CompletionTest.class,
+                getProjectsDir(), filter));
+        }
+    }
+    
+    private static File getProjectsDir(){
+        File datadir = new CompletionTest().getDataDir();
+        return new File(datadir, "CompletionTestProjects");
+    }
+    
+    
     @Override
     public void runTest() throws Exception {
+        if (testFileObj == null){
+            return;
+        }
         String ext = testFileObj.getExt();
         if (JSP_EXTS.contains(ext)) {
             test(testFileObj, "<%--CC", "--%>");
@@ -540,7 +574,7 @@ public class CompletionTest extends JellyTestCase {
         return method;
     }
 
-    protected void assertInstanceOf(Class expectedType, Object actual) {
+    protected void assertInstanceOf(Class<?> expectedType, Object actual) {
         if (!expectedType.isAssignableFrom(actual.getClass())) {
             fail("Expected type: " + expectedType.getName() + "\nbut was: " +
                     actual.getClass().getName());
@@ -611,25 +645,12 @@ public class CompletionTest extends JellyTestCase {
     static void generateGoldenFiles(JellyTestCase test) throws Exception {
             test.getRef().flush();
             File ref = new File(test.getWorkDir(), test.getName() + ".ref");
-            File f = test.getDataDir();
-            ArrayList<String> names = new ArrayList<String>();
-            names.add("goldenfiles");
-            names.add("data");
-            names.add("qa-functional");
-            while (!f.getName().equals("test")) {
-                f = f.getParentFile();
-            }
-            //            f= new File("/home/jindra/TRUNK/web/jspsyntax/test/"); //internal execution
-            for (int i = names.size() - 1; i > -1; i--) {
-                f = new File(f, names.get(i));
-            }
-            f = new File(f, test.getClass().getName().replace('.', File.separatorChar));
-            f = new File(f, test.getName() + ".pass");
-            if (!f.getParentFile().exists()) {
-                f.getParentFile().mkdirs();
-            }
-            ref.renameTo(f);
-            assertTrue("Generating golden files to " + f.getAbsolutePath(), false);
+            String fullClassName = test.getClass().getName();
+            String goldenFilePath = fullClassName.replace('.', '/')+"/" + test.getName();
+            File goldenFile = new File(test.getDataDir()+"/goldenfiles/" + goldenFilePath);
+            goldenFile = new File(goldenFile.getAbsolutePath().replace("build/", "")+".pass");
+            ref.renameTo(goldenFile);
+            assertTrue("Generating golden files to " + goldenFile.getAbsolutePath(), false);
     }
     
     protected void ending() throws Exception {

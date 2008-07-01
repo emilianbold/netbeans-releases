@@ -305,6 +305,9 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             }
             return ((JPDAThread) node).isSuspended () ? SUSPENDED_THREAD : RUNNING_THREAD;
         }
+        if (node == TreeModel.ROOT) {
+            return CALL_STACK; // will not be displayed
+        }
         throw new UnknownTypeException (node);
     }
 
@@ -341,12 +344,12 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             String s = "";
             switch (i) {
                 case JPDAThread.STATE_UNKNOWN:
-                    s = NbBundle.getBundle (ThreadsNodeModel.class).getString
+                    s = NbBundle.getBundle (DebuggingNodeModel.class).getString
                         ("CTL_ThreadsModel_State_Unknown");
                     break;
                 case JPDAThread.STATE_MONITOR:
-                    s = ""; // TODO: Enable tooltips again after problem with call stack refreshing is fixed.
-                    ObjectVariable ov;/* = t.getContendedMonitor ();
+                    s = "";
+                    ObjectVariable ov = t.getContendedMonitor ();
                     if (ov == null)
                         s = NbBundle.getBundle (ThreadsNodeModel.class).
                             getString ("CTL_ThreadsModel_State_Monitor");
@@ -360,29 +363,29 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                                     new Object [] { ov.getToStringValue () });
                         } catch (InvalidExpressionException ex) {
                             s = ex.getLocalizedMessage ();
-                        }*/
+                        }
                     break;
                 case JPDAThread.STATE_NOT_STARTED:
-                    s = NbBundle.getBundle (ThreadsNodeModel.class).getString
+                    s = NbBundle.getBundle (DebuggingNodeModel.class).getString
                         ("CTL_ThreadsModel_State_NotStarted");
                     break;
                 case JPDAThread.STATE_RUNNING:
-                    s = NbBundle.getBundle (ThreadsNodeModel.class).getString
+                    s = NbBundle.getBundle (DebuggingNodeModel.class).getString
                         ("CTL_ThreadsModel_State_Running");
                     break;
                 case JPDAThread.STATE_SLEEPING:
-                    s = NbBundle.getBundle (ThreadsNodeModel.class).getString
+                    s = NbBundle.getBundle (DebuggingNodeModel.class).getString
                         ("CTL_ThreadsModel_State_Sleeping");
                     break;
                 case JPDAThread.STATE_WAIT:
                     ov = t.getContendedMonitor ();
                     if (ov == null)
-                        s = NbBundle.getBundle (ThreadsNodeModel.class).
+                        s = NbBundle.getBundle (DebuggingNodeModel.class).
                             getString ("CTL_ThreadsModel_State_Waiting");
                     else
                         try {
                             s = java.text.MessageFormat.format
-                                (NbBundle.getBundle (ThreadsNodeModel.class).
+                                (NbBundle.getBundle (DebuggingNodeModel.class).
                                 getString ("CTL_ThreadsModel_State_WaitingOn"), 
                                 new Object [] { ov.getToStringValue () });
                         } catch (InvalidExpressionException ex) {
@@ -390,18 +393,23 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                         }
                     break;
                 case JPDAThread.STATE_ZOMBIE:
-                    s = NbBundle.getBundle (ThreadsNodeModel.class).getString
+                    s = NbBundle.getBundle (DebuggingNodeModel.class).getString
                         ("CTL_ThreadsModel_State_Zombie");
                     break;
             }
-            if (t.isSuspended () && (t.getStackDepth () > 0)) {
-                try { 
-                    CallStackFrame sf = t.getCallStack (0, 1) [0];
-                    s += " " + CallStackNodeModel.getCSFName (null, sf, true);
-                } catch (AbsentInformationException e) {
-                }
+            String msg;
+            if (t.isSuspended()) {
+                msg = NbBundle.getMessage(DebuggingNodeModel.class,
+                        "CTL_ThreadsModel_Suspended_Thread_Desc");
+            } else {
+                msg = NbBundle.getMessage(DebuggingNodeModel.class,
+                        "CTL_ThreadsModel_Resumed_Thread_Desc");
             }
-            return s;
+            if (s != null && s.length() > 0) {
+                msg = "<html>" + msg + "<br>" + NbBundle.getMessage(DebuggingNodeModel.class,
+                        "CTL_ThreadsModel_Thread_State_Desc", s) + "</html>";
+            }
+            return msg;
         }
         if (node instanceof CallStackFrame) {
             CallStackFrame sf = (CallStackFrame) node;
@@ -409,6 +417,9 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         }
         if (node instanceof JPDAThreadGroup) {
             return ((JPDAThreadGroup) node).getName ();
+        }
+        if (node == TreeModel.ROOT) {
+            return ""; // NOI18N
         }
         throw new UnknownTypeException(node.toString());
     }
@@ -454,6 +465,9 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     }
 
     private void fireNodeChanged (Object node) {
+        if (preferences.getBoolean(DebuggingTreeModel.SHOW_SUSPENDED_THREADS_ONLY, false)) {
+            node = TreeModel.ROOT;
+        }
         List<ModelListener> ls;
         synchronized (listeners) {
             ls = new ArrayList<ModelListener>(listeners);

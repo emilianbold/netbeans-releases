@@ -59,8 +59,8 @@ public final class Util {
     
     public static final Logger LOGGER = Logger.getLogger(Util.class.getName());
     
-    private static final String RUBY_MIME_TYPE = "text/x-ruby"; // NOI18N
-    private static final String ERB_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
+    public static final String RUBY_MIME_TYPE = "text/x-ruby"; // NOI18N
+    public static final String ERB_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
     
     private Util() { /* do not allow instances */ }
     

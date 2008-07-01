@@ -44,18 +44,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import javax.enterprise.deploy.shared.ModuleType;
-import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.TargetModuleID;
-import javax.management.ObjectName;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.ide.ProjectSupport;
-import org.netbeans.modules.j2ee.archive.project.ArchiveProjectProperties;
 import org.netbeans.modules.j2ee.archive.ui.JavaEePlatformUiSupport;
 import org.netbeans.modules.j2ee.archive.wizard.*;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
-import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 

@@ -79,7 +79,9 @@ import org.netbeans.modules.websvc.rest.wizard.Util;
  * @author Ayub Khan
  */
 public class ClientStubModel {
-
+    
+    public static final int EXPAND_LEVEL_MAX = 2;
+    
     private Project p;
 
     private SortedMap<String, JavaSource> srcMap = new TreeMap<String, JavaSource>();
@@ -487,7 +489,11 @@ public class ClientStubModel {
             }
             rDoc.setRoot(rootNode);
             documentMap.put(converter, rDoc);
-            processConverter(converter, rDoc, rootNode, r);
+            if(rootNode != null) {
+                rootNode.setIsContainer(r.isContainer());
+                int expandLevel = 0;
+                processConverter(converter, rDoc, rootNode, r, expandLevel);
+            }
         }
     }    
     
@@ -527,32 +533,38 @@ public class ClientStubModel {
         return null;
     }
     
-    private void processConverter(String converter, RepresentationDocument rr, 
-            RepresentationNode rElem, Resource r) throws IOException {
-        assert converter != null;
-        String cName = converter;
+    private String findBaseClassName(String name) {
+        String cName = name;
         if(cName.indexOf("Collection<") > -1 || cName.indexOf("List<") > -1 || 
            cName.indexOf("Set<") > -1) 
         {
             if(cName.indexOf("<") != -1)
                 cName = cName.substring(cName.indexOf("<")+1, cName.indexOf(">"));
         }
-        
+        return cName;
+    }
+    
+    private void processConverter(String converter, RepresentationDocument rr, 
+            RepresentationNode rElem, Resource r, int expandLevel) throws IOException {
+        assert converter != null;
+        String cName = findBaseClassName(converter);
         JavaSource cSrc = getJavaSource(cName);
         if(cSrc == null) {
             Class cClass = TypeUtil.getClass(cName, r.getSource(), p);
             if (cClass != null) {
-                processConverter(cClass, rr, rElem, r);
+                processConverter(cClass, rr, rElem, r, expandLevel);
             }
         } else {
-            processConverter(cSrc, rr, rElem, r);
+            processConverter(cSrc, rr, rElem, r, expandLevel);
         }
     }
     
     private void processConverter(JavaSource cSrc, RepresentationDocument rr, 
-            RepresentationNode rElem, Resource r) throws IOException {
+            RepresentationNode rElem, Resource r, int expandLevel) throws IOException {
+        if(expandLevel++ == EXPAND_LEVEL_MAX)
+            return;
         List<? extends AnnotationMirror> annotations = JavaSourceHelper.getClassAnnotations(cSrc);
-        if(annotations == null)
+        if(annotations == null || annotations.size() == 0)
             return;
         for (int i=0;i<annotations.size();i++) {
             AnnotationMirror annotation = annotations.get(i);
@@ -581,14 +593,19 @@ public class ClientStubModel {
                             String c = tree.getReturnType().toString();                            
                             RepresentationDocument cDoc = documentMap.get(c);
                             RepresentationNode cElem = null;
+                            String eName = RestUtils.findElementName(tree); // "playlistRef"
                             if(cDoc == null || cDoc.getRoot() == null) {
-                                String eName = RestUtils.findElementName(tree); // "playlistRef"
-                                cElem = new RepresentationNode(eName);
+                                String rName = findRepresentationNameFromClass(c);
+                                if(rName == null || rName.length() == 0)
+                                    rName = eName;
+                                cElem = new RepresentationNode(rName);
+                                cElem.setId(eName);
                                 cElem.setLink(tree); //getReferences() method tree for tracking the link                                
                                 elems.add(cElem);//process later
                                 rTypes.add(c);//process later                                
                             } else {
-                                cElem = cDoc.getRoot();
+                                cElem = cDoc.getRoot().clone();
+                                cElem.setId(eName);
                             }
                             rElem.addChild(cElem);
                         } else if (Constants.XML_ATTRIBUTE_ANNOTATION.equals(mAnonType) || Constants.XML_ATTRIBUTE.equals(mAnonType)) {
@@ -606,20 +623,30 @@ public class ClientStubModel {
                 
                 //now process element methods
                 for (int j=0;j<elems.size();j++) {                    
-                    processConverter(rTypes.get(j), rr, elems.get(j), r);
+                    processConverter(rTypes.get(j), rr, elems.get(j), r, expandLevel);
                 }                
             }
         }
     }    
     
+    private String findRepresentationNameFromClass(String name) {
+        String cName = findBaseClassName(name);
+        JavaSource cSrc = getJavaSource(cName);
+        if(cSrc != null) {
+            cName = RestUtils.findStubNameFromClass(cName);
+            return cName.substring(0, 1).toLowerCase()+cName.substring(1);
+        }
+        return null;
+    }
+    
     private void processConverter(Class converterClass, RepresentationDocument rr, 
-            RepresentationNode rElem, Resource r) throws IOException {
-        
+            RepresentationNode rElem, Resource r, int expandLevel) throws IOException {
+        if(expandLevel++ == EXPAND_LEVEL_MAX)
+            return;
         rElem.setSource(null);
         if (! TypeUtil.isXmlRoot(converterClass)) {
             return;
         }
-        
         List<RepresentationNode> elems = new ArrayList<RepresentationNode>();
         for (java.lang.reflect.Method method : converterClass.getMethods()) {
             String c = method.getGenericReturnType().toString();
@@ -649,7 +676,7 @@ public class ClientStubModel {
 
         //now process element methods
         for (int j = 0; j < elems.size(); j++) {
-            processConverter(elems.get(j).getType(), rr, elems.get(j), r);
+            processConverter(elems.get(j).getType(), rr, elems.get(j), r, expandLevel);
         }
     }    
     
@@ -797,9 +824,10 @@ public class ClientStubModel {
     /*
      * Represents JAXB node
      */
-    public class RepresentationNode {
+    public class RepresentationNode implements Cloneable {
 
         private String name;
+        private String id;
         private String type;
 
         private MethodTree link;
@@ -808,15 +836,25 @@ public class ClientStubModel {
         private List<RepresentationNode> attrList = new ArrayList<RepresentationNode>();
         private List<RepresentationNode> childList = new ArrayList<RepresentationNode>();
         private boolean isRoot;
+        private boolean isContainer;
 
         public RepresentationNode(String name) {
             this.name = name;
+            this.id = name;
         }
         
         public String getName() {
             return name;
         }
+        
+        public String getId() {
+            return id;
+        }
 
+        private void setId(String id) {
+            this.id = id;
+        }
+        
         public MethodTree getLink() {
             return link;
         }
@@ -865,11 +903,30 @@ public class ClientStubModel {
             this.src = src;
         }  
         
+        public boolean isContainer() {
+            return isContainer;
+        }
+        
+        protected void setIsContainer(boolean isContainer) {
+            this.isContainer = isContainer;
+        }
+        
         public String getType() {
             return type;
         }
+        
         public void setType(String type) {
             this.type = type;
+        }
+        
+        @Override
+        public RepresentationNode clone() {
+            try {
+                RepresentationNode clone = (RepresentationNode)super.clone();
+                return clone;
+            } catch (CloneNotSupportedException cne) {
+                throw new RuntimeException(cne);
+            }
         }
         
         @Override

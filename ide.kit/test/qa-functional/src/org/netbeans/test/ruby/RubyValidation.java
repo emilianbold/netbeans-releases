@@ -59,8 +59,9 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.test.ide.WatchProjects;
 
 /**
  * Overall validation suite for ruby cluster.
@@ -68,22 +69,42 @@ import org.netbeans.junit.ide.ProjectSupport;
  * @author Jiri.Skrivanek@sun.com
  */
 public class RubyValidation extends JellyTestCase {
-    
+
+     static final String [] tests = {
+                "testCreateRubyProject",
+                "testRunRubyFile",
+                "testCreateRailsProject",
+                "testRailsGenerate",
+                "testIrbShell",
+    };
+
     /** Need to be defined because of JUnit */
     public RubyValidation(String name) {
         super(name);
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new RubyValidation("testCreateRubyProject"));
-        suite.addTest(new RubyValidation("testRunRubyFile"));
-        suite.addTest(new RubyValidation("testCreateRailsProject"));
-        suite.addTest(new RubyValidation("testRailsGenerate"));
-        suite.addTest(new RubyValidation("testIrbShell"));
-        return suite;
+    public static junit.framework.Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(RubyValidation.class)
+                .addTest(tests)
+                .clusters(".*")
+                .enableModules(".*")
+                .gui(true)
+                );
     }
-    
+
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite();
+//        suite.addTest(new RubyValidation("testCreateRubyProject"));
+//        suite.addTest(new RubyValidation("testRunRubyFile"));
+//        suite.addTest(new RubyValidation("testCreateRailsProject"));
+//        suite.addTest(new RubyValidation("testRailsGenerate"));
+//        suite.addTest(new RubyValidation("testIrbShell"));
+//        return suite;
+//    }
+
+
+
     /** Use for execution inside IDE */
     public static void main(java.lang.String[] args) {
         // run whole suite
@@ -147,7 +168,7 @@ public class RubyValidation extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 30000); // NOI18N
         new ProjectsTabOperator().getProjectRootNode(SAMPLE_RUBY_PROJECT_NAME);
         // wait classpath scanning finished
-        ProjectSupport.waitScanFinished();
+        WatchProjects.waitScanFinished();
     }
     
     /** Test run Ruby file
@@ -194,7 +215,7 @@ public class RubyValidation extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 30000); // NOI18N
         new ProjectsTabOperator().getProjectRootNode(SAMPLE_RAILS_PROJECT_NAME);
         // wait classpath scanning finished
-        ProjectSupport.waitScanFinished();
+        WatchProjects.waitScanFinished();
     }
     
     /** Test Rails Generator

@@ -39,19 +39,29 @@
 
 package org.netbeans.modules.ruby.testrunner;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.ruby.platform.RubyExecution;
+import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.ExecutionService;
+import org.netbeans.modules.ruby.testrunner.ui.TestRecognizer;
+import org.openide.LifecycleManager;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 
 /**
  * Handles running and re-running of test executions.
- *
+ * 
+ * <i>This class will probably not be needed after migrating to the new Execution API</i>
+ * 
  * @author Erno Mononen
  */
 public final class TestExecutionManager {
 
+    private final static Logger LOGGER = Logger.getLogger(TestExecutionManager.class.getName());
+    
     /**
      * The current execution.
      */
@@ -60,6 +70,7 @@ public final class TestExecutionManager {
      * Indicates whether the current execution has finished.
      */
     private boolean finished;
+    private TestRecognizer recognizer;
     private ChangeSupport changeSupport = new ChangeSupport(this);
     
     private static final TestExecutionManager INSTANCE = new TestExecutionManager();
@@ -72,13 +83,31 @@ public final class TestExecutionManager {
     }
     
     /**
-     * Runs the given <code>executionService</code>.
+     * Starts a RubyExecution with the given executionDescriptor and testRecognizer.
      * 
-     * @param executionService
+     * @param executionDescriptor
+     * @param testRecognizer
      */
-    synchronized void start(ExecutionService executionService) {
-        execution = executionService;
+    synchronized void start(ExecutionDescriptor executionDescriptor, TestRecognizer testRecognizer) {
+        assert executionDescriptor != null;
+        assert testRecognizer != null;
+        
+        if (!isFinished() && execution != null) {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Killing unfinished execution: " + execution);
+            }
+            execution.kill();
+        } 
+        
+        recognizer = testRecognizer;
+        executionDescriptor.addOutputRecognizer(recognizer);
+        execution = new RubyExecution(executionDescriptor);
+
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Starting: " + execution);
+        }
         setFinished(false);
+        LifecycleManager.getDefault().saveAll();
         handleTask(execution.run());
     }
     
@@ -112,7 +141,14 @@ public final class TestExecutionManager {
      * Re-runs the last run test execution.
      */
     public synchronized void rerun() {
+        assert isFinished();
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Re-running: " + execution);
+        }
+        
+        recognizer.refreshSession();
         setFinished(false);
+        LifecycleManager.getDefault().saveAll();
         handleTask(execution.rerun());
     }
 

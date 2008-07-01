@@ -42,97 +42,50 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<!-- You may freely edit this file. See commented blocks below for -->
-<!-- some examples of how to customize the build. -->
+<!-- You may freely edit this file. -->
 <!-- (If you delete it and reopen the project it will be recreated.) -->
+<!-- The names of existing targets are significant to the IDE and should not be removed. -->
+<!-- (For example, 'javadoc' is run when you choose Build -> Generate Javadoc.) -->
 <project name="PerformanceTestData" default="default" basedir=".">
-    <description>Builds, tests, and runs the project PerformanceTestData.</description>
-    <import file="../../../../../../nbbuild/templates/projectized.xml"/>
-
-    <target name="pre-init">
-        <echo message="called before initialization of project properties"/>
+    <description>
+        Builds, tests, and runs the project PerformanceTestData.
+    </description>
+    <target name="default" depends="test,jar,javadoc" description="Build and test whole project."/>
+    <target name="jar" description="Build JAR.">
+        <ant antfile="nbproject/build-impl.xml" target="jar"/>
     </target>
-         
-    <target name="post-init">
-        <echo message="called after initialization of project properties"/>
+    <target name="compile-single">
+        <ant antfile="nbproject/build-impl.xml" target="compile-single">
+            <property name="is.test" value="false"/>
+        </ant>
     </target>
-        
-    <target name="pre-compile">
-        <echo message="called before javac compilation"/>
+    <target name="compile-test-single">
+        <ant antfile="nbproject/build-impl.xml" target="compile-single">
+            <property name="is.test" value="true"/>
+        </ant>
     </target>
-        
-    <target name="post-compile">
-        <echo message="called after javac compilation"/>
+    <target name="run" description="Run a main class.">
+        <ant antfile="nbproject/build-impl.xml" target="run"/>
     </target>
-        
-    <target name="pre-compile-single">
-        <echo message="called before javac compilation of single file"/>
+    <target name="debug" description="Debug project in IDE.">
+        <ant antfile="nbproject/build-impl.xml" target="debug-nb"/>
     </target>
-        
-    <target name="post-compile-single">
-        <echo message="called after javac compilation of single file"/>
+    <target name="javadoc" description="Build Javadoc.">
+        <ant antfile="nbproject/build-impl.xml" target="javadoc-nb"/>
     </target>
-        
-    <target name="pre-compile-test">
-        <echo message="called before javac compilation of JUnit tests"/>
+    <target name="test" description="Run unit tests.">
+        <ant antfile="nbproject/build-impl.xml" target="test-nb"/>
     </target>
-        
-    <target name="post-compile-test">
-        <echo message="called after javac compilation of JUnit tests"/>
+    <target name="test-single">
+        <ant antfile="nbproject/build-impl.xml" target="test-single-nb"/>
     </target>
-        
-    <target name="pre-compile-test-single">
-        <echo message="called before javac compilation of single JUnit test"/>
+    <target name="debug-test-single">
+        <ant antfile="nbproject/build-impl.xml" target="debug-test-single-nb"/>
     </target>
-        
-    <target name="post-compile-test-single">
-        <echo message="called after javac compilation of single JUunit test"/>
+    <target name="debug-fix">
+        <ant antfile="nbproject/build-impl.xml" target="debug-fix-nb"/>
     </target>
-        
-    <target name="pre-jar">
-        <echo message="called before jar building "/>
+    <target name="clean" description="Clean build products.">
+        <ant antfile="nbproject/build-impl.xml" target="clean"/>
     </target>
-        
-    <target name="post-jar">
-        <echo message="called after jar building "/>
-    </target>
-        
-    <target name="post-clean">
-        <echo message="called after cleaning build products "/>
-    </target>
-        
-
-    <target name="init-macrodef-javac">
-        <echo message="defines macro for javac compilation"/>
-    </target>
-        
-    <target name="init-macrodef-junit">
-        <echo message="defines macro for junit execution"/>
-    </target>
-        
-    <target name="init-macrodef-debug">
-        <echo message="defines macro for class debugging"/>
-    </target>
-        
-    <target name="init-macrodef-java">
-        <echo message="defines macro for class execution"/>
-    </target>
-        
-    <target name="do-jar">
-        <echo message="jar archive building"/>
-    </target>
-        
-    <target name="run">
-        <echo message="execution of project "/>
-    </target>
-        
-    <target name="javadoc-build">
-        <echo message="javadoc generation "/>
-    </target>
-        
-    <target name="test-report">
-        <echo message="JUnit report generation"/>
-    </target>
-        
-
 </project>

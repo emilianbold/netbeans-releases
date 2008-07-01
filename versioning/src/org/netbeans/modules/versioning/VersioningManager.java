@@ -230,48 +230,31 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             if (folder == null) return null;
         }
         
-        VersioningSystem owner = getKnownOwner(folder);
-        if (owner == NULL_OWNER) return null;
-        if (owner != null) return owner;
-        
-        File closestParent = null;
-            for (VersioningSystem system : versioningSystems) {
-                if (system != localHistory) {    // currently, local history is never an owner of a file
-                    File topmost = system.getTopmostManagedAncestor(folder);                
-                    if (topmost != null && (closestParent == null || Utils.isAncestorOrEqual(closestParent, topmost))) {
-                        owner = system;
-                        closestParent = topmost;
-                    }                    
-                }    
-            }
-                
-        if (owner != null) {
-            folderOwners.put(folder, owner);
-        } else {
-            folderOwners.put(folder, NULL_OWNER);
-        }
-        return owner;
-    }
-
-    private VersioningSystem getKnownOwner(File folder) {
         VersioningSystem owner = folderOwners.get(folder);
         if (owner == NULL_OWNER) return null;
         if (owner != null) return owner;
         
-        File ancestor = null;
-        for (File f : folderOwners.keySet()) {
-            if(folderOwners.get(ancestor) == NULL_OWNER) continue;
-            if(Utils.isAncestorOrEqual(f, folder)) {
-                if(ancestor == null && Utils.isAncestorOrEqual(ancestor, f)) {
-                    ancestor = f;
+        File closestParent = null;
+        for (VersioningSystem system : versioningSystems) {
+            if (system != localHistory) {    // currently, local history is never an owner of a file
+                File topmost = system.getTopmostManagedAncestor(folder);
+                if (topmost != null && (closestParent == null || Utils.isAncestorOrEqual(closestParent, topmost))) {
+                    owner = system;
+                    closestParent = topmost;
                 }
             }
         }
-        if(ancestor == null) {
-            return null;
+                
+        if (owner != null) {
+            folderOwners.put(folder, owner);
         } else {
-            return folderOwners.get(ancestor);
+            // nobody owns the folder => all parents aren't owned
+            while(folder != null) {
+                folderOwners.put(folder, NULL_OWNER);
+                folder = folder.getParentFile();
+            }
         }
+        return owner;
     }
     
     /**

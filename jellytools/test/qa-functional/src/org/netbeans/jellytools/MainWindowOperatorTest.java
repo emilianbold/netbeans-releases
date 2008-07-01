@@ -75,8 +75,9 @@ public class MainWindowOperatorTest extends JellyTestCase {
      * @return Test suite.
      */
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite(MainWindowOperatorTest.class);
-        return suite;
+        //NbTestSuite suite = new NbTestSuite(MainWindowOperatorTest.class);
+        //return suite;
+        return (NbTestSuite) createModuleTest(MainWindowOperatorTest.class);
     }
     
     
@@ -140,7 +141,7 @@ public class MainWindowOperatorTest extends JellyTestCase {
     
     /** Test of getToolbarCount method. */
     public void testGetToolbarCount() {
-        assertEquals("Wrong toolbar count.", 4, mainWindowOper.getToolbarCount());
+        assertEquals("Wrong toolbar count.", 5, mainWindowOper.getToolbarCount());
     }
     
     /** Test of getToolbarName method. */

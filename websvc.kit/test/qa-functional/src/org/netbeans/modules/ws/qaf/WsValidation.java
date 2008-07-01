@@ -53,7 +53,6 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.modules.web.NewJspFileNameStepOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -70,7 +69,7 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Listener;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
@@ -397,28 +396,24 @@ public class WsValidation extends WebServicesTestBase {
     public void testRefreshClientAndReplaceWSDL() {
         refreshWSDL("client","",true);
     }
-
-    public static TestSuite suite() {
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new WsValidation("testCreateNewWs")); //NOI18N
-        suite.addTest(new WsValidation("testAddOperation")); //NOI18N
-        suite.addTest(new WsValidation("testStartServer")); //NOI18N
-        suite.addTest(new WsValidation("testWsHandlers")); //NOI18N
-        suite.addTest(new WsValidation("testDeployWsProject")); //NOI18N
-        suite.addTest(new WsValidation("testCreateWsClient")); //NOI18N
-        suite.addTest(new WsValidation("testCallWsOperationInServlet")); //NOI18N
-        suite.addTest(new WsValidation("testCallWsOperationInJSP")); //NOI18N
-        suite.addTest(new WsValidation("testCallWsOperationInJavaClass")); //NOI18N
-        suite.addTest(new WsValidation("testRefreshClient")); //NOI18N
-        suite.addTest(new WsValidation("testWsClientHandlers")); //NOI18N
-        suite.addTest(new WsValidation("testDeployWsClientProject")); //NOI18N
-        suite.addTest(new WsValidation("testUndeployProjects")); //NOI18N
-        suite.addTest(new WsValidation("testStopServer")); //NOI18N
-        return suite;
-    }
-
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
+    
+    public static Test suite() {
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(WsValidation.class),
+                "testCreateNewWs",
+                "testAddOperation",
+                "testStartServer",
+                "testWsHandlers",
+                "testDeployWsProject",
+                "testCreateWsClient",
+                "testCallWsOperationInServlet",
+                "testCallWsOperationInJSP",
+                "testCallWsOperationInJavaClass",
+                "testRefreshClient",
+                "testWsClientHandlers",
+                "testDeployWsClientProject",
+                "testUndeployProjects",
+                "testStopServer"
+                ).enableModules(".*").clusters(".*"));
     }
 
     protected void addWsOperation(EditorOperator eo, String opName, String opRetVal) {
