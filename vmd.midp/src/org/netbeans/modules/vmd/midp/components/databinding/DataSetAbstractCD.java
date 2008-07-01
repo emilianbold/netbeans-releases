@@ -62,11 +62,15 @@ import org.netbeans.modules.vmd.midp.inspector.controllers.InspectorPositionCont
  * @author Karol Harezlak
  */
 public class DataSetAbstractCD extends ComponentDescriptor {
-
-    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#AbstractDataSet"); //NOI18N
+    
+    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/dataset_16.gif"; // NOI18N
+    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#DataSetAbstract"); //NOI18N
     
     public static final String PROP_NAMES = "names"; 
-
+    
+    static {
+        MidpTypes.registerIconResource(TYPEID, ICON_PATH);
+    }
    
     @Override
     public TypeDescriptor getTypeDescriptor() {
@@ -98,7 +102,6 @@ public class DataSetAbstractCD extends ComponentDescriptor {
                 // code
                 MidpCodePresenterSupport.createAddImportPresenter("org.netbeans.microedition.databinding.DataBindingException", //NOI18N
                                                                   "org.netbeans.microedition.databinding.DataBinder"), //NOI18N
-                //MIDPDataSetBodyCodePresenter.create("/org/netbeans/modules/vmd/midp/codegen/dataset_java.code"), //NOI18N
                 //inspector
                 new InspectorFolderComponentPresenter(true),
                 InspectorPositionPresenter.create(InspectorPositionControllerSupport.createHierarchical(DatabindingCategoryCD.TYPEID)));   

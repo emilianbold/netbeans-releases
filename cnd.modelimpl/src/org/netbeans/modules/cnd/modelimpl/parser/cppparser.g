@@ -735,13 +735,13 @@ template_explicit_specialization
 // it's a caller's responsibility to check isCPlusPlus
 //
 protected
-external_declaration_template { K_and_R = false; boolean ctrName=false;}
+external_declaration_template { String s; K_and_R = false; boolean ctrName=false;}
 	:      
 		(LITERAL_template LESSTHAN GREATERTHAN) => template_explicit_specialization
 	|
 		(LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union)) =>
 		LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union) 
-		ID LESSTHAN template_argument_list GREATERTHAN SEMICOLON
+		s=scope_override ID LESSTHAN template_argument_list GREATERTHAN SEMICOLON
 		{#external_declaration_template = #(#[CSM_TEMPLATE_EXPLICIT_INSTANTIATION, "CSM_TEMPLATE_EXPLICIT_INSTANTIATION"], #external_declaration_template);}
 	|
 		(LITERAL_template (~LESSTHAN)) =>
@@ -2421,14 +2421,12 @@ protected template_template_parameter
  *	as type setting is ineffective whilst guessing
  */
 assigned_type_name
-	{/*TypeSpecifier*/int ts;}
+	{/*TypeSpecifier*/int ts;
+         TypeQualifier tq;}
 	:
-	(LITERAL_typename)?
-	(options{generateAmbigWarnings = false;}:
-		qualified_type abstract_declarator	
-	|
-		ts = simple_type_specifier abstract_declarator
-	)
+            (tq=cv_qualifier)? (LITERAL_typename)?
+            ts = simple_type_specifier (postfix_cv_qualifier)?
+            abstract_declarator
 	;
 
 // This rule refers to an instance of a template class or function
@@ -3017,6 +3015,7 @@ cast_expression_type_specifier
                 (tq = cv_qualifier)? 
                 (LITERAL_struct|LITERAL_union|LITERAL_class|LITERAL_enum)? 
                 ts = simple_type_specifier 
+                (postfix_cv_qualifier)? // to support (char const*)
                 (ptr_operator)*
             RPAREN
         ;
@@ -3112,6 +3111,9 @@ unary_expression
                         // TILDE was handled above
                         {LA(1)!=TILDE}? unary_operator cast_expression
                 |
+                        // IZ 138482 : No support for ({}) extensions
+                        (LPAREN LCURLY) => LPAREN statement RPAREN
+                |
                         //{!(LA(1)==TILDE && LA(2)==ID) || 
 			//	    qualifiedItemIsOneOf(qiVar | qiFun | qiDtor | qiCtor)}?
                         postfix_expression
@@ -3161,7 +3163,7 @@ postfix_expression
 	|
 		(LITERAL_dynamic_cast|LITERAL_static_cast|LITERAL_reinterpret_cast|LITERAL_const_cast)
 		    // Note const_cast in elsewhere
-		LESSTHAN declaration_specifiers (ptr_operator)* GREATERTHAN
+		LESSTHAN declaration_specifiers ptr_operators_in_cast_operator (LPAREN RPAREN)? GREATERTHAN
 		LPAREN expression RPAREN
 	) 
         // add possibility to have a().b().c()->d() etc.
@@ -3169,6 +3171,14 @@ postfix_expression
         // not at the end of postfix_expression
         (post_postfix_expression)*
 	;
+
+protected
+ptr_operators_in_cast_operator
+        : 
+                ((ptr_operator)* (GREATERTHAN|RPAREN)) => (ptr_operator)*               
+        |
+                ((STAR)* LPAREN) => (STAR)* LPAREN ptr_operators_in_cast_operator RPAREN                
+;
 
 protected
 fun_call_param_list : fun_call_param (COMMA fun_call_param)*;

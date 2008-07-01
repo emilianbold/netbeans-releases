@@ -197,6 +197,9 @@ abstract class PHPRule implements AstRule, UserConfigurableRule, Visitor {
 
     public void visit(ClassDeclaration classDeclaration) {
     }
+    
+    public void leavingClassDeclaration(ClassDeclaration classDeclaration) {
+    }
 
     public void visit(ClassInstanceCreation classInstanceCreation) {
     }

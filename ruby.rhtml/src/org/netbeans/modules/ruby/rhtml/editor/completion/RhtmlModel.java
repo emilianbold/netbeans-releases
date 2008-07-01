@@ -334,10 +334,10 @@ public class RhtmlModel {
     IncrementalEmbeddingModel.UpdateState incrementalUpdate(EditHistory history) {
         // Clear cache
         //prevLexOffset = prevAstOffset = 0;
-        prevLexOffset = history.convertOldToNew(prevLexOffset);
+        prevLexOffset = history.convertOriginalToEdited(prevLexOffset);
 
         int offset = history.getStart();
-        int limit = history.getOldEnd();
+        int limit = history.getOriginalEnd();
         int delta = history.getSizeDelta();
 
         boolean codeOverlaps = false;

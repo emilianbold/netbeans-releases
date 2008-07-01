@@ -688,7 +688,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             } else if (isTestFile) {
                 if (name.equals("test") || name.equals("describe") || // NOI18N
                         name.equals("specify") || name.equals("context") || // NOI18N
-                        name.equals("should")) { // NOI18N
+                        name.equals("should") || name.equals("it")) { // NOI18N
                     String desc = name;
                     FCallNode fc = (FCallNode)node;
                     if (fc.getIterNode() != null) {

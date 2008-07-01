@@ -52,7 +52,7 @@ public class ScpTestCase extends RemoteTestBase {
         super(testName);
     }
 
-    public void qtestCopyFile() throws Exception {
+/*    public void qtestCopyFile() throws Exception {
         File localFile = File.createTempFile("cnd", ".cnd");
         File localFile2 = new File(localFile.getAbsolutePath().replace(".cnd", ".2.cnd"));
         RemoteCopySupport rcs = new RemoteCopySupport(getHostName(), getUserName());
@@ -77,7 +77,7 @@ public class ScpTestCase extends RemoteTestBase {
         long start = System.currentTimeMillis();
         SystemIncludesUtils.unzip("C:\\123","C:\\123.zip");
         System.err.println("Unzipping took " + (System.currentTimeMillis() - start) + "ms.");
-    }
+    }*/
     
     public void testSystemIncludesUtils() throws Exception {
         SystemIncludesUtils.load(getHostName(), getUserName(), new SystemIncludesUtils.FakeCompilerSet());

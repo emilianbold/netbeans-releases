@@ -40,11 +40,9 @@
 package org.netbeans.modules.groovy.editor;
 
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.groovy.editor.completion.CodeCompleter;
-
 
 /**
  *
@@ -52,10 +50,17 @@ import org.netbeans.modules.groovy.editor.completion.CodeCompleter;
  */
 public class GroovyCodeCompletionTest extends GroovyTestBase {
 
+    String TEST_BASE = "testfiles/completion/";
 
     public GroovyCodeCompletionTest(String testName) {
         super(testName);
         Logger.getLogger(CodeCompleter.class.getName()).setLevel(Level.FINEST);
+    }
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        CodeCompleter.setTesting(true);
     }
 
     // uncomment this to have logging from GroovyLexer
@@ -67,13 +72,8 @@ public class GroovyCodeCompletionTest extends GroovyTestBase {
     }
 
 
-//    public void testMethodCompletion1() throws Exception {
-//        checkCompletion("testfiles/completion/MethodCompletionTestCase.groovy", "new String().^toS", false);
-//    }
-
-
-    public void testDummy() {
-        assertTrue(true);
+    public void testMethodCompletion1() throws Exception {
+        checkCompletion(TEST_BASE + "MethodCompletionTestCase.groovy", "new String().^toS", false);
     }
 
 //    public void testPrefix1() throws Exception {

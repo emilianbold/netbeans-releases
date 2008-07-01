@@ -42,10 +42,13 @@ import java.util.Collection;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 /**
- * Implementations of this interface are EmbeddingModels that support
+ * <p>Implementations of this interface are EmbeddingModels that support
  * incremental updates. When it does, then the GSF infrastructure will keep its
  * most recent TranslatedSource collection and will pass it along with
- * an editing history object to perform incremental updates.
+ * an editing history object to perform incremental updates.</p>
+ * <p>For more information about incremental parsing, see the
+ * <a href="../../../../../incremental-parsing.html">incremental updating</a>
+ * document.</p>
  *
  * @author Tor Norbye
  */

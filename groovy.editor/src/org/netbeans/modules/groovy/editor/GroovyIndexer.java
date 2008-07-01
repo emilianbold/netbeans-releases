@@ -78,7 +78,6 @@ public class GroovyIndexer implements Indexer {
     static final String FQN_NAME = "fqn"; //NOI18N
     static final String CLASS_NAME = "class"; //NOI18N
     static final String CASE_INSENSITIVE_CLASS_NAME = "class-ig"; //NOI18N
-    static final String REQUIRE = "require"; //NOI18N
     // not indexed
     static final String IN = "in"; //NOI18N
     /** Attributes: hh;nnnn where hh is a hex representing flags in IndexedClass, and nnnn is the documentation length */
@@ -89,6 +88,9 @@ public class GroovyIndexer implements Indexer {
 
     // field
     static final String FIELD_NAME = "field"; //NOI18N
+
+    /** Attributes: "i" -> private, "o" -> protected, ", "s" - static/notinstance, "d" - documented */
+    static final String ATTRIBUTE_NAME = "attribute"; //NOI18N
 
     private static FileObject preindexedDb;
 

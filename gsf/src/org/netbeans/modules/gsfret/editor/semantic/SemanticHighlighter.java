@@ -185,8 +185,8 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
                             if (element.language == language) {
                                 OffsetRange range = element.range;
                                 if (range.getStart() > offset) {
-                                    element.range = new OffsetRange(history.convertOldToNew(range.getStart()),
-                                            history.convertOldToNew(range.getEnd()));
+                                    element.range = new OffsetRange(history.convertOriginalToEdited(range.getStart()),
+                                            history.convertOriginalToEdited(range.getEnd()));
                                 }
                                 newColoring.add(element);
                             }

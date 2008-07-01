@@ -302,7 +302,7 @@ public abstract class Index extends org.netbeans.modules.gsf.api.Index {
                     // Compute relative path
                     rootSearch:
                     for (FileObject fo : getPreindexRoots()) {
-                        if (FileUtil.isParentOf(fo, rootFo)) {
+                        if (fo != null && FileUtil.isParentOf(fo, rootFo)) {
                             // getRelativePath performs a isParentOf check and returns null if not
                             String relative = FileUtil.getRelativePath(fo, rootFo);
                             if (relative != null && relative.length() > 0) {

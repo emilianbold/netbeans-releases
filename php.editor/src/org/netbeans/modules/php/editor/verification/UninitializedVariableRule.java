@@ -47,12 +47,14 @@ import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.openide.util.NbBundle;
 
@@ -96,6 +98,14 @@ public class UninitializedVariableRule  extends PHPRule {
             
             if (forEachStatement.getExpression() != variable){
                 return;
+            }
+        } else if (parent instanceof ArrayAccess) {
+            if (context.path.size() > 1) {
+                ASTNode grandpa = context.path.get(1);
+                
+                if (grandpa instanceof FieldAccess || grandpa instanceof StaticFieldAccess) {
+                    return;
+                }
             }
         }
         
