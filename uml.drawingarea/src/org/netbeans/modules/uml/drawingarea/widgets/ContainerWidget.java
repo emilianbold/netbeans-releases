@@ -43,8 +43,10 @@ package org.netbeans.modules.uml.drawingarea.widgets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -52,6 +54,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import org.netbeans.api.visual.action.ActionFactory;
+import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.layout.LayoutFactory;
@@ -76,6 +79,7 @@ import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.MoveWidgetTransferable;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -388,6 +392,9 @@ public class ContainerWidget extends Widget
      */
     protected boolean isFullyContained(Widget widget)
     {
+        // Calling getPreferredBounds forces the bounds to be calculated if it
+        // has not already been calculated.  For example when the Widget was 
+        // just created and therefore has not had a chance to be displayed.
         Rectangle area = widget.getClientArea();
         
         boolean retVal = false;
@@ -396,7 +403,8 @@ public class ContainerWidget extends Widget
             Rectangle sceneArea = widget.convertLocalToScene(area);
 
             Rectangle localArea = convertSceneToLocal(sceneArea);
-            retVal = getClientArea().contains(localArea);
+            Rectangle myArea = getClientArea();
+            retVal = myArea.contains(localArea);
         }
         
         return retVal;
@@ -414,6 +422,42 @@ public class ContainerWidget extends Widget
         {
             return allowed(elements);
         }
+
+        @Override
+        public ConnectorState isAcceptable(Widget widget, Point point, Transferable transferable)
+        {
+            ConnectorState retVal = super.isAcceptable(widget, point, transferable);
+            
+            if(isWidgetMove(transferable) == true)
+            {
+                try
+                {
+                    MoveWidgetTransferable data = (MoveWidgetTransferable) transferable.getTransferData(MoveWidgetTransferable.FLAVOR);
+                    Widget[] target = new Widget[]{data.getWidget()};
+                    for (Widget curWidget : target)
+                    {
+                        if (isFullyContained(curWidget) == false)
+                        {
+                            retVal = ConnectorState.REJECT;
+                            break;
+                        }
+                    }
+                }
+                catch (UnsupportedFlavorException ex)
+                {
+                    // Since we first test if the datafalvor is supported, 
+                    // it is an error if we get this exception.
+                    Exceptions.printStackTrace(ex);
+                }
+                catch (IOException ex)
+                {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            
+            return retVal;
+        }
+        
         
         @Override
         public void accept(Widget widget, Point point, Transferable transferable)

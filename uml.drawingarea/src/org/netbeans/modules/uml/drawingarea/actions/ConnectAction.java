@@ -108,14 +108,17 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
             }
             else if(provider.hasTargetWidgetCreator() == true)
             {
+                // The EXConnectProvider is expecting the location to be in 
+                // scene coordinates, not relative to the source widget.
+                Point sourceLocation = sourceWidget.getLocation();
+                point.translate(sourceLocation.x, sourceLocation.y);
+                Point sceneLocation = sourceWidget.getParentWidget().convertLocalToScene(point);
+
                 targetWidget = provider.createTargetWidget(interractionLayer.getScene(), 
                                                            sourceWidget, 
-                                                           point);
+                                                           sceneLocation);
                 if(targetWidget != null)
                 {
-                    Point targetSceneLocation = widget.convertLocalToScene (point);
-                    
-                    targetWidget.setPreferredLocation(targetSceneLocation);
                     provider.createConnection (sourceWidget, targetWidget);
                 }
             }
