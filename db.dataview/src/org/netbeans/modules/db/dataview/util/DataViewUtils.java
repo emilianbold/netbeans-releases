@@ -62,38 +62,10 @@ import org.netbeans.modules.db.dataview.meta.DBTable;
 public class DataViewUtils {
 
     public static final int JDBCSQL_TYPE_UNDEFINED = -65535;
-    private static HashMap<Integer, Integer> dataTypePrecedenceMap = new HashMap<Integer, Integer>();
     private static Map<String, String> JDBC_SQL_MAP = new HashMap<String, String>();
-    private static Map<String, String> SQL_JDBC_MAP = new HashMap<String, String>();
     private static transient final Localizer mLoc = Localizer.get();
 
     static {
-        SQL_JDBC_MAP.put("array", String.valueOf(Types.ARRAY)); // NOI18N
-        SQL_JDBC_MAP.put("bigint", String.valueOf(Types.BIGINT)); // NOI18N
-        SQL_JDBC_MAP.put("binary", String.valueOf(Types.BINARY)); // NOI18N
-        SQL_JDBC_MAP.put("boolean", String.valueOf(Types.BOOLEAN)); // NOI18N
-        SQL_JDBC_MAP.put("bit", String.valueOf(Types.BIT)); // NOI18N
-        SQL_JDBC_MAP.put("blob", String.valueOf(Types.BLOB)); // NOI18N
-        SQL_JDBC_MAP.put("char", String.valueOf(Types.CHAR)); // NOI18N
-        SQL_JDBC_MAP.put("clob", String.valueOf(Types.CLOB)); // NOI18N
-        SQL_JDBC_MAP.put("date", String.valueOf(Types.DATE)); // NOI18N
-        SQL_JDBC_MAP.put("decimal", String.valueOf(Types.DECIMAL)); // NOI18N
-        SQL_JDBC_MAP.put("distinct", String.valueOf(Types.DISTINCT)); // NOI18N
-        SQL_JDBC_MAP.put("double", String.valueOf(Types.DOUBLE)); // NOI18N
-        SQL_JDBC_MAP.put("float", String.valueOf(Types.FLOAT)); // NOI18N
-        SQL_JDBC_MAP.put("integer", String.valueOf(Types.INTEGER)); // NOI18N
-        SQL_JDBC_MAP.put("longvarbinary", String.valueOf(Types.LONGVARBINARY)); // NOI18N
-        SQL_JDBC_MAP.put("longvarchar", String.valueOf(Types.LONGVARCHAR)); // NOI18N
-        SQL_JDBC_MAP.put("numeric", String.valueOf(Types.NUMERIC)); // NOI18N
-        SQL_JDBC_MAP.put("real", String.valueOf(Types.REAL)); // NOI18N
-        SQL_JDBC_MAP.put("smallint", String.valueOf(Types.SMALLINT)); // NOI18N
-        SQL_JDBC_MAP.put("time", String.valueOf(Types.TIME)); // NOI18N
-        SQL_JDBC_MAP.put("timestamp", String.valueOf(Types.TIMESTAMP)); // NOI18N
-        SQL_JDBC_MAP.put("tinyint", String.valueOf(Types.TINYINT)); // NOI18N
-        SQL_JDBC_MAP.put("varbinary", String.valueOf(Types.VARBINARY)); // NOI18N
-        SQL_JDBC_MAP.put("varchar", String.valueOf(Types.VARCHAR)); // NOI18N
-        SQL_JDBC_MAP.put("null", String.valueOf(Types.NULL)); // NOI18N
-
         JDBC_SQL_MAP.put(String.valueOf(Types.ARRAY), "array"); // NOI18N
         JDBC_SQL_MAP.put(String.valueOf(Types.BIGINT), "bigint"); // NOI18N
         JDBC_SQL_MAP.put(String.valueOf(Types.BINARY), "binary"); // NOI18N
@@ -119,29 +91,6 @@ public class DataViewUtils {
         JDBC_SQL_MAP.put(String.valueOf(Types.VARBINARY), "varbinary"); // NOI18N
         JDBC_SQL_MAP.put(String.valueOf(Types.VARCHAR), "varchar"); // NOI18N
         JDBC_SQL_MAP.put(String.valueOf(Types.NULL), "null"); // NOI18N
-    }
-    /**
-     * Data types in decreasing order of precedence 1 is hightest
-     */
-
-
-    static {
-        dataTypePrecedenceMap.put(new Integer(Types.DOUBLE), new Integer(1));
-        dataTypePrecedenceMap.put(new Integer(Types.FLOAT), new Integer(2));
-        dataTypePrecedenceMap.put(new Integer(Types.REAL), new Integer(3));
-        dataTypePrecedenceMap.put(new Integer(Types.NUMERIC), new Integer(4));
-        dataTypePrecedenceMap.put(new Integer(Types.DECIMAL), new Integer(5));
-        dataTypePrecedenceMap.put(new Integer(Types.BIGINT), new Integer(6));
-        dataTypePrecedenceMap.put(new Integer(Types.INTEGER), new Integer(7));
-        dataTypePrecedenceMap.put(new Integer(Types.SMALLINT), new Integer(8));
-        dataTypePrecedenceMap.put(new Integer(Types.TINYINT), new Integer(9));
-        dataTypePrecedenceMap.put(new Integer(Types.BIT), new Integer(10));
-        dataTypePrecedenceMap.put(new Integer(Types.TIMESTAMP), new Integer(11));
-        dataTypePrecedenceMap.put(new Integer(Types.CLOB), new Integer(12));
-        dataTypePrecedenceMap.put(new Integer(Types.VARCHAR), new Integer(13));
-        dataTypePrecedenceMap.put(new Integer(Types.CHAR), new Integer(14));
-        dataTypePrecedenceMap.put(new Integer(Types.VARBINARY), new Integer(15));
-        dataTypePrecedenceMap.put(new Integer(Types.BINARY), new Integer(16));
     }
 
     public static String getStdSqlType(int dataType) throws IllegalArgumentException {
