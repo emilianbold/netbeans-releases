@@ -393,8 +393,12 @@ public class PHPIndex {
                     String funcName = sig.string(1);
                     
                     if(kind == NameKind.PREFIX) {
-                        //case sensitive
+                        //case sensitive - TODO does it make sense?
                         if(!funcName.startsWith(name)) {
+                            continue;
+                        }
+                    } else if (kind == NameKind.EXACT_NAME){
+                        if (!funcName.equalsIgnoreCase(name)){ // PHP func names r case-insensitive
                             continue;
                         }
                     }
