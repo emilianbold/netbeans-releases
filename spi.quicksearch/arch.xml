@@ -203,6 +203,35 @@ Microsystems, Inc. All Rights Reserved.
    <usecase id="hideProvider" name="How To Hide Recent Searches Results and Others" >
        
    </usecase>
+
+   <usecase id="searchWebProvider" name="How To Add a Default Web Search Provider" >
+       There is a default implementation of web search provider which uses Google
+       to search for the given text on the web. Simply add the following lines to your XML layer 
+       to enable this search provider in your application:
+        <pre>
+          &lt;folder name="QuickSearch"&gt;
+              &lt;folder name="WebSearch"&gt;
+                  &lt;!--Attribute for localization - provide localized display name of category!--&gt;
+                  &lt;attr name="SystemFileSystem.localizingBundle" stringvalue="com.myapp.mymodule.MyBundle"/>
+                  &lt;!--Attribute for command prefix - used to narrow search to this category only!--&gt;
+                  &lt;attr name="command" stringvalue="g"/>
+                  &lt;!--Attribute for category ordering!--&gt;
+                  &lt;attr name="position" intvalue="200"/&gt;
+                  &lt;!--Note that multiple providers can contribute to one category!--&gt;
+                  &lt;file name="org-netbeans-modules-quicksearch-web-WebQuickSearchProviderImpl.instance"/&gt;
+              &lt;/folder&gt;
+          &lt;/folder&gt;
+        </pre>
+        You can also add branding for <code>org.netbeans.modules.quicksearch.web</code> Bundle to restrict 
+        the search to a particular site only:
+        <pre>
+            quicksearch.web.site=mywebsite.com
+        </pre>
+        And you can also restrict the search to some parts your website only:
+        <pre>
+            quicksearch.web.url_patterns=mywebsite.com/docs,mywebsite.com/files/tutorials
+        </pre>
+   </usecase>
    
    
   </p>

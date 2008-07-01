@@ -58,6 +58,7 @@ import javax.help.search.SearchListener;
 import javax.help.search.SearchQuery;
 import org.openide.util.Lookup;
 import org.netbeans.api.javahelp.Help;
+import org.openide.util.NbBundle;
 
 /**
  * Search Java Help for given string.
@@ -75,6 +76,10 @@ class JavaHelpQuery implements Comparator<SearchTOCItem> {
         if (h != null && h instanceof JavaHelp ) {
             JavaHelp jh = (JavaHelp)h;
             engine = jh.createSearchEngine();
+            if( null == engine ) {
+                Logger.getLogger(JavaHelpQuery.class.getName()).log(Level.INFO, 
+                        NbBundle.getMessage(JavaHelpQuery.class, "Err_CreateJavaHelpSearchEngine")); //NOI18N
+            }
         }
     }
     
