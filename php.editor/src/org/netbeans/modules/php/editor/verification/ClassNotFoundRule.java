@@ -40,15 +40,13 @@ package org.netbeans.modules.php.editor.verification;
 
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.php.editor.index.IndexedClass;
-import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.util.NbBundle;
 
 /**
@@ -58,7 +56,7 @@ import org.openide.util.NbBundle;
 public class ClassNotFoundRule extends PHPRule {
 
     public HintSeverity getDefaultSeverity() {
-        return HintSeverity.WARNING;
+        return HintSeverity.ERROR;
     }
 
     public String getId() {
@@ -66,19 +64,27 @@ public class ClassNotFoundRule extends PHPRule {
     }
 
     @Override
+    public void visit(ClassDeclaration classDeclaration) {
+        Expression superClass = classDeclaration.getSuperClass();
+        check(superClass);
+    }
+
+    @Override
     public void visit(ClassInstanceCreation classInstanceCreation) {
-        Expression expression = classInstanceCreation.getClassName().getName();
+        Expression className = classInstanceCreation.getClassName().getName();
+        check(className);
+    }
+    
+    private void check(Expression expression) {
         if (expression instanceof Identifier) {
-            String className = ((Identifier)expression).getName();
-            Index i = context.compilationInfo.getIndex(PhpSourcePath.MIME_TYPE);
-            PHPIndex index = PHPIndex.get(i);
-            for (IndexedClass indexedClass : index.getClassInheritanceLine(null, className)) {
+            String className = ((Identifier) expression).getName();
+            
+            for (IndexedClass indexedClass : context.index.getClassInheritanceLine(null, className)) {
                 return;
             }
+            
             addHint(expression);
         }
-
-        super.visit(classInstanceCreation);
     }
 
     public String getDescription() {

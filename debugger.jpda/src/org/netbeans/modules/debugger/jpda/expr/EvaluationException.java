@@ -163,6 +163,8 @@ public class EvaluationException extends RuntimeException {
             msgParams = new String [] { ((Identifier)params[0]).typeContext.name(),  ((Identifier)params[0]).superQualifier };
         else if (reason.equals("accessInstanceVariableFromStaticContext"))
             msgParams = new String [] { ((Identifier)params[0]).identifier };
+        else if (reason.equals("invokeInstanceMethodAsStatic"))
+            msgParams = new String [] { ((Identifier)params[0]).identifier };
         else if (reason.equals("methodCallOnNull"))
             msgParams = new String[] { params[0].toString() };
         else {
