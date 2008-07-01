@@ -154,6 +154,7 @@ public final class EarProjectProperties {
     
     public static final String LAUNCH_URL_RELATIVE = "client.urlPart"; //NOI18N
     public static final String DISPLAY_BROWSER = "display.browser"; //NOI18N
+    public static final String DEPLOY_ON_SAVE = "deploy.on.save"; //NOI18N
     public static final String CLIENT_MODULE_URI = "client.module.uri"; //NOI18N
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; //NOI18N
     public static final String J2EE_SERVER_TYPE = "j2ee.server.type"; //NOI18N
@@ -209,6 +210,8 @@ public final class EarProjectProperties {
     
     public static final String ANT_DEPLOY_BUILD_SCRIPT = "nbproject/ant-deploy.xml"; // NOI18N
     
+    private static final Logger LOGGER = Logger.getLogger(EarProjectProperties.class.getName());
+    
     // CustomizerLibraries
     Document SHARED_LIBRARIES_MODEL;
     DefaultListModel DEBUG_CLASSPATH_MODEL;
@@ -231,6 +234,7 @@ public final class EarProjectProperties {
     Document ARUGMENTS_MODEL;
     Document VM_OPTIONS_MODEL;
     Document APPLICATION_CLIENT_MODEL;
+    ButtonModel DEPLOY_ON_SAVE_MODEL;
     
     // Private fields ----------------------------------------------------------
     
@@ -300,6 +304,7 @@ public final class EarProjectProperties {
         J2EE_PLATFORM_MODEL = projectGroup.createStringDocument(evaluator, J2EE_PLATFORM);
         LAUNCH_URL_RELATIVE_MODEL = projectGroup.createStringDocument(evaluator, LAUNCH_URL_RELATIVE);
         DISPLAY_BROWSER_MODEL = projectGroup.createToggleButtonModel(evaluator, DISPLAY_BROWSER);
+        DEPLOY_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, DEPLOY_ON_SAVE);
         J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel(privateProperties.getProperty( J2EE_SERVER_INSTANCE ), projectProperties.getProperty(J2EE_PLATFORM));
         MAIN_CLASS_MODEL = projectGroup.createStringDocument(evaluator, APPCLIENT_MAIN_CLASS);
         ARUGMENTS_MODEL = projectGroup.createStringDocument(evaluator, APPCLIENT_ARGS);
@@ -360,6 +365,14 @@ public final class EarProjectProperties {
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );
         
+        // compile on save listeners
+        if (DEPLOY_ON_SAVE_MODEL.isEnabled() && DEPLOY_ON_SAVE_MODEL.isSelected()) {
+            LOGGER.log(Level.FINE, "Starting listening on cos for {0}", project.getAppModule());
+            Deployment.getDefault().enableCompileOnSaveSupport(project.getAppModule());
+        } else {
+            LOGGER.log(Level.FINE, "Stopping listening on cos for {0}", project.getAppModule());
+            Deployment.getDefault().disableCompileOnSaveSupport(project.getAppModule());
+        }        
     }
 
     public static void setServerInstance(final Project project, final UpdateHelper helper, final String serverInstanceID) {

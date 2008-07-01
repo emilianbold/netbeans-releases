@@ -111,6 +111,44 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="deployOnSaveSPI">
+	    <api name="plugins"/>
+	    <summary>
+                Support methods to allow plugin to implement deploy on save.
+	    </summary>
+	    <version major="1" minor="47"/>
+	    <date day="4" month="7" year="2008"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                    SPI is enhanced by two methods isDeployOnSaveSupported and
+                    deployOnSave in order to allow plugin to provide deploy on
+                    save functionality.
+                </p>
+	    </description>
+	    <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="IncrementalDeployment"/>
+            <issue number="138476"/>
+	</change>         
+        <change id="deploymentChangeDescriptor">
+	    <api name="plugins"/>
+	    <summary>
+                Added final class describing the changes during the incremental deployment.
+	    </summary>
+	    <version major="1" minor="47"/>
+	    <date day="4" month="7" year="2008"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                    Added final class describing the changes during the incremental deployment.
+                    New class DeploymentChangeDescriptor implements old interface (AppChangeDescriptor)
+                    and should be used in any new API.
+                </p>
+	    </description>
+	    <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="DeploymentChangeDescriptor"/>
+            <issue number="138476"/>
+	</change>        
         <change id="serverInstanceDescriptor">
 	    <api name="plugins"/>
 	    <summary>

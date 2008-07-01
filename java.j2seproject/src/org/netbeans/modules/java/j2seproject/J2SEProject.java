@@ -47,6 +47,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
@@ -376,8 +377,6 @@ public final class J2SEProject implements Project, AntProjectListener {
             }
         });
     }
-
-
 
 
     // Private innerclasses ----------------------------------------------------

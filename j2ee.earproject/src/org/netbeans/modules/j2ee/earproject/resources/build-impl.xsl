@@ -597,6 +597,7 @@ to simulate
                 <xsl:variable name="script" select="projdeps:script"/>
                 <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}">
                     <property name="dist.ear.dir" location="${{build.dir}}"/>
+                    <property name="deploy.on.save" value="${{deploy.on.save}}"/>
                 </ant>
             </xsl:for-each>
             <xsl:variable name="references2" select="/p:project/p:configuration/projdeps2:references"/>

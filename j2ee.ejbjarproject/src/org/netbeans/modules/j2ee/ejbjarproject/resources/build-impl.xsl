@@ -236,6 +236,17 @@ is divided into following sections:
                         <available file="nbproject/jaxws-build.xml"/>
                     </and>
                 </condition>
+                
+                <!-- COS feature -->
+                <condition>
+                    <xsl:attribute name="property">ensure.built.source.roots</xsl:attribute>
+                    <xsl:attribute name="value">
+                        <xsl:call-template name="createPath">
+                            <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:source-roots"/>
+                        </xsl:call-template>
+                    </xsl:attribute>
+                    <istrue value="${{deploy.on.save}}"/>
+                </condition>             
             </target>
             
             <target name="-post-init">
@@ -922,7 +933,7 @@ exists or setup the property manually. For example like this:
             <target name="-init-deploy-ant" unless="netbeans.home">
                 <property name="deploy.ant.archive" value="${{dist.jar}}"/>
                 <property name="deploy.ant.resource.dir" value="${{resource.dir}}"/>
-                <property name="deploy.ant.enabled" value="true"/>
+                <property name="deploy.ant.enabled" value="true"/>                
             </target>
             
             <target name="run-undeploy">
