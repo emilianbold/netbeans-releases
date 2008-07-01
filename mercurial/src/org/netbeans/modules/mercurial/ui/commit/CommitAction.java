@@ -148,9 +148,7 @@ public class CommitAction extends ContextAction {
         JComponent component = data.getComponent();
         panel.filesPanel.setLayout(new BorderLayout());
         panel.filesPanel.add(component, BorderLayout.CENTER);
-        
-        DialogDescriptor dd = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_CommitDialog_Title", contentTitle)); // NOI18N
-        dd.setModal(true);
+                
         final JButton commitButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(commitButton, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Commit"));
         commitButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSN_Commit_Action_Commit"));
@@ -160,10 +158,16 @@ public class CommitAction extends ContextAction {
         cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSN_Commit_Action_Cancel"));
         cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSD_Commit_Action_Cancel"));
 
+        DialogDescriptor dd = new DialogDescriptor(panel,
+              org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_CommitDialog_Title", contentTitle), // NOI18N
+              true,
+              new Object[] {commitButton, cancelButton},
+              commitButton,
+              DialogDescriptor.DEFAULT_ALIGN,
+              new HelpCtx(CommitAction.class), 
+              null);
         computeNodes(data, panel, ctx, repository, cancelButton);
         commitButton.setEnabled(false);
-        dd.setOptions(new Object[] {commitButton, cancelButton});
-        dd.setHelpCtx(new HelpCtx(CommitAction.class));
         panel.addVersioningListener(new VersioningListener() {
             public void versioningEvent(VersioningEvent event) {
                 refreshCommitDialog(panel, data, commitButton);
