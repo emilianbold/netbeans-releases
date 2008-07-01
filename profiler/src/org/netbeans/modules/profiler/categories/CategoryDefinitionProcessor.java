@@ -39,6 +39,11 @@
 
 package org.netbeans.modules.profiler.categories;
 
+import org.netbeans.modules.profiler.categories.definitions.SubtypeCategoryDefinition;
+import org.netbeans.modules.profiler.categories.definitions.SingleTypeCategoryDefinition;
+import org.netbeans.modules.profiler.categories.definitions.CustomCategoryDefinition;
+import org.netbeans.modules.profiler.categories.definitions.PackageCategoryDefinition;
+
 /**
  *
  * @author Jaroslav Bachorik
@@ -53,4 +58,6 @@ public abstract class CategoryDefinitionProcessor {
     public abstract void process(SingleTypeCategoryDefinition def);
     
     public abstract void process(CustomCategoryDefinition def);
+    
+    public abstract void process(PackageCategoryDefinition def);
 }

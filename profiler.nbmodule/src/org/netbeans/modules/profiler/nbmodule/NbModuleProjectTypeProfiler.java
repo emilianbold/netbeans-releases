@@ -46,10 +46,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.ProfilerLogger;
-import org.netbeans.lib.profiler.marker.CompositeMarker;
 import org.netbeans.lib.profiler.marker.Marker;
-import org.netbeans.lib.profiler.marker.MethodMarker;
-import org.netbeans.lib.profiler.results.cpu.marking.HierarchicalMark;
 import org.netbeans.lib.profiler.marker.Mark;
 import org.netbeans.modules.profiler.AbstractProjectTypeProfiler;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -92,32 +89,11 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
                                                                      "NbModuleProjectTypeProfiler_FilesCategory"); // NOI18N
     private static final String SOCKETS_CATEGORY = NbBundle.getMessage(NbModuleProjectTypeProfiler.class,
                                                                        "NbModuleProjectTypeProfiler_SocketsCategory"); // NOI18N
-
-    //~ Instance fields ----------------------------------------------------------------------------------------------------------
-
-    private HierarchicalMark projectRoot;
-    private Marker marker;
-
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public boolean isFileObjectSupported(final Project project, final FileObject fo) {
         return SourceUtils.isTest(fo); // profile single only for tests
     }
-
-    @Override
-    public HierarchicalMark getMarkHierarchyRoot() {
-        if (projectRoot == null) {
-            projectRoot = new HierarchicalMark(Mark.DEFAULT_ID, PROJECT_CATEGORY, null); // NOI18N
-        }
-
-        return projectRoot;
-    }
-
-//    public Marker getProjectMarker(Project project) {
-//        setupMarks(project);
-//
-//        return marker;
-//    }
 
     public String getProfilerTargetName(final Project project, final FileObject buildScript, final int type,
                                         final FileObject profiledClass) {
@@ -228,103 +204,4 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
 
         // not applicable for NBM projects
     }
-
-//    private void setupMarks(final Project project) {
-////        PackageMarker pMarker = new PackageMarker();
-//        MethodMarker mMarker = new MethodMarker();
-//
-//        HierarchicalMark uiMark = new HierarchicalMark("UI", "Generic UI", getMarkHierarchyRoot()); // NOI18N
-//        HierarchicalMark listenerMark = new HierarchicalMark("UI/LISTENER", LISTENERS_CATEGORY, uiMark); // NOI18N
-//        HierarchicalMark painterMark = new HierarchicalMark("UI/PAINTER", PAINTERS_CATEGORY, uiMark); // NOI18N
-//        HierarchicalMark ioMark = new HierarchicalMark("IO", IO_CATEGORY, getMarkHierarchyRoot()); // NOI18N
-//        HierarchicalMark fileMark = new HierarchicalMark("IO/FILE", FILES_CATEGORY, ioMark); // NOI18N
-//        HierarchicalMark socketMark = new HierarchicalMark("IO/SOCKET", SOCKETS_CATEGORY, ioMark); // NOI18N
-//
-//        String[] listenerIfcs = new String[] {
-//                                    "java.awt.event.ActionListener", // NOI18N
-//        "java.awt.event.AdjustmentListener", // NOI18N
-//        "java.awt.event.AWTEventListener", // NOI18N
-//        "java.awt.event.ComponentListener", // NOI18N
-//        "java.awt.event.ContainerListener", // NOI18N
-//        "java.awt.event.FocusListener", // NOI18N
-//        "java.awt.event.HierarchyBoundsListener", // NOI18N
-//        "java.awt.event.HierarchyListener", // NOI18N
-//        "java.awt.event.InputMethodListener", // NOI18N
-//        "java.awt.event.InputMethodListener", // NOI18N
-//        "java.awt.event.ItemListener", // NOI18N
-//        "java.awt.event.KeyListener", // NOI18N
-//        "java.awt.event.MouseListener", // NOI18N
-//        "java.awt.event.MouseMotionListener", // NOI18N
-//        "java.awt.event.MouseWheelListener", // NOI18N
-//        "java.awt.event.WindowFocusListener", // NOI18N
-//        "java.awt.event.WindowListener", // NOI18N
-//        "java.awt.event.WindowStateListener", // NOI18N
-//        "java.awt.event.TextListener", // NOI18N
-//        "javax.swing.event.AncestorListener", // NOI18N
-//        "javax.swing.event.CaretListener", // NOI18N
-//        "javax.swing.event.CellEditorListener", // NOI18N
-//        "javax.swing.event.ChangeListener", // NOI18N
-//        "javax.swing.event.DocumentListener", // NOI18N
-//        "javax.swing.event.HyperlinkListener", // NOI18N
-//        "javax.swing.event.InternalFrameListener", // NOI18N
-//        "javax.swing.event.ListDataListener", // NOI18N
-//        "javax.swing.event.ListSelectionListener", // NOI18N
-//        "javax.swing.event.MenuDragMouseListener", // NOI18N
-//        "javax.swing.event.MenuKeyListener", // NOI18N
-//        "javax.swing.event.MenuListener", // NOI18N
-//        "javax.swing.event.MouseInputListener", // NOI18N
-//        "javax.swing.event.PopupMenuListener", // NOI18N
-//        "javax.swing.event.TableColumnModelListener", // NOI18N
-//        "javax.swing.event.TableModelListener", // NOI18N
-//        "javax.swing.event.TreeExpansionListener", // NOI18N
-//        "javax.swing.event.TreeModelListener", // NOI18N
-//        "javax.swing.event.TreeSelectionListener", // NOI18N
-//        "javax.swing.event.TreeWillExpandListener", // NOI18N
-//        "javax.swing.event.UndoableEditListener" // NOI18N
-//                                };
-//
-//        addInterfaceMarkers(mMarker, listenerIfcs, listenerMark, project);
-//        addInterfaceMarker(mMarker, "java.awt.LightweightDispatcher", new String[] { "dispatchEvent" }, true, listenerMark,
-//                           project); // NOI18N
-//        addInterfaceMarker(mMarker, "javax.swing.JComponent",
-//                           new String[] {
-//                               "repaint", "paint", "paintBorder", "paintChildren", "paintComponent", "paintImmediately", "print",
-//                               "printAll", "printBorder", "printChildren", "printComponent"
-//                           }, true, painterMark, project); // NOI18N
-//        addInterfaceMarker(mMarker, "java.awt.Component", new String[] { "paint", "paintAll", "print", "printAll" }, true,
-//                           painterMark, project); // NOI18N
-//
-//        String[] ioFileClasses = new String[] {
-//                                     "java.io.FileInputStream", // NOI18N
-//        "java.io.FileOuptutStream", // NOI18N
-//        "java.io.FileReader", // NOI18N
-//        "java.io.FileWriter" // NOI18N
-//                                 };
-//        String[] ioSocketClasses = new String[] { "java.nio.SocketChannel" // NOI18N
-//                                   };
-//
-//        String[] ioFileRestrictMethods = new String[] {
-//                                             "read", // NOI18N
-//        "write", // NOI18N
-//        "reset", // NOI18N
-//        "skip", // NOI18N
-//        "flush" // NOI18N
-//                                         };
-//        String[] ioSocketRestrictMethods = new String[] { "open", // NOI18N
-//            "read", // NOI18N
-//            "write" // NOI18N
-//                                           };
-//
-//        addInterfaceMarkers(mMarker,
-//                            new String[] {
-//                                "java.io.InputStreamReader", "java.io.OutputStreamWriter", "java.io.InputStream",
-//                                "java.io.OutputStream"
-//                            }, ioFileRestrictMethods, true, ioMark, project); // NOI18N
-//        addInterfaceMarkers(mMarker, ioFileClasses, ioFileRestrictMethods, true, fileMark, project);
-//        addInterfaceMarkers(mMarker, ioSocketClasses, ioSocketRestrictMethods, true, socketMark, project);
-//
-//        marker = new CompositeMarker();
-//        ((CompositeMarker) marker).addMarker(mMarker);
-////        ((CompositeMarker) marker).addMarker(pMarker);
-//    }
 }

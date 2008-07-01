@@ -97,6 +97,15 @@ made subject to such option by the copyright holder.
                             <file name="javax.servlet.jsp.tagext.TagSupport" url="javax.servlet.jsp.tagext.TagSupport"/>
                         </folder>
                     </folder>
+                    <folder name="WS">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
+                            <folder name="Core">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
+                            <folder name="~package">
+                                <file name="javax.xml.ws"/>
+                            </folder>
+                        </folder>
+                    </folder>
                     <folder name="Servlets">
                         <folder name="LifeCycle">
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>

@@ -78,7 +78,7 @@ public abstract class AbstractProjectLookupProvider implements LookupProvider {
     
     protected abstract List getAdditionalLookups(Project project);
     
-    final public Lookup createAdditionalLookup(Lookup baseContext) {
+    public Lookup createAdditionalLookup(Lookup baseContext) {
         List lookUps = new ArrayList();
         Project project = baseContext.lookup(Project.class);
         lookUps.add(getDataFilesProviderImplementation(project));
