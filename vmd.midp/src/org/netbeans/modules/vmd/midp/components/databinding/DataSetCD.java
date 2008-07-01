@@ -57,14 +57,9 @@ import org.netbeans.modules.vmd.midp.codegen.MIDPDataSetBodyCodePresenter;
  */
 public class DataSetCD extends ComponentDescriptor {
 
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/dataset_16.gif"; // NOI18N
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.databinding.DataSet"); //NOI18N
     
-    public static final String PROP_NAMES = "names"; 
-
-    static {
-        MidpTypes.registerIconResource(TYPEID, ICON_PATH);
-    }
+    public static final String PROP_NAMES = "names"; //NOI18N 
 
     @Override
     public TypeDescriptor getTypeDescriptor() {
@@ -95,6 +90,6 @@ public class DataSetCD extends ComponentDescriptor {
         return Arrays.asList(
                 // code
                 MIDPDataSetBodyCodePresenter.create("/org/netbeans/modules/vmd/midp/codegen/dataset_java.code") //NOI18N
-                );   
+        );   
     }
 }
