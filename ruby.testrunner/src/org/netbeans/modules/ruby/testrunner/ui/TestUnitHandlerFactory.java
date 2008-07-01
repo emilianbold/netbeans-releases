@@ -181,7 +181,7 @@ public class TestUnitHandlerFactory {
     static class SuiteFinishedHandler extends TestRecognizerHandler {
 
         public SuiteFinishedHandler() {
-            super("%SUITE_FINISHED%\\s(\\d+\\.\\d+)"); //NOI18N
+            super("%SUITE_FINISHED%\\stime=(.+)"); //NOI18N
         }
 
         @Override

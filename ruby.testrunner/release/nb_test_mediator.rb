@@ -173,7 +173,7 @@ class NbTestMediator
   end
 
   def suite_finished(result)
-    puts "%SUITE_FINISHED% #{result}"
+    puts "%SUITE_FINISHED% time=#{result}"
   end
   
   def test_started(result)

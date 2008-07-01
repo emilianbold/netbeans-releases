@@ -134,12 +134,22 @@ public class TestUnitRecognizerTest extends TestCase {
     
     public void testSuiteFinished() {
         TestRecognizerHandler handler = new TestUnitHandlerFactory.SuiteFinishedHandler();
-        String output = "%SUITE_FINISHED% 0.124";
+        String output = "%SUITE_FINISHED% time=0.124";
         Matcher matcher = handler.match(output);
         assertTrue(matcher.matches());
         
         assertEquals(1, matcher.groupCount());
         assertEquals("0.124", matcher.group(1));
+    }
+    
+    public void testSuiteFinished2() {
+        TestRecognizerHandler handler = new TestUnitHandlerFactory.SuiteFinishedHandler();
+        String output = "%SUITE_FINISHED% time=8.4e-05";
+        Matcher matcher = handler.match(output);
+        assertTrue(matcher.matches());
+        
+        assertEquals(1, matcher.groupCount());
+        assertEquals("8.4e-05", matcher.group(1));
     }
     
     public void testSuiteStarted() {
