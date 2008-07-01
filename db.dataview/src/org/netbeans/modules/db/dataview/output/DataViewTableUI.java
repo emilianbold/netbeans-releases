@@ -50,13 +50,21 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.EventObject;
 import java.util.List;
 import javax.swing.DefaultCellEditor;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
@@ -66,6 +74,8 @@ import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
+import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.datatransfer.ExClipboard;
@@ -83,43 +93,17 @@ class DataViewTableUI extends JTable {
     private final DataViewTablePanel tablePanel;
     private static transient final Localizer mLoc = Localizer.get();
     private static final String data = "WE WILL EITHER FIND A WAY, OR MAKE ONE."; // NOI18N
+
     private static Logger mLogger = Logger.getLogger(DataViewTableUI.class.getName());
-    
+
     public DataViewTableUI(final DataViewTablePanel tablePanel, final DataViewActionHandler handler, final DataView dataView) {
         this.tablePanel = tablePanel;
-        addKeyListener(new KeyListener() {
-
-            public void keyTyped(KeyEvent e) {
-            }
-
-            public void keyPressed(KeyEvent e) {
-                if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_0) {
-                    int row = getSelectedRow();
-                    int col = getSelectedColumn();
-                    editCellAt(row, col);
-                    TableCellEditor editor = getCellEditor();
-                    if (editor != null) {
-                        DBColumn dbcol = DataViewTableUI.this.tablePanel.getDataViewDBTable().getColumn(col);
-                        if (dbcol.isGenerated() || !dbcol.isNullable()) {
-                            Toolkit.getDefaultToolkit().beep();
-                            editor.stopCellEditing();
-                        } else {
-                            editor.getTableCellEditorComponent(DataViewTableUI.this, null, rowSelectionAllowed, row, col);
-                            setValueAt(null, row, col);
-                            editor.stopCellEditing();
-                        }
-                    }
-                }
-            }
-
-            public void keyReleased(KeyEvent e) {
-            }
-        });
+        addKeyListener(new Control0KeyListener());
 
         // content popup menu on table with results
         tablePopupMenu = new JPopupMenu();
         String nbBundle15 = mLoc.t("RESC015: Print Table Data");
-        JMenuItem printTable = new JMenuItem(nbBundle15.substring(15)); 
+        JMenuItem printTable = new JMenuItem(nbBundle15.substring(15));
 
         printTable.addActionListener(new ActionListener() {
 
@@ -130,7 +114,7 @@ class DataViewTableUI extends JTable {
                         System.err.println(nbBundle16.substring(15));
                     }
                 } catch (java.awt.print.PrinterException ex) {
-                    mLogger.infoNoloc(mLoc.t("LOGR023: Cannot print %s%n",ex.getMessage()));
+                    mLogger.infoNoloc(mLoc.t("LOGR023: Cannot print %s%n", ex.getMessage()));
                     System.err.format("Cannot print %s%n", ex.getMessage());
                 }
             }
@@ -138,7 +122,7 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.add(printTable);
 
         String nbBundle17 = mLoc.t("RESC017: Refresh Records");
-        JMenuItem miRefreshAction = new JMenuItem(nbBundle17.substring(15)); 
+        JMenuItem miRefreshAction = new JMenuItem(nbBundle17.substring(15));
         miRefreshAction.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -149,7 +133,7 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.addSeparator();
 
         String nbBundle18 = mLoc.t("RESC018: Insert Record");
-        final JMenuItem miInsertAction = new JMenuItem(nbBundle18.substring(15)); 
+        final JMenuItem miInsertAction = new JMenuItem(nbBundle18.substring(15));
         miInsertAction.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -159,7 +143,7 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.add(miInsertAction);
 
         String nbBundle19 = mLoc.t("RESC019: Delete Record(s)");
-        final JMenuItem miDeleteAction = new JMenuItem(nbBundle19.substring(15)); 
+        final JMenuItem miDeleteAction = new JMenuItem(nbBundle19.substring(15));
         miDeleteAction.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -169,7 +153,7 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.add(miDeleteAction);
 
         String nbBundle20 = mLoc.t("RESC020: Commit Record(s)");
-        final JMenuItem miCommitAction = new JMenuItem(nbBundle20.substring(15)); 
+        final JMenuItem miCommitAction = new JMenuItem(nbBundle20.substring(15));
         miCommitAction.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -180,7 +164,7 @@ class DataViewTableUI extends JTable {
 
 
         String nbBundle21 = mLoc.t("RESC021: Cancel Edits");
-        final JMenuItem miCancelEdits = new JMenuItem(nbBundle21.substring(15)); 
+        final JMenuItem miCancelEdits = new JMenuItem(nbBundle21.substring(15));
         miCancelEdits.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -190,7 +174,7 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.add(miCancelEdits);
 
         String nbBundle22 = mLoc.t("RESC022: Truncate Table");
-        final JMenuItem miTruncateRecord = new JMenuItem(nbBundle22.substring(15)); 
+        final JMenuItem miTruncateRecord = new JMenuItem(nbBundle22.substring(15));
         miTruncateRecord.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -201,7 +185,7 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.addSeparator();
 
         String nbBundle23 = mLoc.t("RESC023: Copy Cell Value");
-        final JMenuItem miCopyValue = new JMenuItem(nbBundle23.substring(15)); 
+        final JMenuItem miCopyValue = new JMenuItem(nbBundle23.substring(15));
         miCopyValue.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -219,7 +203,7 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.add(miCopyValue);
 
         String nbBundle24 = mLoc.t("RESC024: Copy Row Values");
-        final JMenuItem miCopyRowValues = new JMenuItem(nbBundle24.substring(15)); 
+        final JMenuItem miCopyRowValues = new JMenuItem(nbBundle24.substring(15));
         miCopyRowValues.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -229,7 +213,7 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.add(miCopyRowValues);
 
         String nbBundle25 = mLoc.t("RESC025: Copy Row Values(With Header)");
-        final JMenuItem miCopyRowValuesH = new JMenuItem(nbBundle25.substring(15)); 
+        final JMenuItem miCopyRowValuesH = new JMenuItem(nbBundle25.substring(15));
         miCopyRowValuesH.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -251,6 +235,7 @@ class DataViewTableUI extends JTable {
                         Object[] insertRow = dataView.getDataViewPageContext().getCurrentRows().get(rows[j]);
                         String sql = dataView.getSQLStatementGenerator().generateInsertStatement(insertRow)[1];
                         insertSQL += sql.replaceAll("\n", "").replaceAll("\t", "") + "\n"; // NOI18N
+
                     }
                     ShowSQLDialog dialog = new ShowSQLDialog();
                     dialog.setLocationRelativeTo(DataViewTableUI.this);
@@ -264,7 +249,7 @@ class DataViewTableUI extends JTable {
         tablePopupMenu.add(miInsertSQLScript);
 
         String nbBundle27 = mLoc.t("RESC027: Show SQL Script for DELETE");
-        final JMenuItem miDeleteSQLScript = new JMenuItem(nbBundle27.substring(15)); 
+        final JMenuItem miDeleteSQLScript = new JMenuItem(nbBundle27.substring(15));
         miDeleteSQLScript.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -310,7 +295,12 @@ class DataViewTableUI extends JTable {
 
         getTableHeader().setReorderingAllowed(false);
         setDefaultRenderer(Object.class, new ResultSetCellRenderer());
+        setDefaultRenderer(Number.class, new ResultSetCellRenderer());
+        setDefaultRenderer(Date.class, new ResultSetCellRenderer());
+
         setDefaultEditor(Object.class, new ResultSetTableCellEditor(new JTextField()));
+        setDefaultEditor(Number.class, new NumberEditor(new JTextField()));
+
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
         multiplier = getFontMetrics(getFont()).stringWidth(data) / data.length() + 5;
@@ -357,57 +347,6 @@ class DataViewTableUI extends JTable {
                 }
             }
         });
-    }
-
-    class ResultSetTableCellEditor extends DefaultCellEditor {
-
-        Object val;
-
-        public ResultSetTableCellEditor(final JTextField textField) {
-            super(textField);
-            delegate = new EditorDelegate() {
-
-                @Override
-                public void setValue(Object value) {
-                    val = value;
-                    textField.setText((value != null) ? value.toString() : ""); // NOI18N
-                }
-
-                @Override
-                public Object getCellEditorValue() {
-                    String txtVal = textField.getText();
-                    if (val == null && textField.getText().equals("")) { // NOI18N
-                        return null;
-                    } else if(val != null && val.toString().equals(txtVal)){
-                        return val;
-                    } else {
-                        return txtVal;
-                    }
-                }
-            };
-            textField.addActionListener(delegate);
-            textField.addKeyListener(new KeyListener() {
-
-                public void keyTyped(KeyEvent e) {
-                }
-
-                public void keyPressed(KeyEvent e) {
-                    if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_0) {
-                        int col = getEditingColumn();
-                        DBColumn dbcol = DataViewTableUI.this.tablePanel.getDataViewDBTable().getColumn(col);
-                        if (dbcol.isGenerated() || !dbcol.isNullable()) {
-                            Toolkit.getDefaultToolkit().beep();
-                        } else {
-                            delegate.setValue(null);
-                            ResultSetTableCellEditor.this.stopCellEditing();
-                        }
-                    }
-                }
-
-                public void keyReleased(KeyEvent e) {
-                }
-            });
-        }
     }
 
     @Override
@@ -497,9 +436,10 @@ class DataViewTableUI extends JTable {
 
     @Override
     public TableCellRenderer getCellRenderer(int row, int column) {
-        DataViewTableSorter model =  (DataViewTableSorter)getModel();
+        DataViewTableSorter model = (DataViewTableSorter) getModel();
         row = model.modelIndex(row);
-        if (tablePanel.getDataViewDBTable().getColumn(column).isGenerated()) {
+        DBColumn dbCol = tablePanel.getDataViewDBTable().getColumn(column);
+        if (dbCol.isGenerated()) {
             return new GeneratedResultSetCellRenderer();
         } else if (getResultSetRowContext().getValueList((row + 1) + ";" + (column + 1)) != null) { // NOI18N
             return new UpdatedResultSetCellRenderer();
@@ -520,7 +460,71 @@ class DataViewTableUI extends JTable {
         }
     }
 
-    private static class GeneratedResultSetCellRenderer extends DefaultTableCellRenderer {
+    private static class NumberObjectCellRenderer extends DefaultTableCellRenderer.UIResource {
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            ((JLabel) c).setHorizontalAlignment(JLabel.RIGHT);
+            return c;
+        }
+    }
+
+    private static class DateTimeRenderer extends DefaultTableCellRenderer.UIResource {
+
+        DateFormat formatter;
+
+        public DateTimeRenderer() {
+            super();
+        }
+
+        @Override
+        public void setValue(Object value) {
+            if (formatter == null) {
+                formatter = DateFormat.getDateTimeInstance();
+            }
+            setText((value == null) ? "" : formatter.format(value)); // NOI18N
+
+        }
+    }
+
+    private static class TimeRenderer extends DefaultTableCellRenderer.UIResource {
+
+        DateFormat formatter;
+
+        public TimeRenderer() {
+            super();
+        }
+
+        @Override
+        public void setValue(Object value) {
+            if (formatter == null) {
+                formatter = DateFormat.getTimeInstance();
+            }
+            setText((value == null) ? "" : formatter.format(value)); // NOI18N
+
+        }
+    }
+    
+    private static class DateRenderer extends DefaultTableCellRenderer.UIResource {
+
+        DateFormat formatter;
+
+        public DateRenderer() {
+            super();
+        }
+
+        @Override
+        public void setValue(Object value) {
+            if (formatter == null) {
+                formatter = DateFormat.getDateInstance();
+            }
+            setText((value == null) ? "" : formatter.format(value)); // NOI18N
+
+        }
+    }    
+
+    private static class GeneratedResultSetCellRenderer extends ResultSetCellRenderer {
 
         static Color gray = new Color(245, 245, 245);
 
@@ -537,38 +541,43 @@ class DataViewTableUI extends JTable {
     }
 
     private static class ResultSetCellRenderer extends DefaultTableCellRenderer.UIResource {
-
-        static final TableCellRenderer NULL_RENDERER = new NullObjectCellRenderer();
+        final TableCellRenderer NULL_RENDERER = new NullObjectCellRenderer();
+        final TableCellRenderer NUMNBER_RENDERER = new NumberObjectCellRenderer();
+        final TableCellRenderer TIME_RENDERER = new TimeRenderer();
+        final TableCellRenderer DATE_RENDERER = new DateRenderer();
+        final TableCellRenderer DATETIME_RENDERER = new DateTimeRenderer();
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             if (null == value) {
                 return NULL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            } else if(value instanceof Number){ 
+                return NUMNBER_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            } else if(value instanceof Timestamp){ 
+                return DATETIME_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            } else if(value instanceof Date){ 
+                return DATE_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            } else if(value instanceof Time){ 
+                return TIME_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             } else {
                 return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            }
+            }  
         }
     }
 
-    private static class UpdatedResultSetCellRenderer extends DefaultTableCellRenderer.UIResource {
+    private static class UpdatedResultSetCellRenderer extends ResultSetCellRenderer {
 
         static Color green = new Color(0, 128, 0);
-        static final TableCellRenderer NULL_RENDERER = new NullObjectCellRenderer();
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            Component c;
-            if (null == value) {
-                c = NULL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            } else {
-                c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            }
+            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
             if (isSelected) {
                 c.setForeground(Color.ORANGE);
             } else {
                 c.setForeground(green);
             }
-
             return c;
         }
     }
@@ -582,6 +591,105 @@ class DataViewTableUI extends JTable {
         @Override
         public String getToolTipText(MouseEvent e) {
             return getColumnToolTipText(e);
+        }
+    }
+
+    private class ResultSetTableCellEditor extends DefaultCellEditor {
+
+        Object val;
+        public ResultSetTableCellEditor(final JTextField textField) {
+            super(textField);
+            delegate = new EditorDelegate() {
+
+                @Override
+                public void setValue(Object value) {
+                    val = value;
+                    textField.setText((value != null) ? value.toString() : ""); // NOI18N
+                }
+
+                @Override
+                public boolean stopCellEditing() {
+                    return super.stopCellEditing();
+                }
+
+                @Override
+                public boolean startCellEditing(EventObject anEvent) {
+                    ((JComponent) getComponent()).setBorder(new LineBorder(Color.black));
+                    return super.startCellEditing(anEvent);
+                }
+
+                @Override
+                public void cancelCellEditing() {
+                    ((JComponent) getComponent()).setBorder(new LineBorder(Color.black));
+                    super.cancelCellEditing();
+                }
+
+                @Override
+                public Object getCellEditorValue() {
+                    String txtVal = textField.getText();
+                    if (val == null && textField.getText().equals("")) { // NOI18N
+                        val = null;
+                    } else {
+                        try {
+                            int col = getEditingColumn();
+                            DBColumn dbcol = DataViewTableUI.this.tablePanel.getDataViewDBTable().getColumn(col);                    
+                            
+                            val = DBReadWriteHelper.validate(txtVal, dbcol);
+                        } catch (Exception ex) {
+                            ((JComponent) getComponent()).setBorder(new LineBorder(Color.red));
+                            StatusDisplayer.getDefault().setStatusText(ex.getMessage());
+                            return txtVal;
+                        }
+                    }                    
+                    return val;
+                }
+            };
+            textField.addActionListener(delegate);
+            textField.addKeyListener(new Control0KeyListener());
+        }
+    }
+
+    private class NumberEditor extends ResultSetTableCellEditor {
+
+        public NumberEditor(final JTextField textField) {
+            super(textField);
+            ((JTextField) getComponent()).setHorizontalAlignment(JTextField.RIGHT);
+        }
+    }
+
+    private class Control0KeyListener implements KeyListener {
+
+        public Control0KeyListener() {
+        }
+
+        public void keyTyped(KeyEvent e) {
+        }
+
+        public void keyPressed(KeyEvent e) {
+            if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_0) {
+
+                int row = getSelectedRow();
+                int col = getSelectedColumn();
+                if (isCellEditable(row, col)) {
+                    editCellAt(row, col);
+                }
+
+                TableCellEditor editor = getCellEditor();
+                if (editor != null) {
+                    DBColumn dbcol = DataViewTableUI.this.tablePanel.getDataViewDBTable().getColumn(col);
+                    if (dbcol.isGenerated() || !dbcol.isNullable()) {
+                        Toolkit.getDefaultToolkit().beep();
+                        editor.stopCellEditing();
+                    } else {
+                        editor.getTableCellEditorComponent(DataViewTableUI.this, null, rowSelectionAllowed, row, col);
+                        setValueAt(null, row, col);
+                        editor.stopCellEditing();
+                    }
+                }
+            }
+        }
+
+        public void keyReleased(KeyEvent e) {
         }
     }
 }

@@ -253,7 +253,7 @@ class DataViewTablePanel extends JPanel {
             }
 
             Object oldVal = getValueAt(row, col);
-            if (oldVal != null && oldVal.toString().equals(value) || (oldVal == null && value == null)) {
+            if (oldVal != null && oldVal.toString().equals(value ==  null ? "" : value.toString()) || (oldVal == null && value == null)) {
                 return;
             }
 

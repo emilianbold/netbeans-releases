@@ -52,11 +52,6 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.NoSuchElementException;
-import java.util.StringTokenizer;
-import java.util.TimeZone;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
@@ -72,6 +67,7 @@ public class DBReadWriteHelper {
     private static transient final Localizer mLoc = Localizer.get();
 
     @SuppressWarnings(value = "fallthrough") // NOI18N
+
     public static Object readResultSet(ResultSet rs, int colType, int index) throws SQLException {
         switch (colType) {
             case Types.BIT:
@@ -117,8 +113,7 @@ public class DBReadWriteHelper {
                     return new Long(ldata);
                 }
             }
-            case Types.DOUBLE:
-            case Types.FLOAT: {
+            case Types.DOUBLE: {
                 double fdata = rs.getDouble(index);
                 if (rs.wasNull()) {
                     return null;
@@ -126,6 +121,8 @@ public class DBReadWriteHelper {
                     return new Double(fdata);
                 }
             }
+
+            case Types.FLOAT:
             case Types.REAL: {
                 float rdata = rs.getFloat(index);
                 if (rs.wasNull()) {
@@ -284,25 +281,15 @@ public class DBReadWriteHelper {
                     break;
 
                 case Types.TIMESTAMP:
-                    long ts = DBReadWriteHelper.convertFromIso8601(valueObj.toString());
-                    mLogger.infoNoloc(mLoc.t("LOGR001: **** timestamp ****{0}",ts));
-                    try {
-                        ps.setTimestamp(index, new java.sql.Timestamp(ts));
-                    } catch (java.sql.SQLException e) {
-                        ps.setDate(index, new java.sql.Date(ts));
-                    }
+                    ps.setTimestamp(index, (Timestamp) new TimestampType().convert(valueObj));
                     break;
 
                 case Types.DATE:
-                    ts = DBReadWriteHelper.convertFromIso8601(valueObj.toString());
-                    mLogger.infoNoloc(mLoc.t("LOGR001: **** timestamp ****{0}",ts));
-                    ps.setDate(index, new java.sql.Date(ts));
+                    ps.setDate(index, (Date) new DateType().convert(valueObj));
                     break;
 
                 case Types.TIME:
-                    ts = DBReadWriteHelper.convertFromIso8601(valueObj.toString());
-                    mLogger.infoNoloc(mLoc.t("LOGR001: **** timestamp ****{0}",ts));
-                    ps.setTime(index, new Time(ts));
+                    ps.setTime(index, (Time) new TimeType().convert(valueObj));
                     break;
 
                 case Types.BINARY:
@@ -331,54 +318,85 @@ public class DBReadWriteHelper {
                     ps.setObject(index, valueObj, jdbcType);
             }
         } catch (Exception e) {
-            mLogger.errorNoloc(mLoc.t("LOGR002: Invalid Data for {0} type --",jdbcType), e);
+            mLogger.errorNoloc(mLoc.t("LOGR002: Invalid Data for {0} type --", jdbcType), e);
             throw new DBException("Invalid Data for " + jdbcType + " type ", e);
         }
-
     }
 
     public static Object validate(Object valueObj, DBColumn col) throws DBException {
-        int jdbcType = col.getJdbcType();
+        int colType = col.getJdbcType();
+        if (valueObj == null) {
+            return null;
+        }
         try {
-            if (valueObj == null) {
-                return null;
-            }
+            switch (colType) {
+                case Types.BIT:
+                case Types.BOOLEAN:
+                    return (valueObj instanceof Boolean) ? valueObj : new Boolean(valueObj.toString());
 
-            switch (jdbcType) {
-                case Types.DOUBLE:
-                    return (valueObj instanceof Number) ? (Number) valueObj : Double.valueOf(valueObj.toString());
+                case Types.TIMESTAMP:
+                    return valueObj instanceof Timestamp ? valueObj : new TimestampType().convert(valueObj);
+
+                case Types.DATE:
+                    return valueObj instanceof Date ? valueObj : new DateType().convert(valueObj);
+
+                case Types.TIME:
+                    return valueObj instanceof Time ? valueObj : new TimeType().convert(valueObj);
 
                 case Types.BIGINT:
-                case Types.NUMERIC:
-                case Types.DECIMAL:
-                    return  (valueObj instanceof Number) ? (Number) valueObj : new BigDecimal(valueObj.toString());
+                    return valueObj instanceof Long ? valueObj : new Long(valueObj.toString());
+
+                case Types.DOUBLE:
+                    return valueObj instanceof Double ? valueObj : new Double(valueObj.toString());
 
                 case Types.FLOAT:
                 case Types.REAL:
-                    return  (valueObj instanceof Number) ? (Number) valueObj : Float.valueOf(valueObj.toString());
+                    return valueObj instanceof Float ? valueObj : new Float(valueObj.toString());
+
+                case Types.DECIMAL:
+                case Types.NUMERIC:
+                    return valueObj instanceof BigDecimal ? valueObj : new BigDecimal(valueObj.toString());
 
                 case Types.INTEGER:
-                case Types.SMALLINT:
-                case Types.TINYINT:
-                    return  (valueObj instanceof Number) ? (Number) valueObj : Integer.valueOf(valueObj.toString());
+                    return valueObj instanceof Integer ? valueObj : new Integer(valueObj.toString());
 
-                case Types.TIMESTAMP:
-                case Types.DATE:
-                case Types.TIME:
-                    DBReadWriteHelper.convertFromIso8601(valueObj.toString());
-                    return valueObj;
+                case Types.SMALLINT:
+                    return valueObj instanceof Short ? valueObj : new Short(valueObj.toString());
+
+                case Types.TINYINT:
+                    return valueObj instanceof Byte ? valueObj : new Byte(valueObj.toString());
 
                 case Types.CHAR:
                 case Types.VARCHAR:
+                case Types.LONGVARCHAR:
+                case -9:  //NVARCHAR
+                case -8:  //ROWID
+                case -15: //NCHAR    
                     if (valueObj.toString().length() > col.getPrecision()) {
                         String colName = col.getQualifiedName();
                         String errMsg = "Too large data \'" + valueObj + "\' for column " + colName;
                         throw new DBException(errMsg);
                     }
+                    return valueObj;
+
+                case Types.BINARY:
+                case Types.VARBINARY:
+                case Types.LONGVARBINARY:
+                case Types.CLOB:
+                case Types.BLOB:
+                    char[] bytes = valueObj.toString().toCharArray();
+                    Byte[] internal = new Byte[bytes.length];
+                    for (int i = 0; i < bytes.length; i++) {
+                        internal[i] = new Byte((byte) bytes[i]);
+                    }
+                    return BinaryToStringConverter.convertToString(internal, BinaryToStringConverter.BINARY, true);
+
+                case Types.OTHER:
+                default:
+                    return valueObj;
             }
-            return valueObj;
         } catch (Exception e) {
-            String type = DataViewUtils.getStdSqlType(jdbcType);
+            String type = DataViewUtils.getStdSqlType(colType);
             String colName = col.getQualifiedName();
             String errMsg = "Invalid data \'" + valueObj + "\' for column " + colName + "\nEnter Valid data of " + type + " type";
             throw new DBException(errMsg, e);
@@ -387,203 +405,5 @@ public class DBReadWriteHelper {
 
     public static boolean isNullString(String str) {
         return (str == null || str.trim().length() == 0);
-    }
-
-    public static long convertFromIso8601(String isoDateTime) throws DBException {
-        return getCalendar(isoDateTime).getTimeInMillis();
-    }
-
-    /**
-     * returns a Gregorian Calendar of given iso date
-     * 
-     * @param isodate date in YYYY-MM-DDThh:mm:ss.sTZD format
-     * @return GregorianCalendar
-     */
-    public static GregorianCalendar getCalendar(String isodate) throws DBException {
-        // YYYY-MM-DDThh:mm:ss.sTZD
-        StringTokenizer st = new StringTokenizer(isodate, "-T:.+Z", true); // NOI18N
-
-        GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC")); // NOI18N
-        calendar.clear();
-
-        try {
-            // Year
-            if (st.hasMoreTokens()) {
-                int year = Integer.parseInt(st.nextToken());
-                calendar.set(Calendar.YEAR, year);
-            } else {
-                return calendar;
-            }
-
-            // Month
-            if (check(st, "-") && (st.hasMoreTokens())) { // NOI18N
-                int month = Integer.parseInt(st.nextToken()) - 1;
-                calendar.set(Calendar.MONTH, month);
-            } else {
-                return calendar;
-            }
-
-            // Day
-            if (check(st, "-") && (st.hasMoreTokens())) { // NOI18N
-                int day = Integer.parseInt(st.nextToken());
-                calendar.set(Calendar.DAY_OF_MONTH, day);
-            } else {
-                return calendar;
-            }
-
-            // Hour
-            if (check(st, "T") && (st.hasMoreTokens())) { // NOI18N
-                int hour = Integer.parseInt(st.nextToken());
-                calendar.set(Calendar.HOUR_OF_DAY, hour);
-            } else {
-                calendar.set(Calendar.HOUR_OF_DAY, 0);
-                calendar.set(Calendar.MINUTE, 0);
-                calendar.set(Calendar.SECOND, 0);
-                calendar.set(Calendar.MILLISECOND, 0);
-
-                return calendar;
-            }
-
-            // Minutes
-            if (check(st, ":") && (st.hasMoreTokens())) { // NOI18N
-                int minutes = Integer.parseInt(st.nextToken());
-                calendar.set(Calendar.MINUTE, minutes);
-            } else {
-                calendar.set(Calendar.MINUTE, 0);
-                calendar.set(Calendar.SECOND, 0);
-                calendar.set(Calendar.MILLISECOND, 0);
-
-                return calendar;
-            }
-
-            //
-            // Not mandatory now
-            //
-            // Secondes
-            if (!st.hasMoreTokens()) {
-                return calendar;
-            }
-
-            String tok = st.nextToken();
-
-            if (tok.equals(":")) { // seconds // NOI18N
-
-                if (st.hasMoreTokens()) {
-                    int secondes = Integer.parseInt(st.nextToken());
-                    calendar.set(Calendar.SECOND, secondes);
-
-                    if (!st.hasMoreTokens()) {
-                        return calendar;
-                    }
-
-                    // frac sec
-                    tok = st.nextToken();
-
-                    if (tok.equals(".")) { // NOI18N
-                        // bug fixed, thx to Martin Bottcher
-                        String nt = st.nextToken();
-
-                        while (nt.length() < 3) {
-                            nt += "0"; // NOI18N
-                        }
-
-                        nt = nt.substring(0, 3); // Cut trailing chars..
-
-                        int millisec = Integer.parseInt(nt);
-
-                        // int millisec = Integer.parseInt(st.nextToken()) * 10;
-                        calendar.set(Calendar.MILLISECOND, millisec);
-
-                        if (!st.hasMoreTokens()) {
-                            return calendar;
-                        }
-
-                        tok = st.nextToken();
-                    } else {
-                        calendar.set(Calendar.MILLISECOND, 0);
-                    }
-                } else {
-                    throw new RuntimeException("No secondes specified");
-                }
-            } else {
-                calendar.set(Calendar.SECOND, 0);
-                calendar.set(Calendar.MILLISECOND, 0);
-            }
-
-            // Timezone
-            if (!tok.equals("Z")) { // UTC
-
-                if (!(tok.equals("+") || tok.equals("-"))) { // NOI18N
-                    throw new RuntimeException("only Z, + or - allowed");
-                }
-
-                boolean plus = tok.equals("+"); // NOI18N
-
-                if (!st.hasMoreTokens()) {
-                    throw new RuntimeException("Missing hour field");
-                }
-
-                int tzhour = Integer.parseInt(st.nextToken());
-                int tzmin;
-
-                if (check(st, ":") && (st.hasMoreTokens())) { // NOI18N
-                    tzmin = Integer.parseInt(st.nextToken());
-                } else {
-                    throw new RuntimeException("Missing minute field");
-                }
-
-                // Since the time is represented at UTC (tz 0) format
-                // we need to convert the local time to UTC timezone
-                // for example if PST (-8) is 1.00 PM then UTC is 9.00 PM
-                if (!plus) {
-                    calendar.add(Calendar.HOUR, tzhour);
-                    calendar.add(Calendar.MINUTE, tzmin);
-                } else {
-                    calendar.add(Calendar.HOUR, -tzhour);
-                    calendar.add(Calendar.MINUTE, -tzmin);
-                }
-            }
-        } catch (NumberFormatException ex) {
-            throw new DBException("[" + ex.getMessage() + "] is not an integer");
-        }
-
-        return calendar;
-    }
-
-    /**
-     * Make a data string oracle "safe" by escaping single quote marks which are used to
-     * start and end strings.
-     * 
-     * @param value to be made oracle String safe.
-     * @return String which is Oracle safe
-     */
-    public static String makeStringOracleSafe(String value) {
-        if (value.indexOf("'") == -1) { // NOI18N
-            return value;
-        // nothing to escape
-        }
-
-        // the string contains a "'"
-        StringBuilder newValue = new StringBuilder();
-        for (int i = 0; i < value.length(); i++) {
-            char currChar = value.charAt(i);
-            if (currChar == '\'') {
-                // Append it twice to escape it
-                newValue.append(currChar);
-            }
-            newValue.append(currChar);
-        }
-        return newValue.toString();
-    }
-
-    private static boolean check(StringTokenizer st, String token) throws DBException {
-        try {
-            if (st.nextToken().equals(token)) {
-                return true;
-            }
-            throw new DBException("Missing [" + token + "]");
-        } catch (NoSuchElementException ex) {
-            return false;
-        }
     }
 }
