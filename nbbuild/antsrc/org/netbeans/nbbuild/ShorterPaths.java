@@ -72,6 +72,11 @@ public class ShorterPaths extends Task {
         public void setDir(File dir) {
             this.dir = dir;
         }
+
+        @Override
+        public String toString() {
+            return dir + " => ${" + name + "}";
+        }
     }
     private List<Replacement> replacements = new LinkedList<Replacement>(); // List<Nestme>
     public Replacement createReplacement() {
@@ -233,7 +238,7 @@ public class ShorterPaths extends Task {
                 } 
             }
             if (!bAppend) {
-                String fName = copyExtraLib(path); 
+                String fName = copyExtraLib(file);
                 if (fName != null) {
                     if (externalLibBuf.length() > 0 ) {
                         externalLibBuf.append(":\\\n");
@@ -260,14 +265,13 @@ public class ShorterPaths extends Task {
         getProject().setNewProperty(prop, val);
     }
 
-    private String copyExtraLib(String path) throws IOException{
+    private String copyExtraLib(File file) throws IOException{
         String name = null;
-        File file = new File(path);
         if (this.extraLibsDir != null && extraLibsDir.isDirectory() && file.isFile()) {
-            
+            log("Copying " + file + " to extralibs despite " + replacements);
             name = file.getName();
             byte buff[] = new byte[100000];
-            FileInputStream fis = new FileInputStream(path);
+            FileInputStream fis = new FileInputStream(file);
             FileOutputStream fos = new FileOutputStream(new File (extraLibsDir,name));
             int size = 0;
             while ((size = fis.read(buff)) > 0 ) {
