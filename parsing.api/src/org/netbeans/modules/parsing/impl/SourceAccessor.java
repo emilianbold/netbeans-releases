@@ -115,6 +115,8 @@ public abstract class SourceAccessor {
      */
     public abstract EventSupport getEventSupport (Source source);
     
+    public abstract SourceCache getCache (Source source);
+
     /**
      * SPI method - don't call it directly.
      * Called by the TaskProcessor when a new ParserResultTask is registered
@@ -130,5 +132,4 @@ public abstract class SourceAccessor {
      * @return number of still registered tasks
      */
     public abstract int taskRemoved (Source source);
-    
 }

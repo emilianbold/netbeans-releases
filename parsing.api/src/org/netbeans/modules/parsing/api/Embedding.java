@@ -70,10 +70,16 @@ public final class Embedding {
      * 
      * @param embeddings    A list of some embeddings created from one source.
      * @return              A new embedding compound from given pieces.
+     * @throws IllegalArgumentException
+     *                      if embeddings collection is empty, or
+     *                      mime types of embeddings are not same.
+     * @throws NullPointerException
+     *                      embedding is null.
      */
     public static Embedding create (
         List<Embedding>        embeddings
     ) {
+        if (embeddings.isEmpty ()) throw new IllegalArgumentException ();
         String mimeType = null;
         Source source = null;
         StringBuilder sb = new StringBuilder ();

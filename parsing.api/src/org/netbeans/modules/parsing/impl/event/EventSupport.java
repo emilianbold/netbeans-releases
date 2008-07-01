@@ -117,7 +117,7 @@ public final class EventSupport {
                     assignDocumentListener (dObj);
                     dobjListener = new DataObjectListener(dObj);
                     parserListener = new ParserListener();
-                    final Parser parser = ParserManagerImpl.getParser(source);
+                    final Parser parser = SourceAccessor.getINSTANCE ().getCache (source).getParser ();
                     if (parser != null) {
                         parser.addChangeListener(parserListener);
                     }
@@ -131,6 +131,7 @@ public final class EventSupport {
     
     public void resetState (final boolean invalidate) {
         synchronized (this.source) {
+            SourceAccessor.getINSTANCE ().getCache (source).invalidate ();
             final Set<SourceFlags> flags = SourceAccessor.getINSTANCE().getFlags(this.source);
             flags.add(SourceFlags.CHANGE_EXPECTED);
             if (invalidate) {

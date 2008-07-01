@@ -43,12 +43,8 @@ import java.util.Collections;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenHierarchyEvent;
-import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.parsing.spi.TokenHierarchySchedulerEvent;
 
 
 /**
@@ -59,29 +55,13 @@ public class CurrentDocumentTaskScheduller extends CurrentEditorTaskScheduller {
     
     private Document        currentDocument;
     private Source          source;
-    private TokenHierarchyListener
-                            tokenHierarchyListener = new ATokenHierarchyListener ();
     
     protected void setEditor (JTextComponent editor) {
         Document document = editor.getDocument ();
         if (currentDocument == document) return;
-        if (currentDocument != null)
-            TokenHierarchy.get (document).removeTokenHierarchyListener (tokenHierarchyListener);
         currentDocument = document;            
         source = Source.create (currentDocument);
         scheduleTasks (Collections.singleton (source), new SchedulerEvent (this) {});
-        TokenHierarchy.get (document).addTokenHierarchyListener (tokenHierarchyListener);
-    }
-    
-    private class ATokenHierarchyListener implements TokenHierarchyListener {
-
-        public void tokenHierarchyChanged (TokenHierarchyEvent evt) {
-            scheduleTasks (
-                Collections.singleton (source), 
-                new TokenHierarchySchedulerEvent (this, evt) {}
-            );
-        }
-        
     }
 }
 

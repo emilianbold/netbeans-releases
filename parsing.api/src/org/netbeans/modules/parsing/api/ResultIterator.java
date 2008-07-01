@@ -41,24 +41,22 @@ package org.netbeans.modules.parsing.api;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
-
 import java.util.LinkedList;
 import java.util.List;
+
+import java.util.Map;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.parsing.impl.ParserAccessor;
-import org.netbeans.modules.parsing.impl.ParserManagerImpl;
 import org.netbeans.modules.parsing.impl.ResultIteratorAccessor;
-import org.netbeans.modules.parsing.impl.SourceAccessor;
-import org.netbeans.modules.parsing.impl.SourceFlags;
+import org.netbeans.modules.parsing.impl.SourceCache;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
-import org.openide.util.Lookup;
 
 
 /**
@@ -72,34 +70,31 @@ import org.openide.util.Lookup;
  */
 public final class ResultIterator {
     
-    private Snapshot        snapshot;
+    private SourceCache     sourceCache;
     private MultiLanguageUserTask
                             task;
-    //@NotThreadSafe    //accessed under parser lock
-    private final List<ResultIterator> children = new LinkedList<ResultIterator>();
-    //@NotThreadSafe    //accessed under parser lock
-    private Parser.Result result;
+    private Parser.Result   result;
     
     static {
         ResultIteratorAccessor.setINSTANCE(new MyAccessor());
     }
 
     ResultIterator (
-        Snapshot            snapshot,
+        SourceCache         sourceCache,
         MultiLanguageUserTask
                             task
     ) {
-        this.snapshot = snapshot;
+        this.sourceCache = sourceCache;
         this.task = task;
     }
     
     public Snapshot getSnapshot () {
-        return snapshot;
+        return sourceCache.getSnapshot ();
     }
     
     private void invalidate () {
         if (result != null) {
-            ParserAccessor.getINSTANCE().invalidate(result);
+            ParserAccessor.getINSTANCE ().invalidate (result);
             result = null;
         }
         for (Iterator<ResultIterator> it = children.iterator(); it.hasNext();) {
@@ -115,51 +110,8 @@ public final class ResultIterator {
      * @return              parse {@link Result} for current source.
      */
     public Result getParserResult () throws ParseException {
-        Result result;
-        if (this.result != null) {
-            result = this.result;
-        }
-        else {
-            String mimeType = snapshot.getMimeType ();
-            Parser parser = null;
-            if (mimeType.equals (snapshot.getSource ().getMimeType ()))
-                parser = ParserManagerImpl.getParser (snapshot.getSource ());
-            if (parser == null) {
-                Lookup lookup = MimeLookup.getLookup (mimeType);
-                final Collection <? extends ParserFactory> parserFactories = lookup.lookupAll(ParserFactory.class);
-                final Collection<Snapshot> _tmp = Collections.singleton (snapshot);
-                for (final ParserFactory parserFactory : parserFactories) {
-                    parser = parserFactory.createParser (_tmp);
-                    if (parser != null) {
-                        break;
-                    }
-                }           
-            }
-            if (parser == null) throw new ParseException ();
-            final Source source = snapshot.getSource();
-            boolean invalid;        
-            synchronized (source) {
-                invalid = SourceAccessor.getINSTANCE().getFlags(source).remove(SourceFlags.INVALID);
-            }                    
-            if (!invalid) {
-                result = parser.getResult (task, null);
-            }
-            else {
-                boolean parseSuccess = false;
-                try {
-                    parser.parse (snapshot, task, null);
-                    result = parser.getResult (task, null);
-                    parseSuccess = true;
-                } finally {
-                   if (invalid && !parseSuccess) {
-                       synchronized (source ) {
-                           SourceAccessor.getINSTANCE().getFlags(source).add(SourceFlags.INVALID); //Rollback of optimistic update
-                       }
-                   }
-                }
-            }
-            this.result = result;
-        }
+        if (result == null)
+            result = sourceCache.getResult (task, null);
         return result;
     }
     
@@ -169,36 +121,14 @@ public final class ResultIterator {
      * @return              {@link Iterator} of all embeddings.
      */
     public Iterable<Embedding> getEmbeddings () {
-        return new Iterable<Embedding> () {
-            public Iterator<Embedding> iterator () {
-                return new CompoundIterator<SchedulerTask,Embedding> (
-                    new CompoundIterator<TaskFactory,SchedulerTask> (
-                            MimeLookup.getLookup (
-                                snapshot.getMimeType ()
-                            ).lookupAll (TaskFactory.class).iterator ()
-                        ) {
-                            @Override
-                            protected Iterator<SchedulerTask> getIterator (TaskFactory factory) {
-                                Collection<SchedulerTask> tasks = factory.create(snapshot.getSource());
-                                
-                                if (tasks != null) {
-                                    return tasks.iterator();
-                                } else {
-                                    return Collections.<SchedulerTask>emptyList().iterator();
-                                }
-                            }
-                        }                
-                ) {
-                    @Override
-                    protected Iterator<Embedding> getIterator (SchedulerTask schedulerTask) {
-                        if (schedulerTask instanceof EmbeddingProvider)
-                            return ((EmbeddingProvider) schedulerTask).getEmbeddings (snapshot).iterator ();
-                        return Collections.<Embedding>emptyList ().iterator ();
-                    }
-                };
-            }
-        };
+        return sourceCache.getAllEmbeddings ();
     }
+    
+    //@NotThreadSafe    //accessed under parser lock
+    private final List<ResultIterator> children = new LinkedList<ResultIterator>();
+    //@NotThreadSafe    //accessed under parser lock
+    private Map<Embedding,ResultIterator>
+                            embeddingToResultIterator = new HashMap<Embedding,ResultIterator> ();
     
     /**
      * Returns {@link ResultIterator} for one {@link Embedding}.
@@ -207,45 +137,15 @@ public final class ResultIterator {
      * @return              {@link ResultIterator} for one {@link Embedding}.
      */
     public ResultIterator getResultIterator (Embedding embedding) {
-        //tzezula: Shouldn't be idempotent?
-        final ResultIterator res = new ResultIterator (embedding.getSnapshot (), task);
-        this.children.add(res);
-        return res;
-    }
-    
-    private static abstract class CompoundIterator<A,B> implements Iterator<B> {
-
-        private Iterator<? extends A> iteratorA;
-        private Iterator<? extends B> iteratorB;
-
-        public CompoundIterator (Iterator<? extends A> iteratorA) {
-            this.iteratorA = iteratorA;
+        ResultIterator resultIterator = embeddingToResultIterator.get (embedding);
+        if (resultIterator == null) {
+            resultIterator = new ResultIterator (
+                sourceCache.getCache (embedding), 
+                task
+            );
+            children.add (resultIterator);
         }
-        
-        protected abstract Iterator<? extends B> getIterator (A a);
-        
-        public boolean hasNext () {
-            if (iteratorB == null) {
-                if (!iteratorA.hasNext ()) return false;
-                iteratorB = getIterator (iteratorA.next ());
-            }
-            while (!iteratorB.hasNext ()) {
-                if (!iteratorA.hasNext ()) return false;
-                iteratorB = getIterator (iteratorA.next ());
-            }
-            return true;
-        }
-
-        public B next () {
-            if (!hasNext()) {
-                return null; //XXX should throw exception
-            }
-            return iteratorB.next ();
-        }
-
-        public void remove() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
+        return resultIterator;
     }
     
     private static class MyAccessor extends ResultIteratorAccessor {

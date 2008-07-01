@@ -40,7 +40,7 @@
 package org.netbeans.modules.parsing.spi;
 
 import java.util.Collection;
-import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 
 /**
@@ -61,7 +61,7 @@ public abstract class TaskFactory {
      * @param source        A {@link Source}.
      * @return              {@link SchedulerTask}s for given {@link Source}s
      */
-    public abstract Collection<SchedulerTask> create (Source source);
+    public abstract Collection<SchedulerTask> create (Snapshot snapshot);
 
 }
 

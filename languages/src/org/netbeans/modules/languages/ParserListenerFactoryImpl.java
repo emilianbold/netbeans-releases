@@ -55,7 +55,6 @@ import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
@@ -71,9 +70,9 @@ public class ParserListenerFactoryImpl extends TaskFactory {
 
 
     @Override
-    public Collection<SchedulerTask> create (Source source) {
-        Document document = source.getDocument ();
-        String mimeType = source.getMimeType ();
+    public Collection<SchedulerTask> create (Snapshot snapshot) {
+        Document document = snapshot.getSource ().getDocument ();
+        String mimeType = snapshot.getMimeType ();
         if (!LanguagesManager.getDefault ().isSupported (mimeType)) return null;
         //System.out.println("\nASTEvaluators: ");
         Map<String,Set<ASTEvaluator>> evaluators = new HashMap<String,Set<ASTEvaluator>> ();

@@ -44,8 +44,10 @@ import java.util.Collection;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.CurrentDocumentTaskScheduller;
 import org.netbeans.modules.parsing.impl.CursorSensitiveTaskScheduller;
-import org.netbeans.modules.parsing.impl.Scheduler;
+import org.netbeans.modules.parsing.impl.Schedulers;
 import org.netbeans.modules.parsing.impl.SelectedNodesTaskScheduller;
+import org.netbeans.modules.parsing.impl.SourceAccessor;
+import org.netbeans.modules.parsing.impl.SourceCache;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -133,6 +135,8 @@ public abstract class TaskScheduler {
         final SchedulerEvent
                             event
     ) {
+        for (Source source : sources)
+            assert source != null;
         if (task != null)
             task.cancel ();
         this.sources = sources;
@@ -141,7 +145,10 @@ public abstract class TaskScheduler {
                 requestProcessor = new RequestProcessor ();
             task = requestProcessor.create (new Runnable () {
                 public void run () {
-                    Scheduler.schedule (TaskScheduler.this, TaskScheduler.this.sources, event);
+                    for (Source source : TaskScheduler.this.sources) {
+                        SourceCache cache = SourceAccessor.getINSTANCE ().getCache (source);
+                        cache.scheduleTasks (TaskScheduler.this.getClass ());
+                    }
                 }
             });
         }

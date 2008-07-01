@@ -62,32 +62,33 @@ public class ParserManagerImpl {
      * be returned
      * @return a parser
      */
-    public static Parser getParser (final Source source) {
-        assert source != null;
-        Parser parser;
-        synchronized (source) {
-            parser = SourceAccessor.getINSTANCE().getParser(source);            
-        }
-        if (parser == null) {
-            String mimeType = source.getMimeType ();
-            Lookup lookup = MimeLookup.getLookup (mimeType);
-            final Collection <? extends ParserFactory> parserFactories = lookup.lookupAll(ParserFactory.class);
-            final Collection<Snapshot> _tmp = Collections.singleton (source.createSnapshot());
-            for (final ParserFactory parserFactory : parserFactories) {
-                parser = parserFactory.createParser (_tmp);
-                if (parser != null) {
-                    break;
-                }
-            }           
-        }
-        if (parser != null)
-            synchronized (source) {
-                if (SourceAccessor.getINSTANCE().getParser(source)==null) {
-                    SourceAccessor.getINSTANCE().setParser(source, parser);
-                }
-            }
-        return parser;
-    }
+//    public static Parser getParser (final Source source) {
+//        assert source != null;
+//        Parser parser;
+//        synchronized (source) {
+//            parser = SourceAccessor.getINSTANCE().getParser(source);            
+//        }
+//        if (parser == null) {
+//            String mimeType = source.getMimeType ();
+//            Lookup lookup = MimeLookup.getLookup (mimeType);
+//            final Collection <? extends ParserFactory> parserFactories = lookup.lookupAll(ParserFactory.class);
+//            Snapshot snapshot = SourceAccessor.getINSTANCE().getCache (source).getSnapshot();
+//            final Collection<Snapshot> _tmp = Collections.singleton (snapshot);
+//            for (final ParserFactory parserFactory : parserFactories) {
+//                parser = parserFactory.createParser (_tmp);
+//                if (parser != null) {
+//                    break;
+//                }
+//            }           
+//        }
+//        if (parser != null)
+//            synchronized (source) {
+//                if (SourceAccessor.getINSTANCE().getParser(source)==null) {
+//                    SourceAccessor.getINSTANCE().setParser(source, parser);
+//                }
+//            }
+//        return parser;
+//    }
 }
     
     

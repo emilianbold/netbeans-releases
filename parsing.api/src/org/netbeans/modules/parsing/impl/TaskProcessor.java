@@ -40,6 +40,7 @@
 package org.netbeans.modules.parsing.impl;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -159,107 +160,6 @@ public class TaskProcessor {
         includedTasks = _includedTasks;
     }
         
-    public static void runUserTask (final UserTask userTask, final Source source, final boolean shared) throws ParseException {
-        Parameters.notNull("userTask", userTask);
-        Parameters.notNull("source", source);
-        assert parserLock.isHeldByCurrentThread() || !holdsDocumentWriteLock(
-                Collections.singleton(source)) :
-                "JavaSource.runCompileControlTask called under Document write lock.";    //NOI18N        
-        
-        boolean a = false;
-        assert a = true;
-        if (a && javax.swing.SwingUtilities.isEventDispatchThread()) {
-            StackTraceElement stackTraceElement = findCaller(Thread.currentThread().getStackTrace());
-            if (stackTraceElement != null && warnedAboutRunInEQ.add(stackTraceElement)) {
-                LOGGER.warning("Source.runUserTask called in AWT event thread by: " + stackTraceElement); // NOI18N
-            }
-        }
-        
-        final Request request = currentRequest.getTaskToCancel();
-        try {
-            if (request != null) {
-                request.task.cancel();
-            }            
-            parserLock.lock();
-            try {
-                Parser.Result currentResult = null;
-                final Parser parser = ParserManagerImpl.getParser(source);
-                if (parser == null) {
-                    throw new IllegalAccessException("Source: " + source + " has no parser.");  //NOI18N
-                }
-                Snapshot snapshot = source.createSnapshot ();
-                boolean invalid;
-                synchronized (source) { //tzezula: rough grained lock - may cause deadlock, but Hanz doesn't want the parsing API to do caching of results
-                    final Set<SourceFlags> flags = SourceAccessor.getINSTANCE().getFlags(source);
-                    invalid = flags.remove(SourceFlags.INVALID);    //Optimistic update
-                    if (!shared) {
-                        flags.add(SourceFlags.INVALID);
-                    }
-                }
-                if (!invalid) {
-                    currentResult = parser.getResult(userTask, null);
-                }                             
-                else {
-                    boolean parseSuccess = false;
-                    try {
-                        parser.parse(snapshot, userTask, null);
-                        currentResult = parser.getResult(userTask, null);
-                        parseSuccess = true;
-                    } finally {
-                        if (shared && invalid && !parseSuccess) {
-                            synchronized (source) {
-                                final Set<SourceFlags> flags = SourceAccessor.getINSTANCE().getFlags(source);
-                                flags.add(SourceFlags.INVALID); //Rollback of optimistic update
-                            }
-                        }
-                    }                    
-                }
-                
-                assert currentResult != null;
-                Stack<Parser.Result> stack = resultsStack.get(source);
-                boolean shouldClean = false;
-                boolean didClean = false;
-                if (shared) {
-                    if (stack != null && !stack.isEmpty()) {
-                        currentResult = stack.peek();
-                    }
-                }
-                else {
-                    if (stack == null) {
-                        stack = new Stack<Parser.Result> ();
-                        resultsStack.put(source, stack);
-                        shouldClean = true;
-                    }
-                    stack.push (currentResult);
-                }
-                try {
-                    try {
-                        userTask.run (currentResult, snapshot);
-                    } finally {
-                        ParserAccessor.getINSTANCE().invalidate(currentResult);
-                    }
-                } finally {
-                    if (!shared) {
-                        stack.pop ();
-                        if (stack.isEmpty()) {
-                            resultsStack.remove(source);
-                            didClean = true;
-                        }
-                    }
-                    assert !shouldClean || (shouldClean && didClean);
-                }
-            } catch (final Exception e) {
-                final ParseException ioe = new ParseException ();
-                ioe.initCause(e);
-                throw ioe;
-            } finally {                    
-                parserLock.unlock();
-            }
-        } finally {
-            currentRequest.cancelCompleted (request);
-        }        
-    }
-        
     public static void runUserTask (final GenericUserTask task) throws ParseException {
         Parameters.notNull("task", task);
         boolean a = false;
@@ -295,15 +195,21 @@ public class TaskProcessor {
      * @task The task to run.
      * @source The source on which the task operates
      */
-    public static void addPhaseCompletionTask(final SchedulerTask task, final Source source, SchedulerEvent event) {
-        Parameters.notNull("task", task);   //NOI18N
-        Parameters.notNull("source", source);   //NOI18N
-        final String taskClassName = task.getClass().getName();
-        if (excludedTasks != null && excludedTasks.matcher(taskClassName).matches()) {
-            if (includedTasks == null || !includedTasks.matcher(taskClassName).matches())
-            return;
-        }        
-        handleAddRequest (new Request (task, source, true));
+    public static void addPhaseCompletionTasks(final Collection<SchedulerTask> tasks, final SourceCache cache, Class<TaskScheduler> schedulerType) {
+        Parameters.notNull("task", tasks);   //NOI18N
+        Parameters.notNull("cache", cache);   //NOI18N
+        assert !tasks.isEmpty ();
+        List<Request> requests = new ArrayList<Request> ();
+        for (SchedulerTask task : tasks) {
+            final String taskClassName = task.getClass().getName();
+            if (excludedTasks != null && excludedTasks.matcher(taskClassName).matches()) {
+                if (includedTasks == null || !includedTasks.matcher(taskClassName).matches())
+                    continue;
+            }
+            requests.add (new Request (task, cache, true, schedulerType));
+        }
+        if (!requests.isEmpty ())
+            handleAddRequests (requests);
     }
     
     
@@ -341,29 +247,32 @@ public class TaskProcessor {
      * @param task to reschedule
      * @param source to which the task it bound
      */
-    public static void rescheduleTask(final SchedulerTask task, final Source source, SchedulerEvent event) {
-        Parameters.notNull("task", task);
+    public static void rescheduleTasks(final Collection<SchedulerTask> tasks, final Source source, final Class<TaskScheduler> schedulerType) {
+        Parameters.notNull("task", tasks);
         Parameters.notNull("source", source);
         synchronized (INTERNAL_LOCK) {
-            Request request = currentRequest.getTaskToCancel (task);
-            if ( request == null) {                
-                Collection<Request> cr = finishedRequests.get(source);
-                if (cr != null) {
-                    for (Iterator<Request> it = cr.iterator(); it.hasNext();) {
-                        Request fr = it.next();
-                        if (task == fr.task) {
-                            it.remove();
-                            requests.add(fr);
-                            if (cr.size()==0) {
-                                finishedRequests.remove(source);
+            for (SchedulerTask task : tasks) {
+                Request request = currentRequest.getTaskToCancel (task);
+                if ( request == null) {                
+                    Collection<Request> cr = finishedRequests.get(source);
+                    if (cr != null) {
+                        for (Iterator<Request> it = cr.iterator(); it.hasNext();) {
+                            Request fr = it.next();
+                            fr.schedulerType = schedulerType;
+                            if (task == fr.task) {
+                                it.remove();
+                                requests.add(fr);
+                                if (cr.size()==0) {
+                                    finishedRequests.remove(source);
+                                }
+                                break;
                             }
-                            break;
                         }
                     }
                 }
-            }
-            else {
-                currentRequest.cancelCompleted(request);
+                else {
+                    currentRequest.cancelCompleted(request);
+                }
             }
         }
     }
@@ -440,37 +349,35 @@ public class TaskProcessor {
     
     static void scheduleSpecialTask (final SchedulerTask task) {
         assert task != null;
-        final Request rq = new Request(task, null, false);
-        handleAddRequest(rq);
+        final Request rq = new Request(task, null, false, null);
+        handleAddRequests (Collections.<Request>singletonList (rq));
     }
     
     
     //Private methods
-    private static void handleAddRequest (final Request nr) {
-        assert nr != null;
-        final Source src = nr.source;
+    private static void handleAddRequests (final List<Request> requests) {
+        assert requests != null;
+        final SourceCache src = requests.get (0).cache;
         if (src != null) {
-            SourceAccessor.getINSTANCE().assignListeners(src);
+            SourceAccessor.getINSTANCE().assignListeners(src.getSnapshot ().getSource ());
         }
         //Issue #102073 - removed running task which is readded is not performed
         synchronized (INTERNAL_LOCK) {
-            toRemove.remove(nr.task);
-            requests.add (nr);
-            if (src != null) {
-                synchronized (src) {
-                    if (SourceAccessor.getINSTANCE().taskAdded(src) == 0) {
-                        SourceAccessor.getINSTANCE().getFlags(src).add(SourceFlags.INVALID);
-                    }
-                }
+            for (Request request : requests) {
+                toRemove.remove(request.task);
+                TaskProcessor.requests.add (request);
             }
+//            System.out.println("TP: handleAddRequest " + requests);
         }
-        Request request = currentRequest.getTaskToCancel(nr.task.getPriority());
-        try {
-            if (request != null) {
-                request.task.cancel();
+        for (Request r : requests) {
+            Request request = currentRequest.getTaskToCancel(r.task.getPriority());
+            try {
+                if (request != null) {
+                    request.task.cancel();
+                }
+            } finally {
+                currentRequest.cancelCompleted(request);
             }
-        } finally {
-            currentRequest.cancelCompleted(request);
         }
     }
     
@@ -565,8 +472,8 @@ public class TaskProcessor {
                         if (r != null) {
                             currentRequest.setCurrentTask(r);
                             try {                            
-                                final Source source = r.source;
-                                if (source == null) {
+                                final SourceCache sourceCache = r.cache;
+                                if (sourceCache == null) {
                                     assert r.task instanceof ParserResultTask : "Illegal request: EmbeddingProvider has to be bound to Source";     //NOI18N
                                     parserLock.lock ();
                                     try {
@@ -578,7 +485,8 @@ public class TaskProcessor {
                                         parserLock.unlock();
                                     }
                                 }
-                                else {                                    
+                                else {           
+                                    final Source source = sourceCache.getSnapshot ().getSource ();
                                     synchronized (INTERNAL_LOCK) {
                                         //Not only the finishedRequests for the current request.javaSource should be cleaned,
                                         //it will cause a starvation
@@ -589,10 +497,10 @@ public class TaskProcessor {
                                             boolean changeExpected = SourceAccessor.getINSTANCE().getFlags(source).contains(SourceFlags.CHANGE_EXPECTED);
                                             if (changeExpected) {
                                                 //Skeep the task, another invalidation is comming
-                                                Collection<Request> rc = waitingRequests.get (r.source);
+                                                Collection<Request> rc = waitingRequests.get (r.cache);
                                                 if (rc == null) {
                                                     rc = new LinkedList<Request> ();
-                                                    waitingRequests.put (r.source, rc);
+                                                    waitingRequests.put (r.cache.getSnapshot ().getSource (), rc);
                                                 }
                                                 rc.add(r);
                                                 continue;
@@ -602,75 +510,78 @@ public class TaskProcessor {
                                     
                                     parserLock.lock();                                    
                                     try {
+//                                        if (r.task instanceof EmbeddingProvider) {
+//                                            System.out.println("TP: EmbeddingProvider " + sourceCache.getSnapshot().getMimeType () + " (" + r.task.getPriority () + ")");
+//                                        } else
+//                                        if (r.task instanceof ParserResultTask) {
+//                                            System.out.println("TP: ParserResultTask " + sourceCache.getSnapshot().getMimeType () + " (" + r.task.getPriority () + ")");
+//                                        } else
+//                                            System.out.println("TP: ??? " + sourceCache.getSnapshot().getMimeType () + " (" + r.task.getPriority () + ")");
+                                         
                                         if (r.task instanceof EmbeddingProvider) {
-                                            //todo: What the embedding provider should do?
-                                            //todo: How to cache the embeddings?
-                                            List<Embedding> embeddings = ((EmbeddingProvider) r.task).getEmbeddings (source.createSnapshot());
-                                            Scheduler.schedule (
-                                                r.task.getSchedulerClass (), 
-                                                embeddings, 
-                                                SourceAccessor.getINSTANCE().getEvent (source)
-                                            );
+                                            sourceCache.refresh ((EmbeddingProvider) r.task, r.schedulerType);
                                         }
                                         else {
-                                            final Parser parser = ParserManagerImpl.getParser(source);
-                                            Parser.Result currentResult = null;
                                             SchedulerEvent event = SourceAccessor.getINSTANCE().getEvent (source);
-                                            if (parser != null) {
-                                                boolean invalid;
-                                                synchronized (source) {
-                                                    final Set<SourceFlags> flags = SourceAccessor.getINSTANCE().getFlags(source);
-                                                    invalid = flags.remove(SourceFlags.INVALID);    //Optimistic update
-                                                }                                            
-                                                if (!invalid) {
-                                                    currentResult = parser.getResult(r.task, event);
-                                                }                                        
-                                                else {
-                                                    boolean parseSuccess = false;
-                                                    try {
-                                                        parser.parse(source.createSnapshot(), r.task, event);
-                                                        currentResult = parser.getResult(r.task, event);
-                                                        parseSuccess = true;
-                                                    } finally {
-                                                        if (invalid && !parseSuccess) {
-                                                            synchronized (source ) {
-                                                                final Set<SourceFlags> flags = SourceAccessor.getINSTANCE().getFlags(source);
-                                                                flags.add(SourceFlags.INVALID); //Rollback of optimistic update
-                                                            }
-                                                        }
-                                                    }                                                
-                                                }                                            
-                                            }
+                                            final Parser.Result currentResult = sourceCache.getResult (r.task, event);
+//                                            final Parser parser = sourceCache.getParser ();//ParserManagerImpl.getParser(source);
+//                                            Parser.Result currentResult = null;
+//                                            SchedulerEvent event = SourceAccessor.getINSTANCE().getEvent (source);
+//                                            if (parser != null) {
+//                                                boolean invalid;
+//                                                synchronized (source) {
+//                                                    final Set<SourceFlags> flags = SourceAccessor.getINSTANCE().getFlags(source);
+//                                                    invalid = flags.remove(SourceFlags.INVALID);    //Optimistic update
+//                                                }                                            
+//                                                if (!invalid) {
+//                                                    currentResult = parser.getResult(r.task, event);
+//                                                }                                        
+//                                                else {
+//                                                    boolean parseSuccess = false;
+//                                                    try {
+//                                                        parser.parse(sourceCache.getSnapshot (), r.task, event);
+//                                                        currentResult = parser.getResult(r.task, event);
+//                                                        parseSuccess = true;
+//                                                    } finally {
+//                                                        if (invalid && !parseSuccess) {
+//                                                            synchronized (source ) {
+//                                                                final Set<SourceFlags> flags = SourceAccessor.getINSTANCE().getFlags(source);
+//                                                                flags.add(SourceFlags.INVALID); //Rollback of optimistic update
+//                                                            }
+//                                                        }
+//                                                    }                                                
+//                                                }                                            
+//                                            }
                                             boolean shouldCall = currentResult != null;
-                                            //tzezula: Ideally the parserLock should be aquired here, but it will call parse outside critical section
-                                            if (shouldCall) { 
-                                                synchronized (source) {
-                                                    shouldCall &= !SourceAccessor.getINSTANCE().getFlags(source).contains(SourceFlags.INVALID);
-                                                }
-                                            }
+//                                            //tzezula: Ideally the parserLock should be aquired here, but it will call parse outside critical section
+//                                            if (shouldCall) { 
+//                                                synchronized (source) {
+//                                                    shouldCall &= !SourceAccessor.getINSTANCE().getFlags(source).contains(SourceFlags.INVALID);
+//                                                }
+//                                            }
                                             if (shouldCall) {
                                                 try {
                                                     final long startTime = System.currentTimeMillis();
                                                     if (r.task instanceof ParserResultTask) {
                                                         try {
-                                                            ((ParserResultTask)r.task).run (currentResult,source.createSnapshot());
+                                                            ((ParserResultTask)r.task).run (currentResult,sourceCache.getSnapshot ());
                                                         } finally {
                                                             ParserAccessor.getINSTANCE().invalidate(currentResult);
                                                         }
                                                     }
-                                                    else
-                                                    if (r.task instanceof ParserBasedEmbeddingProvider) {
-                                                        try {
-                                                            List<Embedding> embeddings = ((ParserBasedEmbeddingProvider)r.task).getEmbeddings (currentResult,source.createSnapshot());
-                                                            Scheduler.schedule (
-                                                                r.task.getSchedulerClass (), 
-                                                                embeddings, 
-                                                                SourceAccessor.getINSTANCE ().getEvent (source)
-                                                            );
-                                                        } finally {
-                                                            ParserAccessor.getINSTANCE().invalidate(currentResult);
-                                                        }
-                                                    }
+//                                                    else
+//                                                    if (r.task instanceof ParserBasedEmbeddingProvider) {
+//                                                        try {
+//                                                            List<Embedding> embeddings = ((ParserBasedEmbeddingProvider)r.task).getEmbeddings (currentResult,source.createSnapshot());
+//                                                            Schedulers.schedule (
+//                                                                r.task.getSchedulerClass (), 
+//                                                                embeddings, 
+//                                                                SourceAccessor.getINSTANCE ().getEvent (source)
+//                                                            );
+//                                                        } finally {
+//                                                            ParserAccessor.getINSTANCE().invalidate(currentResult);
+//                                                        }
+//                                                    }
                                                     else {
                                                         assert false : "Unknown task type: " + r.task.getClass();   //NOI18N
                                                     }
@@ -699,16 +610,16 @@ public class TaskProcessor {
                                         synchronized (INTERNAL_LOCK) {
                                             boolean canceled = currentRequest.setCurrentTask(null);
                                             synchronized (source) {
-                                                if (canceled || SourceAccessor.getINSTANCE().getFlags(source).contains(SourceFlags.INVALID)) {
+                                                if (canceled || !SourceAccessor.getINSTANCE().getCache (source).isValid ()) {
                                                     //The JavaSource was changed or canceled rechedule it now
                                                     requests.add(r);
                                                 }
                                                 else {
                                                     //Up to date JavaSource add it to the finishedRequests
-                                                    Collection<Request> rc = finishedRequests.get (r.source);
+                                                    Collection<Request> rc = finishedRequests.get (r.cache.getSnapshot ().getSource ());
                                                     if (rc == null) {
                                                         rc = new LinkedList<Request> ();
-                                                        finishedRequests.put (r.source, rc);
+                                                        finishedRequests.put (r.cache.getSnapshot ().getSource (), rc);
                                                     }
                                                     rc.add(r);
                                                 }
@@ -763,11 +674,12 @@ public class TaskProcessor {
             @Override
             public void run(Result result, Snapshot snapshot) {
             }
-        },null, false);
+        },null, false, null);
         
         private final SchedulerTask task;
-        private final Source source;
+        private final SourceCache cache;
         private final boolean reschedule;
+        private Class<TaskScheduler> schedulerType;
         
         /**
          * Creates new Request
@@ -775,16 +687,17 @@ public class TaskProcessor {
          * @param source on which the task should be performed
          * @param reschedule when true the task is periodic request otherwise one time request
          */
-        public Request (final SchedulerTask task, final Source source, final boolean reschedule) {
+        public Request (final SchedulerTask task, final SourceCache cache, final boolean reschedule, Class<TaskScheduler> schedulerType) {
             assert task != null;
             this.task = task;
-            this.source = source;
+            this.cache = cache;
             this.reschedule = reschedule;
+            this.schedulerType = schedulerType;
         }
         
         private Request () {  
             task = null;
-            source = null;
+            cache = null;
             reschedule = false;
         }
         
@@ -792,12 +705,12 @@ public class TaskProcessor {
             if (reschedule) {
                 return String.format("Periodic request to perform: %s on: %s",  //NOI18N
                         task == null ? null : task.toString(),
-                        source == null ? null : source.toString());
+                        cache == null ? null : cache.toString());
             }
             else {
                 return String.format("One time request to perform: %s on: %s",  //NOI18N
                         task == null ? null : task.toString(),
-                        source == null ? null : source.toString());
+                        cache == null ? null : cache.toString());
             }
         }
         
@@ -809,7 +722,7 @@ public class TaskProcessor {
             if (other instanceof Request) {
                 Request otherRequest = (Request) other;
                 return reschedule == otherRequest.reschedule
-                    && (source == null ? otherRequest.source == null : source.equals (otherRequest.source))
+                    && (cache == null ? otherRequest.cache == null : cache.equals (otherRequest.cache))
                     && (task == null ? otherRequest.task == null : task.equals(otherRequest.task));
             }
             else {

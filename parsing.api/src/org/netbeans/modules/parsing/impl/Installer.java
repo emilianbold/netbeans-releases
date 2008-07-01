@@ -13,6 +13,6 @@ import org.openide.modules.ModuleInstall;
 public class Installer extends ModuleInstall {
 
     public void restored () {
-        Scheduler.init ();
+        Schedulers.init ();
     }
 }

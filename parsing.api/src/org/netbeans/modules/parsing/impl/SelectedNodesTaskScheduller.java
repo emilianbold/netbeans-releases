@@ -59,7 +59,6 @@ import org.netbeans.modules.parsing.api.Source;
 public class SelectedNodesTaskScheduller extends FileObjectsTaskScheduller {
     
     public SelectedNodesTaskScheduller () {
-        refresh ();
         TopComponent.getRegistry ().addPropertyChangeListener (new AListener ());
     }
     
