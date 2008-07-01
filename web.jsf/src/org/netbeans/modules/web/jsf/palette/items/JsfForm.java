@@ -278,14 +278,22 @@ public final class JsfForm implements ActiveEditorDrop {
             if (isAnnotatedWith(typeElement, "javax.persistence.Entity") || isAnnotatedWith(typeElement, "javax.persistence.MappedSuperclass")) { // NOI18N
                 result.addAll(ElementFilter.methodsIn(typeElement.getEnclosedElements()));
             }
-            Element enclosingElement = typeElement.getEnclosingElement();
-            if (ElementKind.CLASS == enclosingElement.getKind()) {
-                typeElement = (TypeElement) enclosingElement;
-            } else {
-                typeElement = null;
-            }
+            typeElement = getSuperclassTypeElement(typeElement);
         }
         return result.toArray(new ExecutableElement[result.size()]);
+    }
+    
+    private static TypeElement getSuperclassTypeElement(TypeElement typeElement) {
+        TypeElement superclass = null;
+        TypeMirror superclassMirror = typeElement.getSuperclass();
+        if (superclassMirror.getKind() == TypeKind.DECLARED) {
+            DeclaredType superclassDeclaredType = (DeclaredType)superclassMirror;
+            Element superclassElement = superclassDeclaredType.asElement();
+            if (superclassElement.getKind() == ElementKind.CLASS && (superclassElement instanceof TypeElement) ) {
+                superclass = (TypeElement)superclassElement;
+            }
+        }
+        return superclass;
     }
     
     static boolean isId(CompilationController controller, ExecutableElement method, boolean isFieldAccess) {
@@ -369,22 +377,25 @@ public final class JsfForm implements ActiveEditorDrop {
         boolean fieldAccess = false;
         boolean accessTypeDetected = false;
         TypeElement typeElement = clazz;
-//        while (typeElement != null) {
-        if (typeElement != null) {
-            for (Element element : typeElement.getEnclosedElements()) {
-                if (isAnnotatedWith(element, "javax.persistence.Id") || isAnnotatedWith(element, "javax.persistence.EmbeddedId")) {
-                    if (ElementKind.FIELD == element.getKind()) {
-                        fieldAccess = true;
+        Name qualifiedName = typeElement.getQualifiedName();
+        whileloop:
+        while (typeElement != null) {
+            if (isAnnotatedWith(typeElement, "javax.persistence.Entity") || isAnnotatedWith(typeElement, "javax.persistence.MappedSuperclass")) { // NOI18N
+                for (Element element : typeElement.getEnclosedElements()) {
+                    if (isAnnotatedWith(element, "javax.persistence.Id") || isAnnotatedWith(element, "javax.persistence.EmbeddedId")) {
+                        if (ElementKind.FIELD == element.getKind()) {
+                            fieldAccess = true;
+                        }
+                        accessTypeDetected = true;
+                        break whileloop;
                     }
-                    accessTypeDetected = true;
                 }
             }
-            if (!accessTypeDetected) {
-                Logger.getLogger("global").log(Level.WARNING, "Failed to detect correct access type for class:" + typeElement.getQualifiedName()); // NOI18N
-            }
+            typeElement = getSuperclassTypeElement(typeElement);
         }
-//            typeElement = (TypeElement) typeElement.getEnclosingElement();
-//        }
+        if (!accessTypeDetected) {
+            Logger.getLogger("global").log(Level.WARNING, "Failed to detect correct access type for class: " + qualifiedName); // NOI18N
+        }
         return fieldAccess;
     }
 
@@ -453,6 +464,9 @@ public final class JsfForm implements ActiveEditorDrop {
                         if (embeddable) {
                             pkMethods = new ArrayList<ExecutableElement>();
                             TypeElement entityType = controller.getElements().getTypeElement(entityClass);
+                            if (embeddedPkSupport == null) {
+                                embeddedPkSupport = new JSFClientGenerator.EmbeddedPkSupport();
+                            }
                             for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(controller, entityType)) {
                                 if (!embeddedPkSupport.isRedundantWithRelationshipField(controller, entityType, pkMethod)) {
                                     pkMethods.add(pkMethod);
@@ -496,6 +510,9 @@ public final class JsfForm implements ActiveEditorDrop {
         boolean isMethodRedundantWithItsPkFields = false;
         boolean isOtherSideRedundantWithItsPkFields = false;
         if (!isEmbeddedPkMethod && isRelationship != REL_NONE) {
+            if (embeddedPkSupport == null) {
+                embeddedPkSupport = new JSFClientGenerator.EmbeddedPkSupport();
+            }
             isMethodRedundantWithItsPkFields = embeddedPkSupport.isRedundantWithPkFields(controller, bean, method);
             if (!isMethodRedundantWithItsPkFields) {
                 ExecutableElement otherSide = getOtherSideOfRelation(controller, method, fieldAccess);
@@ -510,6 +527,13 @@ public final class JsfForm implements ActiveEditorDrop {
                 ( isId &&  isGenerated) ) || 
                 formType == FORM_TYPE_EMPTY ) {
             //skip if formType is new and field is generated (or if formType is "empty")
+        } else if (formType == FORM_TYPE_DETAIL && isRelationship == REL_TO_ONE && 
+                (entityClass.length() == 0 || controllerClass.length() == 0) ) {
+            //this method was called from outside the jsfcrud generator feature
+            String template = "<h:outputText value=\"{0}:\"/>\n" +
+                    "<h:outputText value=\" #'{'{1}.{2}'}'\"/>\n";
+            Object[] args = new Object [] {name, variable, propName};
+            stringBuffer.append(MessageFormat.format(template, args));
         } else if (formType == FORM_TYPE_DETAIL && isRelationship == REL_TO_ONE) {
             String template = "<h:outputText value=\"{0}:\"/>\n" +
                 "<h:panelGroup>\n" + 
@@ -643,8 +667,32 @@ public final class JsfForm implements ActiveEditorDrop {
         return isFieldXable;
     }
     
+    public static String getFreeTableVarName(String name, List<String> entities) {
+        //return a permutation of name that is not a managed bean name among the entities
+        String newName = name;
+        int i = 0;
+        while (i < 1000) {
+            boolean match = false;
+            for (String entityClass : entities) {
+                String simpleEntityName = JSFClientGenerator.simpleClassName(entityClass);
+                String managedBeanName = JSFClientGenerator.getManagedBeanName(simpleEntityName);
+                if (newName.equals(managedBeanName)) {
+                    match = true;
+                    break;
+                }
+            }
+            if (match) {
+                newName = name + (++i);
+            }
+            else {
+                return newName;
+            }
+        }
+        return newName;
+    }
+    
     public static void createTablesForRelated(CompilationController controller, TypeElement bean, int formType, String variable, 
-            String idProperty, boolean isInjection, StringBuffer stringBuffer, JSFClientGenerator.EmbeddedPkSupport embeddedPkSupport, String controllerClass) {
+            String idProperty, boolean isInjection, StringBuffer stringBuffer, JSFClientGenerator.EmbeddedPkSupport embeddedPkSupport, String controllerClass, List<String> entities) {
         ExecutableElement methods [] = getEntityMethods(bean);
         String entityClass = bean.getQualifiedName().toString();
         String simpleClass = bean.getSimpleName().toString();
@@ -665,10 +713,11 @@ public final class JsfForm implements ActiveEditorDrop {
                         if (typeElement != null) {
                             String relatedClass = typeElement.getSimpleName().toString();
                             String relatedManagedBean = JSFClientGenerator.getManagedBeanName(relatedClass);
+                            String tableVarName = getFreeTableVarName("item", entities); //NOI18N
                             stringBuffer.append("<h:outputText value=\"" + name + ":\" />\n");
                             stringBuffer.append("<h:panelGroup>\n");
                             stringBuffer.append("<h:outputText rendered=\"#{empty " + variable + "." + propName + "}\" value=\"(No Items)\"/>\n");
-                            stringBuffer.append("<h:dataTable value=\"#{" + variable + "." + propName + "}\" var=\"item\" \n");
+                            stringBuffer.append("<h:dataTable value=\"#{" + variable + "." + propName + "}\" var=\"" + tableVarName + "\" \n");
                             stringBuffer.append("border=\"0\" cellpadding=\"2\" cellspacing=\"0\" rowClasses=\"jsfcrud_odd_row,jsfcrud_even_row\" rules=\"all\" style=\"border:solid 1px\" \n rendered=\"#{not empty " + variable + "." + propName + "}\">\n"); //NOI18N
                             String commands = "<h:column>\n"
                                     + "<f:facet name=\"header\">\n"
@@ -696,7 +745,7 @@ public final class JsfForm implements ActiveEditorDrop {
                                     + "</h:commandLink>\n"
                                     + "</h:column>\n";
                             
-                            JsfTable.createTable(controller, typeElement, variable + "." + propName, stringBuffer, commands, embeddedPkSupport);
+                            JsfTable.createTable(controller, typeElement, variable + "." + propName, stringBuffer, commands, embeddedPkSupport, tableVarName);
                             stringBuffer.append("</h:dataTable>\n");
                             stringBuffer.append("</h:panelGroup>\n");
                         } else {
