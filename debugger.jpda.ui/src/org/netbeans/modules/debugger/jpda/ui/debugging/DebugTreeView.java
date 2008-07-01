@@ -163,6 +163,9 @@ public class DebugTreeView extends BeanTreeView implements TreeExpansionListener
         Color origColor = g.getColor();
         JPDADebugger debugger = ThreadsListener.getDefault().getDebugger();
         JPDAThread currentThread = (debugger != null) ? debugger.getCurrentThread() : null;
+        if (currentThread != null && !currentThread.isSuspended()) {
+            currentThread = null;
+        }
         boolean isHighlighted = false;
         boolean isCurrent = false;
         Iterator<TreePath> iter = paths.iterator();
