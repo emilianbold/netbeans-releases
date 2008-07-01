@@ -40,11 +40,7 @@
  */
 package org.netbeans.modules.java.source.usages;
 
-import java.io.File;
-import java.net.URL;
-import java.util.Collection;
 import java.util.EventListener;
-import java.util.List;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 
 /**
