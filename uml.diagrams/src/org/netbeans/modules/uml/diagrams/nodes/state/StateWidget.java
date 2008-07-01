@@ -41,6 +41,9 @@ package org.netbeans.modules.uml.diagrams.nodes.state;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
@@ -56,7 +59,10 @@ import org.netbeans.modules.uml.core.metamodel.basic.basicactions.IProcedure;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.State;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.diagrams.Util;
+import org.netbeans.modules.uml.diagrams.actions.CompositeWidgetSelectProvider;
 import org.netbeans.modules.uml.diagrams.border.UMLRoundedBorder;
+import org.netbeans.modules.uml.diagrams.nodes.CompartmentWidget;
+import org.netbeans.modules.uml.diagrams.nodes.CompositeWidget;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
 import org.netbeans.modules.uml.diagrams.nodes.state.ProcedureWidget.DoEventWidget;
 import org.netbeans.modules.uml.diagrams.nodes.state.ProcedureWidget.EntryEventWidget;
@@ -74,7 +80,7 @@ import org.openide.util.NbBundle;
  *
  * @author Sheryl Su
  */
-public class StateWidget extends UMLNodeWidget
+public class StateWidget extends UMLNodeWidget implements CompositeWidget
 {
 
     private Widget currentView;
@@ -92,7 +98,8 @@ public class StateWidget extends UMLNodeWidget
     {
         super((Scene) scene);
         this.scene = scene;
-        addToLookup(initializeContextPalette());
+        addToLookup(initializeContextPalette());   
+        addToLookup(new CompositeWidgetSelectProvider(this));
     }
 
     private DefaultContextPaletteModel initializeContextPalette()
@@ -264,7 +271,7 @@ public class StateWidget extends UMLNodeWidget
             return nameWidget;
         }
     }
-
+    
     @Override
     public void propertyChange(PropertyChangeEvent event)
     {
@@ -372,6 +379,16 @@ public class StateWidget extends UMLNodeWidget
             super.load(nodeReader);
         }
     }
-    
-    
+
+    public Collection<CompartmentWidget> getCompartmentWidgets()
+    {
+        CompositeStateWidget csw = getCompositeStateWidget();
+        if (csw != null)
+        {
+            ArrayList<CompartmentWidget> result = new ArrayList<CompartmentWidget>();
+            result.addAll(csw.getRegionWidgets());
+            return result;
+        }
+        return Collections.EMPTY_LIST;
+    }   
 }

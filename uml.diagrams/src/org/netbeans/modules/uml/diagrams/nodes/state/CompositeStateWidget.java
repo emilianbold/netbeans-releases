@@ -311,5 +311,5 @@ public class CompositeStateWidget extends Widget
         }        
         return retVal;
     }
-
+    
 }

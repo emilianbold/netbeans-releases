@@ -215,7 +215,7 @@ public class DefaultDiagramEngine extends  DiagramEngine {
             if(lookup.lookup(SelectProvider.class) != null)
             {
                 SelectProvider selectProvider = lookup.lookup(SelectProvider.class);
-                selectAction = ActionFactory.createSelectAction(selectProvider);
+                selectAction = ActionFactory.createSelectAction(selectProvider, true);
             }
         }
         
