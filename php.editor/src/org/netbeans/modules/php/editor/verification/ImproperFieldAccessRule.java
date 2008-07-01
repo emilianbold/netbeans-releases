@@ -69,8 +69,7 @@ import org.openide.util.NbBundle;
  * @author Radek Matous
  */
 public class ImproperFieldAccessRule extends PHPRule {
-    private List<String> classNames;
-    private boolean inside = false; 
+    private String insideClsName = "";//NOI18N 
 
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.WARNING;
@@ -82,22 +81,14 @@ public class ImproperFieldAccessRule extends PHPRule {
     
     @Override
     public void visit(ClassDeclaration classDeclaration) {
-        inside = true;
-        classNames = new ArrayList<String>();
-        String className = classDeclaration.getName().getName();
-        Index i = context.compilationInfo.getIndex(PhpSourcePath.MIME_TYPE);
-        PHPIndex index = PHPIndex.get(i);
-        List<IndexedElement> l = new LinkedList<IndexedElement>();
-        for (IndexedClass indexedClass : index.getClassInheritanceLine(null, className)) {
-            classNames.add(indexedClass.getName());
-        }
+        insideClsName = classDeclaration.getName().getName();//NOI18N 
         super.visit(classDeclaration);
     }
 
     @Override
     public void leavingClassDeclaration(ClassDeclaration classDeclaration) {
         super.leavingClassDeclaration(classDeclaration);
-        inside = false;
+        insideClsName = "";//NOI18N 
     }
     
     @Override
@@ -117,35 +108,41 @@ public class ImproperFieldAccessRule extends PHPRule {
 
     @Override
     public void visit(Program program) {
-        classNames = null;
+        insideClsName = "";//NOI18N 
         super.visit(program);
     }
 
     @Override
     public void visit(StaticFieldAccess staticFieldAccess) {
-        String dispName = staticFieldAccess.getClassName().getName();        
-        Variable field = staticFieldAccess.getField();
-        if (classNames != null) {
-            Index i = context.compilationInfo.getIndex(PhpSourcePath.MIME_TYPE);
-            PHPIndex index = PHPIndex.get(i);
-            Collection<IndexedConstant> flds = null;
-            int modifiers = PHPIndex.ANY_ATTR;
-            for (String clsName : classNames) {
-                flds = getFields(index, clsName, field, modifiers);
-                if (!flds.isEmpty()) {
-                    break;
+        Variable field = staticFieldAccess.getField();        
+        String className = staticFieldAccess.getClassName().getName();        
+        if (className.equals("self")) {//NOI18N
+            className = insideClsName;
+        }
+        int modifiers = (insideClsName.equals(className)) ? PHPIndex.ANY_ATTR : 
+            BodyDeclaration.Modifier.PUBLIC;
+
+        List<String> classNames = new ArrayList<String>();        
+        Index i = context.compilationInfo.getIndex(PhpSourcePath.MIME_TYPE);
+        PHPIndex index = PHPIndex.get(i);
+        List<IndexedElement> l = new LinkedList<IndexedElement>();
+        Collection<IndexedConstant> flds = null;        
+        for (IndexedClass indexedClass : index.getClassInheritanceLine(null, className)) {
+            flds = getFields(index, indexedClass.getName(), field, modifiers);
+            if (!flds.isEmpty()) {
+                break;
+            } else {
+                if (insideClsName.equals(indexedClass.getName())) {
+                    modifiers = BodyDeclaration.Modifier.PUBLIC | BodyDeclaration.Modifier.PROTECTED;
                 } else {
-                    if (inside) {
-                        modifiers = BodyDeclaration.Modifier.PUBLIC | BodyDeclaration.Modifier.PROTECTED;
-                    } else {
-                        modifiers = BodyDeclaration.Modifier.PUBLIC;
-                    }
+                    modifiers = BodyDeclaration.Modifier.PUBLIC;
                 }
             }
-            if (flds == null || flds.isEmpty()) {
-                addHint(field);
-            }
-        }        
+        }
+        
+        if (flds == null || flds.isEmpty()) {
+            addHint(field);
+        }
         super.visit(staticFieldAccess);
     }
     
@@ -154,13 +151,7 @@ public class ImproperFieldAccessRule extends PHPRule {
         super.visit(fieldAccess);
         Variable field = fieldAccess.getField();
         if (field.isDollared()) {
-            boolean showHint = false;
-            if (context.variableStack.isVariableDefined(extractVariableName(field))) {
-                showHint = false;
-            } else {
-                showHint = true;
-            }
-            if (showHint) {
+            if (!context.variableStack.isVariableDefined(extractVariableName(field))) {
                 addHint(field);
             }
         } 
