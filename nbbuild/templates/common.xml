@@ -460,7 +460,7 @@ made subject to such option by the copyright holder.
             <!-- test distribution -->
             <mkdir dir="${extra.test.libs.dir}"/>
             <mkdir dir="${test.@{test.type}.out.folder}"/>
-            <jar destfile="${test.@{test.type}.out.folder}/tests.jar" basedir="${build.test.@{test.type}.classes.dir}" filesetmanifest="merge"/>            
+            <jar destfile="${test.@{test.type}.out.folder}/tests.jar" basedir="${build.test.@{test.type}.classes.dir}" filesetmanifest="merge"/>
             <!-- create properties -->
             <shorterpaths inref="test.@{test.type}.run.cp" 
                           out="test.@{test.type}.run.cp.short" 
@@ -469,8 +469,9 @@ made subject to such option by the copyright holder.
                           testproperties="${test.@{test.type}.out.folder}/test.properties">
                 <replacement dir="${netbeans.dest.dir}" name="netbeans.dest.dir"/>
                 <replacement dir="${test.dist.dir}" name="test.dist.dir"/>
-                <replacement dir="${java.home}" name="java.home"/>
-                <replacement dir="${java.home.parent}" name="java.home.parent"/>
+                <!-- XXX this will not be right on Macs: -->
+                <replacement dir="${nbjdk.home}/jre" name="java.home"/>
+                <replacement dir="${nbjdk.home}" name="java.home.parent"/>
             </shorterpaths>
         </sequential>
     </macrodef>
