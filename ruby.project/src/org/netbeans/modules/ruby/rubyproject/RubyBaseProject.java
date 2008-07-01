@@ -135,6 +135,10 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
                 helper.getPropertyProvider(RakeProjectHelper.PROJECT_PROPERTIES_PATH));
     }
 
+    private boolean hasRakeFile() {
+        return getRakeFile() != null;
+    }
+    
     FileObject getRakeFile() {
         return RakeSupport.findRakeFile(this);
     }
@@ -225,12 +229,12 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
                 public @Override void fileDeleted(FileEvent fe) { updateRakeTasks(); }
                 public @Override void fileRenamed(FileRenameEvent fe) { updateRakeTasks(); }
             });
+            updateRakeTasks();
         }
-        updateRakeTasks();
     }
 
     private void updateRakeTasks() {
-        if (RubyPlatform.hasValidRake(this, false)) {
+        if (hasRakeFile() && RubyPlatform.hasValidRake(this, false)) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     RakeSupport.refreshTasks(RubyBaseProject.this);
