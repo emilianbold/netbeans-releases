@@ -256,7 +256,7 @@ public class SourceAnalyser {
         }
     }
     
-    private static class Data {
+    static class Data {
         final Map<String, Set<ClassIndexImpl.UsageType>> usages = new HashMap<String, Set<ClassIndexImpl.UsageType>>();
         final Set<CharSequence> featuresIdents = new HashSet<CharSequence>();
         final Set<CharSequence> idents = new HashSet<CharSequence>();
