@@ -686,7 +686,7 @@ made subject to such option by the copyright holder.
                 <attr name="factory" newvalue="org.netbeans.modules.uml.diagrams.edges.factories.AbstractionFactory"/>
             </file>
             <!-- Activity Diagram -->
-            <file name="ActivityEdge.context_palette_item" url="resources/context/ActivityEdge.context_palette_item">
+            <file name="MultiFlow.context_palette_item" url="resources/context/MultiFlow.context_palette_item">
                 <attr name="factory" newvalue="org.netbeans.modules.uml.diagrams.edges.factories.ActivityEdgeFactory"/>
             </file>
             <file name="StateTransition.context_palette_item" url="resources/context/StateTransition.context_palette_item">
@@ -1352,7 +1352,7 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="Activity">  <!-- common context palette for most activity nodes -->
                 <file name="ActivityEdge.shadow">
-                    <attr name="originalFile" stringvalue="modeling/relationships/ActivityEdge.context_palette_item"/>
+                    <attr name="originalFile" stringvalue="modeling/relationships/MultiFlow.context_palette_item"/>
                     <attr name="default-node" stringvalue="InvocationNode"/>
                     <attr name="position" intvalue="100"/>
                 </file>
@@ -1404,7 +1404,7 @@ made subject to such option by the copyright holder.
             </folder>
              <folder name="ActivityControl">
                 <file name="ActivityEdge.shadow">
-                    <attr name="originalFile" stringvalue="modeling/relationships/ActivityEdge.context_palette_item"/>
+                    <attr name="originalFile" stringvalue="modeling/relationships/MultiFlow.context_palette_item"/>
                     <attr name="default-node" stringvalue="InvocationNode"/>
                     <attr name="position" intvalue="100"/>
                 </file>
@@ -1416,7 +1416,7 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="ActivityFork">
                 <file name="ActivityEdge.shadow">
-                    <attr name="originalFile" stringvalue="modeling/relationships/ActivityEdge.context_palette_item"/>
+                    <attr name="originalFile" stringvalue="modeling/relationships/MultiFlow.context_palette_item"/>
                     <attr name="default-node" stringvalue="InvocationNode"/>
                     <attr name="position" intvalue="100"/>
                 </file>
