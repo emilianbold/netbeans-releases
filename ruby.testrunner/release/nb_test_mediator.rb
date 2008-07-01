@@ -135,17 +135,26 @@ class NbTestMediator
       attach_listeners
       begin
         puts "%SUITE_STARTING% #{suite}"
+        start_suite_timer
         result = @mediator.run_suite
         puts "%SUITE_SUCCESS% #{result.passed?}"
         puts "%SUITE_FAILURES% #{result.failure_count}"
         puts "%SUITE_ERRORS% #{result.error_count}"
       rescue => err
-        puts err
+        puts "%SUITE_FINISHED% time=#{elapsed_suite_time}"
+        puts "%SUITE_ERROR_OUTPUT% error=#{err}"
       end
     end
     
   end
   
+  def start_suite_timer
+    @suite_start_time = Time.now
+  end
+  
+  def elapsed_suite_time
+    Time.now - @suite_start_time
+  end
   def attach_listeners
     @mediator.add_listener(Test::Unit::UI::TestRunnerMediator::STARTED, &method(:suite_started))
     @mediator.add_listener(Test::Unit::UI::TestRunnerMediator::FINISHED, &method(:suite_finished))
@@ -173,7 +182,7 @@ class NbTestMediator
   end
 
   def suite_finished(result)
-    puts "%SUITE_FINISHED% #{result}"
+    puts "%SUITE_FINISHED% time=#{result}"
   end
   
   def test_started(result)
