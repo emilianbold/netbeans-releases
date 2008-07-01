@@ -735,8 +735,7 @@ final class JUnitOutputReader {
          //
         isDeterminateProgress = willBeDeterminateProgress;
         
-        Manager.getInstance().testStarted(session,
-                                          sessionType);
+        manager.testStarted(session, sessionType);
     }
     
     /**
@@ -868,8 +867,7 @@ final class JUnitOutputReader {
     void buildFinished(final AntEvent event) {
         try {
             buildFinished(event.getException());
-            Manager.getInstance().sessionFinished(session,
-                                                  sessionType);
+            manager.sessionFinished(session, sessionType);
         } finally {
             progressHandle.finish();
         }
@@ -897,9 +895,7 @@ final class JUnitOutputReader {
             progressHandle.progress(stepMessage);
         }
                 
-        Manager.getInstance().displaySuiteRunning(session,
-                                                  sessionType,
-                                                  suiteName);
+        manager.displaySuiteRunning(session, sessionType, suiteName);
         return report;
     }
     
@@ -911,7 +907,7 @@ final class JUnitOutputReader {
         }
         executedSuitesCount++;
         
-        Manager.getInstance().displayReport(session, sessionType, report);
+        manager.displayReport(session, sessionType, report);
     }
     
     private void buildFinished(final Throwable exception) {
@@ -950,7 +946,7 @@ final class JUnitOutputReader {
     /**
      */
     private void displayOutput(final String text, final boolean error) {
-        Manager.getInstance().displayOutput(session, sessionType, text, error);
+        manager.displayOutput(session, sessionType, text, error);
     }
     
     //--------------------------------------------------------
