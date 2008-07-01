@@ -51,6 +51,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
@@ -64,12 +65,14 @@ import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
+import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiFrame;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiSeparator;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
+import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
 
@@ -111,8 +114,8 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
      * Additionally it initializes and lays out the core swing components of the
      * container.
      */
-    public SwingFrameContainer() {
-        super();
+    public SwingFrameContainer() {        
+        super();    
         
         frameWidth = UiUtils.getDimension(System.getProperties(),
                 WIZARD_FRAME_WIDTH_PROPERTY,
@@ -200,6 +203,9 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
      * {@inheritDoc}
      */
     public void updateWizardUi(final WizardUi wizardUi) {
+        if(wizardUi==null) {
+            return;
+        }
         if (!SwingUtilities.isEventDispatchThread()) {         
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -301,6 +307,37 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
      */
     public NbiButton getCancelButton() {
         return contentPane.getCancelButton();
+    }
+
+    public void open() {
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+
+                public void run() {
+                    Thread.currentThread().setUncaughtExceptionHandler(
+                            ErrorManager.getExceptionHandler());
+                }
+            });
+        } catch (InvocationTargetException e) {
+            ErrorManager.notifyDebug(ResourceUtils.getString(
+                    SwingFrameContainer.class,
+                    RESOURCE_FAILED_TO_ATTACH_ERROR_HANDLER), e);
+        } catch (InterruptedException e) {
+            ErrorManager.notifyDebug(ResourceUtils.getString(
+                    SwingFrameContainer.class,
+                    RESOURCE_FAILED_TO_ATTACH_ERROR_HANDLER), e);
+        }
+
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                setVisible(true);
+            }
+        });
+    }
+
+    public void close() {
+        setVisible(false);
     }
     
     // protected ////////////////////////////////////////////////////////////////////
@@ -920,6 +957,12 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             "SFC.error.close.operation"; //NOI18N
     private static final String RESOURCE_FAILED_TO_SET_FRAME_CONTAINER_ICON =
             "SFC.error.failed.to.set.icon";//NOI18N
+    /**
+     * Name of a resource bundle entry.
+     */
+    private static final String RESOURCE_FAILED_TO_ATTACH_ERROR_HANDLER =
+            "SFC.error.failed.to.attach.error.handler"; // NOI18N
+    
     /**
      * Name of the {@link AbstractAction} which is invoked when the user presses the
      * <code>Escape</code> button.
