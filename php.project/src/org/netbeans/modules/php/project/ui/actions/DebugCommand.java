@@ -45,6 +45,7 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -83,7 +84,8 @@ public class DebugCommand extends Command implements Displayable {
                     }
             };
             
-            if (WebClientToolsProjectUtils.getServerDebugProperty(getProject())) {
+            boolean jsDebuggingAvailable = WebClientToolsSessionStarterService.isAvailable();
+            if (!jsDebuggingAvailable || WebClientToolsProjectUtils.getServerDebugProperty(getProject())) {
                 //temporary; after narrowing deps. will be changed
                 XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
                 if (dbgStarter != null) {

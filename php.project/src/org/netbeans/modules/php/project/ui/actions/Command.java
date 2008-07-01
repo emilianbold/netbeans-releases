@@ -116,6 +116,12 @@ public abstract class Command {
     protected final void showURLForDebugProjectFile() throws MalformedURLException {
         boolean debugServer = WebClientToolsProjectUtils.getServerDebugProperty(project);
         boolean debugClient = WebClientToolsProjectUtils.getClientDebugProperty(project);
+        
+        if (!WebClientToolsSessionStarterService.isAvailable()) {
+            debugServer = true;
+            debugClient = false;
+        }
+        
         assert debugServer || debugClient;
         
         URL debugUrl = (debugServer) ? urlForDebugProjectFile() : urlForProjectFile();
@@ -134,6 +140,12 @@ public abstract class Command {
     protected final void showURLForDebugContext(Lookup context) throws MalformedURLException {
         boolean debugServer = WebClientToolsProjectUtils.getServerDebugProperty(project);
         boolean debugClient = WebClientToolsProjectUtils.getClientDebugProperty(project);
+        
+        if (!WebClientToolsSessionStarterService.isAvailable()) {
+            debugServer = true;
+            debugClient = false;
+        }
+        
         assert debugServer || debugClient;
         
         URL debugUrl = (debugServer) ? urlForDebugContext(context) : urlForContext(context);
