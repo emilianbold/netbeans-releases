@@ -40,7 +40,6 @@ if [ "$action" = "build" ]; then
 
     ant build || exit 2
     ant commit-validation || echo commit-validation >$RESULT
-    ant commit-validation-junit-format
 
     testmodule ant.freeform
     testmodule api.java
