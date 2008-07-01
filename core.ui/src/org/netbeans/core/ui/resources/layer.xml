@@ -695,11 +695,4 @@ made subject to such option by the copyright holder.
         </file>
     </folder>
     
-    <folder name="QuickSearch">
-          <folder name="Help">
-              <!--Note that multiple providers can contribute to one category!-->
-              <file name="org-netbeans-core-ui-quicksearch-web-WebQuickSearchProviderImpl.instance"/>
-          </folder>
-    </folder>
-    
 </filesystem>

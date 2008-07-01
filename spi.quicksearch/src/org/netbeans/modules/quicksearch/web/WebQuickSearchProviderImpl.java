@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.core.ui.quicksearch.web;
+package org.netbeans.modules.quicksearch.web;
 
 import java.awt.Toolkit;
 import java.net.URL;
@@ -63,10 +63,13 @@ public class WebQuickSearchProviderImpl implements SearchProvider {
             query = Query.getDefault();
         }
         Result res = query.search( request.getText() );
-        for( Item item : res.getItems() ) {
-            if( !response.addResult( createAction( item.getUrl() ), item.getTitle() ) )
-                return;
-        }
+        do {
+            for( Item item : res.getItems() ) {
+                if( !response.addResult( createAction( item.getUrl() ), item.getTitle() ) )
+                    return;
+            }
+            res = query.searchMore( request.getText() );
+        } while( !res.isSearchFinished() );
     }
 
     private Runnable createAction( final String url ) {
