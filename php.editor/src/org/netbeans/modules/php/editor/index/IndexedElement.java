@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 
 
@@ -63,7 +64,7 @@ public abstract class IndexedElement extends PHPElement {
     protected String name;
     protected String in;
     protected PHPIndex index;
-    protected String fileUrl;
+    private String fileUrl;
     protected Document document;
     protected FileObject fileObject;
     protected int flags;
@@ -81,6 +82,10 @@ public abstract class IndexedElement extends PHPElement {
         this.offset = offset;
         this.flags = flags;
         this.kind = kind;
+        
+        if (fileUrl != null && fileUrl.contains(" ")){
+            throw new IllegalArgumentException("fileURL may not contain spaces!");
+        }
     }
 
     public boolean isResolved() {
@@ -166,9 +171,14 @@ public abstract class IndexedElement extends PHPElement {
     }
 
     public ParserFile getFile() {
-        boolean platform = false; // XXX FIND OUT WHAT IT IS!
-
-        return new DefaultParserFile(getFileObject(), null, platform);
+        FileObject fobj = getFileObject();
+        boolean platform = false;
+        
+        if (fobj != null) {
+            PhpSourcePath.FileType fileType = PhpSourcePath.getFileType(fileObject);
+            platform = fileType == PhpSourcePath.FileType.INTERNAL;
+        }
+        return new DefaultParserFile(fobj, null, platform);
     }
 
     @Override

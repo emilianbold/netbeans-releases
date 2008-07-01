@@ -41,15 +41,14 @@
 package org.netbeans.test.j2ee.wizard;
 
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
  * @author jungi
  */
-public class MultiSrcRootModsWizardsTest extends NbTestCase {
+public class MultiSrcRootModsWizardsTest extends J2eeTestCase {
     
     /** Creates a new instance of MultiSrcRootModsWizardsTest */
     public MultiSrcRootModsWizardsTest(String s) {
@@ -61,30 +60,17 @@ public class MultiSrcRootModsWizardsTest extends NbTestCase {
     }
     
     public static Test suite() {
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new NewFileWizardsTest("testOpenEjbMultiRootProject"));
-        suite.addTest(new NewFileWizardsTest("testMultiLocalSessionBean"));
-        suite.addTest(new NewFileWizardsTest("testMultiRemoteSessionBean"));
-        suite.addTest(new NewFileWizardsTest("testMultiLocalRemoteSessionBean"));
-        suite.addTest(new NewFileWizardsTest("testMultiLocalStatefulSessionBean"));
-        suite.addTest(new NewFileWizardsTest("testMultiRemoteStatefulSessionBean"));
-        suite.addTest(new NewFileWizardsTest("testMultiLocalRemoteStatefulSessionBean"));
-        suite.addTest(new NewFileWizardsTest("testMultiLocalEntityBean"));
-        suite.addTest(new NewFileWizardsTest("testMultiRemoteEntityBean"));
-        suite.addTest(new NewFileWizardsTest("testMultiLocalRemoteEntityBean"));
-        suite.addTest(new NewFileWizardsTest("testMultiQueueMdbBean"));
-        suite.addTest(new NewFileWizardsTest("testMultiTopicMdbBean"));
-        suite.addTest(new NewFileWizardsTest("testMultiServiceLocatorInEjb"));
-        suite.addTest(new NewFileWizardsTest("testMultiCachingServiceLocatorInEjb"));
-        suite.addTest(new NewFileWizardsTest("testBuildEjbMultiRootProject"));
-
-        suite.addTest(new NewFileWizardsTest("testOpenWebMultiRootProject"));
-        suite.addTest(new NewFileWizardsTest("testMultiServletInWeb"));
-        suite.addTest(new NewFileWizardsTest("testMultiServiceLocatorInWeb"));
-        suite.addTest(new NewFileWizardsTest("testMultiCachingServiceLocatorInWeb"));
-        suite.addTest(new NewFileWizardsTest("testBuildWebMultiRootProject"));
-        
-        return suite;
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(NewFileWizardsTest.class);
+        conf = addServerTests(conf,"testOpenEjbMultiRootProject","testMultiLocalSessionBean",
+        "testMultiRemoteSessionBean","testMultiLocalRemoteSessionBean","testMultiLocalStatefulSessionBean",
+        "testMultiRemoteStatefulSessionBean","testMultiLocalRemoteStatefulSessionBean",
+        "testMultiLocalEntityBean","testMultiRemoteEntityBean","testMultiLocalRemoteEntityBean",
+        "testMultiQueueMdbBean","testMultiTopicMdbBean","testMultiServiceLocatorInEjb",
+        "testMultiCachingServiceLocatorInEjb","testBuildEjbMultiRootProject","testOpenWebMultiRootProject",
+        "testMultiServletInWeb","testMultiServiceLocatorInWeb","testMultiCachingServiceLocatorInWeb",
+        "testBuildWebMultiRootProject");
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
     }
     
 }

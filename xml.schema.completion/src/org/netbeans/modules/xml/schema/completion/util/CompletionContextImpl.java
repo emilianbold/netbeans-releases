@@ -299,23 +299,12 @@ public class CompletionContextImpl extends CompletionContext {
                 case XMLDefaultTokenContext.OPERATOR_ID:
                 //user enters either ' or "
                 case XMLDefaultTokenContext.VALUE_ID: {
-//                    //user enters end quote => no value completion here
-//                    if(token.getNext() != null) {
-//                        if (lastTypedChar == '\'' || lastTypedChar == '\"') {
-//                            int next = token.getNext().getTokenID().getNumericID();
-//                            if(next == XMLDefaultTokenContext.WS_ID || next == XMLDefaultTokenContext.TAG_ID) {
-//                                completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
-//                                break;                            
-//                            }
-//                        }
-//                    }
-//                    
                     //user enters start quote and no end quote exists
                     if(token.getNext() == null) {
                         if(lastTypedChar == '\'' || lastTypedChar == '\"')
                             typedChars = null;
                         else 
-                            typedChars = ""+lastTypedChar;
+                            typedChars = token.getImage().substring(1, token.getImage().indexOf(">"));
                     }                    
                     
                     //user is inside start/end quotes

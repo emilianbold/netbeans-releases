@@ -43,6 +43,7 @@ import org.netbeans.modules.cnd.remote.support.managers.ScriptManager;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
+import org.openide.util.Exceptions;
 
 /**
  * Base class for running a script remotely where the script requires a manager class
@@ -55,11 +56,15 @@ public class RemoteScriptSupport extends RemoteConnectionSupport {
     
     private ChannelExec echannel;
     
-    public RemoteScriptSupport(String host, String user, ScriptManager manager) {
-        super(host, user);
+    public RemoteScriptSupport(String key, ScriptManager manager, int port) {
+        super(key, port);
+        manager.setSupport(this);
         setChannelCommand(manager.getScript());
-        
-        manager.runScript(this); 
+        manager.runScript(); 
+    }
+    
+    public RemoteScriptSupport(String key, ScriptManager manager) {
+        this(key, manager, 22);
     }
 
     @Override
@@ -69,6 +74,11 @@ public class RemoteScriptSupport extends RemoteConnectionSupport {
     }
     
     private void setChannelCommand(String script) {
-        ((ChannelExec) getChannel()).setCommand(System.getProperty("user.home") + "/.netbeans/rddev/cnd.remote/scripts/" + script); //NOI18N
+        try {
+            channel = createChannel();
+            ((ChannelExec) channel).setCommand(script);
+        } catch (JSchException ex) {
+            log.warning(ex.getMessage());
+        }
     }
 }

@@ -46,8 +46,8 @@ package org.netbeans.modules.javascript.editing;
  */
 public final class Pair<A, B> {
 
-    private A a;
-    private B b;
+    private final A a;
+    private final B b;
 
     public Pair(A a, B b) {
         this.a = a;
@@ -61,4 +61,8 @@ public final class Pair<A, B> {
     public B getB() {
         return b;
     }
+
+    public static <A,B> Pair<A,B> of(A a, B b) {
+      return new Pair<A, B>(a, b);
+    } 
 }

@@ -106,13 +106,13 @@ class ActionFilterNode extends FilterNode {
      * @return ActionFilterNode
      */
     static ActionFilterNode create (Node original, UpdateHelper helper, String classPathId, String entryId, String webModuleElementName,
-            ClassPathSupport cs, String[] libUpdaterProperties, ReferenceHelper rh) {
+            ClassPathSupport cs, ReferenceHelper rh) {
         DataObject dobj = (DataObject) original.getLookup().lookup(DataObject.class);
         assert dobj != null;
         FileObject root =  dobj.getPrimaryFile();
         Lookup lkp = new ProxyLookup (new Lookup[] {original.getLookup(), helper == null ?
             Lookups.singleton (new JavadocProvider(root,root)) :
-            Lookups.fixed (new Object[] {new Removable (helper, classPathId, entryId, webModuleElementName, cs, libUpdaterProperties, rh),
+            Lookups.fixed (new Object[] {new Removable (helper, classPathId, entryId, webModuleElementName, cs, rh),
             new JavadocProvider(root,root)})});
         return new ActionFilterNode (original, helper == null ? MODE_PACKAGE : MODE_ROOT, root, lkp);
     }
@@ -266,17 +266,15 @@ class ActionFilterNode extends FilterNode {
        private final String entryId;
        private final String webModuleElementName;
        private final ClassPathSupport cs;
-       private String[] libUpdaterProperties;
        private ReferenceHelper rh;
 
        Removable (UpdateHelper helper, String classPathId, String entryId, 
-               String webModuleElementName, ClassPathSupport cs, String[] libUpdaterProperties, ReferenceHelper rh) {
+               String webModuleElementName, ClassPathSupport cs, ReferenceHelper rh) {
            this.helper = helper;
            this.classPathId = classPathId;
            this.entryId = entryId;
            this.webModuleElementName = webModuleElementName;
            this.cs = cs;
-           this.libUpdaterProperties = libUpdaterProperties;
            this.rh = rh;
        }
 
@@ -311,21 +309,8 @@ class ActionFilterNode extends FilterNode {
             if (removed) {
                 String[] itemRefs = cs.encodeToStrings(resources, webModuleElementName);
                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
-                EditableProperties privateProps = helper.getProperties (AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                 props.setProperty (classPathId, itemRefs);
-                
-                if (libUpdaterProperties != null) {
-                    // update library properties:
-                    HashSet set = new HashSet();
-                    for (String property : libUpdaterProperties) {
-                        List wmLibs = cs.itemsList(props.getProperty(property),  null);
-                        set.addAll(wmLibs);
-                    }
-                    ProjectProperties.storeLibrariesLocations(helper.getAntProjectHelper(), set.iterator(), helper.getAntProjectHelper().isSharableProject() ? props : privateProps);
-                }
-                
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-                helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
                return FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
            } else {
                return null;

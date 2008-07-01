@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.openide.util.Lookup;
 
@@ -46,60 +48,107 @@ import org.openide.util.Lookup;
  *
  * @author gordonp
  */
-public class DevelopmentHostConfiguration extends IntConfiguration {
+public class DevelopmentHostConfiguration {
+    
+    public static final String PROP_DEV_HOST = "devHost"; // NOI18N
+    
+    private int def;
+    private int value;
+    private String[] names;
+    private boolean modified;
+    private boolean dirty = false;
+    private PropertyChangeSupport pcs;
     
     private static ServerList serverList = null;
     
-    private StringConfiguration developmentHostName;
-
     public DevelopmentHostConfiguration() {
-        super((IntConfiguration) null, _getDefaultServerIndex(), _getServerNames(), null);
-        developmentHostName = new StringConfiguration(null, _getServerNames()[_getDefaultServerIndex()]);
+        names = getServerNames();
+        value = 0;
+        def = 0; // localost is always defined and should be considered the default
+        pcs = new PropertyChangeSupport(this);
     }
     
-    // developmentHostName
-    public StringConfiguration getDevelopmentHostName() {
-        return developmentHostName;
-    }
-    
-    public void setDevelopmentHostName(StringConfiguration developmentHostName) {
-        this.developmentHostName = developmentHostName;
-    }
-    
-    public String[] getServerNames() {
-        return _getServerNames();
-    }
-    
-    public int getDefaultServerIndex() {
-        return _getDefaultServerIndex();
+    public String getName() {
+        return names[value];
     }
     
     public String getDisplayName() {
-        return developmentHostName.getValue();
+        return names[value];
+    }
+
+    public int getValue() {
+        return value;
     }
     
-    @Override
     public void setValue(String v) {
-        super.setValue(v);
+        setValue(v, false);
     }
     
-    private static int _getDefaultServerIndex() {
-        if (getServerList() != null) {
-            return serverList.getDefaultServerIndex();
+    public void setValue(String v, boolean firePC) {
+        for (int i = 0; i < names.length; i++) {
+            if (v.equals(names[i])) {
+                value = i;
+                if (firePC) {
+                    pcs.firePropertyChange(PROP_DEV_HOST, null, v);
+                }
+                return;
+            }
         }
-        return 0;
+        throw new IllegalStateException();
+    }
+
+    public void reset() {
+        names = getServerNames();
+        value = def;
+    }
+
+    public boolean getModified() {
+        return modified;
+    }
+    
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
+    }
+    
+    public boolean getDirty() {
+        return dirty;
+    }
+
+    void assign(DevelopmentHostConfiguration conf) {
+        boolean dirty2 = false;
+        String oldName = getName();
+        String newName = conf.getName();
+        
+        if (names.length != conf.names.length) {
+            names = getServerNames();
+            dirty2 = true;
+        }
+        if (!newName.equals(oldName)) {
+            dirty2 = true;
+        }
+        setDirty(dirty2);
+        setValue(newName);
     }
     
     @Override
     public Object clone() {
         DevelopmentHostConfiguration clone = new DevelopmentHostConfiguration();
-        clone.setDevelopmentHostName((StringConfiguration) getDevelopmentHostName().clone());
+        clone.setValue(getName());
         return clone;
     }
     
-    private static String[] _getServerNames() {
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        pcs.addPropertyChangeListener(l);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        pcs.removePropertyChangeListener(l);
+    }
+    
+    public String[] getServerNames() {
         if (getServerList() != null) {
-            return serverList.getServerNames();
+            String[] nu = serverList.getServerNames();
+            return nu;
         }
         return new String[] { "localhost" }; // NOI18N
     }

@@ -180,7 +180,7 @@ public class JavaScriptLibraryTypeProvider
             boolean first = true;
             for (Iterator rootsIt = roots.iterator(); rootsIt.hasNext();) {
                 URL url = (URL) rootsIt.next();
-                if ("zip".equals(url.getProtocol())) {
+                if ("jar".equals(url.getProtocol())) {
                     url = FileUtil.getArchiveFile(url);
                 // XXX check whether this is really the root
                 }

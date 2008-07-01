@@ -495,7 +495,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         Collection<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
         String url = null;
         try {
-            url = request.result.getFile().getFile().toURL().toExternalForm();
+            url = request.result.getFile().getFile().toURI().toURL().toExternalForm();
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -735,9 +735,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             final IndexedElement indexedElement = (IndexedElement) element;
             StringBuilder builder = new StringBuilder();
             
+            String location = indexedElement.getFile().isPlatform() ? NbBundle.getMessage(PHPCodeCompletion.class, "PHPPlatform")
+                    : indexedElement.getFilenameUrl();
+            
             builder.append(String.format("<font size=-1>%s</font>" +
                     "<p><font size=+1><code><b>%s</b></code></font></p><br>", //NOI18N
-                    indexedElement.getFilenameUrl(), indexedElement.getDisplayName()));
+                    location, indexedElement.getDisplayName()));
             
             final StringBuilder phpDoc = new StringBuilder();
             

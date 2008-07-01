@@ -212,7 +212,7 @@ public class CsmTracer {
 	StringBuilder sb = new StringBuilder();
 	
 	sb.append("CLASS="); // NOI18N
-	CsmClassifier cls = inh.getCsmClassifier();
+	CsmClassifier cls = inh.getClassifier();
 	//sb.append(isDummyUnresolved(cls) ? "<unresolved>" : cls.getQualifiedName());
 	sb.append(cls == null ? NULL_TEXT : cls.getQualifiedName()); // NOI18N
 	
@@ -848,7 +848,7 @@ public class CsmTracer {
 			    "<unknown-CsmClass-kind>"; // NOI18N
 	
         CharSequence name;
-        if (cls.isTemplate() && cls instanceof CsmTemplate) {
+        if (CsmKindUtilities.isTemplate(cls)) {
             name = ((CsmTemplate)cls).getDisplayName();
         } else {
             name = cls.getName();

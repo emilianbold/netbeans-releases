@@ -170,7 +170,7 @@ public class XMLGeneration_0004 extends XMLGeneration {
 
       // Browse file
       JFileChooserOperator opFileChooser = new JFileChooserOperator( );
-      opFileChooser.setCurrentDirectory( new File( System.getProperty( "xtest.data" ) ) );
+      opFileChooser.setCurrentDirectory( new File( GetWorkDir( ) ) );
       opFileChooser.chooseFile(
           "\"CreditReport.xsd\""
           + " "

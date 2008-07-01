@@ -732,4 +732,17 @@ made subject to such option by the copyright holder.
         </file>
     </folder>
     
+    <folder name="QuickSearch">
+          <folder name="Web">
+              <!--Attribute for localization - provide localized display name of category!-->
+              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.quicksearch.web.Bundle"/>
+              <!--Attribute for command prefix - used to narrow search to this category only!-->
+              <attr name="command" stringvalue="g"/>
+              <!--Attribute for category ordering!-->
+              <attr name="position" intvalue="1000"/>
+              <!--Note that multiple providers can contribute to one category!-->
+              <file name="org-netbeans-core-ui-quicksearch-web-WebQuickSearchProviderImpl.instance"/>
+          </folder>
+    </folder>
+    
 </filesystem>

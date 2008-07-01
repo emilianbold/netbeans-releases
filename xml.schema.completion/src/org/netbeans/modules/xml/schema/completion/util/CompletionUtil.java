@@ -716,7 +716,15 @@ public class CompletionUtil {
         
         public List<DocRootAttribute> getAttributes() {
             return attributes;
-        }        
+        }
+        
+        public boolean declaresNamespace() {
+            for(DocRootAttribute attr: getAttributes()) {
+                if(attr.getName().startsWith(XMLConstants.XMLNS_ATTRIBUTE))
+                    return true;
+            }            
+            return false;
+        }
     }
     
     public static class DocRootAttribute {

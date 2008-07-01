@@ -97,7 +97,7 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
     @Override
     public void init(SaasMethod m, Document doc) throws IOException {
         super.init(m, doc);
-        setBean(new RestClientSaasBean((WadlSaasMethod) m));
+        setBean(new RestClientSaasBean((WadlSaasMethod) m, true));
         
         serviceFolder = null;
         
@@ -157,14 +157,14 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         getAuthenticationGenerator().createAuthenticatorClass();
 
         //Create Authorization classes
-        //getAuthenticationGenerator().createAuthorizationClasses();
+        getAuthenticationGenerator().createAuthorizationClasses();
 
         createSaasServiceClass();
         addSaasServiceMethod();
         addImportsToSaasService();
 
         //Modify Authenticator class
-        //getAuthenticationGenerator().modifyAuthenticationClass(); 
+        getAuthenticationGenerator().modifyAuthenticationClass(); 
 
         insertSaasServiceAccessCode(isInBlock(getTargetDocument()));
         addImportsToTargetFile();

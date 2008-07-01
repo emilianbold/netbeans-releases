@@ -61,6 +61,7 @@ import org.openide.loaders.DataObject;
  * rest of methods delegates to WD.ArrayIterator created only with SimpleTargetChooserPanel.
  *
  * @author  Jiri Rechtacek
+ *          Winston Prakash - Added optional Page Layout Chooser Panel
  */
 public class NewFileIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     

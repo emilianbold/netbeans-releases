@@ -59,6 +59,7 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.ide.WatchProjects;
 
@@ -68,22 +69,42 @@ import org.netbeans.test.ide.WatchProjects;
  * @author Jiri.Skrivanek@sun.com
  */
 public class RubyValidation extends JellyTestCase {
-    
+
+     static final String [] tests = {
+                "testCreateRubyProject",
+                "testRunRubyFile",
+                "testCreateRailsProject",
+                "testRailsGenerate",
+                "testIrbShell",
+    };
+
     /** Need to be defined because of JUnit */
     public RubyValidation(String name) {
         super(name);
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new RubyValidation("testCreateRubyProject"));
-        suite.addTest(new RubyValidation("testRunRubyFile"));
-        suite.addTest(new RubyValidation("testCreateRailsProject"));
-        suite.addTest(new RubyValidation("testRailsGenerate"));
-        suite.addTest(new RubyValidation("testIrbShell"));
-        return suite;
+    public static junit.framework.Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(RubyValidation.class)
+                .addTest(tests)
+                .clusters(".*")
+                .enableModules(".*")
+                .gui(true)
+                );
     }
-    
+
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite();
+//        suite.addTest(new RubyValidation("testCreateRubyProject"));
+//        suite.addTest(new RubyValidation("testRunRubyFile"));
+//        suite.addTest(new RubyValidation("testCreateRailsProject"));
+//        suite.addTest(new RubyValidation("testRailsGenerate"));
+//        suite.addTest(new RubyValidation("testIrbShell"));
+//        return suite;
+//    }
+
+
+
     /** Use for execution inside IDE */
     public static void main(java.lang.String[] args) {
         // run whole suite
