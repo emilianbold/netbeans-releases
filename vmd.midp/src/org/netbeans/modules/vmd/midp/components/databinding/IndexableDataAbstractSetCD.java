@@ -39,7 +39,6 @@
 package org.netbeans.modules.vmd.midp.components.databinding;
 
 import org.netbeans.modules.vmd.midp.components.*;
-import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.Presenter;
@@ -52,13 +51,13 @@ import org.netbeans.modules.vmd.api.model.VersionDescriptor;
  *
  * @author Karol Harezlak
  */
-public class AddressDataSetCD extends ComponentDescriptor {
-    
-    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.databinding.pim.AddressDataSet"); //NOI18N
+public class IndexableDataAbstractSetCD extends ComponentDescriptor {
+
+    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#IndexableDataSet"); //NOI18N
 
     @Override
     public TypeDescriptor getTypeDescriptor() {
-        return new TypeDescriptor(DataSetAbstractCD.TYPEID, TYPEID, true, true);
+        return new TypeDescriptor(DataSetAbstractCD.TYPEID, TYPEID, false, true);
     }
 
     @Override
@@ -66,19 +65,13 @@ public class AddressDataSetCD extends ComponentDescriptor {
         return MidpVersionDescriptor.MIDP_2;
     }
 
-    @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return null;
     }
-
-    @Override
-    protected void gatherPresenters(ArrayList<Presenter> presenters) {
-        //DocumentSupport.removePresentersOfClass(presenters, CodeClassLevelPresenter.class);
-        super.gatherPresenters(presenters);
-    }
+    
 
     @Override
     protected List<? extends Presenter> createPresenters() {
-        return null;
+       return null;
     }
 }

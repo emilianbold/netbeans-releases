@@ -62,11 +62,15 @@ import org.netbeans.modules.vmd.midp.inspector.controllers.InspectorPositionCont
  * @author Karol Harezlak
  */
 public class DataSetAbstractCD extends ComponentDescriptor {
-
-    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#AbstractDataSet"); //NOI18N
+    
+    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/dataset_16.gif"; // NOI18N
+    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#DataSetAbstract"); //NOI18N
     
     public static final String PROP_NAMES = "names"; 
-
+    
+    static {
+        MidpTypes.registerIconResource(TYPEID, ICON_PATH);
+    }
    
     @Override
     public TypeDescriptor getTypeDescriptor() {
