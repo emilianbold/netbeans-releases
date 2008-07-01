@@ -74,6 +74,7 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
@@ -521,9 +522,24 @@ public class TargetServer {
         boolean hasActivities = false;
 
         init(ui, true, true);
-        if (forceRedeploy) {
-            if (redeployTargetModules == null) {
-            } else {
+
+        boolean missingModule = false;
+        if (ModuleType.EAR.equals(dtarget.getModule().getModuleType())
+                && dtarget.getModule() instanceof J2eeApplication
+                && redeployTargetModules != null
+                && redeployTargetModules.length == 1) {
+
+            // TODO more precise check
+            // this is namely because of glassfish deploying EAR without EJB module
+            // see gf issue #5240
+            missingModule = redeployTargetModules[0].getChildTargetModuleID().length < ((J2eeApplication) dtarget.getModule()).getModules().length;
+            if (missingModule) {
+                LOGGER.log(Level.INFO, "Enterprise application needs to be redeployed due to missing module");
+            }
+        }
+
+        if (forceRedeploy || missingModule) {
+            if (redeployTargetModules != null) {
                 for (int i = 0; i < redeployTargetModules.length; i++) {
                     distributeTargets.add(redeployTargetModules [i].findTarget ());
                     undeployTMIDs.add(redeployTargetModules [i].delegate());
@@ -643,46 +659,44 @@ public class TargetServer {
         return true;
     }
 
-    public boolean notifyArtifactsUpdated(Iterable<File> artifacts) {
+    public boolean notifyArtifactsUpdated(J2eeModuleProvider provider, Iterable<File> artifacts) {
         if (!dtarget.getServer().getServerInstance().isRunning()) {
+            return false;
+        }
+
+        try {
+            init(null, false, false);
+        } catch (ServerException ex) {
+            // this should never occur
+            Exceptions.printStackTrace(ex);
+        }
+
+        TargetModule[] modules = getDeploymentDirectoryModules();
+
+        try {
+            if (!supportsDeployOnSave(modules)) {
+                return false;
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        // FIXME target
+        TargetModule targetModule = dtarget.getTargetModules()[0];
+        if (!targetModule.hasDelegate()) {
             return false;
         }
 
         ProgressUI ui = new ProgressUI(NbBundle.getMessage(TargetServer.class, "MSG_DeployOnSave"), false);
         ui.start(Integer.valueOf(0));
         try {
-            try {
-                init(ui, false, false);
-            } catch (ServerException ex) {
-                // this should never occur
-                Exceptions.printStackTrace(ex);
+            DeploymentChangeDescriptor changes = distributeChangesOnSave(targetModule, artifacts);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, changes.toString());
             }
-
-            TargetModule[] modules = getDeploymentDirectoryModules();
-
-            try {
-                if (!supportsDeployOnSave(modules)) {
-                    return false;
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
-            // FIXME target
-            TargetModule targetModule = dtarget.getTargetModules()[0];
-            if (!targetModule.hasDelegate()) {
-                return false;
-            }
-
-            try {
-                DeploymentChangeDescriptor changes = distributeChangesOnSave(targetModule, artifacts);
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, changes.toString());
-                }
-                reloadArtifacts(ui, modules, changes);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            reloadArtifacts(ui, modules, changes);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         } finally {
             ui.finish();
         }
