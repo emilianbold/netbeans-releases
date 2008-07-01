@@ -42,7 +42,122 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-  <folder name="Projects">
+  <folder name="Profiler">
+        <folder name="J2SE">
+            <folder name="AreasOfInterest">
+                <folder name="IO">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
+                    <folder name="~subtypes">
+                        <file name="java.io.InputStreamReader">
+                            <attr name="includes" stringvalue="write,reset,skip,flush"/>
+                        </file>
+                        <file name="java.io.OutputStreamWriter">
+                            <attr name="includes" stringvalue="write,reset,skip,flush"/>
+                        </file>
+                        <file name="java.io.InputStream">
+                            <attr name="includes" stringvalue="write,reset,skip,flush"/>
+                        </file>
+                        <file name="java.io.OutputStream">
+                            <attr name="includes" stringvalue="write,reset,skip,flush"/>
+                        </file>
+                    </folder>
+                    <folder name="Files">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
+                        <folder name="~subtypes">
+                            <file name="java.io.FileOuptutStream">
+                                <attr name="includes" stringvalue="write,reset,skip,flush"/>
+                            </file>
+                            <file name="java.io.FileReader">
+                                <attr name="includes" stringvalue="write,reset,skip,flush"/>
+                            </file>
+                            <file name="java.io.FileWriter">
+                                <attr name="includes" stringvalue="write,reset,skip,flush"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="Socket">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
+                        <folder name="~subtype">
+                            <file name="java.nio.SocketChannel">
+                                <attr name="includes" stringvalue="read,write"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+                <folder name="UI">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
+                    <folder name="Java2D">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
+                        <folder name="~package">
+                            <file name="sun.java2d"/>
+                        </folder>
+                    </folder>
+                    <folder name="~type">
+                        <file name="javax.swing.UIManager"/>
+                    </folder>
+                    <folder name="Listeners">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
+                        <folder name="~subtypes">
+                            <file name="java.awt.event.AWTEventListener"/>
+                            <file name="java.awt.event.AdjustmentListener"/>
+                            <file name="java.awt.event.ComponentListener"/>
+                            <file name="java.awt.event.ContainerListener"/>
+                            <file name="java.awt.event.FocusListener"/>
+                            <file name="java.awt.event.HierarchyBoundsListener"/>
+                            <file name="java.awt.event.HierarchyListener"/>
+                            <file name="java.awt.event.InputMethodListener"/>
+                            <file name="java.awt.event.InputMethodListener"/>
+                            <file name="java.awt.event.ItemListener"/>
+                            <file name="java.awt.event.KeyListener"/>
+                            <file name="java.awt.event.MouseListener"/>
+                            <file name="java.awt.event.MouseMotionListener"/>
+                            <file name="java.awt.event.MouseWheelListener"/>
+                            <file name="java.awt.event.WindowFocusListener"/>
+                            <file name="java.awt.event.WindowListener"/>
+                            <file name="java.awt.event.WindowStateListener"/>
+                            <file name="java.awt.event.TextListener"/>
+                            <file name="javax.swing.event.AncestorListener"/>
+                            <file name="javax.swing.event.CaretListener"/>
+                            <file name="javax.swing.event.CellEditorListener"/>
+                            <file name="javax.swing.event.ChangeListener"/>
+                            <file name="javax.swing.event.DocumentListener"/>
+                            <file name="javax.swing.event.HyperlinkListener"/>
+                            <file name="javax.swing.event.InternalFrameListener"/>
+                            <file name="javax.swing.event.ListDataListener"/>
+                            <file name="javax.swing.event.ListSelectionListener"/>
+                            <file name="javax.swing.event.MenuDragMouseListener"/>
+                            <file name="javax.swing.event.MenuKeyListener"/>
+                            <file name="javax.swing.event.MenuListener"/>
+                            <file name="javax.swing.event.MouseInputListener"/>
+                            <file name="javax.swing.event.PopupMenuListener"/>
+                            <file name="javax.swing.event.TableColumnModelListener"/>
+                            <file name="javax.swing.event.TableModelListener"/>
+                            <file name="javax.swing.event.TreeExpansionListener"/>
+                            <file name="javax.swing.event.TreeModelListener"/>
+                            <file name="javax.swing.event.TreeSelectionListener"/>
+                            <file name="javax.swing.event.TreeWillExpandListener"/>
+                            <file name="javax.swing.event.UndoableEditListener"/>
+                            <file name="java.awt.LightweightDispatcher">
+                                <attr name="includes" stringvalue="dispatchEvent"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="Painters">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
+                        <folder name="~subtypes">
+                            <file name="javax.swing.JComponent">
+                                <attr name="includes" stringvalue="repaint,paint,paintBorder,paintChildren,paintComponent,paintImmediately,print,printAll,printBorder,printChildren,printComponent"/>
+                            </file>
+                            <file name="java.awt.Component">
+                                <attr name="includes" stringvalue="repaint,paint,paintAll,print,printAll"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Projects">
     <folder name="org-netbeans-modules-java-j2seproject">
       <folder name="Lookup">
         <file name="org.netbeans.modules.profiler.j2se.LookupProviderImpl.instance"/>
