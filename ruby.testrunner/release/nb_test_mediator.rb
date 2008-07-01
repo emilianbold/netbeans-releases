@@ -142,7 +142,7 @@ class NbTestMediator
         puts "%SUITE_ERRORS% #{result.error_count}"
       rescue => err
         puts "%SUITE_FINISHED% time=#{elapsed_suite_time}"
-        puts err
+        puts "%SUITE_ERROR_OUTPUT% error=#{err}"
       end
     end
     

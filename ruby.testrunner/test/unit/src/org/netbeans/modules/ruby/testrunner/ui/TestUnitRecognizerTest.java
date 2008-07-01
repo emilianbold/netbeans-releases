@@ -168,4 +168,13 @@ public class TestUnitRecognizerTest extends TestCase {
         assertEquals("TestMe", matcher.group(1));
     }
 
+    public void testSuiteErrorOutput() throws InterruptedException {
+        TestRecognizerHandler handler = new TestUnitHandlerFactory.SuiteErrorOutputHandler();
+        String output = "%SUITE_ERROR_OUTPUT% error=undefined method `size' for UserHelperTest:Class";
+        Matcher matcher = handler.match(output);
+        assertTrue(matcher.matches());
+        assertEquals(1, matcher.groupCount());
+        assertEquals("undefined method `size' for UserHelperTest:Class", matcher.group(1));
+    }
+
 }
