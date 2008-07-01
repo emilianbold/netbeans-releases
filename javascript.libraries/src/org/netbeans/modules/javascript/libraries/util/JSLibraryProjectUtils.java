@@ -55,6 +55,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
@@ -92,6 +93,9 @@ public final class JSLibraryProjectUtils {
     private static final String RUBY_PROJECT_DEFAULT_RELATIVE_PATH = "public/resources"; // NOI18N
     private static final String PHP_PROJECT = "org.netbeans.modules.php.project"; // NOI18N
     private static final String OTHER_PROJECT_DEFAULT_RELATIVE_PATH = "javascript/resources"; // NOI18N
+    
+    private static final String LIBRARY_PROPERTIES = "library.properties"; // NOI18N
+    private static final String LIBRARY_PATH_PROP = "LibraryRoot"; // NOI18N
 
     private static final String LIBRARY_LIST_PROP = "javascript-libraries"; // NOI18N
     private static final String LIBRARY_ZIP_VOLUME = "scriptpath"; // NOI18N
@@ -281,7 +285,7 @@ public final class JSLibraryProjectUtils {
         assert prefs != null;
         
         String libraries = prefs.get(LIBRARY_LIST_PROP, "");
-        String[] tokens = libraries.split(";");
+        String[] tokens = removeEmptyStrings(libraries.split(";"));
         
         Set<String> librarySet = new LinkedHashSet<String>();
         for (String token : tokens) {
@@ -355,7 +359,9 @@ public final class JSLibraryProjectUtils {
 
                         for (ZipFile zip : zipFiles) {
                             try {
-                                currentSize = extractZip(destination, zip, handle, currentSize);
+                                String[] libraryDirs = getLibraryPropsValue(zip);
+                                
+                                currentSize = extractZip(destination, zip, handle, currentSize, libraryDirs);
                             } catch (IOException ex) {
                                 Log.getLogger().log(Level.SEVERE, "Unable to extract zip file", ex);
                             }
@@ -421,13 +427,59 @@ public final class JSLibraryProjectUtils {
     }
     
     private static int extractZip(File outDir, ZipFile zipFile, ProgressHandle handle, int currentTotal) throws IOException {
-        
+        return extractZip(outDir, zipFile, handle, currentTotal, null);
+    }
+    
+    private static int extractZip(File outDir, ZipFile zipFile, ProgressHandle handle, int currentTotal, String[] includePaths) throws IOException {
         try {
+            String[][] includeParts = null;
+            
+            if (includePaths != null && includePaths.length > 0) {
+                includeParts = new String[includePaths.length][];
+                
+                for (int i = 0; i < includePaths.length; i++) {
+                    includeParts[i] = removeEmptyStrings(includePaths[i].split("[/\\\\]"));
+                }
+                
+            }
+            
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
             
             while (entries.hasMoreElements()) {
                 ZipEntry zipEntry = entries.nextElement();
                 String entryName = zipEntry.getName();
+                
+                // used to ignore files without a common prefix
+                if (includeParts != null) {
+                    String[] entryParts = removeEmptyStrings(entryName.split("[/\\\\]"));
+                    
+                    boolean match = false;
+                    for (String[] includePart : includeParts) {
+                        if (entryParts.length < includePart.length) {
+                            continue;
+                        } else {
+                            boolean currentMatch = true;
+                            for (int i = 0; i < includePart.length; i++) {
+                                if (!entryParts[i].equals(includePart[i])) {
+                                    currentMatch = false;
+                                    break;
+                                }
+                            }
+                            
+                            if (!currentMatch) {
+                                continue;
+                            } else {
+                                match = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (!match) {
+                        continue;
+                    }
+                }
+                
                 if (zipEntry.isDirectory()) {
                     File newFolder = new File(outDir, entryName);
                     newFolder.mkdirs();
@@ -457,6 +509,52 @@ public final class JSLibraryProjectUtils {
         }
 
         return currentTotal;
+    }
+
+    private static String[] getLibraryPropsValue(ZipFile zipFile) {
+        InputStream is = null;
+        try {
+            ZipEntry zipEntry = zipFile.getEntry(LIBRARY_PROPERTIES);
+            if (zipEntry != null) {
+                Properties props = new Properties();
+                is = zipFile.getInputStream(zipEntry);
+                props.load(is);
+                
+                String propValue = props.getProperty(LIBRARY_PATH_PROP);
+                if (propValue != null) {
+                    String[] result = removeEmptyStrings(propValue.split(","));
+                    if (result.length > 0) {
+                        for (int i = 0; i < result.length; i++) {
+                            result[i] = result[i].trim();
+                        }
+                        
+                        return result;
+                    }
+                }
+            }
+            
+            return null;
+        } catch (IOException ex) {
+            return null;
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                }catch (IOException ex) {
+                }
+            }
+        }
+    }
+    
+    private static String[] removeEmptyStrings(String[] arg) {
+        ArrayList<String> strings = new ArrayList<String>();
+        for (String component : arg) {
+            if (component != null && component.length() > 0) {
+                strings.add(component);
+            }
+        }
+        
+        return strings.toArray(new String[strings.size()]);
     }
     
     private static final class LibraryData {
