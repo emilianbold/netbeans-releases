@@ -29,7 +29,7 @@
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/rome-0.6.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/rome-0.6.jar</binary-origin>
+                <binary-origin>../../external/rome-0.6.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

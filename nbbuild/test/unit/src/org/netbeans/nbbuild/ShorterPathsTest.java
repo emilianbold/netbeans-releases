@@ -100,8 +100,8 @@ public class ShorterPathsTest extends NbTestCase {
       FileInputStream propsIs = new FileInputStream(testProperties);
       props.load(propsIs);
       propsIs.close();
-      assertEquals("extra.test.libs.dir","${extra.test.libs}/extlib.jar",props.getProperty("extra.test.libs.dir"));
-      assertEquals("test.unit.run.cp","${nb.root.test.dir}/module.jar",props.getProperty("test.unit.run.cp"));
+      assertEquals("extra.test.libs.dir","${extra.test.libs.dir}/extlib.jar",props.getProperty("extra.test.libs"));
+      assertEquals("test.unit.run.cp","${nb.root.test.dir}/module.jar",props.getProperty("test.run.cp"));
       assertEquals("test-unit-sys-prop.prop1","value1",props.getProperty("test-unit-sys-prop.prop1"));
       assertEquals("test-unit-sys-prop.prop2","${nb.root.test.dir}/module.jar",props.getProperty("test-unit-sys-prop.prop2"));
       assertNull(props.getProperty("test-unit-sys-prop.xtest.data"));       
