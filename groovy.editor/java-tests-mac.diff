@@ -1,0 +1,59 @@
+diff -r 3e08b13a84e1 nbbuild/templates/common.xml
+--- a/nbbuild/templates/common.xml	Mon Jun 30 17:41:45 2008 +0200
++++ b/nbbuild/templates/common.xml	Tue Jul 01 13:12:31 2008 +0200
+@@ -442,6 +442,13 @@
+                    debug="true" deprecation="${build.compiler.deprecation}" encoding="UTF-8"
+                    source="${javac.source}" target="${javac.target}" optimize="${build.compiler.optimize}" includeantruntime="false">
+                 <classpath refid="test.@{test.type}.cp"/>
++            <bootclasspath>
++                <pathelement path="${nb_all}/libs.javacapi/external/javac-api-nb-7.0-b07.jar"/>
++                <pathelement path="${nb_all}/libs.javacimpl/external/javac-impl-nb-7.0-b07.jar"/>
++                <pathelement path="/System/Library/Frameworks/JavaVM.framework/Classes/classes.jar"/>
++                <pathelement path="/System/Library/Frameworks/JavaVM.framework/Classes/laf.jar"/>
++                <pathelement path="/System/Library/Frameworks/JavaVM.framework/Classes/ui.jar"/>
++            </bootclasspath>
+                 <compilerarg line="${javac.compilerargs}"/>
+             </javac>
+             <copy todir="${build.test.@{test.type}.classes.dir}">
+@@ -505,6 +512,13 @@
+                        debug="true" deprecation="${build.compiler.deprecation}" encoding="UTF-8"
+                        source="${javac.source}" target="${javac.target}" includeantruntime="false" optimize="${build.compiler.optimize}" includes="${javac.includes}">
+                     <classpath refid="test.@{test.type}.cp"/>
++            <bootclasspath>
++                <pathelement path="${nb_all}/libs.javacapi/external/javac-api-nb-7.0-b07.jar"/>
++                <pathelement path="${nb_all}/libs.javacimpl/external/javac-impl-nb-7.0-b07.jar"/>
++                <pathelement path="/System/Library/Frameworks/JavaVM.framework/Classes/classes.jar"/>
++                <pathelement path="/System/Library/Frameworks/JavaVM.framework/Classes/laf.jar"/>
++                <pathelement path="/System/Library/Frameworks/JavaVM.framework/Classes/ui.jar"/>
++            </bootclasspath>
+                     <compilerarg line="${javac.compilerargs}"/>
+                 </javac>
+                 <copy todir="${build.test.@{test.type}.classes.dir}">
+@@ -544,6 +558,13 @@
+                     <fileset dir="${build.test.@{test.type}.classes.dir}" includes="${test.includes}" excludes="${test.excludes}"/>
+                 </batchtest>
+                 <classpath refid="test.@{test.type}.run.cp"/>
++            <bootclasspath>
++                <pathelement path="${nb_all}/libs.javacapi/external/javac-api-nb-7.0-b07.jar"/>
++                <pathelement path="${nb_all}/libs.javacimpl/external/javac-impl-nb-7.0-b07.jar"/>
++                <pathelement path="/System/Library/Frameworks/JavaVM.framework/Classes/classes.jar"/>
++                <pathelement path="/System/Library/Frameworks/JavaVM.framework/Classes/laf.jar"/>
++                <pathelement path="/System/Library/Frameworks/JavaVM.framework/Classes/ui.jar"/>
++            </bootclasspath>
+                 <syspropertyset refid="test.@{test.type}.properties"/>
+                 <jvmarg line="${test.run.args}"/>
+                 <formatter type="brief" usefile="false"/>
+@@ -571,6 +592,13 @@
+                         <fileset dir="${test.@{test.type}.src.dir}" includes="${test.includes}"/>
+                     </batchtest>
+                     <classpath refid="test.@{test.type}.run.cp"/>
++            <bootclasspath>
++                <pathelement path="${nb_all}/libs.javacapi/external/javac-api-nb-7.0-b07.jar"/>
++                <pathelement path="${nb_all}/libs.javacimpl/external/javac-impl-nb-7.0-b07.jar"/>
++                <pathelement path="/System/Library/Frameworks/JavaVM.framework/Classes/classes.jar"/>
++                <pathelement path="/System/Library/Frameworks/JavaVM.framework/Classes/laf.jar"/>
++                <pathelement path="/System/Library/Frameworks/JavaVM.framework/Classes/ui.jar"/>
++            </bootclasspath>
+                     <syspropertyset refid="test.@{test.type}.properties"/>
+                     <jvmarg line="${test.run.args}"/>
+                     <formatter type="brief" usefile="false"/>
