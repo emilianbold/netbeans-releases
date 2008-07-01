@@ -57,18 +57,13 @@ import org.netbeans.modules.vmd.midp.components.general.ClassCD;
  */
 public class ContactsDataSetCD extends ComponentDescriptor {
 
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/dataset_16.gif"; // NOI18N
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.databinding.pim.ContactDataSet"); //NOI18N
     
     public static final String PROP_NAMES = "names"; 
 
-    static {
-        MidpTypes.registerIconResource(TYPEID, ICON_PATH);
-    }
-
     @Override
     public TypeDescriptor getTypeDescriptor() {
-        return new TypeDescriptor(IndexableDataSetCD.TYPEID, TYPEID, true, true);
+        return new TypeDescriptor(IndexableDataAbstractSetCD.TYPEID, TYPEID, true, true);
     }
 
     @Override

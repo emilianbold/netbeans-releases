@@ -150,13 +150,7 @@ public class TextFieldCD extends ComponentDescriptor {
                 // code
                 createSetterPresenter(),
                 // screen
-                new TextFieldDisplayPresenter(),
-                //delete
-                new DeletePresenter() {
-                    protected void delete() {
-                        getComponent().getDocument().deleteComponents(MidpDatabindingSupport.getAllRelatedConnectors(getComponent()));
-                    }
-                });
+                new TextFieldDisplayPresenter());
     }
 
     public static class TextFieldConstraintsParameter extends MidpParameter {
