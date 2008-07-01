@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.remote.compilers;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSetProvider;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.remote.support.RemoteScriptSupport;
 import org.netbeans.modules.cnd.remote.support.managers.CompilerSetScriptManager;
 
@@ -47,14 +48,28 @@ import org.netbeans.modules.cnd.remote.support.managers.CompilerSetScriptManager
  *
  * @author gordonp
  */
-public class RemoteCompilerSetProvider implements CompilerSetProvider {
+public class RemoteCompilerSetProvider implements CompilerSetProvider, PlatformTypes {
     
-    private RemoteScriptSupport support;
     private CompilerSetScriptManager manager;
     
     public void init(String name) {
         manager = new CompilerSetScriptManager();
-        support = new RemoteScriptSupport(name, manager);
+        new RemoteScriptSupport(name, manager);
+    }
+    
+    public int getPlatform() {
+        String platform = manager.getPlatform();
+        if (platform.startsWith("Windows")) {
+            return PLATFORM_WINDOWS;
+        } else if (platform.startsWith("Linux")) {
+            return PLATFORM_LINUX;
+        } else if (platform.startsWith("SunOS")) {
+            return platform.contains("86") ? PLATFORM_SOLARIS_INTEL : PLATFORM_SOLARIS_SPARC;
+        } else if (platform.toLowerCase().startsWith("mac")) {
+            return PLATFORM_MACOSX;
+        } else {
+            return PLATFORM_GENERIC;
+        }
     }
 
     public boolean hasMoreCompilerSets() {
