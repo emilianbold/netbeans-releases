@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.jumpto.symbol;
 
+import java.awt.Insets;
 import java.util.regex.Pattern;
 import org.netbeans.modules.jumpto.type.Models;
 import org.netbeans.modules.jumpto.type.UiOptions;
@@ -53,6 +54,8 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -69,6 +72,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.ListCellRenderer;
@@ -475,6 +479,7 @@ public class GoToSymbolAction extends AbstractAction implements GoToPanel.Conten
          
         private MyPanel rendererComponent;
         private JLabel jlName = new JLabel();
+        private JLabel jlOwner = new JLabel();
         private JLabel jlPrj = new JLabel();
         private int DARKER_COLOR_COMPONENT = 5;
         private int LIGHTER_COLOR_COMPONENT = 80;        
@@ -498,9 +503,38 @@ public class GoToSymbolAction extends AbstractAction implements GoToPanel.Conten
             }
             
             rendererComponent = new MyPanel();
-            rendererComponent.setLayout(new BorderLayout());
-            rendererComponent.add( jlName, BorderLayout.CENTER);
-            rendererComponent.add( jlPrj, BorderLayout.EAST );
+            rendererComponent.setLayout(new GridBagLayout());
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 0;
+            c.gridy = 0;
+            c.gridwidth = 1;
+            c.gridheight = 1;
+            c.fill = GridBagConstraints.NONE;
+            c.weightx = 0;            
+            c.anchor = GridBagConstraints.WEST;
+            c.insets = new Insets (0,0,0,7);
+            rendererComponent.add( jlName, c);
+            
+            c = new GridBagConstraints();
+            c.gridx = 1;
+            c.gridy = 0;
+            c.gridwidth = 1;
+            c.gridheight = 1;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.weightx = 0.1;            
+            c.anchor = GridBagConstraints.WEST;
+            c.insets = new Insets (0,0,0,7);
+            rendererComponent.add( jlOwner, c);
+            
+            c = new GridBagConstraints();
+            c.gridx = 2;
+            c.gridy = 0;
+            c.gridwidth = 1;
+            c.gridheight = 1;
+            c.fill = GridBagConstraints.NONE;
+            c.weightx = 0;            
+            c.anchor = GridBagConstraints.EAST;
+            rendererComponent.add( jlPrj, c);
             
             
             jlName.setOpaque(false);
@@ -548,41 +582,29 @@ public class GoToSymbolAction extends AbstractAction implements GoToPanel.Conten
             
             Dimension size = new Dimension( width, height );
             rendererComponent.setMaximumSize(size);
-            rendererComponent.setPreferredSize(size);
-                        
-            Color c, sc;
+            rendererComponent.setPreferredSize(size);                        
+                                    
             if ( isSelected ) {
-                c = sc = fgSelectionColor;
+                jlName.setForeground(fgSelectionColor);
+                jlOwner.setForeground(fgSelectionColor);
+                jlPrj.setForeground(fgSelectionColor);
                 rendererComponent.setBackground(bgSelectionColor);
             }
             else {
-                c = fgColor;
-                sc = fgColorLighter;
+                jlName.setForeground(fgColor);
+                jlOwner.setForeground(fgColorLighter);
+                jlPrj.setForeground(fgColor);
                 rendererComponent.setBackground( index % 2 == 0 ? bgColor : bgColorDarker );
             }
             
             if ( value instanceof SymbolDescriptor ) {
                 long time = System.currentTimeMillis();
                 SymbolDescriptor td = (SymbolDescriptor)value;                
-                jlName.setIcon(td.getIcon());
-                String val;
-                try {
-                    val = String.format("<html><FONT COLOR=\"#%02x%02x%02x\">%s</FONT> <FONT COLOR=\"#%02x%02x%02x\">%s</FONT>",    //NOI18N
-                            c.getRed(),
-                            c.getGreen(),
-                            c.getBlue(),
-                            XMLUtil.toElementContent(td.getSymbolName()),
-                            sc.getRed(),
-                            sc.getGreen(),
-                            sc.getBlue(),
-                            XMLUtil.toElementContent(td.getOwnerName()));
-                } catch (CharConversionException e) {
-                    val = td.getSymbolName() + " " + td.getOwnerName(); //NOI18N
-                }
-                jlName.setText(val);
+                jlName.setIcon(td.getIcon());                
+                jlName.setText(td.getSymbolName());
+                jlOwner.setText(NbBundle.getMessage(GoToSymbolAction.class, "MSG_DeclaredIn",td.getOwnerName()));
                 jlPrj.setText(td.getProjectName());
                 jlPrj.setIcon(td.getProjectIcon());
-                jlPrj.setForeground(c);
 		rendererComponent.setDescriptor(td);
                 FileObject fo = td.getFileObject();
                 if (fo != null) {
@@ -592,7 +614,6 @@ public class GoToSymbolAction extends AbstractAction implements GoToPanel.Conten
             }
             else {
                 jlName.setText( value.toString() );
-                jlName.setForeground(c);
             }
             
             return rendererComponent;
