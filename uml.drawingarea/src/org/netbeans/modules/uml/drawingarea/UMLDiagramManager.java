@@ -656,7 +656,7 @@ public class UMLDiagramManager
 //      }
 //      return retDia;
 //   }
-    
+
     public IDiagram doNewDiagramDialog(INamespace pNamespace,
             int defaultKind,
             int selectableKinds)
