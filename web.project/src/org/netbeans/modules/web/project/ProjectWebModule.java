@@ -358,7 +358,9 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
     
     public Iterator getArchiveContents () throws java.io.IOException {
-        return new IT (getContentDirectory ());
+        FileObject content = getContentDirectory();
+        content.refresh();
+        return new IT(content);
     }
 
     public FileObject getContentDirectory() {

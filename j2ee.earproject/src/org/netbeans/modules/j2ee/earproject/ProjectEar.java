@@ -191,7 +191,9 @@ public final class ProjectEar extends J2eeApplicationProvider
      * contain module archives.
      */
     public Iterator getArchiveContents () throws IOException {
-        return new IT (this, getContentDirectory ());
+        FileObject content = getContentDirectory();
+        content.refresh();
+        return new IT(this, content);
     }
 
     public FileObject getContentDirectory() {
