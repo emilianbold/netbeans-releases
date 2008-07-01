@@ -33,7 +33,7 @@ import org.netbeans.modules.vmd.midp.components.categories.CommandsCategoryCD;
 import org.netbeans.modules.vmd.midp.components.categories.DatabindingCategoryCD;
 import org.netbeans.modules.vmd.midp.components.databinding.DataSetAbstractCD;
 import org.netbeans.modules.vmd.midp.components.databinding.DataSetConnectorCD;
-import org.netbeans.modules.vmd.midp.components.databinding.IndexableDataSetCD;
+import org.netbeans.modules.vmd.midp.components.databinding.IndexableDataAbstractSetCD;
 import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSupport;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 
@@ -447,7 +447,7 @@ public class DatabindingElementUI extends javax.swing.JPanel {
     
     private String createDataSetName(String name, DesignComponent c) {
         DescriptorRegistry registry = c.getDocument().getDescriptorRegistry();
-        if (registry.isInHierarchy(IndexableDataSetCD.TYPEID, c.getType())) {
+        if (registry.isInHierarchy(IndexableDataAbstractSetCD.TYPEID, c.getType())) {
             name = name + " " + INDEXABLE; //NOI18N
         } else if (registry.isInHierarchy(DataSetAbstractCD.TYPEID, c.getType())) {
             name = name + " " + DATASET; //NOI18N
