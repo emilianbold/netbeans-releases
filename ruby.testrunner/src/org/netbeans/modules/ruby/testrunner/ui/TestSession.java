@@ -54,6 +54,12 @@ public class TestSession {
         TEST,
         DEBUG
     }
+    /**
+     * Counter for failures/errors.
+     */
+    private long failuresCount = 0;
+    
+    
     private final List<Report.Testcase> testCases = new ArrayList<Report.Testcase>();
     private String suiteName;
     private final FileLocator fileLocator;
@@ -118,6 +124,10 @@ public class TestSession {
 
     SessionType getSessionType() {
         return sessionType;
+    }
+
+    synchronized long incrementFailuresCount() {
+        return ++failuresCount;
     }
 
 }
