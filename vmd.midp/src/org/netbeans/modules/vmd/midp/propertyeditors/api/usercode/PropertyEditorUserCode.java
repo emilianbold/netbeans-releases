@@ -108,7 +108,15 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
     protected void initElements(Collection<PropertyEditorElement> elements) {
         customEditor.init(elements);
     }
-    
+
+    /**
+     * This method should be invoked from subclass to init elements. Develpers can controll position of 
+     * the Elements by seting index as a Integer value in the elements map. 
+     */
+    protected void initElements(Map<PropertyEditorElement, Integer> elements) {
+        customEditor.init(elements);
+    }
+
     /**
      * It returns radio buttom added to PropertyEditorUserCode
      * @return null if radio burron is not created yet
@@ -116,6 +124,7 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
     protected JRadioButton getUserCodeRadioButton() {
         return userCodeRadioButton;
     }
+
     /**
      * <b>WARNING - while override, you have to call super.init() method too.</b>
      */
@@ -252,18 +261,18 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
 
         if (os.indexOf("mac") != -1) { //NOI18N
             undoKeys = new KeyStroke[]{KeyStroke.getKeyStroke(KeyEvent.VK_UNDO, 0),
-                KeyStroke.getKeyStroke(KeyEvent.VK_Z, Event.META_MASK)
-            };
+                        KeyStroke.getKeyStroke(KeyEvent.VK_Z, Event.META_MASK)
+                    };
             redoKeys = new KeyStroke[]{KeyStroke.getKeyStroke(KeyEvent.VK_AGAIN, 0),
-                KeyStroke.getKeyStroke(KeyEvent.VK_Y, Event.META_MASK)
-            };
+                        KeyStroke.getKeyStroke(KeyEvent.VK_Y, Event.META_MASK)
+                    };
         } else {
             undoKeys = new KeyStroke[]{KeyStroke.getKeyStroke(KeyEvent.VK_UNDO, 0),
-                KeyStroke.getKeyStroke(KeyEvent.VK_Z, 130)
-            };
+                        KeyStroke.getKeyStroke(KeyEvent.VK_Z, 130)
+                    };
             redoKeys = new KeyStroke[]{KeyStroke.getKeyStroke(KeyEvent.VK_AGAIN, 0),
-                KeyStroke.getKeyStroke(KeyEvent.VK_Y, 130)
-            };
+                        KeyStroke.getKeyStroke(KeyEvent.VK_Y, 130)
+                    };
         }
 
         Keymap keymap = editor.getKeymap();
@@ -289,10 +298,17 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
     private final class CustomEditor extends JPanel implements DocumentListener, ActionListener, FocusListener {
 
         private Collection<PropertyEditorElement> elements;
+        private Map<PropertyEditorElement, Integer> elementsMap;
         private JEditorPane userCodeEditorPane;
 
         public void init(Collection<PropertyEditorElement> elements) {
             this.elements = elements;
+            initComponents();
+        }
+
+        public void init(Map<PropertyEditorElement, Integer> elementsMap) {
+            this.elementsMap = elementsMap;
+            this.elements = elementsMap.keySet();
             initComponents();
         }
 
@@ -302,26 +318,28 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
             GridBagConstraints constraints = new GridBagConstraints();
             boolean isAnyElementVerticallyResizable = false;
             for (PropertyEditorElement element : elements) {
-                JRadioButton rb = element.getRadioButton();
-                buttonGroup.add(rb);
-                constraints.insets = new Insets(12, 12, 6, 12);
-                constraints.anchor = GridBagConstraints.NORTHWEST;
-                constraints.gridx = GridBagConstraints.REMAINDER;
-                constraints.gridy = GridBagConstraints.RELATIVE;
-                constraints.weightx = 1.0;
-                constraints.weighty = 0.0;
-                constraints.fill = GridBagConstraints.HORIZONTAL;
-                add(rb, constraints);
+                if (elementsMap == null || elementsMap != null && elementsMap.get(element) == null) {
+                    JRadioButton rb = element.getRadioButton();
+                    buttonGroup.add(rb);
+                    constraints.insets = new Insets(12, 12, 6, 12);
+                    constraints.anchor = GridBagConstraints.NORTHWEST;
+                    constraints.gridx = GridBagConstraints.REMAINDER;
+                    constraints.gridy = GridBagConstraints.RELATIVE;
+                    constraints.weightx = 1.0;
+                    constraints.weighty = 0.0;
+                    constraints.fill = GridBagConstraints.HORIZONTAL;
+                    add(rb, constraints);
 
-                constraints.insets = new Insets(0, 32, 12, 12);
-                constraints.anchor = GridBagConstraints.NORTHWEST;
-                constraints.gridx = GridBagConstraints.REMAINDER;
-                constraints.gridy = GridBagConstraints.RELATIVE;
-                constraints.weightx = 1.0;
-                constraints.weighty = element.isVerticallyResizable() ? 1.0 : 0.0;
-                constraints.fill = element.isVerticallyResizable() ? GridBagConstraints.BOTH : GridBagConstraints.HORIZONTAL;
-                add(element.getCustomEditorComponent(), constraints);
+                    constraints.insets = new Insets(0, 32, 12, 12);
+                    constraints.anchor = GridBagConstraints.NORTHWEST;
+                    constraints.gridx = GridBagConstraints.REMAINDER;
+                    constraints.gridy = GridBagConstraints.RELATIVE;
+                    constraints.weightx = 1.0;
+                    constraints.weighty = element.isVerticallyResizable() ? 1.0 : 0.0;
+                    constraints.fill = element.isVerticallyResizable() ? GridBagConstraints.BOTH : GridBagConstraints.HORIZONTAL;
 
+                    add(element.getCustomEditorComponent(), constraints);
+                }
                 if (element.isVerticallyResizable()) {
                     isAnyElementVerticallyResizable = true;
                 }
@@ -369,6 +387,34 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
             constraints.weighty = isAnyElementVerticallyResizable ? 0.0 : 1.0;
             constraints.fill = isAnyElementVerticallyResizable ? GridBagConstraints.HORIZONTAL : GridBagConstraints.BOTH;
             add(jsp, constraints);
+
+            for (PropertyEditorElement element : elements) {
+                if (elementsMap != null && elementsMap.get(element) != null) {
+                    JRadioButton rb = element.getRadioButton();
+                    buttonGroup.add(rb);
+                    constraints.insets = new Insets(12, 12, 6, 12);
+                    constraints.anchor = GridBagConstraints.NORTHWEST;
+                    constraints.gridx = GridBagConstraints.REMAINDER;
+                    constraints.gridy = GridBagConstraints.RELATIVE;
+                    constraints.weightx = 1.0;
+                    constraints.weighty = 0.0;
+                    constraints.fill = GridBagConstraints.HORIZONTAL;
+                    add(rb, constraints);
+
+                    constraints.insets = new Insets(0, 32, 12, 12);
+                    constraints.anchor = GridBagConstraints.NORTHWEST;
+                    constraints.gridx = GridBagConstraints.REMAINDER;
+                    constraints.gridy = GridBagConstraints.RELATIVE;
+                    constraints.weightx = 1.0;
+                    constraints.weighty = element.isVerticallyResizable() ? 1.0 : 0.0;
+                    constraints.fill = element.isVerticallyResizable() ? GridBagConstraints.BOTH : GridBagConstraints.HORIZONTAL;
+                    add(element.getCustomEditorComponent(), constraints);
+                }
+                if (element.isVerticallyResizable()) {
+                    isAnyElementVerticallyResizable = true;
+                }
+            }
+
 
             constraints.insets = new Insets(0, 12, 0, 12);
             constraints.anchor = GridBagConstraints.NORTHWEST;
@@ -488,7 +534,6 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
         }
 
         public void focusLost(FocusEvent e) {
-
         }
     }
 }

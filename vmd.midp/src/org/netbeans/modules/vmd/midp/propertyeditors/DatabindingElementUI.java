@@ -46,7 +46,7 @@ public class DatabindingElementUI extends javax.swing.JPanel {
     private static String NULL = "<null>"; //TODO Localized
     private DesignPropertyEditor propertyEditor;
     private JRadioButton radioButton;
-    private static String INDEXABLE =  "[IndexableDataSet]"; //NOI18N
+    private static String INDEXABLE = "[IndexableDataSet]"; //NOI18N
     private static String DATASET = "[DataSet]"; //NOI18N
 
     /** Creates new form DataSetDatabindingElement */
@@ -88,7 +88,6 @@ public class DatabindingElementUI extends javax.swing.JPanel {
         updateNextPreviousCommands();
 
     }
-    
 
     private boolean updateWarning() {
 
@@ -118,13 +117,13 @@ public class DatabindingElementUI extends javax.swing.JPanel {
             jTextFieldExpression.setEnabled(false);
         }
     }
-    
+
     private void updateNextPreviousCommands() {
         String name = (String) jComboBoxDatasets.getSelectedItem();
         if (name != null && name.contains(INDEXABLE)) {
             jComboBoxCommandsIndexablePrevious.setEnabled(true);
             jComboBoxIndexableNext.setEnabled(true);
-        } else if (name != null && name.contains(DATASET)){
+        } else if (name != null && name.contains(DATASET)) {
             jComboBoxCommandsIndexablePrevious.setEnabled(false);
             jComboBoxCommandsIndexablePrevious.setSelectedItem(NULL);
             jComboBoxIndexableNext.setEnabled(false);
@@ -325,14 +324,13 @@ public class DatabindingElementUI extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     public void updateComponent(final DesignComponent component) {
-        component.getDocument().getTransactionManager().readAccess(new Runnable() {
+        if (component == null)
+            return;
+        final DesignDocument document = component.getDocument();
+        document.getTransactionManager().readAccess(new Runnable() {
 
             public void run() {
-                final DesignDocument document = component.getDocument();
-
-                if (document == null) {
-                    return;
-                }
+                
                 jComboBoxDatasets.setModel(new Model(component, DatabindingCategoryCD.TYPEID));
                 jComboBoxCommandUpdate.setModel(new Model(component, CommandsCategoryCD.TYPEID));
                 jComboBoxCommandsIndexablePrevious.setModel(new Model(component, CommandsCategoryCD.TYPEID));
@@ -376,15 +374,19 @@ public class DatabindingElementUI extends javax.swing.JPanel {
         document.getTransactionManager().writeAccess(new Runnable() {
 
             public void run() {
-                DesignComponent connector = MidpDatabindingSupport.getConnector(component, propertyEditor.getPropertyNames().get(0));
+                
                 String selectedDataSet = cleanUpDataSetName((String) jComboBoxDatasets.getSelectedItem());
                 String selectedUpdateCommand = (String) jComboBoxCommandUpdate.getSelectedItem();
                 String selectedNextCommand = (String) jComboBoxIndexableNext.getSelectedItem();
                 String selectedPreviousCommand = (String) jComboBoxCommandsIndexablePrevious.getSelectedItem();
                 Collection<DesignComponent> dataSets = MidpDocumentSupport.getCategoryComponent(document, DatabindingCategoryCD.TYPEID).getComponents();
-               
+                removeUnusedConnector(component);
                 for (DesignComponent dataSet : dataSets) {
                     if (dataSet.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue().equals(selectedDataSet)) {
+                        DesignComponent connector = MidpDatabindingSupport.getConnector(component, propertyEditor.getPropertyNames().get(0));
+                        if (!dataSet.getComponents().contains(connector)) {
+                            connector = null;
+                        }
                         if (connector == null) {
                             connector = document.createComponent(DataSetConnectorCD.TYPEID);
                             connector.writeProperty(DataSetConnectorCD.PROP_BINDED_PROPERTY, MidpTypes.createStringValue(propertyEditor.getPropertyNames().get(0)));
@@ -400,6 +402,7 @@ public class DatabindingElementUI extends javax.swing.JPanel {
                         break;
                     }
                 }
+                
             }
         });
     }
@@ -417,6 +420,19 @@ public class DatabindingElementUI extends javax.swing.JPanel {
     }
 
     public void resetValuesInModel(final DesignComponent component) {
+        removeUnusedConnector(component);
+        jComboBoxCommandUpdate.setSelectedItem(NULL);
+        jComboBoxDatasets.setSelectedItem(NULL);
+        jComboBoxCommandsIndexablePrevious.setSelectedItem(NULL);
+        jComboBoxIndexableNext.setSelectedItem(NULL);
+        jTextFieldExpression.setText(null);
+        jTextFieldExpression.setEnabled(false);
+        jLabelPreview.setText(null);
+        updateWarning();
+        updateNextPreviousCommands();
+    }
+    
+    private void removeUnusedConnector(final DesignComponent component) {
         final DesignDocument document = component.getDocument();
         document.getTransactionManager().writeAccess(new Runnable() {
 
@@ -427,15 +443,6 @@ public class DatabindingElementUI extends javax.swing.JPanel {
                 }
             }
         });
-        jComboBoxCommandUpdate.setSelectedItem(NULL);
-        jComboBoxDatasets.setSelectedItem(NULL);
-        jComboBoxCommandsIndexablePrevious.setSelectedItem(NULL);
-        jComboBoxIndexableNext.setSelectedItem(NULL);
-        jTextFieldExpression.setText(null);
-        jTextFieldExpression.setEnabled(false);
-        jLabelPreview.setText(null);
-        updateWarning();
-        updateNextPreviousCommands();
     }
     
     private String createDataSetName(String name, DesignComponent c) {
