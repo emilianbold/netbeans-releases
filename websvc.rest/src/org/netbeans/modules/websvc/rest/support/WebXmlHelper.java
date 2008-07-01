@@ -76,6 +76,8 @@ public class WebXmlHelper {
     private static final String PERSISTENCE_UNIT_REF_TAG = "persistence-unit-ref";      //NOI18N
     private static final String PERSISTENCE_UNIT_REF_NAME_TAG = "persistence-unit-ref-name";        //NOI18N
     private static final String PERSISTENCE_UNIT_NAME_TAG = "persistence-unit-name";    //NOI18N
+    private static final String PERSISTENCE_CONTEXT_REF_TAG = "persistence-context-ref";      //NOI18N
+    private static final String PERSISTENCE_CONTEXT_REF_NAME_TAG = "persistence-context-ref-name";        //NOI18N
    
     private static int TIME_TO_WAIT = 300;
     
@@ -98,6 +100,35 @@ public class WebXmlHelper {
    
             Element refElement = document.createElement(PERSISTENCE_UNIT_REF_TAG);
             Element refNameElement = createElement(document, PERSISTENCE_UNIT_REF_NAME_TAG, refName);
+            Element puNameElement = createElement(document, PERSISTENCE_UNIT_NAME_TAG, puName);
+            
+            refElement.appendChild(refNameElement);
+            refElement.appendChild(puNameElement);    
+            document.getDocumentElement().appendChild(refElement);
+                
+            writeDocument(fobj, document);
+        }
+    }
+    
+      public static void addPersistenceContextRef(Project project, String puName) {
+        FileObject fobj = getWebXml(project);
+        
+        if (fobj != null) {
+            Document document = getDocument(fobj);          
+            String refName = PERSISTENCE_UNIT_REF_PREFIX + puName;          
+            NodeList nodeList = document.getElementsByTagName(PERSISTENCE_CONTEXT_REF_NAME_TAG);
+            int len = nodeList.getLength();
+        
+            for (int i = 0; i < len; i++) {
+                Element element =  (Element) nodeList.item(i);
+          
+                if (containsValue(element, refName)) {
+                    return;
+                }
+            }
+   
+            Element refElement = document.createElement(PERSISTENCE_CONTEXT_REF_TAG);
+            Element refNameElement = createElement(document, PERSISTENCE_CONTEXT_REF_NAME_TAG, refName);
             Element puNameElement = createElement(document, PERSISTENCE_UNIT_NAME_TAG, puName);
             
             refElement.appendChild(refNameElement);
