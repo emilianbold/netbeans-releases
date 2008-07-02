@@ -242,6 +242,7 @@ public class TaskProcessor {
      * Does nothing if the task was not yet executed.
      * @param task to reschedule
      * @param source to which the task it bound
+     * todo: wrong!!!!!!!
      */
     public static void rescheduleTasks(final Collection<SchedulerTask> tasks, final Source source, final Class<TaskScheduler> schedulerType) {
         Parameters.notNull("task", tasks);
@@ -353,27 +354,30 @@ public class TaskProcessor {
     //Private methods
     private static void handleAddRequests (final List<Request> requests) {
         assert requests != null;
+        if (requests.isEmpty()) {
+            return;
+        }
         final SourceCache src = requests.get (0).cache;
         if (src != null) {
             SourceAccessor.getINSTANCE().assignListeners(src.getSnapshot ().getSource ());
         }
         //Issue #102073 - removed running task which is readded is not performed
+        int priority = Integer.MAX_VALUE;
         synchronized (INTERNAL_LOCK) {
             for (Request request : requests) {
                 toRemove.remove(request.task);
-                TaskProcessor.requests.add (request);
+                priority = Math.min(priority, request.task.getPriority());
             }
+            TaskProcessor.requests.addAll (requests);
 //            System.out.println("TP: handleAddRequest " + requests);
-        }
-        for (Request r : requests) {
-            Request request = currentRequest.getTaskToCancel(r.task.getPriority());
-            try {
-                if (request != null) {
-                    request.task.cancel();
-                }
-            } finally {
-                currentRequest.cancelCompleted(request);
+        }        
+        Request request = currentRequest.getTaskToCancel(priority);
+        try {
+            if (request != null) {
+                request.task.cancel();
             }
+        } finally {
+            currentRequest.cancelCompleted(request);
         }
     }
     
@@ -493,7 +497,7 @@ public class TaskProcessor {
                                             boolean changeExpected = SourceAccessor.getINSTANCE().getFlags(source).contains(SourceFlags.CHANGE_EXPECTED);
                                             if (changeExpected) {
                                                 //Skeep the task, another invalidation is comming
-                                                Collection<Request> rc = waitingRequests.get (r.cache);
+                                                Collection<Request> rc = waitingRequests.get (r.cache.getSnapshot().getSource());
                                                 if (rc == null) {
                                                     rc = new LinkedList<Request> ();
                                                     waitingRequests.put (r.cache.getSnapshot ().getSource (), rc);
@@ -505,56 +509,14 @@ public class TaskProcessor {
                                     }
                                     
                                     parserLock.lock();                                    
-                                    try {
-//                                        if (r.task instanceof EmbeddingProvider) {
-//                                            System.out.println("TP: EmbeddingProvider " + sourceCache.getSnapshot().getMimeType () + " (" + r.task.getPriority () + ")");
-//                                        } else
-//                                        if (r.task instanceof ParserResultTask) {
-//                                            System.out.println("TP: ParserResultTask " + sourceCache.getSnapshot().getMimeType () + " (" + r.task.getPriority () + ")");
-//                                        } else
-//                                            System.out.println("TP: ??? " + sourceCache.getSnapshot().getMimeType () + " (" + r.task.getPriority () + ")");
-                                         
+                                    try {                                         
                                         if (r.task instanceof EmbeddingProvider) {
                                             sourceCache.refresh ((EmbeddingProvider) r.task, r.schedulerType);
                                         }
                                         else {
                                             SchedulerEvent event = SourceAccessor.getINSTANCE().getEvent (source);
                                             final Parser.Result currentResult = sourceCache.getResult (r.task, event);
-//                                            final Parser parser = sourceCache.getParser ();//ParserManagerImpl.getParser(source);
-//                                            Parser.Result currentResult = null;
-//                                            SchedulerEvent event = SourceAccessor.getINSTANCE().getEvent (source);
-//                                            if (parser != null) {
-//                                                boolean invalid;
-//                                                synchronized (source) {
-//                                                    final Set<SourceFlags> flags = SourceAccessor.getINSTANCE().getFlags(source);
-//                                                    invalid = flags.remove(SourceFlags.INVALID);    //Optimistic update
-//                                                }                                            
-//                                                if (!invalid) {
-//                                                    currentResult = parser.getResult(r.task, event);
-//                                                }                                        
-//                                                else {
-//                                                    boolean parseSuccess = false;
-//                                                    try {
-//                                                        parser.parse(sourceCache.getSnapshot (), r.task, event);
-//                                                        currentResult = parser.getResult(r.task, event);
-//                                                        parseSuccess = true;
-//                                                    } finally {
-//                                                        if (invalid && !parseSuccess) {
-//                                                            synchronized (source ) {
-//                                                                final Set<SourceFlags> flags = SourceAccessor.getINSTANCE().getFlags(source);
-//                                                                flags.add(SourceFlags.INVALID); //Rollback of optimistic update
-//                                                            }
-//                                                        }
-//                                                    }                                                
-//                                                }                                            
-//                                            }
-                                            boolean shouldCall = currentResult != null;
-//                                            //tzezula: Ideally the parserLock should be aquired here, but it will call parse outside critical section
-//                                            if (shouldCall) { 
-//                                                synchronized (source) {
-//                                                    shouldCall &= !SourceAccessor.getINSTANCE().getFlags(source).contains(SourceFlags.INVALID);
-//                                                }
-//                                            }
+                                            boolean shouldCall = currentResult != null && sourceCache.isValid();
                                             if (shouldCall) {
                                                 try {
                                                     final long startTime = System.currentTimeMillis();
@@ -565,19 +527,6 @@ public class TaskProcessor {
                                                             ParserAccessor.getINSTANCE().invalidate(currentResult);
                                                         }
                                                     }
-//                                                    else
-//                                                    if (r.task instanceof ParserBasedEmbeddingProvider) {
-//                                                        try {
-//                                                            List<Embedding> embeddings = ((ParserBasedEmbeddingProvider)r.task).getEmbeddings (currentResult,source.createSnapshot());
-//                                                            Schedulers.schedule (
-//                                                                r.task.getSchedulerClass (), 
-//                                                                embeddings, 
-//                                                                SourceAccessor.getINSTANCE ().getEvent (source)
-//                                                            );
-//                                                        } finally {
-//                                                            ParserAccessor.getINSTANCE().invalidate(currentResult);
-//                                                        }
-//                                                    }
                                                     else {
                                                         assert false : "Unknown task type: " + r.task.getClass();   //NOI18N
                                                     }

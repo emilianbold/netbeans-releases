@@ -128,8 +128,8 @@ public class SourceCache {
     private boolean         parsed = false;
     
     public Result getResult (
-        Task                task,
-        SchedulerEvent      event
+        final Task                task,
+        final SchedulerEvent      event
     ) throws ParseException {
         assert TaskProcessor.holdsParserLock();
         Parser parser = getParser ();
@@ -137,11 +137,19 @@ public class SourceCache {
         boolean _parsed;
         synchronized (this) {
             _parsed = this.parsed;
+            this.parsed = true; //Optimizstic update
         }
-        if (!_parsed) {            
-            parser.parse (getSnapshot (), task, event);
-            synchronized (this) {
-                parsed = true;
+        if (!_parsed) {
+            boolean parseSuccess = false;
+            try {
+                parser.parse (getSnapshot (), task, event);
+                parseSuccess = true;
+            } finally {
+                if (!parseSuccess) {
+                    synchronized (this) {
+                        parsed = false;
+                    }
+                }
             }
         }
         return parser.getResult (task, null);
