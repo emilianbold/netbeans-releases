@@ -235,7 +235,7 @@ public abstract class JSAbstractDebugger implements JSDebugger {
     
     protected void fireJSDebuggerEvent(JSDebuggerEvent debuggerEvent) {
 
-        Logger.getLogger(this.getClass().getName()).info("****** HTTP MESSAGE RECEIVED AND TRIGGERED ********");
+        //Logger.getLogger(this.getClass().getName()).info("****** HTTP MESSAGE RECEIVED AND TRIGGERED ********");
         for (JSDebuggerEventListener listener : listeners) {
             listener.onDebuggerEvent(debuggerEvent);
         }
