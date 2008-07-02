@@ -76,11 +76,6 @@ public class LookupSensitiveActionTest extends NbTestCase {
         d4 = DataObject.find(f4);
     }
     
-    protected void tearDown() throws Exception {
-        clearWorkDir();
-        super.tearDown();
-    }
-    
     public boolean runInEQ () {
         return true;
     }
