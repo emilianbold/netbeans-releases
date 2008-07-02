@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.uml.drawingarea.widgets;
 
+import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.datatransfer.Transferable;
@@ -96,8 +97,14 @@ public class ContainerWidget extends Widget
         setLayout(LayoutFactory.createAbsoluteLayout());
         
         initActions();
+        //all should be as for scene initially
+        DesignerScene sc=(DesignerScene) scene;
+        setForeground(sc.getMainLayer().getForeground());
+        setBackground(sc.getMainLayer().getBackground());
+        setFont(sc.getMainLayer().getFont());
+        //need to add font/colors listener to scene to get updates, but currently inheritance from scene
     }
-    
+
     public INamespace getContainerNamespace()
     {
         INamespace retVal=null;
