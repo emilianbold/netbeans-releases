@@ -197,7 +197,7 @@ private void addLibraryJButtonActionPerformed(java.awt.event.ActionEvent evt) {/
         for (Library library : addedLibraries) {
             boolean addLibrary = true;
             if (!JSLibraryProjectUtils.isLibraryFolderEmpty(project, library)) {
-                Object result = JSLibraryProjectUtils.displayFolderOverwriteDialog();
+                Object result = JSLibraryProjectUtils.displayLibraryOverwriteDialog(library);
                 addLibrary = (result == NotifyDescriptor.YES_OPTION);
             }
 
