@@ -48,7 +48,6 @@ import org.netbeans.modules.bpel.mapper.cast.CastManager;
 import org.netbeans.modules.bpel.mapper.cast.PseudoCompManager;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
@@ -57,6 +56,7 @@ import org.netbeans.modules.bpel.model.ext.editor.api.Editor;
 import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComp;
 import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComps;
 import org.netbeans.modules.bpel.model.ext.editor.api.Source;
+import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
 
 /**
  * Process special BPEL extensions like <editor>, <cast>, <pseudoComp>
@@ -248,7 +248,7 @@ public class EditorExtensionProcessor {
             treeModel = mModel.getRightTreeModel();
         }
         //
-        MapperTreeModel sourceModel = treeModel.getSourceModel();
+        SoaTreeModel sourceModel = treeModel.getSourceModel();
         //
         if (forLeftTree) {
             mLeftCastManager = CastManager.getCastManager(sourceModel);

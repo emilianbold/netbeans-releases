@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.bpel.mapper.cast;
 
-import org.netbeans.modules.bpel.mapper.tree.search.SimpleFinder;
+import org.netbeans.modules.soa.ui.tree.impl.SimpleFinder;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 

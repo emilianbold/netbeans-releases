@@ -204,7 +204,7 @@ class AppFrameworkSupport {
         }
 
         if (searched) { // possibly update project and cache
-            if (storedInProject) {
+            if (appClassName != null) { // valid app class found - make sure it is stored in project
                 org.w3c.dom.Document xml = XMLUtil.createDocument(SWINGAPP_ELEMENT, SWINGAPP_NS, null, null);
                 appEl = xml.createElementNS(SWINGAPP_NS, SWINGAPP_ELEMENT);
                 if (appClassName != null) {
@@ -213,6 +213,15 @@ class AppFrameworkSupport {
                     appEl.appendChild(clsEl);
                 }
                 ac.putConfigurationFragment(appEl, true);
+                storedInProject = true;
+                try {
+                    ProjectManager.getDefault().saveProject(project);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            } else if (storedInProject) { // app class disappeared
+                ac.removeConfigurationFragment(SWINGAPP_ELEMENT, SWINGAPP_NS, true);
+                storedInProject = false;
                 try {
                     ProjectManager.getDefault().saveProject(project);
                 } catch (IOException ex) {

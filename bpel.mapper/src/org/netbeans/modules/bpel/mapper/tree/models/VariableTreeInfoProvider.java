@@ -21,16 +21,14 @@ package org.netbeans.modules.bpel.mapper.tree.models;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.tree.TreePath;
-import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.editors.api.Constants.VariableStereotype;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemInfoProvider;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.mapper.cast.AbstractPseudoComp;
@@ -50,33 +48,24 @@ import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.Variable;
-import org.netbeans.modules.bpel.mapper.tree.images.NodeIcons;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
-import org.netbeans.modules.bpel.model.api.PartnerLink;
-import org.netbeans.modules.bpel.model.api.PartnerLinkContainer;
+import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
+import org.netbeans.modules.bpel.mapper.model.MapperTreeContext;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableDeclarationScope;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.xml.schema.model.AnyAttribute;
 import org.netbeans.modules.xml.schema.model.AnyElement;
-import org.netbeans.modules.xml.schema.model.Attribute;
-import org.netbeans.modules.xml.schema.model.Attribute.Use;
-import org.netbeans.modules.xml.schema.model.Element;
-import org.netbeans.modules.xml.schema.model.ElementReference;
-import org.netbeans.modules.xml.schema.model.GlobalAttribute;
-import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
-import org.netbeans.modules.xml.schema.model.LocalAttribute;
-import org.netbeans.modules.xml.schema.model.LocalElement;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Part;
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.xpath.ext.StepNodeTestType;
 import org.netbeans.modules.xml.xpath.ext.XPathUtils;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.bpel.model.api.support.Roles;
+import org.netbeans.modules.soa.ui.schema.SchemaIcons;
 import org.netbeans.modules.soa.ui.schema.SchemaTreeInfoProvider;
+import org.netbeans.modules.soa.ui.tree.TreeItemActionsProvider;
+import org.netbeans.modules.soa.ui.tree.TreeItemInfoProvider;
 import org.netbeans.modules.xml.schema.model.Any;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
@@ -87,7 +76,8 @@ import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
  * @author nk160297
  * @author AlexanderPermyakov
  */
-public class VariableTreeInfoProvider implements TreeItemInfoProvider {
+public class VariableTreeInfoProvider 
+        implements TreeItemInfoProvider, TreeItemActionsProvider {
     
     private static VariableTreeInfoProvider singleton = new VariableTreeInfoProvider();
     
@@ -95,74 +85,73 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
         return singleton;
     }
 
-    public String getDisplayName(Object treeItem) {
-        if (treeItem instanceof Process) {
+    public String getDisplayName(TreeItem treeItem) {
+        Object dataObj = treeItem.getDataObject();
+        return getDisplayByDataObj(dataObj);
+    }
+
+    private String getDisplayByDataObj(Object dataObj) {
+        if (dataObj instanceof SchemaComponent) {
+            return SchemaTreeInfoProvider.getInstance().getDisplayByDataObj(dataObj);
+        }
+        if (dataObj instanceof Process) {
             return NodeType.VARIABLE_CONTAINER.getDisplayName();
         } 
-        if (treeItem instanceof ElementReference) {
-            NamedComponentReference<GlobalElement> elementRef = 
-                    ((ElementReference)treeItem).getRef();
-            QName qName = elementRef.getQName();
-            return qName.getLocalPart();
+        if (dataObj instanceof Named) {
+            return ((Named)dataObj).getName();
         }
-        if (treeItem instanceof Named) {
-            return ((Named)treeItem).getName();
+        if (dataObj instanceof AbstractPredicate) {
+            return ((AbstractPredicate)dataObj).getDisplayName();
         }
-        if (treeItem instanceof AbstractPredicate) {
-            return ((AbstractPredicate)treeItem).getDisplayName();
-        }
-        if (treeItem instanceof BpelEntity) {
-            if (treeItem instanceof Variable) {
-                return ((Variable)treeItem).getVariableName();
+        if (dataObj instanceof BpelEntity) {
+            if (dataObj instanceof Variable) {
+                return ((Variable)dataObj).getVariableName();
             }
             //
             Class<? extends BpelEntity> bpelInterface = 
-                    ((BpelEntity)treeItem).getElementType();
+                    ((BpelEntity)dataObj).getElementType();
             NodeType nodeType = EditorUtil.getBasicNodeType(bpelInterface);
             if (nodeType != null && nodeType != NodeType.UNKNOWN_TYPE) {
                 return nodeType.getDisplayName();
             }
         }
-        if (treeItem instanceof AbstractVariableDeclaration) {
-            return ((AbstractVariableDeclaration)treeItem).getVariableName();
+        if (dataObj instanceof AbstractVariableDeclaration) {
+            return ((AbstractVariableDeclaration)dataObj).getVariableName();
         }
         //
-        if (treeItem instanceof AbstractTypeCast) {
-            Object castableObject = ((AbstractTypeCast)treeItem).getCastedObject();
-            GlobalType gType = ((AbstractTypeCast)treeItem).getType();
-            return "(" + gType.getName() + ")" + getDisplayName(castableObject);
+        if (dataObj instanceof AbstractTypeCast) {
+            Object castableObject = ((AbstractTypeCast)dataObj).getCastedObject();
+            GlobalType gType = ((AbstractTypeCast)dataObj).getType();
+            return "(" + gType.getName() + ")" + getDisplayByDataObj(castableObject);
         }
         //
-        if (treeItem instanceof XPathPseudoComp) {
-            return AbstractPseudoComp.getDisplayName((XPathPseudoComp)treeItem);
-        }
-        //
-        if (treeItem instanceof AnyElement) {
-            return AbstractPseudoComp.ANY_ELEMENT;
-        }
-        //
-        if (treeItem instanceof AnyAttribute) {
-            return AbstractPseudoComp.ANY_ATTRIBUTE;
+        if (dataObj instanceof XPathPseudoComp) {
+            return AbstractPseudoComp.getDisplayName((XPathPseudoComp)dataObj);
         }
         //
         return null;
     }
 
-    public Icon getIcon(Object treeItem) {
-        if (treeItem instanceof BpelEntity) {
-            if (treeItem instanceof Variable) {
-                Variable var = (Variable)treeItem;
+    public Icon getIcon(TreeItem treeItem) {
+        Object dataObj = treeItem.getDataObject();
+        return getIconByDataObj(dataObj);
+    }    
+        
+    private Icon getIconByDataObj(Object dataObj) {
+        if (dataObj instanceof BpelEntity) {
+            if (dataObj instanceof Variable) {
+                Variable var = (Variable)dataObj;
                 VariableStereotype vst = EditorUtil.getVariableStereotype(var);
                 Image img = NodeType.VARIABLE.getImage(vst);
                 return new ImageIcon(img);
             }
             //
-            if (treeItem instanceof Process) {
+            if (dataObj instanceof Process) {
                 return NodeType.VARIABLE_CONTAINER.getIcon();
             }
             //
             Class<? extends BpelEntity> bpelInterface = 
-                    ((BpelEntity)treeItem).getElementType();
+                    ((BpelEntity)dataObj).getElementType();
             NodeType nodeType = EditorUtil.getBasicNodeType(bpelInterface);
             if (nodeType != null && nodeType != NodeType.UNKNOWN_TYPE) {
                 Icon icon = nodeType.getIcon();
@@ -172,193 +161,96 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
             }
         }
         //
-        if (treeItem instanceof AbstractVariableDeclaration) {
-            AbstractVariableDeclaration var = (AbstractVariableDeclaration)treeItem;
+        if (dataObj instanceof AbstractVariableDeclaration) {
+            AbstractVariableDeclaration var = (AbstractVariableDeclaration)dataObj;
             VariableStereotype vst = EditorUtil.getVariableStereotype(var);
             Image img = NodeType.VARIABLE.getImage(vst);
             return new ImageIcon(img);
         }
         //
-        if (treeItem instanceof SchemaComponent) {
-            if (treeItem instanceof Element) {
-                Element element = (Element)treeItem;
-                boolean isOptional = false;
-                boolean isRepeating = false;
-                String maxOccoursStr = null;
-                if (element instanceof GlobalElement) {
-                    return NodeIcons.ELEMENT.getIcon();
-                } else if (element instanceof LocalElement) {
-                    LocalElement lElement = (LocalElement)element;
-                    isOptional = lElement.getMinOccursEffective() < 1;
-                    //
-                    maxOccoursStr = lElement.getMaxOccursEffective();
-                } else if (element instanceof ElementReference) {
-                    ElementReference elementRef = (ElementReference)element;
-                    isOptional = elementRef.getMinOccursEffective() < 1;  
-                    //
-                    maxOccoursStr = elementRef.getMaxOccursEffective();
-                }
-                //
-                if (maxOccoursStr != null) {
-                    try {
-                        int maxOccoursInt = Integer.parseInt(maxOccoursStr);
-                        isRepeating = maxOccoursInt > 1;  
-                    } catch (NumberFormatException ex) {
-                        // Do Nothing
-                        isRepeating = true;
-                    }
-                }
-                //
-                if (isOptional) {
-                    if (isRepeating) {
-                        return NodeIcons.ELEMENT_OPTIONAL_REPEATING.getIcon();
-                    } else {
-                        return NodeIcons.ELEMENT_OPTIONAL.getIcon();
-                    }
-                } else {
-                    if (isRepeating) {
-                        return NodeIcons.ELEMENT_REPEATING.getIcon();
-                    } else {
-                        return NodeIcons.ELEMENT.getIcon();
-                    }
-                }
-            } 
-            //
-            if (treeItem instanceof Attribute) {
-                 Attribute attribute = (Attribute)treeItem;
-                if (attribute instanceof LocalAttribute) {
-                    Use use = ((LocalAttribute)attribute).getUseEffective();
-                    if (use == Use.OPTIONAL) {
-                        return NodeIcons.ATTRIBUTE_OPTIONAL.getIcon();
-                    } else {
-                        return NodeIcons.ATTRIBUTE.getIcon();
-                    }
-                } else {
-                    return NodeIcons.ATTRIBUTE.getIcon();
-                }
-            } 
-            //
-            if (treeItem instanceof GlobalType) {
-                return NodeIcons.UNKNOWN_IMAGE;
-            } 
-            //
-            if (treeItem instanceof AnyElement) {
-                AnyElement anyElement = (AnyElement)treeItem;
-                boolean isOptional = anyElement.getMinOccursEffective() < 1;
-                String maxOccoursStr = anyElement.getMaxOccursEffective();
-                //
-                boolean isRepeating = false;
-                //
-                if (maxOccoursStr != null) {
-                    try {
-                        int maxOccoursInt = Integer.parseInt(maxOccoursStr);
-                        isRepeating = maxOccoursInt > 1;  
-                    } catch (NumberFormatException ex) {
-                        // Do Nothing
-                        isRepeating = true;
-        } 
-                }
-        //
-                if (isOptional) {
-                    if (isRepeating) {
-                        return NodeIcons.ELEMENT_OPTIONAL_REPEATING.getIcon();
-                    } else {
-                        return NodeIcons.ELEMENT_OPTIONAL.getIcon();
-                    }
-                } else {
-                    if (isRepeating) {
-                        return NodeIcons.ELEMENT_REPEATING.getIcon();
-                    } else {
-                        return NodeIcons.ELEMENT.getIcon();
-                    }
-                }
-            }
-            //
-            if (treeItem instanceof AnyAttribute) {
-                // The Any Attribute doesn't have multiplisity parameters
-                return NodeIcons.ATTRIBUTE.getIcon();
-            }
+        if (dataObj instanceof SchemaComponent) {
+            return SchemaTreeInfoProvider.getInstance().getIconByDataObj(dataObj);
         } 
         //
-        if (treeItem instanceof Part) {
+        if (dataObj instanceof Part) {
             return NodeType.MESSAGE_PART.getIcon();
         }
         //
-        if (treeItem instanceof AbstractPredicate) {
+        if (dataObj instanceof AbstractPredicate) {
             SchemaCompHolder sCompHolder = 
-                    ((AbstractPredicate)treeItem).getSCompHolder();
-            return getIcon(sCompHolder.getHeldComponent());
+                    ((AbstractPredicate)dataObj).getSCompHolder();
+            return getIconByDataObj(sCompHolder.getHeldComponent());
         }
         //
-        if (treeItem instanceof AbstractTypeCast) {
-            Object castableObject = ((AbstractTypeCast)treeItem).getCastedObject();
-            return getIcon(castableObject);
+        if (dataObj instanceof AbstractTypeCast) {
+            Object castableObject = ((AbstractTypeCast)dataObj).getCastedObject();
+            return getIconByDataObj(castableObject);
         }
         //
-        if (treeItem instanceof XPathPseudoComp) {
-            XPathPseudoComp pseudo = (XPathPseudoComp)treeItem;
+        if (dataObj instanceof XPathPseudoComp) {
+            XPathPseudoComp pseudo = (XPathPseudoComp)dataObj;
             if (pseudo.isAttribute()) {
-                return NodeIcons.ATTRIBUTE.getIcon();
+                return SchemaIcons.ATTRIBUTE.getIcon();
             } else {
-                return NodeIcons.ELEMENT_OPTIONAL.getIcon();
+                return SchemaIcons.ELEMENT_OPTIONAL.getIcon();
             }
         }
         //
         return null;
     }
 
-    private void populateActionsList(Object treeItem, List<Action> result, 
+    private void populateActionsList(Object dataObj, List<Action> result, 
             MapperTcContext mapperTcContext, 
             boolean inLeftTree, TreePath treePath, 
-            Iterable<Object> dataObjectPathItrb) {
+            TreeItem treeItem) {
         //
         boolean isProcessed = false;
-        if (treeItem instanceof SchemaComponent) {
-            if (!(treeItem instanceof Any)) {
+        if (dataObj instanceof SchemaComponent) {
+            if (!(dataObj instanceof Any)) {
                 //
-                // if (BpelMapperUtils.isRepeating((SchemaComponent)treeItem)) {
+                // if (BpelMapperUtils.isRepeating((SchemaComponent)dataObj)) {
                 Action action = new AddPredicateAction(
-                        mapperTcContext, inLeftTree, treePath, dataObjectPathItrb);
+                        mapperTcContext, inLeftTree, treePath, treeItem);
                 result.add(action);
                 //
                 // Only for components which have any children!
-                boolean notLeaf = XPathUtils.hasSubcomponents((SchemaComponent)treeItem);
+                boolean notLeaf = XPathUtils.hasSubcomponents((SchemaComponent)dataObj);
                 if (notLeaf) {
                     addSpecialStepActions(result, mapperTcContext, inLeftTree, 
-                            treePath, dataObjectPathItrb);
+                            treePath, treeItem);
                 }
             }
             isProcessed = true;
-        } else if (treeItem instanceof AbstractPredicate) {
+        } else if (dataObj instanceof AbstractPredicate) {
             Action action = new EditPredicateAction(
-                    mapperTcContext, inLeftTree, treePath, dataObjectPathItrb);
+                    mapperTcContext, inLeftTree, treePath, treeItem);
             result.add(action);
             //
             action = new DeletePredicateAction(
-                    mapperTcContext, inLeftTree, treePath, dataObjectPathItrb);
+                    mapperTcContext, inLeftTree, treePath, treeItem);
             result.add(action);
             isProcessed = true;
-        } else if (treeItem instanceof AbstractTypeCast) {
+        } else if (dataObj instanceof AbstractTypeCast) {
             Action action = new DeleteCastAction(
-                    mapperTcContext, inLeftTree, treePath, dataObjectPathItrb);
+                    mapperTcContext, inLeftTree, treePath, treeItem);
             result.add(action);
             //
-            Object castableObject = ((AbstractTypeCast)treeItem).getCastedObject();
+            Object castableObject = ((AbstractTypeCast)dataObj).getCastedObject();
             populateActionsList(castableObject, result, 
                     mapperTcContext, inLeftTree, treePath, 
-                    dataObjectPathItrb);
+                    treeItem);
 
             
             isProcessed = true;
-        } else if (treeItem instanceof AbstractPseudoComp) {
+        } else if (dataObj instanceof AbstractPseudoComp) {
             Action action = new DeletePseudoCompAction(
-                    mapperTcContext, inLeftTree, treePath, dataObjectPathItrb);
+                    mapperTcContext, inLeftTree, treePath, treeItem);
             result.add(action);
             //
-            GlobalType pseudoType = ((AbstractPseudoComp)treeItem).getType();
+            GlobalType pseudoType = ((AbstractPseudoComp)dataObj).getType();
             populateActionsList(pseudoType, result, 
                     mapperTcContext, inLeftTree, treePath, 
-                    dataObjectPathItrb);
+                    treeItem);
 
             
             isProcessed = true;
@@ -367,16 +259,16 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
         if (!isProcessed) {
             // If the tree item is a variable or a part then use its schema type!
             SchemaComponent sComp = null;
-            if (treeItem instanceof VariableDeclarationScope) {
+            if (dataObj instanceof VariableDeclarationScope) {
                 // nothing to add
-            } else if (treeItem instanceof VariableDeclarationWrapper) {
+            } else if (dataObj instanceof VariableDeclarationWrapper) {
                 VariableDeclaration varDecl = 
-                        ((VariableDeclarationWrapper)treeItem).getDelegate();
+                        ((VariableDeclarationWrapper)dataObj).getDelegate();
                 sComp = EditorUtil.getVariableSchemaType(varDecl);
-            } else if (treeItem instanceof VariableDeclaration) {
-                sComp = EditorUtil.getVariableSchemaType((VariableDeclaration)treeItem);
-            } else if (treeItem instanceof Part) {
-                Part part = (Part)treeItem;
+            } else if (dataObj instanceof VariableDeclaration) {
+                sComp = EditorUtil.getVariableSchemaType((VariableDeclaration)dataObj);
+            } else if (dataObj instanceof Part) {
+                Part part = (Part)dataObj;
                 sComp = EditorUtil.getPartType(part);
             } 
             if (sComp != null) {
@@ -385,55 +277,58 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
                 boolean notLeaf = XPathUtils.hasSubcomponents((SchemaComponent)sComp);
                 if (notLeaf) {
                     addSpecialStepActions(result, mapperTcContext, inLeftTree, 
-                            treePath, dataObjectPathItrb);
+                            treePath, treeItem);
                 }
             } 
         }
     }
     
-    public List<Action> getMenuActions(MapperTcContext mapperTcContext, 
-            boolean inLeftTree, TreePath treePath, 
-            Iterable<Object> dataObjectPathItrb) {
+    public List<Action> getMenuActions(TreeItem treeItem, 
+            Object context, TreePath treePath) {
         //
-        Object treeItem = dataObjectPathItrb.iterator().next();
+        Object dataObj = treeItem.getDataObject();
         //
+        assert context instanceof MapperTreeContext;
+        MapperTreeContext mapperContext = (MapperTreeContext)context;
+        MapperTcContext mapperTcContext = mapperContext.getMapperTcContext();
+        boolean inLeftTree = mapperContext.inLeftTree();
         Mapper mapper = mapperTcContext.getMapper();
-        BpelDesignContext context = mapperTcContext.
+        BpelDesignContext designContext = mapperTcContext.
                 getDesignContextController().getContext();
-        if (mapper == null || context == null) {
+        if (mapper == null || designContext == null) {
             return Collections.EMPTY_LIST;
         }
         //
         List<Action> result = new ArrayList<Action>();
         //
-        if (!(treeItem instanceof LocationStep || 
-                treeItem instanceof AbstractPredicate || 
-                treeItem instanceof AbstractTypeCast || 
-                treeItem instanceof AbstractPseudoComp)) {
-            GlobalType gType = BpelMapperUtils.getGlobalType(treeItem);
+        if (!(dataObj instanceof LocationStep || 
+                dataObj instanceof AbstractPredicate || 
+                dataObj instanceof AbstractTypeCast || 
+                dataObj instanceof AbstractPseudoComp)) {
+            GlobalType gType = BpelMapperUtils.getGlobalType(dataObj);
             if (gType != null) {
                 Action action = new AddCastAction(gType, mapperTcContext, 
-                        inLeftTree, treePath, dataObjectPathItrb);
+                        inLeftTree, treePath, treeItem);
                 result.add(action);
             }
         }
         //
-        if  (treeItem instanceof AnyElement) {
-            AnyElement anyElement = (AnyElement)treeItem;
+        if  (dataObj instanceof AnyElement) {
+            AnyElement anyElement = (AnyElement)dataObj;
             Action action = new AddPseudoCompAction(anyElement, mapperTcContext, 
-                    inLeftTree, treePath, dataObjectPathItrb);
+                    inLeftTree, treePath, treeItem);
             result.add(action);
         }
         //
-        if  (treeItem instanceof AnyAttribute) {
-            AnyAttribute anyAttr = (AnyAttribute)treeItem;
+        if  (dataObj instanceof AnyAttribute) {
+            AnyAttribute anyAttr = (AnyAttribute)dataObj;
             Action action = new AddPseudoCompAction(anyAttr, mapperTcContext, 
-                    inLeftTree, treePath, dataObjectPathItrb);
+                    inLeftTree, treePath, treeItem);
             result.add(action);
         }
         //
-        populateActionsList(treeItem, result, mapperTcContext, inLeftTree, 
-                treePath, dataObjectPathItrb);
+        populateActionsList(dataObj, result, mapperTcContext, inLeftTree, 
+                treePath, treeItem);
         //
         return result;
 //        if (result.isEmpty()) {
@@ -446,191 +341,103 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
     private void addSpecialStepActions(List<Action> result, 
             MapperTcContext mapperTcContext, 
             boolean inLeftTree, TreePath treePath, 
-            Iterable<Object> dataObjectPathItrb) {
+            TreeItem treeItem) {
         Action action;
         action = new AddSpecialStepAction(StepNodeTestType.NODETYPE_NODE, 
-                mapperTcContext, inLeftTree, treePath, dataObjectPathItrb);
+                mapperTcContext, inLeftTree, treePath, treeItem);
         result.add(action);
         //
         action = new AddSpecialStepAction(StepNodeTestType.NODETYPE_TEXT, 
-                mapperTcContext, inLeftTree, treePath, dataObjectPathItrb);
+                mapperTcContext, inLeftTree, treePath, treeItem);
         result.add(action);
         //
         action = new AddSpecialStepAction(StepNodeTestType.NODETYPE_COMMENT, 
-                mapperTcContext, inLeftTree, treePath, dataObjectPathItrb);
+                mapperTcContext, inLeftTree, treePath, treeItem);
         result.add(action);
         //
         action = new AddSpecialStepAction(StepNodeTestType.NODETYPE_PI, 
-                mapperTcContext, inLeftTree, treePath, dataObjectPathItrb);
+                mapperTcContext, inLeftTree, treePath, treeItem);
         result.add(action);
     }
 
-    public String getToolTipText(Iterable<Object> dataObjectPathItrb) {
-        Iterator itr = dataObjectPathItrb.iterator();
-        Object treeItem = itr.next();
-
-        if (treeItem instanceof PartnerLinkContainer) {
-            String type = ((PartnerLinkContainer) treeItem).getBpelModel().
-                    getProcess().getName();
-            return SchemaTreeInfoProvider.getColorTooltip(
-                    null,"Partner Links", type, null);
-        }
-
-        if (treeItem instanceof PartnerLink) {
-            PartnerLink pLink = (PartnerLink) treeItem;
-            String result;
-            result = "<html> <body> Partner Link ";
-            if (pLink.getName() != null) {
-                result = result + "<b><font color =#7C0000>" + pLink.getName() + 
-                        "</font></b>";
-            }
-            if (pLink.getDocumentation() != null) {
-                result = result + "<hr>" + pLink.getDocumentation();
-            }
-            if (pLink.getMyRole() != null) {
-                result = result + "<hr><p><b><font color =#000099> myRole= </font></b>" 
-                        + pLink.getMyRole().getRefString() + "</p>";
-            }
-            if (pLink.getPartnerRole() != null) {
-                result = result + "<b><font color =#000099> partnerRole= </font></b>" +
-                        pLink.getPartnerRole().getRefString();
-            }
-            result = result + " </body>";
-            return result;
-        }
-
-        if (treeItem instanceof Roles) {
-            Object parent = itr.next();
-            String value = null;
-            String nameSpace = null;
-            
-            if (parent instanceof PartnerLink) {
-                PartnerLink pLink = (PartnerLink) parent;
-                if (Roles.MY_ROLE.equals(treeItem)) {
-                    value = pLink.getMyRole().getRefString();
-                    nameSpace = pLink.getMyRole().getEffectiveNamespace();
-                }
-                if (Roles.PARTNER_ROLE.equals(treeItem)) {
-                    value = pLink.getPartnerRole().getRefString();
-                    nameSpace = pLink.getMyRole().getEffectiveNamespace();
-                }
-            }
-            String result;
-            result ="<html><body><b><font color =#000099>" + 
-                    ((Roles) treeItem).toString() + " = </font></b>";
-            if (value != null) {
-                result = result + value;
-            }
-            if (nameSpace != null && nameSpace.length() > 0) {
-                result = result + "<hr> NameSpace= " +nameSpace;
-            }
-            result = result + "</body>";
-            
-            return result;
-        }
-
-        return getToolTipText(treeItem);
+    public String getToolTipText(TreeItem treeItem) {
+        Object dataObj = treeItem.getDataObject();
+        String name = getDisplayByDataObj(dataObj);
+        return getToolTipTextByDataObj(dataObj, name);
     }
-    
-    private String getToolTipText(Object treeItem) {
-        String name = getDisplayName(treeItem);
-        String nameSpase = null;
-        if (treeItem instanceof SchemaComponent) {
-            nameSpase = ((SchemaComponent) treeItem).getModel().
-                    getEffectiveNamespace((SchemaComponent) treeItem);
+
+    private String getToolTipTextByDataObj(Object dataObj, String name) {
+        String nameSpace = null;
+        if (dataObj instanceof SchemaComponent) {
+            String result = SchemaTreeInfoProvider.getInstance().
+                    getToolTipTextByDataObj(dataObj, name);
+            if (result != null) {
+                return result;
+            }
         }
-
-        String type = null;
-
-        if (treeItem instanceof GlobalElement) {
-            if (((GlobalElement) treeItem).getType() != null) {
-                type = ((GlobalElement) treeItem).getType().getRefString();
+        
+        if (dataObj instanceof Part) {
+            String partLbl = NbBundle.getMessage(
+                    VariableTreeInfoProvider.class, "MESSAGE_PART"); // NOI18N
+            
+            if (((Part) dataObj).getType() != null) {
                 return SchemaTreeInfoProvider.getColorTooltip(
-                        null, name, type, nameSpase);
+                        partLbl, name, ((Part) dataObj).getType().
+                        getRefString(), nameSpace);
+            }
+            if (((Part) dataObj).getElement() != null) {
+                return SchemaTreeInfoProvider.getColorTooltip(
+                        partLbl, name, ((Part) dataObj).
+                        getElement().getRefString(), nameSpace);
             }
         }
 
-        if (treeItem instanceof Part) {
-            if (((Part) treeItem).getType() != null) {
+        if (dataObj instanceof Variable) {
+            if (((Variable) dataObj).getMessageType() != null) {
+                String varLbl = NbBundle.getMessage(
+                        VariableTreeInfoProvider.class, 
+                        "MESSAGE_VARIABLE"); // NOI18N
                 return SchemaTreeInfoProvider.getColorTooltip(
-                        null, name, ((Part) treeItem).getType().
-                        getRefString(), nameSpase);
+                        varLbl, name, ((Variable) dataObj).
+                        getMessageType().getRefString(), nameSpace);
             }
-            if (((Part) treeItem).getElement() != null) {
+            //
+            if (((Variable) dataObj).getType() != null) {
+                String varLbl = NbBundle.getMessage(
+                        VariableTreeInfoProvider.class, 
+                        "TYPE_VARIABLE"); // NOI18N
                 return SchemaTreeInfoProvider.getColorTooltip(
-                        null, name, ((Part) treeItem).
-                        getElement().getRefString(), nameSpase);
+                        varLbl, name, ((Variable) dataObj).
+                        getType().getRefString(), nameSpace);
             }
-        }
-
-        if (treeItem instanceof LocalElement) {
-            if (((LocalElement) treeItem).getType() != null) {
+            //
+            if (((Variable) dataObj).getElementType() != null) {
+                String varLbl = NbBundle.getMessage(
+                        VariableTreeInfoProvider.class, 
+                        "ELEMENT_VARIABLE"); // NOI18N
                 return SchemaTreeInfoProvider.getColorTooltip(
-                        null, name, ((LocalElement) treeItem).
-                        getType().getRefString(), nameSpase);
-            }
-        }
-
-        if (treeItem instanceof LocalAttribute) {
-            if (((LocalAttribute) treeItem).getType() != null) {
-                return SchemaTreeInfoProvider.getColorTooltip(
-                        null, name, ((LocalAttribute) treeItem).
-                        getType().getRefString(), nameSpase);
-            }
-        }
-
-        if (treeItem instanceof GlobalAttribute) {
-            if (((GlobalAttribute) treeItem).getType() != null) {
-                return SchemaTreeInfoProvider.getColorTooltip(
-                        null, name, ((GlobalAttribute) treeItem).
-                        getType().getRefString(), nameSpase);
+                        varLbl, name, ((Variable) dataObj).
+                        getElementType().getName(), nameSpace);
             }
         }
 
-        if (treeItem instanceof GlobalType) {
-            return SchemaTreeInfoProvider.getColorTooltip(null, name, 
-                    ((GlobalType) treeItem).getName(), nameSpase);
-        }
+//        if (dataObj instanceof Process) {
+//            return SchemaTreeInfoProvider.getColorTooltip(
+//                    null, name, ((Process) dataObj).getName(), null);
+//        }
 
-        if (treeItem instanceof Variable) {
-            if (((Variable) treeItem).getMessageType() != null) {
-                return SchemaTreeInfoProvider.getColorTooltip(
-                        null, name, ((Variable) treeItem).
-                        getMessageType().getRefString(), nameSpase);
-            }
-            if (((Variable) treeItem).getType() != null) {
-                return SchemaTreeInfoProvider.getColorTooltip(
-                        null, name, ((Variable) treeItem).
-                        getType().getRefString(), nameSpase);
-            }
-            if (((Variable) treeItem).getElementType() != null) {
-                return SchemaTreeInfoProvider.getColorTooltip(
-                        null, name, ((Variable) treeItem).
-                        getElementType().getName(), nameSpase);
-            }
-        }
-
-        if (treeItem instanceof Any) {
-            return SchemaTreeInfoProvider.getColorTooltip(
-                    name, null, null, nameSpase);
-        }
-
-        if (treeItem instanceof Process) {
-            return SchemaTreeInfoProvider.getColorTooltip(
-                    null, name, ((Process) treeItem).getName(), null);
-        }
-
-        if (treeItem instanceof AbstractTypeCast) {
-            Object castableObject = ((AbstractTypeCast) treeItem).getCastedObject();
-            String baseTooltip = getToolTipText(castableObject);
-            GlobalType gType = ((AbstractTypeCast) treeItem).getType();
+        if (dataObj instanceof AbstractTypeCast) {
+            Object castableObject = ((AbstractTypeCast) dataObj).getCastedObject();
+            String castedObjName = getDisplayByDataObj(castableObject);
+            String baseTooltip = getToolTipTextByDataObj(castableObject, castedObjName);
+            GlobalType gType = ((AbstractTypeCast) dataObj).getType();
             String castedToLbl = NbBundle.getMessage(
                     VariableTreeInfoProvider.class, "CASTED_TO"); // NOI18N
             return baseTooltip + " " + castedToLbl + " " + gType.getName();
         }
         //
-        if (treeItem instanceof AbstractPseudoComp) {
-            AbstractPseudoComp pseudo = (AbstractPseudoComp)treeItem;
+        if (dataObj instanceof AbstractPseudoComp) {
+            AbstractPseudoComp pseudo = (AbstractPseudoComp)dataObj;
             //
             String title = null;
             if (pseudo.isAttribute()) {
@@ -645,13 +452,7 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
             return body;
         }
         //
-        String notNamedTypeLbl = NbBundle.getMessage(
-                VariableTreeInfoProvider.class, "NOT_NAMED_TYPE"); // NOI18N
-
-        return new String("<html><body>" + name +
-                "<b><font color=#7C0000>" + " " + notNamedTypeLbl +
-                "</font></b> <hr> Localy define type, this type does not have name" +
-                "</body>");
+        return null;
     }
-    
+
 }

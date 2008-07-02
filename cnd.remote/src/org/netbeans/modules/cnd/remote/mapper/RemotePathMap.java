@@ -107,6 +107,9 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
                 }
             } else if (key.startsWith("sg155630@")) { // Debug
                 // fill in your debugging pathmaps if you want...
+                if (ch.equals("z:") ) { // Debug
+                    return true; // Debug
+                }
             }
         }
         return false;

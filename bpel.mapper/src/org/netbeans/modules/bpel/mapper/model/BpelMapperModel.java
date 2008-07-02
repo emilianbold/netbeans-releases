@@ -33,7 +33,6 @@ import java.util.Set;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
 import org.netbeans.modules.soa.mappercore.model.GraphSubset;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.soa.mappercore.model.SourcePin;
@@ -46,9 +45,10 @@ import org.netbeans.modules.xml.xpath.ext.metadata.ArgumentDescriptor;
 import org.netbeans.modules.xml.xpath.ext.metadata.ArgumentGroup;
 import org.netbeans.modules.xml.xpath.ext.metadata.XPathType;
 import org.netbeans.modules.bpel.mapper.palette.Palette;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
+import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.utils.Utils;
+import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
 
 /**
  * The default implementation of the MapperModel interface for the BPEL Mapper.
@@ -72,7 +72,7 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
 
     public BpelMapperModel(MapperTcContext mapperTcContext, 
             GraphChangeProcessor changeProcessor, 
-            MapperTreeModel leftModel, MapperTreeModel rightModel) {
+            SoaTreeModel leftModel, SoaTreeModel rightModel) {
         //
         mMapperTcContext = mapperTcContext;
         mChangeProcessor = changeProcessor;
