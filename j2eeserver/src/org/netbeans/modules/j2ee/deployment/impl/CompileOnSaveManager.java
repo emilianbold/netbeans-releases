@@ -59,6 +59,8 @@ public final class CompileOnSaveManager {
 
     private static final Logger LOGGER = Logger.getLogger(CompileOnSaveManager.class.getName());
 
+    private static final int DELAY = 300;
+
     private static CompileOnSaveManager instance;
 
     private final ExecutorService EXECUTOR = Executors.newFixedThreadPool(1);
@@ -98,7 +100,7 @@ public final class CompileOnSaveManager {
 
         public void run() {
             try {
-                Thread.sleep(300);
+                Thread.sleep(DELAY);
             } catch (InterruptedException ex) {
                 LOGGER.log(Level.INFO, null, ex);
                 return;
