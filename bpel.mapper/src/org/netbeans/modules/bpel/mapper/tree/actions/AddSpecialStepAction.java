@@ -23,17 +23,18 @@ import java.awt.event.ActionEvent;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
 import org.netbeans.modules.bpel.mapper.predicates.SpecialStepManager;
-import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
+import org.netbeans.modules.bpel.mapper.model.PathConverter;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
+import org.netbeans.modules.soa.ui.tree.impl.TreeFinderProcessor;
+import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.support.BpelXPathModelFactory;
 import org.netbeans.modules.soa.mappercore.LeftTree;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.xpath.ext.StepNodeTestType;
 import org.netbeans.modules.xml.xpath.ext.StepNodeTypeTest;
@@ -46,7 +47,7 @@ import org.openide.util.NbBundle;
  *
  * @author nk160297
  */
-public class AddSpecialStepAction extends MapperAction<Iterable<Object>> {
+public class AddSpecialStepAction extends MapperAction<TreeItem> {
     
     private static final long serialVersionUID = 1L;
     
@@ -57,8 +58,8 @@ public class AddSpecialStepAction extends MapperAction<Iterable<Object>> {
     public AddSpecialStepAction(StepNodeTestType stepType, 
             MapperTcContext mapperTcContext,
             boolean inLeftTree, TreePath treePath, 
-            Iterable<Object> dataObjectPathItrb) {
-        super(mapperTcContext, dataObjectPathItrb);
+            TreeItem treeItem) {
+        super(mapperTcContext, treeItem);
         mStepType = stepType;
         mTreePath = treePath;
         mInLeftTree = inLeftTree;
@@ -83,10 +84,10 @@ public class AddSpecialStepAction extends MapperAction<Iterable<Object>> {
     }
     
     public void actionPerformed(ActionEvent e) {
-        Iterable<Object> itrb = getActionSubject();
+        TreeItem treeItem = getActionSubject();
         //
         // Construct a new Schema Context by the current element
-        XPathSchemaContext sContext = PathConverter.constructContext(itrb, false);
+        XPathSchemaContext sContext = PathConverter.constructContext(treeItem, false);
         if (sContext == null) {
             return;
         }
@@ -113,13 +114,13 @@ public class AddSpecialStepAction extends MapperAction<Iterable<Object>> {
             treeModel = mapperModel.getRightTreeModel();
         }
         //
-        MapperTreeModel sourceModel = treeModel.getSourceModel();
-        VariableTreeModel varTreeModel = MapperTreeModel.Utils.
+        SoaTreeModel sourceModel = treeModel.getSourceModel();
+        VariableTreeModel varTreeModel = SoaTreeModel.MyUtils.
                 findExtensionModel(sourceModel, VariableTreeModel.class);
         if (varTreeModel != null) {
             SpecialStepManager sStepManager = varTreeModel.getSStepManager();
             if (sStepManager != null) {
-                sStepManager.addStep(itrb, newStep);
+                sStepManager.addStep(treeItem, newStep);
             }
         }
         //

@@ -66,7 +66,7 @@ public class AnnotationsTest extends J2eeTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        if (firstTest){
+        if (firstTest && isRegistered(Server.ANY)){
             openDataProjects(projectName);
             RecurrentSuiteFactory.resolveServer(projectName);
             openAllWebFiles();
@@ -212,11 +212,5 @@ public class AnnotationsTest extends J2eeTestCase {
         assertNotNull(operator.getText());
         assertTrue(operator.getText().length() > 0);
         return operator;
-    }
-
-    public static void main(java.lang.String[] args) {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(AnnotationsTest.class);
-        junit.textui.TestRunner.run(suite);
     }
 }

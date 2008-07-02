@@ -644,7 +644,7 @@ public class Resolver3 implements Resolver {
                 return null;
             }
             CsmClassifier out = ((InheritanceImpl)inh).getClassifier(this);
-            out = CsmBaseUtilities.getOriginalClassifier(out);
+            out = getOriginalClassifier(out);
             if (CsmKindUtilities.isClass(out)) {
                 return (CsmClass) out;
             }

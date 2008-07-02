@@ -68,7 +68,7 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
                          GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0,0,0,0),0,0);
     private Container panel;
     
-    public static RemoteUserInfo getUserInfo(String key) {
+    public static synchronized RemoteUserInfo getUserInfo(String key) {
         if (map == null) {
             map = new HashMap<String, RemoteUserInfo>();
         }
@@ -81,7 +81,9 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         return ui;
     }
 
-    public String getPassword() { return passwd; }
+    public String getPassword() {
+        return passwd;
+    }
 
     public boolean promptYesNo(String str) {
         Object[] options = { "yes", "no" }; // NOI18N
@@ -99,15 +101,19 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         return true; 
     }
 
-    public boolean promptPassword(String message) {
-        Object[] ob = { passwordField }; 
-        int result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
-
-        if (result == JOptionPane.OK_OPTION) {
-            passwd = passwordField.getText();
+    public synchronized boolean promptPassword(String message) {
+        if (passwd != null && passwd.length() > 0) {
             return true;
-        } else { 
-            return false; 
+        } else {
+            Object[] ob = { passwordField }; 
+            int result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
+
+            if (result == JOptionPane.OK_OPTION) {
+                passwd = passwordField.getText();
+                return true;
+            } else { 
+                return false; 
+            }
         }
     }
 

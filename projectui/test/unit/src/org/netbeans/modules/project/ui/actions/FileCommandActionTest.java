@@ -104,11 +104,6 @@ public class FileCommandActionTest extends NbTestCase {
         
     }
     
-    protected void tearDown() throws Exception {
-        clearWorkDir();
-        super.tearDown();
-    }
-    
     public boolean runInEQ () {
         return true;
     }

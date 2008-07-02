@@ -34,8 +34,7 @@ import org.netbeans.modules.bpel.mapper.tree.models.EmptyTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.PartnerLinkTreeExtModel;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.search.LoggingNodeFinder;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
-import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
+import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 import org.netbeans.modules.bpel.model.api.From;
@@ -47,6 +46,7 @@ import org.netbeans.modules.bpel.model.ext.logging.api.Trace;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.soa.ui.tree.TreeItemFinder;
 
 /**
  * Implementaiton of the MapperModelFactory for the Logging mapper.
