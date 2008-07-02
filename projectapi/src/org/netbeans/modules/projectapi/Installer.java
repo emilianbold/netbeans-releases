@@ -39,72 +39,25 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.sun.ide.j2ee;
+package org.netbeans.modules.projectapi;
 
-import javax.enterprise.deploy.shared.ActionType;
-import javax.enterprise.deploy.shared.CommandType;
-import javax.enterprise.deploy.shared.StateType;
-import javax.enterprise.deploy.spi.status.DeploymentStatus;
+import org.openide.modules.ModuleInstall;
 
-//The tomcat team will split the tomcat module in 2, so that this type of behaviour can be shared
-// between web/app server plugins. This is really a shared utility class.
-//
-
-/** Implementation of DeploymentStatus
- *
- * @@author  Radim Kubacki
+/**
+ * Manages a module's lifecycle. Remember that an installer is optional and
+ * often not needed at all.
  */
-public class Status implements DeploymentStatus {
-    
-    /** Value of action type. */
-    private ActionType at;
-    
-    /** Executed command. */
-    private CommandType ct;
-    
-    /** Status message. */
-    private String msg;
-    
-    /** Current state. */
-    private StateType state;
-    
-    public Status (ActionType at, CommandType ct, String msg, StateType state) {
-        this.at = at;
-        this.ct = ct;
-        this.msg = msg;
-        this.state = state;
+public class Installer extends ModuleInstall {
+
+    @Override
+    public void restored() {
+        //#125582
+        SimpleFileOwnerQueryImplementation.deserialize();
     }
-    
-    public ActionType getAction () {
-        return at;
-    }
-    
-    public CommandType getCommand () {
-        return ct;
-    }
-    
-    public String getMessage () {
-        return msg;
-    }
-    
-    public StateType getState () {
-        return state;
-    }
-    
-    public boolean isCompleted () {
-        return StateType.COMPLETED.equals (state);
-    }
-    
-    public boolean isFailed () {
-        return StateType.FAILED.equals (state);
-    }
-    
-    public boolean isRunning () {
-        return StateType.RUNNING.equals (state);
-    }
-    
-    public String toString () {
-        return "A="+getAction ()+" S="+getState ()+" "+getMessage ();   // NOI18N
+
+    @Override
+    public void close() {
+        //#125582
+        SimpleFileOwnerQueryImplementation.serialize();
     }
 }
-

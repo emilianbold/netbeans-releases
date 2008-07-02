@@ -75,8 +75,8 @@ public abstract class RestTestBase extends WebServicesTestBase {
     //don't try to (un)deploy REST apps on windows!!!
     //see: https://jersey.dev.java.net/issues/show_bug.cgi?id=45
     private static final boolean isWindows = System.getProperty("os.name").toLowerCase().contains("windows"); //NOI18N
-    
-    
+
+
     private static final String HOSTNAME = "localhost"; //NOI18N
     private static final int PORT = resolveServerPort();
     private static final String JDBC_DRIVER = "org.apache.derby.jdbc.ClientDriver"; //NOI18N
@@ -174,7 +174,7 @@ public abstract class RestTestBase extends WebServicesTestBase {
 
     /**
      * Helper method to get RESTful Web Services node
-     * 
+     *
      * @return RESTful Web Services node
      */
     protected Node getRestNode() {
@@ -357,8 +357,8 @@ public abstract class RestTestBase extends WebServicesTestBase {
         if (!isWindows) {
             super.undeployProject(projectName);
         }
-    }    
-    
+    }
+
     private static int resolveServerPort() {
         Integer i = Integer.getInteger("glassfish.server.port"); //NOI18N
         return i != null ? i.intValue() : 8080;

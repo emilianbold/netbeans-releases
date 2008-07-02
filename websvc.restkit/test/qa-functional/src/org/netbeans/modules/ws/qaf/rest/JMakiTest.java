@@ -142,24 +142,4 @@ public class JMakiTest extends CStubsTest {
                     ).enableModules(".*").clusters(".*"));
         }
     }
-    
-//    public static TestSuite suite() {
-//        TestSuite suite = new NbTestSuite();
-//        if (!Boolean.getBoolean("plugins.jmaki.skip")) { //NOI18N
-//            suite.addTest(new JMakiTest("testCreateStubs")); //NOI18N
-//            suite.addTest(new JMakiTest("testFromWADL")); //NOI18N
-//            suite.addTest(new JMakiTest("testCloseProject")); //NOI18N
-//        } else {
-//            suite.addTest(new JMakiTest("testJMakiTestsSkipped"));
-//        }
-//        return suite;
-//    }
-//
-//    /**
-//     * Method allowing test execution directly from the IDE.
-//     */
-//    public static void main(java.lang.String[] args) {
-//        // run whole suite
-//        TestRunner.run(suite());
-//    }
 }

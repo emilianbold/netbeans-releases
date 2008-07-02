@@ -76,7 +76,7 @@ public class RemoteScriptSupport extends RemoteConnectionSupport {
     private void setChannelCommand(String script) {
         try {
             channel = createChannel();
-            ((ChannelExec) channel).setCommand(script);
+            ((ChannelExec) channel).setCommand("chmod 755 " + script + " && " + script); // NOI18N
         } catch (JSchException ex) {
             log.warning(ex.getMessage());
         }
