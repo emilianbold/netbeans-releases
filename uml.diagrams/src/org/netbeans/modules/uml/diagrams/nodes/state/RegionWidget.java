@@ -42,23 +42,16 @@ import java.awt.BasicStroke;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ResizeControlPointResolver;
 import org.netbeans.api.visual.action.ResizeProvider;
 import org.netbeans.api.visual.action.ResizeStrategy;
-import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.WidgetAction;
-import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.layout.LayoutFactory;
-import org.netbeans.api.visual.model.ObjectScene;
-import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
@@ -67,10 +60,8 @@ import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.ITrans
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.diagrams.nodes.CompartmentWidget;
-import org.netbeans.modules.uml.diagrams.nodes.CompositeWidget;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
-import org.netbeans.modules.uml.drawingarea.actions.DiagramPopupMenuProvider;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeReader;
@@ -79,6 +70,7 @@ import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
 
 /**
@@ -157,7 +149,7 @@ public class RegionWidget extends CompartmentWidget implements PropertyChangeLis
             {
                 int width = Math.max(mininumBounds.width + separatorWidget.calculateClientArea().width, suggestedBounds.width + 1);
                 int height = Math.max(mininumBounds.height + separatorWidget.calculateClientArea().height + 1, suggestedBounds.height);
-                
+                                
                 if (getCompositeStateWidget().isHorizontalLayout())
                 {
                     return new Rectangle(suggestedBounds.x, suggestedBounds.y, width, suggestedBounds.height);
@@ -301,7 +293,7 @@ public class RegionWidget extends CompartmentWidget implements PropertyChangeLis
     }
     
     private final ResizeProvider RESIZE_PROVIDER = new ResizeProvider() {
-        public void resizingStarted (Widget widget) {
+        public void resizingStarted (Widget widget) {           
             mininumBounds = calculateMinimumBounds();
         }
         public void resizingFinished (Widget widget) {
