@@ -169,8 +169,8 @@ class ClickableIcon extends JLabel implements MouseListener {
     }
 
     public void mouseEntered(MouseEvent e) {
-        if ((e.getModifiers() & MouseEvent.BUTTON1_DOWN_MASK) != 0) {
-            state = STATE_PRESSED;
+        if ((e.getModifiersEx() & MouseEvent.BUTTON1_DOWN_MASK) != 0) {
+            state = STATE_NORMAL;
         } else {
             state = STATE_FOCUSED;
         }
