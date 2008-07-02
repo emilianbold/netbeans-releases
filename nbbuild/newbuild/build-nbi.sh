@@ -1,4 +1,4 @@
-#!/Bin/bash
+#!/bin/bash
 set -x
 
 DIRNAME=`dirname $0`
