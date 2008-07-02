@@ -105,6 +105,15 @@ public class J2eeTestCaseGlassfishTest extends JellyTestCase {
         assertEquals("testA was running", "AAA", System.getProperty("testA"));
     }
 
+    public void testAddEmptyTestIntoEmptyConfiguration(){
+        Configuration conf = NbModuleSuite.emptyConfiguration();
+        conf = J2eeTestCase.addServerTests(ANY, conf, TD.class);
+        Test t = NbModuleSuite.create(conf);
+        t.run(new TestResult());
+        assertEquals("just one empty test", 1, t.countTestCases());
+        assertNull("testA was not running", System.getProperty("testA"));
+    }
+
     private void setGlassfishHome() throws IOException{
         System.setProperty("glassfish.home", getWorkDirPath());
         new File(getWorkDir(), "domains/domain1").mkdirs();
