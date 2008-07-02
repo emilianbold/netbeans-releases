@@ -95,6 +95,8 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         ProjectFactorySupport.updateSourceRootLabels(model.getEclipseTestSourceRoots(), nbProject.getTestSourceRoots());
         
         ProjectFactorySupport.setupSourceExcludes(helper, model);
+
+        setupCompilerProperties(helper, model);
         
         // Make sure PCPM knows who owns this (J2SEProject will do the same later on anyway):
         if (!nbProjectDir.equals(model.getEclipseProjectFolder())) {
@@ -122,8 +124,6 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         EditableProperties prop = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String ver = model.getJavaPlatform().getSpecification().getVersion().toString();
         String normalizedName = model.getJavaPlatform().getProperties().get("platform.ant.name"); // NOI18N
-        prop.setProperty(J2SEProjectProperties.JAVAC_SOURCE, ver);
-        prop.setProperty(J2SEProjectProperties.JAVAC_TARGET, ver);
         prop.setProperty(J2SEProjectProperties.JAVA_PLATFORM, normalizedName);
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prop);
     }
@@ -144,6 +144,8 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
                 ((J2SEProject)project).getAntProjectHelper(), 
                 ((J2SEProject)project).getReferenceHelper(), model, oldKey, newKey, importProblems);
         
+        setupCompilerProperties(((J2SEProject) project).getAntProjectHelper(), model);
+
         // TODO:
         // update source roots and platform
         
@@ -164,4 +166,23 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
     public boolean prepare() {
         return true;
     }
+
+    private void setupCompilerProperties(AntProjectHelper helper, ProjectImportModel model) {
+        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ep.setProperty(J2SEProjectProperties.JAVAC_SOURCE, model.getSourceLevel());
+        ep.setProperty(J2SEProjectProperties.JAVAC_TARGET, model.getTargetLevel());
+        ep.setProperty(J2SEProjectProperties.JAVAC_DEPRECATION, Boolean.toString(model.isDeprecation()));
+        ep.setProperty(J2SEProjectProperties.JAVAC_COMPILER_ARG, model.getCompilerArgs());
+        String enc = model.getEncoding();
+        if (enc != null) {
+            ep.setProperty(J2SEProjectProperties.SOURCE_ENCODING, enc);
+        } else {
+            ep.remove(J2SEProjectProperties.SOURCE_ENCODING);
+        }
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        ep.setProperty(J2SEProjectProperties.JAVAC_DEBUG, Boolean.toString(model.isDebug()));
+        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+    }
+
 }

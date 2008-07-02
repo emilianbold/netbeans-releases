@@ -126,6 +126,9 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
             itemLabel.setBackground(QuickSearchComboBar.getResultBackground());
             itemLabel.setForeground(list.getForeground());
         }
+        // tell JMenuItem if it's selected or not
+        itemLabel.setArmed(isSelected);
+        itemLabel.setSelected(isSelected);
         ((JComponent) itemLabel).setOpaque(true);
 
         rendererComponent.setOpaque(true);

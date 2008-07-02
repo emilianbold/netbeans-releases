@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.core.ui.quicksearch.web;
+package org.netbeans.modules.quicksearch.web;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -52,9 +52,10 @@ import java.util.regex.Pattern;
  * 
  * @author S. Aubrecht
  */
-class Result {
+final class Result {
 
     private List<Item> items = new ArrayList<Item>(Query.MAX_NUM_OF_RESULTS);
+    private boolean searchFinished = false;
 
     Result() {
     }
@@ -63,7 +64,12 @@ class Result {
         return items;
     }
     
-    void parse( String html ) {
+    public boolean isSearchFinished() {
+        return searchFinished;
+    }
+    
+    void parse( String html, int currentSearchOffset ) {
+        searchFinished = true;
         items.clear();
         try {
             html = new String(html.getBytes(), "UTF-8"); //NOI18N
@@ -76,13 +82,55 @@ class Result {
         while( m.find() ) {
             String url = m.group(1);
             String title = m.group(2);
-            if( url.startsWith("/") ) //NOI18N
+            if( url.startsWith("/") ) {//NOI18N
+                //look for previous/next links
+                int searchOffset = findSearchOffset( url );
+                if( searchOffset > currentSearchOffset )
+                    searchFinished = false;
                 continue; 
-            if( url.contains("google.com") ) //NOI18N
+            }
+            if( url.contains("google.com") ) {//NOI18N
                 continue;
+            }
             title = "<html>" + title; //NOI18N
             Item si = new Item(url, title, null);
             items.add( si );
         }
+    }
+    
+    public void filterUrl( String[] urlPatterns ) {
+        if( null == urlPatterns || urlPatterns.length == 0 )
+            return;
+        List<Item> filteredItems = new ArrayList<Item>(items.size());
+        for( Item item : items ) {
+            for( int i=0; i<urlPatterns.length; i++ ) {
+                if( urlPatterns[i].length() == 0 )
+                    continue;
+                if( item.getUrl().contains( urlPatterns[i] ) ) {
+                    filteredItems.add(item);
+                    break;
+                }
+            }
+        }
+        items = filteredItems;
+    }
+    
+    private int findSearchOffset( String url ) {
+        int startIndex = url.indexOf( "&amp;start=" );  //NOI18N
+        if( startIndex < 0 )
+            return -1;
+        
+        int endIndex = url.indexOf( "&amp;", startIndex+1 );  //NOI18N
+        if( endIndex < 0 )
+            endIndex = url.length();
+        if( endIndex < startIndex )
+            return -1;
+        String offset = url.substring( startIndex, endIndex );
+        try {
+            return Integer.parseInt( offset );
+        } catch( NumberFormatException nfE ) {
+            //ignore
+        }
+        return -1;
     }
 }

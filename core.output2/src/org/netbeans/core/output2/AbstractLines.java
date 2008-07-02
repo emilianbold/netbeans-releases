@@ -296,7 +296,7 @@ abstract class AbstractLines implements Lines, Runnable {
             return Math.max(0, toByteIndex(lastLineLength));
         }
         int lineStart = getByteLineStart(idx);
-        int lineEnd = idx < lineStartList.size() - 1 ? lineStartList.get(idx + 1) : getStorage().size();
+        int lineEnd = idx < lineStartList.size() - 1 ? lineStartList.get(idx + 1) - 2 : getStorage().size();
         return lineEnd - lineStart;
     }
 
@@ -413,7 +413,7 @@ abstract class AbstractLines implements Lines, Runnable {
         int linesAbove = getLogicalLineCountAbove(physLineIdx, charsPerLine);
         
         int len = length(physLineIdx);
-        int wrapCount = len > charsPerLine ? lengthToLineCount(len, charsPerLine) : 1;
+        int wrapCount = lengthToLineCount(len, charsPerLine);
 
         info[0] = physLineIdx;
         info[1] = logicalLineIdx - linesAbove;
@@ -515,7 +515,7 @@ abstract class AbstractLines implements Lines, Runnable {
     }
 
     static int lengthToLineCount(int len, int charsPerLine) {
-        return charsPerLine == 0 ? len : (len + charsPerLine - 1) / charsPerLine;
+        return len > charsPerLine ? (charsPerLine == 0 ? len : (len + charsPerLine - 1) / charsPerLine) : 1;
     }
     
     void markDirty() {
