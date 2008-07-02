@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.client.tools.firefox;
+package org.netbeans.modules.web.client.tools.common.launcher;
 
 import java.io.File;
 import java.io.IOException;
@@ -101,7 +101,7 @@ public class Utils {
                     // This should match the code name base of the module in
                     // which this file lives. The code name base can be found in
                     // nbproject/project.xml
-                    "org.netbeans.modules.web.client.tools.firefox", // NOI18N
+                    "org.netbeans.modules.web.client.tools.common", // NOI18N
                     false));
         }
         return debuggerDotHtmlFileObject;
@@ -114,26 +114,10 @@ public class Utils {
                     // This should match the code name base of the module in
                     // which this file lives. The code name base can be found in
                     // nbproject/project.xml
-                    "org.netbeans.modules.web.client.tools.firefox", // NOI18N
+                    "org.netbeans.modules.web.client.tools.common", // NOI18N
                     false));
         }
         return netbeansDotJpgFileObject;
-    }
-
-    private static final String LAUNCHFIREFOX_DOT_COMMAND = "modules/ext/launchfirefox.command"; // NOI18N
-    private static File launchfirefoxDotCommandFile;
-
-    public static String getLaunchfirefoxDotCommandFilePath() {
-        if (launchfirefoxDotCommandFile == null) {
-            launchfirefoxDotCommandFile = InstalledFileLocator.getDefault().locate(LAUNCHFIREFOX_DOT_COMMAND,
-                // This should match the code name base of the module in
-                // which this file lives. The code name base can be found in
-                // nbproject/project.xml
-                "org.netbeans.modules.web.client.tools.firefox", // NOI18N
-                false);
-        }
-        assert launchfirefoxDotCommandFile != null;
-        return launchfirefoxDotCommandFile.getAbsolutePath();
-    }
+    }   
 
 }
