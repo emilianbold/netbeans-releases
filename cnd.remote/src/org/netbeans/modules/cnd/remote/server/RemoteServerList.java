@@ -42,10 +42,12 @@ package org.netbeans.modules.cnd.remote.server;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.openide.util.ChangeSupport;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -55,6 +57,10 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
     
     public static final String PROP_SET_AS_ACTIVE = "setAsActive"; // NOI18N
     public static final String PROP_DELETE_SERVER = "deleteServer"; // NOI18N
+    
+    private static final String CND_REMOTE = "cnd.remote"; // NOI18N
+    private static final String REMOTE_SERVERS = CND_REMOTE + ".servers"; // NOI18N
+    private static final String ACTIVE_SERVER = CND_REMOTE + ".active"; // NOI18N
     
     private static RemoteServerList instance = null;
     
@@ -68,25 +74,20 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         return instance;
     }
     
-    public RemoteServerList() {
-        if (instance == null) {
-            instance = this;
-        }
+    private RemoteServerList() {
+        String slist = getPreferences().get(REMOTE_SERVERS, null);
+        String active = getPreferences().get(ACTIVE_SERVER, null);
+        
         pcs = new PropertyChangeSupport(this);
         cs = new ChangeSupport(this);
         
-        String extra = System.getProperty("cnd.remote.extra_server");
-        if (extra != null) {
-            add("localhost", false);
-            int pos = extra.indexOf('@');
-            if (pos != -1) {
-                String user = extra.substring(0, pos);
-                String host = extra.substring(pos + 1);
-                add(user, host, true);
-            }
-        } else
-        // creates the "localhost" record and make it active
+        // Creates the "localhost" record and any remote records cached in remote.preferences
         add("localhost", true); // NOI18N
+        if (slist != null) {
+            for (String hkey : slist.split(",")) { // NOI18N
+                add(hkey, active != null && active.equals(hkey));
+            }
+        }
         refresh();
     }
 
@@ -134,22 +135,31 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         add(record);
         addPropertyChangeListener(record);
         refresh();
-    }
-    
-    public void add(String user, String server, boolean active) {
-        RemoteServerRecord record = new RemoteServerRecord(user, server, active);
-        add(record);
-        addPropertyChangeListener(record);
-        if (active) {
-            pcs.firePropertyChange(PROP_SET_AS_ACTIVE, null, record);
-        }
-        refresh();
+        
         // TODO: this should follow toolchain loading
         // SystemIncludesUtils.load(record);
-    }
-    
-    public void add(String user, String server) {
-        add(user, server, false);
+        
+        // Register the new server
+        if (!name.equals("localhost")) {
+            String slist = getPreferences().get(REMOTE_SERVERS, null);
+            if (slist == null) {
+                getPreferences().put(REMOTE_SERVERS, name);
+            } else {
+                boolean do_add = true;
+                for (String server : slist.split(",")) { // NOI18N
+                    if (server.equals(name)) {
+                        do_add = false;
+                        break;
+                    }
+                }
+                if (do_add) {
+                    getPreferences().put(REMOTE_SERVERS, slist + ',' + name);
+                }
+            }
+        }
+        if (active) {
+            getPreferences().put(ACTIVE_SERVER, name);
+        }
     }
 
     public void deleteServer(RemoteServerRecord record) {
@@ -207,5 +217,9 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
     
     public void firePropertyChange(String property, Object n) {
         pcs.firePropertyChange(property, null, n);
+    }
+    
+    private Preferences getPreferences() {
+        return NbPreferences.forModule(RemoteServerList.class);
     }
 }
