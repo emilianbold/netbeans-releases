@@ -82,7 +82,7 @@ made subject to such option by the copyright holder.
         <description>
             <p>
                 In order to align <code>RequestProcessor</code> closer to standard 
-                Java 5 concurency utilities, the class now implements
+                Java 5 concurrency utilities, the class now implements
                 <a href="@JDK@/java/util/concurrent/Executor.html">Executor</a>
                 interfaces and its <code>execute(Runnable)</code> method.
             </p>
