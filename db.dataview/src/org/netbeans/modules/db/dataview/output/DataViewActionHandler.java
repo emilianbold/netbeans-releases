@@ -40,9 +40,10 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
+import java.awt.Component;
+import javax.swing.JOptionPane;
 import org.netbeans.modules.db.dataview.logger.Localizer;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.openide.windows.WindowManager;
 
 /**
  * Handles all the DataView Panel actions.
@@ -71,8 +72,7 @@ class DataViewActionHandler {
             String nbBundle5 = mLoc.t("RESC005: You have uncommited Changes in this page. If you continue, you changes will be lost. Do you still want to continue?");
             String msg = nbBundle5.substring(15);
             String nbBundle6 = mLoc.t("RESC006: Confirm Navigation");
-            NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, nbBundle6.substring(15), NotifyDescriptor.YES_NO_OPTION);
-            if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.NO_OPTION) {
+            if (showYesAllDialog(msg, nbBundle6.substring(15)) == 1) {
                 doCalculation = false;
             }
         }
@@ -139,12 +139,9 @@ class DataViewActionHandler {
     void truncateActionPerformed() {
         String nbBundle7 = mLoc.t("RESC007: Truncate contents of table");
         String confirmMsg = nbBundle7.substring(15) + dataView.getDataViewDBTable().geTable(0).getDisplayName();
-        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(confirmMsg, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.WARNING_MESSAGE);
-
-        if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.CANCEL_OPTION) {
-            return;
-        }
-        execHelper.executeTruncate();
+        if (showYesAllDialog(confirmMsg, confirmMsg) == 0) {
+            execHelper.executeTruncate();
+        } 
     }
 
     void deleteRecordActionPerformed() {
@@ -157,8 +154,7 @@ class DataViewActionHandler {
             String nbBundle9 = mLoc.t("RESC009: Permanently delete record(s) from the database?");
             String msg = nbBundle9.substring(15);
             String nbBundle10 = mLoc.t("RESC010: Confirm Delete");
-            NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, nbBundle10.substring(15), NotifyDescriptor.OK_CANCEL_OPTION);
-            if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
+            if (showYesAllDialog(msg, nbBundle10.substring(15)) == 0) {
                 execHelper.executeDeleteRow(rsTable);
             }
         }
@@ -168,4 +164,10 @@ class DataViewActionHandler {
         dataPage.setTotalRows(-1); // force total row refresh
         execHelper.executeQuery();
     }
+
+    private static int showYesAllDialog(Object msg, String title) {
+       String[] options = new String[] { "Yes", "No",};
+       Component parent = WindowManager.getDefault().getMainWindow();
+       return JOptionPane.showOptionDialog(parent, msg, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[1]);
+   }
 }
