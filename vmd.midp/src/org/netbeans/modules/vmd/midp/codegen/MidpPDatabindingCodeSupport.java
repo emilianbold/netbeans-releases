@@ -56,7 +56,7 @@ import org.openide.loaders.DataObject;
  *
  * @author Karol Harezlak
  */
-public final class MIDPDatabindingCodeSupport {
+public final class MidpPDatabindingCodeSupport {
 
     /**
      * Types of BinderProviders provideres a
@@ -86,7 +86,7 @@ public final class MIDPDatabindingCodeSupport {
         TextField_FeatureText
     };
 
-    private MIDPDatabindingCodeSupport() {
+    private MidpPDatabindingCodeSupport() {
     }
 
     public static String getCodeProviderNama(ProviderType type) {
@@ -169,8 +169,8 @@ public final class MIDPDatabindingCodeSupport {
     }
 
     public static Presenter createDataBinderBindCodePresenter(final String bindedProperty,
-            final MIDPDatabindingCodeSupport.ProviderType providerType,
-            final MIDPDatabindingCodeSupport.FeatureType featureType) {
+            final MidpPDatabindingCodeSupport.ProviderType providerType,
+            final MidpPDatabindingCodeSupport.FeatureType featureType) {
         assert bindedProperty != null;
         assert providerType != null;
         assert featureType != null;
@@ -192,9 +192,9 @@ public final class MIDPDatabindingCodeSupport {
                     code.append("\n"); //NOI18N
                     code.append("DataBinder.bind(").append("\""); //NOI18N
                     code.append(getExpression(connecter)).append("\", "); //NOI!8N
-                    code.append(MIDPDatabindingCodeSupport.getCodeProviderNama(providerType)).append(", "); //NOI18N
+                    code.append(MidpPDatabindingCodeSupport.getCodeProviderNama(providerType)).append(", "); //NOI18N
                     code.append(CodeReferencePresenter.generateAccessCode(getComponent())).append(", "); //NOI!8N
-                    code.append(MIDPDatabindingCodeSupport.getCodeFeatureName(featureType)).append(");"); //NOI18N
+                    code.append(MidpPDatabindingCodeSupport.getCodeFeatureName(featureType)).append(");"); //NOI18N
                     section.getWriter().write(code.toString());
                 }
 
@@ -238,8 +238,8 @@ public final class MIDPDatabindingCodeSupport {
 
     public static Collection<Presenter> createDatabindingPresenters(String bindedProperty,
             String methodString,
-            MIDPDatabindingCodeSupport.ProviderType providedType,
-            MIDPDatabindingCodeSupport.FeatureType featureType) {
+            MidpPDatabindingCodeSupport.ProviderType providedType,
+            MidpPDatabindingCodeSupport.FeatureType featureType) {
         assert bindedProperty != null;
         assert methodString != null;
         assert providedType != null;
@@ -268,10 +268,11 @@ public final class MIDPDatabindingCodeSupport {
         }
         String[] fqnNames = new String[]{fqnName};
         return Arrays.asList(
-                MIDPDatabindingCodeSupport.createDataBinderRegisterCodePresenter(bindedProperty),
-                MIDPDatabindingCodeSupport.createDataBinderBindCodePresenter(bindedProperty, providedType, featureType),
-                MIDPDatabindingCodeSupport.createEventSourceCodeGenPresenter(bindedProperty, methodString),
+                MidpPDatabindingCodeSupport.createDataBinderRegisterCodePresenter(bindedProperty),
+                MidpPDatabindingCodeSupport.createDataBinderBindCodePresenter(bindedProperty, providedType, featureType),
+                MidpPDatabindingCodeSupport.createEventSourceCodeGenPresenter(bindedProperty, methodString),
                 MidpCodePresenterSupport.createAddImportDatabindingPresenter(bindedProperty, fqnNames)
+        
         );
     }
 
