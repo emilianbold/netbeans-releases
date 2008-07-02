@@ -1245,7 +1245,7 @@ member_declaration
                 ctor_decl_spec
                 {ctrName = qualifiedItemIsOneOf(qiCtor);}
                 ctor_declarator[true]
-		ctor_body 
+                ctor_body
 		{ 
                     if (ctrName) {
                         #member_declaration = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #member_declaration); 
@@ -1635,7 +1635,13 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
 				LCURLY
 				// This stores class name in dictionary
 				{beginClassDefinition(ts, id);}
-				(member_declaration)*
+				(options{generateAmbigWarnings = false;greedy=false;}:
+                                    member_declaration
+                                    |
+                                    // IZ 138291 : Completion does not work for unfinished constructor
+                                    // On unfinished construction we skip some symbols for class parsing process recovery
+                                    .! { reportError(new NoViableAltException(LT(0), getFilename())); }
+                                )*
 				{endClassDefinition();}
 				(EOF!|RCURLY)
 				{enclosingClass = saveClass;}
@@ -1823,7 +1829,7 @@ declarator
                 |
                     restrict_declarator
                 )
-	|	
+	|       
 		direct_declarator	
 	;
 
