@@ -587,6 +587,9 @@ public class CompletionResolverImpl implements CompletionResolver {
                 }
             }
         }
+        if (CsmKindUtilities.isTemplate(fun)) {
+            analyzeTemplates.add((CsmTemplate)fun);
+        }
         CsmClass clazz = fun == null ? null : CsmBaseUtilities.getFunctionClass(fun);
         clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false);
         if (CsmKindUtilities.isTemplate(clazz)) {
@@ -598,9 +601,6 @@ public class CompletionResolverImpl implements CompletionResolver {
                 }
                 scope = ((CsmClass)scope).getScope();
             }
-        }
-        if (CsmKindUtilities.isTemplate(fun)) {
-            analyzeTemplates.add((CsmTemplate)fun);
         }
         if (!analyzeTemplates.isEmpty()) {
             templateParameters = new ArrayList<CsmTemplateParameter>();
