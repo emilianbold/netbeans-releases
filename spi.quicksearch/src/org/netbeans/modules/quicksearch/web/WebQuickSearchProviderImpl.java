@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.core.ui.quicksearch.web;
+package org.netbeans.modules.quicksearch.web;
 
 import java.awt.Toolkit;
 import java.net.URL;
@@ -48,6 +48,7 @@ import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -62,10 +63,13 @@ public class WebQuickSearchProviderImpl implements SearchProvider {
             query = Query.getDefault();
         }
         Result res = query.search( request.getText() );
-        for( Item item : res.getItems() ) {
-            if( !response.addResult( createAction( item.getUrl() ), item.getTitle() ) )
-                return;
-        }
+        do {
+            for( Item item : res.getItems() ) {
+                if( !response.addResult( createAction( item.getUrl() ), item.getTitle() ) )
+                    return;
+            }
+            res = query.searchMore( request.getText() );
+        } while( !res.isSearchFinished() );
     }
 
     private Runnable createAction( final String url ) {
@@ -77,7 +81,8 @@ public class WebQuickSearchProviderImpl implements SearchProvider {
                         displayer.showURL(new URL(url));
                     }
                 } catch (Exception e) {
-                    StatusDisplayer.getDefault().setStatusText("Cannot display URL: " + url );
+                    StatusDisplayer.getDefault().setStatusText(
+                            NbBundle.getMessage(WebQuickSearchProviderImpl.class, "Err_CannotDisplayURL", url) ); //NOI18N
                     Toolkit.getDefaultToolkit().beep();
                     Logger.getLogger(WebQuickSearchProviderImpl.class.getName()).log(Level.FINE, null, e);
                 }

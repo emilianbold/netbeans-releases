@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import javax.swing.event.EventListenerList;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -115,6 +116,18 @@ public class ProxyLookup extends Lookup {
      * @since 1.19 protected
      */
     protected final void setLookups(Lookup... lookups) {
+        setLookups(null, lookups);
+    }
+    
+    /**
+     * Changes the delegates immediatelly, notifies the listeners in provided
+     * executor, potentially later.
+     *
+     * @param lookups the new lookups to delegate to
+     * @param notifyIn executor to deliver the notification to listeners or null
+     * @since 7.16
+     */
+    protected final void setLookups(Executor notifyIn, Lookup... lookups) {
         Collection<Reference<R>> arr;
         Set<Lookup> newL;
         Set<Lookup> current;
@@ -143,7 +156,7 @@ public class ProxyLookup extends Lookup {
 
 
         // this cannot be done from the synchronized block
-        ArrayList<Object> evAndListeners = new ArrayList<Object>();
+        final ArrayList<Object> evAndListeners = new ArrayList<Object>();
         for (Reference<R> ref : arr) {
             R<?> r = ref.get();
             if (r != null) {
@@ -151,13 +164,21 @@ public class ProxyLookup extends Lookup {
             }
         }
         
-        {
-            Iterator it = evAndListeners.iterator();
-            while (it.hasNext()) {
-                LookupEvent ev = (LookupEvent)it.next();
-                LookupListener l = (LookupListener)it.next();
-                l.resultChanged(ev);
+        class Notify implements Runnable {
+            public void run() {
+                Iterator it = evAndListeners.iterator();
+                while (it.hasNext()) {
+                    LookupEvent ev = (LookupEvent)it.next();
+                    LookupListener l = (LookupListener)it.next();
+                    l.resultChanged(ev);
+                }
             }
+        }
+        Notify n = new Notify();
+        if (notifyIn == null) {
+            n.run();
+        } else {
+            notifyIn.execute(n);
         }
     }
 

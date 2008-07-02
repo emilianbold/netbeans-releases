@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.core.ui.quicksearch.web;
+package org.netbeans.modules.quicksearch.web;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -45,23 +45,29 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.util.Locale;
+import java.util.MissingResourceException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.util.NbBundle;
 
 /**
  * Search Google for given text.
  * 
  * @author S. Aubrecht
  */
-class Query {
+final class Query {
 
     private Thread searchThread;
     private static Query theInstance;
+    private int searchOffset;
     
     //restrict search for this site only
-    private static final String SITE_SEARCH = "netbeans.org"; //NOI18N
+    private static final String SITE_SEARCH = getSiteSearch();
     //maximum number of search results requested
-    static final int MAX_NUM_OF_RESULTS = 20;
+    static final int MAX_NUM_OF_RESULTS = 50;
+    //google doesn't allow searching in site subfolders, so we must make sure
+    //the links we found have the following patterns in their URLs
+    private static final String[] URL_PATTERNS = getUrlPatterns();
     
     private Query() {
     }
@@ -75,10 +81,23 @@ class Query {
     public Result search( String searchString ) {
         abort();
         Result res = new Result();
-        searchThread = new Thread( createSearch( searchString, res ) );
+        searchThread = new Thread( createSearch( searchString, res, 0 ) );
         searchThread.start();
         try {
-            searchThread.join(10*1000);
+            searchThread.join(20*1000);
+        } catch( InterruptedException iE ) {
+            //ignore
+        }
+        return res;
+    }
+    
+    public Result searchMore( String searchString ) {
+        searchOffset += MAX_NUM_OF_RESULTS;
+        Result res = new Result();
+        Thread searchMoreThread = new Thread( createSearch( searchString, res, searchOffset ) );
+        searchMoreThread.start();
+        try {
+            searchMoreThread.join(20*1000);
         } catch( InterruptedException iE ) {
             //ignore
         }
@@ -90,11 +109,12 @@ class Query {
             return;
         }
         
+        searchOffset = 0;
         searchThread.interrupt();
         searchThread = null;
     }
     
-    private Runnable createSearch( final String searchString, final Result result ) {
+    private Runnable createSearch( final String searchString, final Result result, final int searchOffset ) {
         Runnable res = new Runnable() {
 
             public void run() {
@@ -103,7 +123,11 @@ class Query {
                 query = query.replaceAll( "#", "%23" ); //NOI18N //NOI18N
                 query += "&num=" + MAX_NUM_OF_RESULTS; //NOI18N
                 query += "&hl=" + Locale.getDefault().getLanguage(); //NOI18N
-                query += "&sitesearch=" + SITE_SEARCH; //NOI18N
+                if( null != SITE_SEARCH )
+                    query += "&sitesearch=" + SITE_SEARCH; //NOI18N
+                if( searchOffset > 0 ) {
+                    query += "&start=" + searchOffset; //NOI18N
+                }
                 try {
                     Socket s = new Socket("google.com",80); //NOI18N
                     PrintStream p = new PrintStream(s.getOutputStream());
@@ -123,12 +147,33 @@ class Query {
                     }
 
                     in.close();            
-                    result.parse( rawHtml.toString() );
+                    result.parse( rawHtml.toString(), searchOffset );
+                    result.filterUrl( URL_PATTERNS );
                 } catch( IOException ioE ) {
                     Logger.getLogger(Query.class.getName()).log(Level.INFO, null, ioE);
                 }
             }
         };
         return res;
+    }
+    
+    private static String getSiteSearch() {
+        String res = null;
+        try {
+            res = NbBundle.getMessage(Query.class, "quicksearch.web.site" ); //NOI18N
+        } catch( MissingResourceException mrE ) {
+            //ignore
+        }
+        return res;
+    }
+    
+    private static String[] getUrlPatterns() {
+        try {
+            String patterns = NbBundle.getMessage(Query.class, "quicksearch.web.url_patterns" ); //NOI18N
+            return patterns.split("\\s|,|;|:" );
+        } catch( MissingResourceException mrE ) {
+            //ignore
+        }
+        return null;
     }
 }
