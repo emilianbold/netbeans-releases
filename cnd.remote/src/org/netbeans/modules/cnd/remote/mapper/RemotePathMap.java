@@ -109,6 +109,7 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
                 // fill in your debugging pathmaps if you want...
                 if (ch.equals("z:") ) { // Debug
                     return true; // Debug
+                }
             }
         }
         return false;
