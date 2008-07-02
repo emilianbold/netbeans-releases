@@ -18,7 +18,6 @@
                 </file>
             </folder>
         </folder>
-        <!-- XXX Not working for PHP projects yet
         <folder name="org-netbeans-modules-php-project">
             <folder name="Customizer">
                 <file name="JSLib.instance">
@@ -27,7 +26,6 @@
                 </file>
             </folder>
         </folder>
-        -->
     </folder>
     
     <folder name="org-netbeans-api-project-libraries">

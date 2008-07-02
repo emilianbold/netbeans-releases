@@ -72,18 +72,16 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.javascript.libraries.api.JavaScriptLibrarySupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileAlreadyLockedException;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
@@ -94,11 +92,11 @@ import org.openide.windows.WindowManager;
  */
 public final class JSLibraryProjectUtils {
     private static final String WEB_PROJECT = "org.netbeans.modules.web.project.WebProject"; // NOI18N
-    private static final String WEB_PROJECT_DEFAULT_RELATIVE_PATH = "web/resources"; // NOI18N
-    private static final String RUBY_PROJECT = "org.netbeans.modules.ruby.rubyproject.RubyProject"; // NOI18N
-    private static final String RUBY_PROJECT_DEFAULT_RELATIVE_PATH = "public/resources"; // NOI18N
+    private static final String WEB_PROJECT_DEFAULT_RELATIVE_PATH = "web"; // NOI18N
+    private static final String RUBY_PROJECT = "org.netbeans.modules.ruby.railsprojects.RailsProject"; // NOI18N
+    private static final String RUBY_PROJECT_DEFAULT_RELATIVE_PATH = "public"; // NOI18N
     private static final String PHP_PROJECT = "org.netbeans.modules.php.project"; // NOI18N
-    private static final String OTHER_PROJECT_DEFAULT_RELATIVE_PATH = "javascript/resources"; // NOI18N
+    private static final String OTHER_PROJECT_DEFAULT_RELATIVE_PATH = "javascript"; // NOI18N
     
     private static final String LIBRARY_PROPERTIES = "library.properties"; // NOI18N
     private static final String LIBRARY_PATH_PROP = "LibraryRoot"; // NOI18N
@@ -242,21 +240,45 @@ public final class JSLibraryProjectUtils {
         }
         
         String projectClassName = p.getClass().getName();
-        String relativePath;
         if (projectClassName.startsWith(PHP_PROJECT)) {
-            relativePath = WEB_PROJECT_DEFAULT_RELATIVE_PATH;
+            SourceGroup[] groups = ProjectUtils.getSources(p).getSourceGroups("PHPSOURCE"); // XXX key taken from php project
+            if (groups.length > 0) {
+                File srcDirFile = FileUtil.toFile(groups[0].getRootFolder());
+                return srcDirFile.getAbsolutePath();
+            } else {
+                File projectDirFile = FileUtil.toFile(p.getProjectDirectory());
+                return new File(projectDirFile, OTHER_PROJECT_DEFAULT_RELATIVE_PATH).getAbsolutePath();
+            }
         } else if (projectClassName.equals(WEB_PROJECT)) {
-            relativePath = WEB_PROJECT_DEFAULT_RELATIVE_PATH;
+            File projectDirFile = FileUtil.toFile(p.getProjectDirectory());
+            return new File(projectDirFile, WEB_PROJECT_DEFAULT_RELATIVE_PATH).getAbsolutePath();
         } else if (projectClassName.equals(RUBY_PROJECT)) {
-            relativePath = RUBY_PROJECT_DEFAULT_RELATIVE_PATH;
+            File projectDirFile = FileUtil.toFile(p.getProjectDirectory());
+            return new File(projectDirFile, RUBY_PROJECT_DEFAULT_RELATIVE_PATH).getAbsolutePath();
         } else {
-            relativePath = OTHER_PROJECT_DEFAULT_RELATIVE_PATH;
+            File projectDirFile = FileUtil.toFile(p.getProjectDirectory());
+            return new File(projectDirFile, OTHER_PROJECT_DEFAULT_RELATIVE_PATH).getAbsolutePath();
+        }
+    }
+
+    private static boolean isIncluded(String fileName, String prefix) {
+        if (prefix.length() > fileName.length()) {
+            return false;
         }
         
-        File projectDirFile = FileUtil.toFile(p.getProjectDirectory());
-        assert projectDirFile != null;
+        for (int i = 0; i < prefix.length(); i++) {
+            char letter = fileName.charAt(i);
+            letter = (letter == '\\') ? '/' : letter;
+            
+            char prefixLetter = prefix.charAt(i);
+            prefixLetter = (prefixLetter == '\\') ? '/' : prefixLetter;
+            
+            if (prefixLetter != letter) {
+                return false;
+            }
+        }
         
-        return new File(projectDirFile, relativePath).getAbsolutePath();
+        return true;
     }
     
     private static void modifyJSLibraries(final Project project, final boolean remove, final Collection<Library> libraries) {
@@ -329,29 +351,23 @@ public final class JSLibraryProjectUtils {
         ResourceBundle bundle = NbBundle.getBundle(JSLibraryProjectUtils.class);
         final ProgressHandle handle = ProgressHandleFactory.createHandle(bundle.getString("LBL_Add_Libraries_progress"));
         final JDialog dialog = createProgressDialog(handle, bundle.getString("LBL_Add_Libraries_Msg"), bundle.getString("LBL_Add_Libraries_Title"));
-                
-        final Map<Library, LibraryData> libData = new HashMap<Library, LibraryData>();
-        for (Library library : libraries) {
-            try {
-                String libName = library.getName().replaceAll(" ", "_");
-                File folderPath = new File(path, libName);
-                FileObject jsFolder = FileUtil.createFolder(folderPath);
 
-                LibraryData data = new LibraryData();
-                data.setDestinationFolder(jsFolder);
-                libData.put(library, data);
-            } catch (IOException ex) {
-                Log.getLogger().log(Level.SEVERE, "Unable to create folder for javascript library", ex);
-            }
+        final File destination = new File(path);
+        try {
+            FileUtil.createFolder(destination);
+        } catch (IOException ex) {
+            Log.getLogger().log(Level.SEVERE, "Unable to find or create root folder", ex);
+            return false;
         }
         
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
                     int totalSize = 0;
+                    Map<Library, Collection<ZipFile>> libraryZips = new HashMap<Library, Collection<ZipFile>>();
                     for (Library library : libraries) {
                         Collection<ZipFile> zips = getJSLibraryZips(library);
-                        libData.get(library).setZipFiles(zips);
+                        libraryZips.put(library, zips);
                         for (ZipFile zipFile : zips) {
                             totalSize += zipFile.size();
                         }
@@ -361,13 +377,7 @@ public final class JSLibraryProjectUtils {
 
                     int currentSize = 0;
                     for (Library library : libraries) {
-                        LibraryData data = libData.get(library);
-                        Collection<ZipFile> zipFiles = data.getZipFiles();
-                        File destination = FileUtil.toFile(data.getDestinationFolder());
-                        if (destination == null) {
-                            Log.getLogger().severe("No File for FileObject: " + FileUtil.getFileDisplayName(data.getDestinationFolder()));
-                            continue;
-                        }
+                        Collection<ZipFile> zipFiles = libraryZips.get(library);
 
                         for (ZipFile zip : zipFiles) {
                             try {
@@ -410,11 +420,10 @@ public final class JSLibraryProjectUtils {
             public void run() {
                 try {
                     int totalSize = 0;
-                    final Map<Library, LibraryData> libData = new HashMap<Library, LibraryData>();
+                    Map<Library, Collection<ZipFile>> libraryZips = new HashMap<Library, Collection<ZipFile>>();
                     for (Library library : libraries) {
-                        libData.put(library, new LibraryData());
                         Collection<ZipFile> zips = getJSLibraryZips(library);
-                        libData.get(library).setZipFiles(zips);
+                        libraryZips.put(library, zips);
                         for (ZipFile zipFile : zips) {
                             totalSize += zipFile.size();
                         }
@@ -423,13 +432,12 @@ public final class JSLibraryProjectUtils {
                     handle.start(totalSize);
 
                     int currentSize = 0;
+                    File folderPath = new File(path);
+                    FileObject baseFO = FileUtil.toFileObject(folderPath);
                     for (Library library : libraries) {
-                        String libName = library.getName().replaceAll(" ", "_");
-                        File folderPath = new File(path, libName);
-                        FileObject baseFO = FileUtil.toFileObject(folderPath);
-                        
-                        Collection<ZipFile> zipFiles = libData.get(library).getZipFiles();
+                        Collection<ZipFile> zipFiles = libraryZips.get(library);
                         List<String> sortedEntries = getSortedFilenamesInZips(zipFiles);
+                        Collections.reverse(sortedEntries);
 
                         for (ZipFile zip : zipFiles) {
                             try {
@@ -437,14 +445,6 @@ public final class JSLibraryProjectUtils {
                                 currentSize = deleteFiles(baseFO, sortedEntries, handle, currentSize, libraryDirs);
                             } catch (IOException ex) {
                                 Log.getLogger().log(Level.SEVERE, "Unable to delete files", ex);
-                            }
-                        }
-                        
-                        if (baseFO.getChildren().length == 0) {
-                            try {
-                                baseFO.delete();
-                            } catch (IOException ex) {
-                                Log.getLogger().log(Level.SEVERE, "Unable to delete file", ex);
                             }
                         }
                     }
@@ -488,14 +488,17 @@ public final class JSLibraryProjectUtils {
     
     public static boolean isLibraryFolderEmpty(Project project, Library library) {
         String path = getJSLibrarySourcePath(project);
-        return isLibraryFolderEmpty(project, library, path);
-    }
-    
-    public static boolean isLibraryFolderEmpty(Project project, Library library, String path) {
-        String libName = library.getName().replaceAll(" ", "_");
-        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(path, libName)));
-
-        return fo == null || fo.getChildren().length == 0;
+        
+        List<String> fileNames = getSortedFilenamesInZips(getJSLibraryZips(library));
+        
+        for (String fileName : fileNames) {
+            File fullFile = new File(path, fileName);
+            if (fullFile.exists() && fullFile.isFile()) {
+                return false;
+            }
+        }
+        
+        return true;
     }
     
     private static Collection<ZipFile> getJSLibraryZips(Library library) {
@@ -522,20 +525,9 @@ public final class JSLibraryProjectUtils {
         if (baseFO != null) {
             if (includePaths != null) {
                 for (int i = 0; i < includePaths.length; i++) {
-                    includePaths[i] = includePaths[i].replaceAll("\\\\", "/");
                     if (!includePaths[i].startsWith("/")) {
                         includePaths[i] = "/" + includePaths[i];
                     }
-                }
-
-                for (int i = 0; i < fileNames.size(); i++) {
-                    String entry = fileNames.get(i);
-                    entry.replaceAll("\\\\", "/");
-                    if (!entry.startsWith("/")) {
-                        entry = "/" + entry;
-                    }
-
-                    fileNames.set(i, entry);
                 }
             }
             
@@ -543,7 +535,7 @@ public final class JSLibraryProjectUtils {
                 if (includePaths != null) {
                     boolean skip = true;
                     for (String includePath : includePaths) {
-                        if (fileName.startsWith(includePath)) {
+                        if (isIncluded(fileName, includePath)) {
                             skip = false;
                             break;
                         }
@@ -582,7 +574,6 @@ public final class JSLibraryProjectUtils {
         try {
             if (includePaths != null && includePaths.length > 0) {
                 for (int i = 0; i < includePaths.length; i++) {
-                    includePaths[i] = includePaths[i].replaceAll("\\\\", "/");
                     if (!includePaths[i].startsWith("/")) {
                         includePaths[i] = "/" + includePaths[i];
                     }
@@ -598,14 +589,13 @@ public final class JSLibraryProjectUtils {
                 
                 // used to ignore files without a common prefix
                 if (includePaths != null) {
-                    entryName = entryName.replaceAll("\\\\", "/");
                     if (!entryName.startsWith("/")) {
                         entryName = "/" + entryName;
                     }
                     
                     boolean match = false;
                     for (String includePath : includePaths) {
-                        if (entryName.startsWith(includePath)) {
+                        if (isIncluded(entryName,includePath)) {
                             match = true;
                             break;
                         }
@@ -694,7 +684,6 @@ public final class JSLibraryProjectUtils {
         }
         
         Collections.sort(result);
-        Collections.reverse(result);
         
         return result;
     }
@@ -708,26 +697,5 @@ public final class JSLibraryProjectUtils {
         }
         
         return strings.toArray(new String[strings.size()]);
-    }
-    
-    private static final class LibraryData {
-        private Collection<ZipFile> zipFiles;
-        private FileObject destinationFolder;
-        
-        public FileObject getDestinationFolder() {
-            return destinationFolder;
-        }
-
-        public void setDestinationFolder(FileObject destinationFolder) {
-            this.destinationFolder = destinationFolder;
-        }
-
-        public Collection<ZipFile> getZipFiles() {
-            return zipFiles;
-        }
-
-        public void setZipFiles(Collection<ZipFile> zipFiles) {
-            this.zipFiles = zipFiles;
-        }
     }
 }
