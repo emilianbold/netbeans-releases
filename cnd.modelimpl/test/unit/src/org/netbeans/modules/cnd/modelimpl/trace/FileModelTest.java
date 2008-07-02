@@ -370,6 +370,11 @@ public class FileModelTest extends TraceModelTestBase {
 	    performTest("template_inner_class_dtor_definition.cc"); // NOI18N
 	}
         
+        public void testTypedefPointerToStaticMember() throws Exception {
+            // IZ 138325 : IDE highlights 'typedef R (T::*F);' line as wrong
+            performTest("typedef_pointer_to_static_member.cc"); // NOI18N
+        }
+        
         @Override
 	protected void postSetUp() {
 	    // init flags needed for file model tests

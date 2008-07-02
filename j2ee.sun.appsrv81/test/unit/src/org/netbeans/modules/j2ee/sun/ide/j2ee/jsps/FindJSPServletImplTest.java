@@ -96,6 +96,11 @@ public class FindJSPServletImplTest {
         String expResult = "org/apache/jsp/test/index_jsp.java";
         String result = instance.getServletResourcePath(moduleContextPath, jspResourcePath);
         assertEquals(expResult, result);
+        jspResourcePath = "//test///index.jsp";
+        instance = new FindJSPServletImpl(null);
+        expResult = "org/apache/jsp/test/index_jsp.java";
+        result = instance.getServletResourcePath(moduleContextPath, jspResourcePath);
+        assertEquals(expResult, result);
         jspResourcePath = "/index.jsp";
         expResult = "org/apache/jsp/index_jsp.java";
         result = instance.getServletResourcePath(moduleContextPath, jspResourcePath);

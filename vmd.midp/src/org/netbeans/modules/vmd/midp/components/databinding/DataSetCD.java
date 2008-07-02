@@ -48,7 +48,7 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
-import org.netbeans.modules.vmd.midp.codegen.MIDPDataSetBodyCodePresenter;
+import org.netbeans.modules.vmd.midp.codegen.MidpDataSetBodyCodePresenter;
 
 /**
  *
@@ -82,7 +82,7 @@ public class DataSetCD extends ComponentDescriptor {
         
         return Arrays.asList(
                 // code
-                MIDPDataSetBodyCodePresenter.create("/org/netbeans/modules/vmd/midp/codegen/dataset_java.code") //NOI18N
+                MidpDataSetBodyCodePresenter.create("/org/netbeans/modules/vmd/midp/codegen/dataset_java.code") //NOI18N
         );   
     }
 }

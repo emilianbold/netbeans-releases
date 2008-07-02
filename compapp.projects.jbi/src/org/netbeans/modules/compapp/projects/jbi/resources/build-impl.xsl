@@ -609,6 +609,10 @@ made subject to such option by the copyright holder.
                     <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-editor-util.jar"/>
                     <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-editor-lib2.jar"/>
                     <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-editor-indent.jar"/>
+                    <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-editor-plain.jar"/>
+                    <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-editor-plain-lib.jar"/>
+                    <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-editor-settings.jar"/>
+                    <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-editor-settings-storage.jar"/>
                     <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-lexer.jar"/>
                     <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-xml-core.jar"/>
                     <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-xml-lexer.jar"/>
@@ -622,6 +626,7 @@ made subject to such option by the copyright holder.
                     <pathelement path="${{netbeans.home}}/modules/org-openide-loaders.jar"/>
                     <pathelement path="${{netbeans.home}}/modules/org-openide-nodes.jar"/>
                     <pathelement path="${{netbeans.home}}/modules/org-netbeans-modules-editor-mimelookup.jar"/>
+                    <pathelement path="${{netbeans.home}}/modules/org-netbeans-modules-editor-mimelookup-impl.jar"/>
                     <pathelement path="${{netbeans.home}}/core/org-openide-filesystems.jar"/>
                 </path>
             </target>

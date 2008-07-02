@@ -30,7 +30,7 @@ import org.netbeans.modules.bpel.mapper.multiview.BpelModelSynchListener;
 import org.netbeans.modules.bpel.mapper.multiview.DesignContextController;
 import org.netbeans.modules.bpel.mapper.tree.TreeExpandedState;
 import org.netbeans.modules.bpel.mapper.tree.TreeExpandedStateImpl;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
+import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.soa.mappercore.Mapper;
