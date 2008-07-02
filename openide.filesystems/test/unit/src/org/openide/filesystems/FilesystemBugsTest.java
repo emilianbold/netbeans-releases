@@ -39,38 +39,24 @@
  * made subject to such option by the copyright holder.
  */
 
-package unit.org.openide.filesystems;
+package org.openide.filesystems;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
-import java.util.Properties;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.JarFileSystem;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.filesystems.URLMapper;
-import org.openide.filesystems.XMLFileSystem;
-import org.openide.util.Lookup;
 
 /**
  *
  * @author  pz97949
  */
-public class FilesystemBugs extends NbTestCase {
+public class FilesystemBugsTest extends NbTestCase {
     final String FOLDER1 = "F";
 final String FO1     ="testNFOADelete";
     private int counter;
     /** Creates a new instance of FilesystemBugs */
-    public FilesystemBugs(String name) {
+    public FilesystemBugsTest(String name) {
         super(name);
     }
     /**
@@ -80,7 +66,7 @@ final String FO1     ="testNFOADelete";
     *    It also hurts the org.netbeans.core.xml.FileEntityResolver.update implementation.
    */
 
-    public void testNotifyOfSubFoldersAfterDelete23929 () throws IOException {
+    public void testNotifyOfSubFoldersAfterDelete23929() throws Exception {
         counter = 0;
         if (canGenWriteFolder()) {
             // create tree an register listener
@@ -89,7 +75,7 @@ final String FO1     ="testNFOADelete";
            log(folder.toString());
            folder = getSubFolder(folder, FOLDER1);
            FileObject tmpFolder = folder;
-           System.out.println(folder);
+           //System.out.println(folder);
            for (int i = 0 ; i  <  10 ; i++ ) {
                FileObject subFolder = getSubFolder(tmpFolder,FOLDER1 + i);
                subFolder.addFileChangeListener(new TestFileChangeListener());
@@ -143,26 +129,21 @@ final String FO1     ="testNFOADelete";
     }
     
     private class TestFileChangeListener extends FileChangeAdapter {
+        @Override
         public void fileDeleted(FileEvent ev) {
             log("Delete: " + ev.getFile().getPath());
             counter++;
         }
     }
-       
-        
     
     protected boolean canGenWriteFolder() {
         return true;
     }
-    protected FileObject getWriteFolder() throws IOException {   
-        String folderName = "unit/org/openide/filesystems/";
-        FileObject folder =  Repository.getDefault().findResource(folderName);
-        assertNotNull("folder : " + folder + " doesn't exists.",folder);
-        FileObject myFolder = folder.getFileObject("data");
-        if (myFolder == null) {
-           myFolder = folder.createFolder("data");
-        }
-        return folder;
+    protected FileObject getWriteFolder() throws Exception {
+        clearWorkDir();
+        LocalFileSystem lfs = new LocalFileSystem();
+        lfs.setRootDirectory(getWorkDir());
+        return lfs.getRoot();
     }
     
     protected String getFSType() {
@@ -174,7 +155,7 @@ final String FO1     ="testNFOADelete";
       *   attributes remain on a particular file object, that <fileobject> tag should be
       *   deleted from the .nbattrs even if others remain.
       */
-     public void testDeleteAttrsFileAfterDeleteAttrib() throws IOException {
+     public void testDeleteAttrsFileAfterDeleteAttrib() throws Exception {
          FileObject folder  = getWriteFolder();
          FileObject fo = folder.getFileObject("testAttr");
          if (fo == null) {
@@ -211,31 +192,10 @@ impact on comparisons of URL objects then (see
 URLStreamHandler.hostsEqual). Following code
 always fails*/
 
-     public void testURLContract() throws IOException {
+     public void testURLContract() throws Exception {
          FileObject fo = getWriteFolder();
           URL u = fo.getURL();
          assertEquals(u, new URL(u.toExternalForm()));
-     }
-/** #10507    After implementation of issue 18220 it has been
-realized that pluggable mapping is also needed
-from URL to FileObject, I suggest to implement it
-by adding methods:
-
-static FileObject findFileObject (URL url);
-abstract FileObject getFileObject (URL url);
-
-both able to return null. Please do it now before
-the URLMapper appears in the 3.4 release.
-*/
-
-     public void testFindFOfromURL() throws IOException {
-         FileObject fo = getWriteFolder();
-          URL u = fo.getURL();
-          URLMapper urlMapper = (URLMapper) Lookup.getDefault().lookup(URLMapper.class);
-          FileObject fos[] = urlMapper.findFileObjects(u);
-          assertTrue("url " + u + " must to only one FileObject",fos.length==1);
-          assertTrue("The references must be equal.", fo == fos[0]);
-          
      }
      /* http://installer.netbeans.org/issues/show_bug.cgi?id=26400
       *If I have a multifilesystem and set an attribute
@@ -294,31 +254,7 @@ is now always searched in parent folder.
      
   ////////////////////////   
      
-      public void testOpenJarManifestAsResource()  throws Exception {
-        Repository repo = Repository.getDefault ();
-        JarFileSystem jfs = new JarFileSystem ();
-        File nbHome = new File(System.getProperty("netbeans.home"));
-        File jarName = new File(new File (nbHome,"lib"), "openide.jar");
-        jfs.setJarFile (jarName);
-        repo.addFileSystem (jfs);
-        repo.removeFileSystem (jfs);
-        //try {
-            //FileObject fo = jfs.findResource ("META-INF/MANIFEST.MF");
-            FileObject fo = jfs.findResource ("org/openide/filesystems/Repository.class");
-            assertTrue("FileObject must to be valid",   fo.isValid ());
-            try {
-              assertNotNull("FileObject must to have InputStream (fo.getInputStream ()");
-            } catch (Exception e) {
-                e.printStackTrace(getLog());
-                fail("Exception " + e);
-            }
-                
-        //} finally {
-        //    repo.removeFileSystem (jfs);
-        //}
-    
-    }
-    public void testBackSlashAttribute33459() throws IOException {
+    public void testBackSlashAttribute33459() throws Exception {
         FileObject fo = getWriteFolder();
         String attribName = "y\\u2dasfas";
         System.gc();
@@ -328,43 +264,12 @@ is now always searched in parent folder.
            System.gc();
            System.gc();
            assertTrue("Attribute is not equal", fo.getAttribute(attribName).equals(attribName));
-           System.out.println("ok");
+           //System.out.println("ok");
         } catch (Exception e) {
             log(e.toString());
             e.printStackTrace();
             fail("Exception :" + e ) ;
         }
-    }
-    
-     public static NbTestSuite suite() {
-         NbTestSuite suite = new NbTestSuite();
-         suite.addTest(new FilesystemBugs("testDeleteAttrsFileAfterDeleteAttrib"));
-         suite.addTest(new FilesystemBugs("testMultiAttrsBug26400"));
-         suite.addTest(new FilesystemBugs("testNotifyOfSubFoldersAfterDelete23929"));
-         suite.addTest(new FilesystemBugs("testURLContract"));
-         suite.addTest(new FilesystemBugs("testFindFOfromURL"));
-         suite.addTest(new FilesystemBugs("testOpenJarManifestAsResource"));
-         suite.addTest(new FilesystemBugs("testFolderSlashUrl"));
-         suite.addTest(new FilesystemBugs("testBackSlashAttribute33459"));
-         return suite;
-     }
-    
-     public  void testMultiLayers19725() throws Exception {
-         XMLFileSystem origFs = new XMLFileSystem(FilesystemBugs.class.getResource("layer1.xml"));
-         XMLFileSystem brandedFs = new XMLFileSystem(FilesystemBugs.class.getResource("layer2.xml"));
-         MultiFileSystem mfs = new MultiFileSystem(new FileSystem[]{brandedFs,origFs});
-         FileObject fo = mfs.findResource("myfolder");
-         log("file1/file2 = " +  fo.getAttribute("file1/file2").toString());
-         log("file2/file1 = " + fo.getAttribute("file2/file1").toString());
-         assertTrue(fo.getAttribute("file1/file2").equals(Boolean.FALSE));
-         assertTrue(fo.getAttribute("file2/file1").equals(Boolean.TRUE));
-     }
-     
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(new FilesystemBugs("testMultiLayers19725"));
     }
     
 }

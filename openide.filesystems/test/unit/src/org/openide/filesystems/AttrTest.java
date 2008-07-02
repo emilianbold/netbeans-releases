@@ -4,15 +4,12 @@
  * Created on August 15, 2002, 4:09 PM
  */
 
-package FileSystemTest;
+package org.openide.filesystems;
 
 import java.beans.PropertyVetoException;
-import java.io.*;
-import java.util.Enumeration;
-import junit.framework.Test;
+import java.io.File;
+import java.io.IOException;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-import org.openide.filesystems.*;
 
 /**
  *
@@ -47,7 +44,6 @@ public class AttrTest extends NbTestCase {
             getAttribute(fo,">","4");
             getAttribute(fo,"-","5");
             getAttribute(fo,"*","6");
-            postprocess();
     }
  
     /** set attribute to FileObject 
@@ -80,44 +76,17 @@ public class AttrTest extends NbTestCase {
      */
     private void preprocess() throws IOException,PropertyVetoException {
 //        fileSystemFile.mkdir();
+        clearWorkDir();
         fileSystemDir = new File(getWorkDir(), "testAtt123rDir");
         if(fileSystemDir.mkdir() == false || fileSystemDir.isDirectory() == false) {
             throw new IOException (fileSystemDir.toString() + " is not directory");
         }
-        Enumeration en = Repository.getDefault().fileSystems();
-        while (en.hasMoreElements()) {
-            FileSystem fs = (FileSystem) en.nextElement();
-            if (fs instanceof LocalFileSystem) {
-                LocalFileSystem lfs = (LocalFileSystem) fs;
-                if (lfs.getRootDirectory().equals(fileSystemDir)) {
-                    fileSystem = lfs;
-                    break;
-                }
-            }
-        } 
-        if (fileSystem == null ) {
-            fileSystem = new LocalFileSystem();
-            fileSystem.setRootDirectory(fileSystemDir);
-            Repository.getDefault().addFileSystem(fileSystem);
-        }
-        
-    }
-        
-    /** unmount temporary filesystem
-     **/    
-    private void postprocess() {
-        Repository.getDefault().getDefault().removeFileSystem(fileSystem);
-        fileSystemDir.deleteOnExit();
-      //  fileSystemFile.deleteOnExit();
+        fileSystem = new LocalFileSystem();
+        fileSystem.setRootDirectory(fileSystemDir);
     }
         
     private FileObject getAnyFileObject() {
         return fileSystem.getRoot();
-    }
-   /**This suite*/
-    public static Test suite() {
-        NbTestSuite suite = new NbTestSuite(AttrTest.class);
-        return suite;
     }
     
     /** test set "\\" attr value, see to :  8977 in Issuezila
@@ -131,18 +100,6 @@ public class AttrTest extends NbTestCase {
         } catch(Exception e) {
             assertTrue(" failed:no  attribute setted " + e,false );
         }
-            
-       
-        postprocess();
     }
-    
-    
-      /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
     
 }
