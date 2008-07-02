@@ -39,44 +39,62 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-//</editor-fold>
+// </editor-fold>
 
-package org.netbeans.modules.j2ee.sun.ide.j2ee.jsps;
+package org.netbeans.modules.glassfish.eecommon.api;
 
+import org.netbeans.modules.glassfish.eecommon.*;
 import java.io.File;
-import javax.enterprise.deploy.spi.DeploymentManager;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
-import org.netbeans.modules.glassfish.eecommon.api.FindJSPServletHelper;
-import org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentManager;
+import org.openide.util.Parameters;
 
-import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
-
-/**
- */
-public class FindJSPServletImpl implements FindJSPServlet {
-
-    private DeploymentManager tm;
+public class FindJSPServletHelper {
 
     /** Creates a new instance of FindJSPServletImpl */
-    public FindJSPServletImpl(DeploymentManager dm) {
-        tm = dm;
+    private FindJSPServletHelper() {
     }
     
-    public File getServletTempDirectory(String moduleContextPath) {
-        DeploymentManagerProperties dmProps = new DeploymentManagerProperties(tm);
-        String domain = dmProps.getDomainName();
-	String domainDir = dmProps.getLocation();
-        SunDeploymentManager sunDM = (SunDeploymentManager)tm;
-        String modName = sunDM.getManagement().getWebModuleName(moduleContextPath);
-        //modName may be null, but this does not impact to following logic: in this case, the file will not exist as well.
-        return FindJSPServletHelper.getServletTempDirectory(domainDir,domain,modName);
+    public static File getServletTempDirectory(String domainDir, String domain, String modName) {
+        Parameters.notWhitespace("domainDir", domainDir);
+        Parameters.notWhitespace("domain", domain);
+        File workDir = new File(domainDir, "/"+domain+"/generated/jsp/j2ee-modules/" +modName);// NOI18N
+        if (!workDir.exists()) { //check for ear file gen area:
+            workDir = new File(domainDir, "/"+domain+"/generated/jsp/j2ee-apps/" +modName);// NOI18N
+            
+        }
+        return workDir;
     }
     
-    public String getServletResourcePath(String moduleContextPath, String jspResourcePath) {
-        return FindJSPServletHelper.getServletResourcePath(moduleContextPath, jspResourcePath);
+    
+    static public String getServletResourcePath(String moduleContextPath, String jspResourcePath) {
+        Parameters.notWhitespace("jspResourcePath", jspResourcePath);
+        String s= getServletPackageName(jspResourcePath).replace('.', '/') + '/' +
+            getServletClassName(jspResourcePath) + ".java";// NOI18N
+        return s;
+    }
+
+    // copied from org.apache.jasper.JspCompilationContext
+    static private String getServletPackageName(String jspUri) {
+        String dPackageName = getDerivedPackageName(jspUri);
+        if (dPackageName.length() == 0) {
+            return JasperNameMappingHelper.JSP_PACKAGE_NAME;
+        }
+        return JasperNameMappingHelper.JSP_PACKAGE_NAME + '.' + getDerivedPackageName(jspUri);
     }
     
-    public String getServletEncoding(String moduleContextPath, String jspResourcePath) {
-        return FindJSPServletHelper.getServletEncoding(moduleContextPath, jspResourcePath);
+    // copied from org.apache.jasper.JspCompilationContext
+    static private String getDerivedPackageName(String jspUri) {
+        int iSep = jspUri.lastIndexOf('/');
+        return (iSep > 0) ? JasperNameMappingHelper.makeJavaPackage(jspUri.substring(0,iSep)) : "";// NOI18N
     }
+    
+    // copied from org.apache.jasper.JspCompilationContext
+    static private String getServletClassName(String jspUri) {
+        int iSep = jspUri.lastIndexOf('/') + 1;
+        return JasperNameMappingHelper.makeJavaIdentifier(jspUri.substring(iSep));
+    }
+    
+    public static String getServletEncoding(String moduleContextPath, String jspResourcePath) {
+        return "UTF8"; // NOI18N
+    }
+        
 }

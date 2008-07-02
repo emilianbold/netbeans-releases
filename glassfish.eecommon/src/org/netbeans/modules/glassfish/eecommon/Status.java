@@ -1,3 +1,4 @@
+// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -38,21 +39,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+// </editor-fold>
 
-package org.netbeans.modules.j2ee.sun.ide.j2ee;
+package org.netbeans.modules.glassfish.eecommon;
 
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
 
-//The tomcat team will split the tomcat module in 2, so that this type of behaviour can be shared
-// between web/app server plugins. This is really a shared utility class.
-//
-
 /** Implementation of DeploymentStatus
- *
- * @@author  Radim Kubacki
  */
 public class Status implements DeploymentStatus {
     
