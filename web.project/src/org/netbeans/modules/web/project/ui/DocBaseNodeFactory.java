@@ -350,7 +350,7 @@ public final class DocBaseNodeFactory implements NodeFactory {
                         List list = (List) data;
                         for (Object each : list) {
                             FileObject file = FileUtil.toFileObject((File) each);
-                            if (JAVA_MIME_TYPE.equals(file.getMIMEType())) { //NO18N
+                            if (file != null && JAVA_MIME_TYPE.equals(file.getMIMEType())) { //NO18N
                                 // don't allow java files, see #119968
                                 return null;
                             }
