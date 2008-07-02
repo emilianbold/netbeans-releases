@@ -420,7 +420,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
        
             formatter.appendHtml("("); // NOI18N
             formatter.parameters(true);
-            formatter.appendText(getParamsStr());
+            appendParamsStr(formatter);
             formatter.parameters(false);
             formatter.appendHtml(")"); // NOI18N
             
@@ -434,25 +434,31 @@ abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public String getSortText() {
-            return getName() + getParamsStr();
+            int order = getFunction().getDefaultParameterCount() - defArgCount;
+            return getName() + order;
         }
         
-        private String getParamsStr(){
-            StringBuilder builder = new StringBuilder();
+        private void appendParamsStr(HtmlFormatter formatter){
             String parameters[] = getFunction().getParameters().toArray(new String[0]);
             
             int count = parameters.length - defArgCount;
+            int requiredParamCount = parameters.length - getFunction().getDefaultParameterCount();
             
             for (int i = 0; i < count; i++) {
                 String param = parameters[i];
-                builder.append(param);
+                
+                if (i < requiredParamCount) {
+                    formatter.emphasis(true);
+                    formatter.appendText(param);
+                    formatter.emphasis(false);
+                } else {
+                    formatter.appendText(param);
+                }
                 
                 if (i < count - 1){
-                    builder.append(", "); // NOI18N
+                    formatter.appendText(", "); // NOI18N
                 }
             }
-            
-            return builder.toString();
         }
     }
 

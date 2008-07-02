@@ -133,7 +133,7 @@ public enum PropertyType {
     IMPORT_LOCATION(String.class, StringPropEditor.class), 
     IMPORT_TYPE(String.class, StringPropEditor.class), 
     IMPORT_NAMESPACE(String.class, StringPropEditor.class), 
-    // PARALLEL(TBoolean.class, TBooleanEditor.class), 
+    PARALLEL(Boolean.class), 
     COUNTER_NAME(String.class, StringPropEditor.class), 
     START_COUNTER_EXPR(StartCounterValue.class, StartCounterExprEditor.class), 
     FINAL_COUNTER_EXPR(FinalCounterValue.class, FinalCounterExprEditor.class), 
