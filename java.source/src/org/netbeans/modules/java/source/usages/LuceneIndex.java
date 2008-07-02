@@ -47,6 +47,7 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -59,7 +60,10 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.lang.model.element.ElementKind;
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.KeywordAnalyzer;
+import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
+import org.apache.lucene.analysis.WhitespaceAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.FilterIndexReader;
@@ -86,6 +90,7 @@ import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.modules.java.source.util.LowMemoryEvent;
 import org.netbeans.modules.java.source.util.LowMemoryListener;
 import org.netbeans.modules.java.source.util.LowMemoryNotifier;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -105,6 +110,7 @@ class LuceneIndex extends Index {
     //@GuardedBy (this)
     private IndexReader reader; //Cache, do not use this dirrectly, use getReader
     private Set<String> rootPkgCache;   //Cache, do not use this dirrectly
+    private Analyzer analyzer;  //Analyzer used to store documents
     
     static Index create (final File cacheRoot) throws IOException {        
         assert cacheRoot != null && cacheRoot.exists() && cacheRoot.canRead() && cacheRoot.canWrite();
@@ -115,6 +121,11 @@ class LuceneIndex extends Index {
     private LuceneIndex (final File refCacheRoot) throws IOException {
         assert refCacheRoot != null;
         this.directory = FSDirectory.getDirectory(refCacheRoot, NoLockFactory.getNoLockFactory());      //Locking controlled by rwlock
+        PerFieldAnalyzerWrapper _analyzer = new PerFieldAnalyzerWrapper(new KeywordAnalyzer());
+        _analyzer.addAnalyzer(DocumentUtil.identTerm("").field(), new WhitespaceAnalyzer());
+        _analyzer.addAnalyzer(DocumentUtil.featureIdentTerm("").field(), new WhitespaceAnalyzer());
+        _analyzer.addAnalyzer(DocumentUtil.caseInsensitiveFeatureIdentTerm("").field(), new DocumentUtil.LCWhitespaceAnalyzer());
+        this.analyzer = _analyzer;
     }
 
 
@@ -195,15 +206,7 @@ class LuceneIndex extends Index {
         final AtomicBoolean cancel = this.cancel.get();
         assert cancel != null;
         assert name != null;                
-        final Set<Term> toSearch = new TreeSet<Term> (new Comparator<Term>(){
-            public int compare (Term t1, Term t2) {
-                int ret = t1.field().compareTo(t2.field());
-                if (ret == 0) {
-                    ret = t1.text().compareTo(t2.text());
-                }
-                return ret;
-            }
-        });
+        final Set<Term> toSearch = new TreeSet<Term> (new TermComparator());
         final IndexReader in = getReader();
         switch (kind) {
             case SIMPLE_NAME:
@@ -348,6 +351,143 @@ class LuceneIndex extends Index {
         }        
     }
     
+    public <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<T> convertor, Map<T,Set<String>> result) throws IOException, InterruptedException {
+        if (!isValid(false)) {
+            LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));   //NOI18N
+            return;
+        }
+        final AtomicBoolean cancel = this.cancel.get();
+        assert cancel != null;
+        Parameters.notNull("ident", ident);             //NOI18N
+        Parameters.notEmpty("ident", ident);            //NOI18N
+        final Set<Term> toSearch = new TreeSet<Term> (new TermComparator());
+        final IndexReader in = getReader();
+        switch (kind) {
+            case SIMPLE_NAME:
+            {
+                toSearch.add(DocumentUtil.featureIdentTerm(ident));
+                break;
+            }
+            case PREFIX:
+                {
+                final Term nameTerm = DocumentUtil.featureIdentTerm(ident);
+                prefixSearh(nameTerm, in, toSearch, cancel);
+                break;                
+            }
+            case CASE_INSENSITIVE_PREFIX:
+            {
+                final Term nameTerm = DocumentUtil.caseInsensitiveFeatureIdentTerm(ident.toLowerCase());    //I18N Locale?
+                prefixSearh(nameTerm, in, toSearch, cancel);
+                break;
+            }
+            case REGEXP:                        
+            {
+                final Pattern pattern = Pattern.compile(ident);
+                if (Character.isJavaIdentifierStart(ident.charAt(0))) {
+                    regExpSearch(pattern, DocumentUtil.featureIdentTerm(ident), in, toSearch, cancel, true);
+                }
+                else {
+                    regExpSearch(pattern, DocumentUtil.featureIdentTerm(""), in, toSearch, cancel, true);             //NOI18N
+                }
+                break;
+            }
+            case CASE_INSENSITIVE_REGEXP:
+            {
+                final Pattern pattern = Pattern.compile(ident,Pattern.CASE_INSENSITIVE);
+                if (Character.isJavaIdentifierStart(ident.charAt(0))) {
+                    regExpSearch(pattern, DocumentUtil.caseInsensitiveFeatureIdentTerm(ident.toLowerCase()), in, toSearch,cancel, false);      //XXX: Locale
+                }
+                else {
+                    regExpSearch(pattern, DocumentUtil.caseInsensitiveFeatureIdentTerm(""), in, toSearch,cancel, false);      //NOI18N
+                }
+                    break;
+            }
+            case CAMEL_CASE:
+            {
+                final StringBuilder sb = new StringBuilder();
+                String prefix = null;
+                int lastIndex = 0;
+                int index;
+                do {
+                    index = findNextUpper(ident, lastIndex + 1);
+                    String token = ident.substring(lastIndex, index == -1 ? ident.length(): index);
+                    if ( lastIndex == 0 ) {
+                        prefix = token;
+                    }
+                    sb.append(token); 
+                    sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N         
+                    lastIndex = index;
+                }
+                while(index != -1);
+
+                final Pattern pattern = Pattern.compile(sb.toString());
+                regExpSearch(pattern,DocumentUtil.featureIdentTerm(prefix),in,toSearch,cancel, true);
+                break;
+            }
+            case CAMEL_CASE_INSENSITIVE:
+            {
+                final Term nameTerm = DocumentUtil.caseInsensitiveFeatureIdentTerm(ident.toLowerCase());     //XXX: I18N, Locale
+                prefixSearh(nameTerm, in, toSearch, cancel);
+                StringBuilder sb = new StringBuilder();
+                String prefix = null;
+                int lastIndex = 0;
+                int index;
+                do {
+                    index = findNextUpper(ident, lastIndex + 1);
+                    String token = ident.substring(lastIndex, index == -1 ? ident.length(): index);
+                    if ( lastIndex == 0 ) {
+                        prefix = token;
+                    }
+                    sb.append(token); 
+                    sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N         
+                    lastIndex = index;
+                }
+                while(index != -1);
+                final Pattern pattern = Pattern.compile(sb.toString());
+                regExpSearch(pattern,DocumentUtil.featureIdentTerm(prefix),in,toSearch,cancel, true);
+                break;
+            }
+            default:
+                throw new UnsupportedOperationException (kind.toString());
+        }
+        TermDocs tds = in.termDocs();
+        LOGGER.fine(String.format("LuceneIndex.getDeclaredElements[%s] returned %d elements\n",this.toString(), toSearch.size()));  //NOI18N
+        final Iterator<Term> it = toSearch.iterator();        
+        final ElementKind[] kindHolder = new ElementKind[1];
+        Map<Integer,Set<String>> docNums = new HashMap<Integer,Set<String>>();   //todo: TreeMap may perform better, ordered according to doc nums => linear IO
+        int[] docs = new int[25];
+        int[] freq = new int [25];
+        int len;
+        while (it.hasNext()) {
+            if (cancel.get()) {
+                throw new InterruptedException ();
+            }
+            final Term term = it.next();
+            tds.seek(term);
+            while ((len = tds.read(docs, freq))>0) {
+                for (int i = 0; i < len; i++) {
+                    Set<String> row = docNums.get(docs[i]);
+                    if (row == null) {
+                        row = new HashSet<String>();
+                        docNums.put(docs[i], row);
+                    }
+                    row.add(term.text());
+                }
+                if (len < docs.length) {
+                    break;
+                }
+            }
+        }
+        for (Map.Entry<Integer,Set<String>> docNum : docNums.entrySet()) {
+            if (cancel.get()) {
+                throw new InterruptedException ();
+            }
+            final Document doc = in.document(docNum.getKey(), DocumentUtil.declaredTypesFieldSelector());
+            final String binaryName = DocumentUtil.getBinaryName(doc, kindHolder);            
+            result.put (convertor.convert(kindHolder[0],binaryName),docNum.getValue());
+        }        
+    }
+    
     private static int findNextUpper(String text, int offset ) {
         
         for( int i = offset; i < text.length(); i++ ) {
@@ -372,7 +512,7 @@ class LuceneIndex extends Index {
                 startBuilder.append(c);
             }
             startPrefix = startBuilder.toString();
-            startTerm = caseSensitive ? DocumentUtil.simpleNameTerm(startPrefix) : DocumentUtil.caseInsensitiveNameTerm(startPrefix);
+            startTerm = new Term (startTerm.field(),startPrefix);
         }
         else {
             startPrefix=startText;
@@ -564,7 +704,7 @@ class LuceneIndex extends Index {
         }
     }
     
-    public void store (final Map<Pair<String,String>, List<String>> refs, final List<Pair<String,String>> topLevels) throws IOException {
+    public void store (final Map<Pair<String,String>, Object[]> refs, final List<Pair<String,String>> topLevels) throws IOException {
         assert ClassIndexManager.getDefault().holdsWriteLock();
         this.rootPkgCache = null;
         boolean create = !isValid (false);
@@ -587,7 +727,7 @@ class LuceneIndex extends Index {
         storeData(refs, create, timeStamp);
     }
 
-    public void store(final Map<Pair<String,String>, List<String>> refs, final Set<Pair<String,String>> toDelete) throws IOException {
+    public void store(final Map<Pair<String,String>, Object[]> refs, final Set<Pair<String,String>> toDelete) throws IOException {
         assert ClassIndexManager.getDefault().holdsWriteLock();
         this.rootPkgCache = null;
         boolean create = !isValid (false);        
@@ -634,7 +774,7 @@ class LuceneIndex extends Index {
         storeData(refs, create, timeStamp);
     }    
     
-    private void storeData (final Map<Pair<String,String>, List<String>> refs, final boolean create, final long timeStamp) throws IOException {        
+    private void storeData (final Map<Pair<String,String>, Object[]> refs, final boolean create, final long timeStamp) throws IOException {
         final IndexWriter out = getWriter(create);
         try {
             if (debugIndexMerging) {
@@ -656,24 +796,27 @@ class LuceneIndex extends Index {
             }
             else {
                 memDir = new RAMDirectory ();
-                activeOut = new IndexWriter (memDir,new KeywordAnalyzer(), true);
+                activeOut = new IndexWriter (memDir, analyzer, true);
             }        
             try {
                 activeOut.addDocument (DocumentUtil.createRootTimeStampDocument (timeStamp));
-                for (Iterator<Map.Entry<Pair<String,String>,List<String>>> it = refs.entrySet().iterator(); it.hasNext();) {
-                    Map.Entry<Pair<String,String>,List<String>> refsEntry = it.next();
+                for (Iterator<Map.Entry<Pair<String,String>,Object[]>> it = refs.entrySet().iterator(); it.hasNext();) {
+                    Map.Entry<Pair<String,String>,Object[]> refsEntry = it.next();
                     it.remove();
                     final Pair<String,String> pair = refsEntry.getKey();
                     final String cn = pair.first;
                     final String srcName = pair.second;
-                    List<String> cr = refsEntry.getValue();                    
-                    Document newDoc = DocumentUtil.createDocument(cn,timeStamp,cr,srcName);
+                    final Object[] data = refsEntry.getValue();
+                    final List<String> cr = (List<String>) data[0];
+                    final String fids = (String) data[1];
+                    final String ids = (String) data[2];
+                    final Document newDoc = DocumentUtil.createDocument(cn,timeStamp,cr,fids,ids,srcName);
                     activeOut.addDocument(newDoc);
                     if (memDir != null && lmListener.lowMemory.getAndSet(false)) {                       
                         activeOut.close();
                         out.addIndexes(new Directory[] {memDir});                        
                         memDir = new RAMDirectory ();        
-                        activeOut = new IndexWriter (memDir,new KeywordAnalyzer(), true);
+                        activeOut = new IndexWriter (memDir, analyzer, true);
                     }
                 }
                 if (memDir != null) {
@@ -744,7 +887,7 @@ class LuceneIndex extends Index {
             this.reader.close();
             this.reader = null;
         }
-        IndexWriter writer = new IndexWriter (this.directory,new KeywordAnalyzer(), create);
+        IndexWriter writer = new IndexWriter (this.directory, analyzer, create);
         return writer;
     }
     
@@ -818,6 +961,16 @@ class LuceneIndex extends Index {
                 Arrays.fill(this.norms, DefaultSimilarity.encodeNorm(1.0f));
             }
             return this.norms;
+        }
+    }
+    
+    private static class TermComparator implements Comparator<Term> {
+        public int compare (Term t1, Term t2) {
+            int ret = t1.field().compareTo(t2.field());
+            if (ret == 0) {
+                ret = t1.text().compareTo(t2.text());
+            }
+            return ret;
         }
     }
     

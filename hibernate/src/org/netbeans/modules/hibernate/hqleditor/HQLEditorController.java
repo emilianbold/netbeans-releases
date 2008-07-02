@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.hibernate.hqleditor;
@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
 
 /**
  * HQL Editor controller. Controls overall HQL query execution.
- * 
+ *
  * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
 public class HQLEditorController {
@@ -64,7 +64,7 @@ public class HQLEditorController {
     private Logger logger = Logger.getLogger(HQLEditorController.class.getName());
     HQLEditorTopComponent editorTopComponent = null;
 
-    public void executeHQLQuery(final String hql, 
+    public void executeHQLQuery(final String hql,
             final FileObject configFileObject,
             final int maxRowCount,
             final ProgressHandle ph) {
@@ -72,8 +72,7 @@ public class HQLEditorController {
 
         try {
             ph.progress(
-                    NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionPrepare"), 10
-                    );
+                    NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionPrepare"), 10);
             Project project = FileOwnerQuery.getOwner(configFileObject);
             // Parse POJOs from HQL
             // Check and if required compile POJO files mentioned in HQL
@@ -86,7 +85,7 @@ public class HQLEditorController {
             Exceptions.printStackTrace(ex);
         }
 
-        final ClassLoader customClassLoader = new CustomClassLoader(localResourcesURLList.toArray(new URL[]{}), 
+        final ClassLoader customClassLoader = new CustomClassLoader(localResourcesURLList.toArray(new URL[]{}),
                 this.getClass().getClassLoader());
 
         Thread t = new Thread() {
@@ -96,24 +95,23 @@ public class HQLEditorController {
                 Thread.currentThread().setContextClassLoader(customClassLoader);
                 HQLExecutor queryExecutor = new HQLExecutor();
                 try {
-                    ph.progress(
-                    NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionPassControlToHibernate"), 50
-                    );
-                HQLResult r = queryExecutor.execute(hql, configFileObject, maxRowCount, ph);
-                ph.progress(
-                    NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionProcessResults"), 80
-                    );
-                   editorTopComponent.setResult(r);
+                    ph.progress(50);
+                    ph.setDisplayName(NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionPassControlToHibernate"));
+                    HQLResult r = queryExecutor.execute(hql, configFileObject, maxRowCount, ph);
+                    ph.progress(80);
+                    ph.setDisplayName(NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionProcessResults"));
+                    editorTopComponent.setResult(r);
                 } catch (Exception e) {
-                    System.out.println("exception " + e);   
+                    Exceptions.printStackTrace(e);
                 }
-             
+
             }
         };
         t.setContextClassLoader(customClassLoader);
         try {
-        t.start();
-        } catch (Exception e) {}
+            t.start();
+        } catch (Exception e) {
+        }
     }
 
     public void init(Node[] activatedNodes) {
@@ -147,13 +145,12 @@ public class HQLEditorController {
 //            FileObject javaSource = findJavaSource(token, project);
 //            if(javaSource != null) {
 //                // Check for class file..
-//                
+//
 //            }
         }
     }
-    
 //    private FileObject findJavaSource(String text, Project project) {
-//        
+//
 //        return false;
 //    }
 }

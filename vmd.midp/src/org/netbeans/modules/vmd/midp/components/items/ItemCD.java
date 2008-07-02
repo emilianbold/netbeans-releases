@@ -159,7 +159,7 @@ public class ItemCD extends ComponentDescriptor {
         );
     }
 
-    private static DefaultPropertiesPresenter createPropertiesPresenter() {
+    private static Presenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                     .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Label"), // NOI18N
