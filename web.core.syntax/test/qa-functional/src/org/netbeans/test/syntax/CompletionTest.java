@@ -174,15 +174,14 @@ public class CompletionTest extends J2eeTestCase {
                 }
             };
             addTest(RecurrentSuiteFactory.createSuite(CompletionTest.class,
-                getProjectsDir(), filter));
+                new CompletionTest().getProjectsDir(), filter));
         }
     }
     
-    private static File getProjectsDir(){
+    public File getProjectsDir(){
         File datadir = new CompletionTest().getDataDir();
         return new File(datadir, "CompletionTestProjects");
     }
-    
     
     @Override
     public void runTest() throws Exception {

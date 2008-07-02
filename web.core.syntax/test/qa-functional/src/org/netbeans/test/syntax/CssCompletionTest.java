@@ -55,6 +55,8 @@ import org.netbeans.test.web.RecurrentSuiteFactory;
 public class CssCompletionTest extends CompletionTest {
 
     /** Creates a new instance of CompletionTesJ2EE */
+    public CssCompletionTest() {}
+
     public CssCompletionTest(String name, FileObject testFileObj) {
         super(name, testFileObj);
         debug = false;
@@ -71,8 +73,6 @@ public class CssCompletionTest extends CompletionTest {
 
         public SuiteCreator() {
             super();
-            File datadir = new CssCompletionTest(null, null).getDataDir();
-            File projectsDir = new File(datadir, "CSSCompletionTestProjects");
             FileObjectFilter filter = new FileObjectFilter() {
 
                 public boolean accept(FileObject fo) {
@@ -82,7 +82,7 @@ public class CssCompletionTest extends CompletionTest {
                 }
             };
             addTest(RecurrentSuiteFactory.createSuite(CssCompletionTest.class,
-                    projectsDir, filter));
+                    new CssCompletionTest().getProjectsDir(), filter));
         }
     }
 
@@ -90,5 +90,12 @@ public class CssCompletionTest extends CompletionTest {
     public void runTest() throws Exception {
         test(testFileObj, "/**CC", "*/", false);
     }
+
+    @Override
+    public File getProjectsDir() {
+        File datadir = new CssCompletionTest(null, null).getDataDir();
+        return new File(datadir, "CSSCompletionTestProjects");
+    }
+
 
 }
