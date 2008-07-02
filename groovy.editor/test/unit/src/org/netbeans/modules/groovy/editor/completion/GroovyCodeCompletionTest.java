@@ -76,21 +76,47 @@ public class GroovyCodeCompletionTest extends GroovyTestBase {
     }
 
     public void testMethodCompletion2() throws Exception {
-        checkCompletion(TEST_BASE + "MethodCompletionTestCase.groovy", "s.^", false);
+        checkCompletion(TEST_BASE + "MethodCompletionTestCase.groovy", "new String().find^", false);
     }
 
-//    public void testPrefix1() throws Exception {
-//        checkPrefix("testfiles/cc-prefix1.js");
-//    }
-//
-//    public void testAutoQueryStrings() throws Exception {
-//        assertAutoQuery(QueryType.COMPLETION, "foo^ 'foo'", ".");
-//        assertAutoQuery(QueryType.NONE, "'^foo'", ".");
-//        assertAutoQuery(QueryType.NONE, "/f^oo/", ".");
-//        assertAutoQuery(QueryType.NONE, "\"^\"", ".");
-//        assertAutoQuery(QueryType.NONE, "\" foo^ \"", ".");
-//    }
-//
+    public void testScriptLong1() throws Exception {
+        checkCompletion(TEST_BASE + "ScriptLong1.groovy", "l.M^", false);
+    }
 
+    public void testScriptLong2() throws Exception {
+        checkCompletion(TEST_BASE + "ScriptLong2.groovy", "l.comp^", false);
+    }
+
+    public void testScriptString1() throws Exception {
+        checkCompletion(TEST_BASE + "ScriptString1.groovy", "s.val^", false);
+    }
+
+    public void testScriptString2() throws Exception {
+        checkCompletion(TEST_BASE + "ScriptString2.groovy", "s.spli^", false);
+    }
+
+    public void testScriptStringConst1() throws Exception {
+        checkCompletion(TEST_BASE + "ScriptStringConst1.groovy", "\" ddd \".toS^", false);
+    }
+
+    public void testClassMethodFieldString1() throws Exception {
+        checkCompletion(TEST_BASE + "ClassMethodFieldString1.groovy", "stringField.toL^", false);
+    }
+
+    public void testClassMethodFieldString2() throws Exception {
+        checkCompletion(TEST_BASE + "ClassMethodFieldString2.groovy", "stringField.spli^", false);
+    }
+    
+    public void testClassMethodFieldLong1() throws Exception {
+        checkCompletion(TEST_BASE + "ClassMethodFieldLong1.groovy", "longField.M^", false);
+    }
+
+    public void testClassMethodFieldLong2() throws Exception {
+        checkCompletion(TEST_BASE + "ClassMethodFieldLong2.groovy", "longField.comp^", false);
+    }
+
+//    public void testClassMethodLocalStringConst1() throws Exception {
+//        checkCompletion(TEST_BASE + "ClassMethodLocalStringConst1.groovy", "\" ddd \".toS^", false);
+//    }
 
 }

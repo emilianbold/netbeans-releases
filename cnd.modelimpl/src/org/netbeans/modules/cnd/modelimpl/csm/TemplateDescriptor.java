@@ -85,6 +85,11 @@ public final class TemplateDescriptor {
         return null;
     }
 
+    @Override
+    public String toString() {
+        return getTemplateSuffix().toString();
+    }
+
     public void write(DataOutput output) throws IOException {
         PersistentUtils.writeTemplateParameters(templateParams, output);
         output.writeUTF(this.templateSuffix.toString());
