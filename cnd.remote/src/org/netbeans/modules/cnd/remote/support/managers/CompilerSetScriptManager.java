@@ -62,6 +62,7 @@ public class CompilerSetScriptManager implements ScriptManager {
     private BufferedReader in;
     private StringWriter out;
     private StringTokenizer st;
+    private String platform;
     private static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
     public void setSupport(RemoteScriptSupport support) {
@@ -79,6 +80,7 @@ public class CompilerSetScriptManager implements ScriptManager {
             out = new StringWriter();
             
             String line;
+            platform = in.readLine();
             while ((line = in.readLine()) != null) {
                 out.write(line + '\n');
                 out.flush();
@@ -95,6 +97,10 @@ public class CompilerSetScriptManager implements ScriptManager {
 
     public String getScript() {
         return "/home/" + support.getUser() + "/.netbeans/rddev/cnd.remote/scripts/getCompilerSets.bash"; // NOI18N
+    }
+    
+    public String getPlatform() {
+        return platform;
     }
 
     public boolean hasMoreCompilerSets() {

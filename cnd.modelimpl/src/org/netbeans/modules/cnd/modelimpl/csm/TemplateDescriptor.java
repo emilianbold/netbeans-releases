@@ -37,57 +37,56 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor;
+package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.groovy.editor.completion.CodeCompleter;
+import antlr.collections.AST;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
 /**
  *
- * @author schmidtm
+ * @author eu155513
  */
-public class GroovyCodeCompletionTest extends GroovyTestBase {
+public final class TemplateDescriptor {
+    private final List<CsmTemplateParameter>templateParams;
+    private final CharSequence templateSuffix;
 
-    String TEST_BASE = "testfiles/completion/";
-
-    public GroovyCodeCompletionTest(String testName) {
-        super(testName);
-        Logger.getLogger(CodeCompleter.class.getName()).setLevel(Level.FINEST);
+    public TemplateDescriptor(List<CsmTemplateParameter> templateParams, CharSequence templateSuffix) {
+        this.templateParams = templateParams;
+        this.templateSuffix = templateSuffix;
     }
 
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        CodeCompleter.setTesting(true);
+    public List<CsmTemplateParameter> getTemplateParameters() {
+	return (templateParams != null) ? templateParams : Collections.<CsmTemplateParameter>emptyList();
     }
 
-    // uncomment this to have logging from GroovyLexer
-    protected Level logLevel() {
-        // enabling logging
-        return Level.INFO;
-        // we are only interested in a single logger, so we set its level in setUp(),
-        // as returning Level.FINEST here would log from all loggers
+    public CharSequence getTemplateSuffix() {
+        return templateSuffix;
     }
 
-
-    public void testMethodCompletion1() throws Exception {
-        checkCompletion(TEST_BASE + "MethodCompletionTestCase.groovy", "new String().^toS", false);
+    public static TemplateDescriptor createIfNeeded(AST ast, CsmFile file, CsmScope scope) {
+        if (ast == null) {
+            return null;
+        }
+        AST start = TemplateUtils.getTemplateStart(ast.getFirstChild());
+        for( AST token = start; token != null; token = token.getNextSibling() ) {
+            if (token.getType() == CPPTokenTypes.LITERAL_template) {
+                    return new TemplateDescriptor(TemplateUtils.getTemplateParameters(token, file, scope),
+                            '<' + TemplateUtils.getClassSpecializationSuffix(token) + '>');
+            }
+        }
+        return null;
     }
 
-//    public void testPrefix1() throws Exception {
-//        checkPrefix("testfiles/cc-prefix1.js");
-//    }
-//
-//    public void testAutoQueryStrings() throws Exception {
-//        assertAutoQuery(QueryType.COMPLETION, "foo^ 'foo'", ".");
-//        assertAutoQuery(QueryType.NONE, "'^foo'", ".");
-//        assertAutoQuery(QueryType.NONE, "/f^oo/", ".");
-//        assertAutoQuery(QueryType.NONE, "\"^\"", ".");
-//        assertAutoQuery(QueryType.NONE, "\" foo^ \"", ".");
-//    }
-//
-
-
+    public void write(DataOutput output) throws IOException {
+        PersistentUtils.writeTemplateParameters(templateParams, output);
+        output.writeUTF(this.templateSuffix.toString());
+    }
 }

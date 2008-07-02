@@ -55,7 +55,7 @@ import org.openide.util.Exceptions;
  *
  * @author Karol Harezlak
  */
-public final class MIDPDataSetBodyCodePresenter {
+public final class MidpDataSetBodyCodePresenter {
 
     private static final String INSTANCE_NAME = "__instancename__"; //NOI18N
     private static final String START_GUARDED_BLOCK = "__start_guardedblock__"; //NOI18N
@@ -105,7 +105,7 @@ public final class MIDPDataSetBodyCodePresenter {
 
             private void createBodyCode(final MultiGuardedSection section) {
                 try {
-                    InputStream is = MIDPDataSetBodyCodePresenter.class.getClassLoader().getResourceAsStream(bodyTemplatePath);
+                    InputStream is = MidpDataSetBodyCodePresenter.class.getClassLoader().getResourceAsStream(bodyTemplatePath);
                     BufferedReader in = new BufferedReader(new InputStreamReader(is));
                     String line = in.readLine();
                     int i = 0;
@@ -145,6 +145,6 @@ public final class MIDPDataSetBodyCodePresenter {
         };
     }
     
-    private MIDPDataSetBodyCodePresenter() {
+    private MidpDataSetBodyCodePresenter() {
     }
 }

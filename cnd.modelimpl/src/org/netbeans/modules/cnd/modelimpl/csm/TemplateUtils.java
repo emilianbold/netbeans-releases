@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import antlr.collections.AST;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
@@ -129,8 +128,17 @@ public class TemplateUtils {
 	}
 	return false;
     }
+
+    public static AST getTemplateStart(AST ast) {
+        for (AST child = ast; child != null; child = child.getNextSibling()) {
+            if (child.getType() == CPPTokenTypes.LITERAL_template) {
+                return child;
+            }
+        }
+        return null;
+    }
     
-    public static List<CsmTemplateParameter> getTemplateParameters(AST ast, CsmFile file, CsmDeclaration template) {
+    public static List<CsmTemplateParameter> getTemplateParameters(AST ast, CsmFile file, CsmScope scope) {
         assert (ast != null && ast.getType() == CPPTokenTypes.LITERAL_template);
         List<CsmTemplateParameter> res = new ArrayList<CsmTemplateParameter>();
         AST parameterStart = null;
@@ -152,7 +160,7 @@ public class TemplateUtils {
                         // or parameter name, but not both.
                         fakeAST = AstUtil.createAST(parameterStart, child);
                     }
-                    res.add(new TemplateParameterImpl(fakeAST, child.getText(), file, (CsmScope)template));
+                    res.add(new TemplateParameterImpl(fakeAST, child.getText(), file, scope));
                     parameterStart = null;
                     break;
                 case CPPTokenTypes.CSM_PARAMETER_DECLARATION:
@@ -166,11 +174,11 @@ public class TemplateUtils {
                                     if (p.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
                                         AST pn = p.getFirstChild();
                                         if (pn != null) {
-                                            res.add(new TemplateParameterImpl(parameterStart, pn.getText(), file, (CsmScope)template));
+                                            res.add(new TemplateParameterImpl(parameterStart, pn.getText(), file, scope));
                                             break;
                                         }
                                     } else if (p.getType() == CPPTokenTypes.ID) {
-                                       res.add(new TemplateParameterImpl(parameterStart, p.getText(), file, (CsmScope)template));
+                                       res.add(new TemplateParameterImpl(parameterStart, p.getText(), file, scope));
                                        break;
                                     }
                                 }
@@ -182,7 +190,7 @@ public class TemplateUtils {
                     parameterStart = child;
                      for (AST paramChild = child.getFirstChild(); paramChild != null; paramChild = paramChild.getNextSibling()) {
                         if (paramChild.getType() == CPPTokenTypes.ID) {
-                           res.add(new TemplateParameterImpl(parameterStart, paramChild.getText(), file, (CsmScope)template));
+                           res.add(new TemplateParameterImpl(parameterStart, paramChild.getText(), file, scope));
                            break;
                         }
                     }

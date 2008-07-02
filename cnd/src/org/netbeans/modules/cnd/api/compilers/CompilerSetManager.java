@@ -52,7 +52,6 @@ import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
@@ -61,9 +60,11 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -140,6 +141,8 @@ public class CompilerSetManager implements PlatformTypes {
      */
     public static CompilerSetManager getDefault(String key) {
         CompilerSetManager csm = null;
+        boolean no_compilers = false;
+        
         synchronized (MASTER_LOCK) {
             csm = managers.get(key);
             if (csm == null) {
@@ -149,20 +152,25 @@ public class CompilerSetManager implements PlatformTypes {
                 csm = new CompilerSetManager(key);
                 if (csm.isValid()) {
                     csm.saveToDisk();
-                } else {
-                    DialogDescriptor dialogDescriptor = new DialogDescriptor(
-                        new NoCompilersPanel(),
-                        getString("NO_COMPILERS_FOUND_TITLE"),
-                        true,
-                        new Object[]{DialogDescriptor.OK_OPTION},
-                        DialogDescriptor.OK_OPTION,
-                        DialogDescriptor.BOTTOM_ALIGN,
-                        null,
-                        null);
-                    DialogDisplayer.getDefault().notify(dialogDescriptor);
+                } else if (!csm.isPending()) {
+                    no_compilers = true;
                 }
             }
-            managers.put(key, csm);
+            if (csm != null) { 
+                managers.put(key, csm);
+            }
+        }
+        if (no_compilers) {
+            DialogDescriptor dialogDescriptor = new DialogDescriptor(
+                new NoCompilersPanel(),
+                getString("NO_COMPILERS_FOUND_TITLE"),
+                true,
+                new Object[]{DialogDescriptor.OK_OPTION},
+                DialogDescriptor.OK_OPTION,
+                DialogDescriptor.BOTTOM_ALIGN,
+                null,
+                null);
+            DialogDisplayer.getDefault().notify(dialogDescriptor);
         }
         return csm;
     }
@@ -197,6 +205,13 @@ public class CompilerSetManager implements PlatformTypes {
         init();
     }
     
+    private CompilerSetManager(String hkey, ArrayList<CompilerSet> sets) {
+        this.sets = sets;
+        this.hkey = hkey;
+        state = STATE_COMPLETE;
+        platform = getPlatform();
+    }
+    
     private void init() {
         if (hkey.equals("localhost")) { // NOI18N
             initCompilerFilters();
@@ -208,15 +223,12 @@ public class CompilerSetManager implements PlatformTypes {
         }
     }
     
-    private CompilerSetManager(String hkey, ArrayList<CompilerSet> sets) {
-        this.sets = sets;
-        this.hkey = hkey;
-        state = STATE_COMPLETE;
-        platform = getPlatform();
-    }
-    
     public boolean isValid() {
         return sets.size() > 0 && !sets.get(0).getName().equals(CompilerSet.None);
+    }
+    
+    public boolean isPending() {
+        return state == STATE_PENDING;
     }
 
 //    private static CompilerSetManager createDefaultCompilerSetManager(String key) {
@@ -341,31 +353,37 @@ public class CompilerSetManager implements PlatformTypes {
     }
     
     /** Initialize remote CompilerSets */
-    private void initRemoteCompilerSets(String key) {
-        CompilerSetProvider provider = (CompilerSetProvider) Lookup.getDefault().lookup(CompilerSetProvider.class);
+    private void initRemoteCompilerSets(final String key) {
+        final CompilerSetProvider provider = (CompilerSetProvider) Lookup.getDefault().lookup(CompilerSetProvider.class);
         if (provider != null) {
-            provider.init(key);
-            while (provider.hasMoreCompilerSets()) {
-                String data = provider.getNextCompilerSetData();
-                int i1 = data.indexOf(';');
-                int i2 = data.indexOf(';', i1 + 1);
-                String flavor = data.substring(0, i1);
-                String path = data.substring(i1 + 1, i2);
-                String tools = data.substring(i2 + 1);
-                CompilerSet cs = new CompilerSet(CompilerFlavor.toFlavor(flavor), path, flavor);
-                StringTokenizer st = new StringTokenizer(tools, ";"); // NOI18N
-                while (st.hasMoreTokens()) {
-                    String name = st.nextToken();
-                    int kind;
-                    if (flavor.startsWith("Sun")) { // NOI18N
-                        kind = name.equals("CC") ? Tool.CCompiler : Tool.CCCompiler; // NOI18N
-                    } else {
-                        kind = name.equals("gcc") ? Tool.CCompiler : Tool.CCCompiler; // NOI18N
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    provider.init(key);
+                    platform = provider.getPlatform();
+                    while (provider.hasMoreCompilerSets()) {
+                        String data = provider.getNextCompilerSetData();
+                        int i1 = data.indexOf(';');
+                        int i2 = data.indexOf(';', i1 + 1);
+                        String flavor = data.substring(0, i1);
+                        String path = data.substring(i1 + 1, i2);
+                        String tools = data.substring(i2 + 1);
+                        CompilerSet cs = new CompilerSet(CompilerFlavor.toFlavor(flavor), path, flavor);
+                        StringTokenizer st = new StringTokenizer(tools, ";"); // NOI18N
+                        while (st.hasMoreTokens()) {
+                            String name = st.nextToken();
+                            int kind;
+                            if (flavor.startsWith("Sun")) { // NOI18N
+                                kind = name.equals("CC") ? Tool.CCompiler : Tool.CCCompiler; // NOI18N
+                            } else {
+                                kind = name.equals("gcc") ? Tool.CCompiler : Tool.CCCompiler; // NOI18N
+                            }
+                            cs.addTool(name, path + '/' + name, kind);
+                        }
+                        add(cs);
                     }
-                    cs.addTool(name, path + '/' + name, kind);
+                    state = STATE_COMPLETE;
                 }
-                add(cs);
-            }
+            });
         } else {
             throw new IllegalStateException();
         }
@@ -724,6 +742,12 @@ public class CompilerSetManager implements PlatformTypes {
     }
         
     public CompilerSet getCompilerSet(String name, String dname) {
+        while (isPending()) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+            }
+        }
         for (CompilerSet cs : sets) {
             if (cs.getName().equals(name) && cs.getDisplayName().equals(dname)) {
                 return cs;
@@ -733,6 +757,12 @@ public class CompilerSetManager implements PlatformTypes {
     }
 
     public CompilerSet getCompilerSet(int idx) {
+        while (isPending()) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+            }
+        }
         if (idx >= 0 && idx < sets.size())
             return sets.get(idx);
         else

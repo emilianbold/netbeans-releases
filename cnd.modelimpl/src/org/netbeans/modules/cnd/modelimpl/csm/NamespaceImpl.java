@@ -252,6 +252,16 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return uids;
     }
 
+    public Collection<CsmUID<CsmOffsetableDeclaration>> getUnnamedUids() {
+        // add all declarations
+        Collection<CsmUID<CsmOffsetableDeclaration>> uids;
+        // add all unnamed declarations
+        synchronized (unnamedDeclarations) {
+            uids = new ArrayList<CsmUID<CsmOffsetableDeclaration>>(unnamedDeclarations);
+        }
+        return uids;
+    }
+
     public boolean isGlobal() {
         return global;
     }
