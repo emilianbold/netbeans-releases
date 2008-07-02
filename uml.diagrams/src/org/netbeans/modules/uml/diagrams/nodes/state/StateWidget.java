@@ -41,10 +41,6 @@ package org.netbeans.modules.uml.diagrams.nodes.state;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
@@ -59,18 +55,13 @@ import org.netbeans.modules.uml.core.metamodel.basic.basicactions.IProcedure;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.State;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.diagrams.Util;
-import org.netbeans.modules.uml.diagrams.actions.CompositeWidgetSelectProvider;
 import org.netbeans.modules.uml.diagrams.border.UMLRoundedBorder;
-import org.netbeans.modules.uml.diagrams.nodes.CompartmentWidget;
-import org.netbeans.modules.uml.diagrams.nodes.CompositeWidget;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
 import org.netbeans.modules.uml.diagrams.nodes.state.ProcedureWidget.DoEventWidget;
 import org.netbeans.modules.uml.diagrams.nodes.state.ProcedureWidget.EntryEventWidget;
 import org.netbeans.modules.uml.diagrams.nodes.state.ProcedureWidget.ExitEventWidget;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
-import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
-import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
@@ -80,7 +71,7 @@ import org.openide.util.NbBundle;
  *
  * @author Sheryl Su
  */
-public class StateWidget extends UMLNodeWidget implements CompositeWidget
+public class StateWidget extends UMLNodeWidget
 {
 
     private Widget currentView;
@@ -98,8 +89,7 @@ public class StateWidget extends UMLNodeWidget implements CompositeWidget
     {
         super((Scene) scene);
         this.scene = scene;
-        addToLookup(initializeContextPalette());   
-        addToLookup(new CompositeWidgetSelectProvider(this));
+        addToLookup(initializeContextPalette());
     }
 
     private DefaultContextPaletteModel initializeContextPalette()
@@ -132,16 +122,14 @@ public class StateWidget extends UMLNodeWidget implements CompositeWidget
         eventsWidget = new Widget(getScene());
         eventsWidget.setForeground(null);
         eventsWidget.setBackground(null);
+        setIsInitialized(true);
     }
 
     private Widget createStateView(State state)
     {
-        if (state.getIsSubmachineState())
+        if (state.getIsSubmachineState())   
         {
             return createSubMachineStateView(state);
-        } else if (state.getIsComposite())
-        {
-            return createCompositeStateView(state);
         }
         return createSimpleStateView(state);
     }
@@ -180,11 +168,6 @@ public class StateWidget extends UMLNodeWidget implements CompositeWidget
         return stateWidget;
     }
 
-    private Widget createCompositeStateView(State state)
-    {
-        stateWidget = new CompositeStateWidget(scene, state);
-        return stateWidget;
-    }
 
     public String getWidgetID()
     {
@@ -263,15 +246,9 @@ public class StateWidget extends UMLNodeWidget implements CompositeWidget
 
     private UMLNameWidget getNameWidget()
     {
-        if (state.getIsComposite())
-        {
-            return ((CompositeStateWidget) stateWidget).getNameWidget();
-        } else
-        {
-            return nameWidget;
-        }
+        return nameWidget;
     }
-    
+
     @Override
     public void propertyChange(PropertyChangeEvent event)
     {
@@ -289,15 +266,10 @@ public class StateWidget extends UMLNodeWidget implements CompositeWidget
                 listener.propertyChange(event);
             }
         } else if (propName.equals(ModelElementChangedKind.ELEMENTMODIFIED.toString()))
-        {
-            if (state.getIsComposite())
-            {
-                ((CompositeStateWidget) stateWidget).updateName(event);
-            } else
-            {
-                updateDetails();
-            }
+        {         
+            updateDetails();
         }
+        updateSizeWithOptions();
     }
 
     private String loc(String key)
@@ -336,59 +308,4 @@ public class StateWidget extends UMLNodeWidget implements CompositeWidget
 
         return stateWidget;
     }
-
-    public CompositeStateWidget getCompositeStateWidget()
-    {
-        if (stateWidget instanceof CompositeStateWidget)
-        {
-            return (CompositeStateWidget) stateWidget;
-        }
-        return null;
-    }
-
-    @Override
-    public void save(NodeWriter nodeWriter)
-    {
-        CompositeStateWidget csw = getCompositeStateWidget();
-        if (csw != null)
-        {
-            boolean horizontal = csw.isHorizontalLayout();
-            String layout = "";
-            if (horizontal)
-                layout = SeparatorWidget.Orientation.HORIZONTAL.toString();
-            else
-                layout = SeparatorWidget.Orientation.VERTICAL.toString();
-            
-            HashMap map = nodeWriter.getProperties();
-            map.put("Orientation", layout);
-            nodeWriter.setProperties(map);
-        }
-        super.save(nodeWriter);
-    }
-
-    @Override
-    public void load(NodeInfo nodeReader)
-    {
-        CompositeStateWidget csw = getCompositeStateWidget();
-        if (csw != null)
-        {
-            csw.load(nodeReader);
-        } 
-        else
-        {
-            super.load(nodeReader);
-        }
-    }
-
-    public Collection<CompartmentWidget> getCompartmentWidgets()
-    {
-        CompositeStateWidget csw = getCompositeStateWidget();
-        if (csw != null)
-        {
-            ArrayList<CompartmentWidget> result = new ArrayList<CompartmentWidget>();
-            result.addAll(csw.getRegionWidgets());
-            return result;
-        }
-        return Collections.EMPTY_LIST;
-    }   
 }

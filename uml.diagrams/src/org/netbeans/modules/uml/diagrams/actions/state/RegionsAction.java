@@ -53,7 +53,6 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElem
 import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
 import org.netbeans.modules.uml.diagrams.actions.DeleteCompartmentWidgetAction;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
-import org.netbeans.modules.uml.diagrams.nodes.state.StateWidget;
 import org.netbeans.modules.uml.diagrams.nodes.state.CompositeStateWidget;
 
 import org.netbeans.modules.uml.diagrams.nodes.state.RegionWidget;
@@ -156,9 +155,9 @@ public class RegionsAction extends NodeAction implements ContextAwareAction
         Object[] objs = new Object[selected.size()];
         selected.toArray(objs);
         Widget widget = scene.findWidget(objs[0]);
-        if (widget instanceof StateWidget)
+        if (widget instanceof CompositeStateWidget)
         {
-            return ((StateWidget) widget).getCompositeStateWidget();
+            return (CompositeStateWidget) widget;
         }
         return null;
     }
