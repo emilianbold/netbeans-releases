@@ -42,6 +42,7 @@ import org.netbeans.modules.soa.ui.form.valid.SoaDialogDisplayer;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
 import org.netbeans.modules.soa.ui.tree.DataObjectHolder;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
 import org.netbeans.modules.soa.ui.tree.impl.SoaTreeCellRenderer;
 import org.netbeans.modules.soa.ui.tree.impl.SoaTreeModelImpl;
 import org.netbeans.modules.soa.ui.tree.impl.SoaTreeNodeImpl;
@@ -67,7 +68,7 @@ public class PseudoCompEditor extends EditorLifeCycleAdapter
     private AnyAttribute mAnyAttr;
     private boolean mIsAttribute;
     
-    private Iterable<Object> mAnyLocationPath; // represents a TreePath to the any
+    private TreeItem mTreeItem; // represents a TreePath to the any
     private BpelModel mBpelModel;
     
     private SoaTreeModelImpl mSoaTreeModel;
@@ -75,10 +76,10 @@ public class PseudoCompEditor extends EditorLifeCycleAdapter
     private ValidStateManager mFastVSM;
     private ValidStateManager mFullVSM;
 
-    public PseudoCompEditor(Iterable<Object> path, AnyAttribute anyAttr, 
+    public PseudoCompEditor(TreeItem treeItem, AnyAttribute anyAttr, 
             BpelModel bpelModel, BpelMapperModel mapperModel, boolean inLeftTree) {
         //
-        mAnyLocationPath = path;
+        mTreeItem = treeItem;
         mAnyAttr = anyAttr;
         mBpelModel = bpelModel;
         mIsAttribute = true;
@@ -90,10 +91,10 @@ public class PseudoCompEditor extends EditorLifeCycleAdapter
         initControls();
     }
     
-    public PseudoCompEditor(Iterable<Object> path, AnyElement anyElement, 
+    public PseudoCompEditor(TreeItem treeItem, AnyElement anyElement, 
             BpelModel bpelModel, BpelMapperModel mapperModel, boolean inLeftTree) {
         //
-        mAnyLocationPath = path;
+        mTreeItem = treeItem;
         mAnyElement = anyElement;
         mBpelModel = bpelModel;
         mIsAttribute = false;
@@ -287,7 +288,7 @@ public class PseudoCompEditor extends EditorLifeCycleAdapter
                     //
                     if (name != null || name.length() != 0) {
                         boolean hasSibling = BpelMapperUtils.hasSibling(
-                                mMapperModel, mInLeftTree, mAnyLocationPath, 
+                                mMapperModel, mInLeftTree, mTreeItem, 
                                 name, namespace, mIsAttribute);
                         //
                         if (hasSibling) {

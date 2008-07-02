@@ -31,14 +31,15 @@ import org.netbeans.modules.bpel.mapper.predicates.PredicateManager;
 import org.netbeans.modules.bpel.mapper.predicates.SyntheticPredicate;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
+import org.netbeans.modules.soa.ui.tree.impl.TreeFinderProcessor;
+import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.support.BpelXPathModelFactory;
 import org.netbeans.modules.soa.mappercore.LeftTree;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.Graph;
+import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
@@ -75,7 +76,7 @@ public class PredicateUpdater extends AbstractBpelModelUpdater {
         mTreePath = treePath;
     }
 
-    public void addPredicate(Iterable<Object> itrb) {
+    public void addPredicate(TreeItem treeItem) {
         //
         // Create a new predicate and populate it
         mPred = new SyntheticPredicate(mSContext, null);
@@ -93,12 +94,12 @@ public class PredicateUpdater extends AbstractBpelModelUpdater {
             treeModel = mapperModel.getRightTreeModel();
         }
         //
-        MapperTreeModel sourceModel = treeModel.getSourceModel();
+        SoaTreeModel sourceModel = treeModel.getSourceModel();
         PredicateManager predManager =
                 PredicateManager.getPredicateManager(sourceModel);
         boolean predicateAdded = false;
         if (predManager != null) {
-            predicateAdded = predManager.addPredicate(itrb, mPred);
+            predicateAdded = predManager.addPredicate(treeItem, mPred);
         }
         //
         if (!predicateAdded) {
@@ -156,13 +157,13 @@ public class PredicateUpdater extends AbstractBpelModelUpdater {
         } else {
             treeModel = mModel.getRightTreeModel();
         }
-        MapperTreeModel sourceModel = treeModel.getSourceModel();
+        SoaTreeModel sourceModel = treeModel.getSourceModel();
         //
         // Calculate predicate location index
         // int predIndex = treeModel.getChildIndex(mTreePath.getParentPath(), mPred);
         //
         VariableTreeModel varTreeModel =
-                MapperTreeModel.Utils.findExtensionModel(sourceModel,
+                SoaTreeModel.MyUtils.findExtensionModel(sourceModel,
                 VariableTreeModel.class);
         if (varTreeModel != null) {
             PredicateManager predManager = varTreeModel.getPredicateManager();

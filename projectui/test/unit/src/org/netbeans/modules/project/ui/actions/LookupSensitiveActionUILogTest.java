@@ -93,11 +93,6 @@ public class LookupSensitiveActionUILogTest extends NbTestCase {
         Logger.getLogger("org.netbeans.ui.actions").setLevel(Level.FINE);
     }
     
-    protected void tearDown() throws Exception {
-        clearWorkDir();
-        super.tearDown();
-    }
-    
     public boolean runInEQ () {
         return true;
     }

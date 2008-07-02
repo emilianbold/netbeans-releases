@@ -19,10 +19,11 @@
 
 package org.netbeans.modules.bpel.mapper.tree.search;
 
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Variable;
+import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
+import org.netbeans.modules.soa.ui.tree.TreeItemFinder;
+import org.netbeans.modules.soa.ui.tree.TreeItemFinder.FindResult;
 
 /**
  * Looks for all variables in the tree. 
@@ -36,7 +37,7 @@ public class AllVariablesFinder implements TreeItemFinder {
     public FindResult process(Object treeItem, FindResult result) {
         boolean isFit = (treeItem instanceof Variable);
         boolean drillDeeper = !isFit && 
-                (treeItem == MapperTreeModel.TREE_ROOT || 
+                (treeItem == SoaTreeModel.TREE_ROOT || 
                 treeItem instanceof BpelEntity);
         return new FindResult(isFit, drillDeeper);
     }

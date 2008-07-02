@@ -101,11 +101,6 @@ public class ProjectActionTest extends NbTestCase {
         project2 = (TestSupport.TestProject)ProjectManager.getDefault().findProject( p2 );                
     }
     
-    protected void tearDown() throws Exception {
-        clearWorkDir();
-        super.tearDown();
-    }
-    
     public boolean runInEQ () {
         return true;
     }
