@@ -164,6 +164,42 @@ public class ResolveConflictsAndRevertTest extends JellyTestCase {
         ProjectSupport.waitScanFinished();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
+
+        public void testResolveConflicts() throws Exception {
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
+        PseudoCvsServer cvss;
+        InputStream in;
+        OutputTabOperator oto;
+        org.openide.nodes.Node nodeIDE;
+        String color;
+
+        oto = new OutputTabOperator(sessionCVSroot);
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto.clear();
+
+        Node nodeClass = new Node(new SourcePackagesNode(projectName), pathToMain);
+        in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "diff/create_conflict.in");
+        cvss = new PseudoCvsServer(in);
+        new Thread(cvss).start();
+        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", cvss.getCvsRoot());
+        nodeClass.performPopupActionNoBlock("CVS|Update");
+        NbDialogOperator dialog = new NbDialogOperator("Warning");
+        dialog.ok();
+        oto.waitText("cvs server: conflicts found in Main.java");
+        oto.waitText("Updating \"Main.java\" finished");
+        Thread.sleep(1000);
+        cvss.stop();
+
+        nodeClass = new Node(new SourcePackagesNode(projectName), pathToMain);
+        nodeIDE = (org.openide.nodes.Node) nodeClass.getOpenideNode();
+        color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
+        assertEquals("Wrong color for file in conflict", TestKit.CONFLICT_COLOR, color);
+        //        todo - resolvnout pomoci accept&next , zkontrolovat pocet konfilktu a OK
+        //        nodeClass.performPopupActionNoBlock("CVS|Resolve Conflicts...");
+        //        pri revert modifications pri otevrenem conflict resolveru lita vyjimka!
+        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
+    }
+    
     
     public void testRevertModifications() throws Exception {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
