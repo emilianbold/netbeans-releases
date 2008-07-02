@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -67,6 +68,9 @@ public final class CompileOnSaveManager {
 
     /**<i>GuardedBy("this")</i>*/
     private Map<J2eeModuleProvider, Set<File>> toDeploy = new HashMap<J2eeModuleProvider, Set<File>>();
+
+    /**<i>GuardedBy("this")</i>*/
+    private Future<?> current;
 
     private CompileOnSaveManager() {
         super();
@@ -92,18 +96,33 @@ public final class CompileOnSaveManager {
             for (File artifact : artifacts) {
                 files.add(artifact);
             }
-            EXECUTOR.submit(new DeployTask());
+
+            boolean delayed = true;
+            if (current != null && !current.isDone()) {
+                current.cancel(true);
+                delayed = false;
+            }
+
+            current = EXECUTOR.submit(new DeployTask(delayed));
         }
     }
 
     private class DeployTask implements Runnable {
 
+        private final boolean delayed;
+
+        public DeployTask(boolean delayed) {
+            this.delayed = delayed;
+        }
+
         public void run() {
-            try {
-                Thread.sleep(DELAY);
-            } catch (InterruptedException ex) {
-                LOGGER.log(Level.INFO, null, ex);
-                return;
+            if (delayed) {
+                try {
+                    Thread.sleep(DELAY);
+                } catch (InterruptedException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                    return;
+                }
             }
 
             LOGGER.log(Level.FINE, "Performing pending deployments");
