@@ -72,6 +72,7 @@ import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
 import org.netbeans.modules.projectimport.eclipse.core.ProjectImporterException;
 import org.netbeans.modules.projectimport.eclipse.core.Workspace;
 import org.netbeans.modules.projectimport.eclipse.core.WorkspaceFactory;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -323,7 +324,7 @@ final class ProjectSelectionPanel extends JPanel {
         projectTable.setDefaultRenderer(Boolean.class, new ProjectCellRenderer());
         projectTable.setDefaultEditor(Boolean.class, new ProjectCellRenderer());
         projectTableSP.getViewport().setBackground(projectTable.getBackground());
-        destination.setText(System.getProperty("user.home")+File.separatorChar+"NetBeansProjects"); // NOI18N
+        destination.setText(ProjectChooser.getProjectsFolder().getPath()); // NOI18N
     }
     
     /** Loads project from workspace in the given <code>workspaceDir</code>. */
@@ -470,7 +471,7 @@ final class ProjectSelectionPanel extends JPanel {
             .add(layout.createSequentialGroup()
                 .add(projectListLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(projectTableSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
+                .add(projectTableSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
