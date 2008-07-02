@@ -72,6 +72,7 @@ public class Feed implements Serializable {
         return syndFeed;
     }
     
+    @Override
     public String toString() {
         return name;
     }

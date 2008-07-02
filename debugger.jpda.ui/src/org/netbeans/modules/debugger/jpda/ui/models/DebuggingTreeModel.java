@@ -174,12 +174,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         return nodes;
     }
     
-    private static int counter = 0;
-    
     private Object[] filterSystemThreads(Object[] nodes, boolean filterSystem, boolean filterRunning) {
-        
-        System.out.println("filterSystemThreads: " + counter++);
-        
         List list = null;
         for (Object node : nodes) {
             if (node instanceof JPDAThread) {

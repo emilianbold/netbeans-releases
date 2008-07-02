@@ -80,13 +80,20 @@ public class CommitUiTest extends JellyTestCase{
             TestKit.createNewElement(PROJECT_NAME, "xx", "NewClass3");
             Node packNode = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
             CommitOperator co = CommitOperator.invoke(packNode);
+            Thread.sleep(2000);
             
             co.selectCommitAction("NewClass.java", "Commit");
+            Thread.sleep(500);
             co.selectCommitAction("NewClass.java", "Commit");
+            Thread.sleep(500);
             co.selectCommitAction("NewClass.java", "Exclude from Commit");
+            Thread.sleep(500);
             co.selectCommitAction(2, "Commit");
+            Thread.sleep(500);
             co.selectCommitAction(2, "Commit");
+            Thread.sleep(500);
             co.selectCommitAction(2, "Exclude from Commit");
+            Thread.sleep(500);
             
             JTableOperator table = co.tabFiles();
             TableModel model = table.getModel();

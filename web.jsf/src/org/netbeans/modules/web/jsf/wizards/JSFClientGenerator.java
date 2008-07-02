@@ -142,7 +142,7 @@ public class JSFClientGenerator {
     private static String JSFCRUD_STYLESHEET = "jsfcrud.css"; //NOI18N
     private static String RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/resources/"; //NOI18N
     
-    public static void generateJSFPages(Project project, final String entityClass, String jsfFolderBase, String jsfFolderName, final String controllerClass, FileObject pkg, FileObject controllerFileObject, final EmbeddedPkSupport embeddedPkSupport) throws IOException {
+    public static void generateJSFPages(Project project, final String entityClass, String jsfFolderBase, String jsfFolderName, final String controllerClass, FileObject pkg, FileObject controllerFileObject, final EmbeddedPkSupport embeddedPkSupport, final List<String> entities) throws IOException {
         final boolean isInjection = true;//Util.isSupportedJavaEEVersion(project);
         
         String simpleControllerName = simpleClassName(controllerClass);
@@ -234,8 +234,7 @@ public class JSFClientGenerator {
             addImplementsClause(arrEntityClassFO[0], entityClass, "java.io.Serializable"); //NOI18N
         }
             
-        JEditorPane ep = new JEditorPane("text/x-jsp", "");
-        final BaseDocument doc = new BaseDocument(ep.getEditorKit().getClass(), false);
+        final BaseDocument doc = new BaseDocument(false, "text/x-jsp");
         WebModule wm = WebModule.getWebModule(jsfRoot);
         
         //automatically add JSF framework if it is not added
@@ -282,7 +281,7 @@ public class JSFClientGenerator {
         final String indexJspToUse = addLinkToListJspIntoIndexJsp(wm, styleHrefPrefix, simpleEntityName);
         final String linkToIndex = indexJspToUse != null ? "<br />\n<a href=\"" + wm.getContextPath() + "/" + indexJspToUse + "\">Index</a>\n" : "";  //NOI18N
 
-        generateListJsp(jsfRoot, classpathInfo, entityClass, simpleEntityName, managedBean, linkToIndex, fieldName, idProperty[0], doc, embeddedPkSupport, styleHrefPrefix);
+        generateListJsp(jsfRoot, classpathInfo, entityClass, simpleEntityName, managedBean, linkToIndex, fieldName, idProperty[0], doc, embeddedPkSupport, styleHrefPrefix, entities);
         
         javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
@@ -299,7 +298,7 @@ public class JSFClientGenerator {
         javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                generateDetailJsp(controller, entityClass, simpleEntityName, managedBean, fieldName, idProperty[0], isInjection, linkToIndex, doc, jsfRoot, embeddedPkSupport, controllerClass, styleHrefPrefix);
+                generateDetailJsp(controller, entityClass, simpleEntityName, managedBean, fieldName, idProperty[0], isInjection, linkToIndex, doc, jsfRoot, embeddedPkSupport, controllerClass, styleHrefPrefix, entities);
             }
         }, true);
         
@@ -359,7 +358,8 @@ public class JSFClientGenerator {
     }
 
     private static void generateListJsp(final FileObject jsfRoot, ClasspathInfo classpathInfo, final String entityClass, String simpleEntityName, 
-            final String managedBean, String linkToIndex, final String fieldName, String idProperty, BaseDocument doc, final EmbeddedPkSupport embeddedPkSupport, String styleHrefPrefix) throws FileStateInvalidException, IOException {
+            final String managedBean, String linkToIndex, final String fieldName, String idProperty, BaseDocument doc, final EmbeddedPkSupport embeddedPkSupport, String styleHrefPrefix, List<String> entities) throws FileStateInvalidException, IOException {
+        final String tableVarName = JsfForm.getFreeTableVarName("item", entities); //NOI18N
         FileSystem fs = jsfRoot.getFileSystem();
         final StringBuffer listSb = new StringBuffer();
         final Charset encoding = FileEncodingQuery.getDefaultEncoding();
@@ -381,7 +381,7 @@ public class JSFClientGenerator {
                 + "&nbsp;\n"
                 + "<h:commandLink action=\"#'{'{0}.next'}'\" value=\"Remaining #'{'{0}.itemCount - {0}.lastItem'}'\"\n"
                 + "rendered=\"#'{'{0}.lastItem < {0}.itemCount && {0}.lastItem + {0}.batchSize > {0}.itemCount'}'\"/>\n", managedBean));
-        listSb.append("<h:dataTable value='#{" + managedBean + "." + fieldName + "s}' var='item' border=\"0\" cellpadding=\"2\" cellspacing=\"0\" rowClasses=\"jsfcrud_odd_row,jsfcrud_even_row\" rules=\"all\" style=\"border:solid 1px\">\n");
+        listSb.append("<h:dataTable value=\"#{" + managedBean + "." + fieldName + "s}\" var=\"" + tableVarName + "\" border=\"0\" cellpadding=\"2\" cellspacing=\"0\" rowClasses=\"jsfcrud_odd_row,jsfcrud_even_row\" rules=\"all\" style=\"border:solid 1px\">\n");
         final  String commands = "<h:column>\n <f:facet name=\"header\">\n <h:outputText escape=\"false\" value=\"&nbsp;\"/>\n </f:facet>\n"
                 + "<h:commandLink value=\"Show\" action=\"#'{'" + managedBean + ".detailSetup'}'\">\n" 
                 + "<f:param name=\"jsfcrud.current" + simpleEntityName +"\" value=\"#'{'" + managedBean + ".asString[{0}]'}'\"/>\n"               
@@ -397,7 +397,7 @@ public class JSFClientGenerator {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
-                JsfTable.createTable(controller, typeElement, managedBean + "." + fieldName, listSb, commands, embeddedPkSupport);
+                JsfTable.createTable(controller, typeElement, managedBean + "." + fieldName, listSb, commands, embeddedPkSupport, tableVarName);
             }
         }, true);
         listSb.append("</h:dataTable>\n</h:panelGroup>\n");
@@ -546,7 +546,7 @@ public class JSFClientGenerator {
     }
 
     private static void generateDetailJsp(CompilationController controller, String entityClass, String simpleEntityName, String managedBean, 
-            String fieldName, String idProperty, boolean isInjection, String linkToIndex, BaseDocument doc, final FileObject jsfRoot, EmbeddedPkSupport embeddedPkSupport, String controllerClass, String styleHrefPrefix) throws FileStateInvalidException, IOException {
+            String fieldName, String idProperty, boolean isInjection, String linkToIndex, BaseDocument doc, final FileObject jsfRoot, EmbeddedPkSupport embeddedPkSupport, String controllerClass, String styleHrefPrefix, List<String> entities) throws FileStateInvalidException, IOException {
         StringBuffer detailSb = new StringBuffer();
         final Charset encoding = FileEncodingQuery.getDefaultEncoding();
         detailSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"" + encoding.name() + "\"%>\n"
@@ -560,7 +560,7 @@ public class JSFClientGenerator {
         
         TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
         JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_DETAIL, managedBean + "." + fieldName, detailSb, entityClass, embeddedPkSupport, controllerClass);
-        JsfForm.createTablesForRelated(controller, typeElement, JsfForm.FORM_TYPE_DETAIL, managedBean + "." + fieldName, idProperty, isInjection, detailSb, embeddedPkSupport, controllerClass);
+        JsfForm.createTablesForRelated(controller, typeElement, JsfForm.FORM_TYPE_DETAIL, managedBean + "." + fieldName, idProperty, isInjection, detailSb, embeddedPkSupport, controllerClass, entities);
         detailSb.append("</h:panelGrid>\n");
         detailSb.append("<br />\n"
                 + "<h:commandLink action=\"#{" + fieldName + ".destroy}\" value=\"Destroy\">\n"
@@ -723,7 +723,7 @@ public class JSFClientGenerator {
         final String[] idClassSimpleName = new String[1];
         final String[] idPropertyType = new String[1];
         final ArrayList<MethodModel> paramSetters = new ArrayList<MethodModel>();
-        final boolean[] fieldAccess = new boolean[] { false };
+        //final boolean[] fieldAccess = new boolean[] { false };
         final String[] idGetterName = new String[1];
         JavaSource controllerJavaSource = JavaSource.forFileObject(controllerFileObject);
         controllerJavaSource.runUserActionTask(new Task<CompilationController>() {
@@ -738,7 +738,6 @@ public class JSFClientGenerator {
                     embeddable[0] = idClass != null && JsfForm.isEmbeddableClass(idClass);
                     idClassSimpleName[0] = idClass.getSimpleName().toString();
                     idPropertyType[0] = idClass.getQualifiedName().toString();
-                    fieldAccess[0] = JsfForm.isFieldAccess(idClass);
                     for (ExecutableElement method : ElementFilter.methodsIn(idClass.getEnclosedElements())) {
                         if (method.getSimpleName().toString().startsWith("set")) {
                             paramSetters.add(MethodModelSupport.createMethodModel(compilationController, method));
@@ -1406,8 +1405,10 @@ public class JSFClientGenerator {
                     bodyText = initCollectionsInCreate.toString() +
                             codeToPopulatePkFields.toString() +
                             illegalOrphansInCreate.toString() +
-                            "EntityManager em = getEntityManager();\n" + 
-                            "try {\n " + BEGIN + "\n " + initRelatedInCreate.toString() + "em.persist(" + fieldName + ");\n" + updateRelatedInCreate.toString() + COMMIT + "\n" +   //NOI18N
+                            "EntityManager em = null;\n" + 
+                            "try {\n " + BEGIN + "\n " + 
+                            "em = getEntityManager();\n" +
+                            initRelatedInCreate.toString() + "em.persist(" + fieldName + ");\n" + updateRelatedInCreate.toString() + COMMIT + "\n" +   //NOI18N
                             "addSuccessMessage(\"" + simpleEntityName + " was successfully created.\");\n"  + //NOI18N
                             "} catch (Exception ex) {\n try {\n" +
                             (isGenerated ? "ensureAddErrorMessage(ex, \"A persistence error occurred.\");\n" : 
@@ -1418,7 +1419,7 @@ public class JSFClientGenerator {
                             "}\n") +
                             ROLLBACK + "\n } catch (Exception e) {\n ensureAddErrorMessage(e, \"An error occurred attempting to roll back the transaction.\");\n" + 
                             "}\nreturn null;\n} " +   //NOI18N
-                            "finally {\n em.close();\n }\n" + 
+                            "finally {\n if (em != null) {\nem.close();\n}\n }\n" + 
                             "return listSetup();";
                     methodInfo = new MethodInfo("create", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
@@ -1469,8 +1470,10 @@ public class JSFClientGenerator {
                             "}\n" +
                             "return outcome;\n" +
                             "}\n";
-                    bodyText += "EntityManager em = getEntityManager();\n" + 
-                        "try {\n " + BEGIN + "\n" + updateRelatedInEditPre.toString() + illegalOrphansInEdit.toString() + attachRelatedInEdit.toString() +
+                    bodyText += "EntityManager em = null;\n" + 
+                        "try {\n " + BEGIN + "\n" + 
+                        "em = getEntityManager();\n" +
+                        updateRelatedInEditPre.toString() + illegalOrphansInEdit.toString() + attachRelatedInEdit.toString() +
                         fieldName + " = em.merge(" + fieldName + ");\n " + 
                         updateRelatedInEditPost.toString() + COMMIT + "\n" +   //NOI18N
                         "addSuccessMessage(\"" + simpleEntityName + " was successfully updated.\");\n" +   //NOI18N
@@ -1488,7 +1491,7 @@ public class JSFClientGenerator {
                         "}\n" +
                         ROLLBACK + "\n } catch (Exception e) {\n ensureAddErrorMessage(e, \"An error occurred attempting to roll back the transaction.\");\n" + 
                         "}\nreturn null;\n} " +   //NOI18N
-                        "finally {\n em.close();\n }\n" +  //NOI18N
+                        "finally {\n if (em != null) {\nem.close();\n}\n }\n" +  //NOI18N
                         "return detailSetup();";
                     methodInfo = new MethodInfo("edit", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
@@ -1511,8 +1514,9 @@ public class JSFClientGenerator {
                             refOrMergeStringInDestroy += "id);\n";
                         }
                     }
-                    bodyText = "EntityManager em = getEntityManager();\n" + 
+                    bodyText = "EntityManager em = null;\n" + 
                         "try {\n " + BEGIN + "\n" + 
+                        "em = getEntityManager();\n" +
                         "String idAsString = getRequestParameter(\"jsfcrud.current" + simpleEntityName + "\");\n" +
                         "try {\n " + 
                         (embeddable[0] ? "" : createIdFieldDeclaration(idPropertyType[0], "idAsString") + "\n") + 
@@ -1533,7 +1537,7 @@ public class JSFClientGenerator {
                         "addSuccessMessage(\"" + simpleEntityName + " was successfully deleted.\");\n" +   //NOI18N
                         "} catch (Exception ex) {\n try {\n ensureAddErrorMessage(ex, \"A persistence error occurred.\");\n" + ROLLBACK + "\n } catch (Exception e) {\n ensureAddErrorMessage(e, \"An error occurred attempting to roll back the transaction.\");\n" + 
                         "}\nreturn null;\n} " +   //NOI18N
-                        "finally {\n em.close();\n }\n" +  //NOI18N
+                        "finally {\n if (em != null) {\nem.close();\n}\n }\n" +  //NOI18N
                         relatedControllerOutcomeSwath + 
                             "return listSetup();";
                     methodInfo = new MethodInfo("destroy", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);

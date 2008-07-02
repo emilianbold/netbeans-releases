@@ -409,7 +409,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
                 for (IndexedFunction method : methods){
                     if (staticContext && method.isStatic() || instanceContext && !method.isStatic()) {
-                        proposals.add(new PHPCompletionItem.FunctionItem(method, request));
+                        
+                        for (int i = 0; i <= method.getDefaultParameterCount(); i ++){
+                            proposals.add(new PHPCompletionItem.FunctionItem(method, request, i));
+                        }
                     }
                 }
 
@@ -463,7 +466,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         PHPIndex index = request.index;
 
         for (IndexedFunction function : index.getFunctions(request.result, request.prefix, nameKind)) {
-            proposals.add(new PHPCompletionItem.FunctionItem(function, request));
+            for (int i = 0; i <= function.getDefaultParameterCount(); i++) {
+                proposals.add(new PHPCompletionItem.FunctionItem(function, request, i));
+            }
         }
 
         // CONSTANTS
@@ -495,7 +500,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         Collection<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
         String url = null;
         try {
-            url = request.result.getFile().getFile().toURL().toExternalForm();
+            url = request.result.getFile().getFile().toURI().toURL().toExternalForm();
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }

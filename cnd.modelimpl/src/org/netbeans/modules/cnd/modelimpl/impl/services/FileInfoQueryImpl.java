@@ -136,13 +136,20 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
         List<CsmReference> out = Collections.<CsmReference>emptyList();
         if (file instanceof FileImpl) {
             FileImpl fileImpl = (FileImpl) file;
-
+            List<CsmReference> res = fileImpl.getLastMacroUsages();
+            if (res != null) {
+                return res;
+            }
             try {
+                long lastParsedTime = fileImpl.getLastParsedTime();
                 APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer());
                 if (apt != null) {
                     APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, fileImpl.getPreprocHandler());
                     walker.getTokenStream();
                     out = walker.getCollectedData();
+                }
+                if (lastParsedTime == fileImpl.getLastParsedTime()) {
+                    fileImpl.setLastMacroUsages(out);
                 }
             } catch (IOException ex) {
                 System.err.println("skip marking macros\nreason:" + ex.getMessage()); //NOI18N

@@ -78,6 +78,7 @@ import org.netbeans.modules.vmd.midp.screen.display.ItemDisplayPresenter;
 
 import java.util.*;
 import org.netbeans.modules.vmd.midp.codegen.MIDPDatabindingCodeSupport;
+import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSupport;
 import org.openide.util.NbBundle;
 
 
@@ -244,6 +245,12 @@ public class ItemCD extends ComponentDescriptor {
                         //This typeID check is becaouse of Gauge which could be also attached to the AlertCD
                         if (parent.getType() == FormCD.TYPEID )
                             ArraySupport.remove (parent, FormCD.PROP_ITEMS, component);
+                        
+                    }
+                },
+                new DeletePresenter() {
+                    protected void delete() {
+                        getComponent().getDocument().deleteComponents(MidpDatabindingSupport.getAllRelatedConnectors(getComponent()));
                     }
                 },
                 // screen

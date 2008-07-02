@@ -259,6 +259,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         
         fileChangeThreads[0]=null;
         //if (! customInstaller) Thread.sleep(3000);
+        @SuppressWarnings("unchecked")
         List<OperationContainer.OperationInfo> all = container2.listAll ();
         for (OperationContainer.OperationInfo oi : all) {
             UpdateUnit toInstallUnit = oi.getUpdateUnit ();
@@ -276,9 +277,13 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         return installElement;
     }
     
-    private void assertInstalledModule (UpdateUnit toInstallUnit) {
+    private void assertInstalledModule (UpdateUnit toInstallUnit) throws InterruptedException {
         ModuleInfo info = getModuleInfos ().get (toInstallUnit.getCodeName ());
         assertNotNull (info);
+        int timeout = 250;
+        while (! info.isEnabled () && timeout-- > 0) {
+            Thread.sleep (10);
+        }
         assertTrue (info.getCodeNameBase (), info.isEnabled ());
         assertNotNull (Utilities.toModule (toInstallUnit.getCodeName (), null));
         assertTrue (Utilities.toModule (toInstallUnit.getCodeName (), null).isEnabled ());
@@ -362,6 +367,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         }
         
         
+        @SuppressWarnings("unchecked")
         List<OperationContainer.OperationInfo> all = container2.listAll ();
         for (OperationContainer.OperationInfo oi : all) {
             UpdateUnit toUpdateUnit = oi.getUpdateUnit ();

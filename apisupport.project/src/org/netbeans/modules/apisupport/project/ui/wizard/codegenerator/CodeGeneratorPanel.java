@@ -255,7 +255,7 @@ private void cpCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FI
         
         String packName = packageNameCombo.getEditor().getItem().toString();
         if(packName.equals("")) {
-            setWarning(getMessage("EMPTY_PACKAGE"));
+            setError(getMessage("EMPTY_PACKAGE"));
             return true;
         }
         

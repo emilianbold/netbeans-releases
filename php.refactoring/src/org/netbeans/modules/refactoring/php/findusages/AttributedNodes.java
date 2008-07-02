@@ -38,16 +38,12 @@
  */
 package org.netbeans.modules.refactoring.php.findusages;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -62,7 +58,6 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
@@ -84,7 +79,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
@@ -101,8 +95,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.refactoring.php.findusages.AttributedNodes.AttributedElement.Kind;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Union2;
 
 /**
@@ -184,7 +176,7 @@ public class AttributedNodes extends DefaultVisitor {
     public void visit(Program program) {
         //functions defined on top-level of the current file are visible before declared:
         performEnterPass(global, program.getStatements());
-        enterInclude(getInfo().getFileObject());
+        enterAllIndexedClasses();
         super.visit(program);
     }
 
@@ -391,17 +383,6 @@ public class AttributedNodes extends DefaultVisitor {
     }
 
     @Override
-    public void visit(Include node) {
-        FileObject toInclude = RefactoringUtils.resolveInclude(getInfo(), node);
-
-        if (toInclude != null) {
-            enterInclude(toInclude);
-        }
-
-        super.visit(node);
-    }
-
-    @Override
     public void visit(GlobalStatement node) {
         for (Variable v : node.getVariables()) {
             String name = extractVariableName(v);
@@ -471,17 +452,14 @@ public class AttributedNodes extends DefaultVisitor {
             String contextClassName = (parent) ? getContextSuperClassName() : getContextClassName();
             for (AttributedElement ell : nn) {
                 ClassElement ce = (ClassElement) ell;
-                if (ce != null) {
+                if (ce != null && (contextClassName == null || contextClassName.equals(ce.getName()))) {
                     String name = extractVariableName(node.getField());
                     AttributedElement thisEl = ce.lookup(name, Kind.VARIABLE);
                     if (thisEl != null) {
-                        if (contextClassName == null || contextClassName.equals(ce.getName())) {
-                            node2Element.put(node.getClassName(), ce);
-                            node2Element.put(node, thisEl);
-                            node2Element.put(node.getField(), thisEl);
-                            break;
-                        }
-                    //break;
+                        node2Element.put(node.getClassName(), ce);
+                        node2Element.put(node, thisEl);
+                        node2Element.put(node.getField(), thisEl);
+                        break;
                     }
                 }
             }
@@ -617,75 +595,18 @@ public class AttributedNodes extends DefaultVisitor {
     }
     private Collection<IndexedElement> name2ElementCache;
 
-    public void enterInclude(FileObject file) {
-        if (file == null) {
-            return;
-        }
-
+    public void enterAllIndexedClasses() {
         if (name2ElementCache == null) {
             Index i = getInfo().getIndex(PhpSourcePath.MIME_TYPE);
             PHPIndex index = PHPIndex.get(i);
             name2ElementCache = new LinkedList<IndexedElement>();
-            name2ElementCache.addAll(index.getFunctions(null, "", NameKind.PREFIX));
-            name2ElementCache.addAll(index.getConstants(null, "", NameKind.PREFIX));
             name2ElementCache.addAll(index.getClasses(null, "", NameKind.PREFIX));
         }
 
-        Set<FileObject> files = new HashSet<FileObject>();
-
-        files.add(file);
-
-        Index i = getInfo().getIndex(PhpSourcePath.MIME_TYPE);
-        PHPIndex index = PHPIndex.get(i);
-
-        try {
-            for (String s : index.getAllIncludes(file.getURL().getPath())) {//XXX: getPath?
-
-                files.add(FileUtil.toFileObject(FileUtil.normalizeFile(new File(s))));//TODO: normalization will slow down things - try to do better
-
-            }
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
-        }
-
-        files.remove(null);
-
         for (IndexedElement f : name2ElementCache) {
-            if (files.contains(f.getFileObject())) {
-                Kind k = null;
-
-                if (f instanceof IndexedFunction) {
-                    k = Kind.FUNC;
-                }
-
-                if (f instanceof IndexedConstant) {
-                    k = Kind.CONST;
-                }
-
-                if (f instanceof IndexedClass) {
-                    ClassElement ce = (ClassElement) global.enterWrite(f.getName(), Kind.CLASS, f);
-
-                    if (!ce.isInitialized()) {
-                        //HACK: should create correct hierarchy, not use All* methods:
-                        for (IndexedFunction m : index.getAllMethods(null, f.getName(), "", NameKind.PREFIX, PHPIndex.ANY_ATTR)) {
-                            ce.enclosedElements.enterWrite(m.getName(), Kind.FUNC, m);
-                        }
-                        for (IndexedConstant m : index.getAllProperties(null, f.getName(), "", NameKind.PREFIX, PHPIndex.ANY_ATTR)) {
-                            String name = m.getName();
-                            name = (name.startsWith("$")) ? name.substring(1) : name;
-                            ce.enclosedElements.enterWrite(name, Kind.VARIABLE, m);
-                        }
-                        for (IndexedConstant m : index.getClassConstants(null, f.getName(), "", NameKind.PREFIX)) {
-                            String name = m.getName();
-                            name = (name.startsWith("$")) ? name.substring(1) : name;
-                            ce.enclosedElements.enterWrite(name, Kind.CONST, m);
-                        }
-
-
-                        ce.initialized();
-                    }
-                }
-
+            Kind k = null;
+            if (f instanceof IndexedClass) {
+                ClassElement ce = (ClassElement) global.enterWrite(f.getName(), Kind.CLASS, f);
                 if (k != null) {
                     global.enterWrite(f.getName(), k, f);
                 }
@@ -744,14 +665,13 @@ public class AttributedNodes extends DefaultVisitor {
     }
     private static Map<CompilationInfo, AttributedNodes> info2Attr = new WeakHashMap<CompilationInfo, AttributedNodes>();
 
-    public static AttributedNodes semiAttribute(CompilationInfo info) {
+    public static AttributedNodes getInstance(CompilationInfo info) {
         AttributedNodes a = info2Attr.get(info);
 
         if (a == null) {
             long startTime = System.currentTimeMillis();
 
             a = new AttributedNodes(info);
-
             a.scan(RefactoringUtils.getRoot(info));
 
             a.info = null;
@@ -767,7 +687,7 @@ public class AttributedNodes extends DefaultVisitor {
         return a;
     }
 
-    public static AttributedNodes semiAttribute(CompilationInfo info, int stopOffset) {
+    public static AttributedNodes getInstance(CompilationInfo info, int stopOffset) {
         AttributedNodes a = new AttributedNodes(info, stopOffset);
 
         try {
@@ -1067,7 +987,6 @@ public class AttributedNodes extends DefaultVisitor {
             FIELD, METHOD, CONST;
         }
     }
-
     public  class ClassElement extends AttributedElement {
 
         private final DefinitionScope enclosedElements;
@@ -1081,11 +1000,36 @@ public class AttributedNodes extends DefaultVisitor {
 
         public AttributedElement lookup(String name, Kind k) {
             AttributedElement el = enclosedElements.lookup(name, k);
-
             if (el != null) {
                 return el;
             }
-
+            Index i = getInfo().getIndex(PhpSourcePath.MIME_TYPE);
+            PHPIndex index = PHPIndex.get(i);
+            int attrs = PHPIndex.ANY_ATTR;
+            
+            switch(k) {
+                case CONST:
+                for (IndexedConstant m : index.getClassConstants(null, getName(), name, NameKind.PREFIX)) {
+                    String idxName = m.getName();
+                    idxName = (idxName.startsWith("$")) ? idxName.substring(1) : idxName;
+                    enclosedElements.enterWrite(idxName, Kind.CONST, m);
+                } break;
+                case FUNC:
+                for (IndexedFunction m : index.getMethods(null, getName(), name, NameKind.PREFIX, attrs)) {
+                    enclosedElements.enterWrite(m.getName(), Kind.FUNC, m);
+                } break;
+                case VARIABLE:
+                for (IndexedConstant m : index.getProperties(null, getName(), name, NameKind.PREFIX, attrs)) {
+                    String idxName = m.getName();
+                    idxName = (idxName.startsWith("$")) ? idxName.substring(1) : idxName;
+                    enclosedElements.enterWrite(idxName, Kind.VARIABLE, m);
+                } break;
+                    
+            }
+            el = enclosedElements.lookup(name, k);
+            if (el != null) {
+                return el;
+            }
             if (superClass != null) {
                 return superClass.lookup(name, k);
             }

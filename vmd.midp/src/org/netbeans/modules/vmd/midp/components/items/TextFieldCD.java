@@ -135,7 +135,9 @@ public class TextFieldCD extends ComponentDescriptor {
     }
 
     private static Presenter createSetterPresenter() {
-        return new CodeSetterPresenter().addParameters(MidpParameter.create(PROP_TEXT, PROP_MAX_SIZE, PROP_INITIAL_INPUT_MODE)).addParameters(new TextFieldConstraintsParameter()).addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).addParameters(ItemCD.PROP_LABEL, PROP_TEXT, PROP_MAX_SIZE, TextFieldConstraintsParameter.PARAM_CONSTRAINTS)).addSetters(MidpSetter.createSetter("setString", MidpVersionable.MIDP).addParameters(PROP_TEXT)) // NOI18N
+        return new CodeSetterPresenter().addParameters(MidpParameter.create(PROP_TEXT, PROP_MAX_SIZE, PROP_INITIAL_INPUT_MODE))
+                .addParameters(new TextFieldConstraintsParameter()).addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP)
+                .addParameters(ItemCD.PROP_LABEL, PROP_TEXT, PROP_MAX_SIZE, TextFieldConstraintsParameter.PARAM_CONSTRAINTS)).addSetters(MidpSetter.createSetter("setString", MidpVersionable.MIDP).addParameters(PROP_TEXT)) // NOI18N
                 .addSetters(MidpSetter.createSetter("setConstraints", MidpVersionable.MIDP).addParameters(TextFieldConstraintsParameter.PARAM_CONSTRAINTS)) // NOI18N
                 .addSetters(MidpSetter.createSetter("setInitialInputMode", MidpVersionable.MIDP_2).addParameters(PROP_INITIAL_INPUT_MODE)) // NOI18N
                 .addSetters(MidpSetter.createSetter("setMaxSize", MidpVersionable.MIDP).addParameters(PROP_MAX_SIZE)); // NOI18N
@@ -148,13 +150,7 @@ public class TextFieldCD extends ComponentDescriptor {
                 // code
                 createSetterPresenter(),
                 // screen
-                new TextFieldDisplayPresenter(),
-                //delete
-                new DeletePresenter() {
-                    protected void delete() {
-                        getComponent().getDocument().deleteComponents(MidpDatabindingSupport.getAllRelatedConnectors(getComponent()));
-                    }
-                });
+                new TextFieldDisplayPresenter());
     }
 
     public static class TextFieldConstraintsParameter extends MidpParameter {

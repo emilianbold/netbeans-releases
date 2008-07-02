@@ -297,6 +297,9 @@ public class PtyProcess {
      * We usually get setsid on linux and setpgrp on solaris.
      */
     private static String setpgrpCmd() {
+        if (false)
+            return null;
+
         if (OS.get() == OS.MACOS) {
             return null;
         }

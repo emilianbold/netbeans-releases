@@ -72,9 +72,11 @@ import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyCompoundStatementImpl;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.NestedType;
+import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterTypeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
 
 /**
@@ -399,8 +401,11 @@ public class PersistentUtils {
     }
     
     public static List<CsmTemplateParameter> readTemplateParameters(DataInput input) throws IOException {
-        List<CsmTemplateParameter> res = new ArrayList<CsmTemplateParameter>();
         int collSize = input.readInt();
+        if (collSize == AbstractObjectFactory.NULL_POINTER) {
+            return null;
+        }
+        List<CsmTemplateParameter> res = new ArrayList<CsmTemplateParameter>();
         assert collSize >= 0;
         for (int i = 0; i < collSize; ++i) {
             CsmTemplateParameter param = readTemplateParameter(input);
@@ -411,13 +416,35 @@ public class PersistentUtils {
     }
     
     public static void writeTemplateParameters(Collection<CsmTemplateParameter> params, DataOutput output) throws IOException {
-        assert params != null;
-        int collSize = params.size();
-        output.writeInt(collSize);
-        
-        for (CsmTemplateParameter param: params) {
-            assert param != null;
-            writeTemplateParameter(param, output);
+        if (params == null) {
+            output.writeInt(AbstractObjectFactory.NULL_POINTER);
+        } else {
+            int collSize = params.size();
+            output.writeInt(collSize);
+
+            for (CsmTemplateParameter param: params) {
+                assert param != null;
+                writeTemplateParameter(param, output);
+            }
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // support Template Descriptors
+    public static TemplateDescriptor readTemplateDescriptor(DataInput input) throws IOException {
+        List<CsmTemplateParameter> readTemplateParameters = PersistentUtils.readTemplateParameters(input);
+        if (readTemplateParameters == null) {
+            return null;
+        }
+        CharSequence string = NameCache.getManager().getString(input.readUTF());
+        return new TemplateDescriptor(readTemplateParameters, string);
+    }
+
+    public static void writeTemplateDescriptor(TemplateDescriptor templateDescriptor, DataOutput output) throws IOException {
+        if (templateDescriptor == null) {
+            output.writeInt(AbstractObjectFactory.NULL_POINTER);
+        } else {
+            templateDescriptor.write(output);
         }
     }
     

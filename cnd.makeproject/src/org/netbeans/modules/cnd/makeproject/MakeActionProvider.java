@@ -757,7 +757,9 @@ public class MakeActionProvider implements ActionProvider {
         String cmd = null;
         CompilerSet2Configuration csconf = conf.getCompilerSet();
         String csname = csconf.getOption();
-        CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(csname);
+        CompilerSet cs = CompilerSetManager.useFakeRemoteCompilerSet ?
+                CompilerSetManager.fakeRemoteCS :
+                CompilerSetManager.getDefault().getCompilerSet(csname);
         if (cs != null) {
             cmd = cs.getTool(Tool.MakeTool).getPath();
         }
