@@ -254,10 +254,10 @@ public class TaskProcessor {
                     for (SchedulerTask task : tasks) {
                         if (request == null || request.task != task) {
                             for (Iterator<Request> it = cr.iterator(); it.hasNext();) {
-                                Request fr = it.next();
-                                fr.schedulerType = schedulerType;       //Why???
+                                Request fr = it.next();                                
                                 if (task == fr.task) {
                                     it.remove();
+                                    fr.schedulerType = schedulerType;
                                     requests.add(fr);
                                     if (cr.size()==0) {
                                         finishedRequests.remove(source);
