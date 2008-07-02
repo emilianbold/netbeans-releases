@@ -47,7 +47,7 @@ import java.util.Random;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 
 
@@ -58,7 +58,7 @@ import org.netbeans.lib.editor.util.CharSequenceUtilities;
  * @author mmetelka
  */
 public class TestRandomModify {
-    
+
     private boolean debugOperation;
 
     private boolean debugHierarchy;
@@ -192,15 +192,9 @@ public class TestRandomModify {
     public void insertText(int offset, String text) throws Exception {
         if (text.length() > 0) {
             if (isDebugOperation()) {
-                int beforeTextStartOffset = Math.max(offset - 5, 0);
-                String beforeText = document().getText(beforeTextStartOffset, offset - beforeTextStartOffset);
-                int afterTextEndOffset = Math.min(offset + 5, document().getLength());
-                String afterText = doc.getText(offset, afterTextEndOffset - offset);
                 System.err.println(opIdString() + " INSERT(" + offset +
-                        ", " + text.length() +"): \"" +
-                        CharSequenceUtilities.debugText(text) +"\" text-around: \"" +
-                        CharSequenceUtilities.debugText(beforeText) + '|' + 
-                        CharSequenceUtilities.debugText(afterText) + "\""
+                        ", " + text.length() +"): \""
+                        + CharSequenceUtilities.debugText(text) +"\""
                 );
                 if (isDebugDocumentText()) {
                     StringBuilder sb = new StringBuilder();
@@ -321,7 +315,7 @@ public class TestRandomModify {
         while (s.length() < 3) {
             s = " " + s;
         }
-        return "OPER[" + s + "]";
+        return "[" + s + "]";
     }
         
     public final Random random() {
@@ -334,8 +328,6 @@ public class TestRandomModify {
     
     public void clearDocument() throws Exception {
         doc.remove(0, doc.getLength());
-        // Verify that there are no tokens
-        LexerTestUtilities.incCheck(doc, true);
     }
     
     public final Language<?> language() {
@@ -352,16 +344,15 @@ public class TestRandomModify {
 
     protected void checkConsistency() throws Exception {
         if (!isSkipLexerConsistencyCheck()) {
-            LexerTestUtilities.incCheck(doc, true);
-
-            // Possibly debug the hierarchy - do it after incCheck() so that hierarchy is fully inited
             if (isDebugHierarchy()) {
                 TokenHierarchy<?> hi = TokenHierarchy.get(doc);
                 if (hi != null) {
-                    System.err.println("DEBUG hierarchy:\n" + hi + "\n");
+                    System.err.println("DEBUG hierarchy:\n" + hi.tokenSequence());
                 }
             }
 
+            LexerTestUtilities.incCheck(doc, false);
+            
             for (int i = 0; i < snapshots.size(); i++) {
                 SnapshotDescription sd = snapshots.get(i);
                 TokenHierarchy<?> bm = sd.batchMirror();
@@ -370,8 +361,8 @@ public class TestRandomModify {
                     System.err.println("Comparing snapshot " + i + " of " + snapshots.size());
                 }
                 // Check snapshot without comparing lookaheads and states
-                LexerTestUtilities.assertTokenSequencesEqual(null, bm.tokenSequence(), bm,
-                        s.tokenSequence(), s, false, false);
+                LexerTestUtilities.assertTokenSequencesEqual(bm.tokenSequence(), bm,
+                        s.tokenSequence(), s, false);
             }
         }
     }

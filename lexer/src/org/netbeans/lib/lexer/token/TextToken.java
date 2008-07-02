@@ -45,11 +45,13 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.TokenList;
 
 /**
- * Token with an explicit text - either serving a flyweight token
- * or a non-flyweight replacement for a flyweight token.
+ * Token with an explicit text - either serving as a custom text token
+ * or a flyweight token.
  * <br/>
- * The represented text should be the same like the original content
+ * The represented text can differ from the original content
  * of the recognized text input portion.
+ * <br/>
+ * Token with the custom text cannot be branched by a language embedding.
  *
  * <p>
  * The text token can act as a flyweight token by calling
@@ -72,7 +74,7 @@ public class TextToken<T extends TokenId> extends AbstractToken<T> {
      * is expected to correspond to the recognized input portion
      * (i.e. the text is not custom).
      * <br/>
-     * The token can be made flyweight by using <code>makeFlyweight()</code>.
+     * The token can be made flyweight by using <code>setRawOffset(-1)</code>.
      *
      * @param id non-null identification of the token.
      * @param text non-null text of the token.
@@ -90,7 +92,7 @@ public class TextToken<T extends TokenId> extends AbstractToken<T> {
     }
 
     @Override
-    public int length() {
+    public final int length() {
         return text.length();
     }
 
@@ -100,7 +102,7 @@ public class TextToken<T extends TokenId> extends AbstractToken<T> {
     }
     
     public final TextToken<T> createCopy(TokenList<T> tokenList, int rawOffset) {
-        return new TextToken<T>(id(), tokenList, rawOffset, text);
+        return new TextToken<T>(id(), tokenList, rawOffset, text());
     }
     
     @Override
@@ -108,7 +110,6 @@ public class TextToken<T extends TokenId> extends AbstractToken<T> {
         return isFlyweight() ? "FlyT" : "TexT"; // NOI18N "TextToken" or "FlyToken"
     }
 
-    @Override
     public String toString() {
         return text.toString();
     }

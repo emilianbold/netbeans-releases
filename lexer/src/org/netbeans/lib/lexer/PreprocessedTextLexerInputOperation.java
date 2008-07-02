@@ -64,23 +64,37 @@ public final class PreprocessedTextLexerInputOperation<T extends TokenId> extend
     private int lastRawLengthShift;
     
     private int tokenEndRawLengthShift;
-    
-    private int tokenStartIndex; // Extra added to compile
+
+    public PreprocessedTextLexerInputOperation(TokenList<T> tokenList, PreprocessedTextStorage prepText) {
+        this(tokenList, 0, null, prepText, 0, 0, prepText.length());
+    }
 
     public PreprocessedTextLexerInputOperation(TokenList<T> tokenList, int tokenIndex,
     Object lexerRestartState, PreprocessedTextStorage prepText, int prepTextStartOffset,
     int startOffset, int endOffset) {
-        super(tokenList, tokenIndex, lexerRestartState, startOffset, endOffset);
+        super(tokenList, tokenIndex, lexerRestartState, prepText,
+                prepTextStartOffset, startOffset, endOffset);
         this.preprocessedText = prepText;
         int index = startOffset - prepTextStartOffset;
         if (index > 0) {
             tokenStartRawLengthShift = preprocessedText.rawLengthShift(index);
             lastRawLengthShift = tokenStartRawLengthShift;
         }
+        preprocessingLevelCount++; // extra level of preprocessing
+    }
+
+    public int deepRawLength(int length) {
+        return length + preprocessedText.rawLengthShift(tokenStartIndex() + length - 1)
+                - tokenStartRawLengthShift;
+    }
+    
+    public int deepRawLengthShift(int index) {
+        return preprocessedText.rawLengthShift(tokenStartIndex() + index)
+                - tokenStartRawLengthShift;
     }
 
     public int read(int index) { // index >= 0 is guaranteed by contract
-        index += tokenStartIndex;
+        index += tokenStartIndex();
         if (index < readEndIndex()) {
             // Check whether the char is preprocessed
             int rls = preprocessedText.rawLengthShift(index);
@@ -97,12 +111,13 @@ public final class PreprocessedTextLexerInputOperation<T extends TokenId> extend
         }
     }
 
-    public void assignTokenLength(int tokenLength) {
+    public void tokenRecognized(int tokenLength) {
+        super.tokenRecognized(tokenLength);
         tokenEndRawLengthShift = preprocessedText.rawLengthShift(
-                tokenStartIndex + tokenLength - 1);
+                tokenStartIndex() + tokenLength() - 1);
     }
     
-    protected void tokenApproved() {
+    public void tokenApproved() {
         // Increase base raw length shift by the token's last-char shift
         tokenStartRawLengthShift += tokenEndRawLengthShift;
 
@@ -120,6 +135,7 @@ public final class PreprocessedTextLexerInputOperation<T extends TokenId> extend
                 prepEndIndex -= tokenLength();
             }
         }
+        super.tokenApproved();
     }
     
     public void collectExtraPreprocessedChars(CharProvider.ExtraPreprocessedChars epc,
@@ -137,7 +153,7 @@ public final class PreprocessedTextLexerInputOperation<T extends TokenId> extend
                     // for the present token and the ending chars could possibly
                     // be non-preprocessed (prepEndIndex > tokenLength)
                     while (--i >= prepStartIndex && postCount > 0
-                            && preprocessedText.rawLengthShift(i + tokenStartIndex) == tokenEndRawLengthShift
+                            && preprocessedText.rawLengthShift(i + tokenStartIndex()) == tokenEndRawLengthShift
                     ) { // not preprocessed
                         postCount--;
                     }
@@ -151,11 +167,11 @@ public final class PreprocessedTextLexerInputOperation<T extends TokenId> extend
             assert (preCount >= 0 && postCount >= 0);
             epc.ensureExtraLength(preCount + postCount);
             while (--preCount >= 0) {
-//                epc.insert(readExisting(prepStartIndex - 1), deepRawLength(prepStartIndex) - prepStartIndex);
+                epc.insert(readExisting(prepStartIndex - 1), deepRawLength(prepStartIndex) - prepStartIndex);
                 prepStartIndex--;
             }
             while (--postCount >= 0) {
-//                epc.append(readExisting(prepEndIndex), deepRawLength(prepEndIndex) - topPrepEndIndex);
+                epc.append(readExisting(prepEndIndex), deepRawLength(prepEndIndex) - topPrepEndIndex);
                 prepEndIndex++;
                 topPrepEndIndex++;
             }

@@ -51,58 +51,76 @@ import org.netbeans.lib.lexer.token.AbstractToken;
  * @author Miloslav Metelka
  * @version 1.00
  */
+
 public class TextLexerInputOperation<T extends TokenId> extends LexerInputOperation<T> {
-    
+
     /**
      * Input text from which the reading of characters is done.
      */
-    private final CharSequence inputSourceText;
+    private final CharSequence inputText;
 
+    private final int inputTextStartOffset;
+    
     /**
-     * Point beyond which the reading cannot go.
+     * End of valid chars in readCharArray (points to first invalid char).
      */
-    private int readEndOffset;
+    private int readEndIndex;
+    
 
-
-    public TextLexerInputOperation(TokenList<T> tokenList) {
-        this(tokenList, 0, null, 0, -1);
+    public TextLexerInputOperation(TokenList<T> tokenList, CharSequence inputText) {
+        this(tokenList, 0, null, inputText, 0, 0, inputText.length());
     }
 
     public TextLexerInputOperation(TokenList<T> tokenList, int tokenIndex,
-    Object lexerRestartState, int startOffset, int endOffset) {
+    Object lexerRestartState, CharSequence inputText, int inputTextStartOffset,
+    int startOffset, int endOffset) {
         super(tokenList, tokenIndex, lexerRestartState);
-        this.inputSourceText = tokenList.inputSourceText();
-        if (endOffset == -1) {
-            endOffset = inputSourceText.length();
-        }
+        this.inputText = inputText;
+        this.inputTextStartOffset = inputTextStartOffset;
+
+        // Make the offsets relative to the input start offset
+        startOffset -= inputTextStartOffset;
+        endOffset -= inputTextStartOffset;
         assert (0 <= startOffset) && (startOffset <= endOffset)
-            && (endOffset <= inputSourceText.length())
+            && (endOffset <= inputText.length())
             : "startOffset=" + startOffset + ", endOffset=" + endOffset
-                + ", inputSourceText.length()=" + inputSourceText.length();
-        tokenStartOffset = startOffset;
-        readOffset = tokenStartOffset;
-        readEndOffset = endOffset;
+                + ", inputText.length()=" + inputText.length();
+        setTokenStartIndex(startOffset);
+        readEndIndex = endOffset;
     }
     
-    public int read(int offset) {
-        if (offset < readEndOffset) {
-            return inputSourceText.charAt(offset);
+    public int read(int index) { // index >= 0 is guaranteed by contract
+        index += tokenStartIndex();
+        if (index < readEndIndex) {
+            return inputText.charAt(index);
         } else { // must read next or return EOF
             return LexerInput.EOF;
         }
     }
 
-    public char readExisting(int offset) {
-        return inputSourceText.charAt(offset);
+    public char readExisting(int index) {
+        return inputText.charAt(tokenStartIndex() + index);
     }
 
-    protected void fillTokenData(AbstractToken<T> token) {
-        token.setTokenList(tokenList);
-        token.setRawOffset(tokenStartOffset);
+    public void approveToken(AbstractToken<T> token) {
+        if (isSkipToken(token)) {
+            preventFlyToken();
+
+        } else if (token.isFlyweight()) {
+            assert isFlyTokenAllowed();
+            flyTokenAdded();
+
+        } else { // non-flyweight token
+            token.setTokenList(tokenList());
+            token.setRawOffset(inputTextStartOffset + tokenStartIndex());
+            clearFlySequence();
+        }
+
+        tokenApproved();
     }
-    
+
     protected final int readEndIndex() {
-        return readEndOffset;
+        return readEndIndex;
     }
 
 }

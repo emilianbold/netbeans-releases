@@ -41,7 +41,6 @@
 
 package org.netbeans.api.lexer;
 
-import java.util.List;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -98,18 +97,6 @@ public class CustomTokenClassTest extends NbTestCase {
         }
         
         public PartType partType() {
-            return null;
-        }
-
-        public boolean isRemoved() {
-            return false;
-        }
-
-        public Token<T> joinToken() {
-            return null;
-        }
-
-        public List<? extends Token<T>> joinedParts() {
             return null;
         }
         

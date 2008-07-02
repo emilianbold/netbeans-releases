@@ -42,29 +42,36 @@
 package org.netbeans.lib.lexer.token;
 
 import org.netbeans.api.lexer.PartType;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.spi.lexer.TokenPropertyProvider;
 
 /**
- * Token with associated properties. It may also act as a token part but without
- * a reference to a complete token e.g. suitable for java's incomplete block comment.
+ * Token that holds information about preprocessed characters.
+ *
+ * <p>
+ * Instances of this token are more costly than other token types
+ * because in addition to regular information they store preprocessed
+ * text of the token.
  *
  * @author Miloslav Metelka
  * @version 1.00
  */
 
-public class PropertyToken<T extends TokenId> extends DefaultToken<T> {
-
-    private final TokenPropertyProvider<T> propertyProvider; // 28 bytes (24-super + 4)
-
-    public PropertyToken(T id, int length, TokenPropertyProvider<T> propertyProvider, PartType partType) {
+public final class PropertyToken<T extends TokenId> extends DefaultToken<T> {
+    
+    private final TokenPropertyProvider propertyProvider; // 28 bytes (24-super + 4)
+    
+    private final PartType partType; // 32 bytes
+    
+    public PropertyToken(T id, int length,
+    TokenPropertyProvider propertyProvider, PartType partType) {
         super(id, length);
-        assert (partType != null);
-        this.propertyProvider = (propertyProvider != null)
-                ? PartTypePropertyProvider.createDelegating(partType, propertyProvider)
-                : PartTypePropertyProvider.<T>get(partType);
+        this.propertyProvider = propertyProvider;
+        this.partType = partType;
     }
-
+    
     @Override
     public boolean hasProperties() {
         return (propertyProvider != null);
@@ -74,15 +81,15 @@ public class PropertyToken<T extends TokenId> extends DefaultToken<T> {
     public Object getProperty(Object key) {
         return (propertyProvider != null) ? propertyProvider.getValue(this, key) : null;
     }
-
+    
     @Override
     public PartType partType() {
-        return (PartType) getProperty(PartType.class);
+        return partType;
     }
 
     @Override
     protected String dumpInfoTokenType() {
-        return "ProT"; // NOI18N
+        return "ProT"; // NOI18N "PrepToken"
     }
-
+    
 }

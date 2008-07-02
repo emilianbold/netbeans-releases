@@ -241,8 +241,8 @@ public final class CharPreprocessorOperation implements CharProvider {
     public void notifyError(String errorMessage) {
         if (lexerInputOperation != null) {
             int parentIndex = parent.readIndex(); // Get the 
-//            lexerInputOperation.notifyPreprocessorError(
-//                new CharPreprocessorError(errorMessage, parent.deepRawLength(parentIndex)));
+            lexerInputOperation.notifyPreprocessorError(
+                new CharPreprocessorError(errorMessage, parent.deepRawLength(parentIndex)));
         }
     }
 
@@ -288,10 +288,10 @@ public final class CharPreprocessorOperation implements CharProvider {
         return tokenLength;
     }
     
-    public void assignTokenLength(int tokenLength, boolean skipToken) {
+    public void tokenRecognized(int tokenLength) {
         this.tokenLength = tokenLength;
         // Modify tokenLength for preprocessed characters
-        parent.assignTokenLength(parentLength(tokenLength), skipToken);
+        parent.tokenRecognized(parentLength(tokenLength));
     }
     
     public PreprocessedTextStorage createPreprocessedTextStorage(CharSequence rawText,
@@ -390,7 +390,7 @@ public final class CharPreprocessorOperation implements CharProvider {
      * This method is called after the token has been recognized
      * to clear internal data related to processing of token's characters.
      */
-    public void consumeTokenLength() {
+    public void tokenApproved() {
         if (prepStartIndex != lookaheadIndex) { // some prep chars (may be after token length)
             if (prepStartIndex < tokenLength) { // prep chars before token end
                 if (prepEndIndex <= tokenLength) { // no preprocessed chars past token end
@@ -417,7 +417,7 @@ public final class CharPreprocessorOperation implements CharProvider {
 
         readIndex -= tokenLength;
         lookaheadIndex -= tokenLength;
-        parent.consumeTokenLength();
+        parent.tokenApproved();
 
         if (testing)
             consistencyCheck();

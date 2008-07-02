@@ -101,19 +101,18 @@ public interface CharProvider {
      * token length in the root lexer input operation due to character
      * preprocessing.
      * <br/>
-     * The tokenLength at a particular level should be cached by the corresponding provider.
-     *
-     * @param skipToken whether the token will be skipped due to filtering of its id.
+     * The tokenLength should be cached by this provider.
+     * @param skip whether the token will be skipped due to filtering of its id.
      * @return true if the token is preprocessed or false otherwise.
      */
-    void assignTokenLength(int tokenLength, boolean skipToken);
+    void tokenRecognized(int tokenLength);
     
     /**
-     * Notify this provider that the token was created and
-     * that the tokenLength number of characters should be consumed
-     * (tokenLength should continue to be held by the provider).
+     * Notify this provider that the token was approved and
+     * that the tokenLength number of characters should be skipped
+     * (tokenLength should be cached by the provider).
      */
-    void consumeTokenLength();
+    void tokenApproved();
     
     /**
      * Collect extra preprocessed characters from the parent providers.

@@ -52,7 +52,6 @@ import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.TokenList;
 import org.netbeans.lib.lexer.token.AbstractToken;
 import org.netbeans.lib.lexer.token.TextToken;
-import org.netbeans.lib.lexer.TokenOrEmbedding;
 
 /**
  * Token list implementation holding added or removed tokens from a list.
@@ -65,21 +64,21 @@ public final class RemovedTokenList<T extends TokenId> implements TokenList<T> {
     
     private final LanguagePath languagePath;
     
-    private TokenOrEmbedding<T>[] tokenOrEmbeddings;
+    private Object[] tokensOrBranches;
     
     private int removedTokensStartOffset;
     
-    public RemovedTokenList(LanguagePath languagePath, TokenOrEmbedding<T>[] tokensOrBranches) {
+    public RemovedTokenList(LanguagePath languagePath, Object[] tokensOrBranches) {
         this.languagePath = languagePath;
-        this.tokenOrEmbeddings = tokensOrBranches;
+        this.tokensOrBranches = tokensOrBranches;
     }
     
     public LanguagePath languagePath() {
         return languagePath;
     }
     
-    public TokenOrEmbedding<T> tokenOrEmbedding(int index) {
-        return (index < tokenOrEmbeddings.length) ? tokenOrEmbeddings[index] : null;
+    public Object tokenOrEmbeddingContainer(int index) {
+        return (index < tokensOrBranches.length) ? tokensOrBranches[index] : null;
     }
 
     public int lookahead(int index) {
@@ -90,7 +89,7 @@ public final class RemovedTokenList<T extends TokenId> implements TokenList<T> {
         return null;
     }
 
-    public int tokenOffsetByIndex(int index) {
+    public int tokenOffset(int index) {
         Token<?> token = existingToken(index);
         if (token.isFlyweight()) {
             int offset = 0;
@@ -110,18 +109,14 @@ public final class RemovedTokenList<T extends TokenId> implements TokenList<T> {
         }
     }
 
-    public int[] tokenIndex(int offset) {
-        return LexerUtilsConstants.tokenIndexBinSearch(this, offset, tokenCountCurrent());
-    }
-
     private Token<T> existingToken(int index) {
-        return tokenOrEmbeddings[index].token();
+        return LexerUtilsConstants.token(tokensOrBranches[index]);
     }
 
     public synchronized AbstractToken<T> replaceFlyToken(
     int index, AbstractToken<T> flyToken, int offset) {
         TextToken<T> nonFlyToken = ((TextToken<T>)flyToken).createCopy(this, offset);
-        tokenOrEmbeddings[index] = nonFlyToken;
+        tokensOrBranches[index] = nonFlyToken;
         return nonFlyToken;
     }
 
@@ -130,20 +125,19 @@ public final class RemovedTokenList<T extends TokenId> implements TokenList<T> {
     }
 
     public int tokenCountCurrent() {
-        return tokenOrEmbeddings.length;
+        return tokensOrBranches.length;
     }
 
     public int modCount() {
-        return LexerUtilsConstants.MOD_COUNT_IMMUTABLE_INPUT;
+        return -1;
     }
     
-    public int tokenOffset(AbstractToken<T> token) {
-        int rawOffset = token.rawOffset();
+    public int childTokenOffset(int rawOffset) {
         // Offsets of contained tokens are absolute
         return rawOffset;
     }
     
-    public char charAt(int offset) {
+    public char childTokenCharAt(int rawOffset, int index) {
         throw new IllegalStateException("Querying of text for removed tokens not supported"); // NOI18N
     }
 
@@ -151,14 +145,10 @@ public final class RemovedTokenList<T extends TokenId> implements TokenList<T> {
         throw new IllegalStateException("Branching of removed tokens not supported"); // NOI18N
     }
     
-    public TokenList<?> rootTokenList() {
-        return null;
+    public TokenList<?> root() {
+        return this;
     }
-
-    public CharSequence inputSourceText() {
-        return null;
-    }
-
+    
     public TokenHierarchyOperation<?,?> tokenHierarchyOperation() {
         return null;
     }
@@ -169,14 +159,14 @@ public final class RemovedTokenList<T extends TokenId> implements TokenList<T> {
 
     public int startOffset() {
         if (tokenCountCurrent() > 0 || tokenCount() > 0)
-            return tokenOffsetByIndex(0);
+            return tokenOffset(0);
         return 0;
     }
 
     public int endOffset() {
         int cntM1 = tokenCount() - 1;
         if (cntM1 >= 0)
-            return tokenOffsetByIndex(cntM1) + tokenOrEmbedding(cntM1).token().length();
+            return tokenOffset(cntM1) + LexerUtilsConstants.token(this, cntM1).length();
         return 0;
     }
 

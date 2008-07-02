@@ -162,7 +162,7 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
     }
     
 
-    private final TokenHierarchyOperation<I,?> operation;
+    private TokenHierarchyOperation<I,?> operation;
 
     TokenHierarchy(TokenHierarchyOperation<I,?> operation) {
         this.operation = operation;

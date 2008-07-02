@@ -53,9 +53,9 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.TokenList;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
+import org.netbeans.lib.lexer.test.simple.*;
 import org.netbeans.lib.lexer.token.DefaultToken;
 import org.netbeans.lib.lexer.token.TextToken;
-import org.netbeans.lib.lexer.token.TokenLength;
 
 /**
  * Test methods of token sequence.
@@ -403,7 +403,7 @@ public class TokenSequenceTest extends NbTestCase {
     }
     
     public void testTokenSize() {
-        String text = "abc+def";
+        String text = "abc+";
         TokenHierarchy<?> hi = TokenHierarchy.create(text,TestTokenId.language());
         TokenSequence<?> ts = hi.tokenSequence();
         
@@ -411,39 +411,18 @@ public class TokenSequenceTest extends NbTestCase {
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", 3);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "def", 4);
         assertFalse(ts.moveNext());
         
         TokenList tokenList = LexerTestUtilities.tokenList(ts);
         ts.moveIndex(0); // move before "abc"
         assertTrue(ts.moveNext());
         // Test DefaultToken size
-        Token<?> token = ts.token();
-        // Exclude TokenLength since it should be cached - verify later
-        TokenLength cachedTokenLength = TokenLength.get(token.length());
-        assertSame(DefaultToken.class, token.getClass());
-        assertSize("Token instance too big", Collections.singletonList(token), 24,
-                new Object[] { tokenList, TestTokenId.IDENTIFIER, cachedTokenLength });
-
-        // Check that TokenLength is cached for small tokens
-        assertSame("TokenLength instances not cached for small tokens",
-                cachedTokenLength, TokenLength.get(token.length()));
-        
+        assertSame(DefaultToken.class, ts.token().getClass());
+        assertSize("Token instance too big", Collections.singletonList(ts.token()), 24,new Object[] {  tokenList,TestTokenId.IDENTIFIER});
         // Test TextToken size
         assertTrue(ts.moveNext());
-        token = ts.token();
-        assertSame(TextToken.class, token.getClass());
-        assertSize("Token instance too big", Collections.singletonList(token), 24,
-                new Object[] { tokenList, TestTokenId.PLUS, "+" });
-
-        // Test DefaultToken size
-        assertTrue(ts.moveNext());
-        token = ts.token();
-        assertSame(DefaultToken.class, token.getClass());
-        // Verify that the TokenLength is cached for small tokens - use tokenLength3 directly
-        assertSize("Token instance too big", Collections.singletonList(token), 24,
-                new Object[] { tokenList, TestTokenId.IDENTIFIER, cachedTokenLength });
+        assertSame(TextToken.class, ts.token().getClass());
+        assertSize("Token instance too big", Collections.singletonList(ts.token()), 24,new Object[] {  tokenList,TestTokenId.PLUS, "+"});
     }
 
     public void testSubSequenceInUnfinishedTH() throws Exception {
@@ -465,22 +444,6 @@ public class TokenSequenceTest extends NbTestCase {
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "cd", 3);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, " ", 5);
-        assertFalse(ts.moveNext());
-    }
-
-    public void testSubSequenceInvalidOffset137564() throws Exception {
-        Document doc = new ModificationTextDocument();
-        //             012345678
-        String text = "ab cd efg";
-        doc.insertString(0, text, null);
-        
-        doc.putProperty(Language.class,TestTokenId.language());
-        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        
-        TokenSequence<?> ts = hi.tokenSequence();
-        assertTrue(ts.moveNext());
-        
-        ts = ts.subSequence(-2, -1);
         assertFalse(ts.moveNext());
     }
 

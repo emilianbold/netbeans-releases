@@ -92,7 +92,7 @@ public interface TokenList<T extends TokenId> {
      * @param &gt;=0 index of the token in this list.
      * @return valid token or null if the index is too high.
      */
-    TokenOrEmbedding<T> tokenOrEmbedding(int index);
+    Object tokenOrEmbeddingContainer(int index);
 
     /**
      * Replace flyweight token at the given index with its non-flyweight copy.
@@ -120,41 +120,11 @@ public interface TokenList<T extends TokenId> {
      * Get absolute offset of the token at the given index in the token list.
      * <br>
      * This method can only be called if the token at the given index
-     * was already fetched by {@link tokenOrEmbedding(int)}.
-     * <br/>
-     * For EmbeddedTokenList a EmbeddingContainer.updateStatus() must be called
-     * prior this method to obtain up-to-date results.
+     * was already fetched by {@link tokenOrEmbeddingContainer(int)}.
      */
-    int tokenOffsetByIndex(int index);
+    int tokenOffset(int index);
     
     /**
-     * Get absolute offset of a token contained in this token list.
-     * <br/>
-     * For EmbeddedTokenList a EmbeddingContainer.updateStatus() must be called
-     * prior this method to obtain up-to-date results.
-     *
-     * @param token non-null child token of this token list.
-     * @return absolute offset in the input.
-     */
-    int tokenOffset(AbstractToken<T> token);
-    
-    /**
-     * Get index of the token that "contains" the given offset.
-     * <br/>
-     * The result is in sync with TokenSequence.moveOffset().
-     * 
-     * @param offset offset for which the token index should be found.
-     * @return array of two items where the [0] is token's index and [1] is its offset.
-     *  <br/>
-     *  If offset &gt;= last-token-end-offset then [0] contains token-count and
-     *  [1] conains last-token-end-offset.
-     *  <br/>
-     *  [0] may contain -1 to indicate that there are no tokens in the token list
-     *  ([1] then contains zero).
-     */
-    int[] tokenIndex(int offset);
-    
-   /**
      * Get total count of tokens in the list.
      * <br/>
      * For token lists that create the tokens lazily
@@ -184,12 +154,11 @@ public interface TokenList<T extends TokenId> {
      * <p>
      * This is also used to check whether this token list corresponds to mutable input
      * or not because unmodifiable lists return -1 from this method.
-     * </p>
      *
      * <p>
-     * For embedded token lists this value should be update to root's one
-     * prior constructing child token sequence.
-     * </p>
+     * For branch token lists the {@link #updateStartOffsetShift()} ensures
+     * that the value returned by this method is most up-to-date
+     * (equals to the root list's one).
      *
      * @return number of modifications performed to the list.
      *  <br/>
@@ -198,14 +167,33 @@ public interface TokenList<T extends TokenId> {
     int modCount();
     
     /**
-     * Get the root token list of the token list hierarchy.
+     * Get absolute offset of the child token with the given raw offset
+     * in the underlying input.
+     *
+     * @param rawOffset raw offset of the child token.
+     * @return absolute offset in the input.
      */
-    TokenList<?> rootTokenList();
+    int childTokenOffset(int rawOffset);
     
     /**
-     * Get text of the whole input source.
+     * Get character of a token from the character sequence represented
+     * by this support.
+     *
+     * @param rawOffset raw offset of the child token.
+     *  The given offset value may need to be preprocessed before using (it depends
+     *  on a nature of the token list).
+     * @param index index inside the token's text that should be returned.
+     *  This value cannot be simply added to the previous parameter
+     *  for mutable token lists as the value could errorneously point
+     *  into a middle of the offset gap then.
+     * @return appropriate character that the token has requested.
      */
-    CharSequence inputSourceText();
+    char childTokenCharAt(int rawOffset, int index);
+
+    /**
+     * Get the root token list of the token list hierarchy.
+     */
+    TokenList<?> root();
     
     /**
      * Get token hierarchy operation for this token list or null
@@ -283,9 +271,6 @@ public interface TokenList<T extends TokenId> {
      * If token filtering is used then the first token may start at higher offset.
      * <br/>
      * It's guaranteed that there will be no token starting below this offset.
-     * <br/>
-     * For EmbeddedTokenList a EmbeddingContainer.updateStatus() must be called
-     * prior this method to obtain up-to-date results.
      */
     int startOffset();
     
@@ -295,19 +280,16 @@ public interface TokenList<T extends TokenId> {
      * If token filtering is used then the last token may end at lower offset.
      * <br/>
      * It's guaranteed that there will be no token ending above this offset.
-     * <br/>
-     * For EmbeddedTokenList a EmbeddingContainer.updateStatus() must be called
-     * prior this method to obtain up-to-date results.
      */
     int endOffset();
     
     /**
      * Check if this token list is removed from token hierarchy.
      * <br/>
-     * Should only be called under a lock of a root token list.
+     * Should only be called under the lock of the root token list.
      * 
      * @return true if the token list was removed or false otherwise.
      */
     boolean isRemoved();
-
+    
 }
