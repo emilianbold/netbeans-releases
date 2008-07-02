@@ -304,6 +304,7 @@ introduced by support for multiple source roots. -jglick
             
             <!-- COS feature - used in run-deploy -->
             <target name="-init-cos">
+                <xsl:attribute name="depends">init</xsl:attribute>
                 <condition>
                     <xsl:attribute name="property">ensure.built.source.roots</xsl:attribute>
                     <xsl:attribute name="value">
@@ -1120,7 +1121,7 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="dist-ear">
-                <xsl:attribute name="depends">init,compile,-pre-dist,do-ear-dist,-post-dist</xsl:attribute>
+                <xsl:attribute name="depends">init,-init-cos,compile,-pre-dist,do-ear-dist,-post-dist</xsl:attribute>
                 <xsl:attribute name="description">Build distribution (WAR) to be packaged into an EAR.</xsl:attribute>
             </target>
             

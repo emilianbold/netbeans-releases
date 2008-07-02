@@ -209,6 +209,15 @@ is divided into following sections:
                 </condition>
             </target>
 
+            <!-- COS feature - used in run-deploy -->
+            <target name="-init-cos">
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <condition>
+                    <xsl:attribute name="property">build.deploy.on.save</xsl:attribute>
+                    <istrue value="${{deploy.on.save}}"/>
+                </condition>         
+            </target>
+            
             <target name="post-init">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
@@ -376,7 +385,7 @@ exists or setup the property manually. For example like this:
     </target>
             
     <target name="run-deploy">
-        <xsl:attribute name="depends">dist,pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,post-run-deploy</xsl:attribute>
+        <xsl:attribute name="depends">-init-cos,dist,pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,post-run-deploy</xsl:attribute>
     </target>
 
     <target name="-run-deploy-nb" if="netbeans.home">
@@ -597,7 +606,7 @@ to simulate
                 <xsl:variable name="script" select="projdeps:script"/>
                 <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}">
                     <property name="dist.ear.dir" location="${{build.dir}}"/>
-                    <property name="deploy.on.save" value="${{deploy.on.save}}"/>
+                    <property name="deploy.on.save" value="${{build.deploy.on.save}}"/>
                 </ant>
             </xsl:for-each>
             <xsl:variable name="references2" select="/p:project/p:configuration/projdeps2:references"/>
