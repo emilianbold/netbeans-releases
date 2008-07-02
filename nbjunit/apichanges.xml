@@ -63,7 +63,7 @@ made subject to such option by the copyright holder.
         <author login="mrkam"/>
         <compatibility addition="yes"/>
         <description>
-            <p>NbModuleSuite.Configuration now has 
+            <p>NbModuleSuite.Configuration now has
             <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#reuseUserDir(boolean)">reuseUserDir(boolean)</a>
             method which enables test suite to reuse userdir from previous suite run.
             </p>

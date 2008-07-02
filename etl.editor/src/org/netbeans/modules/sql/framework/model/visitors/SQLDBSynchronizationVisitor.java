@@ -56,6 +56,7 @@ import org.netbeans.modules.sql.framework.ui.view.graph.MetaTableModel;
 import java.util.ArrayList;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
@@ -101,6 +102,7 @@ public class SQLDBSynchronizationVisitor {
                     // *** UPDATE ***
                     copyFrom(newColumn, collabColumn, ignorePrecision);
                     tableModel.updateColumn(collabColName, collabColumn);
+                    DataObjectProvider.getProvider().getActiveDataObject().setModified(true);
                     String desc = collabColumn.getQualifiedName() + " was updated from Database " + table.getParent().getModelName();
                     ValidationInfo vInfo = new ValidationInfoImpl(collabColumn, desc, ValidationInfo.VALIDATION_WARNING);
                     infoList.add(vInfo);
@@ -113,7 +115,8 @@ public class SQLDBSynchronizationVisitor {
         if (!columnMatched) {
             // *** DELETE *** the column
             table.deleteColumn(collabColumn.getName());
-            tableModel.removeColumn(collabColumn);
+            tableModel.removeColumn(collabColumn); 
+            DataObjectProvider.getProvider().getActiveDataObject().setModified(true);
             String desc = collabColumn.getQualifiedName() + " was deleted since it no longer exists in Database " + table.getParent().getModelName();
             ValidationInfo vInfo = new ValidationInfoImpl(collabColumn, desc, ValidationInfo.VALIDATION_WARNING);
             infoList.add(vInfo);
@@ -205,6 +208,7 @@ public class SQLDBSynchronizationVisitor {
             // *** ADD *** the column
             table.addColumn(col);
             tableModel.addColumn(col);
+            DataObjectProvider.getProvider().getActiveDataObject().setModified(true);
             String desc1 = "Found new column in Database -> " + table.getParent().getModelName() + col.getQualifiedName() + " was added";
             ValidationInfo vInfo1 = new ValidationInfoImpl(collabColumn, desc1, ValidationInfo.VALIDATION_INFO);
             infoList.add(vInfo1);
@@ -229,7 +233,6 @@ public class SQLDBSynchronizationVisitor {
 
                 List collabColumns = collabTable.getColumnList();
                 List newColumns = newTable.getColumnList();
-
                 for (Iterator itr = collabColumns.iterator(); itr.hasNext();) {
                     SQLDBColumn oldCol = (SQLDBColumn) itr.next();
                     int sqlTypeCode = oldCol.getJdbcType();

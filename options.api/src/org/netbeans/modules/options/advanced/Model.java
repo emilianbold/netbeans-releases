@@ -81,6 +81,7 @@ public final class Model extends TabbedPanelModel {
     private LookupListener lkpListener;
     private Result<AdvancedOption> lkpResult;
     private String subpath;
+    private PropertyChangeListener propertyChangeListener;
 
     /**
      * @param subpath path to folder under OptionsDialog folder containing 
@@ -139,6 +140,7 @@ public final class Model extends TabbedPanelModel {
         if (panel != null) return panel;
         AdvancedOption option = categoryToOption.get (category);
         OptionsPanelController controller = new DelegatingController(option.create ());
+        controller.addPropertyChangeListener(propertyChangeListener);
         categoryToController.put (category, controller);
         panel = controller.getComponent (masterLookup);
         categoryToPanel.put (category, panel);
@@ -192,7 +194,20 @@ public final class Model extends TabbedPanelModel {
                 return true;
         return false;
     }
-    
+
+    void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeListener = listener;
+        for(OptionsPanelController controller : categoryToController.values()) {
+            controller.addPropertyChangeListener(listener);
+        }
+    }
+
+    void removePropertyChangeListener(PropertyChangeListener listener) {
+        for(OptionsPanelController controller : categoryToController.values()) {
+            controller.removePropertyChangeListener(listener);
+        }
+    }
+
     Lookup getLookup () {
         List<Lookup> lookups = new ArrayList<Lookup> ();
         Iterator<OptionsPanelController> it = categoryToController.values ().iterator ();

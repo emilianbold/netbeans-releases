@@ -1453,6 +1453,9 @@ public class FilterNode extends Node {
 
             if (runnable != null) {
                 runnable.run();
+                if (!original.getChildren().isInitialized()) {
+                    original.getChildren().entrySupport().notifySetEntries();
+                }
             }
         }
 

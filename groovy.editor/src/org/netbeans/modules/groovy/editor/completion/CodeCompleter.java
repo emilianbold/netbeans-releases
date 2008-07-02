@@ -104,10 +104,6 @@ import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.elements.ElementHandleSupport;
 import org.netbeans.modules.groovy.editor.elements.GroovyElement;
@@ -117,8 +113,6 @@ import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -136,7 +130,7 @@ public class CodeCompleter implements CodeCompletionHandler {
     Set<GroovyKeyword> keywords;
 
     public CodeCompleter() {
-        LOG.setLevel(Level.OFF);
+        LOG.setLevel(Level.FINEST);
 
         JavaPlatformManager platformMan = JavaPlatformManager.getDefault();
         JavaPlatform platform = platformMan.getDefaultPlatform();
@@ -166,7 +160,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         }
 
     /*Configures testing environment only*/
-    static public void setTesting(boolean testing) {
+    static void setTesting(boolean testing) {
         testMode = testing;
     }
 
@@ -1313,44 +1307,6 @@ public class CodeCompleter implements CodeCompletionHandler {
      */
 
 
-    private ClasspathInfo getClassPathInfo(BaseDocument doc){
-
-        ClasspathInfo pathInfo = null;
-
-
-        if (!testMode) {
-            assert doc != null : "What am i supposed to do if doc == null ?";
-
-            if (!(doc instanceof BaseDocument)) {
-                LOG.log(Level.FINEST, "Document is *not* a BaseDocument");
-            }
-
-
-            DataObject dob = NbEditorUtilities.getDataObject(doc);
-
-            if (dob == null) {
-                LOG.log(Level.FINEST, "Problem getting DataObject");
-                return null;
-            }
-
-            FileObject fo = dob.getPrimaryFile();
-
-            if (fo == null) {
-                LOG.log(Level.FINEST, "Problem getting FileObject");
-                return null;
-            }
-
-            pathInfo = NbUtilities.getClasspathInfoForFileObject(fo);
-
-            if (pathInfo == null) {
-                LOG.log(Level.FINEST, "Problem getting ClasspathInfo");
-            }
-        }
-        
-        return pathInfo;
-        
-    }
-    
     /**
      * Here we complete package-names like java.lan to java.lang ...
      * 
@@ -1366,9 +1322,11 @@ public class CodeCompleter implements CodeCompletionHandler {
      
         LOG.log(Level.FINEST, "Token fullString = >{0}<", packageRequest.fullString);
         
-        ClasspathInfo pathInfo = getClassPathInfo(request.doc);
+        FileObject fileObject = request.info.getFileObject();
+        assert fileObject != null;
+        ClasspathInfo pathInfo = ClasspathInfo.create(fileObject);
 
-        // assert pathInfo != null : "Can not get ClasspathInfo";
+        assert pathInfo != null : "Can not get ClasspathInfo";
         
         // try to find suitable packages ...
 
@@ -1419,13 +1377,16 @@ public class CodeCompleter implements CodeCompletionHandler {
         // todo: we don't handle single dots in the source. In that case we should
         // find the class we are living in. Disable it for now.
 
-       if (packageRequest.basePackage.length() == 0 &&
-               packageRequest.prefix.length() == 0 &&
-               packageRequest.fullString.equals(".")) {
-           return false;
-       }
-        
-        ClasspathInfo pathInfo = getClassPathInfo(request.doc);
+        if (packageRequest.basePackage.length() == 0 &&
+                packageRequest.prefix.length() == 0 &&
+                packageRequest.fullString.equals(".")) {
+            return false;
+        }
+
+        FileObject fileObject = request.info.getFileObject();
+        assert fileObject != null;
+        ClasspathInfo pathInfo = ClasspathInfo.create(fileObject);
+        assert pathInfo != null;
        
         LOG.log(Level.FINEST, "Prefix = >{0}<", packageRequest.basePackage);
 
@@ -1694,7 +1655,8 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
 
-        LOG.log(Level.FINEST, "complete(...), prefix: {0}", prefix); // NOI18N
+        LOG.log(Level.FINEST, "complete(...), prefix      : {0}", prefix); // NOI18N
+        LOG.log(Level.FINEST, "complete(...), CaretOffset : {0}", context.getCaretOffset()); // NOI18N
 
 
         // Avoid all those annoying null checks

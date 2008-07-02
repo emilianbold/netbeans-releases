@@ -419,7 +419,9 @@ public final class ReferencesSupport {
             kind = CsmReferenceKind.DIRECT_USAGE;
         } else {
             CsmObject target = ref.getReferencedObject();
-            if (target != null) {
+            if (target == null) {
+                kind = getReferenceUsageKind(ref);
+            } else {
                 CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(target, true);
                 CsmObject targetDecl = decDef[0];
                 CsmObject targetDef = decDef[1];        

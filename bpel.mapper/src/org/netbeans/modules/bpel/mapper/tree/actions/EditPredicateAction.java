@@ -28,9 +28,10 @@ import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PredicateEditor;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PredicateMapperModelFactory;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PredicateUpdater;
-import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
+import org.netbeans.modules.bpel.mapper.model.PathConverter;
+import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.openide.util.NbBundle;
 
@@ -39,7 +40,7 @@ import org.openide.util.NbBundle;
  *
  * @author nk160297
  */
-public class EditPredicateAction extends MapperAction<Iterable<Object>> {
+public class EditPredicateAction extends MapperAction<TreeItem> {
     
     private static final long serialVersionUID = 1L;
     
@@ -48,8 +49,8 @@ public class EditPredicateAction extends MapperAction<Iterable<Object>> {
     
     public EditPredicateAction(MapperTcContext mapperTcContext, 
             boolean inLeftTree, TreePath treePath, 
-            Iterable<Object> doItrb) {
-        super(mapperTcContext, doItrb);
+            TreeItem treeItem) {
+        super(mapperTcContext, treeItem);
         mTreePath = treePath;
         mInLeftTree = inLeftTree;
         postInit();
@@ -62,14 +63,14 @@ public class EditPredicateAction extends MapperAction<Iterable<Object>> {
     }
     
     public void actionPerformed(ActionEvent e) {
-        Iterable<Object> itrb = getActionSubject();
-        Object nextObj = itrb.iterator().next();
-        assert nextObj instanceof AbstractPredicate;
-        AbstractPredicate pred = (AbstractPredicate)nextObj;
+        TreeItem treeItem = getActionSubject();
+        Object dataObj = treeItem.getDataObject();
+        assert dataObj instanceof AbstractPredicate;
+        AbstractPredicate pred = (AbstractPredicate)dataObj;
         //
         XPathSchemaContext sContext = pred.getSchemaContext();
         if (sContext == null) {
-            sContext = PathConverter.constructContext(itrb, false);
+            sContext = PathConverter.constructContext(treeItem, false);
         }
         //
         // Create new mapper TC context
