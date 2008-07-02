@@ -45,86 +45,170 @@ made subject to such option by the copyright holder.
     <folder name="Projects">
         <folder name="org-netbeans-modules-j2ee-ejbjarproject">
             <folder name="Lookup">
-                <file name="org.netbeans.modules.profiler.j2ee.LookupProviderImpl.instance"/>
+                <file name="org.netbeans.modules.profiler.j2ee.LookupProvider$EjbJarProject.instance"/>
             </folder>
         </folder>
         <folder name="org-netbeans-modules-j2ee-earproject">
             <folder name="Lookup">
-                <file name="org.netbeans.modules.profiler.j2ee.LookupProviderImpl.instance"/>
+                <file name="org.netbeans.modules.profiler.j2ee.LookupProvider$EarProject.instance"/>
             </folder>
         </folder>
         <folder name="org-netbeans-modules-web-project">
             <folder name="Lookup">
-                <file name="org.netbeans.modules.profiler.j2ee.LookupProviderImpl.instance"/>
+                <file name="org.netbeans.modules.profiler.j2ee.LookupProvider$WebProject.instance"/>
             </folder>
-        </folder>
-    </folder>
-    <folder name="Profiler">
-        <folder name="J2EE">
-            <folder name="AreasOfInterest">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
-                <folder name="WebContainer">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
-                    <folder name="Filters">
-                        <folder name="LifeCycle">
+            <folder name="NBProfiler">
+                <folder name="Categories">
+                    <folder name="EJBContainer">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
+                        <folder name="Lifecycle">
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
                             <folder name="~subtypes">
-                                <file name="javax.servlet.Filter" url="javax.servlet.Filter">
-                                    <attr name="includes" stringvalue="init,destroy"/>
+                                <file name="javax.ejb.SessionBean">
+                                    <attr name="includes" stringvalue="ejbRemove,setSessionContext"/>
+                                </file>
+                                <file name="javax.ejb.EntityBean">
+                                    <attr name="includes" stringvalue="ejbRemove,setEntityContext,unsetEntityContext"/>
+                                </file>
+                                <file name="javax.ejb.MessageDrivenBean">
+                                    <attr name="includes" stringvalue="ejbRemove,setMessageDrivenContext"/>
                                 </file>
                             </folder>
                         </folder>
-                        <folder name="~subtypes">
-                            <file name="javax.servlet.Filter" url="javax_1.servlet.Filter">
-                                <attr name="excludes" stringvalue="init,destroy"/>
-                            </file>
-                            <file name="javax.servlet.FilterChain" url="javax_1.servlet.FilterChain">
-                                <attr name="excludes" stringvalue="init,destroy"/>
-                            </file>
+                        <folder name="Persistence">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
+                            <folder name="~subtypes">
+                                <file name="javax.ejb.EntityBean">
+                                    <attr name="includes" stringvalue="ejbLoad,ejbStore"/>
+                                </file>
+                            </folder>
+                        </folder>
+                        <folder name="Pooling">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
+                            <folder name="~subtypes">
+                                <file name="javax.ejb.SessionBean">
+                                    <attr name="includes" stringvalue="ejbActivate,ejbPassivate"/>
+                                </file>
+                                <file name="javax.ejb.EntityBean">
+                                    <attr name="includes" stringvalue="ejbActivate,ejbPassivate"/>
+                                </file>
+                            </folder>
                         </folder>
                     </folder>
-                    <folder name="JSPs">
-                        <folder name="~custom" url="~custom">
-                            <attr name="instanceClass" stringvalue="org.netbeans.modules.profiler.j2ee.JSPMarkerMethodProvider"/>
-                        </folder>
-                    </folder>
-                    <folder name="JSTL">
+                    <folder name="Persistence">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
-                        <folder name="~subtypes">
-                            <file name="javax.servlet.jsp.tagext.BodyTagSupport" url="javax.servlet.jsp.tagext.BodyTagSupport"/>
-                            <file name="javax.servlet.jsp.tagext.SimpleTagSupport" url="javax.servlet.jsp.tagext.SimpleTagSupport"/>
-                            <file name="javax.servlet.jsp.tagext.Tag" url="javax.servlet.jsp.tagext.Tag"/>
-                            <file name="javax.servlet.jsp.tagext.TagSupport" url="javax.servlet.jsp.tagext.TagSupport"/>
-                        </folder>
-                    </folder>
-                    <folder name="WS">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
-                            <folder name="Core">
+                        <folder name="Hibernate">
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
                             <folder name="~package">
-                                <file name="javax.xml.ws"/>
+                                <file name="org.hibernate.impl"/>
+                            </folder>
+                            <folder name="~type">
+                                <file name="org.hibernate.impl.AbstractQueryImpl"/>
+                                <file name="org.hibernate.impl.CriteriaImpl"/>
+                                <file name="org.hibernate.impl.FetchingScrollableResultsImpl"/>
+                                <file name="org.hibernate.impl.FilterImpl"/>
+                                <file name="org.hibernate.impl.IteratorImpl"/>
+                                <file name="org.hibernate.impl.QueryImpl"/>
+                                <file name="org.hibernate.impl.SQLQueryImpl"/>
+                                <file name="org.hibernate.impl.ScrollableResultsImpl"/>
+                                <file name="org.hibernate.impl.SessionFactoryImpl"/>
+                                <file name="org.hibernate.impl.SessionFactoryObjectFactory"/>
+                                <file name="org.hibernate.impl.SessionImpl"/>
+                                <file name="org.hibernate.impl.StatelessSessionImpl"/>
+                            </folder>
+                        </folder>
+                        <folder name="JDBC">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
+                            <folder name="Connection">
+                                <folder name="~subtypes">
+                                    <file name="java.sql.Connection"/>
+                                    <file name="java.sql.DataSource"/>
+                                    <file name="java.sql.DriverManager">
+                                        <attr name="includes" stringvalue="getConnection"/>
+                                    </file>
+                                </folder>
+                            </folder>
+                            <folder name="Statements">
+                                <folder name="~subtypes">
+                                    <file name="java.sql.Statement"/>
+                                </folder>
+                            </folder>
+                        </folder>
+                        <folder name="JPA">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
+                            <folder name="~subtypes">
+                                <file name="javax.persistence.EntityManager"/>
+                                <file name="javax.persistence.Query"/>
                             </folder>
                         </folder>
                     </folder>
-                    <folder name="Servlets">
-                        <folder name="LifeCycle">
+                    <folder name="WebContainer">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
+                        <folder name="Filters">
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
+                            <folder name="LifeCycle">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
+                                <folder name="~subtypes">
+                                    <file name="javax.servlet.Filter">
+                                        <attr name="includes" stringvalue="init,destroy"/>
+                                    </file>
+                                </folder>
+                            </folder>
                             <folder name="~subtypes">
-                                <file name="javax.servlet.Servlet" url="javax.servlet.Servlet">
-                                    <attr name="includes" stringvalue="init,destroy"/>
+                                <file name="javax.servlet.Filter">
+                                    <attr name="excludes" stringvalue="init,destroy"/>
                                 </file>
-                                <file name="javax.servlet.http.HttpServlet" url="javax.servlet.http.HttpServlet">
-                                    <attr name="includes" stringvalue="init,destroy"/>
-                                </file>
+                                <file name="javax.servlet.FilterChain"/>
                             </folder>
                         </folder>
-                        <folder name="~subtypes">
-                            <file name="javax.servlet.Servlet" url="javax_1.servlet.Servlet">
-                                <attr name="excludes" stringvalue="init,destroy"/>
-                            </file>
-                            <file name="javax.servlet.http.HttpServlet" url="javax_1.servlet.http.HttpServlet">
-                                <attr name="excludes" stringvalue="init,destroy"/>
-                            </file>
+                        <folder name="JSPs">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
+                            <folder name="~custom">
+                                <attr name="instanceClass" stringvalue="org.netbeans.modules.profiler.j2ee.JSPMarkerMethodProvider"/>
+                            </folder>
+                        </folder>
+                        <folder name="JSTL">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
+                            <folder name="~subtypes">
+                                <file name="javax.servlet.jsp.tagext.BodyTagSupport"/>
+                                <file name="javax.servlet.jsp.tagext.SimpleTagSupport"/>
+                                <file name="javax.servlet.jsp.tagext.Tag"/>
+                                <file name="javax.servlet.jsp.tagext.TagSupport"/>
+                            </folder>
+                        </folder>
+                        <folder name="Listeners">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
+                            <folder name="~subtypes">
+                                <file name="javax.servlet.ServletContextAttributeListener"/>
+                                <file name="javax.servlet.ServletContextListener"/>
+                                <file name="javax.servlet.ServletRequestAttributeListener"/>
+                                <file name="javax.servlet.ServletRequestListener"/>
+                                <file name="javax.servlet.http.HttpSessionActivationListener"/>
+                                <file name="javax.servlet.http.HttpSessionAttributeListene"/>
+                                <file name="javax.servlet.http.HttpSessionListener"/>
+                            </folder>
+                        </folder>
+                        <folder name="Servlets">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
+                            <folder name="LifeCycle">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
+                                <folder name="~subtypes">
+                                    <file name="javax.servlet.Servlet" url="javax.servlet.Servlet">
+                                        <attr name="includes" stringvalue="init,destroy"/>
+                                    </file>
+                                    <file name="javax.servlet.http.HttpServlet">
+                                        <attr name="includes" stringvalue="init,destroy"/>
+                                    </file>
+                                </folder>
+                            </folder>
+                            <folder name="~subtypes">
+                                <file name="javax.servlet.Servlet">
+                                    <attr name="excludes" stringvalue="init,destroy"/>
+                                </file>
+                                <file name="javax.servlet.http.HttpServlet">
+                                    <attr name="excludes" stringvalue="init,destroy"/>
+                                </file>
+                            </folder>
                         </folder>
                     </folder>
                 </folder>
