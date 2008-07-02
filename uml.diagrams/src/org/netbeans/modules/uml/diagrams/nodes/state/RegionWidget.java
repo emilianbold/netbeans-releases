@@ -326,6 +326,11 @@ public class RegionWidget extends CompartmentWidget implements PropertyChangeLis
             }
         }
     }
+    
+    public void notifyAdded()
+    {
+        compositeStateWidget.discoverRelationship();
+    }
 
 
     public void save(NodeWriter nodeWriter) {

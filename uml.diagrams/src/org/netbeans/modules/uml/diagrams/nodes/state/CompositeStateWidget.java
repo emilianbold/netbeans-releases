@@ -274,8 +274,7 @@ public class CompositeStateWidget extends StateWidget implements CompositeWidget
         return state;
     }
 
-    @Override
-    public void notifyAdded()
+    public void discoverRelationship()
     {
         // discover relationships (inter or inner) after all regions are loaded
         UMLRelationshipDiscovery relationshipD = new UMLRelationshipDiscovery((GraphScene) scene);
