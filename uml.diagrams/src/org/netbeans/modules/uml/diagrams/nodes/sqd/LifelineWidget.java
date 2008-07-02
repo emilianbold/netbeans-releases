@@ -62,7 +62,6 @@ import org.netbeans.modules.uml.core.metamodel.dynamics.IExecutionOccurrence;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IMessage;
 import org.netbeans.modules.uml.core.metamodel.dynamics.Lifeline;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.diagrams.DefaultWidgetContext;
 import org.netbeans.modules.uml.diagrams.actions.sqd.ArrangeMoveWithBumping;
 import org.netbeans.modules.uml.diagrams.edges.sqd.MessageWidget;
@@ -82,7 +81,6 @@ import org.openide.util.lookup.InstanceContent;
 import java.util.TreeSet;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.widget.ConnectionWidget;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.diagrams.actions.sqd.AdjustAfterBoxChangeProvider;
 import org.netbeans.modules.uml.diagrams.actions.sqd.LifelineResizeProvider;
 import org.netbeans.modules.uml.diagrams.engines.SequenceDiagramEngine;
@@ -90,8 +88,10 @@ import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
 import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
 import org.netbeans.modules.uml.drawingarea.actions.ResizeStrategyProvider;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
-import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator.SQDDiagramEngineExtension;
+import org.netbeans.modules.uml.drawingarea.view.Customizable;
+import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
+import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
 
 /**
  *
@@ -111,7 +111,8 @@ public class LifelineWidget extends UMLNodeWidget implements PropertyChangeListe
 
     private JTrackBar tb;
     private boolean isActorLifeline;
-    private ResourceType[] customizableResTypes;
+    private Font prevFont;
+    private ResourceType[] customizableResTypes = Customizable.DEFAULT_RESTYPES;
     
     private boolean isShowWidget;
     
@@ -124,6 +125,7 @@ public class LifelineWidget extends UMLNodeWidget implements PropertyChangeListe
         //
         lookupContent.add(initializeContextPalette());
         lookupContent.add(new DefaultWidgetContext("Lifeline"));
+        ResourceValue.initResources(getWidgetID(), this);
     }
     
     @Override
@@ -171,6 +173,8 @@ public class LifelineWidget extends UMLNodeWidget implements PropertyChangeListe
                             all.revalidate();
                             boxWidget.updateLabel();
                             revalidate();
+                            getScene().validate();
+                            prevFont=((Font)evt.getNewValue());
                         }
                     }
                     else if(evt.getNewValue() instanceof Color)
@@ -510,6 +514,22 @@ public class LifelineWidget extends UMLNodeWidget implements PropertyChangeListe
         }
         getScene().validate();
     }
+
+    @Override
+    protected void notifyFontChanged(Font font) {
+        if(prevFont==null || prevFont.getSize()!=font.getSize())
+        {
+            //need to adjust messages on this lifeline
+            new AfterValidationExecutor(new AdjustAfterBoxChangeProvider(LifelineWidget.this), getScene());
+            //font size was changed, need to revalidate box sizes
+            boxWidget.revalidate();
+            all.revalidate();
+            boxWidget.updateLabel();
+            revalidate();
+            getScene().validate();
+        }
+        prevFont=font;
+    }
    
     @Override
     protected void saveAnchorage(NodeWriter nodeWriter) {
@@ -542,5 +562,27 @@ public class LifelineWidget extends UMLNodeWidget implements PropertyChangeListe
         nodeWriter.writeAnchorage();
         //done writing the anchoredgemap.. now time to clear it.
         nodeWriter.clearAnchorEdgeMap();
-    }   
+    }
+
+    public String getID() {
+        return UMLWidget.UMLWidgetIDString.LIFELINEWIDGET.toString();
+    }
+
+    public String getDisplayName() {
+        return "Default";
+    }
+
+    public void update() {
+        ResourceValue.initResources(getWidgetID(), this);
+    }
+
+    public void setCustomizableResourceTypes (ResourceType[] resTypes) 
+    {
+        customizableResTypes = resTypes;
+    }
+    
+    public ResourceType[] getCustomizableResourceTypes()
+    {
+        return customizableResTypes;
+    }
 }
