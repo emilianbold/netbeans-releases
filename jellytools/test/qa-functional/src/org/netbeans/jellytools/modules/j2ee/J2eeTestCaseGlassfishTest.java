@@ -80,8 +80,7 @@ public class J2eeTestCaseGlassfishTest extends JellyTestCase {
     }
 
     public void testGlassfishWithDomain() throws IOException {
-        System.setProperty("j2ee.appserver.path", getWorkDirPath());
-        new File(getWorkDir(), "domains/domain1").mkdirs();
+        setGlassfishHome();
         Configuration conf = NbModuleSuite.createConfiguration(TD.class);
         conf = J2eeTestCase.addServerTests(GLASSFISH, conf, "testA", "testB").gui(false);
         Test t = NbModuleSuite.create(conf);
@@ -90,13 +89,25 @@ public class J2eeTestCaseGlassfishTest extends JellyTestCase {
     }
 
     public void testGlassfishHome() throws IOException {
-        System.setProperty("glassfish.home", getWorkDirPath());
-        new File(getWorkDir(), "domains/domain1").mkdirs();
+        setGlassfishHome();
         Configuration conf = NbModuleSuite.createConfiguration(TD.class);
         conf = J2eeTestCase.addServerTests(GLASSFISH, conf, "testA", "testB").gui(false);
         Test t = NbModuleSuite.create(conf);
         t.run(new TestResult());
         assertEquals("both tests", 2, t.countTestCases());
+    }
+
+    public void testCreateAllModulesServerSuiteWithoutFiles() throws IOException {
+        setGlassfishHome();
+        Test t = J2eeTestCase.createAllModulesServerSuite(ANY, TD.class);
+        t.run(new TestResult());
+        assertEquals("both tests", 3, t.countTestCases());
+        assertEquals("testA was running", "AAA", System.getProperty("testA"));
+    }
+
+    private void setGlassfishHome() throws IOException{
+        System.setProperty("glassfish.home", getWorkDirPath());
+        new File(getWorkDir(), "domains/domain1").mkdirs();
     }
 
 
