@@ -102,11 +102,14 @@ public class ContainerWidget extends Widget
         
         initActions();
         //all should be as for scene initially
-        DesignerScene sc=(DesignerScene) scene;
-        setForeground(sc.getMainLayer().getForeground());
-        setBackground(sc.getMainLayer().getBackground());
-        setFont(sc.getMainLayer().getFont());
-        //need to add font/colors listener to scene to get updates, but currently inheritance from scene
+        if(scene instanceof DesignerScene)
+        {
+            DesignerScene sc=(DesignerScene) scene;
+            setForeground(sc.getMainLayer().getForeground());
+            setBackground(sc.getMainLayer().getBackground());
+            setFont(sc.getMainLayer().getFont());
+            //need to add font/colors listener to scene to get updates, but currently inheritance from scene
+        }
     }
 
     public INamespace getContainerNamespace()
