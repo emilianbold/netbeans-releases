@@ -54,7 +54,8 @@ import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.management.ObjectName;
 import org.netbeans.api.project.Project;
-import org.netbeans.junit.ide.ProjectSupport;
+//import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
@@ -66,6 +67,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -85,7 +87,10 @@ public class Util {
     public static final String STATEFUL_PROJECT_NAME = "duke-stateful";
     public static final String STATEFUL_CLIENT_PROJECT_NAME = "duke-stateful-app-client";
     public static final String EJB_PROJECT_PATH = System.getProperty("xtest.tmpdir") + File.separator + EJB_PROJECT_NAME;
-    public static final String WEB_PROJECT_PATH = System.getProperty("xtest.tmpdir") + File.separator + WEB_PROJECT_NAME;
+    public static final String WEB_PROJECT_PATH = //System.getProperty("xtest.tmpdir") + File.separator + WEB_PROJECT_NAME;
+            "j2ee.sun.appsrv81" + File.separator + "build" + File.separator + "test" +
+            File.separator + "qa-functional" + File.separator + "data" + File.separator +
+            WEB_PROJECT_NAME;
     public static final String JSF_PROJECT_PATH = System.getProperty("xtest.tmpdir") + File.separator + JSF_PROJECT_NAME;
     public static final String MDB_PROJECT_PATH = System.getProperty("xtest.tmpdir") + File.separator + MDB_PROJECT_NAME;
     public static final String STATEFUL_PROJECT_PATH = System.getProperty("xtest.tmpdir") + File.separator + "duke_stateful";
@@ -102,7 +107,7 @@ public class Util {
     public static final String _HOST = "localhost";
     public static final String _PORT = getPort(new File(_INSTALL_LOCATION+_SEP+_DOMAIN+_SEP+"config"+_SEP+"domain.xml"));
     public static final String _USER_NAME = "admin";
-    public static final String _PASSWORD = System.getProperty("sjsas.server.password");
+    public static final String _PASSWORD = System.getProperty("sjsas.server.password","adminadmin");
     public static final String _URL = "["+_PLATFORM_LOCATION+"]deployer:Sun:AppServer::"+_HOST+":"+_PORT;
     
     // SERVER PROPERTIES FOR APP SERVER REGISTRATION
@@ -291,7 +296,7 @@ public class Util {
     }
     
     public static Object openProject(File projectDir) {
-        return ProjectSupport.openProject(projectDir);
+        return ProjectSupport.openProject(FileUtil.normalizeFile(projectDir));
     }
     
     public static void closeProject(String projectName) {

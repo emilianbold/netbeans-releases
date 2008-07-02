@@ -100,10 +100,10 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
     private HibernateRevengDbTablesWizardDescriptor dbTablesDescriptor;
     private HibernateRevengCodeGenWizardDescriptor codeGenDescriptor;
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
-    private final String DEFAULT_REVENG_FILENAME = "hibernate.reveng";
-    private final String ATTRIBUTE_NAME = "match-schema";
-    private final String MATCH_NAME = "match-name";
-    private final String resourceAttr = "resource";
+    private final String DEFAULT_REVENG_FILENAME = "hibernate.reveng"; // NOI18N
+    private final String ATTRIBUTE_NAME = "match-schema"; // NOI18N
+    private final String MATCH_NAME = "match-name"; // NOI18N
+    private final String resourceAttr = "resource"; // NOI18N
     private XMLHelper xmlHelper;
     private EntityResolver entityResolver;
     private Logger logger = Logger.getLogger(HibernateRevengWizard.class.getName());
@@ -165,7 +165,7 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
     }
 
     public String name() {
-        return NbBundle.getMessage(HibernateRevengWizard.class, "LBL_RevEngWizardTitle");
+        return NbBundle.getMessage(HibernateRevengWizard.class, "LBL_RevEngWizardTitle"); // NOI18N
     }
 
     public boolean hasPrevious() {

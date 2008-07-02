@@ -71,6 +71,7 @@ public final class ModificationResult {
 
     private JavaSource js;
     Map<FileObject, List<Difference>> diffs = new HashMap<FileObject, List<Difference>>();
+    Map<?, int[]> tag2Span = new IdentityHashMap<Object, int[]>();
     
     /** Creates a new instance of ModificationResult */
     ModificationResult(final JavaSource js) {
@@ -331,6 +332,16 @@ public final class ModificationResult {
         commit(fileObject, diffs.get(fileObject), writer);
         
         return writer.toString();
+    }
+
+    /**
+     * Provides span of tree tagged with {@code tag}
+     * @param tag
+     * @return borders in target document
+     * @since 0.37
+     */
+    public int[] getSpan(Object tag) {
+        return tag2Span.get(tag);
     }
     
     public static class Difference {

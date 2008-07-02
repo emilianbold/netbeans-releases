@@ -152,14 +152,29 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         
     }
 
-    public <T> void writeSortedStringToUIDMap(Map <FileImpl.SortedKey, CsmUID<T>> aMap, DataOutput aStream, boolean sync) throws IOException {
+    public <T> void writeOffsetSortedToUIDMap(Map <FileImpl.OffsetSortedKey, CsmUID<T>> aMap, DataOutput aStream, boolean sync) throws IOException {
         assert aMap != null;
         assert aStream != null;
         aMap = sync ? copySyncMap(aMap) : aMap;
         int collSize = aMap.size();
         aStream.writeInt(collSize);
         
-        for (Map.Entry<FileImpl.SortedKey, CsmUID<T>> anEntry : aMap.entrySet()) {
+        for (Map.Entry<FileImpl.OffsetSortedKey, CsmUID<T>> anEntry : aMap.entrySet()) {
+            anEntry.getKey().write(aStream);
+            CsmUID anUID = anEntry.getValue();
+            assert anUID != null;
+            writeUID(anUID, aStream);
+        }
+    }
+
+    public <T> void writeNameSortedToUIDMap(Map <FileImpl.NameSortedKey, CsmUID<T>> aMap, DataOutput aStream, boolean sync) throws IOException {
+        assert aMap != null;
+        assert aStream != null;
+        aMap = sync ? copySyncMap(aMap) : aMap;
+        int collSize = aMap.size();
+        aStream.writeInt(collSize);
+        
+        for (Map.Entry<FileImpl.NameSortedKey, CsmUID<T>> anEntry : aMap.entrySet()) {
             anEntry.getKey().write(aStream);
             CsmUID anUID = anEntry.getValue();
             assert anUID != null;
@@ -225,14 +240,29 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         }
     }
 
-    public <T> void readSortedStringToUIDMap(Map <FileImpl.SortedKey, CsmUID<T>> aMap, DataInput aStream, APTStringManager manager) throws IOException {
+    public <T> void readOffsetSortedToUIDMap(Map <FileImpl.OffsetSortedKey, CsmUID<T>> aMap, DataInput aStream, APTStringManager manager) throws IOException {
         assert aMap != null;
         assert aStream != null;
         
         int collSize = aStream.readInt();
         
         for (int i = 0; i < collSize; ++i) {
-            FileImpl.SortedKey key = new FileImpl.SortedKey(aStream);
+            FileImpl.OffsetSortedKey key = new FileImpl.OffsetSortedKey(aStream);
+            assert key != null;
+            CsmUID uid = readUID(aStream);
+            assert uid != null;
+            aMap.put(key, uid);
+        }
+    }
+    
+    public <T> void readNameSortedToUIDMap(Map <FileImpl.NameSortedKey, CsmUID<T>> aMap, DataInput aStream, APTStringManager manager) throws IOException {
+        assert aMap != null;
+        assert aStream != null;
+        
+        int collSize = aStream.readInt();
+        
+        for (int i = 0; i < collSize; ++i) {
+            FileImpl.NameSortedKey key = new FileImpl.NameSortedKey(aStream);
             assert key != null;
             CsmUID uid = readUID(aStream);
             assert uid != null;

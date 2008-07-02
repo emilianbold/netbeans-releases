@@ -346,6 +346,11 @@ public class FileModelTest extends TraceModelTestBase {
         performPreprocessorTest("stringize_macro.cc"); // NOI18N
     }
 
+    public void testTemplateParams() throws Exception {
+        // IZ 138551 : parser fails on "template class A::B<1>;"
+        performTest("templateParams.h"); // NOI18N
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
     

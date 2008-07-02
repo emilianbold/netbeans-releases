@@ -48,8 +48,6 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -80,7 +78,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormModel;
@@ -104,10 +101,11 @@ import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Property;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.CollectionType;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.FetchType;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
-import org.netbeans.modules.j2ee.persistence.wizard.fromdb.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -445,14 +443,16 @@ public class J2EEUtils {
      */
     private static String[] generateEntityClass(final Project project, SourceGroup location, String packageName, DatabaseConnection dbconn, List<String> tableNames, PersistenceUnit unit) {
         try {
-            EntitiesFromDBGenerator generator = new EntitiesFromDBGenerator(tableNames, true, packageName, location, dbconn, project, unit);
+            boolean regenTablesAttrs = "org.apache.derby.jdbc.EmbeddedDriver".equals(dbconn.getDriverClass()); // NOI18N
+            EntitiesFromDBGenerator generator = new EntitiesFromDBGenerator(tableNames, true, true, regenTablesAttrs,
+                    FetchType.DEFAULT, CollectionType.LIST,
+                    packageName, location, dbconn, project, unit);
             // PENDING
             final Set<FileObject> entities = generator.generate(AggregateProgressFactory.createProgressContributor("PENDING"));
 
             String[] result = new String[entities.size()];
             int count = 0;
             for (FileObject fob : entities) {
-                addSchemaParameter(fob, dbconn.getSchema()); // see issue 121493 and 89092
                 result[count++] = packageName + '.' + fob.getName();
             }
             return result;
@@ -1056,69 +1056,6 @@ public class J2EEUtils {
             Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, eex.getMessage(), eex);
         }
         return properties;
-    }
-
-    /**
-     * Adds schema parameter into Table annotation if it is not present already.
-     * 
-     * @param entity entity to update.
-     * @param schema name of the schema.
-     */
-    private static void addSchemaParameter(FileObject entity, final String schema) {
-        if (schema == null) return;
-        JavaSource source = JavaSource.forFileObject(entity);
-        try {
-            source.runModificationTask(new CancellableTask<WorkingCopy>() {
-                public void run(WorkingCopy wc) throws Exception {
-                    wc.toPhase(JavaSource.Phase.RESOLVED);
-                    CompilationUnitTree cu = wc.getCompilationUnit();
-                    ClassTree clazz = null;
-                    for (Tree typeDecl : cu.getTypeDecls()) {
-                        if (Tree.Kind.CLASS == typeDecl.getKind()) {
-                            ClassTree candidate = (ClassTree) typeDecl;
-                            if (candidate.getModifiers().getFlags().contains(javax.lang.model.element.Modifier.PUBLIC)) {
-                                clazz = candidate;
-                                break;
-                            }
-                        }
-                    }
-                    if (clazz == null) return;
-                    AnnotationTree tableAnn = null;
-                    for (AnnotationTree annotation : clazz.getModifiers().getAnnotations()) {
-                        Tree annotationType = annotation.getAnnotationType();
-                        Element classElement = wc.getTrees().getElement(wc.getTrees().getPath(cu, annotationType));
-                        if ((classElement != null) && ("javax.persistence.Table".equals(classElement.toString()))) { // NOI18N
-                            tableAnn = annotation;
-                            break;
-                        }
-                    }
-                    if (tableAnn == null) return;
-                    ExpressionTree schemaTree = null;
-                    for (ExpressionTree argument : tableAnn.getArguments()) {
-                        if (argument.getKind() == Tree.Kind.ASSIGNMENT) {
-                            AssignmentTree assignment = (AssignmentTree)argument;
-                            if ("schema".equals(assignment.getVariable().toString())) { // NOI18N
-                                schemaTree = assignment;
-                                break;
-                            }
-                        }
-                    }
-                    if (schemaTree == null) {
-                        TreeMaker make = wc.getTreeMaker();
-                        IdentifierTree nameTree = make.Identifier("schema"); // NOI18N
-                        LiteralTree valueTree = make.Literal(schema);
-                        schemaTree = make.Assignment(nameTree, valueTree);
-                        AnnotationTree newTableAnn = make.addAnnotationAttrValue(tableAnn, schemaTree);
-                        wc.rewrite(tableAnn, newTableAnn);
-                    }
-                }
-
-                public void cancel() {
-                }
-            }).commit();
-        } catch (IOException ex) {
-            Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, ex.getMessage(), ex);
-        }
     }
 
     private static SourceGroup[] getJavaSourceGroups(Project project) {

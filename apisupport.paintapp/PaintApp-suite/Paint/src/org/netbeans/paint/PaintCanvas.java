@@ -111,6 +111,7 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
         return backingImage;
     }
     
+    @Override
     public void paint(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
         g2d.drawRenderedImage(getImage(), AffineTransform.getTranslateInstance(0,0));
@@ -160,10 +161,12 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
     
     private class BrushSizeView extends JComponent {
         
+        @Override
         public boolean isOpaque() {
             return true;
         }
         
+        @Override
         public void paint(Graphics g) {
             ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g.setColor(getBackground());
@@ -175,10 +178,12 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
             g.fillOval(p.x - half, p.y - half, diam, diam);
         }
         
+        @Override
         public Dimension getPreferredSize() {
             return new Dimension(32, 32);
         }
         
+        @Override
         public Dimension getMinimumSize() {
             return getPreferredSize();
         }

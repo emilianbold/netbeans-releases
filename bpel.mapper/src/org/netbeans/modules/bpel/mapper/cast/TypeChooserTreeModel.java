@@ -146,9 +146,9 @@ public class TypeChooserTreeModel implements SoaTreeModel,
             }
             //
             // Add a branch with primitive types here.
-            result.add(SchemaTreeInfoProvider.PRIMITIVE_TYPES);
+            result.add(SchemaTreeInfoProvider.ToolTipTitles.PRIMITIVE_TYPES.getName());
             //
-        } else if (dataObj.equals(SchemaTreeInfoProvider.PRIMITIVE_TYPES)) {
+        } else if (dataObj.equals(SchemaTreeInfoProvider.ToolTipTitles.PRIMITIVE_TYPES.getName())) {
             Collection<GlobalSimpleType> primitiveTypes = 
                     SchemaModelFactory.getDefault().getPrimitiveTypesModel().
                     getSchema().getSimpleTypes();

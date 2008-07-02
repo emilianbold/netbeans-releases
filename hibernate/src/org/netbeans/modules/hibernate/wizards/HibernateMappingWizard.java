@@ -79,8 +79,8 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
     private WizardDescriptor wizard;
     private HibernateMappingWizardDescriptor descriptor;
     private transient WizardDescriptor.Panel[] panels;
-    private final String resourceAttr = "resource";
-    private static String DEFAULT_MAPPING_FILENAME = "hibernate.hbm";
+    private final String resourceAttr = "resource"; // NOI18N
+    private static String DEFAULT_MAPPING_FILENAME = "hibernate.hbm"; // NOI18N
 
     public static HibernateMappingWizard create() {
         return new HibernateMappingWizard();
@@ -233,7 +233,7 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
     }
 
     public String name() {
-        return NbBundle.getMessage(HibernateConfigurationWizard.class, "LBL_MappingWizardTitle");
+        return NbBundle.getMessage(HibernateConfigurationWizard.class, "LBL_MappingWizardTitle"); // NOI18N
     }
 
     public WizardDescriptor.Panel current() {

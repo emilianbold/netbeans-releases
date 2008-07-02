@@ -109,7 +109,7 @@ public class MakeConfiguration extends Configuration {
         super(baseDir, name);
         configurationType = new IntConfiguration(null, configurationTypeValue, TYPE_NAMES, null);
         developmentHost = new DevelopmentHostConfiguration();
-        compilerSet = new CompilerSet2Configuration();
+        compilerSet = new CompilerSet2Configuration(developmentHost);
         cRequired = new LanguageBooleanConfiguration();
         cppRequired = new LanguageBooleanConfiguration();
         fortranRequired = new LanguageBooleanConfiguration();
@@ -354,6 +354,7 @@ public class MakeConfiguration extends Configuration {
         DevelopmentHostConfiguration dhconf = (DevelopmentHostConfiguration) getDevelopmentHost().clone();
         clone.setDevelopmentHost(dhconf);
         CompilerSet2Configuration csconf = (CompilerSet2Configuration) getCompilerSet().clone();
+        csconf.setDevelopmentHostConfiguration(dhconf);
         clone.setCompilerSet(csconf);
         clone.setCRequired((LanguageBooleanConfiguration) getCRequired().clone());
         clone.setCppRequired((LanguageBooleanConfiguration) getCppRequired().clone());

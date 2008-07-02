@@ -56,6 +56,7 @@ import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.parser.GroovyParserResult;
 import org.openide.cookies.EditorCookie;
@@ -63,12 +64,17 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.MapExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.groovy.editor.elements.AstElement;
 import org.netbeans.modules.groovy.editor.elements.IndexedElement;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.parser.SourceUtils;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -201,7 +207,7 @@ public class AstUtilities {
         if (node instanceof FieldNode) {
             int start = getOffset(doc, lineNumber, columnNumber);
             FieldNode fieldNode = (FieldNode) node;
-            return new OffsetRange(start, start + fieldNode.getName().length());
+            return getNextIdentifierByName(doc, fieldNode.getName(), start);
         } else if (node instanceof ClassNode) {
             // ok, here we have to move the Range to the first character
             // after the "class" keyword, plus an indefinite nuber of spaces
@@ -250,23 +256,11 @@ public class AstUtilities {
         } else if (node instanceof MethodNode) {
             int start = getOffset(doc, lineNumber, columnNumber);
             MethodNode methodNode = (MethodNode) node;
-            return new OffsetRange(start, start + methodNode.getName().length());
+            return getNextIdentifierByName(doc, methodNode.getName(), start);
         } else if (node instanceof VariableExpression) {
             int start = getOffset(doc, lineNumber, columnNumber);
-            // In case of variable in GString: "Hello, ${name}", node coordinates 
-            // are suggesting '{' (it means begin and end colum info is wrong).
-            // Pick up what we really want from this.
-            try {
-                if (lineNumber == node.getLastLineNumber() &&
-                        (node.getLastColumnNumber() - columnNumber == 1) &&
-                        "{".equals(doc.getText(start, 1))) {
-                    start++;
-                }
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
             VariableExpression variableExpression = (VariableExpression) node;
-            return new OffsetRange(start, start + variableExpression.getName().length());
+            return getNextIdentifierByName(doc, variableExpression.getName(), start);
         } else if (node instanceof Parameter) {
             int end = getOffset(doc, node.getLastLineNumber(), node.getLastColumnNumber());
             Parameter parameter = (Parameter) node;
@@ -419,5 +413,23 @@ public class AstUtilities {
         return sb.toString();
     }
 
+    private static OffsetRange getNextIdentifierByName(BaseDocument doc, String fieldName, int startOffset) {
+        // since Groovy 1.5.6 the start offset is on 'def' on field/method declaration:
+        // ^def foo = ...
+        // ^Map bar = ...
+        // find first token that is identifier and that matches given name
+        TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, startOffset);
+        if (ts.token().id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(ts.token().text(), fieldName)) {
+            int offset = ts.offset();
+            return new OffsetRange(offset, offset + fieldName.length());
+        }
+        while (ts.moveNext()) {
+            if (ts.token().id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(ts.token().text(), fieldName)) {
+                int offset = ts.offset();
+                return new OffsetRange(offset, offset + fieldName.length());
+            }
+        }
+        return OffsetRange.NONE;
+    }
     
 }

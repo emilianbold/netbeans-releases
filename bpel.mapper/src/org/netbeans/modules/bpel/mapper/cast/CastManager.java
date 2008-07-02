@@ -27,11 +27,10 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
-import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
+import org.netbeans.modules.bpel.mapper.model.PathConverter;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.IterableExpander;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
+import org.netbeans.modules.soa.ui.tree.impl.IterableExpander;
 import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.bpel.model.api.BPELElementsBuilder;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
@@ -45,6 +44,8 @@ import org.netbeans.modules.bpel.model.ext.editor.api.Casts;
 import org.netbeans.modules.bpel.model.ext.editor.api.Editor;
 import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComp;
 import org.netbeans.modules.bpel.model.ext.editor.api.Source;
+import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Part;
@@ -72,7 +73,7 @@ public class CastManager {
         } else {
             treeModel = mModel.getRightTreeModel();
         }
-        MapperTreeModel sourceModel = treeModel.getSourceModel();
+        SoaTreeModel sourceModel = treeModel.getSourceModel();
         //
         // Calculate predicate location index
         // int predIndex = treeModel.getChildIndex(mTreePath.getParentPath(), mPred);
@@ -81,8 +82,8 @@ public class CastManager {
         return castManager;
     }
     
-    public static CastManager getCastManager(MapperTreeModel treeModel) {
-        VariableTreeModel varTreeModel = MapperTreeModel.Utils.
+    public static CastManager getCastManager(SoaTreeModel treeModel) {
+        VariableTreeModel varTreeModel = SoaTreeModel.MyUtils.
                 findExtensionModel(treeModel, VariableTreeModel.class);
         if (varTreeModel != null) {
             CastManager castManager = varTreeModel.getCastManager();
@@ -115,12 +116,12 @@ public class CastManager {
     //-------------------------------------------------------
     
     public List<AbstractTypeCast> getTypeCast(
-            Iterable<Object> paretnPathItrb, SchemaComponent castedComp) {
+            TreeItem paretnTreeItem, SchemaComponent castedComp) {
         //
         // Convert the iterator, which points to the paretn element to the 
         // iterator, which points to the casted component.
         IterableExpander<Object> baseCompItr = new IterableExpander<Object>(
-                paretnPathItrb, castedComp); 
+                paretnTreeItem, castedComp); 
         //
         ArrayList<AbstractTypeCast> result = new ArrayList<AbstractTypeCast>();
         //
@@ -168,11 +169,10 @@ public class CastManager {
         }
     }
 
-    public boolean addTypeCast(Iterable<Object> castedCompItrb, 
-            SyntheticTypeCast cast) {
+    public boolean addTypeCast(TreeItem castedTreeItem, SyntheticTypeCast cast) {
         //
         List<Object> castedCompPath = PathConverter.constructObjectLocationtList(
-                castedCompItrb, true, false);
+                castedTreeItem, true, false);
         //
         if (castedCompPath != null) {
             if (addTypeCastImpl(castedCompPath, cast)) {
