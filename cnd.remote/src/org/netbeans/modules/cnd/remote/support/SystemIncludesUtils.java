@@ -116,7 +116,7 @@ public class SystemIncludesUtils {
             String zipLocalPath = tempDir + File.separator + zipRemote;
 
             rcs.run("zip -r -q " + zipRemotePath + " " + path); //NOI18N
-            rcs.copy(zipRemotePath, zipLocalPath);
+            rcs.copyFrom(zipRemotePath, zipLocalPath);
             unzip(rsf, zipLocalPath);
         }
         return true;

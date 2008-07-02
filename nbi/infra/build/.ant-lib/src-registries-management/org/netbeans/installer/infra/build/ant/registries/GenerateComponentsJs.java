@@ -52,6 +52,7 @@ public class GenerateComponentsJs extends Task {
     private File root;
     private File file;
     private String locale;
+    private File bundlesList;
     
     public void setRoot(final File root) {
         this.root = root;
@@ -65,11 +66,15 @@ public class GenerateComponentsJs extends Task {
         this.locale = locale;
     }
     
+    public void setBundlesList(final File bundles) {
+        this.bundlesList = bundles;
+    }
+    
     @Override
     public void execute() throws BuildException {
         try {
             final String contents = 
-                    new RegistriesManagerImpl().generateComponentsJs(root, locale);
+                    new RegistriesManagerImpl().generateComponentsJs(root, bundlesList, locale);
             
             Utils.write(file, contents);
         } catch (ManagerException e) {

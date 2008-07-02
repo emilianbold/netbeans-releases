@@ -185,8 +185,4 @@ public class IndentCasesTest extends J2eeTestCase {
         return operator;
     }
 
-    public static void main(String[] args) throws Exception {
-        IndentCasesTest test = new IndentCasesTest();
-        test.projectDir = new File("/export/home/jindra/TRUNK/web/jspsyntax/test/qa-functional/data/IndentationTestProjects/IndentationTest");
-    }
 }

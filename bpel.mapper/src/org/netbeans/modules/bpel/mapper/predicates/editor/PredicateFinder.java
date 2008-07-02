@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.bpel.mapper.predicates.editor;
 
-import org.netbeans.modules.bpel.mapper.tree.search.SimpleFinder;
+import org.netbeans.modules.soa.ui.tree.impl.SimpleFinder;
 
 /**
  * Looks for a predicate expression tree item in the predicate's editor 

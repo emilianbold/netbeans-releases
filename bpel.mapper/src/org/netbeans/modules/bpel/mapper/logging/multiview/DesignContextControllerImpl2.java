@@ -34,7 +34,7 @@ import org.netbeans.modules.bpel.mapper.multiview.DesignContextUtil;
 import org.netbeans.modules.bpel.mapper.multiview.MapperMultiviewElement;
 import org.netbeans.modules.bpel.mapper.multiview.MapperStateManager;
 import org.netbeans.modules.bpel.mapper.multiview.ShowMapperCookie;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
+import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.soa.mappercore.Mapper;

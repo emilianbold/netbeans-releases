@@ -46,12 +46,12 @@ import org.netbeans.modules.cnd.completion.csm.CsmProjectContentResolver;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 
+import java.util.Queue;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsChangeEvent;
 import org.netbeans.editor.SettingsChangeListener;
@@ -63,12 +63,9 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmFinder;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
-import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
@@ -141,23 +138,35 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
     }
     
     private CsmNamespace resolveNamespace(String namespaceName, boolean caseSensitive) {
-	CsmModel model = CsmModelAccessor.getModel();
-        Set libraries = new HashSet();
-        for (Iterator it = model.projects().iterator(); it.hasNext();) {
-            CsmProject prj = (CsmProject) it.next();
-            CsmNamespace ns = prj.findNamespace(namespaceName);
+        Queue<CsmProject> queue = new LinkedList<CsmProject>();
+        Set<CsmProject> seen = new HashSet<CsmProject>();
+        queue.add(csmFile.getProject());
+        CsmNamespace namespace = resolveNamespaceBfs(queue, seen, namespaceName);
+        if (namespace != null) {
+            return namespace;
+        }
+        for (CsmProject project : CsmModelAccessor.getModel().projects()) {
+            if (!seen.contains(project)) {
+                queue.add(project);
+            }
+        }
+        return resolveNamespaceBfs(queue, seen, namespaceName);
+    }
+    
+    private CsmNamespace resolveNamespaceBfs(Queue<CsmProject> queue, Set<CsmProject> seen, String namespace) {
+        // breadth-first search in project dependency graph
+        while (!queue.isEmpty()) {
+            CsmProject project = queue.poll();
+            CsmNamespace ns = project.findNamespace(namespace);
             if (ns != null) {
                 return ns;
             }
-            // remember libs
-            libraries.addAll(prj.getLibraries());
-        }
-        for (Iterator it = libraries.iterator(); it.hasNext();) {
-            CsmProject lib = (CsmProject) it.next();
-            CsmNamespace ns = lib.findNamespace(namespaceName);
-            if (ns != null) {
-                return ns;
-            }            
+            seen.add(project);
+            for (CsmProject lib : project.getLibraries()) {
+                if (!seen.contains(lib)) {
+                    queue.offer(lib);
+                }
+            }
         }
         return null;
     }

@@ -130,7 +130,7 @@ public class CodeCompleter implements CodeCompletionHandler {
     Set<GroovyKeyword> keywords;
 
     public CodeCompleter() {
-        LOG.setLevel(Level.OFF);
+        LOG.setLevel(Level.FINEST);
 
         JavaPlatformManager platformMan = JavaPlatformManager.getDefault();
         JavaPlatform platform = platformMan.getDefaultPlatform();
@@ -160,7 +160,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         }
 
     /*Configures testing environment only*/
-    static public void setTesting(boolean testing) {
+    static void setTesting(boolean testing) {
         testMode = testing;
     }
 
@@ -1655,7 +1655,8 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
 
-        LOG.log(Level.FINEST, "complete(...), prefix: {0}", prefix); // NOI18N
+        LOG.log(Level.FINEST, "complete(...), prefix      : {0}", prefix); // NOI18N
+        LOG.log(Level.FINEST, "complete(...), CaretOffset : {0}", context.getCaretOffset()); // NOI18N
 
 
         // Avoid all those annoying null checks

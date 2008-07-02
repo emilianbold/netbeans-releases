@@ -49,6 +49,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Logger;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSCallStackFrame;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebugger;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerConsoleEvent;
@@ -56,6 +57,7 @@ import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerC
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerEvent;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerEventListener;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerState;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessage;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSProperty;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSSource;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSWindow;
@@ -146,6 +148,11 @@ public abstract class JSAbstractDebugger implements JSDebugger {
                 oldjsWindows,
                 this.windows);
     }
+
+    protected void setHttpMessage(JSHttpMessage message){
+        //Logger.getLogger(this.getClass().getName()).info("****** HTTP MESSAGE RECEIVED AND TRIGGERED ********");
+    }
+
 
     // Sources
     public JSSource[] getSources() {
