@@ -727,10 +727,8 @@ public class SvnClientExceptionHandler {
 
     public static String parseExceptionMessage(SVNClientException ex) {
         String msg = ex.getMessage();
-        int idx = msg.lastIndexOf("svn: "); // NOI18N
-        if(idx > -1) {
-            msg = msg.substring(idx + 5);
-        }
+        msg = msg.replace("svn: warning: ", "");
+        msg = msg.replace("svn: ", "");
         return msg;
     }
 
