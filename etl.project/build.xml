@@ -50,7 +50,7 @@
                                       todir="${basedir}/build/classes/org/netbeans/modules/etl/project"/>
         <copy file="${basedir}/src/org/netbeans/modules/etl/project/msgs_log.properties"  
                                       todir="${basedir}/build/classes/org/netbeans/modules/etl/project"/>
-       <delete file="${basedir}/src/org/netbeans/modules/etl/project/msgs.properties"/>
-       <delete file="${basedir}/src/org/netbeans/modules/etl/project/msgs_log.properties"/>
+       <!--delete file="${basedir}/src/org/netbeans/modules/etl/project/msgs.properties"/>
+       <delete file="${basedir}/src/org/netbeans/modules/etl/project/msgs_log.properties"/-->
     </target>
 </project>

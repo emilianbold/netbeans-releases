@@ -75,13 +75,13 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
     private WizardDescriptor wizard;
     private HibernateConfigurationWizardDescriptor descriptor;
     private WizardDescriptor.Panel[] panels;
-    private final String sessionName = "name";
-    private final String dialect = "hibernate.dialect";
-    private final String driver = "hibernate.connection.driver_class";
-    private final String url = "hibernate.connection.url";
-    private final String userName = "hibernate.connection.username";
-    private final String password = "hibernate.connection.password";
-    private final String DEFAULT_CONFIGURATION_FILENAME = "hibernate.cfg";
+    private final String sessionName = "name"; // NOI18N
+    private final String dialect = "hibernate.dialect"; // NOI18N
+    private final String driver = "hibernate.connection.driver_class"; // NOI18N
+    private final String url = "hibernate.connection.url"; // NOI18N
+    private final String userName = "hibernate.connection.username"; // NOI18N
+    private final String password = "hibernate.connection.password"; // NOI18N
+    private final String DEFAULT_CONFIGURATION_FILENAME = "hibernate.cfg"; // NOI18N
     
     private Logger logger = Logger.getLogger(HibernateConfigurationWizard.class.getName());
 
@@ -140,7 +140,7 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
     }
 
     public String name() {
-        return NbBundle.getMessage(HibernateConfigurationWizard.class, "LBL_ConfWizardTitle");
+        return NbBundle.getMessage(HibernateConfigurationWizard.class, "LBL_ConfWizardTitle"); // NOI18N
     }
 
     public boolean hasPrevious() {

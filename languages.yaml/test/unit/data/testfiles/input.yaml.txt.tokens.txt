@@ -1,0 +1,12 @@
+.t.e.s.t. Comments
+COMMENT         "# Comment", la=1
+TEXT            "\n", la=1
+COMMENT         "# Comment 2", la=1
+TEXT            "\ndevelopment:\n  adapter:  mysql ", la=1
+COMMENT         "# Suffix comment", la=1
+TEXT            "\n  socket:   /tmp/mysql.sock\n  encoding: utf8\n  database: newsletter_development\n  username: the-username\n  password: the-password\n", la=1
+----- EOF -----
+
+<Unnamed test>
+----- EOF -----
+

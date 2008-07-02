@@ -201,11 +201,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         tapPanel = new TapPanel();
         tapPanel.setOrientation(TapPanel.DOWN);
         tapPanel.setExpanded(true);
-        // tooltip
-        KeyStroke toggleKey = KeyStroke.getKeyStroke(KeyEvent.VK_T, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()); // [TODO]
-        String keyText = Utilities.keyToString(toggleKey);
         
-        tapPanel.setToolTipText(NbBundle.getMessage(DebuggingView.class, "LBL_TapPanel", keyText)); //NOI18N
         infoPanel = new InfoPanel(tapPanel);
         tapPanel.add(infoPanel);
         GridBagConstraints gridBagConstraints = new GridBagConstraints();

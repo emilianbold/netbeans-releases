@@ -53,6 +53,7 @@ import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.TreePath;
 
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
 
@@ -67,7 +68,8 @@ import org.openide.nodes.Node;
 public class DebugTreeView extends BeanTreeView implements TreeExpansionListener {
 
     private int thickness;
-    private Color zebraColor = new Color(233, 239, 248); // new Color(234, 234, 250);
+    private Color highlightColor = new Color(233, 239, 248); // new Color(234, 234, 250);
+    private Color currentThreadColor = new Color(233, 255, 230); // new Color(234, 234, 250);
     private Color whiteColor = javax.swing.UIManager.getDefaults().getColor("Tree.background"); // NOI18N
     
     private JPDAThread focusedThread;
@@ -159,12 +161,22 @@ public class DebugTreeView extends BeanTreeView implements TreeExpansionListener
         }
 
         Color origColor = g.getColor();
-        boolean isWhite = true;
+        JPDADebugger debugger = ThreadsListener.getDefault().getDebugger();
+        JPDAThread currentThread = (debugger != null) ? debugger.getCurrentThread() : null;
+        if (currentThread != null && !currentThread.isSuspended()) {
+            currentThread = null;
+        }
+        boolean isHighlighted = false;
+        boolean isCurrent = false;
         Iterator<TreePath> iter = paths.iterator();
         int firstGroupNumber = clipY / thickness;
         for (int x = 0; x <= firstGroupNumber && iter.hasNext(); x++) {
             Node node = Visualizer.findNode(iter.next().getLastPathComponent());
-            isWhite = focusedThread == null || node.getLookup().lookup(JPDAThread.class) != focusedThread;
+            JPDAThread thread = node.getLookup().lookup(JPDAThread.class);
+            isHighlighted = focusedThread != null && thread == focusedThread;
+            if (thread != null) {
+                isCurrent = currentThread == thread;
+            }
         }
         
         int sy = (clipY / thickness) * thickness;
@@ -172,14 +184,19 @@ public class DebugTreeView extends BeanTreeView implements TreeExpansionListener
         while (sy < limit) {
             int y1 = Math.max(sy, clipY);
             int y2 = Math.min(clipY + clipH, y1 + thickness) ;
-            g.setColor(isWhite ? whiteColor : zebraColor);
+            g.setColor(isHighlighted ? highlightColor : (isCurrent ? currentThreadColor : whiteColor));
             g.fillRect(clipX, y1, clipW, y2 - y1);
             sy += thickness;
             if (iter.hasNext()) {
                 Node node = Visualizer.findNode(iter.next().getLastPathComponent());
-                isWhite = focusedThread == null || node.getLookup().lookup(JPDAThread.class) != focusedThread;
+                JPDAThread thread = node.getLookup().lookup(JPDAThread.class);
+                isHighlighted = focusedThread != null && thread == focusedThread;
+                if (thread != null) {
+                    isCurrent = currentThread == thread;
+                }
             } else {
-                isWhite = false;
+                isHighlighted = false;
+                isCurrent = false;
             }
         }
         if (sy < clipY + clipH - 1) {

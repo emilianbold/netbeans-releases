@@ -102,13 +102,18 @@ public class JNAPty extends Pty {
     public void masterTIOCSWINSZ(int rows, int cols, int height, int width) {
         if (master_fd == null)
             return;
-        PtyLibrary.WinSize winsize = new PtyLibrary.WinSize();
-        winsize.ws_row = (short) rows;
-        winsize.ws_col = (short) cols;
-        winsize.ws_xpixel = (short) width;
-        winsize.ws_ypixel = (short) height;
+        PtyLibrary.WinSize winsize = new PtyLibrary.WinSize(rows, cols, height, width);
         PtyLibrary.INSTANCE.ioctl(getFd(master_fd), PtyLibrary.TIOCSWINSZ, winsize);
+    }
 
+    /**
+     * {@inheritDoc}
+     */
+    public void slaveTIOCSWINSZ(int rows, int cols, int height, int width) {
+        if (slave_fd == null)
+            return;
+        PtyLibrary.WinSize winsize = new PtyLibrary.WinSize(rows, cols, height, width);
+        PtyLibrary.INSTANCE.ioctl(getFd(slave_fd), PtyLibrary.TIOCSWINSZ, winsize);
     }
 
     /**

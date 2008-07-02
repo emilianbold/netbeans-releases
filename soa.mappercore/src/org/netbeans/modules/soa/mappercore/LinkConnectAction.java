@@ -173,8 +173,8 @@ public class LinkConnectAction extends MapperKeyboardAction implements
         if (treePath == null) { treePath = selectionModel.getSelectedPath(); }
         if (treePath == null) { return; }
         if (selectionModel.getSelectedPath() != treePath) {
-            if (!(linkTool.getSourcePin() instanceof TreeSourcePin) 
-                    || canvas.hasFocus()) 
+            if (!(linkTool.getSourcePin() instanceof TreeSourcePin)) 
+//                    || canvas.hasFocus())
             {
                 linkTool.done();
                 return;
