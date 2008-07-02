@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.openide.filesystems;
 
 import java.io.File;
@@ -52,54 +51,55 @@ import org.netbeans.junit.NbTestCase;
  * @author  pz97949
  */
 public class FilesystemBugsTest extends NbTestCase {
+
     final String FOLDER1 = "F";
-final String FO1     ="testNFOADelete";
+    final String FO1 = "testNFOADelete";
     private int counter;
+
     /** Creates a new instance of FilesystemBugs */
     public FilesystemBugsTest(String name) {
         super(name);
     }
-    /**
-    *        Let's have a file hierarchy A/B/C. If you decide to delete the folder A then listeners registered to 
-    *       file objects B and C do not have any notion these file objects were deleted. IMO it is incorrect 
-    *    behavior.
-    *    It also hurts the org.netbeans.core.xml.FileEntityResolver.update implementation.
-   */
 
+    /**
+     * Let's have a file hierarchy A/B/C. If you decide to delete the folder A then listeners registered to
+     * file objects B and C do not have any notion these file objects were deleted. IMO it is incorrect
+     * behavior.
+     * It also hurts the org.netbeans.core.xml.FileEntityResolver.update implementation.
+     */
     public void testNotifyOfSubFoldersAfterDelete23929() throws Exception {
         counter = 0;
         if (canGenWriteFolder()) {
             // create tree an register listener
             //
-           FileObject folder = getWriteFolder();
-           log(folder.toString());
-           folder = getSubFolder(folder, FOLDER1);
-           FileObject tmpFolder = folder;
-           //System.out.println(folder);
-           for (int i = 0 ; i  <  10 ; i++ ) {
-               FileObject subFolder = getSubFolder(tmpFolder,FOLDER1 + i);
-               subFolder.addFileChangeListener(new TestFileChangeListener());
-               for (int j = 0 ; j < 10 ; j++ ) {
-                   FileObject fo = getFileObject(tmpFolder, FO1 + j);
-                   fo.addFileChangeListener(new TestFileChangeListener());
-               }
-               tmpFolder = subFolder;
-           }
-           // delete tree and check counts of calls (must be 209)
-           //
-           try {
-              folder.delete();
-               assertTrue ("test failed, deleted  " + counter + " != 209"  , counter == 209);
-           } catch (Exception e) {
-               assertTrue("cannot delete folder",false);
-           }
-           
+            FileObject folder = getWriteFolder();
+            log(folder.toString());
+            folder = getSubFolder(folder, FOLDER1);
+            FileObject tmpFolder = folder;
+            //System.out.println(folder);
+            for (int i = 0; i < 10; i++) {
+                FileObject subFolder = getSubFolder(tmpFolder, FOLDER1 + i);
+                subFolder.addFileChangeListener(new TestFileChangeListener());
+                for (int j = 0; j < 10; j++) {
+                    FileObject fo = getFileObject(tmpFolder, FO1 + j);
+                    fo.addFileChangeListener(new TestFileChangeListener());
+                }
+                tmpFolder = subFolder;
+            }
+            // delete tree and check counts of calls (must be 209)
+            //
+            try {
+                folder.delete();
+                assertTrue("test failed, deleted  " + counter + " != 209", counter == 209);
+            } catch (Exception e) {
+                assertTrue("cannot delete folder", false);
+            }
         } else {
-             log ("[OK]  cannot get write folder on " + getFSType());
+            log("[OK]  cannot get write folder on " + getFSType());
         }
     }
-    /** get/create subfolder in folder
-     */
+
+    /** get/create subfolder in folder. */
     protected FileObject getSubFolder(FileObject folder, String name) {
         try {
             FileObject fo = folder.getFileObject(name);
@@ -109,12 +109,12 @@ final String FO1     ="testNFOADelete";
             return fo;
         } catch (IOException e) {
             e.printStackTrace();
-            assertTrue("cannot get subFolder " + name + " in  " + folder.toString(),false);
+            assertTrue("cannot get subFolder " + name + " in  " + folder.toString(), false);
         }
         return null;
     }
-    /** get/create FilObject in folder 
-     */
+
+    /** get/create FilObject in folder */
     protected FileObject getFileObject(FileObject folder, String name) {
         try {
             FileObject fo = folder.getFileObject(name);
@@ -123,82 +123,86 @@ final String FO1     ="testNFOADelete";
             }
             return fo;
         } catch (Exception e) {
-            assertTrue("cannot get subFolder " + name + " in  " + folder.toString(),false);
+            assertTrue("cannot get subFolder " + name + " in  " + folder.toString(), false);
         }
         return null;
     }
-    
+
     private class TestFileChangeListener extends FileChangeAdapter {
+
         @Override
         public void fileDeleted(FileEvent ev) {
             log("Delete: " + ev.getFile().getPath());
             counter++;
         }
     }
-    
+
     protected boolean canGenWriteFolder() {
         return true;
     }
+
     protected FileObject getWriteFolder() throws Exception {
         clearWorkDir();
         LocalFileSystem lfs = new LocalFileSystem();
         lfs.setRootDirectory(getWorkDir());
         return lfs.getRoot();
     }
-    
+
     protected String getFSType() {
         return "LocalFileSystem";
     }
 
-     /** #8124 When attributes are deleted from file objects, so that no attributes remain set
-      *  on any file objects in a folder, the .nbattrs file should be deleted. When no
-      *   attributes remain on a particular file object, that <fileobject> tag should be
-      *   deleted from the .nbattrs even if others remain.
-      */
-     public void testDeleteAttrsFileAfterDeleteAttrib() throws Exception {
-         FileObject folder  = getWriteFolder();
-         FileObject fo = folder.getFileObject("testAttr");
-         if (fo == null) {
+    /** #8124 When attributes are deleted from file objects, so that no attributes remain set
+     *  on any file objects in a folder, the .nbattrs file should be deleted. When no
+     *   attributes remain on a particular file object, that <fileobject> tag should be
+     *   deleted from the .nbattrs even if others remain.
+     */
+    public void testDeleteAttrsFileAfterDeleteAttrib() throws Exception {
+        FileObject folder = getWriteFolder();
+        FileObject fo = folder.getFileObject("testAttr");
+        if (fo == null) {
             fo = folder.createData("testAttr");
-         }
-         // set any attribute
-         fo.setAttribute("blbost","blbost");
-         // flush
-         System.gc();
-         System.gc();
-         // delete all attributes
-         FileObject fos[] = folder.getChildren();
-         for (int i = 0 ; i < fos.length ; i++ ) {
-             Enumeration keys = fos[i].getAttributes();
-             while (keys.hasMoreElements()) {
-                 fos[i].setAttribute((String)keys.nextElement(),null);
-             }
-         }
-         // flush
-         System.gc();
-         System.gc();
-         // test if exists .nbattrs
-         File nbattrs = new File(FileUtil.toFile(folder),".nbattrs");
-         assertTrue("Empty nbattrs exists in folder:" + FileUtil.toFile(folder) , nbattrs.exists() == false);
-         
-         
-     }
-/**#30397 FileURL.encodeFileObject(FileSystem fs, FileObject
-fo) breakes the public contract of java.net.URL by
-setting the hostname as null value. Even if the
-URL constructor implementation permits passing
-null value the javadoc does not. It has fatal
-impact on comparisons of URL objects then (see
-URLStreamHandler.hostsEqual). Following code
-always fails*/
+        }
+        // set any attribute
+        fo.setAttribute("blbost", "blbost");
+        // flush
+        System.gc();
+        System.gc();
+        // delete all attributes
+        FileObject fos[] = folder.getChildren();
+        for (int i = 0; i < fos.length; i++) {
+            Enumeration keys = fos[i].getAttributes();
+            while (keys.hasMoreElements()) {
+                fos[i].setAttribute((String) keys.nextElement(), null);
+            }
+        }
+        // flush
+        System.gc();
+        System.gc();
+        // test if exists .nbattrs
+        File nbattrs = new File(FileUtil.toFile(folder), ".nbattrs");
+        assertTrue("Empty nbattrs exists in folder:" + FileUtil.toFile(folder), nbattrs.exists() == false);
 
-     public void testURLContract() throws Exception {
-         FileObject fo = getWriteFolder();
-          URL u = fo.getURL();
-         assertEquals(u, new URL(u.toExternalForm()));
-     }
-     /* http://installer.netbeans.org/issues/show_bug.cgi?id=26400
-      *If I have a multifilesystem and set an attribute
+
+    }
+
+    /** #30397 FileURL.encodeFileObject(FileSystem fs, FileObject
+    fo) breakes the public contract of java.net.URL by
+    setting the hostname as null value. Even if the
+    URL constructor implementation permits passing
+    null value the javadoc does not. It has fatal
+    impact on comparisons of URL objects then (see
+    URLStreamHandler.hostsEqual). Following code
+    always fails
+     */
+    public void testURLContract() throws Exception {
+        FileObject fo = getWriteFolder();
+        URL u = fo.getURL();
+        assertEquals(u, new URL(u.toExternalForm()));
+    }
+
+    /** http://installer.netbeans.org/issues/show_bug.cgi?id=26400
+    If I have a multifilesystem and set an attribute
     on one of its fileobjects, I will get strange new
     attributes on all parent folders of this fileobject.
 
@@ -212,64 +216,59 @@ always fails*/
     "folder2\fileA\version". If I look into .nbattrs
     file there is just one attribute with name
     "folder1\folder2\fileA\version".
-      */
+     */
     public void testMultiAttrsBug26400() throws Exception {
-            File f1,f2;
-            File dir = new File(File.createTempFile("fsdf","eew").getParentFile(),"aret");
-            dir.mkdirs();
-            assertTrue(dir.isDirectory());
-            f1 = new File(dir,"tm26400a");
-            f2 = new File(dir,"tm26400b");
-            f1.mkdir();
-            f2.mkdir();
-            LocalFileSystem lfs1 = new LocalFileSystem();
-            LocalFileSystem lfs2 = new LocalFileSystem();
-            lfs1.setRootDirectory(f1);
-            lfs2.setRootDirectory(f2);
-            ///
-          
-            MultiFileSystem mfs = new MultiFileSystem(new FileSystem[]{lfs1,lfs2});
-            FileObject rootMfs = mfs.getRoot();
+        File f1, f2;
+        File dir = new File(File.createTempFile("fsdf", "eew").getParentFile(), "aret");
+        dir.mkdirs();
+        assertTrue(dir.isDirectory());
+        f1 = new File(dir, "tm26400a");
+        f2 = new File(dir, "tm26400b");
+        f1.mkdir();
+        f2.mkdir();
+        LocalFileSystem lfs1 = new LocalFileSystem();
+        LocalFileSystem lfs2 = new LocalFileSystem();
+        lfs1.setRootDirectory(f1);
+        lfs2.setRootDirectory(f2);
+        ///
+
+        MultiFileSystem mfs = new MultiFileSystem(new FileSystem[]{lfs1, lfs2});
+        FileObject rootMfs = mfs.getRoot();
         //    FileObject fomc = rootMfs.createData("c");
-            FileObject folder = getSubFolder(rootMfs,"a");
-            FileObject fo = getFileObject(folder, "b");
-            fo.setAttribute("attr","value");
-            assertTrue("folder contains attribute",  folder.getAttributes().hasMoreElements() == false);
-            assertTrue("FileObject doesn't contain attribute attr.",   fo.getAttribute("attr").equals("value"));
+        FileObject folder = getSubFolder(rootMfs, "a");
+        FileObject fo = getFileObject(folder, "b");
+        fo.setAttribute("attr", "value");
+        assertTrue("folder contains attribute", folder.getAttributes().hasMoreElements() == false);
+        assertTrue("FileObject doesn't contain attribute attr.", fo.getAttribute("attr").equals("value"));
     }
-/* 
- URL returned must be terminated by "/" if fileobject represents folder.
-Othervise it violated URL specs and it causes troubles while contructing contexted URL:
 
-  new URL(folder.getURL(), "test.txt");
+    /**
+    URL returned must be terminated by "/" if fileobject represents folder.
+    Othervise it violated URL specs and it causes troubles while contructing contexted URL:
 
-is now always searched in parent folder.
- */
+    new URL(folder.getURL(), "test.txt");
 
-
-    public void testFolderSlashUrl () throws Exception {
-          URL u = getWriteFolder().getURL();
-          assertTrue("invalid url of directory",u.getPath().endsWith("/"));
+    is now always searched in parent folder.
+     */
+    public void testFolderSlashUrl() throws Exception {
+        URL u = getWriteFolder().getURL();
+        assertTrue("invalid url of directory", u.getPath().endsWith("/"));
     }
-     
-  ////////////////////////   
-     
+
     public void testBackSlashAttribute33459() throws Exception {
         FileObject fo = getWriteFolder();
         String attribName = "y\\u2dasfas";
         System.gc();
         System.gc();
         try {
-           fo.setAttribute(attribName,attribName);
-           System.gc();
-           System.gc();
-           assertTrue("Attribute is not equal", fo.getAttribute(attribName).equals(attribName));
-           //System.out.println("ok");
+            fo.setAttribute(attribName, attribName);
+            System.gc();
+            System.gc();
+            assertTrue("Attribute is not equal", fo.getAttribute(attribName).equals(attribName));
         } catch (Exception e) {
             log(e.toString());
             e.printStackTrace();
-            fail("Exception :" + e ) ;
+            fail("Exception :" + e);
         }
     }
-    
 }
