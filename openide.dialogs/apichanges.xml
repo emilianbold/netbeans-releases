@@ -47,6 +47,21 @@ made subject to such option by the copyright holder.
 <apidef name="dialogs">Dialogs API</apidef>
 </apidefs>
 <changes>
+    
+    <change id="WizardDescriptor constants">
+        <api name="dialogs"/>
+        <summary>Wizard Descriptor properties changed to constants, two new constants introduced</summary>
+        <version major="7" minor="8"/>
+        <date day="2" month="7" year="2008"/>
+        <author login="mkubec"/>
+        <compatibility addition="yes"/>
+        <description>
+            Freeform strings are replaced by public constants and two new properties for warning and info messages were introduced.
+        </description>
+        <class package="org.openide" name="WizardDescriptor"/>
+        <issue number="137737"/>
+    </change>
+    
     <change id="WizardDescriptor.ArrayIterator-generic-constructor">
         <api name="dialogs"/>
         <summary>Generics-friendly constructor added for <code>WizardDescriptor.ArrayIterator</code></summary>
