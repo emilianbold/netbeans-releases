@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,63 +31,62 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
+ * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor;
+package org.netbeans.modules.quicksearch.web;
 
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
+import java.awt.Toolkit;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.groovy.editor.completion.CodeCompleter;
+import org.netbeans.spi.quicksearch.SearchProvider;
+import org.netbeans.spi.quicksearch.SearchRequest;
+import org.netbeans.spi.quicksearch.SearchResponse;
+import org.openide.awt.HtmlBrowser;
+import org.openide.awt.StatusDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author schmidtm
+ * @author S. Aubrecht
  */
-public class GroovyCodeCompletionTest extends GroovyTestBase {
+public class WebQuickSearchProviderImpl implements SearchProvider {
 
-    String TEST_BASE = "testfiles/completion/";
-
-    public GroovyCodeCompletionTest(String testName) {
-        super(testName);
-        Logger.getLogger(CodeCompleter.class.getName()).setLevel(Level.FINEST);
+    private Query query;
+    
+    public void evaluate(SearchRequest request, SearchResponse response) {
+        if( null == query ) {
+            query = Query.getDefault();
+        }
+        Result res = query.search( request.getText() );
+        do {
+            for( Item item : res.getItems() ) {
+                if( !response.addResult( createAction( item.getUrl() ), item.getTitle() ) )
+                    return;
+            }
+            res = query.searchMore( request.getText() );
+        } while( !res.isSearchFinished() );
     }
 
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        CodeCompleter.setTesting(true);
+    private Runnable createAction( final String url ) {
+        return new Runnable() {
+            public void run() {
+                try {
+                    HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault();
+                    if (displayer != null) {
+                        displayer.showURL(new URL(url));
+                    }
+                } catch (Exception e) {
+                    StatusDisplayer.getDefault().setStatusText(
+                            NbBundle.getMessage(WebQuickSearchProviderImpl.class, "Err_CannotDisplayURL", url) ); //NOI18N
+                    Toolkit.getDefaultToolkit().beep();
+                    Logger.getLogger(WebQuickSearchProviderImpl.class.getName()).log(Level.FINE, null, e);
+                }
+            }
+        };
     }
-
-    // uncomment this to have logging from GroovyLexer
-    protected Level logLevel() {
-        // enabling logging
-        return Level.INFO;
-        // we are only interested in a single logger, so we set its level in setUp(),
-        // as returning Level.FINEST here would log from all loggers
-    }
-
-
-    public void testMethodCompletion1() throws Exception {
-        checkCompletion(TEST_BASE + "MethodCompletionTestCase.groovy", "new String().^toS", false);
-    }
-
-//    public void testPrefix1() throws Exception {
-//        checkPrefix("testfiles/cc-prefix1.js");
-//    }
-//
-//    public void testAutoQueryStrings() throws Exception {
-//        assertAutoQuery(QueryType.COMPLETION, "foo^ 'foo'", ".");
-//        assertAutoQuery(QueryType.NONE, "'^foo'", ".");
-//        assertAutoQuery(QueryType.NONE, "/f^oo/", ".");
-//        assertAutoQuery(QueryType.NONE, "\"^\"", ".");
-//        assertAutoQuery(QueryType.NONE, "\" foo^ \"", ".");
-//    }
-//
-
-
 }

@@ -1733,10 +1733,10 @@ public class JavaSourceTest extends NbTestCase {
             return null;
         }
 
-        public void store(Map<Pair<String,String>, List<String>> refs, Set<Pair<String,String>> toDelete) throws IOException {            
+        public void store(Map<Pair<String,String>, Object[]> refs, Set<Pair<String,String>> toDelete) throws IOException {            
         }
 
-        public void store(Map<Pair<String,String>, List<String>> refs, List<Pair<String,String>> topLevels) throws IOException {            
+        public void store(Map<Pair<String,String>, Object[]> refs, List<Pair<String,String>> topLevels) throws IOException {            
         }
 
         public boolean isUpToDate(String resourceName, long timeStamp) throws IOException {
@@ -1757,6 +1757,11 @@ public class JavaSourceTest extends NbTestCase {
                 }
                 Thread.sleep(100);
             }
+        }
+
+        @Override
+        public <T> void getDeclaredElements(String ident, NameKind kind, ResultConvertor<T> convertor, Map<T, Set<String>> result) throws IOException, InterruptedException {
+            await();
         }
         
     }

@@ -747,10 +747,6 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
                         length = charsWritten;
                     } else {
                         first = start;
-//                        if (first == getLines().getLineCount()) {
-//                            throw new IllegalStateException ("Out of bounds");
-//                        }
-
                         offset = getLines().getLineStart(first);
                         lineCount = getLines().getLineCount() - first;
                         length = charsWritten - offset;
@@ -799,12 +795,13 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
         
         public Element[] getChildrenAdded() {
             calc();
-            Element[] e = new Element[lineCount-1];
-            for (int i=0; i < lineCount-1; i++) {
+            if (first + lineCount > getLines().getLineCount()) {
+                throw new IllegalStateException ("Document line count: " + getLines().getLineCount() +
+                         ", OD line count: " + (first + lineCount));
+            }
+            Element[] e = new Element[lineCount];
+            for (int i = 0; i < lineCount; i++) {
                 e[i] = new ODElement(first + i);
-                if (first + i >= getLines().getLineCount()) {
-                    throw new IllegalStateException ("UGH!!!");
-                }
             }
             return e;
         }

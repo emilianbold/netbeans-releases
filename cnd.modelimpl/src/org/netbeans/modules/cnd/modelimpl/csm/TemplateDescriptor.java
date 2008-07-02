@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,75 +31,62 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.quicksearch;
+package org.netbeans.modules.cnd.modelimpl.csm;
 
+import antlr.collections.AST;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.junit.NbTest;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.spi.quicksearch.SearchProvider;
-import org.netbeans.spi.quicksearch.SearchRequest;
-import org.netbeans.spi.quicksearch.SearchResponse;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
 /**
  *
- * @author Dafe Simonek
+ * @author eu155513
  */
-public class CommandEvaluatorTest extends NbTestCase {
-    
-    private static final int MAX_TIME = 1000;
-    
-    private Exception exc = null;
-    
-    public CommandEvaluatorTest() {
-        super("");
-    }
-    
-    public CommandEvaluatorTest(String testName) {
-        super(testName);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTest suite() {
-        NbTestSuite suite = new NbTestSuite(CommandEvaluatorTest.class);
-        return suite;
-    }
-    
-    public void testResponsiveness () throws Exception {
-        UnitTestUtils.prepareTest(new String [] { "/org/netbeans/modules/quicksearch/resources/testSlowProvider.xml" });
+public final class TemplateDescriptor {
+    private final List<CsmTemplateParameter>templateParams;
+    private final CharSequence templateSuffix;
 
-        System.out.println("Testing resposiveness against slow providers...");
-        
-        long startTime = System.currentTimeMillis();
-        
-        CommandEvaluator.evaluate("sample text", ResultsModel.getInstance());
-        
-        long endTime = System.currentTimeMillis();
-        
-        assertFalse("Evaluator is slower then expected, max allowed time is " +
-                MAX_TIME + " millis, but was " + (endTime - startTime) + " millis.",
-                (endTime - startTime) > 1000);
+    public TemplateDescriptor(List<CsmTemplateParameter> templateParams, CharSequence templateSuffix) {
+        this.templateParams = templateParams;
+        this.templateSuffix = templateSuffix;
     }
-    
-    public static class SlowProvider implements SearchProvider {
 
-        public void evaluate(SearchRequest request, SearchResponse response) {
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException ex) {
-                System.err.println("SlowProvider interrupted...");
+    public List<CsmTemplateParameter> getTemplateParameters() {
+	return (templateParams != null) ? templateParams : Collections.<CsmTemplateParameter>emptyList();
+    }
+
+    public CharSequence getTemplateSuffix() {
+        return templateSuffix;
+    }
+
+    public static TemplateDescriptor createIfNeeded(AST ast, CsmFile file, CsmScope scope) {
+        if (ast == null) {
+            return null;
+        }
+        AST start = TemplateUtils.getTemplateStart(ast.getFirstChild());
+        for( AST token = start; token != null; token = token.getNextSibling() ) {
+            if (token.getType() == CPPTokenTypes.LITERAL_template) {
+                    return new TemplateDescriptor(TemplateUtils.getTemplateParameters(token, file, scope),
+                            '<' + TemplateUtils.getClassSpecializationSuffix(token) + '>');
             }
         }
-        
+        return null;
     }
 
+    public void write(DataOutput output) throws IOException {
+        PersistentUtils.writeTemplateParameters(templateParams, output);
+        output.writeUTF(this.templateSuffix.toString());
+    }
 }

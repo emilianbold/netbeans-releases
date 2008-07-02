@@ -37,51 +37,32 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.core.ui.quicksearch.web;
+package org.netbeans.modules.jumpto.symbol;
 
-import java.awt.Toolkit;
-import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.spi.quicksearch.SearchProvider;
-import org.netbeans.spi.quicksearch.SearchRequest;
-import org.netbeans.spi.quicksearch.SearchResponse;
-import org.openide.awt.HtmlBrowser;
-import org.openide.awt.StatusDisplayer;
+import java.util.List;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
+import org.netbeans.spi.jumpto.symbol.SymbolProvider;
+import org.netbeans.spi.jumpto.type.SearchType;
+import org.openide.util.Exceptions;
 
 /**
  *
- * @author S. Aubrecht
+ * @author Tomas Zezula
  */
-public class WebQuickSearchProviderImpl implements SearchProvider {
-
-    private Query query;
+public abstract class SymbolProviderAccessor {
     
-    public void evaluate(SearchRequest request, SearchResponse response) {
-        if( null == query ) {
-            query = Query.getDefault();
-        }
-        Result res = query.search( request.getText() );
-        for( Item item : res.getItems() ) {
-            if( !response.addResult( createAction( item.getUrl() ), item.getTitle() ) )
-                return;
+    public static SymbolProviderAccessor DEFAULT;
+
+    static {
+        try {
+            Class.forName(SymbolProvider.Context.class.getName(), true, SymbolProviderAccessor.class.getClassLoader());
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 
-    private Runnable createAction( final String url ) {
-        return new Runnable() {
-            public void run() {
-                try {
-                    HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault();
-                    if (displayer != null) {
-                        displayer.showURL(new URL(url));
-                    }
-                } catch (Exception e) {
-                    StatusDisplayer.getDefault().setStatusText("Cannot display URL: " + url );
-                    Toolkit.getDefaultToolkit().beep();
-                    Logger.getLogger(WebQuickSearchProviderImpl.class.getName()).log(Level.FINE, null, e);
-                }
-            }
-        };
-    }
+    public abstract SymbolProvider.Context createContext(Project p, String text, SearchType t);
+
+    public abstract SymbolProvider.Result createResult(List<? super SymbolDescriptor> result, String[] message);
 }

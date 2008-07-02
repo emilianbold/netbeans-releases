@@ -191,8 +191,9 @@ private void cbSuspendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         defaultActionCheckBox.setVisible(false);
     } else {
         defaultActionCheckBox.setVisible(true);
-        defaultActionCheckBox.setSelected(selectedIndex == checkedSuspendAction);
+        defaultActionCheckBox.setSelected(false);
     }
+    checkedSuspendAction = defaultSuspendAction;
 }//GEN-LAST:event_cbSuspendActionPerformed
     
     /**

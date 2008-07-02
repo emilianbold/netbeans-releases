@@ -39,21 +39,59 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.source.usages;
+package org.openide.util.lookup;
 
-import java.io.IOException;
-import javax.tools.JavaFileObject;
+import org.openide.util.*;
 
-/**
- *
- * @author Tomas Zezula
- */
-public interface Analyser {
+import java.util.concurrent.Executor;
 
-    public void scan (JavaFileObject file) throws IOException;
+public class AbstractLookupExecutorTest extends AbstractLookupBaseHid 
+implements AbstractLookupBaseHid.Impl, Executor, LookupListener {
+    Lookup.Result<?> res;
+    
+    
+    public AbstractLookupExecutorTest(java.lang.String testName) {
+        super(testName, null);
+    }
 
-    public void delete (String binaryName) throws IOException;
+    //
+    // Impl of AbstractLookupBaseHid.Impl
+    //
 
-    public void store () throws IOException;
+    /** Creates the initial abstract lookup.
+     */
+    public Lookup createInstancesLookup (InstanceContent ic) {
+        ic.attachExecutor(this);
+        Lookup l = new AbstractLookup (ic, new InheritanceTree ());
+        return l;
+    }
+    
+    /** Creates an lookup for given lookup. This class just returns 
+     * the object passed in, but subclasses can be different.
+     * @param lookup in lookup
+     * @return a lookup to use
+     */
+    public Lookup createLookup (Lookup lookup) {
+        res = lookup.lookupResult(Object.class);
+        res.addLookupListener(this);
+        return lookup;
+    }
 
+    public void clearCaches () {
+    }    
+
+    ThreadLocal<Object> ME = new ThreadLocal<Object>();
+    public void execute(Runnable command) {
+        assertEquals("Not yet set", null, ME.get());
+        ME.set(this);
+        try {
+            command.run();
+        } finally {
+            ME.set(null);
+        }
+    }
+
+    public void resultChanged(LookupEvent ev) {
+        assertEquals("Changes delivered only from execute method", this, ME.get());
+    }
 }

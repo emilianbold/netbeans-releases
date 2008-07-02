@@ -95,6 +95,7 @@ public class QuickSearchPopup extends javax.swing.JPanel implements ListDataList
         if (result != null) {
             RecentSearches.getDefault().add(result);
             result.getAction().run();
+            clearModel();
         }
     }
 
@@ -108,6 +109,10 @@ public class QuickSearchPopup extends javax.swing.JPanel implements ListDataList
 
     public JList getList() {
         return jList1;
+    }
+
+    public void clearModel () {
+        rModel.setContent(null);
     }
     
     public void maybeEvaluate (String text) {
@@ -131,7 +136,10 @@ public class QuickSearchPopup extends javax.swing.JPanel implements ListDataList
      * actually runs search */
     public void actionPerformed(ActionEvent e) {
         updateTimer.stop();
-        CommandEvaluator.evaluate(searchedText, rModel);
+        // search only if we are not cancelled already
+        if (comboBar.getCommand().isFocusOwner()) {
+            CommandEvaluator.evaluate(searchedText, rModel);
+        }
     }
         
     
@@ -216,9 +224,6 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
      * Updates size and visibility of this panel according to model content
      */
     private void updatePopup () {
-        
-        // TBD - coalesce fast coming update requests to lower popup flickering
-        
         int modelSize = rModel.getSize();
         
         if (modelSize > 0) {
@@ -231,10 +236,9 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
             computePopupBounds(popupBounds, lPane, modelSize);
             setBounds(popupBounds);
             
-            if (!isVisible()) {
+            if (!isVisible() && comboBar.getCommand().isFocusOwner()) {
                 jList1.setSelectedIndex(0);
                 setVisible(true);
-                comboBar.getCommand().requestFocus();
             }
             // needed on JDK 1.5.x to repaint correctly
             revalidate();

@@ -41,12 +41,16 @@
 
 package org.netbeans.modules.java.source.usages;
 
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.ElementKind;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.WhitespaceTokenizer;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -75,6 +79,9 @@ class DocumentUtil {
     private static final String FIELD_SIMPLE_NAME = "simpleName";       //NOI18N
     private static final String FIELD_CASE_INSENSITIVE_NAME = "ciName"; //NOI18N
     private static final String FIELD_SOURCE = "source";                //NOI18N
+    private static final String FIELD_IDENTS = "ids";                           //NOI18N
+    private static final String FIELD_FEATURE_IDENTS = "fids";                  //NOI18N
+    private static final String FIELD_CASE_INSENSItIVE_FEATURE_IDENTS="cifids"; //NOI18N
     
     private static final char NO = '-';                                 //NOI18N
     private static final char YES = '+';                                //NOI18N
@@ -250,6 +257,28 @@ class DocumentUtil {
         return query;
     }
     
+    public static Term identTerm (final String ident) {
+        assert ident != null;
+        return new Term (FIELD_IDENTS, ident);
+    }
+    
+    public static Query identQuery (final String ident) {
+        return new TermQuery(identTerm(ident));
+    }
+    
+    public static Term featureIdentTerm (final String ident) {
+        assert ident != null;
+        return new Term (FIELD_FEATURE_IDENTS, ident);
+    }
+    
+    public static Query featureIdentQuery (final String ident) {
+        return new TermQuery(featureIdentTerm(ident));
+    }
+    
+    public static Term caseInsensitiveFeatureIdentTerm (final String ident) {
+        assert ident != null;
+        return new Term (FIELD_CASE_INSENSItIVE_FEATURE_IDENTS, ident);
+    }
     
     public static Term rootDocumentTerm () {
         return new Term (FIELD_RESOURCE_NAME,ROOT_NAME);
@@ -289,7 +318,11 @@ class DocumentUtil {
     }    
     
     //Factories for lucene document
-    public static Document createDocument (final String binaryName, final long timeStamp, List<String> references, String source) {
+    public static Document createDocument (final String binaryName, final long timeStamp,
+            List<String> references,
+            String featureIdents,
+            String idents,
+            String source) {
         assert binaryName != null;
         assert references != null;
         int index = binaryName.lastIndexOf(PKG_SEPARATOR);  //NOI18N
@@ -323,6 +356,16 @@ class DocumentUtil {
         doc.add (field);
         for (String reference : references) {
             field = new Field (FIELD_REFERENCES,reference,Field.Store.YES,Field.Index.NO_NORMS);
+            doc.add(field);
+        }
+        if (featureIdents != null) {
+            field = new Field(FIELD_FEATURE_IDENTS, featureIdents, Field.Store.NO, Field.Index.TOKENIZED);
+            doc.add(field);
+            field = new Field(FIELD_CASE_INSENSItIVE_FEATURE_IDENTS, featureIdents, Field.Store.NO, Field.Index.TOKENIZED);
+            doc.add(field);
+        }
+        if (idents != null) {
+            field = new Field(FIELD_IDENTS, idents, Field.Store.NO, Field.Index.TOKENIZED);
             doc.add(field);
         }
         if (source != null) {
@@ -455,4 +498,19 @@ class DocumentUtil {
         
     }
     
+    private static class LCWhitespaceTokenizer extends WhitespaceTokenizer {
+        LCWhitespaceTokenizer (final Reader r) {
+            super (r);
+        }
+        
+        protected char normalize(char c) {
+            return Character.toLowerCase(c);
+        }        
+    }
+    
+    public static final class LCWhitespaceAnalyzer extends Analyzer {
+        public TokenStream tokenStream(String fieldName, Reader reader) {
+            return new LCWhitespaceTokenizer(reader);
+        }
+    }
 }
