@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
@@ -61,13 +62,14 @@ public class FilesystemBugsTest extends NbTestCase {
         super(name);
     }
 
+    // should be fixed http://www.netbeans.org/issues/show_bug.cgi?id=138784
     /**
      * Let's have a file hierarchy A/B/C. If you decide to delete the folder A then listeners registered to
      * file objects B and C do not have any notion these file objects were deleted. IMO it is incorrect
      * behavior.
      * It also hurts the org.netbeans.core.xml.FileEntityResolver.update implementation.
      */
-    public void testNotifyOfSubFoldersAfterDelete23929() throws Exception {
+    public void XXXtestNotifyOfSubFoldersAfterDelete23929() throws Exception {
         counter = 0;
         if (canGenWriteFolder()) {
             // create tree an register listener
