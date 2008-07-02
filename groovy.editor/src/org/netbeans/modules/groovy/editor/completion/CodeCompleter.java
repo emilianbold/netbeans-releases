@@ -160,7 +160,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         }
 
     /*Configures testing environment only*/
-    static public void setTesting(boolean testing) {
+    static void setTesting(boolean testing) {
         testMode = testing;
     }
 

@@ -37,12 +37,11 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor;
+package org.netbeans.modules.groovy.editor.completion;
 
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.groovy.editor.completion.CodeCompleter;
 
 /**
  *
@@ -73,7 +72,11 @@ public class GroovyCodeCompletionTest extends GroovyTestBase {
 
 
     public void testMethodCompletion1() throws Exception {
-        checkCompletion(TEST_BASE + "MethodCompletionTestCase.groovy", "new String().^toS", false);
+        checkCompletion(TEST_BASE + "MethodCompletionTestCase.groovy", "new String().toS^", false);
+    }
+
+    public void testMethodCompletion2() throws Exception {
+        checkCompletion(TEST_BASE + "MethodCompletionTestCase.groovy", "s.^", false);
     }
 
 //    public void testPrefix1() throws Exception {
