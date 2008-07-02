@@ -242,32 +242,34 @@ public class TaskProcessor {
      * Does nothing if the task was not yet executed.
      * @param task to reschedule
      * @param source to which the task it bound
-     * todo: wrong!!!!!!!
      */
     public static void rescheduleTasks(final Collection<SchedulerTask> tasks, final Source source, final Class<? extends TaskScheduler> schedulerType) {
         Parameters.notNull("task", tasks);
         Parameters.notNull("source", source);
         synchronized (INTERNAL_LOCK) {
-            for (SchedulerTask task : tasks) {
-                Request request = currentRequest.getTaskToCancel (task);
-                if ( request == null) {                
-                    Collection<Request> cr = finishedRequests.get(source);
-                    if (cr != null) {
-                        for (Iterator<Request> it = cr.iterator(); it.hasNext();) {
-                            Request fr = it.next();
-                            fr.schedulerType = schedulerType;
-                            if (task == fr.task) {
-                                it.remove();
-                                requests.add(fr);
-                                if (cr.size()==0) {
-                                    finishedRequests.remove(source);
+            final Request request = currentRequest.getTaskToCancel (tasks);
+            try {
+                final Collection<Request> cr = finishedRequests.get(source);
+                if (cr != null) {
+                    for (SchedulerTask task : tasks) {
+                        if (request == null || request.task != task) {
+                            for (Iterator<Request> it = cr.iterator(); it.hasNext();) {
+                                Request fr = it.next();
+                                fr.schedulerType = schedulerType;       //Why???
+                                if (task == fr.task) {
+                                    it.remove();
+                                    requests.add(fr);
+                                    if (cr.size()==0) {
+                                        finishedRequests.remove(source);
+                                    }
+                                    break;
                                 }
-                                break;
                             }
                         }
                     }
                 }
-                else {
+            } finally {
+                if (request != null) {
                     currentRequest.cancelCompleted(request);
                 }
             }
@@ -756,11 +758,12 @@ public class TaskProcessor {
         }
         
                 
-        Request getTaskToCancel (final SchedulerTask task) {
+        Request getTaskToCancel (final Collection<? extends SchedulerTask> tasks) {
+            assert tasks != null;
             Request request = null;
             if (!factory.isDispatchThread(Thread.currentThread())) {
                 synchronized (INTERNAL_LOCK) {
-                    if (this.reference != null && task == this.reference.task) {
+                    if (this.reference != null && tasks.contains(this.reference.task)) {
                         assert this.canceledReference == null;
                         request = this.reference;
                         this.canceledReference = request;
