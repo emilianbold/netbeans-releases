@@ -150,7 +150,7 @@ public abstract class JSAbstractDebugger implements JSDebugger {
     }
 
     protected void setHttpMessage(JSHttpMessage message){
-        Logger.getLogger(this.getClass().getName()).info("****** HTTP MESSAGE RECEIVED AND TRIGGERED ********");
+        //Logger.getLogger(this.getClass().getName()).info("****** HTTP MESSAGE RECEIVED AND TRIGGERED ********");
     }
 
 
