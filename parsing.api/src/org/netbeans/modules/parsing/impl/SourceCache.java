@@ -61,7 +61,6 @@ import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
-import org.netbeans.modules.parsing.spi.TaskScheduler;
 import org.openide.util.Lookup;
 
 
@@ -71,32 +70,33 @@ import org.openide.util.Lookup;
  * 
  * @author Jan Jancura
  */
+//@ThreadSafe
 public class SourceCache {
     
-    private Source          source;
+    private final Source    source;
+    //@GuardedBy(this)
     private Embedding       embedding;
-    private String          mimeType;
+    private final String    mimeType;
 
     public SourceCache (
         Source              source,
         Embedding           embedding
     ) {
         assert source != null;
-        assert mimeType == null;
         this.source = source;
         this.embedding = embedding;
         mimeType = embedding != null ?
             embedding.getMimeType () :
             source.getMimeType ();
-        if (mimeType == null) throw new NullPointerException ();
+        mimeType.getClass();
     }
 
-    public void setEmbedding (
+    public synchronized void setEmbedding (
         Embedding           embedding
     ) {
         this.embedding = embedding;
     }
-    
+    //@GuardedBy(this)
     private Snapshot        snapshot;
 
     public synchronized Snapshot getSnapshot () {
@@ -107,7 +107,9 @@ public class SourceCache {
         return snapshot;
     }
 
+    //@GuarderBy(this)
     private boolean         parserInitialized = false;
+    ///@GuardedBy(this)
     private Parser          parser;
     
     public synchronized Parser getParser () {
@@ -122,32 +124,40 @@ public class SourceCache {
         return parser;
     }
     
+    //@GuardedBy(this)
     private boolean         parsed = false;
     
     public Result getResult (
         Task                task,
         SchedulerEvent      event
     ) throws ParseException {
+        assert TaskProcessor.holdsParserLock();
         Parser parser = getParser ();
         if (parser == null) return null;
-        if (!parsed) {
-            parsed = true;
+        boolean _parsed;
+        synchronized (this) {
+            _parsed = this.parsed;
+        }
+        if (!_parsed) {            
             parser.parse (getSnapshot (), task, event);
+            synchronized (this) {
+                parsed = true;
+            }
         }
         return parser.getResult (task, null);
     }
     
-    public void invalidate () {
+    public synchronized void invalidate () {
         snapshot = null;
         embedding = null;
         parsed = false;
         embeddings = null;
-        upToDateEmbeddingProviders = new HashSet<EmbeddingProvider> ();
+        upToDateEmbeddingProviders.clear();
         for (SourceCache sourceCache : embeddingToCache.values ())
             sourceCache.invalidate ();
     }
     
-    boolean isValid () {
+    synchronized boolean isValid () {
         return snapshot != null;
     }
     
@@ -166,12 +176,14 @@ public class SourceCache {
 //        return shedulerTasks;
 //    }
     
+    //GuardedBy(this)
     private Collection<Embedding> 
                             embeddings;
-    private Map<EmbeddingProvider,List<Embedding>>
+    //GuardedBy(this)
+    private final Map<EmbeddingProvider,List<Embedding>>
                             embeddingProviderToEmbedings = new HashMap<EmbeddingProvider,List<Embedding>> ();
     
-    public Iterable<Embedding> getAllEmbeddings () {
+    public synchronized Iterable<Embedding> getAllEmbeddings () {
         if (this.embeddings == null) {
             this.embeddings = new ArrayList<Embedding> ();
             for (SchedulerTask schedulerTask : createTasks ()) {
@@ -193,9 +205,10 @@ public class SourceCache {
         return this.embeddings;
     }
 
-    private Set<EmbeddingProvider> upToDateEmbeddingProviders = new HashSet<EmbeddingProvider> ();
+    //GuardedBy(this)
+    private final Set<EmbeddingProvider> upToDateEmbeddingProviders = new HashSet<EmbeddingProvider> ();
     
-    void refresh (EmbeddingProvider embeddingProvider, Class schedulerType) {
+    synchronized void refresh (EmbeddingProvider embeddingProvider, Class schedulerType) {
         List<Embedding> embeddings = embeddingProvider.getEmbeddings (getSnapshot ());
         List<Embedding> oldEmbeddings = embeddingProviderToEmbedings.get (embeddingProvider);
         updateEmbeddings (embeddings, oldEmbeddings, embeddingProvider, true, schedulerType);
@@ -203,6 +216,7 @@ public class SourceCache {
         upToDateEmbeddingProviders.add (embeddingProvider);
     }
     
+    //@NotThreadSafe - has to be called in GuardedBy(this)
     private void updateEmbeddings (
             List<Embedding> embeddings,
             List<Embedding> oldEmbeddings,
@@ -233,10 +247,11 @@ public class SourceCache {
         }
     }
     
-    private Map<Embedding,SourceCache>
+    //GuardedBy(this)
+    private final Map<Embedding,SourceCache>
                             embeddingToCache = new HashMap<Embedding,SourceCache> ();
     
-    public SourceCache getCache (Embedding embedding) {
+    public synchronized SourceCache getCache (Embedding embedding) {
         SourceCache sourceCache = embeddingToCache.get (embedding);
         if (sourceCache == null) {
             sourceCache = new SourceCache (source, embedding);
@@ -247,12 +262,13 @@ public class SourceCache {
 
     
     // tasks management ........................................................
-    
+    //GuardedBy(this)
     private List<SchedulerTask> 
                             tasks;
+    //GuardedBy(this)
     private Set<SchedulerTask> 
                             pendingTasks;
-    
+    //@NotThreadSafe - has to be called in GuardedBy(this)
     private Collection<SchedulerTask> createTasks (
     ) {
         if (tasks == null) {
@@ -271,27 +287,30 @@ public class SourceCache {
     }
     
     public void scheduleTasks (Class schedulerType) {
-        if (tasks == null)
-            createTasks ();
-        List<SchedulerTask> reschedule = new ArrayList<SchedulerTask> ();
-        List<SchedulerTask> add = new ArrayList<SchedulerTask> ();
-        for (SchedulerTask task : tasks)
-            if (task.getSchedulerClass () == schedulerType ||
-                //(
-                task instanceof EmbeddingProvider //&&
-                 //!upToDateEmbeddingProviders.contains ((EmbeddingProvider) task))
-            ) {
-                if (pendingTasks.remove (task))
-                    add.add (task);
-                else
-                    reschedule.add (task);
-            }
+        final List<SchedulerTask> reschedule = new ArrayList<SchedulerTask> ();
+        final List<SchedulerTask> add = new ArrayList<SchedulerTask> ();
+        synchronized (this) {
+            if (tasks == null)
+                createTasks ();        
+            for (SchedulerTask task : tasks)
+                if (task.getSchedulerClass () == schedulerType ||
+                    //(
+                    task instanceof EmbeddingProvider //&&
+                     //!upToDateEmbeddingProviders.contains ((EmbeddingProvider) task))
+                ) {
+                    if (pendingTasks.remove (task))
+                        add.add (task);
+                    else
+                        reschedule.add (task);
+                }
+        }
         if (!add.isEmpty ())
             TaskProcessor.addPhaseCompletionTasks (add, this, schedulerType);
         if (!reschedule.isEmpty ())
             TaskProcessor.rescheduleTasks (reschedule, source, schedulerType);
     }
     
+    //@NotThreadSafe - has to be called in GuardedBy(this)
     private void removeTasks () {
         if (tasks != null)
             for (SchedulerTask task : tasks)

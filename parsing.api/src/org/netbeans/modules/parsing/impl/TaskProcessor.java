@@ -65,16 +65,13 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
-import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.GenericUserTask;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.parsing.spi.ParserBasedEmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
@@ -194,11 +191,10 @@ public class TaskProcessor {
      * @see SchedulerTask for information about implementation requirements 
      * @task The task to run.
      * @source The source on which the task operates
-     */
+     */ 
     public static void addPhaseCompletionTasks(final Collection<SchedulerTask> tasks, final SourceCache cache, Class<TaskScheduler> schedulerType) {
         Parameters.notNull("task", tasks);   //NOI18N
         Parameters.notNull("cache", cache);   //NOI18N
-        assert !tasks.isEmpty ();
         List<Request> requests = new ArrayList<Request> ();
         for (SchedulerTask task : tasks) {
             final String taskClassName = task.getClass().getName();

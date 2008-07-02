@@ -254,6 +254,7 @@ public final class Source {
     private int taskCount;
     private volatile Parser cachedParser;
     private SchedulerEvent  schedulerEvent;
+    //GuardedBy(this)
     private SourceCache     cache;
     
     
@@ -313,10 +314,13 @@ public final class Source {
         }
 
         @Override
-        public SourceCache getCache (Source source) {
-            if (source.cache == null)
-                source.cache = new SourceCache (source, null);
-            return source.cache;
+        public SourceCache getCache (final Source source) {
+            assert source != null;
+            synchronized (source) {
+                if (source.cache == null)
+                    source.cache = new SourceCache (source, null);
+                return source.cache;
+            }
         }
 
         @Override
