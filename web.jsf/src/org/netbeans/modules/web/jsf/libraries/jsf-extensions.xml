@@ -40,10 +40,27 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="web.jsf" default="netbeans" basedir=".">
 
-    <import file="../nbbuild/templates/projectized.xml"/>
-
-    <target name="netbeans-extra" depends="release"/>
-
-</project>
+<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
+<library version="1.0">
+    <name>jsf-extensions</name>
+    <type>j2se</type>
+    <localizing-bundle>org.netbeans.modules.web.jsf.libraries.Bundle</localizing-bundle>
+    <volume>
+        <type>classpath</type>
+        <resource>jar:nbinst:///modules/ext/jsf-extensions-dynamic-faces-0.1.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jsf-extensions-common-0.1.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jsf-1_2/commons-logging.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/shale-remoting-1.0.4.jar!/</resource>
+    </volume>
+    <!-- 
+    <volume>
+        <type>src</type>
+        <resource>jar:nbinst:///docs/webui-src.zip!/</resource>
+    </volume>
+    <volume>
+        <type>javadoc</type>
+        <resource>jar:nbinst:///docs/webui-doc.zip!/</resource>
+    </volume>
+    -->
+</library>
