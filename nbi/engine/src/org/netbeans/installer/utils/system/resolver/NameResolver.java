@@ -20,9 +20,9 @@
  * Contributor(s):
  * 
  * The Original Software is NetBeans. The Initial Developer of the Original Software
- * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
+ * is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun Microsystems, Inc. All
  * Rights Reserved.
- * 
+ *  
  * If you wish your version of this file to be governed by only the CDDL or only the
  * GPL Version 2, indicate your decision by adding "[Contributor] elects to include
  * this software in this distribution under the [CDDL or GPL Version 2] license." If
@@ -34,50 +34,47 @@
  * copyright holder.
  */
 
-package org.netbeans.installer.wizard.containers;
+package org.netbeans.installer.utils.system.resolver;
 
-import org.netbeans.installer.wizard.ui.WizardUi;
+import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.exceptions.NativeException;
 
 /**
- * This interface represents the container for the UI of a {@link WizardComponent}.
- * Each {@link Wizard} "owns" an instance of this class and uses it to initialize 
- * the UI of its active component.
- * 
- * @author Kirill Sorokin
- * @since 1.0
+ *
+ * @author Dmitry Lipin
  */
-public interface WizardContainer {
-    /**
-     * Shows or hides the container. The behavior of this method is 
-     * component-specific. A frame would probably map this method directly, while
-     * a console-mode container could draw itself or clear the screen.
-     * 
-     * @param visible Whether to show the container - <code>true</code>, or hide 
-     * it - <code>false</code>.
-     */
-    void setVisible(final boolean visible);
+public class NameResolver implements StringResolver{
+
+    public String resolve(String string, ClassLoader cl) {
+        // N for Name
+        String parsed = string;
+        if (parsed.contains("$N{install}")) {
+            try {
+                parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{install\\}", 
+                        StringUtils.escapeRegExp(SystemUtils.getDefaultApplicationsLocation().getAbsolutePath()));
+            } catch (NativeException e) {                
+                ErrorManager.notifyError(ResourceUtils.getString(SystemUtils.class,
+                        ERROR_CANNOT_GET_DEFAULT_APPS_LOCATION_KEY), e);
+            }
+        }
+        if (parsed.contains("$N{home}")) {
+            parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{home\\}", 
+                    StringUtils.escapeRegExp(SystemUtils.getUserHomeDirectory().getAbsolutePath()));
+        }
+        if (parsed.contains("$N{temp}")) {
+            parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{temp\\}", 
+                    StringUtils.escapeRegExp(SystemUtils.getTempDirectory().getAbsolutePath()));
+        }
+        if (parsed.contains("$N{current}")) {
+            parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{current\\}", 
+                    StringUtils.escapeRegExp(SystemUtils.getCurrentDirectory().getAbsolutePath()));
+        }
+        return parsed;
+    }
     
-    /**
-     * Updates the container with a new UI. This method is usually called by the 
-     * wizard when the active component changes - the wizard wants to display its 
-     * UI.
-     * 
-     * @param ui UI which needs to be shown.
-     */
-    void updateWizardUi(final WizardUi ui);
-    
-    /**
-     * Opens(creates) the container. This method is usually called by the wizard upon 
-     * container initialization
-     *      
-     */
-    void open();    
-    
-    /**
-     * Closes(destroyes) the container. This method is usually called by the wizard upon 
-     * container closing
-     *      
-     */
-    void close();
-    
+    public static final String ERROR_CANNOT_GET_DEFAULT_APPS_LOCATION_KEY =
+            "NR.error.cannot.get.default.apps.location";//NOI18N
 }

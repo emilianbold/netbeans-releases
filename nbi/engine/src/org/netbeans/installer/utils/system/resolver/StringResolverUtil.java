@@ -20,9 +20,9 @@
  * Contributor(s):
  * 
  * The Original Software is NetBeans. The Initial Developer of the Original Software
- * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
+ * is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun Microsystems, Inc. All
  * Rights Reserved.
- * 
+ *  
  * If you wish your version of this file to be governed by only the CDDL or only the
  * GPL Version 2, indicate your decision by adding "[Contributor] elects to include
  * this software in this distribution under the [CDDL or GPL Version 2] license." If
@@ -34,50 +34,41 @@
  * copyright holder.
  */
 
-package org.netbeans.installer.wizard.containers;
+package org.netbeans.installer.utils.system.resolver;
 
-import org.netbeans.installer.wizard.ui.WizardUi;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * This interface represents the container for the UI of a {@link WizardComponent}.
- * Each {@link Wizard} "owns" an instance of this class and uses it to initialize 
- * the UI of its active component.
- * 
- * @author Kirill Sorokin
- * @since 1.0
+ *
+ * @author Dmitry Lipin
  */
-public interface WizardContainer {
-    /**
-     * Shows or hides the container. The behavior of this method is 
-     * component-specific. A frame would probably map this method directly, while
-     * a console-mode container could draw itself or clear the screen.
-     * 
-     * @param visible Whether to show the container - <code>true</code>, or hide 
-     * it - <code>false</code>.
-     */
-    void setVisible(final boolean visible);
+public class StringResolverUtil {
     
-    /**
-     * Updates the container with a new UI. This method is usually called by the 
-     * wizard when the active component changes - the wizard wants to display its 
-     * UI.
-     * 
-     * @param ui UI which needs to be shown.
-     */
-    void updateWizardUi(final WizardUi ui);
+    private static List <StringResolver> list;
     
-    /**
-     * Opens(creates) the container. This method is usually called by the wizard upon 
-     * container initialization
-     *      
-     */
-    void open();    
-    
-    /**
-     * Closes(destroyes) the container. This method is usually called by the wizard upon 
-     * container closing
-     *      
-     */
-    void close();
-    
+    public static final String resolve(String string, ClassLoader loader) {
+        String parsed = string;
+        if(parsed == null) {
+            return null;
+        }
+        if(list==null) {
+            list = createStringResolvers();
+        }
+        for(StringResolver resolver : list) {
+            parsed = resolver.resolve(parsed, loader);
+        }
+        return parsed;
+    }
+    private static List <StringResolver> createStringResolvers() {
+        List <StringResolver> srlist = new ArrayList<StringResolver> ();
+        srlist.add(new NameResolver());
+        srlist.add(new BundlePropertyResolver());
+        srlist.add(new FieldResolver());
+        srlist.add(new MethodResolver());
+        srlist.add(new ResourceResolver());
+        srlist.add(new SystemPropertyResolver());
+        srlist.add(new EnvironmentVariableResolver());
+        return srlist;
+    }
 }
