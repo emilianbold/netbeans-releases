@@ -52,6 +52,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileXMLCodec;
@@ -164,6 +165,14 @@ public class RunProfile implements ConfigurationAuxObject {
         }
     }
     
+    private boolean isWindows() {
+        //TODO: RunProfile should be fully aware of remote mode
+        if (CompilerSetManager.useFakeRemoteCompilerSet) {
+            return false;
+        }
+        return Utilities.isWindows();
+    }
+    
     private String[] setTerminalTypeNames() {
         List list = new ArrayList();
         String def = getString("TerminalType_Default"); // NOI18N
@@ -171,7 +180,7 @@ public class RunProfile implements ConfigurationAuxObject {
         String termPath;
         
         list.add(def);
-        if (Utilities.isWindows()) {
+        if (isWindows()) {
             String term = getString("TerminalType_CommandWindow"); // NOI18N
             list.add(term);
             termPaths.put(term, "start"); // NOI18N

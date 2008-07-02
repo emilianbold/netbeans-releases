@@ -61,7 +61,7 @@ import org.netbeans.modules.vmd.midp.screen.display.injector.ImageItemInjectorPr
 import org.openide.util.NbBundle;
 
 import java.util.*;
-import org.netbeans.modules.vmd.midp.codegen.MIDPDatabindingCodeSupport;
+import org.netbeans.modules.vmd.midp.codegen.MidpPDatabindingCodeSupport;
 
 /**
  *
@@ -100,10 +100,10 @@ public class ImageItemCD extends ComponentDescriptor {
     @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
-        presenters.addAll(MIDPDatabindingCodeSupport.createDatabindingPresenters(PROP_IMAGE
+        presenters.addAll(MidpPDatabindingCodeSupport.createDatabindingPresenters(PROP_IMAGE
                                                                                  ,"getImage()", //NOI18N
-                                                                                 MIDPDatabindingCodeSupport.ProviderType.ImageItem,
-                                                                                 MIDPDatabindingCodeSupport.FeatureType.ImageItem_FEATURE_IMAGE));
+                                                                                 MidpPDatabindingCodeSupport.ProviderType.ImageItem,
+                                                                                 MidpPDatabindingCodeSupport.FeatureType.ImageItem_FEATURE_IMAGE));
         super.gatherPresenters (presenters);
     }
 

@@ -7,6 +7,7 @@ do
   then
     echo Packing $f
     pack200 -J-Xmx256m -g $f.pack $f
+    chmod `stat -f %Lp $f` $f.pack && touch -r $f $f.pack
     rm $f
   fi
 done
