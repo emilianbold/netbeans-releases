@@ -63,16 +63,6 @@ public class Utilities {
     private static boolean debug = false;
 
     /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        final String mainmenu_file = "F:\\prace\\hg\\main\\ide.kit\\test\\qa-functional\\src\\org\\netbeans\\test\\permanentUI\\data\\mainmenu-file.txt";
-
-        NbMenuItem item = Utilities.readMenuStructureFromFile(mainmenu_file);
-        Utilities.printMenuStructure(System.out, item, " ");
-    }
-
-    /**
      * reads menus like http://wiki.netbeans.org/MainMenu
      * 
      * 
@@ -275,7 +265,7 @@ public class Utilities {
         }
         output += "   " + menu.getMnemo();
 
-        System.out.println(output);
+        out.println(output);
 
         //print submenu
         if (submenu != null) {
