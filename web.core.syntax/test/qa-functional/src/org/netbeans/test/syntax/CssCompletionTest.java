@@ -91,7 +91,4 @@ public class CssCompletionTest extends CompletionTest {
         test(testFileObj, "/**CC", "*/", false);
     }
 
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
 }
