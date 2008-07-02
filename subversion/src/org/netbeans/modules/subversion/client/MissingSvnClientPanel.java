@@ -40,19 +40,24 @@
  */
 package org.netbeans.modules.subversion.client;
 
-import org.netbeans.modules.subversion.options.*;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author Tomas Stupka
  */
 public class MissingSvnClientPanel extends javax.swing.JPanel {
-    
+
     /** Creates new form SvnOptionsPanel */
     public MissingSvnClientPanel() {
         initComponents();
+        if(Utilities.isWindows()) {
+            jLabel1.setText(org.openide.util.NbBundle.getMessage(MissingSvnClientPanel.class, "MissingSvnClientPanel.jLabel1.windows.text"));
+        } else {
+            jLabel1.setText(org.openide.util.NbBundle.getMessage(MissingSvnClientPanel.class, "MissingSvnClientPanel.jLabel1.unix.text"));
+        }
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -62,57 +67,55 @@ public class MissingSvnClientPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
 
         browseButton.setText(org.openide.util.NbBundle.getMessage(MissingSvnClientPanel.class, "MissingSvnClientPanel.browseButton.text")); // NOI18N
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(MissingSvnClientPanel.class, "MissingSvnClientPanel.jLabel2.text")); // NOI18N
 
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(MissingSvnClientPanel.class, "MissingSvnClientPanel.jLabel3.text")); // NOI18N
-
         jLabel4.setText(org.openide.util.NbBundle.getMessage(MissingSvnClientPanel.class, "MissingSvnClientPanel.jLabel4.text")); // NOI18N
+
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(MissingSvnClientPanel.class, "MissingSvnClientPanel.jLabel1.windows.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)
-            .add(layout.createSequentialGroup()
-                .add(jLabel4)
-                .addContainerGap())
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel3)
                     .add(layout.createSequentialGroup()
-                        .add(executablePathTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 415, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(executablePathTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 460, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(browseButton)))
+                        .add(browseButton))
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(jLabel1))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 104, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel4)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(browseButton)
                     .add(executablePathTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel3)
-                .add(15, 15, 15))
+                .add(1, 1, 1)
+                .add(jLabel1))
         );
     }// </editor-fold>//GEN-END:initComponents
-    
-    
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JButton browseButton = new javax.swing.JButton();
     final javax.swing.JTextField executablePathTextField = new javax.swing.JTextField();
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     // End of variables declaration//GEN-END:variables
-    
+
 }
