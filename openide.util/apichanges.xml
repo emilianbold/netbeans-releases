@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
 <changes>
     <change id="Lookup.asynchronous">
         <api name="lookup"/>
-        <summary>AbstractLookup and ProxyLookup fires changes asynchronously</summary>
+        <summary>AbstractLookup and ProxyLookup fire changes asynchronously</summary>
         <version major="7" minor="16"/>
         <date day="27" month="6" year="2008"/>
         <author login="jtulach"/>
@@ -64,7 +64,7 @@ made subject to such option by the copyright holder.
                 If not null, it is used to dispatch events to listeners sometime
                 "later". Also the <code>AbstractLookup.Content</code> 
                 and <code>InstanceContent</code> constructors
-                have been extended to accept such <code>Executor</code>.
+                have been extended to accept such <code>Executor</code>s.
             </p>
         </description> 
         <class package="org.openide.util.lookup" name="AbstractLookup"/>
