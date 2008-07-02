@@ -1829,7 +1829,13 @@ declarator
                 |
                     restrict_declarator
                 )
-	|       
+	|    
+                // IZ 138325 : IDE highlights typedef R (T::*F); line as wrong
+                (LPAREN ptr_operator restrict_declarator RPAREN SEMICOLON)=> 
+                LPAREN
+                restrict_declarator
+                RPAREN 
+	|	
 		direct_declarator	
 	;
 
