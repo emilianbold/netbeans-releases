@@ -492,7 +492,10 @@ public abstract class Children extends Object {
     * do additional work and then call addNotify.
     */
     void callAddNotify() {
+        //System.err.println("Thread: " + Thread.currentThread().getName() + ", N: " + getNode());
+        //System.err.println("Children: " + this);
         addNotify();
+        //System.err.println("Finished: " + this);
     }
 
     /** @return either nodes associated with this children or null if

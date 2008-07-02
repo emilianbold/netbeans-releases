@@ -89,7 +89,9 @@ abstract class EntrySupport {
     public abstract Node[] testNodes();
 
     public abstract boolean isInitialized();
-    
+
+    abstract void notifySetEntries();
+
     abstract void setEntries(Collection<? extends Entry> entries);
     
     /** Access to copy of current entries.
@@ -261,6 +263,12 @@ abstract class EntrySupport {
         // Entries
         //
 
+        private boolean mustNotifySetEnties = false;
+
+        void notifySetEntries() {
+            mustNotifySetEnties = true;
+        }
+
         protected void setEntries(Collection<? extends Entry> entries) {
             final boolean IS_LOG_GET_ARRAY = LOG_GET_ARRAY.isLoggable(Level.FINE);
             // current list of nodes
@@ -274,30 +282,21 @@ abstract class EntrySupport {
                 LOG_GET_ARRAY.fine("       holder: " + holder); // NOI18N
 
             }
-            if (holder == null) {
-                //      debug.append ("Set1: " + entries); // NOI18N
-                //      printStackTrace();
-                this.entries = new ArrayList<Entry>(entries);
 
+            Node[] current = holder == null ? null : holder.nodes();
+            if (mustNotifySetEnties) {
+                if (holder == null) {
+                    holder = getArray(null);
+                }
+                if (current == null) {
+                    holder.entrySupport = this;
+                    current = holder.nodes();
+                }
+            } else if (holder == null || current == null) {
+                this.entries = new ArrayList<Entry>(entries);
                 if (map != null) {
                     map.keySet().retainAll(new HashSet<Entry>(entries));
                 }
-
-                return;
-            }
-
-            Node[] current = holder.nodes();
-
-            if (current == null) {
-                // the initialization is not finished yet =>
-                //      debug.append ("Set2: " + entries); // NOI18N
-                //      printStackTrace();
-                this.entries = new ArrayList<Entry>(entries);
-
-                if (map != null) {
-                    map.keySet().retainAll(new HashSet<Entry>(entries));
-                }
-
                 return;
             }
 
@@ -847,8 +846,16 @@ abstract class EntrySupport {
         }
         
         Collection<Node> getEntryNodes(Entry entry) {
-            Info info = findInfo(entry);
-            return info.nodes();
+            try {
+                //Children.PR.enterReadAccess();
+                if (map == null) {
+                    map = Collections.synchronizedMap(new HashMap<Entry, Info>(17));
+                }
+                Info info = findInfo(entry);
+                return info.nodes();
+            } finally {
+                //Children.PR.exitReadAccess();
+            }
         }
 
         /** Information about an entry. Contains number of nodes,
@@ -1016,6 +1023,9 @@ abstract class EntrySupport {
         
         @Override
         public synchronized int getNodesCount() {
+            if (!checkInit()) {
+                return 0;
+            }            
             try {
                 Children.PR.enterReadAccess();
                 return entries.size();
@@ -1069,13 +1079,19 @@ abstract class EntrySupport {
                 }
                 return info;
             }
-        }        
+        }
+
+        private boolean mustNotifySetEnties = false;
+
+        void notifySetEntries() {
+            mustNotifySetEnties = true;
+        }
 
         @Override
         void setEntries(Collection<? extends Entry> newEntries) {
             assert entries.size() == entryToInfo.size();
 
-            if (entries.isEmpty()) {
+            if (!mustNotifySetEnties && entries.isEmpty()) {
                 entries = new ArrayList<Entry>(newEntries);
                 for (int i = 0; i < entries.size(); i++) {
                     Entry entry = entries.get(i);

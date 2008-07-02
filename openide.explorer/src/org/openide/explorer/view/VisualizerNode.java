@@ -249,6 +249,9 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         VisualizerChildren ch = children.get();
 
         if ((ch == null) && !node.isLeaf()) {
+            // initialize the nodes children before we enter the readAccess section 
+            // (otherwise we could receive invalid node count (under lock))
+            final int count = node.getChildren().getNodesCount();
 
             // go into lock to ensure that no childrenAdded, childrenRemoved,
             // childrenReordered notifications occures and that is why we do
@@ -499,12 +502,14 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
 
     /** Hash code
     */
+    @Override
     public int hashCode() {
         return hashCode;
     }
 
     /** Equals two objects are equal if they have the same hash code
     */
+    @Override
     public boolean equals(Object o) {
         if (!(o instanceof VisualizerNode)) {
             return false;
@@ -517,6 +522,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
 
     /** String name is taken from the node.
     */
+    @Override
     public String toString() {
         return getDisplayName();
     }
@@ -589,6 +595,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
             this.o = o;
         }
 
+        @Override
         public T get() {
             return o;
         }

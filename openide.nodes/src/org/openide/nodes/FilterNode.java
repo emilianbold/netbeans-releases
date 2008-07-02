@@ -217,6 +217,7 @@ public class FilterNode extends Node {
      * @param lookup
      * @return lookup or null
      */
+    @Override
     final Lookup replaceProvidedLookup(Lookup lookup) {
         synchronized (replaceProvidedLookupCache) {
             Boolean b = replaceProvidedLookupCache.get(getClass());
@@ -258,6 +259,7 @@ public class FilterNode extends Node {
         delegateMask = DELEGATE_ALL;
     }
 
+    @Override
     void notifyPropertyChangeListenerAdded(PropertyChangeListener l) {
         if (!pchlAttached) {
             original.addPropertyChangeListener(getPropertyChangeListener());
@@ -265,6 +267,7 @@ public class FilterNode extends Node {
         }
     }
 
+    @Override
     void notifyPropertyChangeListenerRemoved(PropertyChangeListener l) {
         if (getPropertyChangeListenersCount() == 0) {
             original.removePropertyChangeListener(getPropertyChangeListener());
@@ -906,6 +909,7 @@ public class FilterNode extends Node {
     * the hash reverts to the identity hash code.
     * @return the delegated hash code
     */
+    @Override
     public int hashCode() {
         try {
             assert hashCodeLogging(true) : ""; // NOI18N
@@ -1001,6 +1005,7 @@ public class FilterNode extends Node {
     /** Notified from Node that a listener has been added.
      * Thus we force initialization of listeners.
      */
+    @Override
     final void listenerAdded() {
         getNodeListener();
     }
@@ -1024,6 +1029,7 @@ public class FilterNode extends Node {
      * typically used to when there is a setChildren() on the original node
      * setChildren will fire the appropriate events
      */
+    @Override
     final void updateChildren() {
         if (isDefault()) {
             org.openide.nodes.Children newChildren = null;
@@ -1096,20 +1102,20 @@ public class FilterNode extends Node {
     * prevent the node from being finalized.
     */
     protected static class PropertyChangeAdapter extends Object implements PropertyChangeListener {
-        private Reference<FilterNode> fn;
+        private Reference<FilterNode> fnRef;
 
         /** Create a new adapter.
         * @param fn the proxy
         */
         public PropertyChangeAdapter(FilterNode fn) {
-            this.fn = new WeakReference<FilterNode>(fn);
+            this.fnRef = new WeakReference<FilterNode>(fn);
         }
 
         /* Find the node we are attached to. If it is not null call property
         * change method with two arguments.
         */
         public final void propertyChange(PropertyChangeEvent ev) {
-            FilterNode fn = this.fn.get();
+            FilterNode fn = this.fnRef.get();
 
             if (fn == null) {
                 return;
@@ -1133,20 +1139,20 @@ public class FilterNode extends Node {
     * @see FilterNode.PropertyChangeAdapter
     */
     protected static class NodeAdapter extends Object implements NodeListener {
-        private Reference<FilterNode> fn;
+        private Reference<FilterNode> fnRef;
 
         /** Create an adapter.
         * @param fn the proxy
         */
         public NodeAdapter(FilterNode fn) {
-            this.fn = new WeakReference<FilterNode>(fn);
+            this.fnRef = new WeakReference<FilterNode>(fn);
         }
 
         /* Tests if the reference to the node provided in costructor is
         * still valid (it has not been finalized) and if so, calls propertyChange (Node, ev).
         */
         public final void propertyChange(PropertyChangeEvent ev) {
-            FilterNode fn = this.fn.get();
+            FilterNode fn = this.fnRef.get();
 
             if (fn == null) {
                 return;
@@ -1245,7 +1251,7 @@ public class FilterNode extends Node {
         * @param ev event describing the node
         */
         public final void nodeDestroyed(NodeEvent ev) {
-            FilterNode fn = this.fn.get();
+            FilterNode fn = this.fnRef.get();
 
             if (fn == null) {
                 return;
@@ -1280,10 +1286,19 @@ public class FilterNode extends Node {
         /** node listener on original */
         private ChildrenAdapter nodeL;
 
+        /** default or lazy implementation */
+        private ChildrenSupport support;
+
         /** Create children.
          * @param or original node to take children from */
         public Children(Node or) {
+            this(or, or.getChildren().entrySupport() instanceof EntrySupport.Lazy);
+        }
+        
+        private Children(Node or, boolean lazy) {
+            super(lazy);
             original = or;
+            support = lazy ? new LazySupport() : new DefaultSupport();            
         }
 
         /** Sets the original children for this children. 
@@ -1345,7 +1360,7 @@ public class FilterNode extends Node {
             // add itself to reflect to changes children of original node
             nodeL = new ChildrenAdapter(this);
             original.addNodeListener(nodeL);
-            updateEntries();
+            support.update();
         }
 
         /** Clears current keys, because all mirrored nodes disappeared.
@@ -1423,11 +1438,7 @@ public class FilterNode extends Node {
         * @param ev info about the change
         */
         protected void filterChildrenAdded(NodeMemberEvent ev) {
-            if (ev.sourceEntry == null) {
-                updateEntries();
-            } else {
-                refreshEntry(ev.sourceEntry);
-            }
+            support.filterChildrenAdded(ev);
         }
 
         /** Called when the filter node removes a child.
@@ -1435,12 +1446,7 @@ public class FilterNode extends Node {
         * @param ev info about the change
         */
         protected void filterChildrenRemoved(NodeMemberEvent ev) {
-            //updateKeys();
-            if (ev.sourceEntry == null) {
-                updateEntries();
-            } else {
-                refreshEntry(ev.sourceEntry);
-            }
+            support.filterChildrenRemoved(ev);
         }
 
         /** Called when the filter node reorders its children.
@@ -1448,46 +1454,7 @@ public class FilterNode extends Node {
         * @param ev info about the change
         */
         protected void filterChildrenReordered(NodeReorderEvent ev) {
-            updateEntries();
-        }
-
-        /** variable to notify that there is a cyclic update.
-        * Used only in updateKeys method
-        */
-
-        //    private transient boolean cyclic;
-
-        /** Update keys from original nodes */
-        /*private void updateKeys() {
-            ChildrenAdapter runnable = nodeL;
-
-            if (runnable != null) {
-                runnable.run();
-            }
-        }*/
-        boolean inited;
-        private void updateEntries() {
-            if (!inited) {
-                Node[] arr = original.getChildren().getNodes();
-                inited = true;
-            }
-            List<Entry> entries = original.getChildren().entrySupport().getEntries();
-            ArrayList<Entry> filtEntries = new ArrayList<Entry>(entries.size() + 1);
-            boolean b = before;
-            if (b) {
-                filtEntries.add(getNodesEntry());
-            }
-            for (Entry e : entries) {
-                filtEntries.add(new FilterNodeEntry(e));
-            }
-            if (!b) {
-                filtEntries.add(getNodesEntry());
-            }
-            entrySupport().setEntries(filtEntries);
-        }
-        
-        private void refreshEntry(Entry entry) {
-            entrySupport().refreshEntry(new FilterNodeEntry(entry));
+            support.filterChildrenReordered(ev);
         }
 
         /**
@@ -1500,59 +1467,176 @@ public class FilterNode extends Node {
          */
         @Override
         public Node[] getNodes(boolean optimalResult) {
-            Node[] hold;
-            if (optimalResult) {
-                hold = original.getChildren().getNodes(true);
-            }
-            hold = getNodes();
-            return hold;
+            return support.getNodes(optimalResult);
         }
         
-        /** Substitution for Node to use it as key instead of Node */
-        private final class FilterNodeEntry extends Children.Keys<Object>.KE {
 
-            Entry origEntry;
+        abstract private class ChildrenSupport {
+            abstract protected Node[] getNodes(boolean optimalResult);
 
-            public FilterNodeEntry(Entry origEntry) {
-                this.origEntry = origEntry;
-            }
-            
-            @Override
-            public Object getKey() {
-                return this;
-            }
+            abstract protected void filterChildrenAdded(NodeMemberEvent ev);
 
-            @Override
-            public int getCnt() {
-                return 0;
-            }
+            abstract protected void filterChildrenRemoved(NodeMemberEvent ev);
+
+            abstract protected void filterChildrenReordered(NodeReorderEvent ev);
+
+            abstract protected void update();
+        }
+
+        private class DefaultSupport extends ChildrenSupport {
 
             @Override
-            public Collection<Node> nodes() {
-                Collection<Node> cn = original.getChildren().entrySupport().getEntryNodes(origEntry);
-                ArrayList<Node> list = new ArrayList<Node>(cn.size());
-                for (Node n : cn) {
-                    Node[] created = createNodes(n);
-                    if (created != null) {
-                        list.addAll(Arrays.asList(created));
+            protected Node[] getNodes(boolean optimalResult) {
+                Node[] hold;
+                if (optimalResult) {
+                    hold = original.getChildren().getNodes(true);
+                }
+                hold = Children.this.getNodes();
+                return hold;
+            }
+
+            @Override
+            protected void filterChildrenAdded(NodeMemberEvent ev) {
+                updateKeys();
+            }
+
+            @Override
+            protected void filterChildrenRemoved(NodeMemberEvent ev) {
+                updateKeys();
+            }
+
+            @Override
+            protected void filterChildrenReordered(NodeReorderEvent ev) {
+                updateKeys();
+            }
+
+            @Override
+            protected void update() {
+                updateKeys();
+            }
+
+            private void updateKeys() {
+                ChildrenAdapter cha = nodeL;
+                if (cha != null) {
+                    Node[] arr = original.getChildren().getNodes();
+                    setKeys(arr);
+                    if (!original.getChildren().isInitialized()) {
+                        original.getChildren().entrySupport().notifySetEntries();
                     }
                 }
-                return list;
+            }
+        }
+
+        private class LazySupport extends ChildrenSupport {
+
+            @Override
+            protected Node[] getNodes(boolean optimalResult) {
+                return Children.this.getNodes(optimalResult);
             }
 
             @Override
-            public int hashCode() {
-                return System.identityHashCode(origEntry);
+            protected void filterChildrenAdded(NodeMemberEvent ev) {
+                if (ev.sourceEntry == null) {
+                    updateEntries();
+                } else {
+                    refreshEntry(ev.sourceEntry);
+                }
             }
 
             @Override
-            public boolean equals(Object o) {
-                return o instanceof FilterNodeEntry ? origEntry.equals(((FilterNodeEntry)o).origEntry) : false;
+            protected void filterChildrenRemoved(NodeMemberEvent ev) {
+                if (ev.sourceEntry == null) {
+                    updateEntries();
+                } else {
+                    refreshEntry(ev.sourceEntry);
+                }
             }
 
             @Override
-            public String toString() {
-                return "FilterNodeEntry[" + origEntry + "]@" + Integer.toString(System.identityHashCode(this), 16);
+            protected void filterChildrenReordered(NodeReorderEvent ev) {
+                updateEntries();
+            }
+
+            @Override
+            protected void update() {
+                updateEntries();
+            }
+
+            private void updateEntries() {
+                ChildrenAdapter cha = nodeL;
+                if (cha != null) {
+
+                    if (!original.getChildren().isInitialized()) {
+                        original.getChildren().entrySupport().notifySetEntries();
+                        //return;
+                    }
+
+                    List<Entry> entries = original.getChildren().entrySupport().getEntries();
+                    ArrayList<Entry> filtEntries = new ArrayList<Entry>(entries.size() + 1);
+                    boolean b = before;
+                    if (b) {
+                        filtEntries.add(getNodesEntry());
+                    }
+                    for (Entry e : entries) {
+                        filtEntries.add(new FilterNodeEntry(e));
+                    }
+                    if (!b) {
+                        filtEntries.add(getNodesEntry());
+                    }
+                    entrySupport().setEntries(filtEntries);
+                }
+            }
+
+            private void refreshEntry(Entry entry) {
+                entrySupport().refreshEntry(new FilterNodeEntry(entry));
+            }
+
+            /** Substitution for Node to use it as key instead of Node */
+            private final class FilterNodeEntry extends Children.Keys<Object>.KE {
+
+                Entry origEntry;
+
+                public FilterNodeEntry(Entry origEntry) {
+                    this.origEntry = origEntry;
+                }
+
+                @Override
+                public Object getKey() {
+                    return this;
+                }
+
+                @Override
+                public int getCnt() {
+                    return 0;
+                }
+
+                @Override
+                public Collection<Node> nodes() {
+                    Collection<Node> cn = original.getChildren().entrySupport().getEntryNodes(origEntry);
+                    ArrayList<Node> list = new ArrayList<Node>(cn.size());
+                    for (Node n : cn) {
+                        Node[] created = createNodes(n);
+                        if (created != null) {
+                            list.addAll(Arrays.asList(created));
+                        }
+                    }
+                    return list;
+                }
+
+                @Override
+                public int hashCode() {
+                    return System.identityHashCode(origEntry);
+                }
+
+                @Override
+                public boolean equals(Object o) {
+                    return o instanceof FilterNodeEntry ? origEntry.equals(((FilterNodeEntry) o).origEntry) : false;
+                }
+
+                @Override
+                public String toString() {
+                    return "FilterNodeEntry[" + origEntry + "]@" + Integer.toString(System.identityHashCode(this), 16);
+                }
             }
         }
     }
@@ -1562,28 +1646,17 @@ public class FilterNode extends Node {
     * Used as the default listener in {@link FilterNode.Children},
     * and is intended for refinement by its subclasses.
     */
-    private static class ChildrenAdapter extends Object implements NodeListener, Runnable {
+    private static class ChildrenAdapter extends Object implements NodeListener {
         /** children object to notify about addition of children.
         * Can be null. Set from Children's initNodes method.
         */
-        private Reference<Children> children;
+        private Reference<Children> childrenRef;
 
         /** Create a new adapter.
         * @param ch the children list
         */
         public ChildrenAdapter(Children ch) {
-            this.children = new WeakReference<Children>(ch);
-        }
-
-        /** Called to update the content of children.
-         */
-        public void run() {
-            Children ch = children.get();
-
-            if (ch != null) {
-                Node[] arr = ch.original.getChildren().getNodes();
-                ch.setKeys(arr);
-            }
+            this.childrenRef = new WeakReference<Children>(ch);
         }
 
         /** Does nothing.
@@ -1596,7 +1669,7 @@ public class FilterNode extends Node {
         * @param ev event describing the action
         */
         public void childrenAdded(NodeMemberEvent ev) {
-            Children children = this.children.get();
+            Children children = this.childrenRef.get();
 
             if (children == null) {
                 return;
@@ -1609,7 +1682,7 @@ public class FilterNode extends Node {
         * @param ev event describing the action
         */
         public void childrenRemoved(NodeMemberEvent ev) {
-            Children children = this.children.get();
+            Children children = this.childrenRef.get();
 
             if (children == null) {
                 return;
@@ -1622,7 +1695,7 @@ public class FilterNode extends Node {
         * @param ev event describing the action
         */
         public void childrenReordered(NodeReorderEvent ev) {
-            Children children = this.children.get();
+            Children children = this.childrenRef.get();
 
             if (children == null) {
                 return;
