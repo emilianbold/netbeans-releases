@@ -256,10 +256,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         if (cp == null) {
             switch (type) {
                 case 0:
-                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots,this.helper));
+                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots,this.helper, this.evaluator));
                     break;
                 case 1:
-                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots,this.helper));
+                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots,this.helper, this.evaluator));
                     break;
             }
         }
