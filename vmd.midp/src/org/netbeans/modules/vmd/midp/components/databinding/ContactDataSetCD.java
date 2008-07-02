@@ -41,39 +41,29 @@ package org.netbeans.modules.vmd.midp.components.databinding;
 import org.netbeans.modules.vmd.midp.components.*;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
-import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
+import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
-import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
-import org.netbeans.modules.vmd.midp.components.categories.DatabindingCategoryCD;
+import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
-import org.netbeans.modules.vmd.midp.inspector.controllers.InspectorPositionControllerSupport;
-
 
 /**
  *
  * @author Karol Harezlak
  */
-public class DataSetAbstractCD extends ComponentDescriptor {
-    
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/dataset_16.gif"; // NOI18N
-    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#DataSetAbstract"); //NOI18N
+public class ContactDataSetCD extends ComponentDescriptor {
+
+    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.databinding.pim.ContactDataSet"); //NOI18N
     
     public static final String PROP_NAMES = "names"; 
-    
-    static {
-        MidpTypes.registerIconResource(TYPEID, ICON_PATH);
-    }
-   
+
     @Override
     public TypeDescriptor getTypeDescriptor() {
-        return new TypeDescriptor(ClassCD.TYPEID, TYPEID, false, true);
+        return new TypeDescriptor(IndexableDataAbstractSetCD.TYPEID, TYPEID, true, true);
     }
 
     @Override
@@ -83,20 +73,40 @@ public class DataSetAbstractCD extends ComponentDescriptor {
 
     @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
-        return Arrays.asList(
-                new PropertyDescriptor(PROP_NAMES, MidpTypes.TYPEID_JAVA_LANG_STRING.getArrayType(), PropertyValue.createNull(), true, false, MidpVersionable.MIDP_2)
-        );
+        return null;
+    }
+    
+
+
+    private static Presenter createSetterPresenter() {
+        return new CodeSetterPresenter().addParameters(MidpParameter.create(ClassCD.PROP_INSTANCE_NAME));
     }
 
     @Override
     protected List<? extends Presenter> createPresenters() {
-        
         return Arrays.asList(
-                // code
-                MidpCodePresenterSupport.createAddImportPresenter("org.netbeans.microedition.databinding.DataBindingException", //NOI18N
-                                                                  "org.netbeans.microedition.databinding.DataBinder"), //NOI18N
-                //inspector
-                new InspectorFolderComponentPresenter(true),
-                InspectorPositionPresenter.create(InspectorPositionControllerSupport.createHierarchical(DatabindingCategoryCD.TYPEID)));   
+            createSetterPresenter()
+        );
     }
+    
+    //Runtime parameters
+    public static final String NAME                 = "name";
+    public static final String ADDRESS              = "address";
+    public static final String EMAIL                = "email";
+    public static final String FORMATTED_NAME       = "formatted_name";
+    public static final String NICKNAME             = "nickname";
+    public static final String NOTE                 = "note";
+    public static final String ORGANIZATION         = "organization";
+    public static final String TELEPHONE            = "telephone";
+    public static final String TITLE                = "title";
+    public static final String UID                  = "uid";
+    public static final String URL                  = "url";
+    public static final String BIRTHDAY             = "birthday";
+    public static final String REVISION             = "revision";
+    public static final String PHOTO                = "photo";
+    public static final String PUBLIC_KEY           = "public_key";    
+    public static final String PHOTO_URL            = "photo_url";
+    public static final String PUBLIC_KEY_STRING    = "public_key_string";        
+    public static final String CLASS                = "class";
+    
 }
