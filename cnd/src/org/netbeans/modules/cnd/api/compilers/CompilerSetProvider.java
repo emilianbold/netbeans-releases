@@ -46,6 +46,8 @@ package org.netbeans.modules.cnd.api.compilers;
 public interface CompilerSetProvider {
     
     public void init(String user_and_host);
+    
+    public int getPlatform();
 
     public boolean hasMoreCompilerSets();
     

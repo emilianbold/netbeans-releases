@@ -42,6 +42,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 
@@ -88,6 +89,15 @@ public class CodeUtils {
             return "array"; //NOI18N
         }
 
+        return null;
+    }
+    
+    public static String extractFunctionName(FunctionInvocation functionInvocation){
+        if (functionInvocation.getFunctionName().getName() instanceof Identifier) {
+            Identifier id = (Identifier) functionInvocation.getFunctionName().getName();
+            return id.getName();
+        }
+        
         return null;
     }
 }

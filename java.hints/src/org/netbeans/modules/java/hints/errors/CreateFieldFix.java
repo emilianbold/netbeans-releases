@@ -131,7 +131,7 @@ public final class CreateFieldFix implements Fix {
             }
         });
         
-        return Utilities.commitAndComputeChangeInfo(targetFile, diff);
+        return Utilities.commitAndComputeChangeInfo(targetFile, diff, null);
     }
     
     String toDebugString(CompilationInfo info) {

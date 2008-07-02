@@ -204,8 +204,12 @@ public class AstRenderer {
                     container.addDeclaration(new UsingDirectiveImpl(token, file));
                     break;
                 case CPPTokenTypes.CSM_USING_DECLARATION:
-                    container.addDeclaration(new UsingDeclarationImpl(token, file));
+                {
+                    UsingDeclarationImpl using = new UsingDeclarationImpl(token, file, currentNamespace);
+                    container.addDeclaration(using);
+                    currentNamespace.addDeclaration(using);
                     break;
+                }
                 case CPPTokenTypes.CSM_TEMPL_FWD_CL_OR_STAT_MEM:
                     if (renderForwardClassDeclaration(token, currentNamespace, container, file)){
                         break;
@@ -1115,7 +1119,7 @@ public class AstRenderer {
     
     protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, 
 	    MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope) {
-	
+	type = TemplateUtils.checkTemplateType(type, scope);
         VariableImpl var = new VariableImpl(offsetAst, file, type, name, scope, (container1 != null) || (container2 != null));
         var.setStatic(_static);
         return var;
@@ -1229,8 +1233,12 @@ public class AstRenderer {
                 container.addDeclaration(new UsingDirectiveImpl(token, file));
                 return true;
             case CPPTokenTypes.CSM_USING_DECLARATION:
-                container.addDeclaration(new UsingDeclarationImpl(token, file));
+            {
+                UsingDeclarationImpl using = new UsingDeclarationImpl(token, file, currentNamespace);
+                container.addDeclaration(using);
+                currentNamespace.addDeclaration(using);
                 return true;
+            }
         }
         return false;
     }

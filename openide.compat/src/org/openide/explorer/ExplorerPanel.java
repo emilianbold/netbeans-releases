@@ -40,12 +40,10 @@
  */
 package org.openide.explorer;
 
-import org.netbeans.core.IDESettings;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
-import org.openide.util.WeakListeners;
 import org.openide.util.io.*;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;

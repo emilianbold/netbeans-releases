@@ -268,11 +268,6 @@
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.groovy.editor</code-name-base>
-                        <recursive/>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
@@ -289,6 +284,11 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.groovy.editor</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.gsf</code-name-base>
                         <recursive/>
                         <compile-dependency/>
@@ -301,6 +301,11 @@
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.masterfs</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.util</code-name-base>
+                        <compile-dependency/>
+                        <test/>
                     </test-dependency>
                 </test-type>
             </test-dependencies>

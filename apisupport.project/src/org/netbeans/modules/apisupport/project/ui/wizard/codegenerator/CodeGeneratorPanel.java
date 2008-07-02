@@ -39,8 +39,10 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.codegenerator;
 
+import java.awt.Component;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.JTextComponent;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.netbeans.modules.apisupport.project.ui.wizard.codegenerator.NewCodeGeneratorIterator.DataModel;
@@ -70,9 +72,18 @@ public class CodeGeneratorPanel extends BasicWizardIterator.Panel {
                 checkValidity();
             }
         };
+        
+        if (data.getPackageName() != null) {
+            packageNameCombo.setSelectedItem(data.getPackageName());
+        }
+        
         fileNametextField.getDocument().addDocumentListener(dListener);
         cpFileNameField.getDocument().addDocumentListener(dListener);
         mimeTypeTextField.getDocument().addDocumentListener(dListener);
+        Component editorComp = packageNameCombo.getEditor().getEditorComponent();
+        if (editorComp instanceof JTextComponent) {
+            ((JTextComponent) editorComp).getDocument().addDocumentListener(dListener);
+        }
         
     }
 
@@ -92,6 +103,8 @@ public class CodeGeneratorPanel extends BasicWizardIterator.Panel {
         cpCheckBox = new javax.swing.JCheckBox();
         cpFileNameLabel = new javax.swing.JLabel();
         cpFileNameField = new javax.swing.JTextField();
+        packageNameCombo = UIUtil.createPackageComboBox(data.getSourceRootGroup());
+        packageNameLabel = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(fileNameLabel, org.openide.util.NbBundle.getMessage(CodeGeneratorPanel.class, "CodeGeneratorPanel.fileNameLabel.text")); // NOI18N
 
@@ -114,6 +127,10 @@ public class CodeGeneratorPanel extends BasicWizardIterator.Panel {
         cpFileNameField.setEditable(cpCheckBox.isSelected());
         cpFileNameField.setText(org.openide.util.NbBundle.getMessage(CodeGeneratorPanel.class, "CodeGeneratorPanel.cpFileNameField.text")); // NOI18N
 
+        packageNameCombo.setEditable(true);
+
+        org.openide.awt.Mnemonics.setLocalizedText(packageNameLabel, org.openide.util.NbBundle.getMessage(CodeGeneratorPanel.class, "CodeGeneratorPanel.packageNameLabel.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -126,11 +143,13 @@ public class CodeGeneratorPanel extends BasicWizardIterator.Panel {
                             .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(fileNameLabel)
-                                    .add(mimeTypeLabel))
+                                    .add(mimeTypeLabel)
+                                    .add(packageNameLabel))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(fileNametextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE)
-                                    .add(mimeTypeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE)))
+                                    .add(mimeTypeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE)
+                                    .add(packageNameCombo, 0, 304, Short.MAX_VALUE)))
                             .add(cpCheckBox)))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(33, 33, 33)
@@ -148,6 +167,10 @@ public class CodeGeneratorPanel extends BasicWizardIterator.Panel {
                     .add(fileNametextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(packageNameCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(packageNameLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(mimeTypeLabel)
                     .add(mimeTypeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(18, 18, 18)
@@ -156,7 +179,7 @@ public class CodeGeneratorPanel extends BasicWizardIterator.Panel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(cpFileNameLabel)
                     .add(cpFileNameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(157, Short.MAX_VALUE))
+                .addContainerGap(123, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -176,6 +199,7 @@ private void cpCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FI
         data.setFileName(normalize(fileNametextField.getText().trim()));
         data.setContextProviderRequired(cpCheckBox.isSelected());
         data.setProviderFileName(cpFileNameField.getText().trim());
+        data.setPackageName(packageNameCombo.getEditor().getItem().toString());
         NewCodeGeneratorIterator.generateFileChanges(data);
     }
 
@@ -185,6 +209,7 @@ private void cpCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FI
         fileNametextField.setText(data.getFileName());
         cpFileNameField.setText(data.getProviderFileName());
         cpCheckBox.setSelected(data.isContextProviderRequired());
+        packageNameCombo.setSelectedItem(data.getPackageName());
     }
 
     @Override
@@ -201,6 +226,8 @@ private void cpCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FI
     private javax.swing.JTextField fileNametextField;
     private javax.swing.JLabel mimeTypeLabel;
     private javax.swing.JTextField mimeTypeTextField;
+    private javax.swing.JComboBox packageNameCombo;
+    private javax.swing.JLabel packageNameLabel;
     // End of variables declaration//GEN-END:variables
 
     private String normalize(String trim) {
@@ -225,6 +252,13 @@ private void cpCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FI
             setError(getMessage("ERR_MT_EMPTY"));
             return false;
         }
+        
+        String packName = packageNameCombo.getEditor().getItem().toString();
+        if(packName.equals("")) {
+            setError(getMessage("EMPTY_PACKAGE"));
+            return true;
+        }
+        
         if (cpCheckBox.isSelected()) {
             String cpFileName = cpFileNameField.getText().trim();
             if (cpFileName.length() == 0) {

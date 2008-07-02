@@ -52,13 +52,13 @@ import org.openide.util.Utilities;
 public class Tool {
     
     // Compiler types
-    public static int CCompiler = 0;
-    public static int CCCompiler = 1;
-    public static int FortranCompiler = 2;
-    public static int CustomTool = 3;
-    public static int Assembler = 4;
-    public static int MakeTool = 5;
-    public static int DebuggerTool = 6;
+    public static final int CCompiler = 0;
+    public static final int CCCompiler = 1;
+    public static final int FortranCompiler = 2;
+    public static final int CustomTool = 3;
+    public static final int Assembler = 4;
+    public static final int MakeTool = 5;
+    public static final int DebuggerTool = 6;
 
     private static final String[] TOOL_NAMES = {
         getString("CCompiler"), // NOI18N

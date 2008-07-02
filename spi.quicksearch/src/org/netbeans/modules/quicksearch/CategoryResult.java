@@ -123,6 +123,10 @@ public final class CategoryResult implements Runnable {
         }
     }
 
+    public boolean isObsolete() {
+        return obsolete;
+    }
+
     /** Sends notification about category change, always runs in EQ thread */
     public void run() {
         int curSize = 0;

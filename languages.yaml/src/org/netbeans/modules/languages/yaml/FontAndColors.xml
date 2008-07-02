@@ -42,12 +42,9 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 <fontscolors>
-    <fontcolor default="keyword" name="key">
-        <font style="bold"/>
-    </fontcolor>
-    <fontcolor default="default" name="value"/>
     <fontcolor default="whitespace" name="whitespace"/>
     <fontcolor default="comment" name="comment"/>
-    <fontcolor foreColor="ff098618" name="sequence"/>
-    <fontcolor default="error" name="error"/>
+    <fontcolor default="keyword" name="mod-method">
+        <font style="bold" />
+    </fontcolor>
 </fontscolors>
