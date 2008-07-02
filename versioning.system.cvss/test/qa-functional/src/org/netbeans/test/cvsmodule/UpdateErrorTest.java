@@ -169,7 +169,7 @@ public class UpdateErrorTest extends JellyTestCase {
         
         vo = VersioningOperator.invoke();
         oo = OutputOperator.invoke();
-        oto = oo.getOutputTab(sessionCVSroot);
+        oto = new OutputTabOperator(sessionCVSroot);
         
         Node node = new Node(new SourcePackagesNode("ForImport"), "forimport|Main.java");
         node.performPopupAction("Open");
@@ -178,7 +178,7 @@ public class UpdateErrorTest extends JellyTestCase {
         eo.insert(" a", 3, 4);
         eo.save();      
         //
-        oto = oo.getOutputTab(sessionCVSroot);
+        oto = new OutputTabOperator(sessionCVSroot);
         oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "show_changes_package.in");
         cvss = new PseudoCvsServer(in);
@@ -210,6 +210,7 @@ public class UpdateErrorTest extends JellyTestCase {
         node.performPopupAction("CVS|Update");
         Thread.sleep(1000);
         cvss.stop();
+        oto = new OutputTabOperator(sessionCVSroot);
         oto.waitText("Updating");
         oto.waitText("finished");
         
