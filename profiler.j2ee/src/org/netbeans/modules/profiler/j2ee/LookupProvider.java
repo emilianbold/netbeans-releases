@@ -37,64 +37,53 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.profiler.j2ee;
 
-package org.netbeans.lib.profiler.marker;
-
-import org.netbeans.lib.profiler.client.ClientUtils;
-import org.netbeans.lib.profiler.results.cpu.marking.MarkMapping;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import org.netbeans.api.project.Project;
 import java.util.List;
-import java.util.Map;
-
+import org.netbeans.modules.profiler.categories.Categorization;
+import org.netbeans.modules.profiler.categories.CategoryBuilder;
+import org.netbeans.modules.profiler.projectsupport.AbstractProjectLookupProvider;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * @author Jiri Sedlacek
  */
-public class MethodMarker implements Marker {
-    //~ Instance fields ----------------------------------------------------------------------------------------------------------
-
-    private Map markMap;
-
-    //~ Constructors -------------------------------------------------------------------------------------------------------------
-
-    /**
-     * Creates a new instance of MethodMarker
-     */
-    public MethodMarker() {
-        markMap = new HashMap();
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-
-    public MarkMapping[] getMappings() {
-        List mappings = new ArrayList();
-
-        for (Iterator iter = markMap.keySet().iterator(); iter.hasNext();) {
-            ClientUtils.SourceCodeSelection markerMethod = (ClientUtils.SourceCodeSelection) iter.next();
-            markerMethod.setMarkerMethod(true);
-            mappings.add(new MarkMapping(markerMethod, (Mark) markMap.get(markerMethod)));
+public class LookupProvider {
+    public static class WebProject extends AbstractProjectLookupProvider {
+        @Override
+        protected List getAdditionalLookups(final Project project) {
+            return new ArrayList() {
+            {
+                add(new Categorization(project, new CategoryBuilder(project, "org-netbeans-modules-web-project"))); // NOI18N
+            }
+        };
         }
-
-        return (MarkMapping[]) mappings.toArray(new MarkMapping[mappings.size()]);
+        
     }
     
-    public Mark[] getMarks() {
-        return (Mark[])new HashSet(markMap.values()).toArray(new Mark[0]);
+    public static class EarProject extends AbstractProjectLookupProvider {
+        @Override
+        protected List getAdditionalLookups(final Project project) {
+            return new ArrayList() {
+            {
+                add(new Categorization(project, new CategoryBuilder(project, "org-netbeans-modules-j2ee-earproject"))); // NOI18N
+            }
+        };
+        }
+        
     }
-
-    public void addMethodMark(String className, String methodName, String signature, Mark mark) {
-        markMap.put(new ClientUtils.SourceCodeSelection(className, methodName, signature), mark);
-    }
-
-    public void removeMethodMark(String className, String methodName, String signature) {
-        markMap.remove(new ClientUtils.SourceCodeSelection(className, methodName, signature));
-    }
-
-    public void resetMethodMarks() {
-        markMap.clear();
+    
+    public static class EjbJarProject extends AbstractProjectLookupProvider {
+        @Override
+        protected List getAdditionalLookups(final Project project) {
+            return new ArrayList() {
+            {
+                add(new Categorization(project, new CategoryBuilder(project, "org-netbeans-modules-j2ee-ejbjarproject"))); // NOI18N
+            }
+        };
+        }
+        
     }
 }
