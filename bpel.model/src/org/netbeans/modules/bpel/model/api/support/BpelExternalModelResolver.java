@@ -61,7 +61,6 @@ import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.xam.locator.CatalogModelFactory;
 import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  * A default implementation of the ExternalModelResolver for a BPEL process.
@@ -127,28 +126,28 @@ public class BpelExternalModelResolver implements ExternalModelResolver {
         }
         //
         // Add Clobal catalog schema models
-        Iterator itr = mCatalogReader.getPublicIDs();
-        while (itr.hasNext()) {
-            try {
-                Object pubId = itr.next();
-                ModelSource modelSource = CatalogModelFactory.getDefault().
-                        getCatalogModel(mBpelModel.getModelSource()).
-                        getModelSource(new URI(pubId.toString()));
-                if (modelSource != null) {
-                    SchemaModel sModel = SchemaModelFactory.getDefault().
-                            getModel(modelSource);
-                    if (sModel != null) {
-                        resultList.add(sModel);
+        if (mCatalogReader != null) {
+            Iterator itr = mCatalogReader.getPublicIDs();
+            while (itr.hasNext()) {
+                try {
+                    Object pubId = itr.next();
+                    ModelSource modelSource = CatalogModelFactory.getDefault().
+                            getCatalogModel(mBpelModel.getModelSource()).
+                            getModelSource(new URI(pubId.toString()));
+                    if (modelSource != null) {
+                        SchemaModel sModel = SchemaModelFactory.getDefault().
+                                getModel(modelSource);
+                        if (sModel != null) {
+                            resultList.add(sModel);
+                        }
                     }
+                } catch (CatalogModelException ex) {
+                    // ignore the exception
+                } catch (URISyntaxException ex) {
+                    // ignore the exception
                 }
-            } catch (CatalogModelException ex) {
-                // ignore the exception
-            } catch (URISyntaxException ex) {
-                // ignore the exception
             }
         }
-        //  BPELCatalog bpelCatalog = BPELCatalog.getDefault();
-        // CatalogModelFactory.getDefault().
         //
         // Add Primitive types schema model
         resultList.add(SchemaModelFactory.getDefault().getPrimitiveTypesModel());
