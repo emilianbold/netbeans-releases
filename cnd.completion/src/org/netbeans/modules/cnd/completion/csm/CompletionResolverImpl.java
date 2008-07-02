@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -205,12 +206,13 @@ public class CompletionResolverImpl implements CompletionResolver {
         ResultImpl resImpl = new ResultImpl();
         boolean isLocalVariable = resolveLocalContext(prj, resImpl, fun, context, offset, strPrefix, match);
         if (USE_CACHE && isEnough(strPrefix, match)) {
+            if (isLocalVariable){
+                result = buildResult(context, resImpl);
+                return;
+            }
             if (fun != null) {
-                if (isLocalVariable){
-                    result = buildResult(context, resImpl);
-                    return;
-                }
-                key = new CacheEntry(resolveTypes, hideTypes, strPrefix, fun.getUID());
+                CsmUID uid = fun.getUID();
+                key = new CacheEntry(resolveTypes, hideTypes, strPrefix, uid);
                 Result res = cache.get(key);
                 if (res != null) {
                     result = res;
@@ -218,7 +220,23 @@ public class CompletionResolverImpl implements CompletionResolver {
                 } else {
                     Iterator<CacheEntry> it = cache.keySet().iterator();
                     if (it.hasNext()) {
-                        if (!it.next().function.equals(fun.getUID())){
+                        if (!it.next().function.equals(uid)){
+                            cache.clear();
+                        }
+                    }
+                }
+            } else if (CsmKindUtilities.isVariable(context.getLastObject())) {
+                CsmVariable var = (CsmVariable) context.getLastObject();
+                CsmUID uid = var.getUID();
+                key = new CacheEntry(resolveTypes, hideTypes, strPrefix, uid);
+                Result res = cache.get(key);
+                if (res != null) {
+                    result = res;
+                    return;
+                } else {
+                    Iterator<CacheEntry> it = cache.keySet().iterator();
+                    if (it.hasNext()) {
+                        if (!it.next().function.equals(uid)){
                             cache.clear();
                         }
                     }

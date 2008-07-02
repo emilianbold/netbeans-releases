@@ -80,13 +80,18 @@ public class UsingResolverImpl extends CsmUsingResolver implements CsmProgressLi
         CsmDeclaration.Kind[] kinds = { CsmDeclaration.Kind.USING_DECLARATION };
         CsmSelect select = CsmSelect.getDefault();
         List<CsmUsingDeclaration> res = new ArrayList<CsmUsingDeclaration>();
-        for (CsmNamespaceDefinition def : namespace.getDefinitions()) {
-            Iterator<CsmOffsetableDeclaration> udecls = select.getDeclarations(
-                    def, select.getFilterBuilder().createKindFilter(kinds));
-            while (udecls.hasNext()) {
-                res.add((CsmUsingDeclaration) udecls.next());
-            }
+        Iterator<CsmOffsetableDeclaration> udecls = select.getDeclarations(
+                    namespace, select.getFilterBuilder().createKindFilter(kinds));
+        while (udecls.hasNext()) {
+            res.add((CsmUsingDeclaration) udecls.next());
         }
+//        for (CsmNamespaceDefinition def : namespace.getDefinitions()) {
+//            Iterator<CsmOffsetableDeclaration> udecls = select.getDeclarations(
+//                    def, select.getFilterBuilder().createKindFilter(kinds));
+//            while (udecls.hasNext()) {
+//                res.add((CsmUsingDeclaration) udecls.next());
+//            }
+//        }
         return extractDeclarations(res);
     }
     
