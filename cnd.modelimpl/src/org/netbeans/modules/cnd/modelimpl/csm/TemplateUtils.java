@@ -166,23 +166,30 @@ public class TemplateUtils {
                 case CPPTokenTypes.CSM_PARAMETER_DECLARATION:
                     // now create parameter
                     parameterStart = child;
-                    for (AST paramChild = child.getFirstChild(); paramChild != null; paramChild = paramChild.getNextSibling()) {
-                        switch (paramChild.getType()) {
+                    AST varDecl = child.getFirstChild();
+                    // check for existense of CSM_VARIABLE_DECLARATION branch
+                    if (varDecl != null && varDecl.getNextSibling() != null &&
+                            varDecl.getNextSibling().getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
+                        // CSM_VARIABLE_DECLARATION branch has priority
+                        varDecl = varDecl.getNextSibling();
+                    }
+                    if (varDecl != null) {
+                        switch (varDecl.getType()) {
+                            case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
+                                AST pn = varDecl.getFirstChild();
+                                if (pn != null) {
+                                    res.add(new TemplateParameterImpl(parameterStart, pn.getText(), file, scope));
+                                }
+                                break;
                             case CPPTokenTypes.CSM_TYPE_BUILTIN:
                             case CPPTokenTypes.CSM_TYPE_COMPOUND:
-                                for(AST p = paramChild.getFirstChild(); p != null; p = paramChild.getNextSibling()){
-                                    if (p.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
-                                        AST pn = p.getFirstChild();
-                                        if (pn != null) {
-                                            res.add(new TemplateParameterImpl(parameterStart, pn.getText(), file, scope));
-                                            break;
-                                        }
-                                    } else if (p.getType() == CPPTokenTypes.ID) {
+                                for(AST p = varDecl.getFirstChild(); p != null; p = varDecl.getNextSibling()){
+                                    if (p.getType() == CPPTokenTypes.ID) {
                                        res.add(new TemplateParameterImpl(parameterStart, p.getText(), file, scope));
                                        break;
                                     }
                                 }
-                               break;
+                                break;
                         }
                     }
                     break;
