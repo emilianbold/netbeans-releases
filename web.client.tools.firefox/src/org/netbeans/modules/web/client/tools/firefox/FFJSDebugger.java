@@ -303,7 +303,7 @@ public class FFJSDebugger extends JSAbstractDebugger {
         } catch (UnsufficientValueException ex) {
             Log.getLogger().log(Level.INFO, "Unable to get the console message", ex);   //NOI18N
         }
-        fireJSDebuggerConsoleEvent(consoleEvent);
+        fireJSHttpMessageEvent(consoleEvent);
     }
 
     private void handleHttpMessage(HttpMessage httpMessage) {
