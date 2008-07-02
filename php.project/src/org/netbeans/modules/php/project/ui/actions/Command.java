@@ -114,27 +114,7 @@ public abstract class Command {
     }
 
     protected final void showURLForDebugProjectFile() throws MalformedURLException {
-        boolean debugServer = WebClientToolsProjectUtils.getServerDebugProperty(project);
-        boolean debugClient = WebClientToolsProjectUtils.getClientDebugProperty(project);
-        
-        if (!WebClientToolsSessionStarterService.isAvailable()) {
-            debugServer = true;
-            debugClient = false;
-        }
-        
-        assert debugServer || debugClient;
-        
-        URL debugUrl = (debugServer) ? urlForDebugProjectFile() : urlForProjectFile();
-        
-        if (debugClient) {
-            try {
-                launchJavaScriptDebugger(debugUrl);
-            } catch (URISyntaxException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        } else {
-            HtmlBrowser.URLDisplayer.getDefault().showURL(debugUrl);
-        }
+        showURLForDebugContext(null);
     }
 
     protected final void showURLForDebugContext(Lookup context) throws MalformedURLException {
@@ -148,7 +128,12 @@ public abstract class Command {
         
         assert debugServer || debugClient;
         
-        URL debugUrl = (debugServer) ? urlForDebugContext(context) : urlForContext(context);
+        URL debugUrl;
+        if (context != null) {
+            debugUrl = (debugServer) ? urlForDebugContext(context) : urlForContext(context);
+        } else {
+            debugUrl = (debugServer) ? urlForDebugProjectFile() : urlForProjectFile();
+        }
         
         if (debugClient) {
             try {
