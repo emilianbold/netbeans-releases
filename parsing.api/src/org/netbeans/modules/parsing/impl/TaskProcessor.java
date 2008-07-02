@@ -192,7 +192,7 @@ public class TaskProcessor {
      * @task The task to run.
      * @source The source on which the task operates
      */ 
-    public static void addPhaseCompletionTasks(final Collection<SchedulerTask> tasks, final SourceCache cache, Class<TaskScheduler> schedulerType) {
+    public static void addPhaseCompletionTasks(final Collection<SchedulerTask> tasks, final SourceCache cache, Class<? extends TaskScheduler> schedulerType) {
         Parameters.notNull("task", tasks);   //NOI18N
         Parameters.notNull("cache", cache);   //NOI18N
         List<Request> requests = new ArrayList<Request> ();
@@ -244,7 +244,7 @@ public class TaskProcessor {
      * @param source to which the task it bound
      * todo: wrong!!!!!!!
      */
-    public static void rescheduleTasks(final Collection<SchedulerTask> tasks, final Source source, final Class<TaskScheduler> schedulerType) {
+    public static void rescheduleTasks(final Collection<SchedulerTask> tasks, final Source source, final Class<? extends TaskScheduler> schedulerType) {
         Parameters.notNull("task", tasks);
         Parameters.notNull("source", source);
         synchronized (INTERNAL_LOCK) {
@@ -624,7 +624,7 @@ public class TaskProcessor {
         private final SchedulerTask task;
         private final SourceCache cache;
         private final boolean reschedule;
-        private Class<TaskScheduler> schedulerType;
+        private Class<? extends TaskScheduler> schedulerType;
         
         /**
          * Creates new Request
@@ -632,7 +632,7 @@ public class TaskProcessor {
          * @param source on which the task should be performed
          * @param reschedule when true the task is periodic request otherwise one time request
          */
-        public Request (final SchedulerTask task, final SourceCache cache, final boolean reschedule, Class<TaskScheduler> schedulerType) {
+        public Request (final SchedulerTask task, final SourceCache cache, final boolean reschedule, Class<? extends TaskScheduler> schedulerType) {
             assert task != null;
             this.task = task;
             this.cache = cache;

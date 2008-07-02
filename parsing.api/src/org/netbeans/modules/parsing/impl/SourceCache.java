@@ -61,6 +61,7 @@ import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.netbeans.modules.parsing.spi.TaskScheduler;
 import org.openide.util.Lookup;
 
 
@@ -216,7 +217,7 @@ public class SourceCache {
     //GuardedBy(this)
     private final Set<EmbeddingProvider> upToDateEmbeddingProviders = new HashSet<EmbeddingProvider> ();
     
-    synchronized void refresh (EmbeddingProvider embeddingProvider, Class schedulerType) {
+    synchronized void refresh (EmbeddingProvider embeddingProvider, Class<? extends TaskScheduler> schedulerType) {
         List<Embedding> embeddings = embeddingProvider.getEmbeddings (getSnapshot ());
         List<Embedding> oldEmbeddings = embeddingProviderToEmbedings.get (embeddingProvider);
         updateEmbeddings (embeddings, oldEmbeddings, embeddingProvider, true, schedulerType);
@@ -231,7 +232,7 @@ public class SourceCache {
             EmbeddingProvider
                             embeddingProvider,
             boolean         updateTasks,
-            Class           schedulerType
+            Class<? extends TaskScheduler>           schedulerType
     ) {
         if (oldEmbeddings != null && embeddings.size () == oldEmbeddings.size ()) {
             for (int i = 0; i < embeddings.size (); i++) {
@@ -294,7 +295,7 @@ public class SourceCache {
         return tasks;
     }
     
-    public void scheduleTasks (Class schedulerType) {
+    public void scheduleTasks (Class<? extends TaskScheduler> schedulerType) {
         final List<SchedulerTask> reschedule = new ArrayList<SchedulerTask> ();
         final List<SchedulerTask> add = new ArrayList<SchedulerTask> ();
         synchronized (this) {
