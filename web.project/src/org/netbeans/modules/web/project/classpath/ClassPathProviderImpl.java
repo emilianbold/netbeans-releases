@@ -102,7 +102,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         SOURCE_RUNTIME,
         TEST_SOURCE_RUNTIME,
         BOOT,
-        PLATFORM }
+        PLATFORM,
+        PACKAGED, // #131785
+    }
     
     public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots, SourceRoots testSourceRoots) {
         this.helper = helper;
@@ -223,6 +225,21 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return null;
     }
     
+    // packaged classpath = compilation time classpath - J2EE platform classpath
+    private synchronized ClassPath getPackagedClasspath(FileType type) {        
+        if (type == FileType.SOURCE || type == FileType.CLASS || type == FileType.WEB_SOURCE) {
+            // treat all these types as source:
+            ClassPath cp = cache.get(ClassPathCache.PACKAGED);
+            if (cp == null) {
+                cp = ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, new String[] {"javac.classpath"})); // NOI18N
+                cache.put(ClassPathCache.PACKAGED, cp);
+            }
+            return cp;
+        }
+        return null;
+    }
+    
     private synchronized ClassPath getRunTimeClasspath(FileType type) {
         if (type == FileType.SOURCE || type == FileType.CLASS || 
             type == FileType.CLASS_IN_JAR || type == FileType.WEB_SOURCE)
@@ -321,6 +338,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             return getSourcepath(fileType);
         } else if (type.equals(ClassPath.BOOT)) {
             return getBootClassPath();
+        } else if (type.equals("classpath/packaged")) { // NOI18N
+            return getPackagedClasspath(fileType);
         } else {
             return null;
         }
