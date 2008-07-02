@@ -106,8 +106,6 @@ public class SVGSpinner extends SVGComponent implements DataListener {
     
     private static final String UP              = "up_button";      // NOI18N
     private static final String DOWN            = "down_button";    // NOI18N
-    private static final String PRESSED         = "pressed";        // NOI18N
-    private static final String RELEASED        = "released";       // NOI18N
     private static final String EDITOR          = "editor";         // NOI18N
     
     public SVGSpinner( SVGForm form, String elemId ) {
@@ -115,18 +113,7 @@ public class SVGSpinner extends SVGComponent implements DataListener {
         
         myUILock = new Object();
         
-        myUpButton = getElementByMeta( getElement(), TYPE, UP);
-        myDownButton = getElementByMeta( getElement(), TYPE , DOWN);
-        
-        myUpPressedAnimation = (SVGAnimationElement) getElementByMeta(myUpButton, 
-                TYPE , PRESSED );
-        myUpReleasedAnimation = (SVGAnimationElement) getElementByMeta(myUpButton, 
-                TYPE, RELEASED);
-        
-        myDownPressedAnimation = (SVGAnimationElement) getElementByMeta(myDownButton, 
-                TYPE , PRESSED);
-        myDownReleasedAnimation = (SVGAnimationElement) getElementByMeta(myDownButton, 
-                TYPE, RELEASED );
+        initButtons();
         
         myInputHandler = new SpinnerInputHandler();
 
@@ -135,7 +122,7 @@ public class SVGSpinner extends SVGComponent implements DataListener {
                 (SVGLocatableElement)getElementByMeta( getElement(), TYPE, 
                         EDITOR)  , myUILock )); 
     }
-    
+
     public void focusGained() {
         super.focusGained();
         getEditor().focusGained();
@@ -193,31 +180,61 @@ public class SVGSpinner extends SVGComponent implements DataListener {
         }
     }
     
+    private void initButtons() {
+        myUpButton = getNestedElementByMeta( getElement(), TYPE, UP);
+        myDownButton = getNestedElementByMeta( getElement(), TYPE , DOWN);
+        
+        myUpPressedAnimation = (SVGAnimationElement)myUpButton.getFirstElementChild();
+        myDownPressedAnimation = (SVGAnimationElement) myDownButton.
+            getFirstElementChild();
+        
+        myUpReleasedAnimation = (SVGAnimationElement)myUpPressedAnimation.
+            getNextElementSibling();
+        myDownReleasedAnimation = (SVGAnimationElement)myDownPressedAnimation.
+            getNextElementSibling();
+    }
+    
     private void releaseUpButton() {
-        if (myUpReleasedAnimation != null) {
-            myUpReleasedAnimation.beginElementAt(0);
-        }
+        getForm().invokeLaterSafely(new Runnable() {
+            public void run() {
+                if (myUpReleasedAnimation != null) {
+                    myUpReleasedAnimation.beginElementAt(0);
+                }
+            }
+        });
         getModel().setValue( getModel().getNextValue() );
     }
     
-    private void pressDownButton() { 
-        if (myDownPressedAnimation != null) {
-            myDownPressedAnimation.beginElementAt(0);
-        }
+    private void pressDownButton() {
+        getForm().invokeLaterSafely(new Runnable() {
+            public void run() {
+                if (myDownPressedAnimation != null) {
+                    myDownPressedAnimation.beginElementAt(0);
+                }
+            }
+        });
         form.activate(this);
     }
     
-    private  void pressUpButton() { 
-        if (myUpPressedAnimation != null) {
-            myUpPressedAnimation.beginElementAt(0);
-        }
+    private void pressUpButton() {
+        getForm().invokeLaterSafely(new Runnable() {
+            public void run() {
+                if (myUpPressedAnimation != null) {
+                    myUpPressedAnimation.beginElementAt(0);
+                }
+            }
+        });
         form.activate(this);
     }
     
     private void releaseDownButton() {
-        if (myDownReleasedAnimation != null) {
-            myDownReleasedAnimation.beginElementAt(0);
-        }
+        getForm().invokeLaterSafely(new Runnable() {
+            public void run() {
+                if (myDownReleasedAnimation != null) {
+                    myDownReleasedAnimation.beginElementAt(0);
+                }
+            }
+        });
         getModel().setValue( getModel().getPreviousValue() );
     }
     
@@ -384,17 +401,17 @@ public class SVGSpinner extends SVGComponent implements DataListener {
 
     private InputHandler myInputHandler;
     
-    private final SVGElement myUpButton;
-    private final SVGElement myDownButton;
+    private SVGElement myUpButton;
+    private SVGElement myDownButton;
     
     private SVGComponent myEditor;
     
     private SVGSpinnerModel myModel;
     
-    private final SVGAnimationElement myUpPressedAnimation;
-    private final SVGAnimationElement myUpReleasedAnimation;
-    private final SVGAnimationElement myDownPressedAnimation;
-    private final SVGAnimationElement myDownReleasedAnimation;
+    private SVGAnimationElement myUpPressedAnimation;
+    private SVGAnimationElement myUpReleasedAnimation;
+    private SVGAnimationElement myDownPressedAnimation;
+    private SVGAnimationElement myDownReleasedAnimation;
     
     private boolean isUIAction;
     private boolean isInternallyEdited;

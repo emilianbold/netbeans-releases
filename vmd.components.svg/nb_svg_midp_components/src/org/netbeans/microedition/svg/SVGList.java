@@ -92,7 +92,7 @@ public class SVGList extends SVGComponent implements DataListener {
                 getElement(), TYPE, SVGDefaultListCellRenderer.BOUNDS) ;
         
         
-        hiddenText.setTrait( TRAIT_VISIBILITY, TR_VALUE_HIDDEN);
+        //setTraitSafely( hiddenText, TRAIT_VISIBILITY, TR_VALUE_HIDDEN);
         
         myCount = (int)(bounds.getBBox().getHeight()/height);
         
@@ -183,8 +183,8 @@ public class SVGList extends SVGComponent implements DataListener {
     }
 
     private void removeContent() {
-        SVGLocatableElement content = (SVGLocatableElement)
-        SVGComponent.getElementByMeta(getElement(), TYPE, SVGList.CONTENT );    
+        SVGLocatableElement content = (SVGLocatableElement)getElementByMeta(
+                getElement(), TYPE, SVGList.CONTENT );    
         Node node = content.getFirstElementChild();
         while ( node != null ){
             Element next = null;
@@ -193,6 +193,12 @@ public class SVGList extends SVGComponent implements DataListener {
             }
             if ( !MetaData.METADATA.equals(node.getLocalName())){
                 content.removeChild( node );
+            }
+            else if ( node instanceof SVGElement ){
+                String display = ((SVGElement)node).getTrait( MetaData.DISPLAY );
+                if ( !MetaData.NONE.equals( display )){
+                    content.removeChild( node );
+                }
             }
             node = next;
         }

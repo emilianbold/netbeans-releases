@@ -145,17 +145,10 @@ public class SVGComboBox extends SVGComponent implements
     private static final String BUTTON          = "button";         // NOI18N
     private static final String LIST            = "list";           // NOI18N
     
-    private static final String PRESSED         = "pressed";        // NOI18N
-    private static final String RELEASED        = "released";       // NOI18N
-
     public SVGComboBox( SVGForm form, String elemId ) {
         super(form, elemId);
         
-        myButton =  getElementByMeta( wrapperElement, TYPE , BUTTON);
-        myPressedAnimation = (SVGAnimationElement) getElementByMeta(myButton, 
-                TYPE , PRESSED );
-        myReleasedAnimation = (SVGAnimationElement) getElementByMeta(myButton, 
-                TYPE , RELEASED );
+        initButton();
         
         Element root = form.getDocument().getDocumentElement();
         SVGElement listElement = getElementByMeta( (SVGElement)root , 
@@ -254,6 +247,14 @@ public class SVGComboBox extends SVGComponent implements
     public void actionPerformed( SVGComponent comp ) {
         setSelected( getEditor().getItem());
         fireActionPerformed();
+    }
+    
+
+    private void initButton() {
+        myButton =  getNestedElementByMeta( wrapperElement, TYPE , BUTTON);
+        myPressedAnimation = (SVGAnimationElement) myButton.getFirstElementChild();
+        myReleasedAnimation = (SVGAnimationElement) 
+            myPressedAnimation.getNextElementSibling();
     }
     
     private void setSelected( Object value ){
@@ -375,7 +376,9 @@ public class SVGComboBox extends SVGComponent implements
                         ret = myList.getInputHandler().handleKeyPress( myList, keyCode);
                     }
                     else {
-                        ret = true;
+                        SVGComponent component = getEditor().getEditorComponent();
+                        return component.getInputHandler().handleKeyPress( 
+                                component, keyCode);
                     }
                 }
                 else {
@@ -409,15 +412,22 @@ public class SVGComboBox extends SVGComponent implements
                     ret = true;
                 }
                 else if( keyCode == FIRE ){
-                    hideList();
-                    synchronized ( myUILock ) {
-                        isUIAction = true;
-                        getModel().setSelectedIndex( myIndex );
+                    if (isListShown) {
+                        hideList();
+                        synchronized (myUILock) {
+                            isUIAction = true;
+                            getModel().setSelectedIndex(myIndex);
+                        }
+                        myList.getSelectionModel().addSelectionInterval(
+                                myIndex, myIndex);
+                        setItem();
+                        fireActionPerformed();
                     }
-                    myList.getSelectionModel().addSelectionInterval(
-                            myIndex, myIndex);
-                    setItem();
-                    fireActionPerformed();
+                    else {
+                        SVGComponent component = getEditor().getEditorComponent();
+                        return component.getInputHandler().handleKeyRelease( 
+                                component, keyCode);
+                    }
                 }
                 else {
                     SVGComponent component = getEditor().getEditorComponent();
@@ -447,7 +457,7 @@ public class SVGComboBox extends SVGComponent implements
                 }
             });*/
         }
-
+        
         /* (non-Javadoc)
          * @see org.netbeans.microedition.svg.SVGComboBox.ComboBoxEditor#getEditorCompoenent()
          */
@@ -480,9 +490,9 @@ public class SVGComboBox extends SVGComponent implements
     private ComboBoxEditor myEditor;
     
     private InputHandler myInputHandler;
-    private final SVGElement myButton;
-    private final SVGAnimationElement myPressedAnimation;
-    private final SVGAnimationElement myReleasedAnimation;
+    private SVGElement myButton;
+    private SVGAnimationElement myPressedAnimation;
+    private SVGAnimationElement myReleasedAnimation;
     
     private final SVGList myList;
     
