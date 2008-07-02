@@ -1,7 +1,8 @@
+// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +25,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,26 +39,27 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+//</editor-fold>
 
-package org.netbeans.modules.j2ee.sun.ide.j2ee;
+package org.netbeans.modules.glassfish.eecommon.api;
 
+import org.netbeans.modules.glassfish.eecommon.Status;
 import java.util.Vector;
 
+import javax.enterprise.deploy.shared.ActionType;
+import javax.enterprise.deploy.shared.CommandType;
+import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 
 import org.openide.util.RequestProcessor;
-//The tomcat team will split the tomcat module in 2, so that this type of behaviour can be shared
-// between web/app server plugins. This is really a shared utility class.
-//
+
 /**
  * This is a utility class that can be used by ProgressObject's,
  * You can use an instance of this class as a member field
  * of your ProgressObject and delegate various work to it.
- *
- * @@author  Radim Kubacki
  */
 public class ProgressEventSupport {
 
@@ -73,7 +75,7 @@ public class ProgressEventSupport {
     /**
      * Constructs a <code>ProgressEventSupport</code> object.
      *
-     * @@param o Source for any events.
+     * @param o Source for any events.
      */
     public ProgressEventSupport (Object o) {
         if (o == null) {
@@ -134,12 +136,16 @@ public class ProgressEventSupport {
     
     /** Returns last DeploymentStatus notified by {@@link fireHandleProgressEvent}
      */
-    public DeploymentStatus getDeploymentStatus () {
+    public synchronized DeploymentStatus getDeploymentStatus () {
         return status;
     }
 
     public synchronized void clearProgressListener() {
         listeners = null;
+    }
+    
+    public static DeploymentStatus createStatus(ActionType type, CommandType command, String msg, StateType state) {
+        return new Status(type,command,msg,state);
     }
 }
 

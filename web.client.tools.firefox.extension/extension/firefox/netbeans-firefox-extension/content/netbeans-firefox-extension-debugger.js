@@ -124,7 +124,8 @@
         suspendOnExceptions: false,
         suspendOnErrors: false,
         suspendOnDebuggerKeyword: true,
-        suspendOnAssert: false
+        suspendOnAssert: false,
+        http_monitor:false
     };
 
     var jsDebuggerService;
@@ -305,7 +306,10 @@
                     if ( context == currentFirebugContext && currentFirebugContext ) {
                         releaseFirebugContext = true;
                         netBeansDebugger.onDestroy(netBeansDebugger);
-                        NetBeans.NetMonitor.destroyMonitor(context, browser);
+                        
+                        if (features["http_monitor"] == true ) {
+                          NetBeans.NetMonitor.destroyMonitor(context, browser);
+                        }
                     }
                 },
 
@@ -316,7 +320,13 @@
                         currentFirebugContext = context;
                         releaseFirebugContext = false;
                         netBeansDebugger.onInit(netBeansDebugger);
-                        NetBeans.NetMonitor.initMonitor(context, browser,socket);
+                        
+                        // We would be better off using the Firefox preferences so we can observe and turn on and off
+                        // http monitor as needed rather than only at the beginning.
+                        if (features["http_monitor"] == true) {
+                          NetBeans.NetMonitor.initMonitor(context, browser,socket);
+
+                        } 
                     }
                 },
 
@@ -506,6 +516,8 @@
         }
         var cmd = matches[1];
         transactionId = matches[2];
+        
+        //NetBeans.Logger.log("debugger.commandRegularExpress cmd:" +cmd);
 
         if (cmd == "feature_set") {
             feature_set(matches[3]);
@@ -561,7 +573,7 @@
             onEval(transactionId, matches[3]);
         } else if (cmd == "source") {
             source(transactionId, matches[3]);
-        } else if (cmd == "stop") {
+        }   else if (cmd == "stop") {
             terminate();
         }
         transactionId = -1;
@@ -593,6 +605,7 @@
             return;
         }
         if (matches[1] in features) {
+            //NetBeans.Logger.log("debugger.feature_set - Feature: " + matches[1]);
             if ( typeof(features[matches[1]]) == 'boolean' ) {
                 features[matches[1]] = (matches[2] == 'true');
             } else {

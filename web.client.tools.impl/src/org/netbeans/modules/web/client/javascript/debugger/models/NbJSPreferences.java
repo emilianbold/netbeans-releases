@@ -58,6 +58,7 @@ public final class NbJSPreferences {
     private static final boolean SUSPEND_ON_EXCEPTIONS_DEFAULT = false;
     private static final boolean SUSPEND_ON_ERRORS_DEFAULT = false;
     private static final boolean SUSPEND_ON_DEBUGGER_KEYWORD_DEFAULT = true;
+    private static final boolean HTTP_MONITOR_DEFAULT = true;
     
     
     
@@ -70,6 +71,7 @@ public final class NbJSPreferences {
     public static final String PROP_SUSPEND_ON_EXCEPTIONS = "exceptionsSuspend"; // NOI18N
     public static final String PROP_SUSPEND_ON_ERRORS = "errorsSuspend"; // NOI18N
     public static final String PROP_SUSPEND_ON_DEBUGGER_KEYWORD = "debuggerKeywordSuspend"; // NOI18N
+    public static final String PROP_HTTP_MONITOR = "http_monitor";
     
     public static NbJSPreferences getInstance() {
         if (INSTANCE == null) {
@@ -115,6 +117,7 @@ public final class NbJSPreferences {
         getPreferences().putBoolean(PROP_SUSPEND_ON_FIRST_LINE, b);
     }
     
+    
     public boolean getSuspendOnFirstLine() {
         return getPreferences().getBoolean(PROP_SUSPEND_ON_FIRST_LINE, SUSPEND_ON_FIRST_LINE_DEFAULT);
     }
@@ -125,6 +128,10 @@ public final class NbJSPreferences {
     
     public boolean getSuspendOnExceptions() {
         return getPreferences().getBoolean(PROP_SUSPEND_ON_EXCEPTIONS, SUSPEND_ON_EXCEPTIONS_DEFAULT);
+    }
+    
+    public void setHttpMonitor(boolean b) {
+        getPreferences().putBoolean(PROP_HTTP_MONITOR, b);
     }
     
     public void setSuspendOnErrors(boolean b) {
@@ -141,6 +148,10 @@ public final class NbJSPreferences {
     
     public boolean getSuspendOnDebuggerKeyword() {
         return getPreferences().getBoolean(PROP_SUSPEND_ON_DEBUGGER_KEYWORD, SUSPEND_ON_DEBUGGER_KEYWORD_DEFAULT);
+    } 
+    
+    public boolean getHttpMonitor() {
+        return getPreferences().getBoolean(PROP_HTTP_MONITOR, HTTP_MONITOR_DEFAULT);
     }    
      
     public void addPreferencesChangeListener(PreferenceChangeListener listener) {
