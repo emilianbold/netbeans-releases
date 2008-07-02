@@ -300,8 +300,10 @@ introduced by support for multiple source roots. -jglick
                         <available file="nbproject/jaxws-build.xml"/>
                     </and>
                 </condition>
-                
-                <!-- COS feature -->
+            </target>
+            
+            <!-- COS feature - used in run-deploy -->
+            <target name="-init-cos">
                 <condition>
                     <xsl:attribute name="property">ensure.built.source.roots</xsl:attribute>
                     <xsl:attribute name="value">
@@ -310,7 +312,7 @@ introduced by support for multiple source roots. -jglick
                         </xsl:call-template>
                     </xsl:attribute>
                     <istrue value="${{deploy.on.save}}"/>
-                </condition>
+                </condition>            
             </target>
             
             <target name="-post-init">
@@ -1156,7 +1158,7 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="run-deploy">
-                <xsl:attribute name="depends">init,compile,compile-jsps,-do-compile-single-jsp,-pre-dist,-do-tmp-dist-with-manifest,-do-tmp-dist-without-manifest,-pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,-post-run-deploy</xsl:attribute>
+                <xsl:attribute name="depends">init,-init-cos,compile,compile-jsps,-do-compile-single-jsp,-pre-dist,-do-tmp-dist-with-manifest,-do-tmp-dist-without-manifest,-pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,-post-run-deploy</xsl:attribute>
                 <nbjpdaappreloaded />
             </target>
             

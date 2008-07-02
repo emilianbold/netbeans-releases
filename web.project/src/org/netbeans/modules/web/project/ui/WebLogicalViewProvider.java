@@ -336,7 +336,6 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
             actions.add(CommonProjectActions.newFileAction());
             actions.add(null);
             boolean cos = Boolean.parseBoolean((String) project.getWebProjectProperties().get(WebProjectProperties.DEPLOY_ON_SAVE));
-            
             if (!cos) {
                 actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_BUILD, bundle.getString( "LBL_BuildAction_Name" ), null )); // NOI18N
             }

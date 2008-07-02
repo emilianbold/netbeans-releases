@@ -235,9 +235,11 @@ is divided into following sections:
                         <isset property="jaxws.endorsed.dir"/>
                         <available file="nbproject/jaxws-build.xml"/>
                     </and>
-                </condition>
-                
-                <!-- COS feature -->
+                </condition>             
+            </target>
+            
+            <!-- COS feature - used in run-deploy -->
+            <target name="-init-cos">
                 <condition>
                     <xsl:attribute name="property">ensure.built.source.roots</xsl:attribute>
                     <xsl:attribute name="value">
@@ -246,7 +248,7 @@ is divided into following sections:
                         </xsl:call-template>
                     </xsl:attribute>
                     <istrue value="${{deploy.on.save}}"/>
-                </condition>             
+                </condition>         
             </target>
             
             <target name="-post-init">
@@ -922,7 +924,7 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="run-deploy">
-                <xsl:attribute name="depends">init,-init-deploy,compile,library-inclusion-in-archive,dist,pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,post-run-deploy</xsl:attribute>
+                <xsl:attribute name="depends">init,-init-cos,-init-deploy,compile,library-inclusion-in-archive,dist,pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,post-run-deploy</xsl:attribute>
                 <nbjpdaappreloaded />
             </target>
             
