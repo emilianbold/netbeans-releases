@@ -40,12 +40,12 @@
  */
 package org.openide.util.lookup;
 
-import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.AbstractLookup.Pair;
 
 import java.lang.ref.WeakReference;
 
 import java.util.*;
+import java.util.concurrent.Executor;
 
 
 /** A special content implementation that can be passed to AbstractLookup
@@ -71,6 +71,14 @@ public final class InstanceContent extends AbstractLookup.Content {
     public InstanceContent() {
     }
 
+    /** Creates a content associated with an executor to handle dispatch
+     * of changes.
+     * @param notifyIn the executor to notify changes in
+     * @since  7.16
+     */
+    public InstanceContent(Executor notifyIn) {
+        super(notifyIn);
+    }
     /** The method to add instance to the lookup with.
      * @param inst instance
      */
@@ -190,6 +198,7 @@ public final class InstanceContent extends AbstractLookup.Content {
             return obj;
         }
 
+        @Override
         public boolean equals(Object o) {
             if (o instanceof SimpleItem) {
                 return obj.equals(((SimpleItem) o).obj);
@@ -198,6 +207,7 @@ public final class InstanceContent extends AbstractLookup.Content {
             }
         }
 
+        @Override
         public int hashCode() {
             return obj.hashCode();
         }
@@ -292,6 +302,7 @@ public final class InstanceContent extends AbstractLookup.Content {
             return converted;
         }
 
+        @Override
         public boolean equals(Object o) {
             if (o instanceof ConvertingItem) {
                 return obj.equals(((ConvertingItem) o).obj);
@@ -300,6 +311,7 @@ public final class InstanceContent extends AbstractLookup.Content {
             }
         }
 
+        @Override
         public int hashCode() {
             return obj.hashCode();
         }

@@ -45,35 +45,87 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
+import java.util.logging.Level;
+import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
-public class FolderLookupTest extends NbTestCase {
-    
+public class FolderLookupTest extends NbTestCase implements LookupListener {
+    private Lookup.Result<?> res;
+    private boolean bad;
+    private String threadName = "";
+
     public FolderLookupTest(java.lang.String testName) {
         super(testName);
     }
-    
+
     static {
         System.setProperty ("org.openide.util.Lookup", GLkp.class.getName());
     }
-    
+
+    public static Test suite() {
+        Test t = null;
+        t = new NbTestSuite(FolderLookupTest.class);
+        if (t == null) {
+            t = new FolderLookupTest("testFolderLookupIsUpdatedQuicklyForSubfolders");
+        }
+        return t;
+    }
+
+    @Override
+    protected Level logLevel() {
+        return null;// Level.FINE;
+    }
+
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
     }
-    
-    /** Test of the lookup method. Creates a file under Services directory 
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        if (res != null) {
+            res.allItems();
+            FolderLookup.ProxyLkp.DISPATCH.waitFinished();
+            if (threadName.contains("Folder") || threadName.length() == 0) {
+                fail("Wrong thread name: " + threadName);
+            }
+        }
+    }
+
+
+
+    private void addListener(Lookup l) {
+        bad = true;
+        assertNull("No result yet", res);
+        res = l.lookupResult(Object.class);
+        res.addLookupListener(this);
+        res.allItems();
+    }
+
+    public void resultChanged(LookupEvent ev) {
+        if (threadName.length() == 0) {
+            threadName = Thread.currentThread().getName();
+        } else {
+            threadName = threadName + ", " + Thread.currentThread().getName();
+        }
+    }
+
+    /** Test of the lookup method. Creates a file under Services directory
      * and tries to lookup it. The object should be immediatelly found.
      *
      */
@@ -81,15 +133,15 @@ public class FolderLookupTest extends NbTestCase {
         String fsstruct [] = new String [] {
             "AA/",
         };
-        
+
         TestUtilHid.destroyLocalFileSystem (getName());
         FileSystem lfs = TestUtilHid.createLocalFileSystem (getWorkDir(), fsstruct);
 
         FileObject bb = lfs.findResource("/AA");
-        
+
         DataFolder folder = DataFolder.findFolder (bb);
-        
-        
+
+
         Lookup lookup = new org.openide.loaders.FolderLookup (folder).getLookup ();
         try {
             checkTheLookup (lookup, folder);
@@ -100,17 +152,19 @@ public class FolderLookupTest extends NbTestCase {
 
 
    private void checkTheLookup (Lookup lookup, DataFolder folder) throws Exception {
+       addListener(lookup);
+
         Class toFind = java.util.Dictionary.class;
         Class toCreate = java.util.Hashtable.class;
-        
+
         Object wrongResult = lookup.lookup (toFind);
         DataObject obj = InstanceDataObject.create (folder, "Test", toCreate);
-        
+
         if (lookup.lookup (toFind) == null) {
             fail ("Lookup has not found the class");
         }
         obj.delete ();
-        
+
         if (lookup.lookup (toFind) != null) {
             fail ("Still it is possible to find the class");
         }
@@ -119,10 +173,10 @@ public class FolderLookupTest extends NbTestCase {
             // to clean after itself
             fail ("There is uncleaned environment: " + wrongResult);
         }
-        
+
     }
-   
-    /** Test of the lookup method. Creates files under different levels of directory 
+
+    /** Test of the lookup method. Creates files under different levels of directory
      * hierarchy and tries to lookup it. The objects should be immediatelly found.
      *
      */
@@ -130,21 +184,23 @@ public class FolderLookupTest extends NbTestCase {
         String fsstruct [] = new String [] {
             "AA/",
         };
-        
+
         TestUtilHid.destroyLocalFileSystem (getName());
         FileSystem lfs = TestUtilHid.createLocalFileSystem (getWorkDir(), fsstruct);
 
         FileObject bb = lfs.findResource("/AA");
         assertNotNull(bb + " not found", bb);
-        
+
         DataFolder folder = DataFolder.findFolder (bb);
-        
-        
+
+
         Lookup lookup = new org.openide.loaders.FolderLookup (folder).getLookup ();
         checkTheLookupForSubfolders (lookup, folder);
     }
-    
+
     private void checkTheLookupForSubfolders (Lookup lookup, DataFolder folder) throws Exception {
+        addListener(lookup);
+
         Class toFind = java.awt.Component.class;
         Class toCreate = javax.swing.JButton.class;
 
@@ -154,12 +210,13 @@ public class FolderLookupTest extends NbTestCase {
         DataObject obj = InstanceDataObject.create (folder, "Test", toCreate);
         assertNotNull(obj.getPrimaryFile() + " not found",
             folder.getPrimaryFile().getFileSystem().findResource(obj.getPrimaryFile().getPath()));
-        assertEquals("just one Component in " + res.allInstances(), 1, res.allInstances().size());
+        Collection all = res.allInstances();
+        assertEquals("just one Component in " + all, 1, all.size());
 
         DataFolder subfolder = DataFolder.create(folder, "BB");
         assertNotNull(subfolder.getPrimaryFile() + " not found",
             folder.getPrimaryFile().getFileSystem().findResource(subfolder.getPrimaryFile().getPath()));
-        
+
         obj = InstanceDataObject.create (subfolder, "Test", toCreate);
         assertNotNull(obj.getPrimaryFile() + " not found",
             folder.getPrimaryFile().getFileSystem().findResource(obj.getPrimaryFile().getPath()));
@@ -172,24 +229,25 @@ public class FolderLookupTest extends NbTestCase {
         String fsstruct [] = new String [] {
             "AA/",
         };
-        
+
         TestUtilHid.destroyLocalFileSystem (getName());
         FileSystem lfs = TestUtilHid.createLocalFileSystem (getWorkDir(), fsstruct);
 
         FileObject bb = lfs.findResource("/AA");
-        
+
         DataFolder folder = DataFolder.findFolder (bb);
 
-        InstanceDataObject obj = InstanceDataObject.create (folder, null, ALkp.class);
-        
+
         Lookup lookup = new org.openide.loaders.FolderLookup (folder).getLookup ();
-        
+        addListener(lookup);
+
+        InstanceDataObject obj = InstanceDataObject.create (folder, null, ALkp.class);
         if (lookup.lookup (Integer.class) == null) {
             fail ("Integer not found in delegating lookup");
         }
-        
+
     }
-    
+
     public void testFindInstanceNotCreatedByYouIssue24986 () throws Exception {
         String fsstruct [] = new String [] {
             "AA/",
@@ -198,9 +256,9 @@ public class FolderLookupTest extends NbTestCase {
         FileSystem lfs = TestUtilHid.createLocalFileSystem (getWorkDir(), fsstruct);
 
         FileObject bb = lfs.findResource("/AA");
-        
+
         String inst = "My instnace";
-        
+
         DataFolder folder = DataFolder.findFolder (bb);
         FileObject fo = FileUtil.createData (folder.getPrimaryFile (), "test.ser");
         FileLock lock = fo.lock ();
@@ -215,16 +273,16 @@ public class FolderLookupTest extends NbTestCase {
         assertEquals ("The instance is created", inst, obj.instanceCreate ());
         assertNotSame ("But is not the same", inst, obj.instanceCreate ());
         inst = (String)obj.instanceCreate ();
-        
+
         Lookup lookup = new org.openide.loaders.FolderLookup (folder).getLookup ();
-        
+
         Lookup.Template t = new Lookup.Template (null, null, inst);
         Collection found = lookup.lookup (t).allInstances ();
-        
+
         assertEquals ("Lookup finds it as well", 1, found.size ());
         assertEquals ("Lookup finds it as well", inst, found.iterator ().next());
     }
-    
+
     public void testDeadlockWhileWaitingForFolderRecognizerToFinish50768 () throws Exception {
         /*
          * Used to produce deadlock between main thread and folder recognizer.
@@ -291,12 +349,12 @@ public class FolderLookupTest extends NbTestCase {
     at org.openide.util.lookup.ProxyLookup.lookup(ProxyLookup.java:140)
     at org.openide.loaders.FolderLookupTest.testDeadlockWhileWaitingForFolderRecognizerToFinish50768(FolderLookupTest.java:309)
          */
-        
-        
+
+
         String fsstruct [] = new String [] {
             "AA/X/Y/Z//java-lang-StringBuffer.instance",
         };
-        
+
         TestUtilHid.destroyLocalFileSystem (getName());
         FileSystem lfs = TestUtilHid.createLocalFileSystem (getWorkDir(), fsstruct);
         Repository.getDefault ().addFileSystem (lfs);
@@ -307,25 +365,25 @@ public class FolderLookupTest extends NbTestCase {
         final Thread t = Thread.currentThread ();
         DataLoaderPool pool = DataLoaderPool.getDefault ();
         assertNotNull (pool);
-        
-        
-        
+
+
+
         class R implements OperationListener, FolderListListener {
             public int cnt;
             public int created;
             public Exception ex;
             public Lookup lookup;
             public boolean doWrongThing;
-            
+
             /* Empty implementation */
             public void operationPostCreate (OperationEvent ev) {
                 if (doWrongThing && file.equals (ev.getObject ().getPrimaryFile ())) {
                     assertSame ("The right thread", t, Thread.currentThread ());
-                    
+
                     doWrongThing = false;
                     cnt++;
-                    
-                    
+
+
                     try {
                         synchronized (this) {
                             if (!alreadyBlocked) {
@@ -337,8 +395,11 @@ public class FolderLookupTest extends NbTestCase {
                     } catch (Exception ex) {
                         this.ex = ex;
                     }
-                    // and this will deadlock
-                    lookup.lookup (String.class);
+                    Lookup l = lookup;
+                    if (l != null) {
+                        // and this will deadlock
+                        lookup.lookup (String.class);
+                    }
                 }
             }
 
@@ -365,7 +426,7 @@ public class FolderLookupTest extends NbTestCase {
             /* Empty implementation */
             public void operationCreateFromTemplate (OperationEvent.Copy ev) {
             }
-            
+
             private boolean alreadyBlocked;
             public synchronized void process (DataObject obj, java.util.List arr) {
                 if (!alreadyBlocked) {
@@ -382,58 +443,58 @@ public class FolderLookupTest extends NbTestCase {
                 notifyAll ();
             }
         }
-        
+
         R r = new R ();
         pool.addOperationListener (r);
-        
+
         r.lookup = new org.openide.loaders.FolderLookup (folder).getLookup ();
-        
+
         Object o = r.lookup.lookup (StringBuffer.class);
         assertNotNull ("StringBuffer found", o);
-        
+
         org.openide.util.io.NbMarshalledObject mar = new org.openide.util.io.NbMarshalledObject (r.lookup);
-        
+
         DataObject obj = DataObject.find (file);
         assertEquals ("IDO", InstanceDataObject.class, obj.getClass ());
         java.lang.ref.WeakReference ref = new java.lang.ref.WeakReference (obj);
         obj = null;
         r.lookup = null;
         assertGC ("Make sure the object goes away", ref);
-        
+
         // this will block Folder Recognizer for a while
         FolderList l = FolderList.find (bb, true);
         org.openide.util.RequestProcessor.Task task = l.computeChildrenList (r);
-        
+
         r.doWrongThing = true;
         r.lookup = (Lookup)mar.get ();
-        
+
         // one of the next two lines was causing the deadlock
         o = r.lookup.lookup (StringBuffer.class);
         o = r.lookup.lookup (Runnable.class);
-        
+
         assertEquals ("Called once", 1, r.cnt);
-        
+
         if (r.ex != null) {
             throw r.ex;
         }
-        
+
         pool.removeOperationListener (r);
     }
-    
-    
+
+
     public void testDeserializationOnFolder () throws Exception {
         doDeser (true);
     }
-    
+
     public void testDeserializationOnSubFolder () throws Exception {
         doDeser (false);
     }
-    
+
     public void testGcWhenHoldingOnlyResult () throws Exception {
         String fsstruct [] = new String [] {
             "AA/BB/A.simple"
         };
-        
+
         TestUtilHid.destroyLocalFileSystem (getName());
         FileSystem lfs = TestUtilHid.createLocalFileSystem (getWorkDir(), fsstruct);
         Repository.getDefault ().addFileSystem (lfs);
@@ -445,7 +506,7 @@ public class FolderLookupTest extends NbTestCase {
         FolderLookup lkp = new FolderLookup (folder);
         Lookup.Result res = lkp.getLookup ().lookup (new Lookup.Template(Hashtable.class));
         java.lang.ref.WeakReference ref2 = new java.lang.ref.WeakReference (lkp);
-        
+
         lkp = null;
         folder = null;
         subfolder = null;
@@ -462,12 +523,12 @@ public class FolderLookupTest extends NbTestCase {
             fail("Lookup got GCed when holding only result..");
         }
     }
-    
+
     private void doDeser (boolean root) throws Exception {
         String fsstruct [] = new String [] {
             "AA/BB/A.simple"
         };
-        
+
         TestUtilHid.destroyLocalFileSystem (getName());
         FileSystem lfs = TestUtilHid.createLocalFileSystem (getWorkDir(), fsstruct);
         Repository.getDefault ().addFileSystem (lfs);
@@ -479,9 +540,9 @@ public class FolderLookupTest extends NbTestCase {
         FolderLookup lkp = new FolderLookup (folder);
         Object res = lkp.getLookup ().lookup (Hashtable.class);
         assertNotNull ("The table is obtained", res);
-        
+
         org.openide.util.io.NbMarshalledObject mar = new org.openide.util.io.NbMarshalledObject (lkp.getLookup ());
-        
+
         java.lang.ref.WeakReference ref1 = new java.lang.ref.WeakReference (subfolder);
         java.lang.ref.WeakReference ref2 = new java.lang.ref.WeakReference (lkp);
         subfolder = null;
@@ -491,7 +552,7 @@ public class FolderLookupTest extends NbTestCase {
         assertGC ("Lookup can disappear", ref1);
         assertGC ("Folder can disappear", ref2);
 
-        
+
         Lookup lookup = (Lookup)mar.get ();
         ((FolderLookup.ProxyLkp)lookup).waitFinished ();
         res = lookup.lookup (Hashtable.class);
@@ -503,29 +564,29 @@ public class FolderLookupTest extends NbTestCase {
         tmp = InstanceDataObject.create (my, null, ArrayList.class);
         res = lookup.lookup (ArrayList.class);
         assertNotNull ("array list is there", res);
-        
+
         Repository.getDefault ().removeFileSystem (lfs);
     }
-    
-    
-    
-   
-    
+
+
+
+
+
    public static class ALkp extends AbstractLookup {
        public InstanceContent ic;
-       
+
        public ALkp () {
            this (new InstanceContent ());
        }
-       
+
        private ALkp (InstanceContent ic) {
            super (ic);
            ic.add (new Integer (1));
            this.ic = ic;
        }
-       
+
    }
-   
+
    public static final class GLkp extends ProxyLookup {
        public GLkp() {
            super(new Lookup[] {
@@ -534,5 +595,5 @@ public class FolderLookupTest extends NbTestCase {
            });
        }
    }
-   
+
 }

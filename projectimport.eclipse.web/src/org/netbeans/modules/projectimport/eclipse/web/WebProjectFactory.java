@@ -56,7 +56,9 @@ import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeUpdater;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
+import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -110,7 +112,7 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         createData.setName(model.getProjectName());
         createData.setServerInstanceID(Deployment.getDefault().getServerInstanceIDs()[0]);
         createData.setJavaEEVersion("1.5");
-        createData.setSourceLevel("1.5");
+        createData.setSourceLevel(model.getSourceLevel());
         if (model.getJavaPlatform() != null) {
             createData.setJavaPlatformName(model.getJavaPlatform().getDisplayName());
         }
@@ -135,6 +137,8 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         ProjectFactorySupport.updateSourceRootLabels(model.getEclipseTestSourceRoots(), nbProject.getTestSourceRoots());
         
         ProjectFactorySupport.setupSourceExcludes(helper, model);
+
+        setupCompilerProperties(helper, model);
         
         // Make sure PCPM knows who owns this (J2SEProject will do the same later on anyway):
         if (!nbProjectDir.equals(model.getEclipseProjectFolder())) {
@@ -209,6 +213,8 @@ public class WebProjectFactory implements ProjectTypeUpdater {
                 ((WebProject)project).getAntProjectHelper(), 
                 ((WebProject)project).getReferenceHelper(), model, oldKey, newKey, importProblems);
         
+        setupCompilerProperties(((WebProject) project).getAntProjectHelper(), model);
+
         // TODO:
         // update source roots and platform and server and web root and context
         
@@ -235,4 +241,22 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         return true;
     }
     
+    private void setupCompilerProperties(AntProjectHelper helper, ProjectImportModel model) {
+        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ep.setProperty(WebProjectProperties.JAVAC_SOURCE, model.getSourceLevel());
+        ep.setProperty(WebProjectProperties.JAVAC_TARGET, model.getTargetLevel());
+        ep.setProperty(WebProjectProperties.JAVAC_DEPRECATION, Boolean.toString(model.isDeprecation()));
+        ep.setProperty(WebProjectProperties.JAVAC_COMPILER_ARG, model.getCompilerArgs());
+        String enc = model.getEncoding();
+        if (enc != null) {
+            ep.setProperty(WebProjectProperties.SOURCE_ENCODING, enc);
+        } else {
+            ep.remove(WebProjectProperties.SOURCE_ENCODING);
+        }
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        ep.setProperty(WebProjectProperties.JAVAC_DEBUG, Boolean.toString(model.isDebug()));
+        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+    }
+
 }
