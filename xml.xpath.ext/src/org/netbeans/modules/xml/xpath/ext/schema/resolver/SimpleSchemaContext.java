@@ -22,7 +22,6 @@ package org.netbeans.modules.xml.xpath.ext.schema.resolver;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
@@ -35,7 +34,8 @@ public class SimpleSchemaContext implements XPathSchemaContext {
 
     private XPathSchemaContext mParentContext;
     private SchemaCompPair mSchemaCompPair;
-    
+    private boolean lastInChain = false;
+
     /**
      * Constructs a simple schema context based on the list of 
      * SchemaComponent objects. 
@@ -184,5 +184,13 @@ public class SimpleSchemaContext implements XPathSchemaContext {
             return true;
         }
         return false;
+    }
+
+    public boolean isLastInChain() {
+        return lastInChain;
+    }
+
+    public void setLastInChain(boolean value) {
+        lastInChain = value;
     }
 }
