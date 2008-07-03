@@ -46,6 +46,8 @@ import java.text.DateFormat;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBException;
 
 /**
@@ -56,6 +58,8 @@ import org.netbeans.modules.db.dataview.meta.DBException;
  */
 public class DateType extends TimestampType {
 
+    private static Logger mLogger = Logger.getLogger(DateType.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     // DateFormat objects are not thread safe. Do not share across threads w/o synch block.
     private final DateFormat[] DATE_PARSING_FORMATS = new DateFormat[]{
         new SimpleDateFormat("yyyy-MM-dd", LOCALE),
@@ -89,11 +93,11 @@ public class DateType extends TimestampType {
             }
 
             if (dVal == null) {
-                throw new DBException("Invalid Date");
+                throw new DBException(mLoc.t("LOGR024: Invalid Date"));
             }
             cal.setTimeInMillis(dVal.getTime());
         } else {
-            throw new DBException("Invalid Date");
+               throw new DBException(mLoc.t("LOGR024: Invalid Date"));
         }
 
         // Normalize to 0 hour in default time zone.
@@ -113,7 +117,7 @@ public class DateType extends TimestampType {
             return convertToDate(value);
 
         } catch (DBException e) {
-            throw new DBException("Can't convert " + value.getClass().getName() + " " + value + ".");
+            throw new DBException(mLoc.t("LOGR025: Can't convert {0} {1} .",value.getClass().getName(),value));
         }
     }
 

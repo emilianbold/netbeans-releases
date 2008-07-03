@@ -46,6 +46,7 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
@@ -64,6 +65,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
@@ -123,6 +125,7 @@ class DataViewTableUI extends JTable {
 
         String nbBundle17 = mLoc.t("RESC017: Refresh Records");
         JMenuItem miRefreshAction = new JMenuItem(nbBundle17.substring(15));
+        miRefreshAction.setAccelerator(KeyStroke.getKeyStroke('R', InputEvent.SHIFT_DOWN_MASK));
         miRefreshAction.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -134,6 +137,7 @@ class DataViewTableUI extends JTable {
 
         String nbBundle18 = mLoc.t("RESC018: Insert Record");
         final JMenuItem miInsertAction = new JMenuItem(nbBundle18.substring(15));
+        miInsertAction.setAccelerator(KeyStroke.getKeyStroke('A', InputEvent.SHIFT_DOWN_MASK));
         miInsertAction.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -225,6 +229,7 @@ class DataViewTableUI extends JTable {
 
         String nbBundle26 = mLoc.t("RESC026: Show SQL Script for INSERT");
         final JMenuItem miInsertSQLScript = new JMenuItem(nbBundle26.substring(15));
+        miInsertSQLScript.setAccelerator(KeyStroke.getKeyStroke('I', InputEvent.SHIFT_DOWN_MASK));
         miInsertSQLScript.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -250,6 +255,7 @@ class DataViewTableUI extends JTable {
 
         String nbBundle27 = mLoc.t("RESC027: Show SQL Script for DELETE");
         final JMenuItem miDeleteSQLScript = new JMenuItem(nbBundle27.substring(15));
+        miDeleteSQLScript.setAccelerator(KeyStroke.getKeyStroke('D', InputEvent.SHIFT_DOWN_MASK));
         miDeleteSQLScript.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -274,6 +280,7 @@ class DataViewTableUI extends JTable {
 
         String nbBundle28 = mLoc.t("RESC028: Show SQL Script for UPDATE");
         final JMenuItem miCommitSQLScript = new JMenuItem(nbBundle28.substring(15));
+        miCommitSQLScript.setAccelerator(KeyStroke.getKeyStroke('U', InputEvent.SHIFT_DOWN_MASK));
         miCommitSQLScript.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {

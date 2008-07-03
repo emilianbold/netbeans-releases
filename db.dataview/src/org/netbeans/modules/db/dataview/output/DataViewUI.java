@@ -437,7 +437,6 @@ class DataViewUI extends JPanel {
         c.anchor = GridBagConstraints.FIRST_LINE_START;
         panel.add(toolbar, c);
         this.validate();
-
         return panel;
     }
 }

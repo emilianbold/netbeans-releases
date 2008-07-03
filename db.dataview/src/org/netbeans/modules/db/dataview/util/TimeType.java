@@ -45,6 +45,8 @@ import java.text.DateFormat;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBException;
 
 /**
@@ -55,6 +57,8 @@ import org.netbeans.modules.db.dataview.meta.DBException;
  */
 public class TimeType extends TimestampType {
 
+    private static Logger mLogger = Logger.getLogger(TimeType.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     // DateFormat objects are not thread safe. Do not share across threads w/o synch block.
     private final DateFormat[] TIME_PARSING_FORMATS = new DateFormat[]{
         new SimpleDateFormat("HH:mm:ss", LOCALE),
@@ -97,11 +101,11 @@ public class TimeType extends TimestampType {
             }
 
             if (dVal == null) {
-                throw new DBException("Invalid Time");
+                 throw new DBException(mLoc.t("LOGR026: Invalid Time"));
             }
             return getNormalizedTime(dVal.getTime());
         } else {
-            throw new DBException("Invalid Time");
+            throw new DBException(mLoc.t("LOGR026: Invalid Time"));
         }
     }
 
