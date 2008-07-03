@@ -71,6 +71,8 @@ public class ShowHideListCompartmentAction extends NodeAction
     public static final int OPERATIONS_COMPARTMENT = 1;
     public static final int REDEFINED_ATTR_COMPARTMENT = 2;
     public static final int REDEFINED_OPER_COMPARTMENT = 3;
+    public static final int LITERALS_COMPARTMENT = 4;
+    
     
     @Override
     public Action createContextAwareInstance(Lookup actionContext)
@@ -120,9 +122,22 @@ public class ShowHideListCompartmentAction extends NodeAction
         JMenuItem operationComp = new ShowHideMenuItem(bundle.getString("CTL_OperationsCompartment"), OPERATIONS_COMPARTMENT); // NOI18N
         JMenuItem redefinedAttrComp = new ShowHideMenuItem(bundle.getString("CTL_RedefinedAttrCompartment"), REDEFINED_ATTR_COMPARTMENT); // NOI18N
         JMenuItem redefinedOperComp = new ShowHideMenuItem(bundle.getString("CTL_RedefinedOperCompartment"), REDEFINED_OPER_COMPARTMENT); // NOI18N
+        JMenuItem literalsComp = new ShowHideMenuItem(bundle.getString("CTL_LiteralsCompartment"), LITERALS_COMPARTMENT); // NOI18N
+        
+//        //show only those submenu items which have collapsible compartments
+//        for (IPresentationElement p : getSelectedElements())
+//        {
+//            Widget w = scene.findWidget(p);
+//
+//            if (w instanceof UMLNodeWidget)
+//            {
+////                ((UMLNodeWidget)w).g
+//            }
+//        }
+        
         JMenuItem[] items = new JMenuItem[]
         {
-            attributeComp, operationComp, redefinedAttrComp, redefinedOperComp
+            attributeComp, operationComp, redefinedAttrComp, redefinedOperComp, literalsComp
         };
 
         for (int i = 0; i < items.length; i++)
@@ -133,7 +148,6 @@ public class ShowHideListCompartmentAction extends NodeAction
         }
 
         popupMenu.getMenuComponentCount();
-        // TODO: sub menu enabling logic
         return popupMenu;
     }
     
@@ -215,8 +229,11 @@ public class ShowHideListCompartmentAction extends NodeAction
                      showHideCompartment(UMLNodeWidget.REDEFINED_ATTR_COMPARTMENT);
                      break;
                 case REDEFINED_OPER_COMPARTMENT:
-                     showHideCompartment(UMLNodeWidget.REDEFINED_OPER_COMPARTMENT);
-                     break;
+                    showHideCompartment(UMLNodeWidget.REDEFINED_OPER_COMPARTMENT);
+                    break;
+                case LITERALS_COMPARTMENT:
+                    showHideCompartment(UMLNodeWidget.LITERALS_COMPARTMENT);
+                    break;
             }
         }
     }

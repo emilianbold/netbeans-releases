@@ -291,8 +291,11 @@ public class EnumerationWidget extends SwitchableWidget
                                                     "LBL_LiteralsCompartment"); 
             literals = new ElementListWidget(scene);
             ((ListWidget) literals).setLabel(literalsTitle);
-            classView.addChild(new CollapsibleWidget(scene, literals));
+            CollapsibleWidget cwl = new CollapsibleWidget(scene, literals);
+            classView.addChild(cwl);
             initializeLiterals(element);
+            cwl.setCompartmentName(LITERALS_COMPARTMENT);//NOI8N
+            addToLookup(cwl.getCollapsibleWidgetManager());
             
             // It turns out that attributes can be redefined as well.  I do not
             // think that we have a UI to allow an attribute to be redefined,
@@ -315,6 +318,8 @@ public class EnumerationWidget extends SwitchableWidget
             attributeSection.addChild(membersSection);
             classView.addChild(attributeSection);
             initializeAttributes(element);
+            membersSection.setCompartmentName(ATTRIBUTES_COMPARTMENT);//NOI8N
+            addToLookup(membersSection.getCollapsibleWidgetManager());
 
             String opsTitle = NbBundle.getMessage(EnumerationWidget.class, 
                                                     "LBL_OperationsCompartment");
@@ -327,6 +332,8 @@ public class EnumerationWidget extends SwitchableWidget
             operationSection.setVisible(false);
             classView.addChild(operationSection);
             initializeOperations(element);
+            operationSection.setCompartmentName(OPERATIONS_COMPARTMENT);//NOI8N
+            addToLookup(operationSection.getCollapsibleWidgetManager());
         }
         
         return retVal;
@@ -420,10 +427,12 @@ public class EnumerationWidget extends SwitchableWidget
 
             retVal = new ElementListWidget(getScene());
             retVal.setLabel(title);
-
-            classView.addChild(new CollapsibleWidget(getScene(), retVal));
-            classView.addChild(retVal);
             
+            CollapsibleWidget cw = new CollapsibleWidget(getScene(), retVal);
+            classView.addChild(cw);
+            classView.addChild(retVal);
+            cw.setCompartmentName(REDEFINED_OPER_COMPARTMENT);//NOI8N
+            addToLookup(cw.getCollapsibleWidgetManager());
             operationRedefinedMap.put(classifier.getXMIID(), retVal);
         }
         
@@ -441,10 +450,12 @@ public class EnumerationWidget extends SwitchableWidget
 
             retVal = new ElementListWidget(getScene());
             retVal.setLabel(title);
-
-            attributeSection.addChild(new CollapsibleWidget(getScene(), retVal));
-            attributeSection.addChild(retVal);
             
+            CollapsibleWidget cw = new CollapsibleWidget(getScene(), retVal);
+            attributeSection.addChild(cw);
+            attributeSection.addChild(retVal);
+            cw.setCompartmentName(REDEFINED_ATTR_COMPARTMENT);//NOI8N
+            addToLookup(cw.getCollapsibleWidgetManager());
             attributeRedefinedMap.put(classifier.getXMIID(), retVal);
         }
         
