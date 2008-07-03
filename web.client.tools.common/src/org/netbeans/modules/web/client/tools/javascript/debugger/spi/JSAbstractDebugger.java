@@ -154,8 +154,7 @@ public abstract class JSAbstractDebugger implements JSDebugger {
     }
 
     protected void setHttpMessage(JSHttpMessage message){
-
-        fireJSDebuggerConsoleEvent(new JSHttpMessageEvent(this, message));
+        fireJSHttpMessageEvent(new JSHttpMessageEvent(this, message));
     }
 
 
@@ -171,16 +170,16 @@ public abstract class JSAbstractDebugger implements JSDebugger {
                 oldjsSources,
                 this.sources);
     }
-    
+
     public InputStream getInputStreamForURL(URL url) {
         if (url == null) {
             return null;
         }
         return getInputStreamForURLImpl(url);
     }
-    
-    protected abstract InputStream getInputStreamForURLImpl(URL url); 
-    
+
+    protected abstract InputStream getInputStreamForURLImpl(URL url);
+
     public JSCallStackFrame[] getCallStackFrames() {
         return callStackFrames;
     }
@@ -196,25 +195,25 @@ public abstract class JSAbstractDebugger implements JSDebugger {
     public JSProperty getThis(JSCallStackFrame callStackFrame) {
         return getThisImpl(callStackFrame);
     }
-    
+
     protected abstract JSProperty getThisImpl(JSCallStackFrame callStackFrame);
-    
+
     public JSProperty eval(JSCallStackFrame callStackFrame, String expression) {
         return evalImpl(callStackFrame, expression);
     }
-    
-    protected abstract JSProperty evalImpl(JSCallStackFrame callStackFrame, String expression);        
-    
+
+    protected abstract JSProperty evalImpl(JSCallStackFrame callStackFrame, String expression);
+
     public JSProperty getProperty(JSCallStackFrame callStackFrame, String fullName) {
         return getPropertyImpl(callStackFrame, fullName);
     }
-    
-    protected abstract JSProperty getPropertyImpl(JSCallStackFrame callStackFrame, String fullName);    
+
+    protected abstract JSProperty getPropertyImpl(JSCallStackFrame callStackFrame, String fullName);
 
     public JSProperty[] getProperties(JSCallStackFrame callStackFrame, String fullName) {
         return getPropertiesImpl(callStackFrame, fullName);
     }
-    
+
     protected abstract JSProperty[] getPropertiesImpl(JSCallStackFrame callStackFrame, String fullName);
 
     public void setCallStackFrames(JSCallStackFrame[] callSTackFrames) {
@@ -231,16 +230,14 @@ public abstract class JSAbstractDebugger implements JSDebugger {
 
     public void removeJSDebuggerEventListener(JSDebuggerEventListener debuggerEventListener) {
         listeners.remove(debuggerEventListener);
-    }    
-    
-    protected void fireJSDebuggerEvent(JSDebuggerEvent debuggerEvent) {
+    }
 
-        //Logger.getLogger(this.getClass().getName()).info("****** HTTP MESSAGE RECEIVED AND TRIGGERED ********");
-        for (JSDebuggerEventListener listener : listeners) {
+    protected void fireJSDebuggerEvent(JSDebuggerEvent debuggerEvent) {
+ for (JSDebuggerEventListener listener : listeners) {
             listener.onDebuggerEvent(debuggerEvent);
         }
-    }   
-    
+    }
+
     public void addJSDebuggerConsoleEventListener(JSDebuggerConsoleEventListener consoleEventListener) {
         consoleListeners.add(consoleEventListener);
     }
@@ -249,12 +246,11 @@ public abstract class JSAbstractDebugger implements JSDebugger {
         consoleListeners.remove(consoleEventListener);
     }
 
-    
-    protected void fireJSHttpMessageEvent(JSDebuggerConsoleEvent consoleEvent) {
+    protected void fireJSDebuggerConsoleEvent(JSDebuggerConsoleEvent consoleEvent) {
         for (JSDebuggerConsoleEventListener listener : consoleListeners) {
             listener.onConsoleEvent(consoleEvent);
         }
-    }    
+    }
 
     public void addJSHttpMessageEventListener(JSHttpMessageEventListener httpListener) {
         httpListeners.add(httpListener);
@@ -264,7 +260,9 @@ public abstract class JSAbstractDebugger implements JSDebugger {
         httpListeners.remove(httpListener);
     }
 
-    protected void fireJSDebuggerConsoleEvent(JSHttpMessageEvent httpMessageEvent) {
+    protected void fireJSHttpMessageEvent(JSHttpMessageEvent httpMessageEvent) {
+       // Logger.getLogger(this.getClass().getName()).info("****** HTTP MESSAGE RECEIVED AND TRIGGERED ********");
+
         for (JSHttpMessageEventListener listener : httpListeners) {
             listener.onHttpMessageEvent(httpMessageEvent);
         }
