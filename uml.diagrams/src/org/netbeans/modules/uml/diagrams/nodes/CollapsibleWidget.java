@@ -61,7 +61,7 @@ import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
  *
  * @author treyspiva
  */
-public class CollapsibleWidget extends Widget
+public class CollapsibleWidget extends Widget implements CollapsibleWidgetManager
 {
 
     private Widget targetWidget = null;
@@ -85,17 +85,12 @@ public class CollapsibleWidget extends Widget
         addChild(separator);
         addChild(targetWidget);
     }
-    
-    public CollapsibleWidgetManager getCollapsibleWidgetManager()
-    {
-        return mgr != null ? mgr : new CollapsibleWidgetManagerImpl();
-    }
-    
+
     public void setCompartmentName(String name)
     {
         this.compartmentName = name;
     }
-    
+
     private void collapse()
     {
         // First make sure that the nodes minumum size is not set.
@@ -142,7 +137,21 @@ public class CollapsibleWidget extends Widget
             collapsed = true;
         }
     }
+
+    public void collapseWidget(String name)
+    {
+        collapse();
+    }
+
+    public String getCollapsibleCompartmentName()
+    {
+        return compartmentName;
+    }
     
+    public Widget getCollapsibleCompartmentWidget()
+    {
+        return this;
+    }
 
     public class CollapseControllerAction extends WidgetAction.Adapter
     {
@@ -159,39 +168,4 @@ public class CollapsibleWidget extends Widget
         }
     }
 
-
-    public class CollapsibleWidgetManagerImpl implements CollapsibleWidgetManager
-    {
-        
-
-        public void collapseWidget(String name)
-        {
-            //we don't need to care about name since we are getting the right mgr instance
-//            if (name.equalsIgnoreCase(UMLNodeWidget.ATTRIBUTES_COMPARTMENT))
-//            {
-//                targetWidget = getCollapsibleCompartment();
-//                System.out.println(" attr! ");
-//            }
-//            else if (compartmentName.equalsIgnoreCase(UMLNodeWidget.OPERATIONS_COMPARTMENT))
-//            {
-//                targetWidget = getCollapsibleCompartment();
-//            }
-//            else if (compartmentName.equalsIgnoreCase(UMLNodeWidget.LITERALS_COMPARTMENT))
-//            {
-//                
-//            }
-            collapse();
-        }
-
-        public void expandWidget(String compartmentName)
-        {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public String getCollapsibleCompartmentName()
-        {
-            return compartmentName;
-        }
-    }
-    
 }

@@ -295,7 +295,7 @@ public class EnumerationWidget extends SwitchableWidget
             classView.addChild(cwl);
             initializeLiterals(element);
             cwl.setCompartmentName(LITERALS_COMPARTMENT);//NOI8N
-            addToLookup(cwl.getCollapsibleWidgetManager());
+            addToLookup(cwl);
             
             // It turns out that attributes can be redefined as well.  I do not
             // think that we have a UI to allow an attribute to be redefined,
@@ -319,7 +319,7 @@ public class EnumerationWidget extends SwitchableWidget
             classView.addChild(attributeSection);
             initializeAttributes(element);
             membersSection.setCompartmentName(ATTRIBUTES_COMPARTMENT);//NOI8N
-            addToLookup(membersSection.getCollapsibleWidgetManager());
+            addToLookup(membersSection);
 
             String opsTitle = NbBundle.getMessage(EnumerationWidget.class, 
                                                     "LBL_OperationsCompartment");
@@ -333,7 +333,7 @@ public class EnumerationWidget extends SwitchableWidget
             classView.addChild(operationSection);
             initializeOperations(element);
             operationSection.setCompartmentName(OPERATIONS_COMPARTMENT);//NOI8N
-            addToLookup(operationSection.getCollapsibleWidgetManager());
+            addToLookup(operationSection);
         }
         
         return retVal;
@@ -432,7 +432,7 @@ public class EnumerationWidget extends SwitchableWidget
             classView.addChild(cw);
             classView.addChild(retVal);
             cw.setCompartmentName(REDEFINED_OPER_COMPARTMENT);//NOI8N
-            addToLookup(cw.getCollapsibleWidgetManager());
+            addToLookup(cw);
             operationRedefinedMap.put(classifier.getXMIID(), retVal);
         }
         
@@ -455,7 +455,7 @@ public class EnumerationWidget extends SwitchableWidget
             attributeSection.addChild(cw);
             attributeSection.addChild(retVal);
             cw.setCompartmentName(REDEFINED_ATTR_COMPARTMENT);//NOI8N
-            addToLookup(cw.getCollapsibleWidgetManager());
+            addToLookup(cw);
             attributeRedefinedMap.put(classifier.getXMIID(), retVal);
         }
         

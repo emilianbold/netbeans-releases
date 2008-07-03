@@ -124,30 +124,50 @@ public class ShowHideListCompartmentAction extends NodeAction
         JMenuItem redefinedOperComp = new ShowHideMenuItem(bundle.getString("CTL_RedefinedOperCompartment"), REDEFINED_OPER_COMPARTMENT); // NOI18N
         JMenuItem literalsComp = new ShowHideMenuItem(bundle.getString("CTL_LiteralsCompartment"), LITERALS_COMPARTMENT); // NOI18N
         
-//        //show only those submenu items which have collapsible compartments
-//        for (IPresentationElement p : getSelectedElements())
-//        {
-//            Widget w = scene.findWidget(p);
-//
-//            if (w instanceof UMLNodeWidget)
-//            {
-////                ((UMLNodeWidget)w).g
-//            }
-//        }
-        
-        JMenuItem[] items = new JMenuItem[]
+        //show only those submenu items which have collapsible compartments
+        for (IPresentationElement p : getSelectedElements())
         {
-            attributeComp, operationComp, redefinedAttrComp, redefinedOperComp, literalsComp
-        };
+            Widget w = scene.findWidget(p);
 
-        for (int i = 0; i < items.length; i++)
-        {
-            items[i].addActionListener(new ShowHideMenuItemListener());
-            items[i].setEnabled(scene != null);
-            popupMenu.add(items[i]);
+            if (w instanceof UMLNodeWidget)
+            {
+                Collection<? extends CollapsibleWidgetManager> mgrList = w.getLookup().lookupAll(CollapsibleWidgetManager.class);
+                for (CollapsibleWidgetManager mgr : mgrList)
+                {
+                    if (mgr != null  &&  mgr.getCollapsibleCompartmentWidget().isVisible())
+                    {                        
+                        String compName = mgr.getCollapsibleCompartmentName();
+                        if (compName.equalsIgnoreCase(UMLNodeWidget.ATTRIBUTES_COMPARTMENT))
+                        {
+                            popupMenu.add(attributeComp);
+                        }
+                        if (compName.equalsIgnoreCase(UMLNodeWidget.OPERATIONS_COMPARTMENT))
+                        {
+                            popupMenu.add(operationComp);
+                        }
+                        if (compName.equalsIgnoreCase(UMLNodeWidget.REDEFINED_ATTR_COMPARTMENT))
+                        {
+                            popupMenu.add(redefinedAttrComp);
+                        }
+                        if (compName.equalsIgnoreCase(UMLNodeWidget.REDEFINED_OPER_COMPARTMENT))
+                        {
+                            popupMenu.add(redefinedOperComp);
+                        }
+                        if (compName.equalsIgnoreCase(UMLNodeWidget.LITERALS_COMPARTMENT))
+                        {
+                            popupMenu.add(literalsComp);
+                        }
+                        
+                    }                    
+                }
+            }
         }
-
-        popupMenu.getMenuComponentCount();
+        
+        for (int i = 0; i < popupMenu.getItemCount(); i++)
+        {
+            popupMenu.getItem(i).addActionListener(new ShowHideMenuItemListener());
+            popupMenu.getItem(i).setEnabled(scene != null);
+        }
         return popupMenu;
     }
     
