@@ -519,7 +519,6 @@ public class TaskProcessor {
                                                 try {
                                                     final long startTime = System.currentTimeMillis();
                                                     if (r.task instanceof ParserResultTask) {
-                                                        LOGGER.fine("Running Task: " + r.toString());
                                                         if (LOGGER.isLoggable(Level.FINE)) {
                                                             LOGGER.fine("Running Task: " + r.toString());
                                                         }
