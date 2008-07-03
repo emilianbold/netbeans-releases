@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.db.dataview.output;
 
 import java.util.ArrayList;
@@ -54,14 +53,14 @@ import org.netbeans.modules.db.dataview.meta.DBException;
  *
  * @author Ahimanikya Satapathy
  */
- class UpdatedRowContext {
+class UpdatedRowContext {
 
     private Map<String, String> updateStatements = new LinkedHashMap<String, String>();
     private Map<String, String> rawUpdateSQL = new LinkedHashMap<String, String>();
     private Map<String, List<Object>> valuesList = new LinkedHashMap<String, List<Object>>();
     private Map<String, List<Integer>> typesList = new LinkedHashMap<String, List<Integer>>();
     private SQLStatementGenerator stmtGenerator;
-    
+
     public UpdatedRowContext(SQLStatementGenerator stmtGenerator) {
         this.stmtGenerator = stmtGenerator;
     }
@@ -92,6 +91,13 @@ import org.netbeans.modules.db.dataview.meta.DBException;
 
     public String getUpdateStmt(String key) {
         return updateStatements.get(key);
+    }
+
+    public void removeUpdateStmt(String key) {
+        rawUpdateSQL.remove(key);
+        updateStatements.remove(key);
+        valuesList.remove(key);
+        typesList.remove(key);
     }
 
     public String getRawUpdateStmt(String key) {

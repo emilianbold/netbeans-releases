@@ -210,6 +210,7 @@ class DataViewTablePanel extends JPanel {
             for (Object colVal : (Vector) row) {
                 rowObj[i++] = colVal;
             }
+            rows.add(rowObj);
         }
         return rows;
     }
@@ -225,7 +226,7 @@ class DataViewTablePanel extends JPanel {
             if (rows.size() > 0) {
                 Object[] row = rows.get(0);
                 for (int i = 0, I = row.length; i < I; i++) {
-                    if(row[i] != null) {
+                    if (row[i] != null) {
                         collumnClasses[i] = row[i].getClass();
                     }
                 }
@@ -253,7 +254,7 @@ class DataViewTablePanel extends JPanel {
             }
 
             Object oldVal = getValueAt(row, col);
-            if (oldVal != null && oldVal.toString().equals(value ==  null ? "" : value.toString()) || (oldVal == null && value == null)) {
+            if (oldVal != null && oldVal.toString().equals(value == null ? "" : value.toString()) || (oldVal == null && value == null)) {
                 return;
             }
 

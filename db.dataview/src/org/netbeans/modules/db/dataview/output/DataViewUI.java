@@ -155,7 +155,7 @@ class DataViewUI extends JPanel {
 
     void syncPageWithTableModel() {
         dataView.getDataViewPageContext().setCurrentRows(dataPanel.getPageDataFromTable());
-        dataView.getUpdatedRowContext().resetUpdateState();
+    //dataView.getUpdatedRowContext().resetUpdateState();
     }
 
     void disableButtons() {
@@ -234,8 +234,13 @@ class DataViewUI extends JPanel {
                     dataPage.first();
                 }
                 insert.setEnabled(true);
-                commit.setEnabled(false);
-                cancel.setEnabled(false);
+                if (getUpdatedRowContext().getUpdateKeys().isEmpty()) {
+                    commit.setEnabled(false);
+                    cancel.setEnabled(false);
+                } else {
+                    commit.setEnabled(true);
+                    cancel.setEnabled(true);
+                }
             }
         } else {
             disableButtons();
@@ -267,7 +272,7 @@ class DataViewUI extends JPanel {
                 } else if (src.equals(refreshField)) {
                     actionHandler.setMaxActionPerformed();
                 } else if (src.equals(commit)) {
-                    actionHandler.commitActionPerformed();
+                    actionHandler.commitActionPerformed(false);
                 } else if (src.equals(cancel)) {
                     actionHandler.cancelEditPerformed();
                 } else if (src.equals(deleteRow)) {

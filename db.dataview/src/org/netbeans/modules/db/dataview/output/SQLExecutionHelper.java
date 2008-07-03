@@ -48,7 +48,9 @@ import java.sql.Statement;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.table.TableModel;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.api.db.explorer.DatabaseConnection;
@@ -92,8 +94,8 @@ class SQLExecutionHelper {
             stmt = execHelper.prepareSQLStatement(conn, sql);
             execHelper.executeSQLStatement(stmt, sql);
 
-            if(dv.getUpdateCount() != -1){
-                if(!conn.getAutoCommit()){
+            if (dv.getUpdateCount() != -1) {
+                if (!conn.getAutoCommit()) {
                     conn.commit();
                 }
                 return;
@@ -165,7 +167,7 @@ class SQLExecutionHelper {
                 dataView.incrementRowSize(1);
 
                 // refresh when required
-                if(dataView.getDataViewPageContext().refreshRequiredOnInsert()){
+                if (dataView.getDataViewPageContext().refreshRequiredOnInsert()) {
                     SQLExecutionHelper.this.executeQuery();
                 } else {
                     reinstateToolbar();
@@ -186,6 +188,9 @@ class SQLExecutionHelper {
                 dataView.setEditable(false);
                 int[] rows = rsTable.getSelectedRows();
                 for (int j = 0; j < rows.length && !error; j++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
                     deleteARow(rows[j], rsTable.getModel());
                 }
             }
@@ -239,21 +244,43 @@ class SQLExecutionHelper {
         task.schedule(0);
     }
 
-    void executeUpdateRow() {
+    void executeUpdateRow(final DataViewTableUI rsTable, final boolean selectedOnly) {
         String nbBundle76 = mLoc.t("RESC076: Executing Update");
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, nbBundle76.substring(15), "") {
 
             private PreparedStatement pstmt;
+            Set<String> keysToRemove = new HashSet<String>();
 
             @Override
             public void execute() throws SQLException, DBException {
                 dataView.setEditable(false);
-                UpdatedRowContext tblContext = dataView.getUpdatedRowContext();
-                for (String key : tblContext.getUpdateKeys()) {
-                    if(error) {
-                        break;
+                if (selectedOnly) {
+                    updateSelected();
+                } else {
+                    for (String key : dataView.getUpdatedRowContext().getUpdateKeys()) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        } else {
+                            updateARow(key);
+                            keysToRemove.add(key);
+                        }
                     }
-                    updateARow(key);
+                }
+            }
+
+            private void updateSelected() throws SQLException, DBException {
+                int[] rows = rsTable.getSelectedRows();
+                UpdatedRowContext tblContext = dataView.getUpdatedRowContext();
+                for (int j = 0; j < rows.length && !error; j++) {
+                    Set<String> keys = tblContext.getUpdateKeys();
+                    for (String key : keys) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        } else if (key.startsWith((rows[j] + 1) + ";")) {
+                            updateARow(key);
+                            keysToRemove.add(key);
+                        }
+                    }
                 }
             }
 
@@ -298,8 +325,11 @@ class SQLExecutionHelper {
             @Override
             protected void executeOnSucess() {
                 dataView.syncPageWithTableModel();
+                UpdatedRowContext tblContext = dataView.getUpdatedRowContext();
+                for (String key : keysToRemove) {
+                    tblContext.removeUpdateStmt(key);
+                }
                 reinstateToolbar();
-                //SQLExecutionHelper.this.executeQuery();
             }
         };
         RequestProcessor.Task task = rp.create(executor);
@@ -371,7 +401,7 @@ class SQLExecutionHelper {
                 // Execute the query
                 try {
                     executeSQLStatement(stmt, sql);
-                    if(dataView.hasResultSet()) {
+                    if (dataView.hasResultSet()) {
                         rs = stmt.getResultSet();
                         loadDataFrom(rs);
                     } else {
@@ -382,7 +412,7 @@ class SQLExecutionHelper {
                 }
 
                 // Get total row count
-                if(dataView.getDataViewPageContext().getTotalRows() == -1) {
+                if (dataView.getDataViewPageContext().getTotalRows() == -1) {
                     try {
                         crs = stmt.executeQuery(SQLStatementGenerator.getCountSQLQuery(dataView.getSQLString()));
                         setTotalCount(crs);
@@ -416,7 +446,7 @@ class SQLExecutionHelper {
 
         int pageSize = dataView.getDataViewPageContext().getPageSize();
         int startFrom = 0;
-        if(!dataView.isLimitSupported()) {
+        if (!dataView.isLimitSupported()) {
             startFrom = dataView.getDataViewPageContext().getCurrentPos() - 1;
         }
 
@@ -439,7 +469,7 @@ class SQLExecutionHelper {
                 if (Thread.currentThread().isInterrupted()) {
                     return;
                 }
-                
+
                 Object[] row = new Object[colCnt];
                 for (int i = 0; i < colCnt; i++) {
                     int type = tblMeta.getColumn(i).getJdbcType();
@@ -452,7 +482,7 @@ class SQLExecutionHelper {
                 }
             }
         } catch (SQLException e) {
-            mLogger.infoNoloc(mLoc.t("LOGR009: Failed to set up table model",DBException.getMessage(e)));
+            mLogger.infoNoloc(mLoc.t("LOGR009: Failed to set up table model", DBException.getMessage(e)));
             throw e;
         } finally {
             dataView.getDataViewPageContext().setCurrentRows(rows);
@@ -470,7 +500,7 @@ class SQLExecutionHelper {
                 }
             }
         } catch (SQLException ex) {
-            mLogger.infoNoloc(mLoc.t("LOGR010: Could not get total row count ",ex));
+            mLogger.infoNoloc(mLoc.t("LOGR010: Could not get total row count ", ex));
         }
     }
 
@@ -488,7 +518,7 @@ class SQLExecutionHelper {
         int pageSize = dataView.getDataViewPageContext().getPageSize();
         stmt.setFetchSize(pageSize);
 
-        if(dataView.isLimitSupported() && select){
+        if (dataView.isLimitSupported() && select) {
             stmt.setMaxRows(pageSize);
         } else {
             stmt.setMaxRows(dataView.getDataViewPageContext().getCurrentPos() + pageSize);
@@ -499,13 +529,13 @@ class SQLExecutionHelper {
     private void executeSQLStatement(Statement stmt, String sql) throws SQLException {
         sql = sql.replaceAll("\\n", "").replaceAll("\\t", ""); // NOI18N
         if (dataView.isLimitSupported() && isSelectStatement(sql)) {
-            if(sql.toUpperCase().indexOf("LIMIT") == -1) {
+            if (sql.toUpperCase().indexOf("LIMIT") == -1) {
                 sql += " LIMIT " + dataView.getDataViewPageContext().getPageSize(); // NOI18N
                 sql += " OFFSET " + (dataView.getDataViewPageContext().getCurrentPos() - 1); // NOI18N
             }
         }
         String nbBundle79 = mLoc.t("RESC079: Executing Statement: ");
-        mLogger.infoNoloc(mLoc.t("LOGR021: Executing Statement: {0} ",sql));
+        mLogger.infoNoloc(mLoc.t("LOGR021: Executing Statement: {0} ", sql));
         dataView.setInfoStatusText(nbBundle79.substring(15) + sql);
 
         long startTime = System.currentTimeMillis();
@@ -518,10 +548,10 @@ class SQLExecutionHelper {
         long executionTime = System.currentTimeMillis() - startTime;
 
         String execTimeStr = millisecondsToSeconds(executionTime);
-        mLogger.infoNoloc(mLoc.t("LOGR022: Executed Successfully in {0} seconds",execTimeStr));
+        mLogger.infoNoloc(mLoc.t("LOGR022: Executed Successfully in {0} seconds", execTimeStr));
         String nbBundle80 = mLoc.t("RESC080: Executed Successfully in ");
         String nbBundle81 = mLoc.t("RESC081: seconds");
-        dataView.setInfoStatusText(nbBundle80.substring(15) + execTimeStr +nbBundle81.substring(15));
+        dataView.setInfoStatusText(nbBundle80.substring(15) + execTimeStr + nbBundle81.substring(15));
 
         dataView.setHasResultSet(isResultSet);
         dataView.setUpdateCount(stmt.getUpdateCount());
