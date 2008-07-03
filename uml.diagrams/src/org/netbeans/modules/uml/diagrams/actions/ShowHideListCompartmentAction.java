@@ -72,6 +72,9 @@ public class ShowHideListCompartmentAction extends NodeAction
     public static final int REDEFINED_ATTR_COMPARTMENT = 2;
     public static final int REDEFINED_OPER_COMPARTMENT = 3;
     public static final int LITERALS_COMPARTMENT = 4;
+    public static final int EXPAND_ALL = 5;
+    public static final int COLLAPSE_ALL = 6;
+    
     
     
     @Override
@@ -123,6 +126,11 @@ public class ShowHideListCompartmentAction extends NodeAction
         JMenuItem redefinedAttrComp = new ShowHideMenuItem(bundle.getString("CTL_RedefinedAttrCompartment"), REDEFINED_ATTR_COMPARTMENT); // NOI18N
         JMenuItem redefinedOperComp = new ShowHideMenuItem(bundle.getString("CTL_RedefinedOperCompartment"), REDEFINED_OPER_COMPARTMENT); // NOI18N
         JMenuItem literalsComp = new ShowHideMenuItem(bundle.getString("CTL_LiteralsCompartment"), LITERALS_COMPARTMENT); // NOI18N
+        JMenuItem expandAll = new ShowHideMenuItem(bundle.getString("CTL_ExpandAllCompartments"), EXPAND_ALL); // NOI18N
+        JMenuItem collapseAll = new ShowHideMenuItem(bundle.getString("CTL_CollapseAllCompartments"), COLLAPSE_ALL); // NOI18N
+        
+        popupMenu.add(expandAll);
+        popupMenu.add(collapseAll);
         
         //show only those submenu items which have collapsible compartments
         for (IPresentationElement p : getSelectedElements())
@@ -173,7 +181,18 @@ public class ShowHideListCompartmentAction extends NodeAction
     
     private void showHideCompartment(String compName)
     {
-        for (IPresentationElement p : getSelectedElements())
+        IPresentationElement[] elementList;
+
+        if ((getSelectedElements().length == 0) &&
+                (compName.equalsIgnoreCase(UMLNodeWidget.EXPAND_ALL) || compName.equalsIgnoreCase(UMLNodeWidget.COLLAPSE_ALL)))
+        {
+            elementList = getAllNodes();
+        } 
+        else
+        {
+            elementList = getSelectedElements();
+        }
+        for (IPresentationElement p : elementList)
         {
             Widget w = scene.findWidget(p);
 
@@ -182,13 +201,20 @@ public class ShowHideListCompartmentAction extends NodeAction
                 Collection<? extends CollapsibleWidgetManager> mgrList = w.getLookup().lookupAll(CollapsibleWidgetManager.class);
                 for (CollapsibleWidgetManager mgr : mgrList)
                 {
-                    if (mgr != null && mgr.getCollapsibleCompartmentName().equalsIgnoreCase(compName))
-                    {                        
-                        mgr.collapseWidget(compName);
-                    }
-                    else
+                    if (mgr != null)
                     {
+                        if (compName.equalsIgnoreCase(UMLNodeWidget.EXPAND_ALL) || compName.equalsIgnoreCase(UMLNodeWidget.COLLAPSE_ALL))
+                        {
+                            mgr.collapseWidget(compName);
+                        } 
+                        else if (mgr.getCollapsibleCompartmentName().equalsIgnoreCase(compName))
+                        {
+                            mgr.collapseWidget(compName);
+                        } 
+                        else
+                        {
 //                        System.out.println(" mgr compName = "+mgr.getCollapsibleCompartmentName());
+                        }
                     }
                 }
             }
@@ -201,7 +227,15 @@ public class ShowHideListCompartmentAction extends NodeAction
 
         IPresentationElement[] elements = new IPresentationElement[selected.size()];
         selected.toArray(elements);
-        selected.toArray(elements);
+        return elements;
+    }
+    
+    private IPresentationElement[] getAllNodes()
+    {
+        Set<IPresentationElement> nodesList = (Set<IPresentationElement>) scene.getNodes();
+
+        IPresentationElement[] elements = new IPresentationElement[nodesList.size()];
+        nodesList.toArray(elements);
         return elements;
     }
 
@@ -239,6 +273,12 @@ public class ShowHideListCompartmentAction extends NodeAction
             }
             switch (mi.getActionType())
             {
+                case EXPAND_ALL:
+                    showHideCompartment(UMLNodeWidget.EXPAND_ALL);
+                    break;
+                case COLLAPSE_ALL:
+                    showHideCompartment(UMLNodeWidget.COLLAPSE_ALL);
+                    break;
                 case ATTRIBUTES_COMPARTMENT:
                     showHideCompartment(UMLNodeWidget.ATTRIBUTES_COMPARTMENT);
                     break;

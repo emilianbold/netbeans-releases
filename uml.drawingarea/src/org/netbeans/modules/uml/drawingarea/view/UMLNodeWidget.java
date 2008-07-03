@@ -128,6 +128,8 @@ public abstract class UMLNodeWidget extends Widget
     public final String PSK_RESIZE_NEVER = "PSK_RESIZE_NEVER";   
     public final String VIEW_NAME = "ViewName";
     
+    public static final String EXPAND_ALL = "ExpandAll";
+    public static final String COLLAPSE_ALL = "CollapseAll";
     public static final String ATTRIBUTES_COMPARTMENT = "AttributesCompartment";
     public static final String OPERATIONS_COMPARTMENT = "OperationsCompartment";
     public static final String REDEFINED_ATTR_COMPARTMENT = "RedefinedAttrCompartment";

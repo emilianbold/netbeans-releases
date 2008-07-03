@@ -140,6 +140,15 @@ public class CollapsibleWidget extends Widget implements CollapsibleWidgetManage
 
     public void collapseWidget(String name)
     {
+        if (name.equalsIgnoreCase(UMLNodeWidget.COLLAPSE_ALL))
+        {
+            collapsed = false;
+        }
+        else if (name.equalsIgnoreCase(UMLNodeWidget.EXPAND_ALL))
+        {
+            collapsed = true;
+        }
+        
         collapse();
     }
 
