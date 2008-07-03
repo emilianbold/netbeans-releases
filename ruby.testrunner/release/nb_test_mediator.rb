@@ -66,7 +66,9 @@ class NbTestMediator
           add_to_suites arg
         # directory
         when "-d"
-          Rake::FileList["#{arg}/**/*.rb"].each { |file| add_to_suites(file) }
+          Rake::FileList["#{arg}/**/test*.rb", "#{arg}/**/*test.rb"].each do |file|
+            add_to_suites(file)
+          end
         # single test method
         when "-m"
           if "-m" != ""
@@ -105,12 +107,12 @@ class NbTestMediator
     end
     if (instance.respond_to?(:suite))
       @suites << instance.suite
-    else
+    elsif instance.kind_of? Test::Unit::TestSuite
       @suites << instance
     end
-    
+
   end
-  
+
   def get_filename class_name
     class_name.to_s.gsub(/::/, '/').
       gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').
@@ -135,17 +137,26 @@ class NbTestMediator
       attach_listeners
       begin
         puts "%SUITE_STARTING% #{suite}"
+        start_suite_timer
         result = @mediator.run_suite
         puts "%SUITE_SUCCESS% #{result.passed?}"
         puts "%SUITE_FAILURES% #{result.failure_count}"
         puts "%SUITE_ERRORS% #{result.error_count}"
       rescue => err
-        puts err
+        puts "%SUITE_FINISHED% time=#{elapsed_suite_time}"
+        puts "%SUITE_ERROR_OUTPUT% error=#{err}"
       end
     end
     
   end
   
+  def start_suite_timer
+    @suite_start_time = Time.now
+  end
+  
+  def elapsed_suite_time
+    Time.now - @suite_start_time
+  end
   def attach_listeners
     @mediator.add_listener(Test::Unit::UI::TestRunnerMediator::STARTED, &method(:suite_started))
     @mediator.add_listener(Test::Unit::UI::TestRunnerMediator::FINISHED, &method(:suite_finished))
@@ -173,7 +184,7 @@ class NbTestMediator
   end
 
   def suite_finished(result)
-    puts "%SUITE_FINISHED% #{result}"
+    puts "%SUITE_FINISHED% time=#{result}"
   end
   
   def test_started(result)

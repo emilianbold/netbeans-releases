@@ -38,12 +38,14 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
@@ -75,6 +77,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 /**
  *
@@ -157,6 +160,13 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
     
     @Override
     public void visit(IfStatement node) {
+        IsSetFinder isSetFinder = new IsSetFinder();
+        node.getCondition().accept(isSetFinder);
+        
+        for (Expression checkedVar : isSetFinder.checkedVars){
+            varStack.addVariableDefinition(checkedVar);
+        }
+        
         for (PHPRule rule : rules){
             rule.setContext(context);
             rule.visit(node);
@@ -255,11 +265,9 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(FunctionInvocation node) {
+        String fname = CodeUtils.extractFunctionName(node);
         
-        if (node.getFunctionName().getName() instanceof Identifier) {
-            Identifier id = (Identifier) node.getFunctionName().getName();
-            String fname = id.getName();
-            
+        if (fname != null) {  
             Collection<IndexedFunction> functions = context.index.getFunctions((PHPParseResult) context.parserResult, fname, NameKind.EXACT_NAME);
             
             boolean refParam[] = new boolean[node.getParameters().size()];
@@ -478,6 +486,21 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
         
         public List<ASTNode> getUnreferencedVars(){
             return unreferencesVars;
+        }
+    }
+    
+    private class IsSetFinder extends DefaultVisitor{
+        private List<Expression> checkedVars = new ArrayList<Expression>();
+
+        @Override
+        public void visit(FunctionInvocation node) {
+            String fname = CodeUtils.extractFunctionName(node);
+            
+            if (fname == null || !"isset".equalsIgnoreCase(fname)){
+                return;
+            }
+            
+            checkedVars.addAll(node.getParameters());
         }
     }
 }

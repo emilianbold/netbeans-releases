@@ -48,14 +48,14 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 ###############  Commit validation tests  ##########################
-cp -r $NB_ALL/nbbuild/netbeans $NB_ALL/nbbuild/test-netbeans
+#cp -r $NB_ALL/nbbuild/netbeans $NB_ALL/nbbuild/netbeans-PRISTINE
 
 TESTS_STARTED=`date`
 # Different JDK for tests because JVM crashes often (see 6598709, 6607038)
 JDK_TESTS=$JDK_HOME
 # standard NetBeans unit and UI validation tests
 for i in 1 2 3; do
-    ant -v -f nbbuild/build.xml -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -Dnetbeans.dest.dir=$NB_ALL/nbbuild/test-netbeans commit-validation
+    ant -v -f nbbuild/build.xml -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER commit-validation
     ERROR_CODE=$?
     if [ $ERROR_CODE = 0 ]; then
         break;

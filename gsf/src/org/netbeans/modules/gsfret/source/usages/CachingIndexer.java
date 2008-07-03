@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -58,7 +58,7 @@ import org.netbeans.modules.gsf.api.IndexDocumentFactory;
 /**
  * This class takes parse results, indexes them and stashes the resulting
  * objects until flush is called - or until the number of documents stashed
- * reaches a given limit. When that happens, the lucene index is updated. 
+ * reaches a given limit. When that happens, the lucene index is updated.
  */
 public class CachingIndexer {
     /** Number of files whose index results we cache per file system
@@ -117,8 +117,8 @@ public class CachingIndexer {
         LanguageIndex li = getLanguageIndex(language);
         li.index(file, trees);
     }
-    
-    /** 
+
+    /**
      * Each LanguageIndex object represents cached index data for a specific language.
      * It stores information relevant to caching and flushing index data for the
      * given analyzer.
@@ -127,7 +127,7 @@ public class CachingIndexer {
         final SourceAnalyser analyzer;
         final List<IndexBatchEntry> entries;
         private int size;
-        private final boolean create;
+        private boolean create;
         private final Language language;
 
         public LanguageIndex(SourceAnalyser analyzer, List<IndexBatchEntry> entries, boolean create, Language language) {
@@ -142,13 +142,17 @@ public class CachingIndexer {
         }
 
         public void flush() throws IOException {
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "Flushing index for " + language.getDisplayName() + "; the number of stashed documents is " + entries.size());
-            }
+            try {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "Flushing index for " + language.getDisplayName() + "; the number of stashed documents is " + entries.size());
+                }
 
-            if (entries.size() > 0) {
-                analyzer.batchStore(entries, create);
-                entries.clear();
+                if (entries.size() > 0) {
+                    analyzer.batchStore(entries, create);
+                    entries.clear();
+                }
+            } finally {
+                create = false;
             }
         }
 
@@ -179,7 +183,7 @@ public class CachingIndexer {
                 }
             }
         }
-        
+
         public IndexDocument createDocument(int initialPairs) {
             return new IndexDocumentImpl(initialPairs);
         }

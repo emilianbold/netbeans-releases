@@ -57,8 +57,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchResult;
@@ -254,7 +252,7 @@ public class PHPIndex {
         for (String signature : signaturesMap.keySet()) {
             //items are not indexed, no case insensitive search key user
             Signature sig = Signature.get(signature);
-            int flags = sig.integer(3);
+            int flags = sig.integer(4);
             
             if ((flags & (Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE)) == 0){
                 flags |= Modifier.PUBLIC; // default modifier
@@ -267,6 +265,9 @@ public class PHPIndex {
 
                 IndexedFunction func = new IndexedFunction(funcName, className,
                         this, signaturesMap.get(signature), args, offset, flags, ElementKind.METHOD);
+                
+                int defParamCount = sig.integer(3);
+                func.setDefaultParameterCount(defParamCount);
 
                 methods.add(func);
             }
@@ -393,8 +394,12 @@ public class PHPIndex {
                     String funcName = sig.string(1);
                     
                     if(kind == NameKind.PREFIX) {
-                        //case sensitive
+                        //case sensitive - TODO does it make sense?
                         if(!funcName.startsWith(name)) {
+                            continue;
+                        }
+                    } else if (kind == NameKind.EXACT_NAME){
+                        if (!funcName.equalsIgnoreCase(name)){ // PHP func names r case-insensitive
                             continue;
                         }
                     }
@@ -404,6 +409,9 @@ public class PHPIndex {
 
                     IndexedFunction func = new IndexedFunction(funcName, null,
                             this, map.getPersistentUrl(), arguments, offset, 0, ElementKind.METHOD);
+                    
+                    int defParamCount = sig.integer(4);
+                    func.setDefaultParameterCount(defParamCount);
                     
                     func.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
                     functions.add(func);

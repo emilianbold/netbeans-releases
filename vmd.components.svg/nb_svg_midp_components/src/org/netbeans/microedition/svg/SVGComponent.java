@@ -135,6 +135,26 @@ public abstract class SVGComponent implements SVGForm.FocusListener {
         return getForm().getLabelFor( this );
     }
     
+    protected void setTraitSafely( final SVGElement element , final String trait, 
+            final String value )
+    {
+        getForm().invokeAndWaitSafely(new Runnable() {
+            public void run() {
+                element.setTrait(trait, value);
+            }
+        });
+    }
+    
+    protected void setTraitSafely( final SVGElement element , final String trait, 
+            final float value )
+    {
+        getForm().invokeAndWaitSafely(new Runnable() {
+            public void run() {
+                element.setFloatTrait(trait, value);
+            }
+        });
+    }
+    
     protected static final SVGElement getElementById( SVGElement parent, String childId) {
         Element elem = parent.getFirstElementChild();
         while( elem != null && elem instanceof SVGElement) {
@@ -153,13 +173,36 @@ public abstract class SVGComponent implements SVGForm.FocusListener {
         return null;
     }   
     
-    protected static final SVGElement getElementByMeta( SVGElement parent , 
-            String key, String value )
+    protected final SVGElement getElementByMeta( final SVGElement parent , 
+            final String key, final String value )
     {
-        MetaFinder finder = new MetaFinder( key , value );
-        ChildrenAcceptor acceptor = new ChildrenAcceptor( finder );
-        acceptor.accept(parent);
-        return finder.getFound();
+        final Vector ret = new Vector(1);
+        Runnable runnable = new Runnable() {
+            public void run() {
+                    MetaFinder finder = new MetaFinder( key , value );
+                    ChildrenAcceptor acceptor = new ChildrenAcceptor( finder );
+                    acceptor.accept(parent);
+                    ret.addElement( finder.getFound() );
+            }
+        };
+        getForm().invokeAndWaitSafely(runnable);
+        return (SVGElement)ret.elementAt( 0 );
+    }
+    
+    protected final SVGElement getNestedElementByMeta( final SVGElement parent , 
+            final String key, final String value )
+    {
+        final Vector ret = new Vector(1);
+        Runnable runnable = new Runnable() {
+            public void run() {
+                    MetaFinder finder = new MetaFinder( key , value );
+                    ChildrenAcceptor acceptor = new ChildrenAcceptor( finder );
+                    acceptor.accept(parent);
+                    ret.addElement( finder.getNestedElement() );
+            }
+        };
+        getForm().invokeAndWaitSafely(runnable);
+        return (SVGElement)ret.elementAt( 0 );
     }
     
     private static class MetaFinder implements Visitor {
@@ -177,6 +220,7 @@ public abstract class SVGComponent implements SVGForm.FocusListener {
             myMeta.loadFromElement((SVGElement)element);
             if ( myValue== null && myMeta.get( myKey )==null){
                 myFound = (SVGElement)element;
+                myNested = myMeta.getNestedElement();
                 return false;
             }
             if (myValue == null ){
@@ -184,6 +228,7 @@ public abstract class SVGComponent implements SVGForm.FocusListener {
             }
             if ( myValue.equals( myMeta.get(myKey))){
                 myFound = (SVGElement)element;
+                myNested = myMeta.getNestedElement();
                 return false;
             }
             return true;
@@ -193,9 +238,15 @@ public abstract class SVGComponent implements SVGForm.FocusListener {
             return myFound;
         }
         
+        SVGElement getNestedElement(){
+            return myNested;
+        }
+        
         private String myKey;
         private String myValue;
         private MetaData myMeta;
+        
         private SVGElement myFound;
+        private SVGElement myNested;
     }
 }

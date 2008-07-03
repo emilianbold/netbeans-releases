@@ -996,7 +996,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         }
         
         private Image getMyOpenedIcon(int type) {
-            return getIcon(type);
+            return getMyIcon(type);
         }
         
         public void update() {

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.hibernate.hqleditor.ui;
@@ -45,7 +45,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.table.DefaultTableModel;
@@ -69,7 +71,7 @@ import org.openide.util.Utilities;
 
 /**
  * HQL editor top component.
- * 
+ *
  * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
 public final class HQLEditorTopComponent extends TopComponent {
@@ -178,7 +180,7 @@ public final class HQLEditorTopComponent extends TopComponent {
                     }
 
                     for (Object row : result.getQueryResults()) {
-                            createTableData(tableData, (Object[])row);
+                        createTableData(tableData, (Object[]) row);
                     }
 
                 } else {
@@ -190,7 +192,7 @@ public final class HQLEditorTopComponent extends TopComponent {
                 }
 
             }
-            resultsTable.setModel(new DefaultTableModel(tableData, tableHeaders));
+            resultsTable.setModel(new HQLEditorResultTableModel(tableData, tableHeaders)); //new DefaultTableModel(tableData, tableHeaders));
 
 
         } else {
@@ -204,11 +206,15 @@ public final class HQLEditorTopComponent extends TopComponent {
                 PrintWriter pWriter = new PrintWriter(sWriter);
                 t.printStackTrace(pWriter);
                 errorTextArea.append(sWriter.toString());
+                errorTextArea.append(
+                        removeHibernateModuleCodelines(sWriter.toString()));
+                logger.log(
+                        Level.INFO, "", t);
             }
-            logger.info(errorTextArea.getText());
+
         }
-        ph.progress(
-                NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionDone"), 99);
+        ph.progress(99);
+        ph.setDisplayName(NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionDone"));
 
         runHQLButton.setEnabled(true);
         ph.finish();
@@ -233,7 +239,12 @@ public final class HQLEditorTopComponent extends TopComponent {
                 String methodName = m.getName();
                 if (methodName.startsWith("get")) { //NOI18N
                     try {
-                        oneRow.add(m.invoke(oneObject, new Object[]{}));
+                        Object methodReturnValue = m.invoke(oneObject, new Object[]{});
+                        if(methodReturnValue == null) {
+                            oneRow.add("NULL"); //NOI18N
+                            continue;
+                        }
+                        oneRow.add(methodReturnValue);
                     } catch (IllegalAccessException ex) {
                         Exceptions.printStackTrace(ex);
                     } catch (IllegalArgumentException ex) {
@@ -249,6 +260,33 @@ public final class HQLEditorTopComponent extends TopComponent {
 
     private void setStatus(String message) {
         statusLabel.setText(message);
+    }
+
+    /*
+     * Creates custom table model with read only cell customization.
+     */
+    private class HQLEditorResultTableModel extends DefaultTableModel {
+
+        public HQLEditorResultTableModel(Vector<Vector> tableData, Vector<String> tableHeaders) {
+            super(tableData, tableHeaders);
+        }
+
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return false;
+        }
+    }
+
+    private String removeHibernateModuleCodelines(String exceptionTrace) {
+        StringTokenizer tokenizer = new StringTokenizer(exceptionTrace, "\n");
+        StringBuilder filteredExceptionTrace = new StringBuilder();
+        while (tokenizer.hasMoreTokens()) {
+            String token = tokenizer.nextToken();
+            if (!token.contains("org.netbeans.modules.hibernate")) {
+                filteredExceptionTrace.append(token).append("\n");
+            }
+        }
+        return filteredExceptionTrace.toString();
     }
 
     /** This method is called from within the constructor to
@@ -298,7 +336,7 @@ public final class HQLEditorTopComponent extends TopComponent {
         toolBar.add(hibernateConfigurationComboBox);
         toolBar.add(toolbarSeparator);
 
-        runHQLButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/hibernate/hqleditor/ui/resources/runsql16X16.png"))); // NOI18N
+        runHQLButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/hibernate/hqleditor/ui/resources/run_hql_query_16.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(runHQLButton, org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "HQLEditorTopComponent.runHQLButton.text")); // NOI18N
         runHQLButton.setToolTipText(org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "runHQLQueryButtonToolTip")); // NOI18N
         runHQLButton.setFocusable(false);
@@ -354,7 +392,7 @@ public final class HQLEditorTopComponent extends TopComponent {
         spacerPanel1.setLayout(spacerPanel1Layout);
         spacerPanel1Layout.setHorizontalGroup(
             spacerPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 204, Short.MAX_VALUE)
+            .add(0, 241, Short.MAX_VALUE)
         );
         spacerPanel1Layout.setVerticalGroup(
             spacerPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -367,7 +405,7 @@ public final class HQLEditorTopComponent extends TopComponent {
         spacerPanel2.setLayout(spacerPanel2Layout);
         spacerPanel2Layout.setHorizontalGroup(
             spacerPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 96, Short.MAX_VALUE)
+            .add(0, 134, Short.MAX_VALUE)
         );
         spacerPanel2Layout.setVerticalGroup(
             spacerPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -436,6 +474,7 @@ public final class HQLEditorTopComponent extends TopComponent {
         resultsOrErrorPanel.setLayout(new java.awt.CardLayout());
 
         errorTextArea.setColumns(20);
+        errorTextArea.setEditable(false);
         errorTextArea.setForeground(new java.awt.Color(255, 102, 102));
         errorTextArea.setRows(5);
         jScrollPane4.setViewportView(errorTextArea);
@@ -473,7 +512,7 @@ public final class HQLEditorTopComponent extends TopComponent {
             .add(containerPanelLayout.createSequentialGroup()
                 .add(toolBar2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(executionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE))
+                .add(executionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 286, Short.MAX_VALUE))
         );
 
         splitPane.setRightComponent(containerPanel);
@@ -498,41 +537,47 @@ public final class HQLEditorTopComponent extends TopComponent {
         String selectedMaxCount = setMaxRowCountComboBox.getSelectedItem().toString();
         try {
             return Integer.parseInt(selectedMaxCount);
-        } catch(NumberFormatException e) {
+        } catch (NumberFormatException e) {
             logger.warning("Number Format Error during parsing the max. row count");
         }
         return 1000; // Optimum value.
     }
-    
+
 private void resultToggleButtonItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_resultToggleButtonItemStateChanged
-    if (resultToggleButton.isSelected()) {
+    if (resultToggleButton.isSelected()) {//GEN-LAST:event_resultToggleButtonItemStateChanged
         ((CardLayout) (executionPanel.getLayout())).last(executionPanel);
         sqlToggleButton.setSelected(false);
     }
-}//GEN-LAST:event_resultToggleButtonItemStateChanged
+}
 
 private void sqlToggleButtonItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_sqlToggleButtonItemStateChanged
-    if (sqlToggleButton.isSelected()) {
-        ((CardLayout) (executionPanel.getLayout())).first(executionPanel);
+    if (sqlToggleButton.isSelected()) {//GEN-HEADEREND:event_sqlToggleButtonItemStateChanged
+        ((CardLayout) (executionPanel.getLayout())).first(executionPanel);//GEN-LAST:event_sqlToggleButtonItemStateChanged
         resultToggleButton.setSelected(false);
     }
-}//GEN-LAST:event_sqlToggleButtonItemStateChanged
+}
 
 private void runHQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runHQLButtonActionPerformed
-    runHQLButton.setEnabled(false);
+    // Fix - 138856
+    if(hqlEditor.getText().trim().equals("")) {
+        switchToResultView();
+        setStatus(NbBundle.getMessage(HQLEditorTopComponent.class, "emptyQuery"));
+        return;
+    }
+    runHQLButton.setEnabled(false);                                            
     try {
-        ph = ProgressHandleFactory.createHandle(
-                NbBundle.getMessage(HQLEditorTopComponent.class, "progressTaskname"));
+        ph = ProgressHandleFactory.createHandle(//GEN-HEADEREND:event_runHQLButtonActionPerformed
+                NbBundle.getMessage(HQLEditorTopComponent.class, "progressTaskname"));//GEN-LAST:event_runHQLButtonActionPerformed
         FileObject selectedConfigFile = (FileObject) hibernateConfigMap.get(hibernateConfigurationComboBox.getSelectedItem());
         ph.start(100);
-        controller.executeHQLQuery(hqlEditor.getText(), 
-                selectedConfigFile, 
+        controller.executeHQLQuery(hqlEditor.getText(),
+                selectedConfigFile,
                 getMaxRowCount(),
                 ph);
     } catch (Exception ex) {
-        Exceptions.printStackTrace(ex);                                            
+        Exceptions.printStackTrace(ex);
     }
-}//GEN-LAST:event_runHQLButtonActionPerformed
+}
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel containerPanel;
     private javax.swing.JTextArea errorTextArea;
@@ -564,6 +609,7 @@ private void runHQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JToolBar.Separator toolbarSeparator;
     private javax.swing.JToolBar.Separator toolbarSeparator1;
     // End of variables declaration//GEN-END:variables
+
     @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;

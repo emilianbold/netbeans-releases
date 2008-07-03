@@ -59,7 +59,7 @@ public final class PhpOptions {
 
     // these constants are used in API javadoc so therefore public modifier
     public static final int DEFAULT_DEBUGGER_PORT = 9000;
-    public static final boolean DEFAULT_DEBUGGER_STOP_AT_FIRST_LINE = false;
+    public static final boolean DEFAULT_DEBUGGER_STOP_AT_FIRST_LINE = true;
 
     // php cli
     public static final String PHP_INTERPRETER = "phpInterpreter"; // NOI18N

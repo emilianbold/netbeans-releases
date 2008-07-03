@@ -20,11 +20,12 @@
 package org.netbeans.modules.bpel.mapper.cast;
 
 import org.netbeans.modules.bpel.mapper.model.BpelMapperUtils;
-import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
+import org.netbeans.modules.bpel.mapper.model.PathConverter;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
 import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComp;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.openide.ErrorManager;
@@ -41,37 +42,37 @@ public class SyntheticPseudoComp extends AbstractPseudoComp {
      * which was used for create the new Pseudo component. The first element of the 
      * iterator should be skipped while constructing the schema context or expression. 
      */
-    private Iterable<Object> mItrb;
+    private TreeItem mAnyTreeItem;
     private XPathSchemaContext mSContext;
     
-    public SyntheticPseudoComp(Iterable<Object> itrb, DetachedPseudoComp dpc) {
+    public SyntheticPseudoComp(TreeItem anyTreeItem, DetachedPseudoComp dpc) {
         super(dpc);
-        assert itrb != null;
-        mItrb = itrb;
+        assert anyTreeItem != null;
+        mAnyTreeItem = anyTreeItem;
     }
     
-    public Iterable<Object> getLocationIterable() {
-        return mItrb;
+    public TreeItem getAnyTreeItem() {
+        return mAnyTreeItem;
     }
     
     public XPathSchemaContext getSchemaContext() {
         if (mSContext == null) {
-            mSContext = PathConverter.constructContext(mItrb, true);
+            mSContext = PathConverter.constructContext(mAnyTreeItem, true);
         }
         return mSContext;
     }
 
     public VariableDeclaration getBaseVariable() {
-        return BpelMapperUtils.getBaseVariable(mItrb);
+        return BpelMapperUtils.getBaseVariable(mAnyTreeItem);
     }
     
     public boolean populatePseudoComp(PseudoComp target, 
             BpelEntity destination, boolean inLeftMapperTree) 
             throws ExtRegistrationException {
         //
-        Iterable<Object> itrb = getLocationIterable();
+        TreeItem anyTreeItem = getAnyTreeItem();
         XPathExpression pathObj = PathConverter.constructXPath(
-                destination, itrb, true);
+                destination, anyTreeItem, true);
         if (pathObj == null) {
             return false;
         }
@@ -87,10 +88,10 @@ public class SyntheticPseudoComp extends AbstractPseudoComp {
         return populatePseudoCompImpl(target, destination, inLeftMapperTree);
     }
 
-    public Object getBaseAnyObject() {
-        Object result = mItrb.iterator().next();
-        return result;
-    }
+//    public Object getBaseAnyObject() {
+//        Object result = mAnyTreeItem.getDataObject();
+//        return result;
+//    }
 
     /**
      * This XPath expression is build relative to the variable returned by 
@@ -101,7 +102,7 @@ public class SyntheticPseudoComp extends AbstractPseudoComp {
      */
     public XPathExpression getParentPathExpression() {
         return PathConverter.constructXPath(
-                (BpelEntity)getBaseVariable(), mItrb, true);
+                (BpelEntity)getBaseVariable(), mAnyTreeItem, true);
     }
 
 } 

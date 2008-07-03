@@ -31,8 +31,6 @@ public final class NewFlatfileDatabaseWizardAction extends CallableSystemAction 
     private static transient final Localizer mLoc = Localizer.get();
     public String nbBundle6 = mLoc.t("BUND773: Create Mashup Database...");
     public String nbBundle1 = mLoc.t("BUND265: Create Mashup Database");
-    private static String fs = File.separator;
-
     public void performAction() {
         WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
@@ -130,14 +128,15 @@ public final class NewFlatfileDatabaseWizardAction extends CallableSystemAction 
     private boolean handle(String name) {
         String location = null;
         if (MashupTableWizardIterator.IS_PROJECT_CALL) {
-            location = ETLEditorSupport.PRJ_PATH + fs+"nbproject"+fs+"private"+fs+"databases"+fs;
+            location = ETLEditorSupport.PRJ_PATH + File.separator + "nbproject" +
+                    File.separator + "private" + File.separator + "databases";
         } else {
             location = getDefaultWorkingFolder();
 			name = name + "_" + System.currentTimeMillis();
-        }
+        }       
         MashupTableWizardIterator.IS_PROJECT_CALL = false;
         boolean status = false;
-        String url = DEFAULT_FLATFILE_JDBC_URL_PREFIX + name + ":" + location + name;
+        String url = DEFAULT_FLATFILE_JDBC_URL_PREFIX + name + ":" + location + File.separator + name;
         File f = new File(location + name);
         char[] ch = name.toCharArray();
         if (ch == null) {

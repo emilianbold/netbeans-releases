@@ -43,6 +43,8 @@ package org.netbeans.core.ui.options.filetypes;
 import java.util.ArrayList;
 import java.util.Collections;
 import javax.swing.UIManager;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.core.ui.options.filetypes.FileAssociationsModel.MimeItem;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -58,11 +60,13 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
     private final String chooseExtensionItem;
     private NewExtensionPanel newExtensionPanel;
     private FileAssociationsModel model;
+    private DocumentListener patternListener;
     
     FileAssociationsPanel(FileAssociationsOptionsPanelController controller) {
         this.controller = controller;
         initComponents();
         chooseExtensionItem = NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.cbExtension.choose"); // NOI18N
+        patternListener = new PatternDocumentListener();
     }
 
     /** This method is called from within the constructor to
@@ -82,6 +86,15 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
         btnDefault = new javax.swing.JButton();
         lblAssociatedAlso = new javax.swing.JLabel();
         lblAssociatedAlsoExt = new javax.swing.JLabel();
+        sepFileAssociations = new javax.swing.JSeparator();
+        lblFileAssociations = new javax.swing.JLabel();
+        lblFilesIgnored = new javax.swing.JLabel();
+        setFilesIgnored = new javax.swing.JSeparator();
+        lblPattern = new javax.swing.JLabel();
+        btnDefaultIgnored = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        txtPattern = new javax.swing.JTextPane();
+        txtPatternError = new javax.swing.JTextPane();
 
         lblExtension.setLabelFor(cbExtension);
         org.openide.awt.Mnemonics.setLocalizedText(lblExtension, org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.lblExtension.text")); // NOI18N
@@ -130,55 +143,117 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
         lblAssociatedAlsoExt.setEnabled(false);
         lblAssociatedAlsoExt.setPreferredSize(new java.awt.Dimension(200, 14));
 
+        org.openide.awt.Mnemonics.setLocalizedText(lblFileAssociations, org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.lblFileAssociations.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblFilesIgnored, org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.lblFilesIgnored.text")); // NOI18N
+
+        lblPattern.setLabelFor(txtPattern);
+        org.openide.awt.Mnemonics.setLocalizedText(lblPattern, org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.lblPattern.text")); // NOI18N
+        lblPattern.setToolTipText(org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.lblPattern.tooltip")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnDefaultIgnored, org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.btnDefaultIgnored.text")); // NOI18N
+        btnDefaultIgnored.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDefaultIgnoredActionPerformed(evt);
+            }
+        });
+
+        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        jScrollPane1.setViewportView(txtPattern);
+        txtPattern.getAccessibleContext().setAccessibleParent(this);
+
+        txtPatternError.setForeground(java.awt.Color.red);
+        txtPatternError.setFocusable(false);
+        txtPatternError.setOpaque(false);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lblType)
-                    .add(lblExtension))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(lblAssociatedAlso)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(lblAssociatedAlsoExt, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
-                                .add(cbExtension, 0, 197, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                            .add(cbType, 0, 197, Short.MAX_VALUE))
-                        .add(10, 10, 10)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(btnNew, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(lblFileAssociations)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(btnRemove, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(btnDefault, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                                .add(sepFileAssociations, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE))
+                            .add(layout.createSequentialGroup()
+                                .add(10, 10, 10)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(lblExtension)
+                                    .add(lblType))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(layout.createSequentialGroup()
+                                        .add(lblAssociatedAlso)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(lblAssociatedAlsoExt, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE))
+                                    .add(layout.createSequentialGroup()
+                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                            .add(layout.createSequentialGroup()
+                                                .add(cbExtension, 0, 212, Short.MAX_VALUE)
+                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
+                                            .add(cbType, 0, 212, Short.MAX_VALUE))
+                                        .add(10, 10, 10)
+                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                            .add(layout.createSequentialGroup()
+                                                .add(btnNew, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                                .add(btnRemove, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                            .add(btnDefault, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
+                            .add(layout.createSequentialGroup()
+                                .add(lblFilesIgnored)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(setFilesIgnored, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE))
+                            .add(layout.createSequentialGroup()
+                                .add(10, 10, 10)
+                                .add(lblPattern)
+                                .add(37, 37, 37)
+                                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                .add(btnDefaultIgnored, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(162, 162, 162)
+                        .add(txtPatternError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblExtension)
-                    .add(btnNew)
-                    .add(cbExtension, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(btnRemove))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(sepFileAssociations, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(lblFileAssociations))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblType)
+                    .add(btnNew)
+                    .add(cbExtension, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(btnRemove)
+                    .add(lblExtension))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(cbType, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(btnDefault))
+                    .add(btnDefault)
+                    .add(lblType))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblAssociatedAlso)
                     .add(lblAssociatedAlsoExt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(253, Short.MAX_VALUE))
+                .add(23, 23, 23)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(setFilesIgnored, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(lblFilesIgnored))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(lblPattern)
+                    .add(btnDefaultIgnored)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(txtPatternError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 123, Short.MAX_VALUE)
+                .add(16, 16, 16))
         );
 
         lblExtension.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.lblExtension.AN")); // NOI18N
@@ -193,6 +268,12 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
         btnDefault.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.btnDefault.AD")); // NOI18N
         lblAssociatedAlso.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.lblAssociatedAlso.AN")); // NOI18N
         lblAssociatedAlso.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.lblAssociatedAlso.AD")); // NOI18N
+        lblPattern.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.lblPattern.AN")); // NOI18N
+        lblPattern.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.lblPattern.AD")); // NOI18N
+        btnDefaultIgnored.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.btnDefaultIgnored.AN")); // NOI18N
+        btnDefaultIgnored.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.btnDefaultIgnored.AD")); // NOI18N
+        txtPatternError.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.txtPatternError.AN")); // NOI18N
+        txtPatternError.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.txtPatternError.AD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbExtensionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbExtensionActionPerformed
@@ -265,6 +346,10 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     controller.changed();
 }//GEN-LAST:event_btnRemoveActionPerformed
 
+private void btnDefaultIgnoredActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDefaultIgnoredActionPerformed
+    txtPattern.setText(IgnoredFilesPreferences.DEFAULT_IGNORED_FILES);
+}//GEN-LAST:event_btnDefaultIgnoredActionPerformed
+
     void load() {
         cbExtension.removeAllItems();
         cbExtension.setForeground(UIManager.getDefaults().getColor("ComboBox.disabledForeground"));  //NOI18N
@@ -283,25 +368,67 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         for (MimeItem mimePair : model.getMimeItems()) {
             cbType.addItem(mimePair);
         }
+
+        // load ignored files pattern
+        txtPattern.getDocument().removeDocumentListener(patternListener);
+        txtPattern.setText(IgnoredFilesPreferences.getIgnoredFiles());
+        txtPattern.getDocument().addDocumentListener(patternListener);
+        btnDefaultIgnored.setEnabled(!IgnoredFilesPreferences.DEFAULT_IGNORED_FILES.equals(txtPattern.getText()));
     }
     
     void store() {
+        // store file associations
         model.store();
+        // store ignored files pattern
+        IgnoredFilesPreferences.setIgnoredFiles(txtPattern.getText());
     }
 
     boolean valid() {
-        return true;
+        // Check validity only for ignored files pattern because file associations
+        // cannot get into invalid state.
+        return IgnoredFilesPreferences.isValid(txtPattern.getText());
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnDefault;
+    private javax.swing.JButton btnDefaultIgnored;
     private javax.swing.JButton btnNew;
     private javax.swing.JButton btnRemove;
     private javax.swing.JComboBox cbExtension;
     private javax.swing.JComboBox cbType;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblAssociatedAlso;
     private javax.swing.JLabel lblAssociatedAlsoExt;
     private javax.swing.JLabel lblExtension;
+    private javax.swing.JLabel lblFileAssociations;
+    private javax.swing.JLabel lblFilesIgnored;
+    private javax.swing.JLabel lblPattern;
     private javax.swing.JLabel lblType;
+    private javax.swing.JSeparator sepFileAssociations;
+    private javax.swing.JSeparator setFilesIgnored;
+    private javax.swing.JTextPane txtPattern;
+    private javax.swing.JTextPane txtPatternError;
     // End of variables declaration//GEN-END:variables
+
+
+    private class PatternDocumentListener implements DocumentListener {
+
+        public void insertUpdate(DocumentEvent e) {
+            patternChanged();
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            patternChanged();
+        }
+
+        public void changedUpdate(DocumentEvent e) {}
+
+        /** Notify controller that property was changed and update status of components
+         * handling ignored files pattern. */
+        private void patternChanged() {
+            controller.changed();
+            btnDefaultIgnored.setEnabled(!IgnoredFilesPreferences.DEFAULT_IGNORED_FILES.equals(txtPattern.getText()));
+            txtPatternError.setText(IgnoredFilesPreferences.getSyntaxError());
+        }
+    }
 }
