@@ -2996,9 +2996,16 @@ cast_expression
 		 cast_expression_type_specifier cast_expression
                  {#cast_expression = #(#[CSM_CAST_EXPRESSION, "CSM_CAST_EXPRESSION"], #cast_expression);}
 	|
+                (cast_array_type_specifier) =>
+		{if (statementTrace>=1)
+			printf("cast_expression_2[%d]: Cast to array type expression\n", LT(1).getLine());
+		}
+		 cast_array_type_specifier cast_expression
+                 {#cast_expression = #(#[CSM_CAST_EXPRESSION, "CSM_CAST_EXPRESSION"], #cast_expression);}
+	|
                 (cast_fun_type_specifier) => 
 		{if (statementTrace>=1) 
-			printf("cast_expression_2[%d]: Cast to function type expression\n", LT(1).getLine());
+			printf("cast_expression_3[%d]: Cast to function type expression\n", LT(1).getLine());
 		}
 		 cast_fun_type_specifier cast_expression
                  {#cast_expression = #(#[CSM_FUN_TYPE_CAST_EXPRESSION, "CSM_FUN_TYPE_CAST_EXPRESSION"], #cast_expression);}
@@ -3023,6 +3030,19 @@ cast_expression_type_specifier
                 ts = simple_type_specifier 
                 (postfix_cv_qualifier)? // to support (char const*)
                 (ptr_operator)*
+            RPAREN
+        ;
+
+protected
+cast_array_type_specifier
+        :
+            // cast like (int(*)[4][4]) 
+            LPAREN
+                declaration_specifiers
+                LPAREN
+                ptr_operator
+                RPAREN
+                (LSQUARE (constant_expression)? RSQUARE)+
             RPAREN
         ;
 
