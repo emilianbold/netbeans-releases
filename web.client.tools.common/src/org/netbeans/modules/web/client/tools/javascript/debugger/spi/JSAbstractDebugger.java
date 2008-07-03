@@ -105,7 +105,7 @@ public abstract class JSAbstractDebugger implements JSDebugger {
         }
 
         startDebuggingImpl();
-    }
+    }       
 
     protected final long getSequenceId() {
         return sequenceId;
