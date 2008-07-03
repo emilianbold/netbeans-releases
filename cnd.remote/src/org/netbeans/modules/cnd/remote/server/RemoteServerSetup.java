@@ -77,7 +77,7 @@ public class RemoteServerSetup {
     }
 
     static boolean needsSetupOrUpdate(String name) {
-        String cmd = "PATH=/bin:/usr/bin:$PATH  grep VERSION= " + dirPath + "/* /dev/null"; // NOI18N
+        String cmd = "PATH=/bin:/usr/bin:$PATH  grep VERSION= " + dirPath + "/* /dev/null 2>&1 "; // NOI18N
         List<String> updateList = new ArrayList<String>();
         
         RemoteCommandSupport support = new RemoteCommandSupport(name, cmd);
