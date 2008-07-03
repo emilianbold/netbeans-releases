@@ -36,6 +36,7 @@ import org.netbeans.modules.bpel.model.api.Reply;
 import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.ToPart;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
+import org.netbeans.modules.bpel.model.api.support.TBoolean;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.nodes.DecorationProvider;
 import org.netbeans.modules.xml.xam.Component;
@@ -160,13 +161,15 @@ public interface TooltipManager {
             
             Copy copyRef = (Copy)reference;
             
+        String attributesTooltip = Util.getAttributesTooltip(nodeType,copyRef); 
+
         String stringFrom = null;
         String stringTo = null;
         
         From from = copyRef.getFrom();
         To to = copyRef.getTo();
         
-        if (from == null || to == null) {
+        if ((from == null || to == null) && BpelNode.EMPTY_STRING.equals(attributesTooltip)) {
             return BpelNode.EMPTY_STRING;
         }
         
@@ -177,9 +180,12 @@ public interface TooltipManager {
             stringFrom = "("+stringFrom+endpointStr+")";
         }
         
+                        
         stringTo = DecorationProvider.Util.getToLabel(to);
-        if (stringFrom == null && stringTo == null) {
-            return "";
+        if (stringFrom == null && stringTo == null 
+                && BpelNode.EMPTY_STRING.equals(attributesTooltip)) 
+        {
+            return BpelNode.EMPTY_STRING;
         } else {
             stringFrom = stringFrom == null 
                     ? BpelNode.EMPTY_STRING 
@@ -187,12 +193,13 @@ public interface TooltipManager {
             stringTo = stringTo == null 
                     ? BpelNode.EMPTY_STRING 
                     : org.netbeans.modules.bpel.editors.api.EditorUtil.getCorrectedHtmlRenderedString(stringTo);
+            attributesTooltip = attributesTooltip == null ? BpelNode.EMPTY_STRING : attributesTooltip;
         }
         
         
         return NbBundle.getMessage(BpelNode.class,
                 "LBL_COPY_HTML_TOOLTIP",// NOI18N
-                stringTo,stringFrom); 
+                stringTo, stringFrom, attributesTooltip); 
         }
         
         
@@ -275,10 +282,42 @@ public interface TooltipManager {
                     );
         }
         
+        public static String getLocalizedAttribute(TBoolean attributeValue, String attributeName) {
+            if (attributeValue == null || TBoolean.INVALID.equals(attributeValue)) {
+                return BpelNode.EMPTY_STRING;
+            }
+            
+            attributeName = attributeName == null ? BpelNode.EMPTY_STRING : attributeName;
+            return NbBundle.getMessage(
+                    BpelNode.class,
+                    "LBL_ATTRIBUTE_HTML_TEMPLATE", // NOI18N
+                    attributeName,
+                    attributeValue.toString()
+                    );
+        }
+
+        /**
+         * 
+         * @param nodeType - node type
+         * @param component - node associated component
+         * @return tooltip of attributes part. Never returns null, 
+         * in case no attributes returns empty string
+         */
         public static String getAttributesTooltip(NodeType nodeType, Object component) {
             StringBuffer attributesTooltip = new StringBuffer();
             BpelReference tmpAttrRef = null;
             switch (nodeType) {
+                case COPY:
+                    assert component instanceof Copy;
+                    attributesTooltip.append(Util.getLocalizedAttribute(
+                                ((Copy)component).getIgnoreMissingFromData(),
+                                Copy.IGNORE_MISSING_FROM_DATA)
+                            );
+                    attributesTooltip.append(Util.getLocalizedAttribute(
+                                ((Copy)component).getKeepSrcElementName(),
+                                Copy.KEEP_SRC_ELEMENT_NAME)
+                            );
+                    break;                    
                 case INVOKE:
                     assert component instanceof Invoke;
                     attributesTooltip.append(Util.getLocalizedAttribute(
