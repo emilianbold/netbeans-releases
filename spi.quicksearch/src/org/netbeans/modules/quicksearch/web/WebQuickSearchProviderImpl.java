@@ -43,12 +43,14 @@ import java.awt.Toolkit;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -72,21 +74,35 @@ public class WebQuickSearchProviderImpl implements SearchProvider {
         } while( !res.isSearchFinished() );
     }
 
-    private Runnable createAction( final String url ) {
+    private static Runnable createAction( final String url ) {
         return new Runnable() {
             public void run() {
+                String extendedUrl = appendId( url );
                 try {
                     HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault();
                     if (displayer != null) {
-                        displayer.showURL(new URL(url));
+                        displayer.showURL(new URL(extendedUrl));
                     }
                 } catch (Exception e) {
                     StatusDisplayer.getDefault().setStatusText(
-                            NbBundle.getMessage(WebQuickSearchProviderImpl.class, "Err_CannotDisplayURL", url) ); //NOI18N
+                            NbBundle.getMessage(WebQuickSearchProviderImpl.class, "Err_CannotDisplayURL", extendedUrl) ); //NOI18N
                     Toolkit.getDefaultToolkit().beep();
                     Logger.getLogger(WebQuickSearchProviderImpl.class.getName()).log(Level.FINE, null, e);
                 }
             }
         };
+    }
+    
+    private static String appendId( String url ) {
+        StringBuffer res = new StringBuffer(url);
+        if( url.contains("?") ) { //NOI18N
+            res.append('&'); //NOI18N
+        } else {
+            res.append('?'); //NOI18N
+        }
+        res.append("cid=");
+        final Preferences p = NbPreferences.root().node("/org/netbeans/modules/autoupdate"); // NOI18N
+        res.append( p.get ("ideIdentity", "unknown") ); // NOI18N
+        return res.toString();
     }
 }
