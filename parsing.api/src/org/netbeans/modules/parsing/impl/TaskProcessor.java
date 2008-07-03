@@ -113,10 +113,7 @@ public class TaskProcessor {
     //Currently running SchedulerTask
     private final static CurrentRequestReference currentRequest = new CurrentRequestReference ();
 //    private final static List<DeferredTask> todo = Collections.synchronizedList(new LinkedList<DeferredTask>());
-    
-    //Stack of actives infos in nested runUserTasks
-    private static Map<Source,Stack<Parser.Result>> resultsStack = new HashMap<Source,Stack<Parser.Result>> ();
-                
+                    
     //Internal lock used to synchronize access to TaskProcessor iternal state
     private static class InternalLock {};    
     private static final Object INTERNAL_LOCK = new InternalLock ();
