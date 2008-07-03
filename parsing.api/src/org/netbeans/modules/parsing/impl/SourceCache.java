@@ -62,6 +62,8 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.parsing.spi.TaskScheduler;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 
@@ -317,6 +319,13 @@ public class SourceCache {
             TaskProcessor.addPhaseCompletionTasks (add, this, schedulerType);
         if (!reschedule.isEmpty ())
             TaskProcessor.rescheduleTasks (reschedule, source, schedulerType);
+    }
+    
+    @Override
+    public String toString() {
+        final Source src = getSnapshot().getSource();
+        final FileObject file = src.getFileObject();
+        return file == null ? "<unknown>" : FileUtil.getFileDisplayName(file);  //NOI18N
     }
     
     //@NotThreadSafe - has to be called in GuardedBy(this)

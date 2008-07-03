@@ -51,7 +51,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.WeakHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -88,7 +87,7 @@ import org.openide.util.Parameters;
  */
 public class TaskProcessor {
     
-    private static final Logger LOGGER = Logger.getLogger(Source.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(TaskProcessor.class.getName());
     
     /**Limit for task to be marked as a slow one, in ms*/
     private static final int SLOW_CANCEL_LIMIT = 50;
@@ -484,7 +483,7 @@ public class TaskProcessor {
                                         parserLock.unlock();
                                     }
                                 }
-                                else {           
+                                else {                                    
                                     final Source source = sourceCache.getSnapshot ().getSource ();
                                     synchronized (INTERNAL_LOCK) {
                                         //Not only the finishedRequests for the current request.javaSource should be cleaned,
@@ -520,6 +519,10 @@ public class TaskProcessor {
                                                 try {
                                                     final long startTime = System.currentTimeMillis();
                                                     if (r.task instanceof ParserResultTask) {
+                                                        LOGGER.fine("Running Task: " + r.toString());
+                                                        if (LOGGER.isLoggable(Level.FINE)) {
+                                                            LOGGER.fine("Running Task: " + r.toString());
+                                                        }
                                                         try {
                                                             ((ParserResultTask)r.task).run (currentResult,sourceCache.getSnapshot ());
                                                         } finally {
