@@ -104,6 +104,7 @@ public class SQLExecutorTest extends TestBase {
         assertNotNull(info);
         assertTrue(info.hasExceptions());
         assertTrue(info.getExceptions().size() == 1);
+        assertNotNull(info.getExceptions().get(0));
     }
 
 }
