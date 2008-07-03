@@ -108,7 +108,7 @@ public final class Source {
         FileObject          fileObject
     ) {
         Parameters.notNull("fileObject", fileObject);
-        if (!fileObject.isValid()) {
+        if (!fileObject.isValid() || !fileObject.isData()) {
             return null;
         }
         synchronized (Source.class) {
@@ -140,7 +140,10 @@ public final class Source {
     public static Source create (
         Document            document
     ) {
-        FileObject fileObject = NbEditorUtilities.getFileObject (document);
+        final FileObject fileObject = NbEditorUtilities.getFileObject (document);
+        if (fileObject == null) {
+            return null;
+        }
         return Source.create (fileObject);
     }
 
