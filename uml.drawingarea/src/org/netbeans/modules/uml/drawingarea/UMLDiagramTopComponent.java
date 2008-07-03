@@ -87,6 +87,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IConstraint;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
@@ -819,28 +820,25 @@ public class UMLDiagramTopComponent extends TopComponent
         INamespace newNameSpace = null;
         if (owner != null)
         {
-            //modifications have sense only if occur in project, 
+            //modifications have sense only if occur in project, package etc
             // if user create activity diagram inside activity, sqd inside interaction we have nothing to do
-            if(owner instanceof IProject)
+            FactoryRetriever factory = FactoryRetriever.instance();
+            if (diagramKind.indexOf("Activity") > -1 && !(owner instanceof IActivity))
             {
-                FactoryRetriever factory = FactoryRetriever.instance();
-                if (diagramKind.indexOf("Activity") > -1)
-                {
-                    //create Activity namespace for Activity diagram
-                    newNameSpace = (IActivity) factory.createType("Activity", owner);
-                } 
-                else if (diagramKind.indexOf("Collaboration") > -1 ||
-                        diagramKind.indexOf("Sequence") > -1)
-                {
-                    // Create Interaction nameSpace for Collaboration/Sequence diagram
-                    newNameSpace = (IInteraction) factory.createType("Interaction", owner);
-                } 
-                else if (diagramKind.indexOf("State") > -1)
-                {
-                    // Create StateMachine nameSpace for State diagram
-                    newNameSpace = (IStateMachine) factory.createType("StateMachine", owner);
-                } 
-            }
+                //create Activity namespace for Activity diagram
+                newNameSpace = (IActivity) factory.createType("Activity", owner);
+            } 
+            else if ((diagramKind.indexOf("Collaboration") > -1 ||
+                    diagramKind.indexOf("Sequence") > -1) && !(owner instanceof IInteraction))
+            {
+                // Create Interaction nameSpace for Collaboration/Sequence diagram
+                newNameSpace = (IInteraction) factory.createType("Interaction", owner);
+            } 
+            else if (diagramKind.indexOf("State") > -1 && !(owner instanceof IStateMachine))
+            {
+                // Create StateMachine nameSpace for State diagram
+                newNameSpace = (IStateMachine) factory.createType("StateMachine", owner);
+            } 
             
             if (newNameSpace != null) 
             {
