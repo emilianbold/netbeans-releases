@@ -57,6 +57,7 @@ public abstract class RemoteConnectionSupport {
     protected Session session;
     protected Channel channel;
     private String user;
+    private int exit_status;
     protected static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
     public RemoteConnectionSupport(String key, int port) {
@@ -64,6 +65,7 @@ public abstract class RemoteConnectionSupport {
         int pos = key.indexOf('@');
         user = key.substring(0, pos);
         String host = key.substring(pos + 1);
+        exit_status = -1; // this is what JSch initializes it to...
         
         try {
             jsch = new JSch();
@@ -91,6 +93,14 @@ public abstract class RemoteConnectionSupport {
     }
     
     protected abstract Channel createChannel() throws JSchException;
+    
+    public int getExitStatus() {
+        return channel != null ? channel.getExitStatus() : -1; // JSch initializes exit status to -1
+    }
+    
+    protected void setExitStatus(int exit_status) {
+        this.exit_status = exit_status;
+    }
     
     protected void disconnect() {
         channel.disconnect();
