@@ -129,7 +129,7 @@ class DataViewTableUI extends JTable {
         miCommitAction.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                handler.commitActionPerformed();
+                handler.commitActionPerformed(true);
             }
         });
         tablePopupMenu.add(miCommitAction);
