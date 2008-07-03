@@ -137,6 +137,9 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
      * Keep backward compatibility with CompilerSetConfiguration (for now)
      */
     public int getValue() {
+        // TODO: only usage of getValue is next: 
+        // CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue());
+        
         String s = getCompilerSetName().getValue();
 	if (s != null) {
             int i = 0;
@@ -148,6 +151,13 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
             }
         }
         return 0; // Default
+    }
+    
+    /**
+      * TODO: i'm not sure why this method wasn't here before so maybe it's wrong 
+      */
+    public CompilerSet getCompilerSet() {
+        return CompilerSetManager.getDefault(developmentHostConfiguration.getName()).getCompilerSet(getCompilerSetName().getValue());
     }
     
     public String getName() {

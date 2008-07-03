@@ -1085,6 +1085,7 @@ public abstract class BpelNode<T>
             } else {
                 if (BpelNode.this.isEventRequreUpdate(event)) {
                     reloadChildren();
+                    updateName();
                 }
             }
             // Perform update processing of complex ptoperties

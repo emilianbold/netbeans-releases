@@ -43,7 +43,6 @@ package org.netbeans.modules.xml.schema.completion;
 import java.util.List;
 import junit.framework.*;
 import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -77,7 +76,7 @@ public class BasicCompletionTest extends AbstractTestCase {
         suite.addTest(new BasicCompletionTest("testEndtagCompletion1"));
         suite.addTest(new BasicCompletionTest("testEndtagCompletion2"));
         suite.addTest(new BasicCompletionTest("testEndtagCompletion3"));
-        suite.addTest(new BasicCompletionTest("testCompletionWithAmpersand"));        
+        suite.addTest(new BasicCompletionTest("testCompletionWithAmpersand"));
         suite.addTest(new BasicCompletionTest("testSchemaFromRuntimeCatalog"));
         //suite.addTest(new BasicCompletionTest("testCompletionUsingSchemaFromCatalog"));
         suite.addTest(new BasicCompletionTest("testWildcard1"));
@@ -305,29 +304,14 @@ public class BasicCompletionTest extends AbstractTestCase {
     }
     
     public void testWildcard1() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
-        buffer.append("<A:rootA1 xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=64
-        buffer.append("  xmlns:A=\"http://xml.netbeans.org/schema/TNSA\"\n"); //offset=48
-        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/TNSA A.xsd\">\n"); //offset=66
-        buffer.append("  <\n"); //offset=4
-        buffer.append("</A:rootA1>\n");
-        setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
+        setupCompletion("resources/Wildcard1.xml", null);
         List<CompletionResultItem> items = query(221);
         String[] expectedResult = {"A:rootA1", "A:rootA2", "A:rootA3", "A:A11", "A:A12"};
         assertResult(items, expectedResult);
     }
     
     public void testWildcard2() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
-        buffer.append("<A:rootA1 xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=64
-        buffer.append("  xmlns:A=\"http://xml.netbeans.org/schema/TNSA\"\n"); //offset=48
-        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/TNSA A.xsd\n"); //offset=64
-        buffer.append("  http://xml.netbeans.org/schema/TNSB B.xsd\">\n"); //offset=46
-        buffer.append("  <\n");
-        buffer.append("</A:rootA1>\n");
-        setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
+        setupCompletion("resources/Wildcard2.xml", null);
         List<CompletionResultItem> items = query(265);
         String[] expectedResult = {"ns1:rootB1", "ns1:rootB2", "A:rootA1", "A:rootA2",
         "A:rootA3", "A:A11", "A:A12"};
@@ -335,43 +319,33 @@ public class BasicCompletionTest extends AbstractTestCase {
     }
     
     public void testWildcard3() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
-        buffer.append("<A:rootA1 xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=64
-        buffer.append("  xmlns:A=\"http://xml.netbeans.org/schema/TNSA\"\n"); //offset=48
-        buffer.append("  xmlns:B=\"http://xml.netbeans.org/schema/TNSB\"\n"); //offset=48
-        buffer.append("  xmlns:C=\"http://xml.netbeans.org/schema/TNSC\"\n"); //offset=48
-        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/TNSA A.xsd\n"); //offset=64
-        buffer.append("  http://xml.netbeans.org/schema/TNSB B.xsd\n"); //offset=44
-        buffer.append("  http://xml.netbeans.org/schema/TNSC C.xsd\">\n"); //offset=46
-        buffer.append("  <\n"); //offset=04
-        buffer.append("</A:rootA1>\n");
-        setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
+        setupCompletion("resources/Wildcard3.xml", null);
+        //query at 405
         List<CompletionResultItem> items = query(405);
         String[] expectedResult = {"C:rootC1", "C:rootC1","B:rootB1", "B:rootB2",
         "A:rootA1", "A:rootA2", "A:rootA3", "A:A11", "A:A12"};
         assertResult(items, expectedResult);
+        
+        //query at 447
+        items = query(447);
+        String[] expectedResult1 = {"C:rootC1", "C:rootC2","B:rootB1", "B:rootB2", "A:rootA1",
+            "A:rootA2", "A:rootA3", "A:A11", "A:A12"};        
+        assertResult(items, expectedResult1);
+        
+        //query at 494
+        items = query(494);
+        String[] expectedResult2 = {"B:B11", "B:B12"};
+        assertResult(items, expectedResult2);
     }
     
     public void testWildcard4() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
-        buffer.append("<A:rootA2 xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=64
-        buffer.append("  xmlns:A=\"http://xml.netbeans.org/schema/TNSA\"\n"); //offset=48
-        buffer.append("  xmlns:B=\"http://xml.netbeans.org/schema/TNSB\"\n"); //offset=48
-        buffer.append("  xmlns:C=\"http://xml.netbeans.org/schema/TNSC\"\n"); //offset=48
-        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/TNSA A.xsd\n"); //offset=64
-        buffer.append("  http://xml.netbeans.org/schema/TNSB B.xsd\n"); //offset=44
-        buffer.append("  http://xml.netbeans.org/schema/TNSC C.xsd\">\n"); //offset=46
-        buffer.append("  <\n"); //offset=04
-        buffer.append("</A:rootA2>\n");
-        setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
+        setupCompletion("resources/Wildcard4.xml", null);
         List<CompletionResultItem> items = query(405);
         String[] expectedResult = {"C:rootC1", "C:rootC1","B:rootB1", "B:rootB2", "A:rootA1",
             "A:rootA2", "A:rootA3", "A:rootA3", "A:A21", "A:A22"};
         assertResult(items, expectedResult);
     }
-            
+    
     public void testChildren1() throws Exception {
         StringBuffer buffer = new StringBuffer();
         buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
@@ -408,7 +382,9 @@ public class BasicCompletionTest extends AbstractTestCase {
      */
     public void testReadNamespace() throws Exception {
         setupCompletion(PROJECT_INSTANCE_DOCUMENT, null);
-        String[] results = CompletionUtil.getDeclaredNamespaces(FileUtil.toFile(instanceFileObject));
+        java.util.HashMap<String, String> nsMap = CompletionUtil.getNamespacesFromStartTags(getDocument());
+        String[] results = new String[nsMap.size()];
+        results = nsMap.keySet().toArray(results);
         String[] expectedResult = {"http://www.netbeans.org/ns/project/1","http://www.netbeans.org/ns/nb-module-project/3"};
         assertResult(results, expectedResult);
     }

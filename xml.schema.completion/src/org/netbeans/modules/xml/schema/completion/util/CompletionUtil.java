@@ -40,20 +40,14 @@
  */
 package org.netbeans.modules.xml.schema.completion.util;
 
-import java.io.FileNotFoundException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
-import org.xml.sax.Attributes;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import org.netbeans.api.lexer.Token;
@@ -77,9 +71,6 @@ import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.Co
 import org.netbeans.modules.xml.schema.model.Form;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 /**
  *
@@ -166,11 +157,11 @@ public class CompletionUtil {
     
     /**
      * Returns the list of prefixes declared against the specified
-     * target namespace. For example a document may declare namespaces as follows:
+     * namespace. For example a document may declare namespaces as follows:
      * xmlns="tns" xmlns:a="tns" xmlns:b="tns"
      * The returned list in this case will be [a, b, null]
      */
-    public static List<String> getPrefixesAgainstTargetNamespace(
+    public static List<String> getPrefixesAgainstNamespace(
             CompletionContextImpl context, String namespace) {
         List<String> list = new ArrayList<String>();
         List<DocRootAttribute> attributes = context.getDocRootAttributes();
@@ -391,7 +382,7 @@ public class CompletionUtil {
         List<String> prefixes = new ArrayList<String>();
         if(cm == null) {
             if(!context.getDefaultNamespace().equals(ae.getTargetNamespace())) {
-                prefixes = getPrefixesAgainstTargetNamespace(context, ae.getTargetNamespace());
+                prefixes = getPrefixesAgainstNamespace(context, ae.getTargetNamespace());
                 if(prefixes.size() != 0)
                     return prefixes;
                 String prefix = context.suggestPrefix("ns1");
@@ -400,10 +391,10 @@ public class CompletionUtil {
                 prefixes.add(prefix); //NOI18N
                 return prefixes;
             }
-            return getPrefixesAgainstTargetNamespace(context, ae.getTargetNamespace());
+            return getPrefixesAgainstNamespace(context, ae.getTargetNamespace());
         }
         
-        prefixes = getPrefixesAgainstTargetNamespace(context, cm.getTargetNamespace());
+        prefixes = getPrefixesAgainstNamespace(context, cm.getTargetNamespace());
         if(prefixes.size() == 0)
             prefixes.add(cm.getSuggestedPrefix());
         
@@ -543,77 +534,90 @@ public class CompletionUtil {
         }        
     }
     
-    public static String[] getDeclaredNamespaces(java.io.File file) {        
-        java.io.FileReader fileReader = null;
-        try {
-            fileReader = new java.io.FileReader(file);
-            InputSource inputSource = new org.xml.sax.InputSource(fileReader);
-            NsHandler nsHandler = getNamespaces(inputSource);
-            return nsHandler.getNamespaces();
-        } catch (FileNotFoundException ex) {
-            logger.log(Level.INFO, ex.getMessage());
-        } finally {
-            try {
-                if(fileReader != null)
-                    fileReader.close();
-            } catch (Exception ex) {
-                logger.log(Level.INFO, ex.getMessage());
-            }
-        }        
-        return null;
-    }
     
-    private static NsHandler getNamespaces(InputSource is) {
-        NsHandler handler = new NsHandler();
+    /**
+     * Finds namespaces declared in all start tags in the document and keeps a map
+     * of namespaces to their prefixes.
+     * @param document
+     * @return
+     */
+    public static HashMap<String, String> getNamespacesFromStartTags(Document document) {
+        HashMap<String, String> map = new HashMap<String, String>();
+        ((AbstractDocument)document).readLock();
         try {
-            XMLReader xmlReader = org.openide.xml.XMLUtil.createXMLReader(false, true);
-            xmlReader.setContentHandler(handler);
-            xmlReader.parse(is);
-        } catch (Exception ex) {
-            logger.log(Level.INFO, ex.getMessage());
-        }
-        return handler;
-    }
-    
-    private static class NsHandler extends org.xml.sax.helpers.DefaultHandler {
-
-        Set<String> namespaces;
-        private Map<String, String> mapping;
-
-        NsHandler() {
-            namespaces = new HashSet<String>();
-            mapping = new HashMap<String, String>();
-        }
-
-        public void startElement(String uri, String localName, String rawName, Attributes atts) throws SAXException {
-            if (atts.getLength() > 0) {
-                String locations = atts.getValue(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "schemaLocation"); // NOI18N
-                if (locations == null)
-                    return;                
-                StringTokenizer tokenizer = new StringTokenizer(locations);
-                if ((tokenizer.countTokens() % 2) == 0) {
-                    while (tokenizer.hasMoreElements()) {
-                        String nsURI = tokenizer.nextToken();
-                        String nsLocation = tokenizer.nextToken();
-                        mapping.put(nsURI, nsLocation);
-                    }
+            TokenHierarchy th = TokenHierarchy.get(document);
+            TokenSequence ts = th.tokenSequence();
+            String lastNS = null;
+            while(ts.moveNext()) {
+                Token t = ts.token();
+                if(t.id() == XMLTokenId.ARGUMENT &&
+                   t.text().toString().startsWith(XMLConstants.XMLNS_ATTRIBUTE)) {
+                    lastNS = t.text().toString();
                 }
-            }
+                if(t.id() == XMLTokenId.VALUE && lastNS != null) {
+                    String value = t.text().toString();
+                    if(value.startsWith("'") || value.startsWith("\""))
+                        value = value.substring(1, value.length()-1);
+                    map.put(value, CompletionUtil.getPrefixFromNamespaceDeclaration(lastNS));
+                    lastNS = null;
+                }
+            } //while loop            
+        } finally {
+            ((AbstractDocument)document).readUnlock();
         }
-
-        public void startPrefixMapping(String prefix, String uri) throws SAXException {
-            if (XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI.equals(uri)) {
-                return;
-            }
-            namespaces.add(uri);
-        }
-
-        String[] getNamespaces() {
-            String[] ns = new String[namespaces.size()];
-            namespaces.toArray(ns);
-            return ns;
-        }
+        return map;
     }
+    
+//    private static NsHandler getNamespaces(InputSource is) {
+//        NsHandler handler = new NsHandler();
+//        try {
+//            XMLReader xmlReader = org.openide.xml.XMLUtil.createXMLReader(false, true);
+//            xmlReader.setContentHandler(handler);
+//            xmlReader.parse(is);
+//        } catch (Exception ex) {
+//            logger.log(Level.INFO, ex.getMessage());
+//        }
+//        return handler;
+//    }
+    
+//    private static class NsHandler extends org.xml.sax.helpers.DefaultHandler {
+//
+//        //key=tns, value=prefix
+//        private HashMap<String, String> nsMap;
+//
+//        NsHandler() {
+//            nsMap = new HashMap<String, String>();
+//        }
+//
+//        @Override
+//        public void startElement(String uri, String localName, String rawName, Attributes atts) throws SAXException {
+//            if (atts.getLength() > 0) {
+//                String locations = atts.getValue(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "schemaLocation"); // NOI18N
+//                if (locations == null)
+//                    return;                
+//                StringTokenizer tokenizer = new StringTokenizer(locations);
+//                if ((tokenizer.countTokens() % 2) == 0) {
+//                    while (tokenizer.hasMoreElements()) {
+//                        String nsURI = tokenizer.nextToken();
+//                        String nsLocation = tokenizer.nextToken();
+//                        //mapping.put(nsURI, nsLocation);
+//                    }
+//                }
+//            }
+//        }
+//
+//        @Override
+//        public void startPrefixMapping(String prefix, String uri) throws SAXException {
+//            if (XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI.equals(uri)) {
+//                return;
+//            }
+//            nsMap.put(uri, prefix);
+//        }
+//
+//        HashMap<String, String> getNamespaceMap() {
+//            return nsMap;
+//        }
+//    }
     
     public static boolean isDTDBasedDocument(Document document) {
         ((AbstractDocument)document).readLock();
@@ -658,6 +662,8 @@ public class CompletionUtil {
     /**
      * Finds the root element of the xml document. It also populates the
      * attributes for the root element.
+     * 
+     * See DocRoot.
      */
     public static DocRoot getDocRoot(Document document) {
         ((AbstractDocument)document).readLock();
@@ -702,6 +708,7 @@ public class CompletionUtil {
     }
     
     public static class DocRoot {
+        //name of the root along with prefix, e.g. po:purchaseOrder
         private String name;
         private List<DocRootAttribute> attributes;
         
@@ -712,6 +719,10 @@ public class CompletionUtil {
         
         public String getName() {
             return name;
+        }
+        
+        public String getPrefix() {
+            return CompletionUtil.getPrefixFromTag(name);
         }
         
         public List<DocRootAttribute> getAttributes() {

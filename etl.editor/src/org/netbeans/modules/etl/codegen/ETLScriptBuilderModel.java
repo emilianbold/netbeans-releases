@@ -143,6 +143,9 @@ public final class ETLScriptBuilderModel {
             String qualifiedOid = nameToDatabaseMap.get(connDefName);
 
             if (SQLUtils.getSupportedDBType(connDef.getDBType()) == DBConstants.AXION) {
+                //Fix for Axion Connection Definitions not being persisted in the engine file and causing a problem for 
+                //Staging Strategy.
+                connectionDefinitions.add(connDef);
                 if (qualifiedOid != null) {
                     nameToDatabaseMap.remove(connDefName);
                     nameToDatabaseMap.put(ETL_INSTANCE_DB_CONN_DEF_NAME, qualifiedOid);

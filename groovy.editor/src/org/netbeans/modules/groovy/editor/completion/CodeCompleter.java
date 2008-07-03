@@ -130,7 +130,7 @@ public class CodeCompleter implements CodeCompletionHandler {
     Set<GroovyKeyword> keywords;
 
     public CodeCompleter() {
-        LOG.setLevel(Level.FINEST);
+//        LOG.setLevel(Level.FINEST);
 
         JavaPlatformManager platformMan = JavaPlatformManager.getDefault();
         JavaPlatform platform = platformMan.getDefaultPlatform();

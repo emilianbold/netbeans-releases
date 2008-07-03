@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.remote.compilers;
 
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetProvider;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.remote.support.RemoteScriptSupport;
@@ -51,6 +52,7 @@ import org.netbeans.modules.cnd.remote.support.managers.CompilerSetScriptManager
 public class RemoteCompilerSetProvider implements CompilerSetProvider, PlatformTypes {
     
     private CompilerSetScriptManager manager;
+    private Logger log = Logger.getLogger("cnd.remote.logger");
     
     public void init(String name) {
         manager = new CompilerSetScriptManager();
@@ -59,13 +61,17 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider, PlatformT
     
     public int getPlatform() {
         String platform = manager.getPlatform();
-        if (platform.startsWith("Windows")) {
+        if (platform == null || platform.length() == 0) {
+            log.warning("Got null response on platform");
+            platform = "";
+        }
+        if (platform.startsWith("Windows")) { // NOI18N
             return PLATFORM_WINDOWS;
-        } else if (platform.startsWith("Linux")) {
+        } else if (platform.startsWith("Linux")) { // NOI18N
             return PLATFORM_LINUX;
-        } else if (platform.startsWith("SunOS")) {
-            return platform.contains("86") ? PLATFORM_SOLARIS_INTEL : PLATFORM_SOLARIS_SPARC;
-        } else if (platform.toLowerCase().startsWith("mac")) {
+        } else if (platform.startsWith("SunOS")) { // NOI18N
+            return platform.contains("86") ? PLATFORM_SOLARIS_INTEL : PLATFORM_SOLARIS_SPARC; // NOI18N
+        } else if (platform.toLowerCase().startsWith("mac")) { // NOI18N
             return PLATFORM_MACOSX;
         } else {
             return PLATFORM_GENERIC;

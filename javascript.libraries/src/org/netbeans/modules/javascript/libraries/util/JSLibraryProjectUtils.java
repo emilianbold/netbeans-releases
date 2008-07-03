@@ -64,6 +64,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
@@ -77,8 +78,10 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.javascript.libraries.api.JavaScriptLibrarySupport;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -104,10 +107,12 @@ public final class JSLibraryProjectUtils {
     private static final String LIBRARY_LIST_PROP = "javascript-libraries"; // NOI18N
     private static final String LIBRARY_ZIP_VOLUME = "scriptpath"; // NOI18N
 
-    public static Object displayFolderOverwriteDialog() {
+    private static enum OverwriteOption { PROMPT, OVERWRITE, SKIP, OVERWRITE_ONCE, SKIP_ONCE };
+    
+    public static Object displayLibraryOverwriteDialog(Library library) {
         NotifyDescriptor nd = 
                 new NotifyDescriptor.Confirmation(
-                NbBundle.getMessage(JSLibraryProjectUtils.class, "ExtractLibraries_Overwrite_Msg"), 
+                NbBundle.getMessage(JSLibraryProjectUtils.class, "ExtractLibraries_Overwrite_Msg", library.getDisplayName()), 
                 NbBundle.getMessage(JSLibraryProjectUtils.class, "ExtractLibraries_Overwrite_Title"), 
                 NotifyDescriptor.YES_NO_OPTION);
         
@@ -122,6 +127,39 @@ public final class JSLibraryProjectUtils {
                 NotifyDescriptor.YES_NO_CANCEL_OPTION);
         
         return DialogDisplayer.getDefault().notify(nd);
+    }
+    
+    private static OverwriteOption displayFileOverwriteDialog(String file, Library library) {
+        JButton yesToAll = new JButton();
+        JButton noToAll = new JButton();
+        JButton yes = new JButton();
+        JButton no = new JButton();
+        
+        Mnemonics.setLocalizedText(yesToAll, NbBundle.getMessage(JSLibraryProjectUtils.class, "LBL_YesToAll_Button"));
+        Mnemonics.setLocalizedText(noToAll, NbBundle.getMessage(JSLibraryProjectUtils.class, "LBL_NoToAll_Button"));
+        Mnemonics.setLocalizedText(yes, NbBundle.getMessage(JSLibraryProjectUtils.class, "LBL_Yes_Button"));
+        Mnemonics.setLocalizedText(no, NbBundle.getMessage(JSLibraryProjectUtils.class, "LBL_No_Button"));
+
+        Object[] options = new Object[] { yes, yesToAll, no, noToAll };
+        
+        DialogDescriptor dd =
+                new DialogDescriptor(
+                NbBundle.getMessage(JSLibraryProjectUtils.class, "ExtractLibraries_File_Overwrite_Msg", file, library.getDisplayName()),
+                NbBundle.getMessage(JSLibraryProjectUtils.class, "ExtractLibraries_File_Overwrite_Title"),
+                true, options, no, DialogDescriptor.DEFAULT_ALIGN, null, null);
+        
+        Object result = DialogDisplayer.getDefault().notify(dd);
+        if (result == yes) {
+            return OverwriteOption.OVERWRITE_ONCE;
+        } else if (result == no) {
+            return OverwriteOption.SKIP_ONCE;
+        } else if (result == yesToAll) {
+            return OverwriteOption.OVERWRITE;
+        } else if (result == noToAll) {
+            return OverwriteOption.SKIP;
+        }
+        
+        return OverwriteOption.SKIP_ONCE;
     }
     
     public static LibraryChooser.Filter createDefaultFilter() {
@@ -235,7 +273,6 @@ public final class JSLibraryProjectUtils {
     private static String getDefaultSourcePath(Project project) {
         Project p = project.getLookup().lookup(Project.class);
         if (p == null) {
-            Log.getLogger().warning("project.getLookup().lookup(Project.class) returned null for project: " + project);
             p = project;
         }
         
@@ -383,7 +420,7 @@ public final class JSLibraryProjectUtils {
                             try {
                                 String[] libraryDirs = getLibraryPropsValue(zip);
                                 
-                                currentSize = extractZip(destination, zip, handle, currentSize, libraryDirs);
+                                currentSize = extractZip(library, destination, zip, handle, currentSize, libraryDirs);
                             } catch (IOException ex) {
                                 Log.getLogger().log(Level.SEVERE, "Unable to extract zip file", ex);
                             }
@@ -566,11 +603,7 @@ public final class JSLibraryProjectUtils {
         return currentTotal;
     }
     
-    private static int extractZip(File outDir, ZipFile zipFile, ProgressHandle handle, int currentTotal) throws IOException {
-        return extractZip(outDir, zipFile, handle, currentTotal, null);
-    }
-    
-    private static int extractZip(File outDir, ZipFile zipFile, ProgressHandle handle, int currentTotal, String[] includePaths) throws IOException {
+    private static int extractZip(Library library, File outDir, ZipFile zipFile, ProgressHandle handle, int currentTotal, String[] includePaths) throws IOException {
         try {
             if (includePaths != null && includePaths.length > 0) {
                 for (int i = 0; i < includePaths.length; i++) {
@@ -581,6 +614,7 @@ public final class JSLibraryProjectUtils {
                 
             }
             
+            OverwriteOption option = OverwriteOption.PROMPT;
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
             
             while (entries.hasMoreElements()) {
@@ -613,6 +647,26 @@ public final class JSLibraryProjectUtils {
                     handle.progress(++currentTotal);
                 } else {
                     File file = new File(outDir, entryName);
+                    boolean exists = file.exists();
+                    
+                    if (exists && file.isDirectory()) {
+                        throw new IOException("Cannot write normal file to existing directory with the same path");
+                    }
+                    
+                    if (option == OverwriteOption.PROMPT && exists) {
+                        OverwriteOption result = displayFileOverwriteDialog(entryName, library);
+                        if (result == OverwriteOption.SKIP_ONCE) {
+                            continue;
+                        } else if (result == OverwriteOption.SKIP) {
+                            option = result;
+                            continue;
+                        } else if (result == OverwriteOption.OVERWRITE) {
+                            option = result;
+                        }
+                    } else if (exists && option == OverwriteOption.SKIP) {
+                        continue;
+                    }
+                    
                     BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(file));
                     InputStream input = zipFile.getInputStream(zipEntry);
                     

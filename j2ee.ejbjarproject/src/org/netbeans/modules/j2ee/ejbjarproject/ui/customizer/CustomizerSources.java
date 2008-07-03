@@ -67,7 +67,9 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
+import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -207,6 +209,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         sourceLevel = new javax.swing.JComboBox();
         jLabel5 = new javax.swing.JLabel();
         encoding = new javax.swing.JComboBox();
+        includeExcludeButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -475,9 +478,8 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jLabel4.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "MNE_SourceLevel").charAt(0));
         jLabel4.setLabelFor(sourceLevel);
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "TXT_SourceLevel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "TXT_SourceLevel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -488,10 +490,9 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.75;
         jPanel1.add(sourceLevel, gridBagConstraints);
         sourceLevel.getAccessibleContext().setAccessibleName(bundle.getString("AN_SourceLevel")); // NOI18N
@@ -510,12 +511,25 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         jPanel1.add(encoding, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(includeExcludeButton, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.includeExcludeButton")); // NOI18N
+        includeExcludeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                includeExcludeButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 40, 0, 0);
+        jPanel1.add(includeExcludeButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -548,6 +562,17 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             jTextFieldConfigFilesFolder.setText(newConfigFiles);
         }
     }//GEN-LAST:event_jButtonBrowseActionPerformed
+
+private void includeExcludeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_includeExcludeButtonActionPerformed
+IncludeExcludeVisualizer v = new IncludeExcludeVisualizer();
+    uiProperties.loadIncludesExcludes(v);
+    DialogDescriptor dd = new DialogDescriptor(v.getVisualizerPanel(),
+            NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.title.includeExclude"));
+    dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
+    if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dd))) {
+        uiProperties.storeIncludesExcludes(v);
+    }
+}//GEN-LAST:event_includeExcludeButtonActionPerformed
     
     private void handleEncodingChange() {
         Charset enc = (Charset) encoding.getSelectedItem();
@@ -571,6 +596,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
     private javax.swing.JButton downSourceRoot;
     private javax.swing.JButton downTestRoot;
     private javax.swing.JComboBox encoding;
+    private javax.swing.JButton includeExcludeButton;
     private javax.swing.JButton jButtonBrowse;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
