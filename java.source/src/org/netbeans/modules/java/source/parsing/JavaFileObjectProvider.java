@@ -54,7 +54,7 @@ import org.openide.filesystems.FileObject;
  * @see JavaFileManager
  * @author Tomas Zezula
  */
-interface JavaFileObjectProvider {
+public interface JavaFileObjectProvider {
     
     /**
      * Creates {@link JavaFileObject} for given file under given root.
