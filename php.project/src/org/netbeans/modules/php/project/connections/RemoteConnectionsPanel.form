@@ -4,6 +4,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -114,19 +115,25 @@
                                       <Component id="passwordTextField" alignment="0" pref="152" max="32767" attributes="0"/>
                                       <Component id="initialDirectoryTextField" alignment="0" pref="152" max="32767" attributes="2"/>
                                   </Group>
-                                  <EmptySpace min="-2" max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
                                       <Group type="102" alignment="0" attributes="0">
                                           <Component id="portLabel" min="-2" pref="28" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="portTextField" min="-2" pref="99" max="-2" attributes="0"/>
                                       </Group>
-                                      <Group type="102" alignment="0" attributes="1">
-                                          <Component id="timeoutLabel" min="-2" max="-2" attributes="0"/>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="timeoutTextField" max="32767" attributes="0"/>
-                                      </Group>
                                       <Component id="anonymousCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Group type="102" alignment="0" max="-2" attributes="0">
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="pathSeparatorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              <Component id="timeoutLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                              <Component id="timeoutTextField" linkSize="4" alignment="0" min="-2" pref="34" max="-2" attributes="0"/>
+                                              <Component id="pathSeparatorTextField" linkSize="4" alignment="0" min="-2" pref="34" max="-2" attributes="0"/>
+                                          </Group>
+                                      </Group>
                                   </Group>
                               </Group>
                           </Group>
@@ -169,6 +176,8 @@
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="passwordLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="passwordTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="pathSeparatorLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="pathSeparatorTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
@@ -294,6 +303,18 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="warning" noResource="true"/>
           </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="pathSeparatorLabel">
+          <Properties>
+            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="pathSeparatorTextField"/>
+            </Property>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/php/project/connections/Bundle.properties" key="LBL_PathSeparator" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JTextField" name="pathSeparatorTextField">
         </Component>
       </SubComponents>
     </Container>

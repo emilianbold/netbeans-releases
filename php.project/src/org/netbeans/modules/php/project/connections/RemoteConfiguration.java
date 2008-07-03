@@ -56,10 +56,21 @@ public final class RemoteConfiguration {
     private final String userName;
     private final boolean anonymousLogin;
     private final String initialDirectory;
+    private final String pathSeparator;
     private final int timeout;
 
+    /**
+     * Constructor suitable for some "well-known" connections, e.g. if one wants
+     * some remote configuration and then needs to compare whether it is selected e.g.
+     * @param displayName the display name of the configuration.
+     */
+    public RemoteConfiguration(String displayName) {
+        this(displayName, "", null, null, 0, null, false, null, null, 0); // NOI18N
+    }
+
     public RemoteConfiguration(String displayName, String name, ConnectionType connectionType, String host, int port, String userName,
-            boolean anonymousLogin, String initialDirectory, int timeout) {
+            boolean anonymousLogin, String initialDirectory, String pathSeparator, int timeout) {
+        assert displayName != null;
         assert name != null;
 
         this.displayName = displayName;
@@ -70,6 +81,7 @@ public final class RemoteConfiguration {
         this.userName = userName;
         this.anonymousLogin = anonymousLogin;
         this.initialDirectory = initialDirectory;
+        this.pathSeparator = pathSeparator;
         this.timeout = timeout;
     }
 
@@ -84,6 +96,7 @@ public final class RemoteConfiguration {
         userName = cfg.getValue(RemoteConnections.USER);
         anonymousLogin = Boolean.valueOf(cfg.getValue(RemoteConnections.ANONYMOUS_LOGIN));
         initialDirectory = cfg.getValue(RemoteConnections.INITIAL_DIRECTORY);
+        pathSeparator = cfg.getValue(RemoteConnections.PATH_SEPARATOR);
         timeout = Integer.parseInt(cfg.getValue(RemoteConnections.TIMEOUT));
     }
 
@@ -105,6 +118,10 @@ public final class RemoteConfiguration {
 
     public String getInitialDirectory() {
         return initialDirectory;
+    }
+
+    public String getPathSeparator() {
+        return pathSeparator;
     }
 
     public String getName() {
@@ -143,6 +160,8 @@ public final class RemoteConfiguration {
         sb.append(anonymousLogin);
         sb.append(", initialDirectory: "); // NOI18N
         sb.append(initialDirectory);
+        sb.append(", pathSeparator: "); // NOI18N
+        sb.append(pathSeparator);
         sb.append(", timeout: "); // NOI18N
         sb.append(timeout);
         sb.append("]"); // NOI18N
