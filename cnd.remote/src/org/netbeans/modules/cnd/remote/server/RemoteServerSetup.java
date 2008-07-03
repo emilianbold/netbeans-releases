@@ -82,16 +82,16 @@ public class RemoteServerSetup {
         
         RemoteCommandSupport support = new RemoteCommandSupport(name, cmd);
         String val = support.toString();
-        for (String line : val.split("\n")) {
-            if (line.endsWith(" .netbeans/6.5/cnd2/scripts/*")) {
-                updateList.add(".netbeans/6.5/cnd2/scripts/");
-                break;
-            }
+        for (String line : val.split("\n")) { // NOI18N
             int pos;
             String script;
             Double installedVersion;
             try {
                 pos = line.indexOf(':');
+                if (pos < 0 || line.length() == 0) {
+                    updateList.add(dirPath);
+                    break;
+                }
                 script = line.substring(0, pos);
                 installedVersion = Double.valueOf(line.substring(pos + 9));
                 Double expectedVersion = setupMap.get(script);
@@ -100,6 +100,8 @@ public class RemoteServerSetup {
                 }
             } catch (NumberFormatException nfe) {
                 log.warning("RemoteServerSetup: Bad response from remote grep comand (NFE parsing version)");
+            } catch (Exception ex) {
+                log.warning("RemoteServerSetup: Bad response from remote grep comand: " + ex.getClass().getName());
             }
         }
         if (!updateList.isEmpty()) {
