@@ -127,6 +127,13 @@ public abstract class UMLNodeWidget extends Widget
     public final String PSK_RESIZE_UNLESSMANUAL = "PSK_RESIZE_UNLESSMANUAL";
     public final String PSK_RESIZE_NEVER = "PSK_RESIZE_NEVER";   
     public final String VIEW_NAME = "ViewName";
+    
+    public static final String ATTRIBUTES_COMPARTMENT = "AttributesCompartment";
+    public static final String OPERATIONS_COMPARTMENT = "OperationsCompartment";
+    public static final String REDEFINED_ATTR_COMPARTMENT = "RedefinedAttrCompartment";
+    public static final String REDEFINED_OPER_COMPARTMENT = "RedefinedOperCompartment";
+    public static final String LITERALS_COMPARTMENT = "LiteralsCompartment";
+    
 
     
     public UMLNodeWidget(Scene scene)
