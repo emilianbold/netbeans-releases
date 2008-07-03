@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
 public class DevelopmentHostConfiguration {
     
     public static final String PROP_DEV_HOST = "devHost"; // NOI18N
-    private final static String LOCALHOST = "localhost";
+    private final static String LOCALHOST = "localhost"; // NOI18N
     
     private int def;
     private int value;
@@ -109,7 +109,7 @@ public class DevelopmentHostConfiguration {
                 setValue(v, true);
             }
         } else {
-            setValue(LOCALHOST, true); // NOI18N
+            setValue(LOCALHOST, true);
         }
     }
     
@@ -174,7 +174,7 @@ public class DevelopmentHostConfiguration {
             String[] nu = serverList.getServerNames();
             return nu;
         }
-        return new String[] { LOCALHOST }; // NOI18N
+        return new String[] { LOCALHOST };
     }
     
     private static ServerList getServerList() {
@@ -185,6 +185,6 @@ public class DevelopmentHostConfiguration {
     }
     
     public boolean isLocalhost() {
-        return LOCALHOST.endsWith(getName());
+        return LOCALHOST.equals(getName());
     }
 }
