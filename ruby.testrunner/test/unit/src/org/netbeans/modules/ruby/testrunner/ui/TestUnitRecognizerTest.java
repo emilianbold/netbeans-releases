@@ -192,4 +192,14 @@ public class TestUnitRecognizerTest extends TestCase {
         assertEquals("undefined method `size' for UserHelperTest:Class", matcher.group(1));
     }
 
+    public void testTestLogger() throws InterruptedException {
+        TestRecognizerHandler handler = new TestUnitHandlerFactory.TestLoggerHandler();
+        String output = "%TEST_LOGGER% level=FINE msg=Loading 3 files took 12.345";
+        Matcher matcher = handler.match(output);
+        assertTrue(matcher.matches());
+        assertEquals(2, matcher.groupCount());
+        assertEquals("FINE", matcher.group(1));
+        assertEquals("Loading 3 files took 12.345", matcher.group(2));
+    }
+
 }

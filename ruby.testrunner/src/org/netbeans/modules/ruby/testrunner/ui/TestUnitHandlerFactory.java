@@ -40,6 +40,8 @@ package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FilteredOutput;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
 import org.netbeans.modules.ruby.testrunner.TestUnitRunner;
@@ -53,6 +55,8 @@ import org.openide.util.NbBundle;
  */
 public class TestUnitHandlerFactory {
 
+    private static final Logger LOGGER = Logger.getLogger(TestUnitHandlerFactory.class.getName());
+    
     public static List<TestRecognizerHandler> getHandlers() {
         List<TestRecognizerHandler> result = new ArrayList<TestRecognizerHandler>();
         result.add(new SuiteStartingHandler());
@@ -63,6 +67,7 @@ public class TestUnitHandlerFactory {
         result.add(new TestFailedHandler());
         result.add(new TestErrorHandler());
         result.add(new TestFinishedHandler());
+        result.add(new TestLoggerHandler());
         result.add(new TestMiscHandler());
         result.add(new SuiteMiscHandler());
         return result;
@@ -268,6 +273,23 @@ public class TestUnitHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
+        }
+    }
+
+    /**
+     * Captures output meant for logging.
+     */
+    static class TestLoggerHandler extends TestRecognizerHandler {
+
+        public TestLoggerHandler() {
+            super("%TEST_LOGGER%\\slevel=(.+)\\smsg=(.*)"); //NOI18N
+        }
+
+        @Override
+        void updateUI( Manager manager, TestSession session) {
+            Level level = Level.parse(matcher.group(1));
+            if (LOGGER.isLoggable(level))
+                LOGGER.log(level, matcher.group(2));
         }
     }
 }

@@ -88,19 +88,27 @@ class NbTestMediator
   end
 
   def require_file file
-    file_name = file[0..file.length - 4]
-    require "#{file_name}"
+    begin
+      file_name = file[0..file.length - 4]
+      require "#{file_name}"
+    rescue => err
+      puts "%TEST_LOGGER% level=WARNING msg=Failed to load #{file}, error=#{err}"
+      raise err
+    end
   end
 
   def add_to_suites files
+    t1 = Time.now
     # collect classes that extend TestCase/Suite before loading the files we are going to test
     # TODO: possibly not needed
     original_testcase_subclasses = Array.new(Test::Unit::TestCase::SUBCLASSES)
     original_testsuite_subclasses = Array.new(Test::Unit::TestSuite::SUBCLASSES)
 
+    t2 = Time.now
     files.each do |file|
       require_file file
     end
+    puts "%TEST_LOGGER% level=FINE msg=Loading #{files.size} files took #{Time.now - t2}"
     
     # we are interested only in test cases / suites we just loaded
     testcase_subclasses = Test::Unit::TestCase::SUBCLASSES - original_testcase_subclasses
@@ -149,6 +157,8 @@ class NbTestMediator
         false
       end
     end
+    
+   puts "%TEST_LOGGER% level=FINE msg=Collected #{@suites.size} suites in #{Time.now - t1}"
 
   end
 
