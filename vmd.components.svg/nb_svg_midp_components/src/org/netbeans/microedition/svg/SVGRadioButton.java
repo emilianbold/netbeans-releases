@@ -64,7 +64,7 @@ public class SVGRadioButton extends SVGAbstractButton {
     
     public SVGRadioButton( SVGForm form, String elemId) {
         super(form, elemId);
-        dotElement = (SVGLocatableElement) getElementByMeta( getElement(), 
+        dotElement = (SVGLocatableElement) getNestedElementByMeta( getElement(), 
                 TYPE, DOT );
         //isSelected = form.registerRadioButton(this);
         updateTrait();
@@ -90,6 +90,7 @@ public class SVGRadioButton extends SVGAbstractButton {
     }
     
     private void updateTrait() {
-        dotElement.setTrait(TRAIT_VISIBILITY, isSelected ? "visible" : "hidden");
+        setTraitSafely(dotElement , TRAIT_VISIBILITY, 
+                isSelected ? "visible" : "hidden");
     }
 }

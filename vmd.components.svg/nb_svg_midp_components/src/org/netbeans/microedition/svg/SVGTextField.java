@@ -54,13 +54,12 @@ public class SVGTextField extends SVGComponent {
         super(form, element );
         textElement  = (SVGLocatableElement) getElementByMeta(getElement(), 
                 TYPE , TEXT );
-        caretElement = (SVGLocatableElement) getElementByMeta(getElement(), 
+        caretElement = (SVGLocatableElement) getNestedElementByMeta(getElement(), 
                 TYPE , CARETELEM );
 
         SVGRect outlineBox = wrapperElement.getBBox();
         SVGRect textBox    = textElement.getBBox();
         
-
         if (textBox != null) {
             System.out.println("Text width: " + textBox.getWidth());
             elemWidth = (int) (outlineBox.getWidth() + 0.5f - (textBox.getX() - outlineBox.getX()) * 2);
@@ -79,7 +78,13 @@ public class SVGTextField extends SVGComponent {
         hiddenTextElement.setTrait( TRAIT_FONT_FAMILY, 
                 textElement.getTrait( TRAIT_FONT_FAMILY));
         hiddenTextElement.setTrait( TRAIT_VISIBILITY, TR_VALUE_HIDDEN);
-        wrapperElement.appendChild(hiddenTextElement);
+        
+        getForm().invokeAndWaitSafely( new  Runnable () {
+            public void run() {
+                getElement().appendChild(hiddenTextElement);
+            }
+        }
+        );
         
         if (caretElement != null) {
             SVGRect bBox = caretElement.getBBox();
@@ -100,7 +105,9 @@ public class SVGTextField extends SVGComponent {
     public String getTitle() {
         if ( myTitle == null ) {
             SVGLabel label = getLabel();
-            setTitle( label.getText() );
+            if ( label != null ){
+                setTitle( label.getText() );
+            }
         }
         return myTitle;
     }
@@ -151,7 +158,7 @@ public class SVGTextField extends SVGComponent {
                     String beforeCaret = textValue.substring(startOffset, caretPos);
                     caretLoc += getTextWidth(beforeCaret) + caretWidth;
                 }
-                caretElement.setFloatTrait(TRAIT_X, caretLoc);
+                setTraitSafely(caretElement , TRAIT_X, caretLoc);
             }
         }
     }
@@ -174,12 +181,8 @@ public class SVGTextField extends SVGComponent {
     
     private void showCaret(final boolean showCaret) {
         if ( caretElement != null) {
-            form.invokeAndWaitSafely(new Runnable() {
-               public void run() {
-                    caretElement.setTrait(TRAIT_VISIBILITY, 
+            setTraitSafely( caretElement , TRAIT_VISIBILITY, 
                             showCaret ? TR_VALUE_VISIBLE : TR_VALUE_HIDDEN);
-               }
-            });
         }
     }   
 
@@ -198,7 +201,7 @@ public class SVGTextField extends SVGComponent {
     private float getTextWidthImpl(String text) {
         float width = 0;
         if (text.length() > 0) {
-            hiddenTextElement.setTrait( TRAIT_TEXT, text);
+            setTraitSafely( hiddenTextElement , TRAIT_TEXT, text);
             SVGRect bBox = hiddenTextElement.getBBox();
             if ( bBox != null) {
                 width = bBox.getWidth();
@@ -228,7 +231,7 @@ public class SVGTextField extends SVGComponent {
     }
     
     private void setTextTrait( String text) {
-        textElement.setTrait( TRAIT_TEXT, text);
+        setTraitSafely( textElement, TRAIT_TEXT , text);
     }
     
     private final SVGLocatableElement textElement;

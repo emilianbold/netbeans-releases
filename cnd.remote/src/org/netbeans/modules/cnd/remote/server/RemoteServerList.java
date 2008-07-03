@@ -44,10 +44,12 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -67,7 +69,7 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
     private PropertyChangeSupport pcs;
     private ChangeSupport cs;
     
-    public static RemoteServerList getInstance() {
+    public synchronized static RemoteServerList getInstance() {
         if (instance == null) {
             instance = new RemoteServerList();
         }
@@ -130,7 +132,7 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         return sa;
     }
     
-    public void add(String name, boolean active) {
+    public void add(final String name, boolean active) {
         RemoteServerRecord record = new RemoteServerRecord(name, active);
         add(record);
         addPropertyChangeListener(record);
@@ -140,7 +142,7 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         // SystemIncludesUtils.load(record);
         
         // Register the new server
-        if (!name.equals("localhost")) {
+        if (!name.equals("localhost")) { // NOI18N
             String slist = getPreferences().get(REMOTE_SERVERS, null);
             if (slist == null) {
                 getPreferences().put(REMOTE_SERVERS, name);
@@ -156,8 +158,17 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
                     getPreferences().put(REMOTE_SERVERS, slist + ',' + name);
                 }
             }
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    if (RemoteServerSetup.needsSetupOrUpdate(name)) {
+                        RemoteServerSetup.setup(name);
+                    }
+                    CompilerSetManager.getDefault(name);
+                }
+            });
         }
         if (active) {
+            record.setActive(true);
             getPreferences().put(ACTIVE_SERVER, name);
         }
     }
