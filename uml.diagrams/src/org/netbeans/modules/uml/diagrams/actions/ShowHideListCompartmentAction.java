@@ -151,7 +151,10 @@ public class ShowHideListCompartmentAction extends NodeAction
                     if (mgr != null && mgr.getCollapsibleCompartmentName().equalsIgnoreCase(compName))
                     {                        
                         mgr.collapseWidget(compName);
-                        break;
+                    }
+                    else
+                    {
+//                        System.out.println(" mgr compName = "+mgr.getCollapsibleCompartmentName());
                     }
                 }
             }
