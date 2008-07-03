@@ -79,7 +79,7 @@ public class TestUnitHandlerFactory {
     static class TestFailedHandler extends TestRecognizerHandler {
 
         public TestFailedHandler() {
-            super("%TEST_FAILED%\\stime=(\\d+\\.\\d+)\\stestname=([\\w]+)\\(([\\w]+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
+            super("%TEST_FAILED%\\stime=(.+)\\stestname=([\\w]+)\\(([\\w]+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
         }
 
         @Override
@@ -109,7 +109,7 @@ public class TestUnitHandlerFactory {
     static class TestErrorHandler extends TestRecognizerHandler {
 
         public TestErrorHandler() {
-            super("%TEST_ERROR%\\stime=(\\d+\\.\\d+)\\stestname=([\\w]+)\\(([\\w]+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
+            super("%TEST_ERROR%\\stime=(.+)\\stestname=([\\w]+)\\(([\\w]+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
         }
 
         @Override
