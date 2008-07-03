@@ -242,9 +242,13 @@ public class BuildServiceAssembly extends Task {
             
             String asiFileLoc = confDirLoc + JbiProject.ASSEMBLY_INFO_FILE_NAME;
             loadAssemblyInfo(asiFileLoc);
+                      
+            CasaBuilder casaBuilder = new CasaBuilder(project, mRepo, this);
+            final Document oldCasaDocument = casaBuilder.getOldCasaDocument();
             
-            // generate the SE jar file list
-            // loop thru SE suprojects and copying SE deployment jars            
+            // Generate the SE jar file list
+            // Loop thru SE suprojects and copying/updating SE deployment jars            
+            log("Generating Service Engine Service Units...");
             List<String> srcJarPaths = getJarList(jars);
             List<String> javaEEJarPaths = getJarList(javaeeJars);
             List<String> saEEJarPaths = new ArrayList<String>();
@@ -270,12 +274,10 @@ public class BuildServiceAssembly extends Task {
                 } else {
                     String destJarPath = buildDir + File.separator + jarName;
                     //log("  copying Sub-Assembly: " + destJarPath);
-                    copyJarFile(srcJarPath, destJarPath);
+                    copyJarFileWithEndpointDecoration(srcJarPath, destJarPath,
+                            oldCasaDocument);
                 }
             }
-            
-            CasaBuilder casaBuilder = new CasaBuilder(project, mRepo, this);
-            final Document oldCasaDocument = casaBuilder.getOldCasaDocument();
             
             // Resolve connections
             log("Resolving connections...");
@@ -354,8 +356,49 @@ public class BuildServiceAssembly extends Task {
                 // IZ#126214, soap bc wist callback handler...
                 createBCJar(bcJarMap.get(bcName), genericBCJar,
                         /*isCompAppWSDLNeeded,*/ bcsuDescriptorBuilder, bcName);
+            }            
+              
+            /*
+            // Generate the SE jar file list
+            // Loop thru SE suprojects and copying/updating SE deployment jars            
+            log("Generating Service Engine Service Units...");
+            List<String> srcJarPaths = getJarList(jars);
+            List<String> javaEEJarPaths = getJarList(javaeeJars);
+            List<String> saEEJarPaths = new ArrayList<String>();
+
+            for (String srcJarPath : srcJarPaths) {
+                if ((javaEEJarPaths != null) && (javaEEJarPaths.contains(srcJarPath))){
+                    srcJarPath = getLocalJavaEEJarPath(buildDir, srcJarPath);
+                    saEEJarPaths.add(srcJarPath);
+                    createEndpointsFrom(srcJarPath);
+                    continue;
+                }
+                
+                if ((srcJarPath.indexOf(':') < 0) && (!srcJarPath.startsWith("/"))) { // i.e., relative path
+                    srcJarPath = projDirLoc + srcJarPath;
+                }                
+                File srcJarFile = new File(srcJarPath);
+                
+                String jarName = getShortName(srcJarPath); // e.x.: SynchronousSample.jar
+                if (!srcJarFile.exists()) {
+                    log(" Error: Missing project Sub-Assembly: " + srcJarPath);
+                } else if (! suJarNames.contains(jarName)) {
+                    log(" Error: Cannot locate service unit for " + jarName);
+                } else {
+                    String destJarPath = buildDir + File.separator + jarName;
+                    //log("  copying Sub-Assembly: " + destJarPath);
+                    copyJarFileWithEndpointDecoration(srcJarPath, destJarPath,
+                            newCasaDocument);
+                }
             }
-                        
+            */
+            // )4/03/08, generated OSGi supported manifest.mf (minimum entries)
+            String osgisupport = p.getProperty(JbiProjectProperties.OSGI_SUPPORT);
+            String projName = p.getProperty(JbiProjectProperties.SERVICE_ASSEMBLY_ID);
+            if ((osgisupport != null) && osgisupport.equalsIgnoreCase("true")) {
+                generateOSGiManifest(buildMetaInfDir, projName);
+            }
+
             // 9/12/07, filter out unconnected JavaEE endpoints
             log("Filtering Java EE Endpoints...");
 
@@ -374,6 +417,36 @@ public class BuildServiceAssembly extends Task {
                 // ignore this..
             }
         }
+    }
+
+    private void generateOSGiManifest(File buildDir, String projName) {
+        if (buildDir == null) {
+            return;
+        }
+
+        if (projName == null) {
+            projName = "UnKnownApp";  // NOI18N
+        }
+        try {
+            String manText = "Bundle-Name: " + projName + "\n" +     // NOI18N
+                             "Bundle-SymbolicName: " + projName + "\n" +    // NOI18N
+                             "Bundle-ManifestVersion: 2\n" +      // NOI18N
+                             "Bundle-Version: 1.0.0";     // NOI18N
+
+            File file = new File(buildDir, "MANIFEST.MF");    // NOI18N
+            boolean success = file.createNewFile();
+            if (success) {
+                BufferedWriter out = new BufferedWriter(new FileWriter(file));
+                out.write(manText);
+                out.close();
+            } else {
+                // File already exists
+            }
+        } catch (IOException ex) {
+            log("Exception: A processing error occurred; " + ex);     // NOI18N
+        }
+
+
     }
 
     private List<String> getJarList(String commaSeparatedList){
@@ -790,8 +863,9 @@ public class BuildServiceAssembly extends Task {
         
     }
     
-    private void copyJarFile(String inFile, String outFile)
-    throws Exception {
+    private void copyJarFileWithEndpointDecoration(String inFile, String outFile,
+            Document casaDocument)
+            throws Exception {
         byte[] buffer = new byte[1024];
         int bytesRead;
         
@@ -812,23 +886,32 @@ public class BuildServiceAssembly extends Task {
                 String fileName = entry.getName().toLowerCase();
                 InputStream is = jar.getInputStream(entry);
                 copyJbiXml = false;
-                newJar.putNextEntry(entry);
                 
                 if (fileName.equalsIgnoreCase(SU_JBIXML_PATH)) {
                     // found existing jbi.xml
                     hasJbiXml = true;
                     copyJbiXml = true;
+                    newJar.putNextEntry(new JarEntry(entry.getName()));
+                } else { 
+                    newJar.putNextEntry(entry);
                 }
                 
                 while ((bytesRead = is.read(buffer)) != -1) {
-                    newJar.write(buffer, 0, bytesRead);
                     if (copyJbiXml) {
                         jbiXml += new String(buffer, 0, bytesRead, "UTF-8");
+                    } else {
+                        newJar.write(buffer, 0, bytesRead);                        
                     }
                 }
                 
                 is.close();
                 is = null;
+                
+                if (copyJbiXml) {
+                    Document jbiDoc = XmlUtil.createDocumentFromXML(true, jbiXml);
+                    ServiceUnitDescriptorEnhancer.decorateEndpoints(jbiDoc, casaDocument);
+                    newJar.write(XmlUtil.writeToBytes(jbiDoc));
+                }
             }
             
             // create a temp jbi.xml
