@@ -85,9 +85,11 @@ public final class RakeRunner {
         this.project = project;
     }
 
-    public static void runTask(final Project project, final RakeTask task, final boolean debug) {
+    static void runTask(final Project project, final RakeTask task,
+            final String taskParams, final boolean debug) {
         RakeRunner runner = new RakeRunner(project);
         runner.showWarnings(true);
+        runner.setParameters(taskParams);
         runner.setDebug(debug);
         runner.run(task);
     }
