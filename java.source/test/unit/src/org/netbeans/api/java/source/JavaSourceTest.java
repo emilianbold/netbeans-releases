@@ -107,10 +107,12 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.classpath.CacheClassPath;
+import org.netbeans.modules.java.source.parsing.DefaultJavaFileObjectProvider;
 import org.netbeans.modules.java.source.usages.IndexFactory;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.java.source.usages.PersistentClassIndex;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.TestUtil;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 /**
  *
@@ -203,8 +205,8 @@ public class JavaSourceTest extends NbTestCase {
         AtomicInteger counter = new AtomicInteger (0);
         CancellableTask<CompilationInfo> task1 = new DiagnosticTask(latches1, counter, Phase.RESOLVED);
         CancellableTask<CompilationInfo> task2 =  new DiagnosticTask(latches2, counter, Phase.PARSED);
-        js.addPhaseCompletionTask (task1,Phase.RESOLVED,Priority.HIGH);
-        js.addPhaseCompletionTask(task2,Phase.PARSED,Priority.LOW);
+        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js,task1,Phase.RESOLVED,Priority.HIGH);
+        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js,task2,Phase.PARSED,Priority.LOW);
         assertTrue ("Time out",waitForMultipleObjects(new CountDownLatch[] {latches1[0], latches2[0]}, 15000)); 
         assertEquals ("Called more times than expected",2,counter.getAndSet(0));        
         Thread.sleep(1000);  //Making test a more deterministic, when the task is cancelled by DocListener, it's hard for test to recover from it
@@ -224,8 +226,8 @@ public class JavaSourceTest extends NbTestCase {
         });        
         assertTrue ("Time out",waitForMultipleObjects(new CountDownLatch[] {latches1[1], latches2[1]}, 15000)); 
         assertEquals ("Called more times than expected",2,counter.getAndSet(0));
-        js.removePhaseCompletionTask (task1);
-        js.removePhaseCompletionTask (task2);
+        JavaSourceAccessor.getINSTANCE().removePhaseCompletionTask (js,task1);
+        JavaSourceAccessor.getINSTANCE().removePhaseCompletionTask (js,task2);
     }
     
     public void testCompileControlJob () throws MalformedURLException, IOException, InterruptedException {
@@ -276,10 +278,10 @@ public class JavaSourceTest extends NbTestCase {
         DiagnosticTask task1 = new DiagnosticTask(latches1, counter, Phase.RESOLVED);
         CancellableTask<CompilationInfo> task2 = new DiagnosticTask(latches2, counter, Phase.RESOLVED);
         
-        js1.addPhaseCompletionTask(task1,Phase.RESOLVED,Priority.HIGH);
+        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js1,task1,Phase.RESOLVED,Priority.HIGH);
         Thread.sleep(500);  //Making test a more deterministic, when the task is cancelled by DocListener, it's hard for test to recover from it
         js2.runUserActionTask(new CompileControlJob(latch3),true);
-        js2.addPhaseCompletionTask(task2,Phase.RESOLVED,Priority.MAX);        
+        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js2,task2,Phase.RESOLVED,Priority.MAX);
         boolean result = waitForMultipleObjects (new CountDownLatch[] {latches1[0], latches2[0], latch3}, 15000);
         if (!result) {
             assertTrue (String.format("Time out, latches1[0]: %d latches2[0]: %d latches3: %d",latches1[0].getCount(), latches2[0].getCount(), latch3.getCount()), false);
@@ -303,8 +305,8 @@ public class JavaSourceTest extends NbTestCase {
         });        
         assertTrue ("Time out",waitForMultipleObjects(new CountDownLatch[] {latches1[1]}, 15000)); 
         assertEquals ("Called more times than expected",1,counter.getAndSet(0));        
-        js1.removePhaseCompletionTask(task1);
-        js2.removePhaseCompletionTask(task2);
+        JavaSourceAccessor.getINSTANCE().removePhaseCompletionTask(js1,task1);
+        JavaSourceAccessor.getINSTANCE().removePhaseCompletionTask(js2,task2);
     }
     
     public void testDocumentChanges () throws Exception {
@@ -340,7 +342,7 @@ public class JavaSourceTest extends NbTestCase {
                 }
             }
         };        
-        js1.addPhaseCompletionTask(task,Phase.PARSED,Priority.HIGH);
+        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js1,task,Phase.PARSED,Priority.HIGH);
         start.await();       
         Thread.sleep(500);
         final DataObject dobj = DataObject.find(testFile1);        
@@ -367,7 +369,7 @@ public class JavaSourceTest extends NbTestCase {
         }
         assertTrue ("Time out",stop.await(15000, TimeUnit.MILLISECONDS));
         assertEquals("Called more time than expected",1,counter.get());
-        js1.removePhaseCompletionTask(task);
+        JavaSourceAccessor.getINSTANCE().removePhaseCompletionTask(js1,task);
     }
     
     
@@ -402,7 +404,7 @@ public class JavaSourceTest extends NbTestCase {
         long[] timers = new long[2];
         AtomicInteger counter = new AtomicInteger (0);
         CancellableTask<CompilationInfo> task = new DiagnosticTask(latches, timers, counter, Phase.PARSED);
-        js.addPhaseCompletionTask (task,Phase.PARSED, Priority.HIGH);
+        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js,task,Phase.PARSED, Priority.HIGH);
         assertTrue ("Time out",waitForMultipleObjects(new CountDownLatch[] {latches[0]}, 15000));
         assertEquals ("Called more times than expected",1,counter.getAndSet(0));                
         long start = System.currentTimeMillis();
@@ -423,8 +425,8 @@ public class JavaSourceTest extends NbTestCase {
         });        
         assertTrue ("Time out",waitForMultipleObjects(new CountDownLatch[] {latches[1]}, 15000)); 
         assertEquals ("Called more times than expected",1,counter.getAndSet(0));
-        assertTrue("Took less time than expected time=" + (timers[1] - start), (timers[1] - start) >= js.getReparseDelay());
-        js.removePhaseCompletionTask (task);
+        assertTrue("Took less time than expected time=" + (timers[1] - start), (timers[1] - start) >= TestUtil.getReparseDelay());
+        JavaSourceAccessor.getINSTANCE().removePhaseCompletionTask (js,task);
     }
     
     public void testJavaSourceIsReclaimable() throws MalformedURLException, InterruptedException, IOException, BadLocationException {
@@ -445,7 +447,7 @@ public class JavaSourceTest extends NbTestCase {
         };
         AtomicInteger counter = new AtomicInteger (0);
         CancellableTask<CompilationInfo> task = new DiagnosticTask(latches, counter, Phase.PARSED);
-        js.addPhaseCompletionTask (task,Phase.PARSED,Priority.HIGH);
+        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js,task,Phase.PARSED,Priority.HIGH);
         assertTrue ("Time out",waitForMultipleObjects(new CountDownLatch[] {latches[0]}, 15000));
                
         Thread.sleep(500);  //Making test a more deterministic, when the task is cancelled by DocListener, it's hard for test to recover from it
@@ -465,7 +467,7 @@ public class JavaSourceTest extends NbTestCase {
         });
         
         assertTrue ("Time out",waitForMultipleObjects(new CountDownLatch[] {latches[1]}, 15000)); 
-        js.removePhaseCompletionTask (task);
+        JavaSourceAccessor.getINSTANCE().removePhaseCompletionTask (js,task);
         
         Reference jsWeak = new WeakReference(js);
         Reference testWeak = new WeakReference(test);
@@ -497,15 +499,15 @@ public class JavaSourceTest extends NbTestCase {
         ClassPath bootPath = createBootPath ();
         ClassPath compilePath = createCompilePath ();
         JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, null), test);
-        int originalReparseDelay = js.getReparseDelay();
+        int originalReparseDelay = TestUtil.getReparseDelay();
         
         try {
-            js.setReparseDelay(Integer.MAX_VALUE, false); //never automatically reparse                        
+            TestUtil.setReparseDelay(JavaSourceAccessor.getINSTANCE().getSources(js).iterator().next(),Integer.MAX_VALUE,false); //never automatically reparse
             CountDownLatch latch1 = new CountDownLatch (1);
             final CountDownLatch latch2 = new CountDownLatch (1);
             AtomicInteger counter = new AtomicInteger (0);
             CancellableTask<CompilationInfo> task = new DiagnosticTask(new CountDownLatch[] {latch1}, counter, Phase.PARSED);
-            js.addPhaseCompletionTask (task,Phase.PARSED,Priority.HIGH);
+            JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js,task,Phase.PARSED,Priority.HIGH);
             assertTrue ("Time out",waitForMultipleObjects(new CountDownLatch[] {latch1}, 15000));
 
             DataObject dobj = DataObject.find(test);
@@ -547,10 +549,10 @@ public class JavaSourceTest extends NbTestCase {
             assertTrue("Time out",waitForMultipleObjects(new CountDownLatch[] {latch2}, 15000));
             assertTrue("Content incorrect", contentCorrect[0]);
 
-            js.removePhaseCompletionTask (task);
+            JavaSourceAccessor.getINSTANCE().removePhaseCompletionTask (js,task);
         } finally {
             if (js != null) {
-                js.setReparseDelay(originalReparseDelay, true);
+                TestUtil.setReparseDelay(JavaSourceAccessor.getINSTANCE().getSources(js).iterator().next(), originalReparseDelay, true);
             }
         }
     }
@@ -575,7 +577,7 @@ public class JavaSourceTest extends NbTestCase {
         };
         AtomicInteger counter = new AtomicInteger (0);
         DiagnosticTask task = new DiagnosticTask(latches, counter, Phase.PARSED);
-        js.addPhaseCompletionTask (task,Phase.PARSED,Priority.HIGH);
+        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js,task,Phase.PARSED,Priority.HIGH);
         assertTrue ("Time out",waitForMultipleObjects(new CountDownLatch[] {latches[0]}, 15000));                
         final int[] index = new int[1];
         Thread.sleep(500);  //Making test a more deterministic, when the task is cancelled by DocListener, it's hard for test to recover from it
@@ -620,7 +622,7 @@ public class JavaSourceTest extends NbTestCase {
         
         assertTrue("Time out",waitForMultipleObjects(new CountDownLatch[] {latches[2]}, 15000));
         
-        js.removePhaseCompletionTask (task);
+        JavaSourceAccessor.getINSTANCE().removePhaseCompletionTask (js,task);
     }
     
     
@@ -656,7 +658,7 @@ public class JavaSourceTest extends NbTestCase {
             }
             
         } finally {
-            JavaSource.jfoProvider = new JavaSource.DefaultJavaFileObjectProvider ();
+            JavaSource.jfoProvider = new DefaultJavaFileObjectProvider();
         }
     }
     
