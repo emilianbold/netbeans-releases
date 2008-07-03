@@ -37,17 +37,38 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java;
-import org.openide.filesystems.FileObject;
+package org.netbeans.modules.java.source.ant;
+
+import org.apache.tools.ant.module.spi.AntEvent;
+import org.apache.tools.ant.module.spi.AntLogger;
+import org.apache.tools.ant.module.spi.AntSession;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class ProjectRunnerImpl {
+public class HideOverrideTaskWarning extends AntLogger {
 
-    public static boolean checkRunSupported(FileObject file) {
-        //XXX: finish
+    @Override
+    public int[] interestedInLogLevels(AntSession session) {
+        return new int[] {AntEvent.LOG_WARN};
+    }
+
+    @Override
+    public boolean interestedInSession(AntSession session) {
         return true;
     }
+
+    @Override
+    public boolean interestedInAllScripts(AntSession session) {
+        return true;
+    }
+    
+    @Override
+    public void messageLogged(AntEvent event) {
+        if (!event.isConsumed() && event.getMessage().startsWith("Trying to override old definition of task javac")) { // NOI18N
+            event.consume();
+        }
+    }
+
 }

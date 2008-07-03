@@ -231,19 +231,4 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     
-    <folder name="executor-snippets">
-        <file name="run.xml" url="run-snippet.xml">
-            <attr name="checkSupported" stringvalue="org.netbeans.modules.java.ProjectRunnerImpl.checkRunSupported" />
-        </file>
-        <file name="debug.xml" url="debug-snippet.xml">
-            <attr name="checkSupported" stringvalue="org.netbeans.modules.java.ProjectRunnerImpl.checkRunSupported" />
-        </file>
-        <file name="junit.xml" url="junit-snippet.xml">
-            <attr name="checkSupported" stringvalue="org.netbeans.modules.java.ProjectRunnerImpl.checkRunSupported" />
-        </file>
-        <file name="junit-debug.xml" url="junit-debug-snippet.xml">
-            <attr name="checkSupported" stringvalue="org.netbeans.modules.java.ProjectRunnerImpl.checkRunSupported" />
-        </file>
-    </folder>
-    
 </filesystem>
