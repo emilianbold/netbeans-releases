@@ -124,9 +124,9 @@ class DataViewActionHandler {
         }
     }
 
-    void commitActionPerformed() {
+    void commitActionPerformed(boolean selectedOnly) {
         if (dataViewUI.isDirty()) {
-            execHelper.executeUpdateRow();
+            execHelper.executeUpdateRow(dataViewUI.getDataViewTableUI(), selectedOnly);
         }
     }
 
@@ -141,7 +141,7 @@ class DataViewActionHandler {
         String confirmMsg = nbBundle7.substring(15) + dataView.getDataViewDBTable().geTable(0).getDisplayName();
         if (showYesAllDialog(confirmMsg, confirmMsg) == 0) {
             execHelper.executeTruncate();
-        } 
+        }
     }
 
     void deleteRecordActionPerformed() {
@@ -166,8 +166,8 @@ class DataViewActionHandler {
     }
 
     private static int showYesAllDialog(Object msg, String title) {
-       String[] options = new String[] { "Yes", "No",};
-       Component parent = WindowManager.getDefault().getMainWindow();
-       return JOptionPane.showOptionDialog(parent, msg, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[1]);
-   }
+        String[] options = new String[]{"Yes", "No",};
+        Component parent = WindowManager.getDefault().getMainWindow();
+        return JOptionPane.showOptionDialog(parent, msg, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[1]);
+    }
 }
