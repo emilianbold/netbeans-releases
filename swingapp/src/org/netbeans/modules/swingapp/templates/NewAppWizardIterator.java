@@ -73,9 +73,9 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
     private EventListenerList listenerList;
 
     /** Key for the description of the wizard content. */
-    private static final String WIZARD_PANEL_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
+    private static final String WIZARD_PANEL_CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA; // NOI18N
     /** Key for the description of the wizard panel's position. */
-    private static final String WIZARD_PANEL_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; // NOI18N
+    private static final String WIZARD_PANEL_CONTENT_SELECTED_INDEX = WizardDescriptor.PROP_CONTENT_SELECTED_INDEX; // NOI18N
 
     public NewAppWizardIterator() {
     }

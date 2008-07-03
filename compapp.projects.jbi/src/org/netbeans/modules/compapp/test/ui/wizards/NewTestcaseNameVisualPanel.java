@@ -133,17 +133,17 @@ public class NewTestcaseNameVisualPanel extends JPanel implements DocumentListen
 
     boolean valid(WizardDescriptor wizardDescriptor) {
         if (mNameTf.getText().length() == 0) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(NewTestcaseNameVisualPanel.class, "LBL_Testcase_name_cannot_be_empty")); //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(NewTestcaseNameVisualPanel.class, "LBL_Testcase_name_cannot_be_empty")); //NOI18N
             return false; // Display name not specified
         }
         
         // 2. no existing testcase under Test node has name: mComponent.getTestcaseName()
         if (panel.mTestDir.getFileObject(mNameTf.getText()) != null) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(NewTestcaseNameVisualPanel.class, "LBL_Name_is_already_used_by_another_testcase")); //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(NewTestcaseNameVisualPanel.class, "LBL_Name_is_already_used_by_another_testcase")); //NOI18N
             return false;
         }
         
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
         return true;
     }
     

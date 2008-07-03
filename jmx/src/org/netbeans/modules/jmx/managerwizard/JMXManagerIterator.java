@@ -177,8 +177,8 @@ public class JMXManagerIterator implements TemplateWizard.Iterator {
      */
     private void initializeComponent(String[] steps, int panelOffset,JComponent jc) 
     {
-        jc.putClientProperty("WizardPanel_contentData", steps);// NOI18N
-        jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(panelOffset));// NOI18N
+        jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);// NOI18N
+        jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(panelOffset));// NOI18N
     }
     
     public void uninitialize(TemplateWizard wiz)

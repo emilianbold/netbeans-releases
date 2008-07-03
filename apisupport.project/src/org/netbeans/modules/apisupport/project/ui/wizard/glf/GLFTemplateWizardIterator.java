@@ -42,15 +42,15 @@ public final class GLFTemplateWizardIterator implements WizardDescriptor.Instant
                 if (c instanceof JComponent) { // assume Swing components
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
-                    jc.putClientProperty ("WizardPanel_contentSelectedIndex", i);
+                    jc.putClientProperty (WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i);
                     // Sets steps names for a panel
-                    jc.putClientProperty ("WizardPanel_contentData", steps);
+                    jc.putClientProperty (WizardDescriptor.PROP_CONTENT_DATA, steps);
                     // Turn on subtitle creation on each step
-                    jc.putClientProperty("WizardPanel_autoWizardStyle", true);
+                    jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, true);
                     // Show steps on the left side with the image on the background
-                    jc.putClientProperty("WizardPanel_contentDisplayed", true);
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, true);
                     // Turn on numbering of all steps
-                    jc.putClientProperty("WizardPanel_contentNumbered", true);
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, true);
                 }
             }
         }
@@ -112,7 +112,7 @@ public final class GLFTemplateWizardIterator implements WizardDescriptor.Instant
     // client code.
     private String[] createSteps () {
         String[] beforeSteps = null;
-        Object prop = wizard.getProperty ("WizardPanel_contentData");
+        Object prop = wizard.getProperty (WizardDescriptor.PROP_CONTENT_DATA);
         if (prop != null && prop instanceof String[]) {
             beforeSteps = (String[]) prop;
         }

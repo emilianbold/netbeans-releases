@@ -158,7 +158,7 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
     boolean valid (WizardDescriptor settings) {
         String result = checkValidity (this.projectName.getText(), this.projectLocation.getText());
         if (result == null) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage","");   //NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE,"");   //NOI18N
             
             // 103648: make sure users don't accidentally create Ruby projects from Rails sources
             // Like ZenTest, check for "config/environment.rb" to see if this looks like it
@@ -166,12 +166,12 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
             File environment = new File(this.projectLocation.getText(), "config" + File.separator + "environment.rb");
             if (environment.exists()) {
                 String message = NbBundle.getMessage (PanelProjectLocationExtSrc.class,"ProbablyRails");
-                wizardDescriptor.putProperty( "WizardPanel_errorMessage", message);       //NOI18N
+                wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, message);       //NOI18N
             }
             return true;
         }
         else {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage",result);       //NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE,result);       //NOI18N
             return false;
         }
     }

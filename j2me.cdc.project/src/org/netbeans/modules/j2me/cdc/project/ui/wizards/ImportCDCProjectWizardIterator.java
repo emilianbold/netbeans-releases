@@ -68,6 +68,7 @@ import org.netbeans.modules.mobility.project.ui.wizard.ProjectPanel;
 import org.netbeans.spi.mobility.project.ProjectPropertiesDescriptor;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -264,8 +265,8 @@ public class ImportCDCProjectWizardIterator implements TemplateWizard.Iterator {
                 NbBundle.getMessage(ProjectPanel.class, "TITLE_Project"), // NOI18N
             };
         }
-        component.putClientProperty("WizardPanel_contentData", list); // NOI18N
-        component.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(currentIndex)); // NOI18N
+        component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, list); // NOI18N
+        component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(currentIndex)); // NOI18N
     }
     
 }

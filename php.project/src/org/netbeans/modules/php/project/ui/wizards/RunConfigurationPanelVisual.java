@@ -43,6 +43,7 @@ import javax.swing.JPanel;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.ui.SourcesFolderNameProvider;
 import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
+import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -56,9 +57,9 @@ public class RunConfigurationPanelVisual extends JPanel {
             ConfigManager configManager, RunAsPanel.InsidePanel[] insidePanels) {
         // Provide a name in the title bar.
         setName(NbBundle.getMessage(RunConfigurationPanelVisual.class, "LBL_RunConfiguration"));
-        putClientProperty("WizardPanel_contentSelectedIndex", 1); // NOI18N
+        putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 1); // NOI18N
         // Step name (actually the whole list for reference).
-        putClientProperty("WizardPanel_contentData", wizardPanel.getSteps()); // NOI18N
+        putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, wizardPanel.getSteps()); // NOI18N
 
         this.insidePanels = insidePanels;
         initComponents();

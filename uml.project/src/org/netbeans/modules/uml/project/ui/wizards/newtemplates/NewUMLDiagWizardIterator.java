@@ -211,11 +211,11 @@ public final class NewUMLDiagWizardIterator
             { // assume Swing components
                JComponent jc = (JComponent) c;
                // Sets step number of a component
-               jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+               jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
                // Sets steps names for a panel
-               jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+               jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
                // Turn on subtitle creation on each step
-               jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
+               jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
             }
          }
       }
@@ -226,7 +226,7 @@ public final class NewUMLDiagWizardIterator
    private String[] createSteps()
    {
       String[] beforeSteps = null;
-      Object prop = wizard.getProperty("WizardPanel_contentData"); // NOI18N
+      Object prop = wizard.getProperty(WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
       if (prop != null && prop instanceof String[])
       {
          beforeSteps = (String[]) prop;

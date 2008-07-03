@@ -105,25 +105,25 @@ public class HibernateRevengCodeGenWizardDescriptor implements WizardDescriptor.
         SourceGroup sourceGroup = getComponent().getLocationValue();
         String packageName = getComponent().getPackageName();
         if (sourceGroup == null) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "ERR_JavaTargetChooser_SelectSourceGroup")); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "ERR_JavaTargetChooser_SelectSourceGroup")); // NOI18N
             return false;
         }
 
         if (packageName.trim().equals("")) { // NOI18N
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "ERR_JavaTargetChooser_CantUseDefaultPackage")); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "ERR_JavaTargetChooser_CantUseDefaultPackage")); // NOI18N
             return false;
         }
         if (!JavaIdentifiers.isValidPackageName(packageName)) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "ERR_JavaTargetChooser_InvalidPackage")); //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "ERR_JavaTargetChooser_InvalidPackage")); //NOI18N
             return false;
         }
 
         if (!SourceGroups.isFolderWritable(sourceGroup, packageName)) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "ERR_JavaTargetChooser_UnwritablePackage")); //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "ERR_JavaTargetChooser_UnwritablePackage")); //NOI18N
             return false;
         }
 
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
         return true;
     }
 
@@ -149,7 +149,7 @@ public class HibernateRevengCodeGenWizardDescriptor implements WizardDescriptor.
     }
 
     private void setErrorMessage(String errorMessage) {
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", errorMessage); // NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage); // NOI18N
 
     }
 }

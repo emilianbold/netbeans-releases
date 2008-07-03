@@ -178,7 +178,7 @@ public class ActionPanelVisual extends javax.swing.JPanel implements HelpCtx.Pro
         // check super class
         String superclass = (String) jComboBoxSuperclass.getEditor().getItem();
         if (superclass == null || superclass.trim().equals("")){
-            wizardDescriptor.putProperty("WizardPanel_errorMessage",                            //NOI18N             
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,                            //NOI18N             
                     NbBundle.getMessage(ActionPanelVisual.class, "MSG_NoSuperClassSelected"));  //NOI18N
             return false;
         }
@@ -187,7 +187,7 @@ public class ActionPanelVisual extends javax.swing.JPanel implements HelpCtx.Pro
         String configFile = (String) jComboBoxConfigFile.getSelectedItem();
         if (configFile == null || configFile.trim().equals("")){
             // Should dislpay only warning. We should allow to create action outside module. #68034
-            wizardDescriptor.putProperty("WizardPanel_errorMessage",                            //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,                            //NOI18N
                     NbBundle.getMessage(ActionPanelVisual.class, "MSG_NoConfFileSelectedForAction"));//NOI18N
             // don't check the action path, when the configuration file is not needed. 
             return true;
@@ -195,7 +195,7 @@ public class ActionPanelVisual extends javax.swing.JPanel implements HelpCtx.Pro
         // check Action path
         String actionPath = jTextFieldPath.getText();
         if (actionPath == null || actionPath.trim().equals("") || actionPath.trim().equals("/")){//NOI18N
-            wizardDescriptor.putProperty("WizardPanel_errorMessage",                            //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,                            //NOI18N
                     NbBundle.getMessage(ActionPanelVisual.class, "MSG_WrongActionPath"));       //NOI18N
             return false;
         }

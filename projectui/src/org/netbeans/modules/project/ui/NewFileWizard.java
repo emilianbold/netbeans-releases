@@ -253,15 +253,15 @@ public final class NewFileWizard extends TemplateWizard {
         public void initialize(TemplateWizard wiz) {
             panels = new WizardDescriptor.Panel[]{targetChooserPanel, pageLayoutChooserPanel};
             // Make sure list of steps is accurate.
-            String[] beforeSteps = (String[]) wiz.getProperty("WizardPanel_contentData");
+            String[] beforeSteps = (String[]) wiz.getProperty(WizardDescriptor.PROP_CONTENT_DATA);
             int beforeStepLength = beforeSteps.length - 1;
             String[] steps = createSteps(beforeSteps);
             for (int i = 0; i < panels.length; i++) {
                 Component c = panels[i].getComponent();
                 if (c instanceof JComponent) { // assume Swing components
                     JComponent jc = (JComponent) c;
-                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i + beforeStepLength - 1)); // NOI18N
-                    jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i + beforeStepLength - 1));
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
                 }
             }
         }

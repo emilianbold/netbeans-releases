@@ -111,21 +111,21 @@ public class SunDDWizardPanel implements WizardDescriptor.Panel {
 
         String sunDDFileName = component.getFileName();
         if(sunDDFileName == null) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage",  // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,  // NOI18N
                     NbBundle.getMessage(SunDDWizardPanel.class,"ERR_NoJavaEEModuleType")); //NOI18N
             return false;
         }
         
         File location = component.getSelectedLocation();
         if(location == null) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage",  // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,  // NOI18N
                     NbBundle.getMessage(SunDDWizardPanel.class,"ERR_NoValidLocation", sunDDFileName)); //NOI18N
             return false;
         }
 
         File sunDDFile = component.getFile();
         if(sunDDFile.exists()) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage",  // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,  // NOI18N
                     NbBundle.getMessage(SunDDWizardPanel.class,"ERR_FileExists", sunDDFileName)); //NOI18N
             return false;
         }

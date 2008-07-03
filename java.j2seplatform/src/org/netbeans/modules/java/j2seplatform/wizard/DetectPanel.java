@@ -103,7 +103,7 @@ public class DetectPanel extends javax.swing.JPanel {
     public DetectPanel(NewJ2SEPlatform primaryPlatform) {
         initComponents();
         postInitComponents ();
-        putClientProperty("WizardPanel_contentData",
+        putClientProperty(WizardDescriptor.PROP_CONTENT_DATA,
             new String[] {
                 NbBundle.getMessage(DetectPanel.class,"TITLE_PlatformName"),
         });
@@ -618,22 +618,22 @@ public class DetectPanel extends javax.swing.JPanel {
         }
 
         private void checkValid () {
-            this.wiz.putProperty( "WizardPanel_errorMessage", ""); //NOI18N
+            this.wiz.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
             String name = this.component.getPlatformName ();            
             boolean validDisplayName = name.length() > 0;            
             boolean usedDisplayName = false;            
             if (!detected) {
-                this.wiz.putProperty( "WizardPanel_errorMessage",NbBundle.getMessage(DetectPanel.class,"ERROR_NoSDKRegistry"));         //NOI18N
+                this.wiz.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE,NbBundle.getMessage(DetectPanel.class,"ERROR_NoSDKRegistry"));         //NOI18N
             }
             else if (!validDisplayName) {
-                this.wiz.putProperty( "WizardPanel_errorMessage",NbBundle.getMessage(DetectPanel.class,"ERROR_InvalidDisplayName"));    //NOI18N
+                this.wiz.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE,NbBundle.getMessage(DetectPanel.class,"ERROR_InvalidDisplayName"));    //NOI18N
             }
             else {                
                 JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();                
                 for (int i=0; i<platforms.length; i++) {
                     if (name.equals (platforms[i].getDisplayName())) {
                         usedDisplayName = true;
-                        this.wiz.putProperty( "WizardPanel_errorMessage",NbBundle.getMessage(DetectPanel.class,"ERROR_UsedDisplayName"));    //NOI18N
+                        this.wiz.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE,NbBundle.getMessage(DetectPanel.class,"ERROR_UsedDisplayName"));    //NOI18N
                         break;
                     }
                 }                

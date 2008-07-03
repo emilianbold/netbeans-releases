@@ -64,6 +64,7 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.dbschema.jdbcimpl.DDLBridge;
 import org.netbeans.modules.dbschema.jdbcimpl.ConnectionProvider;
+import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
@@ -98,7 +99,7 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
         views = new LinkedList();
         cp = null;
 
-        putClientProperty("WizardPanel_contentSelectedIndex", new Integer(2)); //NOI18N
+        putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(2)); //NOI18N
         setName(bundle.getString("TablesChooser")); //NOI18N
 
         initComponents();

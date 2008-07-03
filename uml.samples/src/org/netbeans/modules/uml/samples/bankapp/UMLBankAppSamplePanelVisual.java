@@ -257,7 +257,7 @@ public class UMLBankAppSamplePanelVisual extends JPanel implements DocumentListe
     {
         if (projectNameTextField.getText().length() == 0)
         {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                 NbBundle.getMessage(UMLBankAppSamplePanelVisual.class,
                     "MSG_JavaProjectNameNotValidFolder")); // NOI18N
             
@@ -269,7 +269,7 @@ public class UMLBankAppSamplePanelVisual extends JPanel implements DocumentListe
         
         if (!f.isDirectory())
         {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                 NbBundle.getMessage(UMLBankAppSamplePanelVisual.class,
                     "MSG_JavaProjectFolderNotValidPath")); // NOI18N
             
@@ -288,7 +288,7 @@ public class UMLBankAppSamplePanelVisual extends JPanel implements DocumentListe
         
         if (projLoc == null || !projLoc.canWrite())
         {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                 NbBundle.getMessage(UMLBankAppSamplePanelVisual.class,
                     "MSG_CantCreateJavaProjectFolder")); // NOI18N
             
@@ -297,7 +297,7 @@ public class UMLBankAppSamplePanelVisual extends JPanel implements DocumentListe
         
         if (FileUtil.toFileObject(projLoc) == null)
         {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                 NbBundle.getMessage(UMLBankAppSamplePanelVisual.class,
                     "MSG_JavaProjectFolderNotValidPath")); // NOI18N
             
@@ -308,7 +308,7 @@ public class UMLBankAppSamplePanelVisual extends JPanel implements DocumentListe
         if (destFolder.exists() && kids != null && kids.length > 0)
         {
             // Folder exists and is not empty
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                 NbBundle.getMessage(UMLBankAppSamplePanelVisual.class,
                     "MSG_JavaProjectFolderExists")); // NOI18N
             
@@ -319,7 +319,7 @@ public class UMLBankAppSamplePanelVisual extends JPanel implements DocumentListe
         // UML project name/location validation
         if (umlProjectNameTextField.getText().length() == 0)
         {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                 NbBundle.getMessage(UMLBankAppSamplePanelVisual.class,
                     "MSG_UMLProjectNameNotValidFolder")); // NOI18N
             
@@ -341,7 +341,7 @@ public class UMLBankAppSamplePanelVisual extends JPanel implements DocumentListe
         
         if (umlProjLoc == null || !umlProjLoc.canWrite())
         {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                 NbBundle.getMessage(UMLBankAppSamplePanelVisual.class,
                     "MSG_CantCreateUMLProjectFolder")); // NOI18N
 
@@ -350,7 +350,7 @@ public class UMLBankAppSamplePanelVisual extends JPanel implements DocumentListe
         
         if (FileUtil.toFileObject(projLoc) == null)
         {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                 NbBundle.getMessage(UMLBankAppSamplePanelVisual.class,
                     "MSG_UMLProjectFolderNotValidPath")); // NOI18N
                 
@@ -361,14 +361,14 @@ public class UMLBankAppSamplePanelVisual extends JPanel implements DocumentListe
         if (umlDestFolder.exists() && kidz != null && kidz.length > 0)
         {
             // Folder exists and is not empty
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                 NbBundle.getMessage(UMLBankAppSamplePanelVisual.class,
                     "MSG_UMLProjectFolderExists")); // NOI18N
             
             return false;
         }
         
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); // NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
         return true;
     }
     

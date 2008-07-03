@@ -148,7 +148,7 @@ public class RailsInstallationPanel extends JPanel {
     }
     boolean valid (WizardDescriptor settings) {
         if (!platform().isValidRuby(false)) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", 
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, 
                     NbBundle.getMessage(RailsInstallationPanel.class, "NoRuby"));
             return false;
         }
@@ -156,11 +156,11 @@ public class RailsInstallationPanel extends JPanel {
         RailsInstallationInfo railsInfo = RailsInstallationValidator.getRailsInstallation(platform());
         // Make sure we have Rails (and possibly openssl as well)
         if (!railsInfo.isValid()) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", railsInfo.getMessage());       //NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, railsInfo.getMessage());       //NOI18N
             return false;
         } 
 
-        wizardDescriptor.putProperty( "WizardPanel_errorMessage","");   //NOI18N
+        wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE,"");   //NOI18N
         return true;
     }
     

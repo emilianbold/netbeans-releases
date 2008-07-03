@@ -128,7 +128,7 @@ class PanelProjectAppVisual
 
     public boolean valid(WizardDescriptor wizardDescriptor) {
 ///        if (projectNameTextField.getText().length() == 0) {
-///            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getBundle(WIZARD_BUNDLE).getString("MSG_IllegalProjectName")); //NOI18N
+///            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getBundle(WIZARD_BUNDLE).getString("MSG_IllegalProjectName")); //NOI18N
 ///            return false; // Display name not specified
 ///        }
 
@@ -136,11 +136,11 @@ class PanelProjectAppVisual
 ///        File[] children = destFolder.listFiles();
 ///        if (destFolder.exists() && children != null && children.length > 0) {
             // Folder exists and is not empty
-///            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getBundle(WIZARD_BUNDLE).getString("MSG_ProjectFolderExists")); //NOI18N
+///            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getBundle(WIZARD_BUNDLE).getString("MSG_ProjectFolderExists")); //NOI18N
 ///            return false;
 ///        }
 
-///        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
+///        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
         return true;
     }
 

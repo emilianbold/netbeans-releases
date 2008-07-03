@@ -216,11 +216,11 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
     boolean valid (WizardDescriptor settings) {
         String result = checkValidity (this.projectName.getText(), this.projectLocation.getText());
         if (result == null) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage","");   //NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE,"");   //NOI18N
             return true;
         }
         else {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage",result);       //NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE,result);       //NOI18N
             return false;
         }
     }

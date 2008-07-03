@@ -75,7 +75,7 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
     private static final String DEFAULT_DOMAIN_DIR = "domains/domain1";
     private static final String DOMAIN_XML_PATH = "config/domain.xml";
     
-    private final static String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18   
+    private final static String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE; // NOI18   
     
     private ServerWizardIterator wizardIterator;
     private AddServerLocationVisualPanel component;

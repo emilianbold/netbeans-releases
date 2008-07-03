@@ -173,7 +173,7 @@ public class NewRubyFileWizardIterator implements WizardDescriptor.Instantiating
         panels = createPanels( wiz );
         // Make sure list of steps is accurate.
         String[] beforeSteps = null;
-        Object prop = wiz.getProperty ("WizardPanel_contentData"); // NOI18N
+        Object prop = wiz.getProperty (WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
         if (prop instanceof String[]) {
             beforeSteps = (String[])prop;
         }
@@ -189,9 +189,9 @@ public class NewRubyFileWizardIterator implements WizardDescriptor.Instantiating
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent)c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", i); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i); // NOI18N
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
             }
         }
     }

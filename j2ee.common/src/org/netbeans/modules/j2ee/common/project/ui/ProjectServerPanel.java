@@ -439,7 +439,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         wizardDescriptor.putProperty(ProjectLocationPanel.PROP_ERROR_MESSAGE, null);
         if (getSelectedServer() == null) {
             String errMsg = NbBundle.getMessage(ProjectServerPanel.class, "MSG_NoServer");
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", errMsg); // NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, errMsg); // NOI18N
             return false;
         }
         if (isSharableProject() && serverLibraryCheckbox.isEnabled()
@@ -518,7 +518,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
     
     private static void setErrorMessage(
             final String errMsgKey, final WizardDescriptor wizardDescriptor) {
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                 NbBundle.getMessage(ProjectServerPanel.class, errMsgKey));
     }
     
@@ -862,7 +862,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
             errorMessage = null;
         }
         if (d != null) {
-            d.putProperty("WizardPanel_errorMessage", errorMessage); //NOI18N
+            d.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage); //NOI18N
         }
         
         setJ2eeVersionWarningPanel();

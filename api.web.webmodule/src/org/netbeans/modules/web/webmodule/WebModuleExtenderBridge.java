@@ -90,7 +90,7 @@ public class WebModuleExtenderBridge extends WebModuleExtender {
     private void initialize() {
         wizard.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                String message = (String) wizard.getProperty("WizardPanel_errorMessage");
+                String message = (String) wizard.getProperty(WizardDescriptor.PROP_ERROR_MESSAGE);
                 if (message != null && message.trim().length() == 0) {
                     // many WizardDescriptor clients pass " " for no error message to ensure
                     // that it still takes up vertical space

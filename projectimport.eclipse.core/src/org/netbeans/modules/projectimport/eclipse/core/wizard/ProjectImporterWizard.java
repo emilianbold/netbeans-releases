@@ -69,7 +69,7 @@ public final class ProjectImporterWizard {
         final WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
         iterator.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                         iterator.getErrorMessage());
             }
         });

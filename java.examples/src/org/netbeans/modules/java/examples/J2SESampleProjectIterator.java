@@ -156,8 +156,8 @@ public class J2SESampleProjectIterator implements TemplateWizard.Iterator {
         list = new String[] {
             NbBundle.getMessage(PanelConfigureProject.class, "LBL_NWP1_ProjectTitleName"), // NOI18N
         };
-        component.putClientProperty ("WizardPanel_contentData", list); // NOI18N
-        component.putClientProperty ("WizardPanel_contentSelectedIndex", new Integer (currentIndex)); // NOI18N
+        component.putClientProperty (WizardDescriptor.PROP_CONTENT_DATA, list); // NOI18N
+        component.putClientProperty (WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer (currentIndex)); // NOI18N
     }
     
 }

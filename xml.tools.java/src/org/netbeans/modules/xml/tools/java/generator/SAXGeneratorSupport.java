@@ -247,12 +247,12 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             WizardDescriptor descriptor = new WizardDescriptor(panels, model);
 
             descriptor.setTitle(NbBundle.getMessage (SAXGeneratorSupport.class, "SAXGeneratorSupport.title"));
-            descriptor.putProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
-            descriptor.putProperty("WizardPanel_helpDisplayed", Boolean.TRUE); // NOI18N
-            descriptor.putProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
-            descriptor.putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
-            descriptor.putProperty("WizardPanel_leftDimension", new Dimension(500,400)); // NOI18N
-            descriptor.putProperty("WizardPanel_contentData", new String[] { // NOI18N
+            descriptor.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
+            descriptor.putProperty(WizardDescriptor.PROP_HELP_DISPLAYED, Boolean.TRUE); // NOI18N
+            descriptor.putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
+            descriptor.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
+            descriptor.putProperty(WizardDescriptor.PROP_LEFT_DIMENSION, new Dimension(500,400)); // NOI18N
+            descriptor.putProperty(WizardDescriptor.PROP_CONTENT_DATA, new String[] { // NOI18N
                 NbBundle.getMessage (SAXGeneratorSupport.class, "SAXGeneratorVersionPanel.step"),
                 NbBundle.getMessage (SAXGeneratorSupport.class, "SAXGeneratorMethodPanel.step"),
                 NbBundle.getMessage (SAXGeneratorSupport.class, "SAXGeneratorParsletPanel.step"),

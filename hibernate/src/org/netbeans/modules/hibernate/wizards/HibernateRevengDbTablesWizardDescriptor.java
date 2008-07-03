@@ -105,16 +105,16 @@ public class HibernateRevengDbTablesWizardDescriptor implements WizardDescriptor
                 HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
                 boolean value = env.canLoadDBDriver(hco.getHibernateConfiguration());
                 if (!value) {
-                    wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(HibernateRevengDbTablesWizardDescriptor.class, "ERR_Include_DBJars")); // NOI18N
+                    wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateRevengDbTablesWizardDescriptor.class, "ERR_Include_DBJars")); // NOI18N
                     return false;
                 }               
             } catch (Exception e) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(HibernateRevengDbTablesWizardDescriptor.class, "ERR_Include_DBJars")); // NOI18N
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateRevengDbTablesWizardDescriptor.class, "ERR_Include_DBJars")); // NOI18N
                 return false;
             }
         }        
        
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
         return true;
     }
 
@@ -137,7 +137,7 @@ public class HibernateRevengDbTablesWizardDescriptor implements WizardDescriptor
     }
 
     private void setErrorMessage(String errorMessage) {
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", errorMessage); // NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage); // NOI18N
 
     }
 }

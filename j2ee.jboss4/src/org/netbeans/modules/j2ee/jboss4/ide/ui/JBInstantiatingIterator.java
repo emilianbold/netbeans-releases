@@ -237,8 +237,8 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
     public WizardDescriptor.Panel current() {
         WizardDescriptor.Panel result = getPanels()[index];
         JComponent component = (JComponent)result.getComponent();
-        component.putClientProperty("WizardPanel_contentData", getSteps());  // NOI18N
-        component.putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(getIndex()));// NOI18N
+        component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, getSteps());  // NOI18N
+        component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(getIndex()));// NOI18N
         return result;
     }
     

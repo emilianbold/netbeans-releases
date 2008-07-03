@@ -90,19 +90,19 @@ public abstract class JDBCWizardDescriptor extends WizardDescriptor {
         }
 
         // Number the steps.
-        this.putProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
+        this.putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
 
         // Optional: set the size of the left pane explicitly:
-        this.putProperty("WizardPanel_leftDimension", new Dimension(184, 500)); // NOI18N
+        this.putProperty(WizardDescriptor.PROP_LEFT_DIMENSION, new Dimension(184, 500)); // NOI18N
 
         // Optional: show a help tab with special info about the pane:
-        this.putProperty("WizardPanel_helpDisplayed", Boolean.TRUE); // NOI18N
+        this.putProperty(WizardDescriptor.PROP_HELP_DISPLAYED, Boolean.TRUE); // NOI18N
 
         // Make the left pane appear:
-        this.putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
+        this.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
 
         // Make the left pane show list of steps etc.:
-        this.putProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
+        this.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
     }
 
     // Called when user moves forward or backward etc.:
@@ -116,8 +116,8 @@ public abstract class JDBCWizardDescriptor extends WizardDescriptor {
             final JDBCWizardIterator myIterator = (JDBCWizardIterator) this.iterator;
 
             // Make the left pane show list of steps etc.:
-            this.putProperty("WizardPanel_contentData", myIterator.getSteps()); // NOI18N
-            this.putProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(String.valueOf(myIterator.getIndex()))); // NOI18N
+            this.putProperty(WizardDescriptor.PROP_CONTENT_DATA, myIterator.getSteps()); // NOI18N
+            this.putProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(String.valueOf(myIterator.getIndex()))); // NOI18N
         }
 
         super.updateState();

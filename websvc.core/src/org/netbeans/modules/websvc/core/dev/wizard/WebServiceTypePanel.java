@@ -297,16 +297,16 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         boolean jaxWsInWeb14 = wm != null && jaxWsInJ2ee14Supported;
         if (!Util.isJavaEE5orHigher(project) && !noJsr109InWeb && !jaxWsInWeb14 && WebServicesSupport.getWebServicesSupport(project.getProjectDirectory()) == null) {
             // check if jaxrpc plugin installed
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_NoJaxrpcPluginFound")); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_NoJaxrpcPluginFound")); // NOI18N
             return false;
         }
         
         if (getServiceType() == WizardProperties.ENCAPSULATE_SESSION_BEAN &&
             jTextFieldDelegate.getText().length() == 0) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WebServiceTypePanel.class, "LBL_SelectOneEJB")); //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(WebServiceTypePanel.class, "LBL_SelectOneEJB")); //NOI18N
             return false;        
         }
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
         
         return true;
     }
@@ -319,7 +319,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         if( (!jsr109Supported && !jsr109oldSupported) || jaxWsInJ2ee14Supported || 
                 (!jsr109Supported && jsr109oldSupported/* && jwsdpSupported */)){
             if (Util.isSourceLevel14orLower(project)) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage",
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(WebServiceTypePanel.class, "ERR_NeedProperSourceLevel")); // NOI18N
                 return false;
             }

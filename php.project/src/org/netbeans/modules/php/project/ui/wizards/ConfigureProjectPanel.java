@@ -181,26 +181,26 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
     public boolean isValid() {
         getComponent();
-        descriptor.putProperty("WizardPanel_errorMessage", " "); // NOI18N
+        descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, " "); // NOI18N
         String error = validateProject();
         if (error != null) {
-            descriptor.putProperty("WizardPanel_errorMessage", error); // NOI18N
+            descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error); // NOI18N
             return false;
         }
         error = validateSources();
         if (error != null) {
-            descriptor.putProperty("WizardPanel_errorMessage", error); // NOI18N
+            descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error); // NOI18N
             return false;
         }
         error = validateIndexFile();
         if (error != null) {
-            descriptor.putProperty("WizardPanel_errorMessage", error); // NOI18N
+            descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error); // NOI18N
             return false;
         }
         // #133041
         String warning = validateIndexFileInNonEmptySources();
         if (warning != null) {
-            descriptor.putProperty("WizardPanel_errorMessage", warning); // NOI18N
+            descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, warning); // NOI18N
         }
 
         return true;
@@ -430,7 +430,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         if (destFolder.exists() && kids != null && kids.length > 0) {
             // folder exists and is not empty - but just warning
             String warning = NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_" + type + "NotEmpty");
-            descriptor.putProperty("WizardPanel_errorMessage", warning); // NOI18N
+            descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, warning); // NOI18N
         }
     }
 

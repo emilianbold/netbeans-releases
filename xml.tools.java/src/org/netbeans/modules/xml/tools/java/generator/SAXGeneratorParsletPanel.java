@@ -115,7 +115,7 @@ public final class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
     /** Creates new form SAXGeneratorParsletPanel */
     public SAXGeneratorParsletPanel() {
 //        try {
-//            this.putClientProperty("WizardPanel_helpURL", new URL("nbresloc:/org/netbeans/modules/xml/tools/generator/SAXGeneratorParsletPanel.html"));  //NOI18N
+//            this.putClientProperty(WizardDescriptor.PROP_HELP_URL, new URL("nbresloc:/org/netbeans/modules/xml/tools/generator/SAXGeneratorParsletPanel.html"));  //NOI18N
 //        } catch (MalformedURLException ex) {
 //        }            
     }

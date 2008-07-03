@@ -106,7 +106,7 @@ public class NewTestcaseOperationWizardPanel implements WizardDescriptor.Validat
         // and uncomment the complicated stuff below.
         
         if (mComponent.getSelectedBindingOperation() == null) {
-            wiz.putProperty("WizardPanel_errorMessage",
+            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(NewTestcaseOperationVisualPanel.class,
                     "LBL_One_operation_must_be_selected")); //NOI18N
             return false; // WSDL not selected
@@ -123,11 +123,11 @@ public class NewTestcaseOperationWizardPanel implements WizardDescriptor.Validat
         if (!isSupported) {
             String msg = NbBundle.getMessage(NewTestcaseOperationWizardPanel.class,
                     "LBL_Binding_is_not_supported", binding.getName()); // NOI18N 
-            wiz.putProperty("WizardPanel_errorMessage", msg); // NOI18N
+            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
             return false;
         }        
         
-        wiz.putProperty("WizardPanel_errorMessage", ""); //NOI18N
+        wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
         return true;
     }
     

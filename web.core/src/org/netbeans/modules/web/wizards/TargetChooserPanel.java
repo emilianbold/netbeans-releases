@@ -115,7 +115,7 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
     public boolean isValid() {
         // cannot create tag files in j2ee1.3
         if (FileType.TAG.equals(fileType) && WebModule.J2EE_13_LEVEL.equals(j2eeVersion)) {
-            templateWizard.putProperty ("WizardPanel_errorMessage", // NOI18N
+            templateWizard.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                 NbBundle.getMessage(TargetChooserPanel.class, "MSG_13notSupported"));
             return false;
         }
@@ -123,7 +123,7 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
         boolean ok = ( gui != null && gui.getTargetName() != null);
         
         if (!ok) {
-            templateWizard.putProperty ("WizardPanel_errorMessage", null); // NOI18N
+            templateWizard.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, null); // NOI18N
             return false;
         }
         
@@ -142,14 +142,14 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
                 mes = NbBundle.getMessage(TargetChooserPanel.class,"TXT_tagNameExists",tagName);
             }
             if (mes!=null) {
-                templateWizard.putProperty ("WizardPanel_errorMessage", mes); // NOI18N
+                templateWizard.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, mes); // NOI18N
                 return false;
             }
         }
         
         String filename = gui.getTargetName();
         if (INVALID_FILENAME_CHARACTERS.matcher(filename).find()) {
-            templateWizard.putProperty ("WizardPanel_errorMessage", NbBundle.getMessage(TargetChooserPanel.class, "MSG_invalid_filename", filename)); // NOI18N
+            templateWizard.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(TargetChooserPanel.class, "MSG_invalid_filename", filename)); // NOI18N
             return false;
         }
 
@@ -161,7 +161,7 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
             String tldName = gui.getTargetName();
             if (tldName.indexOf(' ') >= 0 ||
                     tldName.indexOf(',') >= 0) {
-                templateWizard.putProperty ("WizardPanel_errorMessage", NbBundle.getMessage(TargetChooserPanel.class,"TXT_wrongTagLibName",tldName)); // NOI18N
+                templateWizard.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(TargetChooserPanel.class,"TXT_wrongTagLibName",tldName)); // NOI18N
                 return false;
             }
         }        
@@ -177,15 +177,15 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
         
         String errorMessage = Utilities.canUseFileName (file, gui.getRelativeTargetFolder(), targetName, ext);
         if (errorMessage!=null)
-            templateWizard.putProperty ("WizardPanel_errorMessage", errorMessage); // NOI18N
+            templateWizard.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage); // NOI18N
         else
-            templateWizard.putProperty("WizardPanel_errorMessage", gui.getErrorMessage()); //NOI18N
+            templateWizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, gui.getErrorMessage()); //NOI18N
         
         boolean valid = gui.isPanelValid() && errorMessage == null;
 
         if (valid && targetName.indexOf(".")>=0) {
             // warning when file name contains dots
-            templateWizard.putProperty("WizardPanel_errorMessage", // NOI18N
+            templateWizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                 NbBundle.getMessage(TargetChooserPanel.class, "MSG_dotsInName",targetName+"."+ext));
         }
         return valid;

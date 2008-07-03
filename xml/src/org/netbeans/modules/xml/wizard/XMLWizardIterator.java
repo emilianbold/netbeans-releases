@@ -168,7 +168,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
         } catch (IOException ignore) {
         }
         model = new DocumentModel(targetFolderURL);
-        Object prop = templateWizard.getProperty ("WizardPanel_contentData"); // NOI18N
+        Object prop = templateWizard.getProperty (WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
         if (prop != null && prop instanceof String[]) {
             beforeSteps = (String[])prop;
         }
@@ -176,7 +176,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
 
     public void uninitialize(TemplateWizard templateWizard) {
         if (targetPanel!=null) {
-            ((JComponent)targetPanel.getComponent()).putClientProperty("WizardPanel_contentData", targetSteps);
+            ((JComponent)targetPanel.getComponent()).putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, targetSteps);
             targetPanel = null;
         }
         current = -1;
@@ -353,7 +353,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
         WizardDescriptor.Panel panel = currentComponent();
         if (panel.getComponent() instanceof JComponent) {
             ((JComponent)panel.getComponent()).putClientProperty(
-                "WizardPanel_contentSelectedIndex",                             // NOI18N
+                WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,                             // NOI18N
                 new Integer(current)
             );        
         }
@@ -460,7 +460,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
             steps[2] = Util.THIS.getString("MSG_unknown");
             String[] newSteps = createSteps(beforeSteps,steps);
             documentPanel.putClientProperty(
-                "WizardPanel_contentData",                                      // NOI18N
+                WizardDescriptor.PROP_CONTENT_DATA,                                      // NOI18N
                 newSteps
             );
             
@@ -479,7 +479,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
             steps[2] = getDTDPanelName();
             String[] newSteps = createSteps(beforeSteps,steps);
             dtdPanel.putClientProperty(
-                "WizardPanel_contentData",                                      // NOI18N
+                WizardDescriptor.PROP_CONTENT_DATA,                                      // NOI18N
                 newSteps
             );
             
@@ -499,7 +499,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
             steps[3] = getXMLContentPanelName();
             String[] newSteps = createSteps(beforeSteps,steps);
             schemaPanel.putClientProperty(
-                "WizardPanel_contentData",                                      // NOI18N
+                WizardDescriptor.PROP_CONTENT_DATA,                                      // NOI18N
                 newSteps
             );
         }
@@ -512,7 +512,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
             // fill component with step hints
             if (targetPanel.getComponent() instanceof JComponent) {
                 JComponent panel = (JComponent) targetPanel.getComponent();
-                targetSteps = panel.getClientProperty("WizardPanel_contentData");
+                targetSteps = panel.getClientProperty(WizardDescriptor.PROP_CONTENT_DATA);
                 String[] steps = new String[3];
                 //steps[0] = "Hello";
                 steps[0] = getTargetPanelName();
@@ -520,7 +520,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
                 steps[2] = Util.THIS.getString("MSG_unknown");
                 String[] newSteps = createSteps(beforeSteps,steps);
                 panel.putClientProperty(
-                    "WizardPanel_contentData",                                  // NOI18N
+                    WizardDescriptor.PROP_CONTENT_DATA,                                  // NOI18N
                     newSteps
                 );
             }
@@ -582,7 +582,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
             steps[3] = getXMLContentPanelName();
             String[] newSteps = createSteps(beforeSteps,steps);
             xmlPanel.putClientProperty(
-                "WizardPanel_contentData",                                      // NOI18N
+                WizardDescriptor.PROP_CONTENT_DATA,                                      // NOI18N
                 newSteps
             );
         }
