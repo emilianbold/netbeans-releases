@@ -75,10 +75,15 @@ class SQLStatementGenerator {
         boolean comma = false;
         for (int i = 0; i < insertedRow.length; i++) {
             DBColumn dbcol = tblMeta.getColumn(i);
-            if (insertedRow[i] == null && !dbcol.isNullable() && !dbcol.isGenerated()) {
+            if(dbcol.isGenerated()) {
+                continue;
+            }
+
+            if (insertedRow[i] == null && !dbcol.isNullable()) {
                     String nbBundle58 = mLoc.t("RESC058: Please enter valid values for not nullable columns");
                     throw new DBException(nbBundle58.substring(15));
             }
+
             if (comma) {
                 values += commaStr;
                 rawvalues += commaStr;

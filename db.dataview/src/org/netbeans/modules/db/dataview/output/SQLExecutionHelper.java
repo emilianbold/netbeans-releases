@@ -499,8 +499,10 @@ class SQLExecutionHelper {
     private void executeSQLStatement(Statement stmt, String sql) throws SQLException {
         sql = sql.replaceAll("\\n", "").replaceAll("\\t", ""); // NOI18N
         if (dataView.isLimitSupported() && isSelectStatement(sql)) {
-            sql += " LIMIT " + dataView.getDataViewPageContext().getPageSize(); // NOI18N
-            sql += " OFFSET " + dataView.getDataViewPageContext().getCurrentPos(); // NOI18N
+            if(sql.toUpperCase().indexOf("LIMIT") == -1) {
+                sql += " LIMIT " + dataView.getDataViewPageContext().getPageSize(); // NOI18N
+                sql += " OFFSET " + (dataView.getDataViewPageContext().getCurrentPos() - 1); // NOI18N
+            }
         }
         String nbBundle79 = mLoc.t("RESC079: Executing Statement: ");
         mLogger.infoNoloc(mLoc.t("LOGR021: Executing Statement: {0} ",sql));

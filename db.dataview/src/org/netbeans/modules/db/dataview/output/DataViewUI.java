@@ -126,7 +126,7 @@ class DataViewUI extends JPanel {
     }
 
     void setTotalCount(int count) {
-        totalRowsLabel.setText(String.valueOf(count) + dataView.getDataViewPageContext().pageOf());
+        totalRowsLabel.setText(String.valueOf(count < 0 ? 0 : count) + dataView.getDataViewPageContext().pageOf());
     }
 
     boolean isCommitEnabled() {
