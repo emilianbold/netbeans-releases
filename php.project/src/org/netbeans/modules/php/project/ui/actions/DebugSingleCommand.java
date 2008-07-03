@@ -44,6 +44,8 @@ package org.netbeans.modules.php.project.ui.actions;
 import java.net.MalformedURLException;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -75,9 +77,15 @@ public class DebugSingleCommand extends DebugCommand {
                     }
                 }
             };
-            XDebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
-            if (dbgStarter != null) {
-                dbgStarter.start(getProject(), runnable, fileForContext(context), useInterpreter());
+            
+            boolean jsDebuggingAvailable = WebClientToolsSessionStarterService.isAvailable();
+            if (!jsDebuggingAvailable || WebClientToolsProjectUtils.getServerDebugProperty(getProject())) {
+                XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
+                if (dbgStarter != null) {
+                    dbgStarter.start(getProject(), runnable, fileForContext(context), useInterpreter());
+                }
+            } else {
+                runnable.run();
             }
         }
     }

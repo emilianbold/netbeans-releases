@@ -68,6 +68,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
  */
 public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
     
+    private static final String HEIGHT      = "height";             // NOI18N
     static final String HIDDEN_TEXT         = "hidden_text";        // NOI18N
     static final String BOUNDS              = "bound";              // NOi18N
     private static final String SELECTION   = "selection";          // NOI18N
@@ -87,12 +88,12 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
             int index, boolean isSelected )
     {
         SVGLocatableElement xmlElement = list.getElement();
-        SVGLocatableElement content = (SVGLocatableElement)
-            SVGComponent.getElementByMeta(xmlElement, 
+        final SVGLocatableElement content = (SVGLocatableElement)
+            list.getElementByMeta(xmlElement, 
                     SVGList.TYPE,  SVGList.CONTENT );
         
         SVGLocatableElement lastText;
-        SVGLocatableElement hiddenText = (SVGLocatableElement) SVGComponent
+        SVGLocatableElement hiddenText = (SVGLocatableElement) list
                 .getElementByMeta(xmlElement, SVGList.TYPE, HIDDEN_TEXT);
         if (hiddenText == null) {
             throw new IllegalArgumentException("List argument "
@@ -103,7 +104,7 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
         myY = hiddenText.getFloatTrait(SVGComponent.TRAIT_Y);
         lastText = hiddenText;
             
-        SVGLocatableElement textElement = (SVGLocatableElement) list.getForm().
+        final SVGLocatableElement textElement = (SVGLocatableElement) list.getForm().
             getDocument().createElementNS( SVGComponent.SVG_NS, SVGTextField.TEXT);
         textElement.setFloatTrait( SVGComponent.TRAIT_X, myX );
         textElement.setFloatTrait( SVGComponent.TRAIT_Y, myY + index*myHeight ) ;
@@ -119,7 +120,12 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
         else {
             textElement.setTrait(SVGComponent.TRAIT_TEXT,  value.toString());
         }
-        content.appendChild(textElement);
+        
+        list.getForm().invokeAndWaitSafely(new Runnable() {
+            public void run() {
+                content.appendChild(textElement);
+            }
+        });
         
         if ( isSelected ) {
             showSelection( list , index );
@@ -132,11 +138,11 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
         // TODO : modify a whole code for enabling multiple selection.
         SVGLocatableElement xmlElement = list.getElement();
         SVGLocatableElement selection = 
-            (SVGLocatableElement)SVGComponent.getElementByMeta(xmlElement,
+            (SVGLocatableElement)list.getNestedElementByMeta(xmlElement,
                 SVGList.TYPE,  SELECTION );
-        selection.setFloatTrait(SVGComponent.TRAIT_Y, myY + (index-1)*myHeight 
-                +ASCENT_SELECTION);
-        selection.setFloatTrait( "height", myHeight +DESCENT_SELECTION);
+        list.setTraitSafely( selection , SVGComponent.TRAIT_Y, 
+                myY + (index-1)*myHeight +ASCENT_SELECTION);
+        list.setTraitSafely( selection , HEIGHT, myHeight +DESCENT_SELECTION);
     }
 
     private float myX;

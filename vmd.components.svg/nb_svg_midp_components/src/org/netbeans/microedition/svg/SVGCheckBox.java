@@ -29,7 +29,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *           &lt;set attributeName="visibility" attributeType="XML" begin="checkbox_online.focusout" fill="freeze" to="hidden"/>
  *       &lt;/rect>
  *       &lt;rect x="7.4" y="5" width="20" height="20" fill="white" stroke="black" stroke-width="2"/>
- *       &lt;path  transform="translate(12.5,15.5)"  d="m0,0 5,5 5,-12" fill="none" stroke="black" stroke-width="2">
+ *       &lt;path  transform="translate(12.5,15.5)"  d="M 0,0 5,5 5,-12" fill="none" stroke="black" stroke-width="2">
  *       &lt;metadata> &lt;text>type=mark&lt;/text> &lt;/metadata>
  *   &lt;/path>
  *       &lt;text  x="33.8" y="21.6" stroke="gray" font-size="15">
