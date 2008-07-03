@@ -62,7 +62,9 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.php.project.ui.actions.DebugSingleCommand;
+import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
 import org.netbeans.modules.php.project.ui.actions.RunSingleCommand;
+import org.netbeans.modules.php.project.ui.actions.UploadCommand;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -451,9 +453,9 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
             Action[] actions = new Action[] {
                 CommonProjectActions.newFileAction(),
                 null,
-//                provider.getAction(DownloadCommand.ID),
-//                provider.getAction(UploadCommand.ID),
-//                null,
+                provider.getAction(DownloadCommand.ID),
+                provider.getAction(UploadCommand.ID),
+                null,
                 SystemAction.get(FileSystemAction.class),
                 null,
                 SystemAction.get(FindAction.class),
