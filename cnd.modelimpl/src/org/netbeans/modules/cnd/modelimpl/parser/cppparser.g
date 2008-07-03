@@ -3243,11 +3243,20 @@ built_in_type
         ;
 
 post_postfix_expression
+        {/*TypeSpecifier*/int ts;}
 		:
-                (options {warnWhenFollowAmbig = false;}:
-                    LSQUARE expression RSQUARE
+                        (options {warnWhenFollowAmbig = false;}:
+                        LSQUARE expression RSQUARE
+                    |   // IZ 138962 : Passer fails on template method calls
+                        (DOT (LITERAL_typename)? ts = simple_type_specifier LPAREN)=>
+                        DOT (LITERAL_typename)? ts = simple_type_specifier
+                        LPAREN 
+                        (
+                            fun_call_param_list
+                        )? 
+                        RPAREN
                     |	LPAREN (expression_list)? RPAREN 
-                    |	DOT id_expression
+                    |	DOT id_expression 
                     // IZ 137531 : IDE highlights db.template cursor<T> line as error
                     |	DOT LITERAL_template id_expression
                     |	POINTERTO id_expression
