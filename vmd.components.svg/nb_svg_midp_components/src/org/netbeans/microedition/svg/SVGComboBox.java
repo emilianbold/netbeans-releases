@@ -58,7 +58,9 @@ import org.w3c.dom.svg.SVGLocatableElement;
  * Suggested svg snippet :
  * <pre>
  * &lt;g id="country_combobox" transform="translate(20,180)">
- *   &lt;metadata> &lt;text>type=combobox&lt;/text> &lt;/metadata>
+ *   &lt;!-- Metadata information. Please don't edit. -->
+ *   &lt;text display="none">type=combobox&lt;/text>
+ *
  *       &lt;rect x="0" y="-5" rx="5" ry="5" width="90" height="30" fill="none" stroke="rgb(255,165,0)" 
  *              stroke-width="2" visibility="hidden">
  *           &lt;set attributeName="visibility" attributeType="XML" begin="country_combobox.focusin" 
@@ -67,32 +69,36 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *               fill="freeze" to="hidden"/>
  *       &lt;/rect>
  *       &lt;rect  x="5.0" y="0.0" width="80" height="20" fill="none" stroke="black" stroke-width="2"/>
- *   &lt;rect  x="66.0" y="1.0" width="18" height="18" fill="rgb(220,220,220)" 
- *                   stroke="black" stroke-width="1.5">
- *       &lt;metadata> &lt;text>type=button&lt;/text> &lt;/metadata>
- *       &lt;animate  attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" 
- *                           fill="freeze" to="rgb(170,170,170)">
- *           &lt;metadata> &lt;text>type=pressed&lt;/text> &lt;/metadata>
- *       &lt;/animate>
- *       &lt;animate  attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" 
- *                           fill="freeze" to="rgb(220,220,220)">
- *           &lt;metadata> &lt;text>type=released&lt;/text> &lt;/metadata>
- *       &lt;/animate>
+ *   &lt;g>
+ *       &lt;!-- Metadata information. Please don't edit. -->
+ *       &lt;text display="none">type=button&lt;/text>
+ *
+ *       &lt;rect  x="66.0" y="1.0" width="18" height="18" fill="rgb(220,220,220)" 
+ *               stroke="black" stroke-width="1.5">
+ *           &lt;animate  attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" 
+ *               fill="freeze" to="rgb(170,170,170)"/>
+ *           &lt;animate  attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" 
+ *               fill="freeze" to="rgb(220,220,220)"/>
  *   &lt;/rect>
+ *   &lt;/g>
  *   &lt;polygon transform="translate(73,8)"  points="0,0 4,0 2,4" fill="blue" 
  *                 stroke="black" stroke-width="2"/>
  *   &lt;g>
- *       &lt;metadata> &lt;text>type=editor&lt;/text> &lt;/metadata>
- *       &lt;!-- this editor is SVGTextField component -->*z
+ *       &lt;!-- this editor is SVGTextField component -->
  *
- *       &lt;!-- metadata definition-->
+ *       &lt;!-- Metadata information. Please don't edit. -->
+ *       &lt;text display="none">type=editor&lt;/text>
  *       &lt;text display="none">readOnly="false" enabled="true"&lt;/text>
+ *
  *       &lt;text  x="10" y="15" stroke="black" font-size="15" font-family="SunSansSemiBold">Item 1
- *           &lt;metadata> &lt;text>type=text&lt;/text> &lt;/metadata>
+ *           &lt;!-- Metadata information. Please don't edit. -->
+ *           &lt;text display="none">type=text&lt;/text>
  *       &lt;/text>
- *       &lt;rect  visibility="visible" x="17" y="3" width="2" height="15" fill="black" stroke="black">
- *           &lt;metadata> &lt;text>type=caret&lt;/text> &lt;/metadata>
- *       &lt;/rect>
+ *       &lt;g>
+ *           &lt;!-- Metadata information. Please don't edit. -->
+ *           &lt;text display="none">type=caret&lt;/text>
+ *           &lt;rect  visibility="visible" x="17" y="3" width="2" height="15" fill="black" stroke="black"/>
+ *       &lt;/g>
  *       &lt;!-- The rectangle below is difference between rectangle that bound 
  *
  *               combobox and combobox button ( the latter 
@@ -110,28 +116,34 @@ import org.w3c.dom.svg.SVGLocatableElement;
  * 
  * <pre>
  * &lt;g visibility="hidden" transform="translate(20,200)">
- *       &lt;metadata> 
- *           &lt;text>ref=country_combobox&lt;/text>
- *           &lt;text>type=list&lt;/text>
- *           &lt;/metadata>
+ *       &lt;!-- Metadata information. Please don't edit. -->
+ *       &lt;text display="none">ref=country_combobox&lt;/text>
+ *       &lt;text display="none">type=list&lt;/text>
+ *
  *       &lt;!-- This is not standalone component ! It reelates to combobox component. This is list that is shown
  *       for user when he press to button. It should be outside of ComboBox component figure ( and should
  *       be at the very end of XML file between other such figures ) because in this case it will be 
  *       on top of any other figure. Otherwise it will be hidden by following sibling component. -->
  *       &lt;text id="_53" visibility="hidden" x="10" y="13" stroke="black" font-size="15" font-family="SunSansSemiBold">
- *           &lt;metadata> &lt;text>type=hidden_text&lt;/text> &lt;/metadata>
+ *           &lt;!-- Metadata information. Please don't edit. -->
+ *           &lt;text display="none">type=hidden_text&lt;/text>
  *           HIDDEN TEXT
  *       &lt;/text>
- *       &lt;rect  x="5.0" y="0.0" width="80" height="60" fill="white" stroke="black" stroke-width="2" visibility="inherit">
- *           &lt;metadata> &lt;text>type=bound&lt;/text> &lt;/metadata>
- *       &lt;/rect>
- *       &lt;rect  x="5" y="0" stroke="black" stroke-width="1" fill="rgb(200,200,255)" visibility="inherit" width="80" height="0">
- *           &lt;metadata> &lt;text>type=selection&lt;/text> &lt;/metadata>
- *       &lt;/rect>
- *       &lt;g  visibility="inherit">
- *           &lt;metadata> &lt;text>type=content&lt;/text> &lt;/metadata>
+ *       &lt;g>
+ *           &lt;!-- Metadata information. Please don't edit. -->
+ *           &lt;text display="none">type=bound&lt;/text>
+ *           &lt;rect  x="5.0" y="0.0" width="80" height="60" fill="white" stroke="black" stroke-width="2" visibility="inherit"/>
  *       &lt;/g>
- *   &lt;/g>
+ *       &lt;g>
+ *           &lt;!-- Metadata information. Please don't edit. -->
+ *           &lt;text display="none">type=selection&lt;/text>
+ *           &lt;rect  x="5" y="0" stroke="black" stroke-width="1" fill="rgb(200,200,255)" visibility="inherit" width="80" height="0"/>
+ *       &lt;/g>
+ *       &lt;g  visibility="inherit">
+ *           &lt;!-- Metadata information. Please don't edit. -->
+ *           &lt;text display="none">type=content&lt;/text>
+ *           &lt;/g>
+ *   &lt;/g
  * </pre>  
  * 
  * @author ads
