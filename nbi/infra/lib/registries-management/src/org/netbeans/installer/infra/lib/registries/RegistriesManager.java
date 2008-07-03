@@ -110,10 +110,13 @@ public interface RegistriesManager {
             final File root,
             final File destination,
             final String codebase) throws ManagerException;
-    
+            
     String generateComponentsJs(
             final File root) throws ManagerException;
+    
+    String generateComponentsJs(
+            final File root, final File bundlesList) throws ManagerException;
 
     String generateComponentsJs(
-            final File root, final String locale) throws ManagerException;
+            final File root, final File bundlesList, final String locale) throws ManagerException;
 }

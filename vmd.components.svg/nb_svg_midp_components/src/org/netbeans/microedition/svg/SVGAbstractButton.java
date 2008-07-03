@@ -21,6 +21,7 @@ package org.netbeans.microedition.svg;
 
 import org.netbeans.microedition.svg.input.InputHandler;
 import org.w3c.dom.svg.SVGAnimationElement;
+import org.w3c.dom.svg.SVGElement;
 import org.w3c.dom.svg.SVGLocatableElement;
 
 /**
@@ -29,29 +30,21 @@ import org.w3c.dom.svg.SVGLocatableElement;
  * @author ads 
  */
 public abstract class SVGAbstractButton extends SVGComponent {
+    
     protected static final String PRESSED  = "pressed";         // NOI18N
     protected static final String RELEASED = "released";        // NOI18N
     private static final String   BODY     = "body";            // NOI18N
     
-    protected final SVGAnimationElement pressedAnimation;
-    protected final SVGAnimationElement releasedAnimation;
+    protected SVGAnimationElement pressedAnimation;
+    protected SVGAnimationElement releasedAnimation;
     
     public SVGAbstractButton( SVGForm form, String elemId) {
         super(form, elemId);
-        myBodyElement = (SVGLocatableElement) getElementByMeta( getElement(), 
+        myBodyElement = (SVGLocatableElement) getNestedElementByMeta( getElement(), 
                 TYPE, BODY );
-        if ( myBodyElement != null ){
-            pressedAnimation = (SVGAnimationElement) getElementByMeta(myBodyElement, 
-                    TYPE, PRESSED );
-            releasedAnimation = (SVGAnimationElement) getElementByMeta( myBodyElement, 
-                    TYPE, RELEASED);
-        }
-        else {
-            pressedAnimation = null;
-            releasedAnimation = null;
-        }
+        initAnimation();
     }
-    
+
     public InputHandler getInputHandler() {
         return InputHandler.BUTTON_INPUT_HANDLER;
     }
@@ -77,5 +70,28 @@ public abstract class SVGAbstractButton extends SVGComponent {
         return myBodyElement;
     }
     
-    private final SVGLocatableElement myBodyElement;
+    private void initAnimation() {
+        if ( myBodyElement != null ){
+            int count = 0;
+            SVGElement animation = (SVGElement)
+                myBodyElement.getFirstElementChild();
+            while ( animation != null ){
+                animation = (SVGElement)animation.getNextElementSibling();
+                if ( count == 1 ){
+                    pressedAnimation = (SVGAnimationElement)animation;
+                }
+                else if ( count ==2 ){
+                    releasedAnimation = (SVGAnimationElement)animation;
+                }
+                count++;
+            }
+        }
+        else {
+            pressedAnimation = null;
+            releasedAnimation = null;
+        }
+        
+    }
+    
+    private SVGLocatableElement myBodyElement;
 }

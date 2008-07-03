@@ -78,9 +78,9 @@ public class ViewsTest extends JellyTestCase {
         if (vers.startsWith("1.6")) {
             return NbModuleSuite.create(
                NbModuleSuite.createConfiguration(ViewsTest.class).addTest(
-                    "testViewsDefaultOpen",
                     "testViewsCallStack",
                     "testViewsHeapWalker1",
+                    "testViewsClasses",
                     "testViewsThreads",
                     "testViewsSessions",
                     "testViewsSources",
@@ -92,9 +92,7 @@ public class ViewsTest extends JellyTestCase {
         } else {
             return NbModuleSuite.create(
                NbModuleSuite.createConfiguration(ViewsTest.class).addTest(
-                    "testViewsDefaultOpen",
                     "testViewsCallStack",
-                    "testViewsClasses",
                     "testViewsThreads",
                     "testViewsSessions",
                     "testViewsSources",
@@ -270,7 +268,7 @@ public class ViewsTest extends JellyTestCase {
             //new TopComponentOperator(Utilities.localVarsViewTitle).close();
             //new TopComponentOperator(Utilities.watchesViewTitle).close();
             //new TopComponentOperator(Utilities.callStackViewTitle).close();
-            new TopComponentOperator(Utilities.classesViewTitle).close();
+//            new TopComponentOperator(Utilities.classesViewTitle).close();
             new TopComponentOperator(Utilities.sessionsViewTitle).close();
             new TopComponentOperator(Utilities.threadsViewTitle).close();
             new TopComponentOperator(Utilities.sourcesViewTitle).close();

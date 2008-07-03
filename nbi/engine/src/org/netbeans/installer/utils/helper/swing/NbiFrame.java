@@ -312,13 +312,7 @@ public class NbiFrame extends JFrame {
     public static final String DEFAULT_FRAME_ICON_URI =
             ExtendedUri.RESOURCE_SCHEME +
             ":org/netbeans/installer/utils/helper/swing/frame-icon.png";
-    
-    /**
-     * Name of a resource bundle entry.
-     */
-    private static final String RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY =
-            "NF.error.failed.to.parse.property"; // NOI18N
-    
+            
     /**
      * Name of a resource bundle entry.
      */

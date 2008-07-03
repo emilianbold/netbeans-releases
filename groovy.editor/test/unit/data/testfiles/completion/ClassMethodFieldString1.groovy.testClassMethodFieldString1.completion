@@ -1,0 +1,8 @@
+Code completion result for source line:
+stringField.toL|
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+METHOD     toList()                                   List
+METHOD     toLong()                                   Long
+METHOD     toLowerCase()                              String
+METHOD     toLowerCase(Locale)                        String

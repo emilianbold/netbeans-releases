@@ -69,6 +69,7 @@ public class DebuggerProxy {
     private Socket sessionSocket;
     private String sessionID;
     private BlockingQueue<Message> suspensionPointQueue = new ArrayBlockingQueue<Message>(8);
+    private BlockingQueue<HttpMessage> httpQueue = new ArrayBlockingQueue<HttpMessage>(200); //this queue may be a lot larger.
     private BlockingQueue<ResponseMessage> responseQueue = new ArrayBlockingQueue<ResponseMessage>(8);
     public static final List<DebuggerProxy> proxies = new CopyOnWriteArrayList<DebuggerProxy>();
     private CommandFactory commandFactory;
@@ -84,10 +85,8 @@ public class DebuggerProxy {
     public synchronized boolean isActive() {
         if(messageHandlerThread != null) {
             return true;
-        }else {
-            if(suspensionPointQueue.size() > 0) {
-                return true;
-            }
+        } else if( suspensionPointQueue.size() > 0 || httpQueue.size() > 0) {
+            return true;
         }
         return false;
     }
@@ -246,6 +245,15 @@ public class DebuggerProxy {
         }
         return null;
     }
+    
+    public Message getHttpMessage() {
+        try {
+            return httpQueue.take();
+        } catch (InterruptedException ie) {
+            Log.getLogger().log(Level.FINEST, "Interrrupted while waiting for http message", ie);
+        }
+        return null;
+    }
 
     public Stack getCallStack(int depth){
         StackGetResponse response = (StackGetResponse) sendCommand(getCommandFactory().stackGetCommand(depth));
@@ -309,6 +317,8 @@ public class DebuggerProxy {
                    message instanceof WindowsMessage ||
                    message instanceof StreamMessage) {
             suspensionPointQueue.add(message);
+        } else if ( message instanceof HttpMessage ) {
+            httpQueue.add((HttpMessage)message);
         }
     }
     

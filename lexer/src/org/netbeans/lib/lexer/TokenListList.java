@@ -125,7 +125,7 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
         }
         
         if (joinSections) {
-            JoinTokenList.init(this, 0, size());
+            JoinTokenList.create(this, 0, size());
         } else {
             // Init individual lists
             for (EmbeddedTokenList<T> etl : this) {

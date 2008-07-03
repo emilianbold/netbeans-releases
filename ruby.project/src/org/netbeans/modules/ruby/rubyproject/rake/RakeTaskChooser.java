@@ -183,10 +183,20 @@ public final class RakeTaskChooser extends JPanel {
     private void refreshTaskList() {
         String filter = rakeTaskField.getText().trim();
         DefaultListModel model = new DefaultListModel();
+        List<RakeTask> matching = new ArrayList<RakeTask>();
         for (RakeTask task : allTasks) {
-            if (task.getTask().toLowerCase(Locale.US).contains(filter.toLowerCase(Locale.US))) {
+            String taskLC = task.getTask().toLowerCase(Locale.US);
+            String filterLC = filter.toLowerCase(Locale.US);
+            if (taskLC.startsWith(filterLC)) {
+                // show tasks which start with the filter first
                 model.addElement(task);
+            } else if (taskLC.contains(filterLC)) {
+                matching.add(task);
             }
+        }
+        // append non-starting-with tasks
+        for (RakeTask task : matching) {
+            model.addElement(task);
         }
         matchingTaskList.setModel(model);
         if (model.isEmpty()) {
@@ -320,7 +330,7 @@ public final class RakeTaskChooser extends JPanel {
 
         // Wrap around
         if ("selectNextRow".equals(actionKey) && selectedIndex == modelSize - 1) { // NOI18N
-            matchingTaskList.setSelectedIndex(0);
+            matchingTaskList.setSelectedIndex(0);//GEN-LAST:event_rakeTaskFieldKeyPressed
             matchingTaskList.ensureIndexIsVisible(0);
             return;
         } else if ("selectPreviousRow".equals(actionKey) && selectedIndex == 0) { // NOI18N
@@ -331,7 +341,7 @@ public final class RakeTaskChooser extends JPanel {
         }
 
         if (isListScrollAction) {
-            Action action = matchingTaskList.getActionMap().get(actionKey);//GEN-LAST:event_rakeTaskFieldKeyPressed
+            Action action = matchingTaskList.getActionMap().get(actionKey);                                        
             action.actionPerformed(new ActionEvent(matchingTaskList, 0, (String) actionKey));
             evt.consume();
         }

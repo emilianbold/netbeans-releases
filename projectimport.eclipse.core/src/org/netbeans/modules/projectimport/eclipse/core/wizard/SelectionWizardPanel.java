@@ -82,6 +82,8 @@ final class SelectionWizardPanel extends ImporterWizardPanel implements
                 steps = new String[] { PROJECT_SELECTION_STEP };
             }
             panel.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+            // force Next and Finish buttons state refresh:
+            setValid(isValid(), true);
         }
     }
     

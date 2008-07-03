@@ -260,7 +260,7 @@ public class NbModuleSuite {
         public Configuration reuseUserDir(boolean reuse) {
             return new Configuration(clusterRegExp, moduleRegExp, parentClassLoader, tests, latestTestCaseClass, reuse, gui);
         }
-    }
+        }
 
     /** Factory method to create wrapper test that knows how to setup proper
      * NetBeans Runtime Container environment. 
@@ -388,6 +388,7 @@ public class NbModuleSuite {
     static final class S extends NbTestSuite {
         final Configuration config;
         private static int invocations;
+        private static File lastUserDir;
         private int testCount = 0; 
         
         public S(Configuration config) {
@@ -440,13 +441,13 @@ public class NbModuleSuite {
             System.setProperty("netbeans.home", platform.getPath());
             System.setProperty("netbeans.full.hack", "true");
 
-            File ud;
+            File ud = new File(new File(Manager.getWorkDirPath()), "userdir" + invocations++);
             if (config.reuseUserDir) {
-                ud = new File(new File(Manager.getWorkDirPath()), "userdir" + invocations);
+                ud = lastUserDir != null ? lastUserDir : ud;
             } else {
-                ud = new File(new File(Manager.getWorkDirPath()), "userdir" + invocations++);
                 NbTestCase.deleteSubFiles(ud);
             }
+            lastUserDir = ud;
             ud.mkdirs();
 
             System.setProperty("netbeans.user", ud.getPath());

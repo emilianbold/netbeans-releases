@@ -78,16 +78,11 @@ public class RootNode extends AbstractNode {
     
     @Override
     public Action[] getActions(boolean context) {
-        if (Boolean.getBoolean("cnd.remote.enable")) { // DEBUG
-            if (actions == null) {
-                actions = new Action[1];
-                actions[0] = new AddNewServerAction();
-            }
-
-            return actions;
-        } else {
-            return super.getActions(context);
+        if (actions == null) {
+            actions = new Action[1];
+            actions[0] = new AddNewServerAction();
         }
+        return actions;
     }
     
     private static class RemoteServicesChildFactory extends ChildFactory<RemoteServerRecord> 
