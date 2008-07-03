@@ -154,8 +154,14 @@ class DataViewUI extends JPanel {
     }
 
     void syncPageWithTableModel() {
-        dataView.getDataViewPageContext().setCurrentRows(dataPanel.getPageDataFromTable());
-    //dataView.getUpdatedRowContext().resetUpdateState();
+        List<Object[]> newrows = dataPanel.getPageDataFromTable();
+        List<Object[]> oldRows = dataView.getDataViewPageContext().getCurrentRows();
+
+        for(String key : dataView.getUpdatedRowContext().getUpdateKeys()){
+            int row = Integer.parseInt(key.substring(0, key.indexOf(";"))) - 1;
+            newrows.set(row, oldRows.get(row));
+        }
+        dataView.getDataViewPageContext().setCurrentRows(newrows);
     }
 
     void disableButtons() {

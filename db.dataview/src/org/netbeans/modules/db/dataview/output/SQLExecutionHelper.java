@@ -324,11 +324,11 @@ class SQLExecutionHelper {
 
             @Override
             protected void executeOnSucess() {
-                dataView.syncPageWithTableModel();
                 UpdatedRowContext tblContext = dataView.getUpdatedRowContext();
                 for (String key : keysToRemove) {
                     tblContext.removeUpdateStmt(key);
                 }
+                dataView.syncPageWithTableModel();
                 reinstateToolbar();
             }
         };
