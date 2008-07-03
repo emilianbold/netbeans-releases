@@ -64,7 +64,8 @@ public class DataSetConnectorCD extends ComponentDescriptor {
     public static final String PROP_BINDED_PROPERTY = "property";//NOI18N
     public static final String PROP_NEXT_COMMAND = "nextCommand"; //NOI18N
     public static final String PROP_PREVIOUS_COMMAND = "previousCommand"; //NOI18N
-
+    public static final String PROP_INDEX_NAME = "indexName"; //NOI18N
+    
     @Override
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(null, TYPEID, true, true);
@@ -82,8 +83,8 @@ public class DataSetConnectorCD extends ComponentDescriptor {
                 new PropertyDescriptor(PROP_UPDATE_COMMAND, CommandCD.TYPEID, PropertyValue.createNull(), true, false, MidpVersionable.MIDP_2),
                 new PropertyDescriptor(PROP_BINDED_PROPERTY, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), true, false, MidpVersionable.MIDP_2),
                 new PropertyDescriptor(PROP_NEXT_COMMAND, CommandCD.TYPEID, PropertyValue.createNull(), true, false, MidpVersionable.MIDP_2),
-                new PropertyDescriptor(PROP_PREVIOUS_COMMAND, CommandCD.TYPEID, PropertyValue.createNull(), true, false, MidpVersionable.MIDP_2)
-                
+                new PropertyDescriptor(PROP_PREVIOUS_COMMAND, CommandCD.TYPEID, PropertyValue.createNull(), true, false, MidpVersionable.MIDP_2),
+                new PropertyDescriptor(PROP_INDEX_NAME, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), true, false, MidpVersionable.MIDP_2)
         );
     }
 

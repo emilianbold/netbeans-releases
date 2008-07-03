@@ -49,10 +49,11 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -97,6 +98,7 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
+import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
@@ -246,7 +248,9 @@ public class EjbJarProjectProperties {
     private StoreGroup privateGroup; 
     private StoreGroup projectGroup;
     
-    private Properties additionalProperties;
+    private Map<String,String> additionalProperties;
+    
+    private String includes, excludes;
     
     EjbJarProject getProject() {
         return project;
@@ -265,7 +269,7 @@ public class EjbJarProjectProperties {
         privateGroup = new StoreGroup();
         projectGroup = new StoreGroup();
         
-        additionalProperties = new Properties();
+        additionalProperties = new HashMap<String,String>();
         
         init(); // Load known properties
     }
@@ -280,6 +284,14 @@ public class EjbJarProjectProperties {
         // CustomizerSources
         SOURCE_ROOTS_MODEL = EjbJarSourceRootsUi.createModel( project.getSourceRoots() );
         TEST_ROOTS_MODEL = EjbJarSourceRootsUi.createModel( project.getTestSourceRoots() );
+        includes = evaluator.getProperty(ProjectProperties.INCLUDES);
+        if (includes == null) {
+            includes = "**"; // NOI18N
+        }
+        excludes = evaluator.getProperty(ProjectProperties.EXCLUDES);
+        if (excludes == null) {
+            excludes = ""; // NOI18N
+        }
         META_INF_MODEL = projectGroup.createStringDocument( evaluator, META_INF );
                 
         // CustomizerLibraries
@@ -466,7 +478,10 @@ public class EjbJarProjectProperties {
             projectProperties.setProperty(J2EE_PLATFORM, newJ2eeVersion);
         }
         
-        storeAdditionalProperties(projectProperties);
+        projectProperties.putAll(additionalProperties);
+
+        projectProperties.put(ProjectProperties.INCLUDES, includes);
+        projectProperties.put(ProjectProperties.EXCLUDES, excludes);
 
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
@@ -479,13 +494,6 @@ public class EjbJarProjectProperties {
             } catch (UnsupportedCharsetException e) {
                 //When the encoding is not supported by JVM do not set it as default
             }
-        }
-    }
-    
-    private void storeAdditionalProperties(EditableProperties projectProperties) {
-        for (Iterator i = additionalProperties.keySet().iterator(); i.hasNext();) {
-            String key = i.next().toString();
-            projectProperties.put(key, additionalProperties.getProperty(key));
         }
     }
     
@@ -579,7 +587,7 @@ public class EjbJarProjectProperties {
     
     /* This is used by CustomizerWSServiceHost */
     void putAdditionalProperty(String propertyName, String propertyValue) {
-        additionalProperties.setProperty(propertyName, propertyValue);
+        additionalProperties.put(propertyName, propertyValue);
     }
     
     private static void setNewServerInstanceValue(String newServInstID, Project project,
@@ -735,4 +743,22 @@ public class EjbJarProjectProperties {
         return props.getProperty(property);
     }
 
+    void loadIncludesExcludes(IncludeExcludeVisualizer v) {
+        Set<File> roots = new HashSet<File>();
+        for (DefaultTableModel model : new DefaultTableModel[] {SOURCE_ROOTS_MODEL, TEST_ROOTS_MODEL}) {
+            for (Object row : model.getDataVector()) {
+                roots.add((File) ((Vector) row).elementAt(0));
+            }
+        }
+        v.setRoots(roots.toArray(new File[roots.size()]));
+        v.setIncludePattern(includes);
+        v.setExcludePattern(excludes);
+    }
+
+    void storeIncludesExcludes(IncludeExcludeVisualizer v) {
+        includes = v.getIncludePattern();
+        excludes = v.getExcludePattern();
+    }
+    
+    
 }

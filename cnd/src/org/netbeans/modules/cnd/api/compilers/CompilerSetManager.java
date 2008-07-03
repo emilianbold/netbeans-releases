@@ -219,6 +219,7 @@ public class CompilerSetManager implements PlatformTypes {
             platform = getPlatform();
             state = STATE_COMPLETE;
         } else {
+            System.err.println("initializing remote compiler set for: " + hkey);
             initRemoteCompilerSets(hkey);
         }
     }
@@ -230,45 +231,6 @@ public class CompilerSetManager implements PlatformTypes {
     public boolean isPending() {
         return state == STATE_PENDING;
     }
-
-//    private static CompilerSetManager createDefaultCompilerSetManager(String key) {
-//        CompilerSetManager csm;
-//        
-//        if (SwingUtilities.isEventDispatchThread()) {
-//            System.err.println("CSM.create: Creating CSM from AWT Event Queue thread");
-//        }
-//        synchronized (MASTER_LOCK) { // FIXME - deadlock when synchronized...
-//            System.err.println("CSM.create: Locking for [" + key + "] on " + Thread.currentThread().getName());
-//            if (key.equals("localhost")) { // NOI18N
-//                csm = restoreFromDisk();
-//                if (csm == null) {
-//                    csm = new CompilerSetManager("localhost");
-//                    if (csm.getCompilerSets().size() > 0 && !(csm.getCompilerSets().get(0).getName().equals(CompilerSet.None))) {
-//                        csm.saveToDisk();
-//                    } else {
-//                        DialogDescriptor dialogDescriptor = new DialogDescriptor(
-//                            new NoCompilersPanel(),
-//                            getString("NO_COMPILERS_FOUND_TITLE"),
-//                            true,
-//                            new Object[]{DialogDescriptor.OK_OPTION},
-//                            DialogDescriptor.OK_OPTION,
-//                            DialogDescriptor.BOTTOM_ALIGN,
-//                            null,
-//                            null);
-//                        DialogDisplayer.getDefault().notify(dialogDescriptor);
-//                    }
-//                }
-//            } else {
-//                csm = new CompilerSetManager(key);
-//            }
-//            if (csm != null && csm.getCompilerSets().size() == 0) { // No compilers found
-//                csm.add(CompilerSet.createEmptyCompilerSet());
-//            }
-//            managers.put(key, csm);
-//            System.err.println("CSM.create: Unlocking " + Thread.currentThread().getName());
-//        }
-//        return csm;
-//    }
     
     private int getPlatform() {
         String os = System.getProperty("os.name"); // NOI18N

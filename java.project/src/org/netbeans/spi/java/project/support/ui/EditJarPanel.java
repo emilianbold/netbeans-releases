@@ -43,12 +43,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.spi.java.project.support.ui.EditJarSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -72,23 +75,57 @@ class EditJarPanel extends javax.swing.JPanel {
         this();
         this.item = item;
         this.helper = helper;
-        txtJar.setText(item.getJarFile());
+        txtJar.setText(stripOffVariableMarkup(item.getJarFile()));
         if (item.getSourceFile() != null) {
-            txtSource.setText(item.getSourceFile());
+            txtSource.setText(stripOffVariableMarkup(item.getSourceFile()));
         }
         if (item.getJavadocFile() != null) {
-            txtJavadoc.setText(item.getJavadocFile());
+            txtJavadoc.setText(stripOffVariableMarkup(item.getJavadocFile()));
         }
     }
 
+    private String stripOffVariableMarkup(String v) {
+        if (!v.startsWith("${var.")) { // NOI18N
+            return v;
+        }
+        int i = v.replace('\\', '/').indexOf('/'); // NOI18N
+        if (i == -1) {
+            i = v.length();
+        }
+        return v.substring(6, i-1)+v.substring(i);
+    }
+    
+    private Set<String> getVariableNames() {
+        Set<String> names = new HashSet<String>();
+        for (String v : PropertyUtils.getGlobalProperties().keySet()) {
+            if (!v.startsWith("var.")) { // NOI18N
+                continue;
+            }
+            names.add(v.substring(4));
+        }
+        return names;
+    }
+    
+    private String addVariableMarkup(String v) {
+        int i = v.replace('\\', '/').indexOf('/'); // NOI18N
+        if (i == -1) {
+            i = v.length();
+        }
+        String varName = v.substring(0, i);
+        if (!getVariableNames().contains(varName)) {
+            return v;
+        }
+        return "${var." + varName + "}" + v.substring(i); // NOI18N
+    }
+    
     EditJarSupport.Item assignValues() {
         if (txtSource.getText() != null && txtSource.getText().trim().length() > 0) {
-            item.setSourceFile(txtSource.getText().trim());
+            item.setSourceFile(addVariableMarkup(txtSource.getText().trim()));
         } else {
             item.setSourceFile(null);
         }
         if (txtJavadoc.getText() != null && txtJavadoc.getText().trim().length() > 0) {
-            item.setJavadocFile(txtJavadoc.getText().trim());
+            item.setJavadocFile(addVariableMarkup(txtJavadoc.getText().trim()));
         } else {
             item.setJavadocFile(null);
         }
@@ -221,7 +258,7 @@ class EditJarPanel extends javax.swing.JPanel {
                 Exceptions.printStackTrace(ex);
                 return;
             }
-            txtJavadoc.setText(chooser.getSelectedPathVariables() != null ? chooser.getSelectedPathVariables()[0] : files[0]);
+            txtJavadoc.setText(chooser.getSelectedPathVariables() != null ? stripOffVariableMarkup(chooser.getSelectedPathVariables()[0]) : files[0]);
         }
         
     }//GEN-LAST:event_btnJavadocActionPerformed
@@ -257,7 +294,7 @@ class EditJarPanel extends javax.swing.JPanel {
                 Exceptions.printStackTrace(ex);
                 return;
             }
-            txtSource.setText(chooser.getSelectedPathVariables() != null ? chooser.getSelectedPathVariables()[0] : files[0]);
+            txtSource.setText(chooser.getSelectedPathVariables() != null ? stripOffVariableMarkup(chooser.getSelectedPathVariables()[0]) : files[0]);
         }
 
     }//GEN-LAST:event_btnSourceActionPerformed

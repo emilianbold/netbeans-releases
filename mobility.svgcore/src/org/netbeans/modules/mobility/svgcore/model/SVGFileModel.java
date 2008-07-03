@@ -58,7 +58,6 @@ import java.util.zip.GZIPInputStream;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
@@ -69,7 +68,6 @@ import javax.swing.text.Element;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseDocumentEvent;
 import org.netbeans.editor.CharSeq;
-import org.netbeans.editor.Formatter;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.editor.structure.api.DocumentModel;
 import org.netbeans.modules.editor.structure.api.DocumentModelException;
@@ -469,6 +467,15 @@ public final class SVGFileModel {
         return id;
     }
 
+    public static boolean isHiddenElement(DocumentElement de) {
+        AttributeSet attrs = de.getAttributes();
+        String visible = (String) attrs.getAttribute(SVGConstants.SVG_VISIBILITY_ATTRIBUTE);
+        if (visible != null && visible.equals(SVGConstants.CSS_HIDDEN_VALUE)) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Convenience helper method.
      */
@@ -778,12 +785,14 @@ public final class SVGFileModel {
 
                 if (svgRoot != null) {
                     BaseDocument doc = getDoc();
-                    DocumentElement lastChild = getLastTagChild(svgRoot.getChildren());
+                    List<DocumentElement> children = svgRoot.getChildren();
+                    DocumentElement lastChild = getLastTagChild(children);
                     int insertPosition;
                     if (lastChild != null) {
                         CharSequence chars = (CharSequence) doc.getProperty(CharSequence.class);
                         
-                        //insert new text after last child
+                        //insert new text before last visible
+                        lastChild = getLastVisibleTagChild(children);
                         insertPosition = lastChild.getEndOffset() + 1;
                         String str = insertString;
                         int i = insertPosition;
@@ -1519,6 +1528,16 @@ public final class SVGFileModel {
         return null;
     }
 
+    private static DocumentElement getLastVisibleTagChild(List<DocumentElement> children) {
+        for (int i = children.size() - 1; i >= 0; i--) {
+            DocumentElement child = children.get(i);
+            if (isTagElement(child) && !isHiddenElement(child)) {
+                return child;
+            }
+        }
+        return null;
+    }
+    
     private static int getTagChildCount(List<DocumentElement> children) {
         int count = 0;
         

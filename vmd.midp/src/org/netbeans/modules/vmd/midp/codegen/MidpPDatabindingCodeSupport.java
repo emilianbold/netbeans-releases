@@ -40,13 +40,18 @@ package org.netbeans.modules.vmd.midp.codegen;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
+import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.Presenter;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.midp.components.databinding.DataSetConnectorCD;
+import org.netbeans.modules.vmd.midp.components.databinding.IndexableDataAbstractSetCD;
 import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSupport;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
@@ -202,35 +207,91 @@ public final class MidpPDatabindingCodeSupport {
         };
     }
 
+    public synchronized static String generateCodeDatabindingEventSource(DesignComponent component, MultiGuardedSection section) {
+
+        Collection<? extends MidpEventSourceCodeGenPresenter> presenters = DocumentSupport.gatherAllPresentersOfClass(component.getDocument(), MidpEventSourceCodeGenPresenter.class);
+
+        for (MidpEventSourceCodeGenPresenter presenter : presenters) {
+            presenter.generateCodeRegistry(section);
+        }
+        Collection<String> indexNames = new HashSet<String>();
+        Collection<DesignComponent> connectors = MidpDatabindingSupport.getAllConnectors(component.getDocument());
+        for (DesignComponent connector : connectors) {
+            PropertyValue value = connector.readProperty(DataSetConnectorCD.PROP_INDEX_NAME);
+            if (value != PropertyValue.createNull()) {
+                indexNames.add((String) value.getPrimitiveValue());
+            }
+        }
+        for (String indexName : indexNames) {
+            section.getWriter().write("if (){");
+            for (MidpEventSourceCodeGenPresenter presenter : presenters) {
+                if (presenter.isValid(component, indexName)) {
+                    presenter.generateCodeNext(section);
+                }
+            }
+            section.getWriter().write("} else {");
+            for (MidpEventSourceCodeGenPresenter presenter : presenters) {
+                presenter.generateCodeNext(section);
+            }
+            section.getWriter().write("}");
+        }
+        return null;
+    }
+
     public static Presenter createEventSourceCodeGenPresenter(final String bindedProperty,
             final String getterMethodName) {
 
         return new MidpEventSourceCodeGenPresenter() {
 
-            public void generateMultiGuardedSectionCode(MultiGuardedSection section) {
+            public void generateCodeRegistry(MultiGuardedSection section) {
                 DesignComponent connector = MidpDatabindingSupport.getConnector(getComponent(), bindedProperty);
                 if (connector == null) {
                     return;
                 }
                 section.getWriter().write("DataBinder.writeValue(\"" + getExpression(connector) + "\"," //NOI18N
                         + CodeReferencePresenter.generateAccessCode(getComponent()) + "." + getterMethodName + ");\n"); //NOI18N
+                DescriptorRegistry registry = getComponent().getDocument().getDescriptorRegistry();
+                if (!registry.isInHierarchy(IndexableDataAbstractSetCD.TYPEID, connector.getParentComponent().getType())) {
+                    return;
+                }
             }
 
-            @Override
-            public boolean isValid(DesignComponent eventSource) {
+            public boolean isValid(DesignComponent eventSource, String indexName) {
 
                 if (eventSource.getType() != CommandEventSourceCD.TYPEID) {
                     return false;
                 }
+
                 DesignComponent connector = MidpDatabindingSupport.getConnector(getComponent(), bindedProperty);
                 if (connector == null) {
                     return false;
                 }
-                DesignComponent command = connector.readProperty(DataSetConnectorCD.PROP_UPDATE_COMMAND).getComponent();
-                if (command != null && command == eventSource.readProperty(CommandEventSourceCD.PROP_COMMAND).getComponent()) {
+                PropertyValue value = connector.readProperty(DataSetConnectorCD.PROP_INDEX_NAME);
+                if (value != PropertyValue.createNull() && value.getPrimitiveValue().equals(indexName)) {
                     return true;
                 }
+//                DesignComponent command = connector.readProperty(DataSetConnectorCD.PROP_UPDATE_COMMAND).getComponent();
+//                if (command != null && command == eventSource.readProperty(CommandEventSourceCD.PROP_COMMAND).getComponent()) {
+//                    return true;
+//                }
+
                 return false;
+            }
+
+            @Override
+            public void generateCodeNext(MultiGuardedSection section) {
+                DesignComponent connector = MidpDatabindingSupport.getConnector(getComponent(), bindedProperty);
+                if (connector.readProperty(DataSetConnectorCD.PROP_NEXT_COMMAND) != PropertyValue.createNull()) {
+                    section.getWriter().write("NxtCommand set\n");
+                }
+            }
+
+            @Override
+            public void generateCodePrevious(MultiGuardedSection section) {
+                DesignComponent connector = MidpDatabindingSupport.getConnector(getComponent(), bindedProperty);
+                if (connector.readProperty(DataSetConnectorCD.PROP_PREVIOUS_COMMAND) != PropertyValue.createNull()) {
+                    section.getWriter().write("PreviousCommand set\n");
+                }
             }
         };
 
@@ -271,15 +332,13 @@ public final class MidpPDatabindingCodeSupport {
                 MidpPDatabindingCodeSupport.createDataBinderRegisterCodePresenter(bindedProperty),
                 MidpPDatabindingCodeSupport.createDataBinderBindCodePresenter(bindedProperty, providedType, featureType),
                 MidpPDatabindingCodeSupport.createEventSourceCodeGenPresenter(bindedProperty, methodString),
-                MidpCodePresenterSupport.createAddImportDatabindingPresenter(bindedProperty, fqnNames)
-        
-        );
+                MidpCodePresenterSupport.createAddImportDatabindingPresenter(bindedProperty, fqnNames));
     }
 
     private static String getExpression(DesignComponent connector) {
         StringBuffer buffer = new StringBuffer();
-        buffer.append((String) connector.getParentComponent().readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue());
-        buffer.append(".");//NOI28N
+        //buffer.append((String) connector.getParentComponent().readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue());
+        //buffer.append(".");//NOI28N
         buffer.append((String) connector.readProperty(DataSetConnectorCD.PROP_EXPRESSION).getPrimitiveValue());
         return buffer.toString();
 

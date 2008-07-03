@@ -115,18 +115,22 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
     }
     
     public String getRemotePath(String lpath) {
-        for (String mpoint : keySet()) {
-            if (lpath.startsWith(mpoint)) {
-                return mpoint + lpath.substring(mpoint.length());
+        String ulpath = unifySeparators(lpath);
+        for (Map.Entry<String, String> entry : entrySet()) {
+            String key = entry.getKey();
+            if (ulpath.startsWith(key)) {
+                String mpoint = entry.getValue();
+                return mpoint + lpath.substring(key.length());
             }
         }
         return lpath;
     }
     
     public String getLocalPath(String rpath) {
+        String urpath = unifySeparators(rpath);
         for (Map.Entry<String, String> entry : entrySet()) {
             String value = entry.getValue();
-            if (rpath.startsWith(value)) {
+            if (urpath.startsWith(value)) {
                 String mpoint = entry.getKey();
                 return mpoint + rpath.substring(value.length());
             }
@@ -143,11 +147,18 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
      * @return true if path is remote, false otherwise
      */
     public boolean isRemote(String lpath) {
+        String ulpath = unifySeparators(lpath);
         for (String mpoint : keySet()) {
-            if (lpath.startsWith(mpoint)) {
+            if (ulpath.startsWith(mpoint)) {
                 return true;
             }
         }
         return false;
+    }
+    
+    // inside path mapper we use only / and lowercase 
+    // TODO: lowercase should be only windows issue -- possible flaw
+    private static String unifySeparators(String path) {
+        return path.replace('\\', '/').toLowerCase();
     }
 }

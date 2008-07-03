@@ -49,7 +49,11 @@ import org.netbeans.modules.vmd.api.model.Presenter;
  */
 public abstract class MidpEventSourceCodeGenPresenter extends Presenter {
     
-    public abstract void generateMultiGuardedSectionCode(MultiGuardedSection section);
-               
-    public abstract boolean isValid(DesignComponent component);
+    public abstract void generateCodeRegistry(MultiGuardedSection section);
+    
+    public abstract void generateCodeNext(MultiGuardedSection section);
+    
+    public abstract void generateCodePrevious(MultiGuardedSection section);
+    
+    public abstract boolean isValid(DesignComponent component, String indexName);
 }
