@@ -41,6 +41,7 @@ package org.netbeans.modules.uml.diagrams.nodes.state;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
@@ -62,6 +63,8 @@ import org.netbeans.modules.uml.diagrams.nodes.state.ProcedureWidget.EntryEventW
 import org.netbeans.modules.uml.diagrams.nodes.state.ProcedureWidget.ExitEventWidget;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
+import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
+import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
@@ -84,6 +87,7 @@ public class StateWidget extends UMLNodeWidget
     private ProcedureWidget exitWidget;
     private ProcedureWidget doWidget;
     private State state;
+    public static String SHOW_TRANSITIONS = "ShowTransitions";
 
     public StateWidget(Scene scene)
     {
@@ -308,4 +312,37 @@ public class StateWidget extends UMLNodeWidget
 
         return stateWidget;
     }
+
+    @Override
+    public void save(NodeWriter nodeWriter)
+    {
+        //we need to save the property for transition visibility
+        HashMap map = nodeWriter.getProperties();
+        map.put(SHOW_TRANSITIONS, isDetailVisible());
+        nodeWriter.setProperties(map);
+        super.save(nodeWriter);
+    }
+    
+    @Override
+    public void load(NodeInfo nodeReader)
+    {
+        if (nodeReader != null)
+        {
+            Object showTransitions = nodeReader.getProperties().get(SHOW_TRANSITIONS);
+            if (showTransitions != null)
+            {
+                setDetailVisible(Boolean.parseBoolean(showTransitions.toString()));
+                if (isDetailVisible())
+                {
+                    showDetail(true);
+                }
+                else
+                {
+                    showDetail(false);
+                }
+            }
+        }
+        super.load(nodeReader);
+    }
+    
 }
