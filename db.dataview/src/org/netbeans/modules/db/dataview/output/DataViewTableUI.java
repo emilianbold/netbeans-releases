@@ -56,17 +56,14 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.EventObject;
 import java.util.List;
 import javax.swing.DefaultCellEditor;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
@@ -95,7 +92,6 @@ class DataViewTableUI extends JTable {
     private final DataViewTablePanel tablePanel;
     private static transient final Localizer mLoc = Localizer.get();
     private static final String data = "WE WILL EITHER FIND A WAY, OR MAKE ONE."; // NOI18N
-
     private static Logger mLogger = Logger.getLogger(DataViewTableUI.class.getName());
 
     public DataViewTableUI(final DataViewTablePanel tablePanel, final DataViewActionHandler handler, final DataView dataView) {
@@ -512,7 +508,7 @@ class DataViewTableUI extends JTable {
 
         }
     }
-    
+
     private static class DateRenderer extends DefaultTableCellRenderer.UIResource {
 
         DateFormat formatter;
@@ -529,7 +525,7 @@ class DataViewTableUI extends JTable {
             setText((value == null) ? "" : formatter.format(value)); // NOI18N
 
         }
-    }    
+    }
 
     private static class GeneratedResultSetCellRenderer extends ResultSetCellRenderer {
 
@@ -548,6 +544,7 @@ class DataViewTableUI extends JTable {
     }
 
     private static class ResultSetCellRenderer extends DefaultTableCellRenderer.UIResource {
+
         final TableCellRenderer NULL_RENDERER = new NullObjectCellRenderer();
         final TableCellRenderer NUMNBER_RENDERER = new NumberObjectCellRenderer();
         final TableCellRenderer TIME_RENDERER = new TimeRenderer();
@@ -558,17 +555,17 @@ class DataViewTableUI extends JTable {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             if (null == value) {
                 return NULL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            } else if(value instanceof Number){ 
+            } else if (value instanceof Number) {
                 return NUMNBER_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            } else if(value instanceof Timestamp){ 
+            } else if (value instanceof Timestamp) {
                 return DATETIME_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            } else if(value instanceof Date){ 
+            } else if (value instanceof Date) {
                 return DATE_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            } else if(value instanceof Time){ 
+            } else if (value instanceof Time) {
                 return TIME_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             } else {
                 return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            }  
+            }
         }
     }
 
@@ -604,6 +601,7 @@ class DataViewTableUI extends JTable {
     private class ResultSetTableCellEditor extends DefaultCellEditor {
 
         Object val;
+
         public ResultSetTableCellEditor(final JTextField textField) {
             super(textField);
             delegate = new EditorDelegate() {
@@ -615,23 +613,6 @@ class DataViewTableUI extends JTable {
                 }
 
                 @Override
-                public boolean stopCellEditing() {
-                    return super.stopCellEditing();
-                }
-
-                @Override
-                public boolean startCellEditing(EventObject anEvent) {
-                    ((JComponent) getComponent()).setBorder(new LineBorder(Color.black));
-                    return super.startCellEditing(anEvent);
-                }
-
-                @Override
-                public void cancelCellEditing() {
-                    ((JComponent) getComponent()).setBorder(new LineBorder(Color.black));
-                    super.cancelCellEditing();
-                }
-
-                @Override
                 public Object getCellEditorValue() {
                     String txtVal = textField.getText();
                     if (val == null && textField.getText().equals("")) { // NOI18N
@@ -639,15 +620,14 @@ class DataViewTableUI extends JTable {
                     } else {
                         try {
                             int col = getEditingColumn();
-                            DBColumn dbcol = DataViewTableUI.this.tablePanel.getDataViewDBTable().getColumn(col);                    
-                            
+                            DBColumn dbcol = DataViewTableUI.this.tablePanel.getDataViewDBTable().getColumn(col);
+
                             val = DBReadWriteHelper.validate(txtVal, dbcol);
                         } catch (Exception ex) {
-                            ((JComponent) getComponent()).setBorder(new LineBorder(Color.red));
                             StatusDisplayer.getDefault().setStatusText(ex.getMessage());
                             return txtVal;
                         }
-                    }                    
+                    }
                     return val;
                 }
             };
@@ -677,9 +657,10 @@ class DataViewTableUI extends JTable {
 
                 int row = getSelectedRow();
                 int col = getSelectedColumn();
-                if (isCellEditable(row, col)) {
-                    editCellAt(row, col);
+                if(row == -1) {
+                    return;
                 }
+                editCellAt(row, col);
 
                 TableCellEditor editor = getCellEditor();
                 if (editor != null) {

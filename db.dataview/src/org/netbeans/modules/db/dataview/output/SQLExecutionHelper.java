@@ -429,6 +429,7 @@ class SQLExecutionHelper {
                     if (error) {
                         dataView.setErrorStatusText(ex);
                     }
+                    dataView.getUpdatedRowContext().resetUpdateState();
                     dataView.resetToolbar(error);
                     dataView.setRowsInTableModel();
                 }
