@@ -53,6 +53,7 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.SeparatorWidget.Orientation;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.drawingarea.view.CollapsibleWidgetManager;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 
@@ -64,6 +65,10 @@ public class CollapsibleWidget extends Widget
 {
 
     private Widget targetWidget = null;
+    private Border border = null;
+    private boolean collapsed = false;
+    private CollapsibleWidgetManager mgr = null;
+    String compartmentName;
 
     public CollapsibleWidget(Scene scene, Widget target)
     {
@@ -76,16 +81,71 @@ public class CollapsibleWidget extends Widget
         SeparatorWidget separator = new SeparatorWidget(scene, Orientation.HORIZONTAL);
         separator.createActions(DesignerTools.SELECT).addAction(new CollapseControllerAction());
         separator.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
-        
+
         addChild(separator);
         addChild(targetWidget);
     }
+    
+    public CollapsibleWidgetManager getCollapsibleWidgetManager()
+    {
+        return mgr != null ? mgr : new CollapsibleWidgetManagerImpl();
+    }
+    
+    public void setCompartmentName(String name)
+    {
+        this.compartmentName = name;
+    }
+    
+    private void collapse()
+    {
+        // First make sure that the nodes minumum size is not set.
+        Widget parent = getParentWidget();
+        UMLNodeWidget node = null;
+        while (parent != null)
+        {
+            if (parent instanceof UMLNodeWidget)
+            {
+                node = (UMLNodeWidget) parent;
+
+                // I would perfer this to be the name comparment min size.  
+                // Maybe the size of the children above.
+                node.setMinimumSize(new Dimension(1, 1));
+                break;
+            }
+            parent = parent.getParentWidget();
+        }
+
+        Rectangle bounds = targetWidget.getBounds();
+        final SceneAnimator animator = getScene().getSceneAnimator();
+        final Rectangle newBounds = collapsed == false ? new Rectangle() : null;
+
+        for (Widget child : targetWidget.getChildren())
+        {
+            animator.animatePreferredBounds(child, newBounds);
+        }
+
+        if (collapsed == true)
+        {
+            if (border != null)
+            {
+                targetWidget.setBorder(border);
+            }
+            collapsed = false;
+        } 
+        else
+        {
+            border = targetWidget.getBorder();
+
+            // I want to create som space between the separator and the 
+            // next widget. That way the separator does not look crowded.
+            targetWidget.setBorder(BorderFactory.createEmptyBorder(1, 0, 1, 0));
+            collapsed = true;
+        }
+    }
+    
 
     public class CollapseControllerAction extends WidgetAction.Adapter
     {
-
-        private Border border = null;
-        private boolean collapsed = false;
 
         @Override
         public State mouseClicked(Widget widget, WidgetMouseEvent event)
@@ -93,53 +153,45 @@ public class CollapsibleWidget extends Widget
             State retVal = State.REJECTED;
             if ((event.getClickCount() == 2) && (event.getButton() == MouseEvent.BUTTON1))
             {
-                // First make sure that the nodes minumum size is not set.
-                Widget parent = getParentWidget();
-                UMLNodeWidget node = null;
-                while (parent != null)
-                {
-                    if (parent instanceof UMLNodeWidget)
-                    {
-                        node = (UMLNodeWidget) parent;
-
-                        // I would perfer this to be the name comparment min size.  
-                        // Maybe the size of the children above.
-                        node.setMinimumSize(new Dimension(1, 1));
-                        break;
-                    }
-                    parent = parent.getParentWidget();
-                }
-
-
-                Rectangle bounds = targetWidget.getBounds();
-                final SceneAnimator animator = getScene().getSceneAnimator();
-                final Rectangle newBounds = collapsed == false ? new Rectangle() : null;
-
-                for (Widget child : targetWidget.getChildren())
-                {
-                    animator.animatePreferredBounds(child, newBounds);
-                }
-                
-                if (collapsed == true)
-                {
-                    if (border != null)
-                    {
-                        targetWidget.setBorder(border);
-                    }
-                    collapsed = false;
-                }
-                else
-                {
-                    border = targetWidget.getBorder();
-                    
-                    // I want to create som space between the separator and the 
-                    // next widget. That way the separator does not look crowded.
-                    targetWidget.setBorder(BorderFactory.createEmptyBorder(1, 0, 1, 0));
-                    collapsed = true;
-                }
+                collapse();
             }
-
             return retVal;
         }
     }
+
+
+    public class CollapsibleWidgetManagerImpl implements CollapsibleWidgetManager
+    {
+        
+
+        public void collapseWidget(String name)
+        {
+            //we don't need to care about name since we are getting the right mgr instance
+//            if (name.equalsIgnoreCase(UMLNodeWidget.ATTRIBUTES_COMPARTMENT))
+//            {
+//                targetWidget = getCollapsibleCompartment();
+//                System.out.println(" attr! ");
+//            }
+//            else if (compartmentName.equalsIgnoreCase(UMLNodeWidget.OPERATIONS_COMPARTMENT))
+//            {
+//                targetWidget = getCollapsibleCompartment();
+//            }
+//            else if (compartmentName.equalsIgnoreCase(UMLNodeWidget.LITERALS_COMPARTMENT))
+//            {
+//                
+//            }
+            collapse();
+        }
+
+        public void expandWidget(String compartmentName)
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public String getCollapsibleCompartmentName()
+        {
+            return compartmentName;
+        }
+    }
+    
 }

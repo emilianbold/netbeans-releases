@@ -303,6 +303,9 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-diagrams-actions-CreateOperationAction.instance"/>
                         <attr name="context" stringvalue="Enumeration, Operation"/>
                     </file>
+                    <file name="org.netbeans.modules.uml.diagrams.actions.ShowHideListCompartmentAction.instance">
+                        <attr name="position" intvalue="609"/>
+                    </file>
                     
                 </folder>
             </folder>
@@ -322,6 +325,9 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-diagrams-actions-CreateOperationAction.instance"/>
                         <attr name="context" stringvalue="Class, Operation"/>
                     </file>
+                    <file name="org.netbeans.modules.uml.diagrams.actions.ShowHideListCompartmentAction.instance">
+                        <attr name="position" intvalue="609"/>
+                    </file>                    
                 </folder>
             </folder>
             <folder name="x-partfacade_class-element">
@@ -408,6 +414,9 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-diagrams-actions-CreateOperationAction.instance"/>
                         <attr name="context" stringvalue="Class, Operation"/>
                         <attr name="position" intvalue="300"/>
+                    </file>
+                    <file name="org.netbeans.modules.uml.diagrams.actions.ShowHideListCompartmentAction.instance">
+                        <attr name="position" intvalue="609"/>
                     </file>
                 </folder>
             </folder>
@@ -597,11 +606,7 @@ made subject to such option by the copyright holder.
                 <folder name="Popup">
                     <file name="org.netbeans.modules.uml.diagrams.actions.usecase.AddExtensionPointAction.instance">
                         <attr name="position" intvalue="200"/>
-                    </file>                      
-                </folder>
-            </folder>
-            <folder name="x-usecase-element">
-                <folder name="Popup">
+                    </file>
                     <file name="org.netbeans.modules.uml.diagrams.actions.usecase.ShowExtensionPointsAction.instance">
                         <attr name="position" intvalue="201"/>
                     </file>                      
