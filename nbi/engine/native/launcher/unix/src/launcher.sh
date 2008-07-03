@@ -1269,7 +1269,7 @@ checkFreeSpace() {
 	path="$2"
 
 	if [ ! -d "$path" ] && [ ! $isSymlink "$path" ] ; then
-		# if checking path is not an existing directory does not exist - check its parent dir
+		# if checking path is not an existing directory - check its parent dir
 		path=`dirname "$path"`
 	fi
 
