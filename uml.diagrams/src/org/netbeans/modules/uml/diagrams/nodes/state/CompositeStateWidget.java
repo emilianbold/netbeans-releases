@@ -205,17 +205,6 @@ public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidg
         scene.validate();
     }
 
-    public void removeRegion(RegionWidget widget)
-    {
-        regionWidgets.remove(widget);
-        if (regionWidgets.isEmpty())
-        {
-            IRegion region = new TypedFactoryRetriever<IRegion>().createType("Region");
-            state.addContent(region);
-            addRegion(region);
-        }
-        updateConstraint();
-    }
 
     public void addRegion(IRegion region)
     {
@@ -375,5 +364,22 @@ public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidg
     public String getWidgetID()
     {
         return UMLWidget.UMLWidgetIDString.STATEWIDGET.toString();
+    }
+
+    public void removeCompartment(CompartmentWidget widget)
+    {
+        regionWidgets.remove(widget);
+        if (regionWidgets.isEmpty())
+        {
+            IRegion region = new TypedFactoryRetriever<IRegion>().createType("Region");
+            state.addContent(region);
+            addRegion(region);
+        }
+        updateConstraint();
+    }
+    
+    public void notifyCompartmentWidgetAdded()
+    {
+        discoverRelationship();
     }
 }

@@ -47,4 +47,11 @@ import java.util.Collection;
 public interface CompositeWidget
 {
     public Collection<CompartmentWidget> getCompartmentWidgets();
+    
+    public boolean isHorizontalLayout();
+    
+    public void removeCompartment(CompartmentWidget widget);
+    
+    public void notifyCompartmentWidgetAdded();
+    
 }

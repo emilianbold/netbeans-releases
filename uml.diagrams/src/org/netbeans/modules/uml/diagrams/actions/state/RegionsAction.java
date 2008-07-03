@@ -138,7 +138,9 @@ public class RegionsAction extends NodeAction implements ContextAwareAction
         {
             if (w.isSelected())
             {
-                popupMenu.add(new DeleteCompartmentWidgetAction(w, loc("CTL_DeleteRegion")));
+                String name = widget.isHorizontalLayout()? 
+                    loc("CTL_DeleteRegionColumn") : loc("CTL_DeleteRegionRow");
+                popupMenu.add(new DeleteCompartmentWidgetAction(w, name));
                 break;
             }
         }
