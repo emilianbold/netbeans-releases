@@ -86,22 +86,29 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
     }
     
     public void testLibraryClass() throws Exception {
-
-        super.performTest("src/main.cc", 7, 6, "sys_include2/include2.h", 9, 1);
+        performTest("src/main.cc", 7, 6, "sys_include2/include2.h", 9, 1);
     }
 
     public void testLibraryClassConstructor() throws Exception {
         // IZ 137971 : library class name after "new" is not resolved
-        super.performTest("src/main.cc", 7, 20, "sys_include2/include2.h", 9, 1);
+        performTest("src/main.cc", 7, 20, "sys_include2/include2.h", 9, 1);
     }
 
     public void testLibraryClassConstructor2() throws Exception {
-        super.performTest("src/main.cc", 9, 20, "sys_include/include1.h", 12, 5);
+        performTest("src/main.cc", 9, 20, "sys_include/include1.h", 12, 5);
     }
 
     public void testNsAliases() throws Exception {
         // IZ 131914: Code completion should work for namespace aliases
-        super.performTest("src/main.cc", 18, 16, "sys_include/include1.h", 32, 5);
-        super.performTest("src/main.cc", 19, 16, "src/include.h", 4, 5);
+        performTest("src/main.cc", 18, 16, "sys_include/include1.h", 32, 5);
+        performTest("src/main.cc", 19, 16, "src/include.h", 4, 5);
     }
+
+    public void testNamespaceOverride() throws Exception {
+        // Main project has namespace std overriding std from library.
+        // This should not break hyperlinks for original std members.
+        performTest("src/main.cc", 20, 13, "sys_include/include1.h", 37, 1);
+        //performTest("sys_include/code1.cc", 3, 11, "sys_include/include1.h", 37, 1);
+    }
+
 }
