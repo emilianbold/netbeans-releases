@@ -346,6 +346,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("templateParams.h"); // NOI18N
     }
 
+    public void testTemplateMethodCall() throws Exception {
+        // IZ 138962 : Passer fails on template method calls
+        performTest("template_method_call.cc"); // NOI18N
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
