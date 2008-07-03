@@ -39,12 +39,16 @@
 
 package org.netbeans.modules.cnd.remote.server;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
+import org.netbeans.modules.cnd.remote.support.RemoteCopySupport;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -53,56 +57,80 @@ import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 public class RemoteServerSetup {
     
     private static Logger log = Logger.getLogger("cnd.remote.logger");
-    private static final String dirPath = ".netbeans/6.5/cnd2/scripts"; // NOI18N
+    private static final String REMOTE_SCRIPT_DIR = ".netbeans/6.5/cnd2/scripts/"; // NOI18N
+    private static final String LOCAL_SCRIPT_DIR = "src/scripts/"; // NOI18N
+    private static final String GET_SCRIPT_INFO = "PATH=/bin:/usr/bin:$PATH  grep VERSION= " + REMOTE_SCRIPT_DIR + "* /dev/null"; // NOI18N
     
     private static Map<String, Double> setupMap;
     private static Map<String, List<String>> updateMap;
     
     static {
         setupMap = new HashMap<String, Double>();
-        setupMap.put(".netbeans/6.5/cnd2/scripts/getCompilerSets.bash", Double.valueOf(1.0));
+        setupMap.put("getCompilerSets.bash", Double.valueOf(1.0));
         updateMap = new HashMap<String, List<String>>();
     }
     
     protected static void setup(String name) {
         List<String> list = updateMap.remove(name);
+        boolean ok = true;
+        String err = null;
         
         for (String script : list) {
-            if (script.equals(dirPath)) {
-                System.out.println("Update: Create directory");
+            if (script.equals(REMOTE_SCRIPT_DIR)) {
+                log.fine("RemoteServerSetup: Creating ~/" + REMOTE_SCRIPT_DIR);
+                int exit_status = RemoteCommandSupport.run(name,
+                        "PATH=/bin:/usr/bin:$PATH mkdir -p " + REMOTE_SCRIPT_DIR); // NOI18N
+                if (exit_status == 0) {
+                    for (String key : setupMap.keySet()) {
+                        File file = InstalledFileLocator.getDefault().locate(LOCAL_SCRIPT_DIR + key, null, false);
+                        ok |= RemoteCopySupport.copyTo(name, file.getAbsolutePath(), REMOTE_SCRIPT_DIR);
+                        log.fine("RemoteServerSetup: Updating " + script);
+                    }
+                } else {
+                    err = NbBundle.getMessage(RemoteServerSetup.class, "ERR_DirectorySetupFailure", name, exit_status);
+                    ok = false;
+                }
             } else {
-                System.out.println("Update: Update " + script + " to " + setupMap.get(script));
+                File file = InstalledFileLocator.getDefault().locate(LOCAL_SCRIPT_DIR + script, null, false);
+                ok |= RemoteCopySupport.copyTo(name, file.getAbsolutePath(), REMOTE_SCRIPT_DIR);
+                err = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", name, script);
             }
+        }
+        if (!ok && err != null) {
+            throw new IllegalStateException(err);
         }
     }
 
     static boolean needsSetupOrUpdate(String name) {
-        String cmd = "PATH=/bin:/usr/bin:$PATH  grep VERSION= " + dirPath + "/* /dev/null"; // NOI18N
         List<String> updateList = new ArrayList<String>();
         
-        RemoteCommandSupport support = new RemoteCommandSupport(name, cmd);
-        String val = support.toString();
-        for (String line : val.split("\n")) { // NOI18N
-            int pos;
-            String script;
-            Double installedVersion;
-            try {
-                pos = line.indexOf(':');
-                if (pos < 0 || line.length() == 0) {
-                    updateList.add(dirPath);
-                    break;
+        updateMap.clear(); // remote entries if run for other remote systems
+        RemoteCommandSupport support = new RemoteCommandSupport(name, GET_SCRIPT_INFO);
+        if (support.getExitStatus() == 0) {
+            String val = support.toString();
+            for (String line : val.split("\n")) { // NOI18N
+                try {
+                    int pos = line.indexOf(':');
+                    if (pos > 0 && line.length() > 0) {
+                        String script = line.substring(REMOTE_SCRIPT_DIR.length(), pos);
+                        Double installedVersion = Double.valueOf(line.substring(pos + 9));
+                        Double expectedVersion = setupMap.get(script);
+                        if (expectedVersion > installedVersion) {
+                            log.fine("RemoteServerSetup: Need to update " + script);
+                            updateList.add(script);
+                        }
+                    } else {
+                        log.warning("RemoteServerSetup: Grep returned [" + line + "]");
+                    }
+                } catch (NumberFormatException nfe) {
+                    log.warning("RemoteServerSetup: Bad response from remote grep comand (NFE parsing version)");
+                } catch (Exception ex) {
+                    log.warning("RemoteServerSetup: Bad response from remote grep comand: " + ex.getClass().getName());
                 }
-                script = line.substring(0, pos);
-                installedVersion = Double.valueOf(line.substring(pos + 9));
-                Double expectedVersion = setupMap.get(script);
-                if (expectedVersion > installedVersion) {
-                    updateList.add(script);
-                }
-            } catch (NumberFormatException nfe) {
-                log.warning("RemoteServerSetup: Bad response from remote grep comand (NFE parsing version)");
-            } catch (Exception ex) {
-                log.warning("RemoteServerSetup: Bad response from remote grep comand: " + ex.getClass().getName());
             }
+        } else {
+            log.fine("RemoteServerSetup: Need to create ~/" + REMOTE_SCRIPT_DIR);
+            updateList.add(REMOTE_SCRIPT_DIR);
         }
         if (!updateList.isEmpty()) {
             updateMap.put(name, updateList);
@@ -111,5 +139,4 @@ public class RemoteServerSetup {
             return false;
         }
     }
-
 }
