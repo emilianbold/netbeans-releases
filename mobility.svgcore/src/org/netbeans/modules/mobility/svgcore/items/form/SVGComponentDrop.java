@@ -37,25 +37,44 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.jaxwsstack;
+package org.netbeans.modules.mobility.svgcore.items.form;
 
-import java.io.File;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.LookupProvider;
-import org.netbeans.modules.websvc.wsstack.api.WSStack;
-import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
+import java.util.logging.Level;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.mobility.svgcore.SVGDataObject;
+import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
+import org.openide.text.ActiveEditorDrop;
 
 /**
  *
- * @author mkuchtiak
+ * @author avk
  */
-public class JaxWsStackLookupProvider implements LookupProvider {
+public abstract class SVGComponentDrop implements  ActiveEditorDrop{
 
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        File file = baseContext.lookup(File.class);
-        WSStack<JaxWs> jaxWsStack = WSStackFactory.createWSStack(JaxWs.class, new JaxWsStackImpl(file), WSStack.Source.SERVER); 
-        return Lookups.fixed(jaxWsStack);
+    protected abstract boolean doTransfer();
+    
+    public boolean handleTransfer(SVGDataObject svgDataObject) {
+        if (svgDataObject == null){
+            SceneManager.log(Level.INFO, "SVGDataObject not found."); //NOI18N
+            return false;
+        }
+        mySvgDataObject = svgDataObject;
+        return doTransfer();
     }
 
+    public boolean handleTransfer(JTextComponent targetComponent) {
+        return false;
+    }
+    
+    protected void setSelection(String id){
+        if (getSVGDataObject() != null){
+            getSVGDataObject().getSceneManager().setSelection(id, true);
+        }
+    }
+    
+    protected SVGDataObject getSVGDataObject(){
+        return mySvgDataObject;
+    }
+
+    private SVGDataObject mySvgDataObject;
 }
