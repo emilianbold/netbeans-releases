@@ -168,16 +168,17 @@ class NbTestMediator
     @suites.each do |suite| 
       @mediator = Test::Unit::UI::TestRunnerMediator.new(suite)
       attach_listeners
+      start_suite_timer
       begin
         puts "%SUITE_STARTING% #{suite}"
-        start_suite_timer
         result = @mediator.run_suite
         puts "%SUITE_SUCCESS% #{result.passed?}"
         puts "%SUITE_FAILURES% #{result.failure_count}"
         puts "%SUITE_ERRORS% #{result.error_count}"
       rescue => err
-        puts "%SUITE_FINISHED% time=#{elapsed_suite_time}"
         puts "%SUITE_ERROR_OUTPUT% error=#{err}"
+      ensure
+        puts "%SUITE_FINISHED% time=#{elapsed_suite_time}"
       end
     end
     
@@ -217,7 +218,8 @@ class NbTestMediator
   end
 
   def suite_finished(result)
-    puts "%SUITE_FINISHED% time=#{result}"
+    # handled in the main loop that runs suites
+    # puts "%SUITE_FINISHED% time=#{result}"
   end
   
   def test_started(result)
