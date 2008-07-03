@@ -41,16 +41,25 @@
 
 package org.netbeans.modules.j2ee.deployment.impl;
 
-import junit.framework.*;
-import org.netbeans.junit.*;
-import org.openide.filesystems.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Enumeration;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-import java.util.*;
-import java.io.*;
-import java.util.logging.*;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.LocalFileSystem;
+import org.openide.filesystems.MultiFileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.filesystems.XMLFileSystem;
 
 /**
  *
@@ -60,11 +69,11 @@ public class ServerRegistryTestBase extends NbTestCase {
     static {
         System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
     }
-    
+
     protected ServerRegistryTestBase (String name) {
         super (name);
     }
-    
+
     public static final class Lkp extends ProxyLookup {
         public Lkp() {
             super(new Lookup[] {
@@ -97,7 +106,7 @@ public class ServerRegistryTestBase extends NbTestCase {
         }
     }
     private File scratchF;
-    
+
     private void mkdir(String path) {
 //        System.out.println ("mkdir:"+path);
         new File(scratchF, path.replace('/', File.separatorChar)).mkdirs();
@@ -122,13 +131,67 @@ public class ServerRegistryTestBase extends NbTestCase {
 //            System.out.println ("    dest file:" + f.getPath ());
 //        }
     }
-    
+
+    protected static File getProjectAsFile(NbTestCase test, String projectFolderName) throws IOException {
+        File f = new File(test.getDataDir(), projectFolderName);
+        if (!f.exists()) {
+            // maybe it's zipped
+            File archive = new File(test.getDataDir(), projectFolderName + ".zip");
+            if (archive.exists() && archive.isFile()) {
+                unZip(archive, test.getWorkDir());
+                f = new File(test.getWorkDir(), projectFolderName);
+            }
+        }
+        NbTestCase.assertTrue("project directory has to exists: " + f, f.exists());
+        return f;
+    }
+
+    private static void unZip(File archive, File destination) throws IOException {
+        if (!archive.exists()) {
+            throw new FileNotFoundException(archive + " does not exist.");
+        }
+        ZipFile zipFile = new ZipFile(archive);
+        Enumeration<? extends ZipEntry> all = zipFile.entries();
+        while (all.hasMoreElements()) {
+            extractFile(zipFile, all.nextElement(), destination);
+        }
+    }
+
+    private static void extractFile(ZipFile zipFile, ZipEntry e, File destination) throws IOException {
+        String zipName = e.getName();
+        if (zipName.startsWith("/")) {
+            zipName = zipName.substring(1);
+        }
+        if (zipName.endsWith("/")) {
+            return;
+        }
+        int ix = zipName.lastIndexOf('/');
+        if (ix > 0) {
+            String dirName = zipName.substring(0, ix);
+            File d = new File(destination, dirName);
+            if (!(d.exists() && d.isDirectory())) {
+                if (!d.mkdirs()) {
+                    NbTestCase.fail("Warning: unable to mkdir " + dirName);
+                }
+            }
+        }
+        FileOutputStream os = new FileOutputStream(destination.getAbsolutePath() + "/" + zipName);
+        InputStream is = zipFile.getInputStream(e);
+        int n = 0;
+        byte[] buff = new byte[8192];
+        while ((n = is.read(buff)) > 0) {
+            os.write(buff, 0, n);
+        }
+        is.close();
+        os.close();
+    }
+
      private static final class Repo extends Repository {
-        
+
         public Repo() throws Exception {
             super(mksystem());
         }
-        
+
         private static FileSystem mksystem() throws Exception {
             LocalFileSystem lfs = new LocalFileSystem();
             lfs.setRootDirectory(new File(System.getProperty("SYSTEMDIR")));
@@ -139,7 +202,7 @@ public class ServerRegistryTestBase extends NbTestCase {
             MultiFileSystem mfs = new MultiFileSystem (layers);
             return mfs;
         }
-        
+
     }
-   
+
 }

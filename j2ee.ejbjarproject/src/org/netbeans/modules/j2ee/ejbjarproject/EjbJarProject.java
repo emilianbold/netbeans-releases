@@ -938,6 +938,11 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
             
+            String deployOnSave = getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, EjbJarProjectProperties.DEPLOY_ON_SAVE);
+            if (Boolean.parseBoolean(deployOnSave)) {
+                Deployment.getDefault().enableCompileOnSaveSupport(ejbModule);
+            }
+            
             EjbJarLogicalViewProvider physicalViewProvider = EjbJarProject.this.getLookup().lookup(EjbJarLogicalViewProvider.class);
             if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {   
                 BrokenReferencesSupport.showAlert();
@@ -1036,6 +1041,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
+            
+            Deployment.getDefault().disableCompileOnSaveSupport(ejbModule);
             
             // unregister project's classpaths to GlobalPathRegistry
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));

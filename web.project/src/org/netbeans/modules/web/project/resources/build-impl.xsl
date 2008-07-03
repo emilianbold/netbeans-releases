@@ -304,6 +304,20 @@ introduced by support for multiple source roots. -jglick
                 </condition>
             </target>
             
+            <!-- COS feature - used in run-deploy -->
+            <target name="-init-cos">
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <condition>
+                    <xsl:attribute name="property">ensure.built.source.roots</xsl:attribute>
+                    <xsl:attribute name="value">
+                        <xsl:call-template name="createPath">
+                            <xsl:with-param name="roots" select="/p:project/p:configuration/webproject3:data/webproject3:source-roots"/>
+                        </xsl:call-template>
+                    </xsl:attribute>
+                    <istrue value="${{deploy.on.save}}"/>
+                </condition>            
+            </target>
+            
             <target name="-post-init">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
@@ -1125,7 +1139,7 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="dist-ear">
-                <xsl:attribute name="depends">init,compile,-pre-dist,do-ear-dist,-post-dist</xsl:attribute>
+                <xsl:attribute name="depends">init,-init-cos,compile,-pre-dist,do-ear-dist,-post-dist</xsl:attribute>
                 <xsl:attribute name="description">Build distribution (WAR) to be packaged into an EAR.</xsl:attribute>
             </target>
             
@@ -1163,7 +1177,7 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="run-deploy">
-                <xsl:attribute name="depends">init,compile,compile-jsps,-do-compile-single-jsp,-pre-dist,-do-tmp-dist-with-manifest,-do-tmp-dist-without-manifest,-pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,-post-run-deploy</xsl:attribute>
+                <xsl:attribute name="depends">init,-init-cos,compile,compile-jsps,-do-compile-single-jsp,-pre-dist,-do-tmp-dist-with-manifest,-do-tmp-dist-without-manifest,-pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,-post-run-deploy</xsl:attribute>
                 <nbjpdaappreloaded />
             </target>
             
