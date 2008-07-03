@@ -239,7 +239,12 @@ public final class HQLEditorTopComponent extends TopComponent {
                 String methodName = m.getName();
                 if (methodName.startsWith("get")) { //NOI18N
                     try {
-                        oneRow.add(m.invoke(oneObject, new Object[]{}));
+                        Object methodReturnValue = m.invoke(oneObject, new Object[]{});
+                        if(methodReturnValue == null) {
+                            oneRow.add("NULL"); //NOI18N
+                            continue;
+                        }
+                        oneRow.add(methodReturnValue);
                     } catch (IllegalAccessException ex) {
                         Exceptions.printStackTrace(ex);
                     } catch (IllegalArgumentException ex) {
