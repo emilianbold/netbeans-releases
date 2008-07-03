@@ -1363,7 +1363,7 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
                 String independPath = directoryFile.getCanonicalPath();
 
                 StringBuffer filenameBuffer = new StringBuffer();
-                for (int index = 0; index < diagramFiles.length; index++) 
+                if(diagramFiles!=null)for (int index = 0; index < diagramFiles.length; index++) 
                 {
                     filenameBuffer.append(independPath);
 
