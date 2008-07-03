@@ -112,7 +112,7 @@ public class DataTypeTest extends NbTestCase{
     
     
     private ResultSetTableModel executeSQL(String sql,Connection conn) throws Exception{
-        SQLExecutionResults sqlrs=SQLExecuteHelper.execute(sql,0,sql.length(),conn,null,new SQLExecutionLogger() {
+        SQLExecutionResults sqlrs=SQLExecuteHelper.execute(sql,0,sql.length(),conn,new SQLExecutionLogger() {
             public void cancel() {
             }
             public void finish(long executionTime) {
