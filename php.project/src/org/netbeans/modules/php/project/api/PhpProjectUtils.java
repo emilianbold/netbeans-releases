@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,33 +31,27 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.spi;
+
+package org.netbeans.modules.php.project.api;
 
 import org.netbeans.api.project.Project;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.php.project.PhpProject;
 
 /**
  * @author Radek Matous
+ * @since 2.1
  */
-public interface XDebugStarter {
+public final class PhpProjectUtils {
     /**
-     * Starts session
      * @param project
-     * @param run code that should initiate connection. Is called after listening
-     *            on defined port (typically 9000) started.
-     * @param startFile file to debug.
-     * @param closeSession
+     * @return true if project represents PHP project
      */
-    void start(Project project, Runnable run, FileObject startFile, boolean closeSession);
-
-    /**
-     * @return true if session is already running
-     */
-    boolean isAlreadyRunning();
-
-    /**
-     * Stops session
-     */
-    void stop();    
+    public static final boolean  isPhpProject(Project project) {
+        return (project instanceof PhpProject);
+    }
 }
