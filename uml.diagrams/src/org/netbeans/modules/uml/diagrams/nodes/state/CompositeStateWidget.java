@@ -71,17 +71,19 @@ import org.netbeans.modules.uml.diagrams.nodes.CompartmentWidget;
 import org.netbeans.modules.uml.diagrams.nodes.CompositeWidget;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
+import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
+import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
 
 /**
  *
  * @author Sheryl Su
  */
-public class CompositeStateWidget extends StateWidget implements CompositeWidget
+public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidget
 {
 
     private State state;
@@ -100,7 +102,15 @@ public class CompositeStateWidget extends StateWidget implements CompositeWidget
     {
         super(scene);
         this.scene = scene;
+        addToLookup(initializeContextPalette());
         addToLookup(new CompositeWidgetSelectProvider(this));
+    }
+    
+    private DefaultContextPaletteModel initializeContextPalette()
+    {
+        DefaultContextPaletteModel paletteModel = new DefaultContextPaletteModel(this);
+        paletteModel.initialize("UML/context-palette/State");
+        return paletteModel;
     }
 
     @Override
@@ -360,5 +370,10 @@ public class CompositeStateWidget extends StateWidget implements CompositeWidget
         ArrayList<CompartmentWidget> result = new ArrayList<CompartmentWidget>();
         result.addAll(getRegionWidgets());
         return result;
+    }
+
+    public String getWidgetID()
+    {
+        return UMLWidget.UMLWidgetIDString.STATEWIDGET.toString();
     }
 }
