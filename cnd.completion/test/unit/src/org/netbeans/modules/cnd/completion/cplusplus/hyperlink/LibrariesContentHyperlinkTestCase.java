@@ -47,11 +47,11 @@ import java.util.List;
 
 /**
  * Test case for hyperlink to library content
- * 
+ *
  * @author Nick Krasilnikov
  */
 public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
-    
+
     public LibrariesContentHyperlinkTestCase(String testName) {
         super(testName, true);
     }
@@ -62,13 +62,13 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         // test-folder
         //  --src\
         //        main.cc
-        //  --sys_include1\ 
+        //  --sys_include1\
         //        include1.h
         //  --sys_include2\
         //        include2.h
         //
         // so, adjust used folders
-        
+
         File srcDir = new File(projectDir, "src");
         File incl1 = new File(projectDir, "sys_include");
         File incl2 = new File(projectDir, "sys_include2");
@@ -79,12 +79,12 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         super.setSysIncludes(sysIncludes);
         return srcDir;
     }
-    
+
     private void checkDir(File srcDir) {
         assertTrue("Not existing directory" + srcDir, srcDir.exists());
         assertTrue("Not directory" + srcDir, srcDir.isDirectory());
     }
-    
+
     public void testLibraryClass() throws Exception {
         performTest("src/main.cc", 7, 6, "sys_include2/include2.h", 9, 1);
     }
@@ -108,7 +108,14 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Main project has namespace std overriding std from library.
         // This should not break hyperlinks for original std members.
         performTest("src/main.cc", 20, 13, "sys_include/include1.h", 37, 1);
-        //performTest("sys_include/code1.cc", 3, 11, "sys_include/include1.h", 37, 1);
+    }
+
+    public void testGlobalNamespaceInLibrary() throws Exception {
+        // Library has declaration of size_t and namespace std with
+        // "using ::size_t". For hyperlink to work in this declaration
+        // the global namespace must be resolved in library project,
+        // not in the main project.
+        performTest("sys_include/include1.h", 40, 15, "sys_include/include1.h", 37, 1);
     }
 
 }
