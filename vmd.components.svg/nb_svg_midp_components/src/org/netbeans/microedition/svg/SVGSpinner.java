@@ -55,46 +55,54 @@ import org.w3c.dom.svg.SVGLocatableElement;
  * Suggested svg snippet:
  * <pre>
  * &lt;g id="age_spinner"  transform="translate(20,140)">
+ *   &lt;!-- Metadata information. Please don't edit. -->
+ *   &lt;text display="none">type=spinner&lt;/text>
+ *
  *       &lt;rect x="0" y="-5" rx="5" ry="5" width="44" height="30" fill="none" stroke="rgb(255,165,0)" stroke-width="2" visibility="hidden">
  *           &lt;set attributeName="visibility" attributeType="XML" begin="age_spinner.focusin" fill="freeze" to="visible"/>
  *           &lt;set attributeName="visibility" attributeType="XML" begin="age_spinner.focusout" fill="freeze" to="hidden"/>
  *       &lt;/rect>
  *       &lt;rect  x="5.0" y="0.0" width="33" height="20" fill="none" stroke="black" stroke-width="2"/>
  *   &lt;g>
- *           &lt;metadata> &lt;text>type=editor&lt;/text> &lt;/metadata>
  *       &lt;!-- this editor is SVGTextField component -->
  *
  *       &lt;!-- metadata definition-->
- *       &lt;text display="none">readOnly="false" enabled="true"</text>
+ *           &lt;text display="none">type=editor&lt;/text>
+ *       &lt;text display="none">readOnly="false" enabled="true"&lt;/text>
+ *
  *       &lt;text x="10" y="15" stroke="black" font-size="15" font-family="SunSansSemiBold">0
- *           &lt;metadata> &lt;text>type=text&lt;/text> &lt;/metadata>
+ *           &lt;!-- Metadata information. Please don't edit. -->
+ *           &lt;text display="none">type=text&lt;/text>
  *       &lt;/text>
- *       &lt;rect  visibility="visible" x="17" y="3" width="2" height="15" fill="black" stroke="black">
- *           &lt;metadata> &lt;text>type=caret&lt;/text> &lt;/metadata>
- *       &lt;/rect>
+ *       &lt;g>
+ *               &lt;!-- Metadata information. Please don't edit. -->
+ *           &lt;text display="none">type=caret&lt;/text>
+ *           &lt;rect  visibility="visible" x="17" y="3" width="2" height="15" fill="black" stroke="black"/>
+ *       &lt;/g>
  *       &lt;!-- The rectangle below is difference between rectangle that bounds spinner and spinner buttons ( the latter 
  *       has id = age_spinner_up and age_spinner_down ). It needed for counting bounds of input text area .
  *       It should be created programatically or SVGTextField should have API for dealing with "width"
  *       of editor not based only on width of text field component.-->
- *       &lt;rect visibility="hidden" x="5.0" y="0" width="33" height="20" />
+ *       &lt;rect visibility="hidden" x="5.0" y="0" width="33" height="20"/>
+ *   &lt;/g>
+ *   &lt;g>
+ *           &lt;!-- Metadata information. Please don't edit. -->
+ *       &lt;text display="none">type=up_button&lt;/text>
+ *
  *       &lt;rect x="21.0" y="0.0" width="16" height="10" fill="rgb(220,220,220)" stroke="black" stroke-width="1.5">
- *       &lt;metadata> &lt;text>type=up_button&lt;/text> &lt;/metadata>
- *           &lt;animate attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(170,170,170)">
- *           &lt;metadata> &lt;text>type=pressed&lt;/text> &lt;/metadata>
- *       &lt;/animate>
- *           &lt;animate attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(220,220,220)">
- *           &lt;metadata> &lt;text>type=released&lt;/text> &lt;/metadata>
- *       &lt;/animate>
- *   &lt;/rect>
- *       &lt;rect id="age_spinner_down" x="21.0" y="10.0" width="16" height="10" fill="rgb(220,220,220)" stroke="black" stroke-width="1.5">
- *       &lt;metadata> &lt;text>type=down_button&lt;/text> &lt;/metadata>
- *           &lt;animate  attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(170,170,170)">
- *           &lt;metadata> &lt;text>type=pressed&lt;/text> &lt;/metadata>
- *       &lt;/animate>
- *           &lt;animate  attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(220,220,220)">
- *           &lt;metadata> &lt;text>type=released&lt;/text> &lt;/metadata>
- *       &lt;/animate>
- *   &lt;/rect>
+ *           &lt;animate attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(170,170,170)"/>
+ *           &lt;animate attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(220,220,220)"/>
+ *       &lt;/rect>
+ *   &lt;/g>
+ *   &lt;g>
+ *           &lt;!-- Metadata information. Please don't edit. -->
+ *       &lt;text display="none">type=down_button&lt;/text>
+ *
+ *       &lt;rect x="21.0" y="10.0" width="16" height="10" fill="rgb(220,220,220)" stroke="black" stroke-width="1.5">
+ *           &lt;animate attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(170,170,170)"/>
+ *           &lt;animate attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(220,220,220)"/>
+ *       &lt;/rect>
+ *   &lt;/g>
  *   &lt;polygon transform="translate(28,6)"  points="0,0 2,0 1,-2" fill="blue" stroke="black" stroke-width="2"/>
  *   &lt;polygon transform="translate(28,14)"  points="0,0 2,0 1,2" fill="blue" stroke="black" stroke-width="2"/>
  *   &lt;/g>
