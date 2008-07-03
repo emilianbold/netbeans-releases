@@ -125,6 +125,56 @@ public class TreeTaggingTest extends GeneratorTestMDRCompat {
         assertEquals(span[0], 119);
     }
 
+    public void testTaggingOfSuperCall() throws Exception {
+
+        // the tag
+        final String methodBodyTag = "mbody"; //NOI18N
+
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "/**/" +    
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.*;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        ;\n" +
+            "    }\n" +
+            "}\n"
+            );
+
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                // finally, find the correct body and rewrite it.
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+
+                MethodInvocationTree inv = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.Identifier("super"), "print"), Collections.<ExpressionTree>emptyList()); //NOI18N
+                ReturnTree ret = make.Return(inv);
+
+                //tag
+                workingCopy.tag(ret, methodBodyTag);
+
+                BlockTree copy = make.addBlockStatement(method.getBody(), ret);
+                workingCopy.rewrite(method.getBody(), copy);
+            }
+
+        };
+        ModificationResult diff = testSource.runModificationTask(task);
+        diff.commit();
+
+        int[] span = diff.getSpan(methodBodyTag);
+        int delta = span[1] - span[0];
+        //lenghth of added statement has to be the same as the length of span
+        assertEquals(delta, new String("return super.print();").length());
+        //absolute position of span beginning
+        assertEquals(span[0], 123);
+    }
+
     @Override
     String getGoldenPckg() {
         return "";

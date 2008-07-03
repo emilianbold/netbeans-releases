@@ -237,9 +237,9 @@ public final class Workspace {
     }
     
     List<URL> getJarsForUserLibrary(String libRawPath) {
-        if (userLibraries != null) {
+        if (userLibraries != null && userLibraries.get(libRawPath) != null) {
             List<String> jars = userLibraries.get(libRawPath);
-            List<URL> urls = new ArrayList<URL>();
+            List<URL> urls = new ArrayList<URL>(jars.size());
             for (String jar : jars) {
                 try {
                     File f = new File(jar);

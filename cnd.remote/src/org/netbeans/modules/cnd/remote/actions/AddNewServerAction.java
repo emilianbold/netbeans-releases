@@ -78,7 +78,7 @@ public class AddNewServerAction extends NodeAction implements PropertyChangeList
             String entry = dlg.getLoginName() + '@' + dlg.getServerName();
             RemoteServerList registry = RemoteServerList.getInstance();
             if (!registry.contains(entry)) {
-                registry.add(dlg.getLoginName(), dlg.getServerName(), dlg.isDefault());
+                registry.add(entry, dlg.isDefault());
             }
         }
     }

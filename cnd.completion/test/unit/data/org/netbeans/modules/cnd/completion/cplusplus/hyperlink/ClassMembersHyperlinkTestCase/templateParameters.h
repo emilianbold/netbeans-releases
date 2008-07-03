@@ -29,4 +29,36 @@ template<unsigned int L, class T, template<class> class C>
             typedef typename base_type::IntType       CountType;
             typedef volatile CountType               *CountPtrType;
         };
+
+        // template forward class declaration
+        template
+        <
+            typename TT,
+            template <class> class OwnershipPolicy = RefCounted,
+            class ConversionPolicy = DisallowConversion,
+            AAAAA::BBB::CCC::DDD CheckingPolicy = AssertCheck,
+            template <class> class StoragePolicy = DefaultSPStorage,
+            unsigned long ConstnessPolicy = LOKI_DEFAULT_CONSTNESS
+         >
+         class SmartPtr;
+
     };
+
+// template forward class declaration
+template<unsigned int LL, class TT, class TList = Loki::NullType> class OrderedStatic;
+
+template <
+            typename T,
+            template <class> class OwnershipPolicy = RefCounted,
+            class ConversionPolicy = DisallowConversion,
+            AAAAA::BBB::CCC::DDD CheckingPolicy = AssertCheck,
+            template <class> class StoragePolicy = DefaultSPStorage,
+            unsigned long ConstnessPolicy = LOKI_DEFAULT_CONSTNESS
+         >
+         class SmartPtr {
+    
+};
+
+template<unsigned int L, class T, class TList = Loki::NullType> class OrderedStatic {
+
+};

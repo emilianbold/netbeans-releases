@@ -46,12 +46,10 @@ import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
-import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -70,7 +68,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.JViewport;
-import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
@@ -116,7 +113,6 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
 
     /** unique ID of <code>TopComponent</code> (singleton) */
     private static final String ID = "debugging"; //NOI18N
-    public static final int CLICKABLE_ICON_WIDTH = 24; // [TODO] move to ClickableIcon
     public static final int BAR_WIDTH = 8;
     
     static final Color hitsColor = new Color(255, 255, 178);
@@ -192,7 +188,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         leftPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
         rightPanel = new ZebraPanel(treeView);
         rightPanel.setBackground(treeBackgroundColor);
-        rightPanel.setPreferredSize(new Dimension(CLICKABLE_ICON_WIDTH, 0));
+        rightPanel.setPreferredSize(new Dimension(ClickableIcon.CLICKABLE_ICON_WIDTH, 0));
         rightPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
         
         mainPanel.add(leftPanel, BorderLayout.WEST);
@@ -631,7 +627,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             leftPanel.removeAll();
             rightPanel.removeAll();
             int sy = 0;
-            int sx = (rightPanel.getWidth() - CLICKABLE_ICON_WIDTH) / 2;
+            int sx = (rightPanel.getWidth() - ClickableIcon.CLICKABLE_ICON_WIDTH) / 2;
 
             JPDAThread currentThread = debugger != null ? debugger.getCurrentThread() : null;
             // collect all deadlocked threads
@@ -680,12 +676,12 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
 
                 JComponent icon = jpdaThread != null ? new ClickableIcon(resumeIcon, focusedResumeIcon, pressedResumeIcon,
                         suspendIcon, focusedSuspendIcon, pressedSuspendIcon, jpdaThread, treeView) : new JLabel();
-                icon.setPreferredSize(new Dimension(CLICKABLE_ICON_WIDTH, height));
+                icon.setPreferredSize(new Dimension(ClickableIcon.CLICKABLE_ICON_WIDTH, height));
                 icon.setBackground(treeBackgroundColor);
                 icon.setOpaque(false);
                 rightPanel.add(icon);
                 if (icon instanceof ClickableIcon) {
-                    ((ClickableIcon) icon).initializeState(sx, sy, CLICKABLE_ICON_WIDTH, height);
+                    ((ClickableIcon) icon).initializeState(sx, sy, ClickableIcon.CLICKABLE_ICON_WIDTH, height);
                 }
                 sy += height;
             } // for

@@ -38,7 +38,11 @@
  */
 package org.netbeans.modules.cnd.remote.support;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  * There hardly is a way to unit test remote operations.
@@ -52,34 +56,51 @@ public class ScpTestCase extends RemoteTestBase {
         super(testName);
     }
 
-/*    public void qtestCopyFile() throws Exception {
-        File localFile = File.createTempFile("cnd", ".cnd");
-        File localFile2 = new File(localFile.getAbsolutePath().replace(".cnd", ".2.cnd"));
-        RemoteCopySupport rcs = new RemoteCopySupport(getHostName(), getUserName());
-        assert rcs.copy("/tmp/ReadMe.txt", localFile.getAbsolutePath());
-        System.err.println("testLoadIncludes created " + localFile.getAbsolutePath());
-        assert localFile.exists();
-
-        assert rcs.copy("/tmp/ReadMe.txt", localFile2.getAbsolutePath());
-        System.err.println("testLoadIncludes created " + localFile2.getAbsolutePath());
-        assert localFile2.exists();
-
-        rcs.disconnect();
-    }
-    
-    public void qtestRun() throws Exception {
-        RemoteCopySupport rcs = new RemoteCopySupport(getHostName(), getUserName());
-        rcs.run("ls /tmp");
-        rcs.disconnect();
-    }
-
-    public void qtestUnzip() {
-        long start = System.currentTimeMillis();
-        SystemIncludesUtils.unzip("C:\\123","C:\\123.zip");
-        System.err.println("Unzipping took " + (System.currentTimeMillis() - start) + "ms.");
-    }*/
-    
-    public void testSystemIncludesUtils() throws Exception {
-        SystemIncludesUtils.load(getHostName(), getUserName(), new SystemIncludesUtils.FakeCompilerSet());
-    }
+//    public void testCopyTo() throws Exception {
+//        File localFile = File.createTempFile("cnd", ".cnd");
+//        FileWriter fstream = new FileWriter(localFile);
+//        BufferedWriter out = new BufferedWriter(fstream);
+//        out.write("File from "); //NOI18N
+//        try {
+//            InetAddress addr = InetAddress.getLocalHost();
+//            out.write( addr.getHostName() );
+//        } catch (UnknownHostException e) {
+//        }
+//        out.write("\n");
+//        out.write(System.currentTimeMillis()+ "\n");
+//        out.close();
+//        RemoteCopySupport rcs = new RemoteCopySupport(getKey());
+//        assert rcs.copyTo(localFile.getAbsolutePath(), "/tmp");
+//    }
+//    
+//    public void qtestCopyFile() throws Exception {
+//        File localFile = File.createTempFile("cnd", ".cnd");
+//        File localFile2 = new File(localFile.getAbsolutePath().replace(".cnd", ".2.cnd"));
+//        RemoteCopySupport rcs = new RemoteCopySupport(getKey());
+//        assert rcs.copyFrom("/tmp/ReadMe.txt", localFile.getAbsolutePath());
+//        System.err.println("testLoadIncludes created " + localFile.getAbsolutePath());
+//        assert localFile.exists();
+//
+//        assert rcs.copyFrom("/tmp/ReadMe.txt", localFile2.getAbsolutePath());
+//        System.err.println("testLoadIncludes created " + localFile2.getAbsolutePath());
+//        assert localFile2.exists();
+//
+//        rcs.disconnect();
+//    }
+//    
+//    public void qtestRun() throws Exception {
+//        RemoteCopySupport rcs = new RemoteCopySupport(getKey());
+//        rcs.run("ls /tmp");
+//        rcs.disconnect();
+//    }
+//
+//    public void qtestUnzip() {
+//        long start = System.currentTimeMillis();
+//        SystemIncludesUtils.unzip("C:\\123","C:\\123.zip");
+//        System.err.println("Unzipping took " + (System.currentTimeMillis() - start) + "ms.");
+//    }
+//    
+//    public void testSystemIncludesUtils() throws Exception {
+//        SystemIncludesUtils.load(getHostName(), getUserName(), new SystemIncludesUtils.FakeCompilerSet());
+//    }
 }

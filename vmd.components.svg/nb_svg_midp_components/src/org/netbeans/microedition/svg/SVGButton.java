@@ -25,26 +25,27 @@ import org.w3c.dom.svg.SVGRGBColor;
  * Suggested SVG snippet:
  * <pre>
  * &lt;g transform="translate(130,276)" id="button_ok">
- *       &lt;metadata> &lt;text>type=button&lt;/text> &lt;/metadata>
+ *   &lt;!-- Metadata information. Please don't edit. -->
+ *   &lt;text display="none">type=button&lt;/text>
+ *
  *       &lt;rect x="-2" y="-2" rx="5" ry="5" width="80" height="30" fill="white"/>
  *       &lt;rect x="1" y="1" rx="5" ry="5" width="81" height="31" fill="rgb(0,0,128)"/>
- *   &lt;rect transform="matrix(1.060988,0.003826782,-0.003826782,1.060988,4.617886,1.9321077)"   
- *       x="0" y="0" rx="5" ry="5" width="80" height="30" fill="rgb(176,196,222)" stroke="rgb(255,165,0)" stroke-width="0">
- *       &lt;metadata> &lt;text>type=body&lt;/text> &lt;/metadata>
+ *   &lt;g>
+ *       &lt;text display="none">type=body&lt;/text>
+ *       &lt;rect transform="matrix(1.060988,0.003826782,-0.003826782,1.060988,4.617886,1.9321077)"   
+ *           x="0" y="0" rx="5" ry="5" width="80" height="30" fill="rgb(176,196,222)" stroke="rgb(255,165,0)" stroke-width="0">
  *           &lt;animate attributeName="stroke-width" attributeType="XML" begin="button_ok.focusin" dur="0.25s" fill="freeze" to="2"/>
  *           &lt;animate attributeName="stroke-width" attributeType="XML" begin="button_ok.focusout" dur="0.25s" fill="freeze" to="0"/>
- *           &lt;animate attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(156,176,202)">
- *       &lt;metadata> &lt;text>type=pressed&lt;/text> &lt;/metadata>
- *       &lt;/animate>
- *           &lt;animate attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(176,196,222)">
- *       &lt;metadata> &lt;text>type=released&lt;/text> &lt;/metadata>
- *       &lt;/animate>
+ *               &lt;!-- The third and fourth animation elements are used for animate button : on press, on release -->
+ *           &lt;animate attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(156,176,202)"/>
+ *           &lt;animate attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(176,196,222)"/>
  *       &lt;/rect>
+ *   &lt;/g>
  *   &lt;text x="24" y="23" fill="black" font-size="20">
- *       &lt;metadata> &lt;text>type=shadow_text&lt;/text> &lt;/metadata>
+ *       &lt;text display="none">type=shadow_text&lt;/text>
  *       OK&lt;/text>
  *       &lt;text x="23" y="21" fill="gray" font-size="20">
- *       &lt;metadata> &lt;text>type=text&lt;/text> &lt;/metadata>
+ *       &lt;text display="none">type=text&lt;/text>
  *       OK&lt;/text>
  *   &lt;/g>
  * </pre>
