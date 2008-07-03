@@ -63,14 +63,16 @@ public class SelectedNodesTaskScheduller extends FileObjectsTaskScheduller {
     }
     
     private void refresh () {
-        List<Source> sources = new ArrayList<Source> ();
-        Node[] nodes = TopComponent.getRegistry ().getActivatedNodes ();
-        for (Node node : nodes) {
-            DataObject dataObject = node.getLookup ().lookup (DataObject.class);
+        final List<Source> sources = new ArrayList<Source> ();
+        final Node[] nodes = TopComponent.getRegistry ().getActivatedNodes ();
+        for (final Node node : nodes) {
+            final DataObject dataObject = node.getLookup ().lookup (DataObject.class);
             if (dataObject != null) {
-                FileObject fileObject = dataObject.getPrimaryFile ();
-                Source source = Source.create (fileObject);
-                sources.add (source);
+                final FileObject fileObject = dataObject.getPrimaryFile ();
+                final Source source = Source.create (fileObject);
+                if (source != null) {
+                    sources.add (source);
+                }
             }
         }
         scheduleTasks (sources, new SchedulerEvent (this) {});

@@ -135,8 +135,7 @@ public abstract class TaskScheduler {
         final SchedulerEvent
                             event
     ) {
-        for (Source source : sources)
-            assert source != null;
+        assert notNull (sources);
         if (task != null)
             task.cancel ();
         this.sources = sources;
@@ -153,6 +152,15 @@ public abstract class TaskScheduler {
             });
         }
         task.schedule (reparseDelay);
+    }
+
+    private static boolean  notNull (final Iterable<?> it) {
+        for (Object o : it) {
+            if (o == null) {
+                return false;
+            }
+        }
+        return true;
     }
 }
 
