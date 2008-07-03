@@ -331,7 +331,7 @@ public final class HQLEditorTopComponent extends TopComponent {
         toolBar.add(hibernateConfigurationComboBox);
         toolBar.add(toolbarSeparator);
 
-        runHQLButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/hibernate/hqleditor/ui/resources/runsql16X16.png"))); // NOI18N
+        runHQLButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/hibernate/hqleditor/ui/resources/run_hql_query_16.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(runHQLButton, org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "HQLEditorTopComponent.runHQLButton.text")); // NOI18N
         runHQLButton.setToolTipText(org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "runHQLQueryButtonToolTip")); // NOI18N
         runHQLButton.setFocusable(false);
@@ -387,7 +387,7 @@ public final class HQLEditorTopComponent extends TopComponent {
         spacerPanel1.setLayout(spacerPanel1Layout);
         spacerPanel1Layout.setHorizontalGroup(
             spacerPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 204, Short.MAX_VALUE)
+            .add(0, 241, Short.MAX_VALUE)
         );
         spacerPanel1Layout.setVerticalGroup(
             spacerPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -400,7 +400,7 @@ public final class HQLEditorTopComponent extends TopComponent {
         spacerPanel2.setLayout(spacerPanel2Layout);
         spacerPanel2Layout.setHorizontalGroup(
             spacerPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 96, Short.MAX_VALUE)
+            .add(0, 134, Short.MAX_VALUE)
         );
         spacerPanel2Layout.setVerticalGroup(
             spacerPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -507,7 +507,7 @@ public final class HQLEditorTopComponent extends TopComponent {
             .add(containerPanelLayout.createSequentialGroup()
                 .add(toolBar2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(executionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE))
+                .add(executionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 286, Short.MAX_VALUE))
         );
 
         splitPane.setRightComponent(containerPanel);
