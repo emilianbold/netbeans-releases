@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.db.api.sql.execute;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
  * Provides information about the execution of one or more SQL statements.
@@ -51,5 +51,5 @@ import java.util.Collection;
  */
 public interface SQLExecutionInfo {
     public boolean hasExceptions();
-    public Collection<? extends Throwable> getExceptions();
+    public List<? extends Throwable> getExceptions();
 }

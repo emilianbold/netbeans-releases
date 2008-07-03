@@ -41,7 +41,7 @@ package org.netbeans.modules.db.api.sql.execute;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -99,8 +99,8 @@ public class SQLExecutor {
 
     private static class SQLExecutionInfoImpl implements SQLExecutionInfo {
         private final boolean hasExceptions;
-        private final Collection<Throwable> exceptions;
-        
+        private final List<Throwable> exceptions;
+
         SQLExecutionInfoImpl(SQLExecutionResults results) {
             hasExceptions = results.hasExceptions();
 
@@ -119,12 +119,12 @@ public class SQLExecutor {
             }
 
         }
-        
+
         public boolean hasExceptions() {
             return hasExceptions;
         }
 
-        public Collection<? extends Throwable> getExceptions() {
+        public List<? extends Throwable> getExceptions() {
             return exceptions;
         }
 
