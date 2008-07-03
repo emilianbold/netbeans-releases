@@ -54,5 +54,7 @@ public interface ServerList {
 
     public ServerRecord get(String key);
     
+    public void add(String key, boolean active);
+    
     // Other methods are TBD...
 }

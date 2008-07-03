@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.javascript.libraries.util;
 
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.Rectangle;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -46,25 +49,42 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.javascript.libraries.api.JavaScriptLibrarySupport;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -72,13 +92,37 @@ import org.openide.filesystems.URLMapper;
  */
 public final class JSLibraryProjectUtils {
     private static final String WEB_PROJECT = "org.netbeans.modules.web.project.WebProject"; // NOI18N
-    private static final String WEB_PROJECT_DEFAULT_RELATIVE_PATH = "/web/resources"; // NOI18N
-    private static final String RUBY_PROJECT = "org.netbeans.modules.ruby.rubyproject.RubyProject"; // NOI18N
-    private static final String RUBY_PROJECT_DEFAULT_RELATIVE_PATH = "/public/resources"; // NOI18N
+    private static final String WEB_PROJECT_DEFAULT_RELATIVE_PATH = "web"; // NOI18N
+    private static final String RUBY_PROJECT = "org.netbeans.modules.ruby.railsprojects.RailsProject"; // NOI18N
+    private static final String RUBY_PROJECT_DEFAULT_RELATIVE_PATH = "public"; // NOI18N
     private static final String PHP_PROJECT = "org.netbeans.modules.php.project"; // NOI18N
-    private static final String OTHER_PROJECT_DEFAULT_RELATIVE_PATH = "/javascript/resources"; // NOI18N
+    private static final String OTHER_PROJECT_DEFAULT_RELATIVE_PATH = "javascript"; // NOI18N
+    
+    private static final String LIBRARY_PROPERTIES = "library.properties"; // NOI18N
+    private static final String LIBRARY_PATH_PROP = "LibraryRoot"; // NOI18N
 
     private static final String LIBRARY_LIST_PROP = "javascript-libraries"; // NOI18N
+    private static final String LIBRARY_ZIP_VOLUME = "scriptpath"; // NOI18N
+
+    public static Object displayFolderOverwriteDialog() {
+        NotifyDescriptor nd = 
+                new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage(JSLibraryProjectUtils.class, "ExtractLibraries_Overwrite_Msg"), 
+                NbBundle.getMessage(JSLibraryProjectUtils.class, "ExtractLibraries_Overwrite_Title"), 
+                NotifyDescriptor.YES_NO_OPTION);
+        
+        return DialogDisplayer.getDefault().notify(nd);
+    }
+    
+    public static Object displayLibraryDeleteConfirm(Library library) {
+        NotifyDescriptor nd = 
+                new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage(JSLibraryProjectUtils.class, "DeleteLibraries_Delete_Msg", library.getDisplayName()), 
+                NbBundle.getMessage(JSLibraryProjectUtils.class, "DeleteLibraries_Delete_Title"), 
+                NotifyDescriptor.YES_NO_CANCEL_OPTION);
+        
+        return DialogDisplayer.getDefault().notify(nd);
+    }
     
     public static LibraryChooser.Filter createDefaultFilter() {
         return new LibraryChooser.Filter() {
@@ -147,15 +191,15 @@ public final class JSLibraryProjectUtils {
         
     }
     
-    public static void addJSLibraries(final Project project, final Library... libraries) {
+    public static void addJSLibraryMetadata(final Project project, final Collection<Library> libraries) {
         modifyJSLibraries(project, false, libraries);
     }
     
-    public static void removeJSLibraries(Project project, Library... libraries) {
+    public static void removeJSLibraryMetadata(Project project, Collection<Library> libraries) {
         modifyJSLibraries(project, true, libraries);
     }
 
-    public static void setJSLibraries(final Project project, final Library... libraries) {
+    public static void setJSLibraryMetadata(final Project project, final List<Library> libraries) {
         ProjectManager.mutex().writeAccess(
                 new Runnable() {
                     public void run() {
@@ -191,24 +235,53 @@ public final class JSLibraryProjectUtils {
     private static String getDefaultSourcePath(Project project) {
         Project p = project.getLookup().lookup(Project.class);
         if (p == null) {
-            // XXX this really shouldn't happen
             Log.getLogger().warning("project.getLookup().lookup(Project.class) returned null for project: " + project);
             p = project;
         }
         
         String projectClassName = p.getClass().getName();
         if (projectClassName.startsWith(PHP_PROJECT)) {
-            return WEB_PROJECT_DEFAULT_RELATIVE_PATH;
+            SourceGroup[] groups = ProjectUtils.getSources(p).getSourceGroups("PHPSOURCE"); // XXX key taken from php project
+            if (groups.length > 0) {
+                File srcDirFile = FileUtil.toFile(groups[0].getRootFolder());
+                return srcDirFile.getAbsolutePath();
+            } else {
+                File projectDirFile = FileUtil.toFile(p.getProjectDirectory());
+                return new File(projectDirFile, OTHER_PROJECT_DEFAULT_RELATIVE_PATH).getAbsolutePath();
+            }
         } else if (projectClassName.equals(WEB_PROJECT)) {
-            return WEB_PROJECT_DEFAULT_RELATIVE_PATH;
+            File projectDirFile = FileUtil.toFile(p.getProjectDirectory());
+            return new File(projectDirFile, WEB_PROJECT_DEFAULT_RELATIVE_PATH).getAbsolutePath();
         } else if (projectClassName.equals(RUBY_PROJECT)) {
-            return RUBY_PROJECT_DEFAULT_RELATIVE_PATH;
+            File projectDirFile = FileUtil.toFile(p.getProjectDirectory());
+            return new File(projectDirFile, RUBY_PROJECT_DEFAULT_RELATIVE_PATH).getAbsolutePath();
         } else {
-            return OTHER_PROJECT_DEFAULT_RELATIVE_PATH;
+            File projectDirFile = FileUtil.toFile(p.getProjectDirectory());
+            return new File(projectDirFile, OTHER_PROJECT_DEFAULT_RELATIVE_PATH).getAbsolutePath();
         }
     }
+
+    private static boolean isIncluded(String fileName, String prefix) {
+        if (prefix.length() > fileName.length()) {
+            return false;
+        }
+        
+        for (int i = 0; i < prefix.length(); i++) {
+            char letter = fileName.charAt(i);
+            letter = (letter == '\\') ? '/' : letter;
+            
+            char prefixLetter = prefix.charAt(i);
+            prefixLetter = (prefixLetter == '\\') ? '/' : prefixLetter;
+            
+            if (prefixLetter != letter) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
     
-    private static void modifyJSLibraries(final Project project, final boolean remove, final Library... libraries) {
+    private static void modifyJSLibraries(final Project project, final boolean remove, final Collection<Library> libraries) {
         final Set<String> libNames = getJSLibraryNames(project);
         
         ProjectManager.mutex().writeAccess(
@@ -260,7 +333,7 @@ public final class JSLibraryProjectUtils {
         assert prefs != null;
         
         String libraries = prefs.get(LIBRARY_LIST_PROP, "");
-        String[] tokens = libraries.split(";");
+        String[] tokens = removeEmptyStrings(libraries.split(";"));
         
         Set<String> librarySet = new LinkedHashSet<String>();
         for (String token : tokens) {
@@ -270,72 +343,274 @@ public final class JSLibraryProjectUtils {
         return librarySet;
     }
     
-    // TODO Rewrite copy/delete to intelligently detect overlapping files
-    public static boolean extractLibraryToProject(Project project, Library library) {
-        String relativePath = getJSLibrarySourcePath(project);
-        return extractLibrary(project, library, relativePath);
+    public static boolean extractLibrariesWithProgress(Project project, final Collection<Library> libraries, final String path) {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            throw new IllegalStateException("Cannot invoke JSLibraryProjectUtils.extractLibrariesWithProgress() outside event dispatch thread");
+        }
+        
+        ResourceBundle bundle = NbBundle.getBundle(JSLibraryProjectUtils.class);
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(bundle.getString("LBL_Add_Libraries_progress"));
+        final JDialog dialog = createProgressDialog(handle, bundle.getString("LBL_Add_Libraries_Msg"), bundle.getString("LBL_Add_Libraries_Title"));
+
+        final File destination = new File(path);
+        try {
+            FileUtil.createFolder(destination);
+        } catch (IOException ex) {
+            Log.getLogger().log(Level.SEVERE, "Unable to find or create root folder", ex);
+            return false;
+        }
+        
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    int totalSize = 0;
+                    Map<Library, Collection<ZipFile>> libraryZips = new HashMap<Library, Collection<ZipFile>>();
+                    for (Library library : libraries) {
+                        Collection<ZipFile> zips = getJSLibraryZips(library);
+                        libraryZips.put(library, zips);
+                        for (ZipFile zipFile : zips) {
+                            totalSize += zipFile.size();
+                        }
+                    }
+
+                    handle.start(totalSize);
+
+                    int currentSize = 0;
+                    for (Library library : libraries) {
+                        Collection<ZipFile> zipFiles = libraryZips.get(library);
+
+                        for (ZipFile zip : zipFiles) {
+                            try {
+                                String[] libraryDirs = getLibraryPropsValue(zip);
+                                
+                                currentSize = extractZip(destination, zip, handle, currentSize, libraryDirs);
+                            } catch (IOException ex) {
+                                Log.getLogger().log(Level.SEVERE, "Unable to extract zip file", ex);
+                            }
+                        }
+                    }
+
+                    handle.finish();
+                } finally {
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        public void run() {
+                            dialog.setVisible(false);
+                            dialog.dispose();
+                        }
+                    });
+                }
+            }
+        });
+
+        dialog.setVisible(true);
+        return true;
     }
     
-    public static boolean deleteLibraryFromProject(Project project ,Library library) {
-        // currently no-op
+    public static boolean deleteLibrariesWithProgress(Project project, final Collection<Library> libraries, final String path) {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            throw new IllegalStateException("Cannot invoke JSLibraryProjectUtils.deleteLibrariesWithProgress() outside event dispatch thread");
+        }
+        
+        ResourceBundle bundle = NbBundle.getBundle(JSLibraryProjectUtils.class);
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(bundle.getString("LBL_Remove_Libraries_progress"));
+        final JDialog dialog = createProgressDialog(handle, bundle.getString("LBL_Remove_Libraries_Msg"), bundle.getString("LBL_Remove_Libraries_Title"));
+        
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    int totalSize = 0;
+                    Map<Library, Collection<ZipFile>> libraryZips = new HashMap<Library, Collection<ZipFile>>();
+                    for (Library library : libraries) {
+                        Collection<ZipFile> zips = getJSLibraryZips(library);
+                        libraryZips.put(library, zips);
+                        for (ZipFile zipFile : zips) {
+                            totalSize += zipFile.size();
+                        }
+                    }
+
+                    handle.start(totalSize);
+
+                    int currentSize = 0;
+                    File folderPath = new File(path);
+                    FileObject baseFO = FileUtil.toFileObject(folderPath);
+                    for (Library library : libraries) {
+                        Collection<ZipFile> zipFiles = libraryZips.get(library);
+                        List<String> sortedEntries = getSortedFilenamesInZips(zipFiles);
+                        Collections.reverse(sortedEntries);
+
+                        for (ZipFile zip : zipFiles) {
+                            try {
+                                String[] libraryDirs = getLibraryPropsValue(zip);
+                                currentSize = deleteFiles(baseFO, sortedEntries, handle, currentSize, libraryDirs);
+                            } catch (IOException ex) {
+                                Log.getLogger().log(Level.SEVERE, "Unable to delete files", ex);
+                            }
+                        }
+                    }
+
+                    handle.finish();
+                } finally {
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        public void run() {
+                            dialog.setVisible(false);
+                            dialog.dispose();
+                        }
+                    });
+                }
+            }
+        });
+
+        dialog.setVisible(true);
         return true;
+    }
+    
+    private static JDialog createProgressDialog(ProgressHandle handle, String dialogMsg, String dialogTitle) {
+        JComponent component = ProgressHandleFactory.createProgressComponent(handle);
+        Frame mainWindow = WindowManager.getDefault().getMainWindow();
+        final JDialog dialog = new JDialog(mainWindow, dialogTitle, true);
+        
+        JSLibraryModificationPanel panel = new JSLibraryModificationPanel(component, dialogMsg);
+
+        dialog.getContentPane().add(panel);
+        dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        dialog.pack();
+
+        Rectangle bounds = mainWindow.getBounds();
+        int middleX = bounds.x + bounds.width / 2;
+        int middleY = bounds.y + bounds.height / 2;
+        Dimension size = dialog.getPreferredSize();
+        dialog.setBounds(middleX - size.width / 2, middleY - size.height / 2, size.width, size.height);
+        
+        return dialog;
     }
     
     public static boolean isLibraryFolderEmpty(Project project, Library library) {
-        String relativePath = getJSLibrarySourcePath(project);
-        return isLibraryFolderEmpty(project, library, relativePath);        
-    }
-    
-    public static boolean isLibraryFolderEmpty(Project project, Library library, String relativePath) {
-        relativePath = relativePath + "/" + library.getName().replaceAll(" ", "_");
-        FileObject fo = project.getProjectDirectory().getFileObject(relativePath);
-
-        return fo == null || fo.getChildren().length > 0;
-    }
-
-    public static boolean extractLibrary(Project project, Library library, String relativePath) {
-        try {
-            relativePath = relativePath + "/" + library.getName().replaceAll(" ", "_");
-            FileObject jsFolder = FileUtil.createFolder(project.getProjectDirectory(), relativePath);
-
-            for (URL url : library.getContent("scriptpath")) {
-                URL archiveURL = FileUtil.isArchiveFile(url) ? url : FileUtil.getArchiveFile(url);
-                FileObject archiveFO = URLMapper.findFileObject(archiveURL);
-                
-                extractZip(FileUtil.toFile(jsFolder), FileUtil.toFile(archiveFO));
-                /*
-                if (archiveFO != null) {
-                    FileObject archiveRootFolder = FileUtil.getArchiveRoot(archiveFO);
-                    FileLock lock = null;
-                    try {
-                        lock = archiveFO.lock();
-                        extractArchiveFolder(jsFolder, archiveRootFolder);
-                    } finally {
-                        if (lock != null) {
-                            lock.releaseLock();
-                        }
-                    }
-                }*/
+        String path = getJSLibrarySourcePath(project);
+        
+        List<String> fileNames = getSortedFilenamesInZips(getJSLibraryZips(library));
+        
+        for (String fileName : fileNames) {
+            File fullFile = new File(path, fileName);
+            if (fullFile.exists() && fullFile.isFile()) {
+                return false;
             }
-        } catch (IOException ioe) {
-            Log.getLogger().log(Level.SEVERE, "Unable to extract javascript library", ioe);
-            return false;
         }
-
+        
         return true;
     }
     
-    private static void extractZip(File outDir, File zip) throws IOException {
-        ZipFile zipFile = new ZipFile(zip);
+    private static Collection<ZipFile> getJSLibraryZips(Library library) {
+        ArrayList<ZipFile> result = new ArrayList<ZipFile>();
+
         try {
+            for (URL url : library.getContent(LIBRARY_ZIP_VOLUME)) {
+                URL archiveURL = FileUtil.isArchiveFile(url) ? url : FileUtil.getArchiveFile(url);
+                FileObject archiveFO = URLMapper.findFileObject(archiveURL);
+
+                File zipFile = (archiveFO != null) ? FileUtil.toFile(archiveFO) : null;
+                if (zipFile != null) {
+                    result.add(new ZipFile(zipFile));
+                }
+            }
+        } catch (IOException ex) {
+            Log.getLogger().log(Level.SEVERE, "Unable to load zip file", ex);
+        }
+
+        return result;
+    }
+    
+    private static int deleteFiles(FileObject baseFO, List<String> fileNames, ProgressHandle handle, int currentTotal, String[] includePaths) throws IOException {
+        if (baseFO != null) {
+            if (includePaths != null) {
+                for (int i = 0; i < includePaths.length; i++) {
+                    if (!includePaths[i].startsWith("/")) {
+                        includePaths[i] = "/" + includePaths[i];
+                    }
+                }
+            }
+            
+            for (String fileName : fileNames) {
+                if (includePaths != null) {
+                    boolean skip = true;
+                    for (String includePath : includePaths) {
+                        if (isIncluded(fileName, includePath)) {
+                            skip = false;
+                            break;
+                        }
+                    }
+                    
+                    if (skip) {
+                        continue;
+                    }
+                }
+                
+                FileObject toDelete = baseFO.getFileObject(fileName);
+                if (toDelete != null) {
+                    if (toDelete.isFolder() && toDelete.getChildren().length > 0) {
+                        Log.getLogger().warning("Skipping attempt to delete non-empty folder");
+                        continue;
+                    }
+                    
+                    try {
+                        toDelete.delete();
+                        handle.progress(++currentTotal);
+                    } catch (IOException ex) {
+                        Log.getLogger().log(Level.WARNING, "Could not delete file: " + FileUtil.getFileDisplayName(toDelete));
+                    }
+                }
+            }
+        }
+        
+        return currentTotal;
+    }
+    
+    private static int extractZip(File outDir, ZipFile zipFile, ProgressHandle handle, int currentTotal) throws IOException {
+        return extractZip(outDir, zipFile, handle, currentTotal, null);
+    }
+    
+    private static int extractZip(File outDir, ZipFile zipFile, ProgressHandle handle, int currentTotal, String[] includePaths) throws IOException {
+        try {
+            if (includePaths != null && includePaths.length > 0) {
+                for (int i = 0; i < includePaths.length; i++) {
+                    if (!includePaths[i].startsWith("/")) {
+                        includePaths[i] = "/" + includePaths[i];
+                    }
+                }
+                
+            }
+            
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
             
             while (entries.hasMoreElements()) {
                 ZipEntry zipEntry = entries.nextElement();
                 String entryName = zipEntry.getName();
+                
+                // used to ignore files without a common prefix
+                if (includePaths != null) {
+                    if (!entryName.startsWith("/")) {
+                        entryName = "/" + entryName;
+                    }
+                    
+                    boolean match = false;
+                    for (String includePath : includePaths) {
+                        if (isIncluded(entryName,includePath)) {
+                            match = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!match) {
+                        continue;
+                    }
+                }
+                
                 if (zipEntry.isDirectory()) {
                     File newFolder = new File(outDir, entryName);
                     newFolder.mkdirs();
+                    
+                    handle.progress(++currentTotal);
                 } else {
                     File file = new File(outDir, entryName);
                     BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(file));
@@ -350,6 +625,8 @@ public final class JSLibraryProjectUtils {
                     } finally {
                         output.close();
                         input.close();
+                        
+                        handle.progress(++currentTotal);
                     }
                 }
             }
@@ -357,17 +634,68 @@ public final class JSLibraryProjectUtils {
             zipFile.close();
         }
 
+        return currentTotal;
     }
-    
-    private static void extractArchiveFolder(FileObject destFolder, FileObject srcFolder) throws IOException {
-        FileObject[] children = srcFolder.getChildren();
-        for (FileObject child : children) {
-            if (child.isFolder()) {
-                FileObject destFolderChild = destFolder.createFolder(child.getName());
-                extractArchiveFolder(destFolderChild, child);
-            } else {
-                child.copy(destFolder, child.getName(), child.getExt());
+
+    private static String[] getLibraryPropsValue(ZipFile zipFile) {
+        InputStream is = null;
+        try {
+            ZipEntry zipEntry = zipFile.getEntry(LIBRARY_PROPERTIES);
+            if (zipEntry != null) {
+                Properties props = new Properties();
+                is = zipFile.getInputStream(zipEntry);
+                props.load(is);
+                
+                String propValue = props.getProperty(LIBRARY_PATH_PROP);
+                if (propValue != null) {
+                    String[] result = removeEmptyStrings(propValue.split(","));
+                    if (result.length > 0) {
+                        for (int i = 0; i < result.length; i++) {
+                            result[i] = result[i].trim();
+                        }
+                        
+                        return result;
+                    }
+                }
+            }
+            
+            return null;
+        } catch (IOException ex) {
+            return null;
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                }catch (IOException ex) {
+                }
             }
         }
+    }
+    
+    private static List<String> getSortedFilenamesInZips(Collection<ZipFile> zipFiles) {
+        List<String> result = new ArrayList<String>();
+        
+        for (ZipFile zip : zipFiles) {
+            Enumeration<? extends ZipEntry> entries = zip.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                result.add(entry.getName());
+            }
+        }
+        
+        Collections.sort(result);
+        
+        return result;
+    }
+    
+    private static String[] removeEmptyStrings(String[] arg) {
+        ArrayList<String> strings = new ArrayList<String>();
+        for (String component : arg) {
+            if (component != null && component.length() > 0) {
+                strings.add(component);
+            }
+        }
+        
+        return strings.toArray(new String[strings.size()]);
     }
 }

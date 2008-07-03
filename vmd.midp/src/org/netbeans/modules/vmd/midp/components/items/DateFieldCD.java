@@ -61,7 +61,7 @@ import org.netbeans.modules.vmd.midp.screen.display.DateFieldDisplayPresenter;
 import org.openide.util.NbBundle;
 
 import java.util.*;
-import org.netbeans.modules.vmd.midp.codegen.MIDPDatabindingCodeSupport;
+import org.netbeans.modules.vmd.midp.codegen.MidpPDatabindingCodeSupport;
 
 /**
  *
@@ -107,10 +107,10 @@ public class DateFieldCD extends ComponentDescriptor {
     @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
-        presenters.addAll(MIDPDatabindingCodeSupport.createDatabindingPresenters(PROP_DATE
+        presenters.addAll(MidpPDatabindingCodeSupport.createDatabindingPresenters(PROP_DATE
                                                                                  ,"getDate()" //NOI18N
-                                                                                 , MIDPDatabindingCodeSupport.ProviderType.DataField
-                                                                                 , MIDPDatabindingCodeSupport.FeatureType.DataField_FEATURE_DATETIME));
+                                                                                 , MidpPDatabindingCodeSupport.ProviderType.DataField
+                                                                                 , MidpPDatabindingCodeSupport.FeatureType.DataField_FEATURE_DATETIME));
         super.gatherPresenters (presenters);
     }
 

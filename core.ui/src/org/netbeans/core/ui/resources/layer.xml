@@ -370,25 +370,6 @@ made subject to such option by the copyright holder.
             <folder name="IDEConfiguration"> <!-- PENDING rename to somethink like APP Settings or so -->
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
                 
-                <folder name="LookAndFeel"> 
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
-                    
-                    <file name="Actions.instance">
-                        <attr name="instanceCreate" newvalue="org.netbeans.core.ActionsPoolNode"/>
-                        <attr name="instanceClass" stringvalue="org.openide.nodes.Node"/>
-                    </file>
-                    
-                    <file name="Menu.instance">
-                        <attr name="instanceCreate" newvalue="org.netbeans.core.windows.services.MenuFolderNode"/>
-                        <attr name="instanceClass" stringvalue="org.openide.nodes.Node"/>
-                    </file>
-                    
-                    <file name="Toolbar.instance">
-                        <attr name="instanceCreate" newvalue="org.netbeans.core.windows.services.ToolbarFolderNode"/>
-                        <attr name="instanceClass" stringvalue="org.openide.nodes.Node"/>
-                    </file>
-                </folder> <!-- LookAndFeel -->
-
                 <folder name="ServerAndExternalToolSettings">
 
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
@@ -712,19 +693,6 @@ made subject to such option by the copyright holder.
             <attr name="instanceClass" stringvalue="org.netbeans.core.ui.options.general.GeneralOptions"/>
             <attr name="position" intvalue="100"/>
         </file>
-    </folder>
-    
-    <folder name="QuickSearch">
-          <folder name="Web">
-              <!--Attribute for localization - provide localized display name of category!-->
-              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.quicksearch.web.Bundle"/>
-              <!--Attribute for command prefix - used to narrow search to this category only!-->
-              <attr name="command" stringvalue="g"/>
-              <!--Attribute for category ordering!-->
-              <attr name="position" intvalue="1000"/>
-              <!--Note that multiple providers can contribute to one category!-->
-              <file name="org-netbeans-core-ui-quicksearch-web-WebQuickSearchProviderImpl.instance"/>
-          </folder>
     </folder>
     
 </filesystem>

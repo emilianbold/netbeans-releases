@@ -171,6 +171,11 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
                         }
                     });
                     GeneratorUtils.guardedCommit(component, mr);
+                    int span[] = mr.getSpan("methodBodyTag"); // NOI18N
+                    if(span != null) {
+                        component.setSelectionStart(span[0]);
+                        component.setSelectionEnd(span[1]);
+                    }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }

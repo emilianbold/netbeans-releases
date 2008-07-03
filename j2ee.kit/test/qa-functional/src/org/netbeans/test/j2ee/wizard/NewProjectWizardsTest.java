@@ -83,7 +83,7 @@ public class NewProjectWizardsTest extends JellyTestCase {
     private Reporter reporter;
 
     public NewProjectWizardsTest(String testName) {
-        this(testName, "1.4");
+        this(testName, "5");
     }
     
     public NewProjectWizardsTest(String testName, String version) {

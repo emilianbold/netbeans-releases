@@ -48,6 +48,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Scope;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
@@ -213,10 +214,21 @@ public class Utilities {
         }
         
     }
-    
-    public static ChangeInfo commitAndComputeChangeInfo(FileObject target, ModificationResult diff) throws IOException {
+
+    /**
+     * Commits changes and provides selection bounds
+     *
+     * @param target target FileObject
+     * @param diff set of changes made by ModificationTask
+     * @param tag mark used for selection of generated text
+     * @return set of changes made by hint
+     * @throws java.io.IOException
+     */
+    public static ChangeInfo commitAndComputeChangeInfo(FileObject target, final ModificationResult diff, final Object tag) throws IOException {
         List<? extends Difference> differences = diff.getDifferences(target);
         ChangeInfo result = null;
+        
+        diff.commit();
         
         try {
             if (differences != null) {
@@ -229,14 +241,20 @@ public class Utilities {
                             doc = start.getCloneableEditorSupport().openDocument();
                         }
                         
-                        final Position[] pos = new Position[1];
+                        final Position[] pos = new Position[2];
                         final Document fdoc = doc;
                         
                         doc.render(new Runnable() {
-
                             public void run() {
                                 try {
-                                    pos[0] = NbDocument.createPosition(fdoc, start.getOffset(), Position.Bias.Backward);
+                                    int[] span = diff.getSpan(tag);
+                                    if(span != null) {
+                                        pos[0] = fdoc.createPosition(span[0]);
+                                        pos[1] = fdoc.createPosition(span[1]);
+                                    } else {
+                                        pos[0] = NbDocument.createPosition(fdoc, start.getOffset(), Position.Bias.Backward);
+                                        pos[1] = pos[0];
+                                    }
                                 } catch (BadLocationException ex) {
                                     Exceptions.printStackTrace(ex);
                                 }
@@ -244,7 +262,7 @@ public class Utilities {
                         });
                         
                         if (pos[0] != null) {
-                            result = new ChangeInfo(target, pos[0], pos[0]);
+                            result = new ChangeInfo(target, pos[0], pos[1]);
                         }
                         
                         break;
@@ -254,8 +272,6 @@ public class Utilities {
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
         }
-        
-        diff.commit();
         
         return result;
     }

@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.remote.support;
 
 import com.jcraft.jsch.Channel;
@@ -44,6 +43,7 @@ import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,29 +57,27 @@ import org.openide.util.Exceptions;
  * @author Sergey Grinev
  */
 public class RemoteCopySupport extends RemoteConnectionSupport {
-        
+
     public RemoteCopySupport(String key, int port) {
         super(key, port);
         revitalize();
-        
-        // copy(remote, local);
+
+    // copy(remote, local);
     }
-        
+
     public RemoteCopySupport(String key) {
         this(key, 22);
     }
-    
-    
+
     @Override
     protected Channel createChannel() throws JSchException {
         return session.openChannel("exec");
-        
+
     }
 
     private void setChannelCommand(String cmd) {
         ((ChannelExec) getChannel()).setCommand(cmd); //NOI18N
     }
-    
     // TODO: not sure why we can't recreate channels through session?
     private void revitalize() {
         try {
@@ -89,7 +87,7 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
         }
     }
 
-    public boolean copy(String remoteName, String localName) {
+    public boolean copyFrom(String remoteName, String localName) {
         FileOutputStream fos = null;
         try {
             String prefix = null;
@@ -119,7 +117,7 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
 
             while (true) {
                 long start = System.currentTimeMillis();
-                
+
                 int c = checkAck(in);
                 if (c != 'C') {
                     break;
@@ -186,7 +184,7 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
                 out.write(buf, 0, 1);
                 out.flush();
 
-                System.err.println("Copying: filesize="+filesize+"b, file="+file + " took " + (System.currentTimeMillis() - start) + " ms");
+                System.err.println("Copying: filesize=" + filesize + "b, file=" + file + " took " + (System.currentTimeMillis() - start) + " ms");
             }
 
         } catch (Exception e) {
@@ -203,8 +201,78 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
             } catch (Exception ee) {
             }
         }
-        
+
         revitalize();
+        return true;
+    }
+
+    public boolean copyTo(String localFile, String remotePath) {
+        FileInputStream fis=null;
+        try {
+            // exec 'scp -t rfile' remotely
+            String command = "scp -p -t " + remotePath; //NOI18N
+            setChannelCommand(command);
+
+            // get I/O streams for remote scp
+            OutputStream out = channel.getOutputStream();
+            InputStream in = channel.getInputStream();
+
+            channel.connect();
+
+            if (checkAck(in) != 0) {
+                System.exit(0);
+            }
+
+            // send "C0644 filesize filename", where filename should not include '/'
+            long filesize = (new File(localFile)).length();
+            command = "C0644 " + filesize + " ";
+            if (localFile.lastIndexOf(File.separator) > 0) {
+                command += localFile.substring(localFile.lastIndexOf(File.separator) + 1);
+            } else {
+                command += localFile;
+            }
+            command += "\n";
+            out.write(command.getBytes());
+            out.flush();
+            if (checkAck(in) != 0) {
+                System.exit(0);
+            }
+
+            // send a content of lfile
+            fis = new FileInputStream(localFile);
+            byte[] buf = new byte[1024];
+            while (true) {
+                int len = fis.read(buf, 0, buf.length);
+                if (len <= 0) {
+                    break;
+                }
+                out.write(buf, 0, len); //out.flush();
+            }
+            fis.close();
+            fis = null;
+            // send '\0'
+            buf[0] = 0;
+            out.write(buf, 0, 1);
+            out.flush();
+            if (checkAck(in) != 0) {
+                System.exit(0);
+            }
+            out.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            if (channel.isConnected()) {
+                channel.disconnect();
+            }
+            try {
+                if (fis != null) {
+                    fis.close();
+                }
+            } catch (Exception ee) {
+            }
+        }
         return true;
     }
 
@@ -217,9 +285,11 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
         if (b == 0) {
             return b;
         }
+
         if (b == -1) {
             return b;
         }
+
         if (b == 1 || b == 2) {
             StringBuffer sb = new StringBuffer();
             int c;
@@ -231,34 +301,36 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
 
                 System.out.print(sb.toString());
             }
+
             if (b == 2) { // fatal error
 
                 System.out.print(sb.toString());
             }
+
         }
         return b;
     }
-    
-    
-    // shouldn't be there but RemoteCommandSupport is not finished yet
+// shouldn't be there but RemoteCommandSupport is not finished yet
     public boolean run(String command) {
         try {
             long startTime = System.currentTimeMillis();
-            setChannelCommand(command); 
+            setChannelCommand(command);
             InputStream is = channel.getInputStream();
             BufferedReader in = new BufferedReader(new InputStreamReader(is));
             StringWriter out = new StringWriter();
-            
+
             channel.connect();
-            
-            
-            
+
+
+
             String line;
+
             while ((line = in.readLine()) != null || !channel.isClosed()) {
-                if (line!=null) {
+                if (line != null) {
                     out.write(line);
                     out.flush();
                 }
+
                 try {
                     Thread.sleep(50);
                 } catch (InterruptedException e) {
@@ -266,10 +338,12 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
             }
             in.close();
             is.close();
-            
+
             System.err.println("run `" + command + "` took " + (System.currentTimeMillis() - startTime) + " ms.");
             String output = out.toString();
-            if (output.length() > 0) System.err.println(output);
+            if (output.length() > 0) {
+                System.err.println(output);
+            }
         } catch (JSchException ex) {
             Exceptions.printStackTrace(ex);
             return false;
@@ -280,6 +354,7 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
             if (channel.isConnected()) {
                 channel.disconnect();
             }
+
         }
         revitalize();
         return true;

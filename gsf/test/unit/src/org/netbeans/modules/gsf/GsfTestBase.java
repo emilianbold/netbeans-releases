@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -187,12 +187,12 @@ public abstract class GsfTestBase extends NbTestCase {
         return touch(new File(dir), path);
     }
 
-    protected FileObject touch(final File dir, final String binary) throws IOException {
+    protected FileObject touch(final File dir, final String path) throws IOException {
         if (!dir.isDirectory()) {
             assertTrue("success to create " + dir, dir.mkdirs());
         }
         FileObject dirFO = FileUtil.toFileObject(FileUtil.normalizeFile(dir));
-        return FileUtil.createData(dirFO, binary);
+        return FileUtil.createData(dirFO, path);
     }
     
     public static final FileObject copyStringToFileObject(FileObject fo, String content) throws IOException {
@@ -611,6 +611,52 @@ public abstract class GsfTestBase extends NbTestCase {
         testFO = workDir.createData(tempName);
         FileObject fileObject = copyStringToFileObject(testFO, text);
         return getInfo(fileObject);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Parser tests
+    ////////////////////////////////////////////////////////////////////////////
+    protected void checkErrors(String relFilePath) throws Exception {
+        GsfTestCompilationInfo info = getInfo(relFilePath);
+        String text = info.getText();
+        assertNotNull(text);
+
+        ParserResult pr = info.getEmbeddedResult(info.getPreferredMimeType(), 0);
+        assertNotNull(pr);
+
+        List<Error> diagnostics = pr.getDiagnostics();
+        String annotatedSource = annotateErrors(text, diagnostics);
+        assertDescriptionMatches(relFilePath, annotatedSource, false, ".errors");
+    }
+
+    private String annotateErrors(String text, List<Error> errors) {
+        List<String> descs = new ArrayList<String>();
+        for (Error error : errors) {
+            StringBuilder desc = new StringBuilder();
+            if (error.getKey() != null) {
+                desc.append("[");
+                desc.append(error.getKey());
+                desc.append("] ");
+            }
+            desc.append(error.getStartPosition());
+            desc.append("-");
+            desc.append(error.getEndPosition());
+            desc.append(":");
+            desc.append(error.getDisplayName());
+            if (error.getDescription() != null) {
+                desc.append(" ; " );
+                desc.append(error.getDescription());
+            }
+            descs.add(desc.toString());
+        }
+        Collections.sort(descs);
+        StringBuilder summary = new StringBuilder();
+        for (String desc : descs) {
+            summary.append(desc);
+            summary.append("\n");
+        }
+
+        return summary.toString();
     }
 
     ////////////////////////////////////////////////////////////////////////////

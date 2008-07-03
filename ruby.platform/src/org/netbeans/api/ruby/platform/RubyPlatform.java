@@ -152,7 +152,7 @@ public final class RubyPlatform {
             }
             return false;
         }
-        return platform.isValidRuby(warn) && platform.hasRubyGemsInstalled() && platform.getGemManager().isValidRake(warn);
+        return platform.isValidRuby(warn) && platform.hasRubyGemsInstalled(warn) && platform.getGemManager().isValidRake(warn);
     }
     
     public String getID() {
@@ -265,7 +265,7 @@ public final class RubyPlatform {
     }
     
     private String getRubiniusLibDir() {
-        File lib = new File(getHome(), "lib");
+        File lib = new File(getHome(), "lib"); // NOI18N
         return lib.isDirectory() ? lib.getAbsolutePath() : null; // NOI18N
     }
 
@@ -781,10 +781,26 @@ public final class RubyPlatform {
     }
 
     /**
-     * @return whether the RubyGems are installed for this platform.
+     * Calls {@link #hasRubyGemsInstalled(boolean)} with <tt>false</tt> for warn
+     * parameter.
      */
     public boolean hasRubyGemsInstalled() {
-        return info.getGemHome() != null;
+        return hasRubyGemsInstalled(false);
+    }
+
+    /**
+     * Check for RubyGems installation for this platform.
+     * 
+     * @param warn whether to show warning if RubyGems are not installed
+     * @return whether the RubyGems are installed for this platform.
+     */
+    public boolean hasRubyGemsInstalled(boolean warn) {
+        boolean hasRubyGems = info.getGemHome() != null;
+        if (!hasRubyGems && warn) {
+            Util.notifyLocalized(RubyPlatform.class, "RubyPlatform.DoesNotHaveRubyGems", // NOI18N
+                    NotifyDescriptor.WARNING_MESSAGE, this.getLabel());
+        }
+        return hasRubyGems;
     }
 
     /**
@@ -877,7 +893,7 @@ public final class RubyPlatform {
                     "jruby-1.1.2", "org.netbeans.modules.ruby.platform", false);  // NOI18N
             // XXX handle valid case when it is not available, see #124534
             assert (jrubyHome != null && jrubyHome.isDirectory()) : "Default platform available";
-            FileObject libDirFO = FileUtil.toFileObject(jrubyHome).getFileObject("/lib/ruby");
+            FileObject libDirFO = FileUtil.toFileObject(jrubyHome).getFileObject("/lib/ruby"); // NOI18N
             info.libDir = FileUtil.toFile(libDirFO.getFileObject("/1.8")).getAbsolutePath(); // NOI18N
             info.gemHome = FileUtil.toFile(libDirFO.getFileObject("/gems/1.8")).getAbsolutePath(); // NOI18N
             info.gemPath = info.gemHome;

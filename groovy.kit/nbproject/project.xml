@@ -8,7 +8,7 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.groovy.editor</code-name-base>
                     <run-dependency>
-                        <specification-version>1.3</specification-version>
+                        <specification-version>1.4</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -20,7 +20,7 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.groovy.grailsproject</code-name-base>
                     <run-dependency>
-                        <specification-version>1.4</specification-version>
+                        <specification-version>1.5</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

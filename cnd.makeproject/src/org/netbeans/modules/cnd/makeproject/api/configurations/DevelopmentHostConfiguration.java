@@ -42,7 +42,10 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -94,7 +97,27 @@ public class DevelopmentHostConfiguration {
                 return;
             }
         }
-        throw new IllegalStateException();
+        
+        // The project's configuration wants a dev host not currently defined. Ask the
+        // user what they want to do...
+        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage(DevelopmentHostConfiguration.class, "AddMissingRemoteServerQuestion", v));
+        if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
+            if (addDevelopmentHost(v)) {
+                names = getServerNames();
+                setValue(v, true);
+            }
+        } else {
+            setValue("localhost", true); // NOI18N
+        }
+    }
+    
+    private boolean addDevelopmentHost(String host) {
+        ServerList list = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+        if (list != null) {
+            list.add(host, false);
+        }
+        return list != null;
     }
 
     public void reset() {
@@ -154,7 +177,6 @@ public class DevelopmentHostConfiguration {
     }
     
     private static ServerList getServerList() {
-        if (Boolean.getBoolean("cnd.remote.enable")) // DEBUG
         if (serverList == null) {
             serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
         }

@@ -1245,7 +1245,7 @@ member_declaration
                 ctor_decl_spec
                 {ctrName = qualifiedItemIsOneOf(qiCtor);}
                 ctor_declarator[true]
-		ctor_body 
+                ctor_body
 		{ 
                     if (ctrName) {
                         #member_declaration = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #member_declaration); 
@@ -1635,7 +1635,13 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
 				LCURLY
 				// This stores class name in dictionary
 				{beginClassDefinition(ts, id);}
-				(member_declaration)*
+				(options{generateAmbigWarnings = false;greedy=false;}:
+                                    member_declaration
+                                    |
+                                    // IZ 138291 : Completion does not work for unfinished constructor
+                                    // On unfinished construction we skip some symbols for class parsing process recovery
+                                    .! { reportError(new NoViableAltException(LT(0), getFilename())); }
+                                )*
 				{endClassDefinition();}
 				(EOF!|RCURLY)
 				{enclosingClass = saveClass;}
@@ -1823,7 +1829,7 @@ declarator
                 |
                     restrict_declarator
                 )
-	|	
+	|    
 		direct_declarator	
 	;
 
@@ -3111,6 +3117,9 @@ unary_expression
                         // TILDE was handled above
                         {LA(1)!=TILDE}? unary_operator cast_expression
                 |
+                        // IZ 138482 : No support for ({}) extensions
+                        (LPAREN LCURLY) => LPAREN statement RPAREN
+                |
                         //{!(LA(1)==TILDE && LA(2)==ID) || 
 			//	    qualifiedItemIsOneOf(qiVar | qiFun | qiDtor | qiCtor)}?
                         postfix_expression
@@ -3160,7 +3169,7 @@ postfix_expression
 	|
 		(LITERAL_dynamic_cast|LITERAL_static_cast|LITERAL_reinterpret_cast|LITERAL_const_cast)
 		    // Note const_cast in elsewhere
-		LESSTHAN declaration_specifiers (ptr_operator)* GREATERTHAN
+		LESSTHAN declaration_specifiers ptr_operators_in_cast_operator (LPAREN RPAREN)? GREATERTHAN
 		LPAREN expression RPAREN
 	) 
         // add possibility to have a().b().c()->d() etc.
@@ -3168,6 +3177,14 @@ postfix_expression
         // not at the end of postfix_expression
         (post_postfix_expression)*
 	;
+
+protected
+ptr_operators_in_cast_operator
+        : 
+                ((ptr_operator)* (GREATERTHAN|RPAREN)) => (ptr_operator)*               
+        |
+                ((STAR)* LPAREN) => (STAR)* LPAREN ptr_operators_in_cast_operator RPAREN                
+;
 
 protected
 fun_call_param_list : fun_call_param (COMMA fun_call_param)*;

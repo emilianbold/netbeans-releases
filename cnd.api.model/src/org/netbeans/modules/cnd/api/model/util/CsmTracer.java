@@ -848,7 +848,7 @@ public class CsmTracer {
 			    "<unknown-CsmClass-kind>"; // NOI18N
 	
         CharSequence name;
-        if (cls.isTemplate() && cls instanceof CsmTemplate) {
+        if (CsmKindUtilities.isTemplate(cls)) {
             name = ((CsmTemplate)cls).getDisplayName();
         } else {
             name = cls.getName();

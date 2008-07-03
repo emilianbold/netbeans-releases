@@ -114,7 +114,7 @@ abstract class AbstractTab extends JPanel implements Scrollable, Constants {
                 d.width = Math.max(getParent().getWidth(), START_PAGE_MIN_WIDTH+(int)(((FONT_SIZE-11)/11.0)*START_PAGE_MIN_WIDTH));
                 if( getParent().getParent() instanceof JScrollPane ) {
                     if( ((JScrollPane)getParent().getParent()).getVerticalScrollBar().isVisible() )
-                        d.width -= ((JScrollPane)getParent().getParent()).getVerticalScrollBar().getWidth();
+                        d.width -= ((JScrollPane)getParent().getParent()).getVerticalScrollBar().getWidth() + 5;
                 }
             } else if( d.width < getParent().getWidth() ) {
                 d.width = getParent().getWidth();
