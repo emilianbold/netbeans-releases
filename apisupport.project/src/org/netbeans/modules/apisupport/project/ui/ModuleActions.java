@@ -338,7 +338,8 @@ public final class ModuleActions implements ActionProvider {
             targetNames = setupDebugTestSingle(p, testSources);
         } else if (command.equals(COMMAND_RUN_SINGLE)) {
             TestSources testSources = findTestSources(context, false);
-            if (true && "unit".equals(testSources.testType)) {
+            String enableQuickTest = project.evaluator().getProperty("quick.test.single"); // NOI18N
+            if ((enableQuickTest == null || Boolean.parseBoolean(enableQuickTest)) && "unit".equals(testSources.testType)) { // NOI18N
                     bypassAntBuildScript(command, testSources.sources);
                     return ;
             }
