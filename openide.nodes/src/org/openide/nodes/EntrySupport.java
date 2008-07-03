@@ -363,8 +363,7 @@ abstract class EntrySupport {
             //debug.append ("New     : " + this.entries + '\n'); // NOI18N
             //printStackTrace();
             clearNodes();
-
-            children.notifyRemove(nodes, current, null);
+            notifyRemove(nodes, current, null);
         }
 
         /** Updates the order of entries.
@@ -503,8 +502,7 @@ abstract class EntrySupport {
             //      debug.append ("Set4: " + entries); // NOI18N
             //      printStackTrace();
             clearNodes();
-
-            children.notifyAdd(nodes, null);
+            notifyAdd(nodes, null);
         }
 
         /** Refreshes content of one entry. Updates the state of children
@@ -557,8 +555,7 @@ abstract class EntrySupport {
                 clearNodes();
 
                 // now everything should be consistent => notify the remove
-                children.notifyRemove(toRemove, current, entry);
-
+                notifyRemove(toRemove, current, entry);
                 current = holder.nodes();
             }
 
@@ -568,7 +565,7 @@ abstract class EntrySupport {
             if (!toAdd.isEmpty()) {
                 // modifies the list associated with the info
                 clearNodes();
-                children.notifyAdd(toAdd, entry);
+                notifyAdd(toAdd, entry);
             }
         }
 
@@ -623,6 +620,65 @@ abstract class EntrySupport {
             return toAdd;
         }
 
+        /** Notifies that a set of nodes has been removed from
+         * children. It is necessary that the system is already
+         * in consistent state, so any callbacks will return
+         * valid values.
+         *
+         * @param nodes list of removed nodes
+         * @param current state of nodes
+         * @return array of nodes that were deleted
+         */
+        Node[] notifyRemove(Collection<Node> nodes, Node[] current, Entry sourceEntry) {
+            //System.err.println("notifyRemove from: " + getNode ());
+            //System.err.println("notifyRemove: " + nodes);
+            //System.err.println("Current     : " + Arrays.asList (current));
+            //Thread.dumpStack();
+            //Keys.last.printStackTrace();
+            // [TODO] Children do not have always a parent
+            // see Services->FIRST ($SubLevel.class)
+            // during a deserialization it may have parent == null
+            Node[] arr = nodes.toArray(new Node[nodes.size()]);
+
+            if (children.parent != null) {
+                // fire change of nodes
+                children.parent.fireSubNodesChange(false, arr, current, sourceEntry);
+
+                // fire change of parent
+                Iterator it = nodes.iterator();
+
+                while (it.hasNext()) {
+                    Node n = (Node) it.next();
+                    n.deassignFrom(children);
+                    n.fireParentNodeChange(children.parent, null);
+                }
+            }
+            children.destroyNodes(arr);
+            return arr;
+        }
+
+        /** Notifies that a set of nodes has been add to
+         * children. It is necessary that the system is already
+         * in consistent state, so any callbacks will return
+         * valid values.
+         *
+         * @param nodes list of removed nodes
+         */
+        void notifyAdd(Collection<Node> nodes, Entry sourceEntry) {
+            // notify about parent change
+            for (Node n : nodes) {
+                n.assignTo(children, -1);
+                n.fireParentNodeChange(null, children.parent);
+            }
+
+            Node[] arr = nodes.toArray(new Node[nodes.size()]);
+
+            Node n = children.parent;
+
+            if (n != null) {
+                n.fireSubNodesChange(true, arr, null, sourceEntry);
+            }
+        }    
         //
         // ChildrenArray operations call only under lock
         //
@@ -1001,6 +1057,7 @@ abstract class EntrySupport {
             }
             try {
                 Children.PR.enterReadAccess();
+
                 Node[] nodes = new Node[entries.size()];
                 for (int i = 0; i < nodes.length; i++) {
                     Entry e = entries.get(i);
@@ -1010,6 +1067,22 @@ abstract class EntrySupport {
                 }
                 nodesCreated = true;
                 return nodes;
+
+//                Node[] nodes = new Node[entries.size()];
+//                int valid = 0;
+//                for (int i = 0; i < nodes.length; i++) {
+//                    Entry e = entries.get(i);
+//                    EntryInfo info = entryToInfo.get(e);
+//                    Node node = info.getNode();
+//                    if (node != NONEXISTING_NODE) {
+//                        nodes[valid] = node;
+//                        valid++;
+//                    }
+//                }
+//                Node[] validNodes = new Node[valid];
+//                System.arraycopy(nodes, 0, validNodes, 0, valid);
+//                nodesCreated = true;
+//                return validNodes;
             } finally {
                 Children.PR.exitReadAccess();
             }
@@ -1063,7 +1136,7 @@ abstract class EntrySupport {
             info.useNode(oldNode);
             fireSubNodesChangeIdx(false, new int[]{info.getIndex()});
 
-            //children.destroyNodes((Node[]) removeNodes.toArray(new Node[0]));
+            children.destroyNodes(new Node[]{oldNode});
 
             info.useNode(newNode);
             fireSubNodesChangeIdx(true, new int[]{info.getIndex()});
@@ -1104,6 +1177,7 @@ abstract class EntrySupport {
 
             HashSet<Entry> retain = new HashSet<Entry>(newEntries);
             Iterator<Entry> it = this.entries.iterator();
+            int newIndex = 0;
             int index = 0;
             ArrayList<Integer> removedIdxs = new ArrayList<Integer>();
             ArrayList<Node> removedNodes = new ArrayList<Node>();
@@ -1113,15 +1187,17 @@ abstract class EntrySupport {
                     removedIdxs.add(new Integer(index));
                     // unassign from parent
                     Node node = info.currentNode();
-                    if (node != null) {
+                    if (node != null && node != NONEXISTING_NODE) {
                         node.deassignFrom(children);
                         removedNodes.add(node);
                     }
                     // remove the entry from collection
                     it.remove();
                     entryToInfo.remove(info.entry);
+                } else {
+                    info.setIndex(newIndex++);
                 }
-                info.setIndex(index++);
+                index++;
             }
 
             if (!removedIdxs.isEmpty()) {
@@ -1130,7 +1206,7 @@ abstract class EntrySupport {
                     idxs[i] = ((Integer) removedIdxs.get(i)).intValue();
                 }
                 fireSubNodesChangeIdx(false, idxs);
-                //children.destroyNodes(removedNodes.toArray(new Node[removedNodes.size()]));
+                children.destroyNodes(removedNodes.toArray(new Node[removedNodes.size()]));
             }
 
             // change the order of entries, notifies
@@ -1280,11 +1356,12 @@ abstract class EntrySupport {
             /** Assignes new set of nodes to this entry. */
             public final synchronized Node useNode(Node node) {
                 refNode = new WeakReference<Node>(node);
-                /*
+                
                 // assign node to the new children
-                node.assignTo(Children.this, -1);
-                node.fireParentNodeChange(null, parent);
-                }*/
+                if (node != NONEXISTING_NODE) {
+                    node.assignTo(children, -1);
+                    node.fireParentNodeChange(null, children.parent);
+                }
                 return node;
             }
 

@@ -150,6 +150,7 @@ public abstract class Children extends Object {
      */
     EntrySupport createEntrySource() {
         return lazySupport ? new EntrySupport.Lazy(this) : new EntrySupport.Default(this);
+        //return new EntrySupport.Lazy(this);
     }
 
     /**
@@ -498,6 +499,17 @@ public abstract class Children extends Object {
         //System.err.println("Finished: " + this);
     }
 
+    /** Called when the nodes have been removed from the children.
+     * This method should allow subclasses to clean the nodes somehow.
+     * <p>
+     * Current implementation notifies all listeners on the nodes
+     * that nodes have been deleted.
+     *
+     * @param arr array of deleted nodes
+     */
+    void destroyNodes(Node[] arr) {
+    }
+
     /** @return either nodes associated with this children or null if
      * they are not created
      */
@@ -505,68 +517,6 @@ public abstract class Children extends Object {
         return entrySupport == null ? null : entrySupport().testNodes();
     }
 
-    /** Notifies that a set of nodes has been removed from
-     * children. It is necessary that the system is already
-     * in consistent state, so any callbacks will return
-     * valid values.
-     *
-     * @param nodes list of removed nodes
-     * @param current state of nodes
-     * @return array of nodes that were deleted
-     */
-    Node[] notifyRemove(Collection<Node> nodes, Node[] current, Entry sourceEntry) {
-        //System.err.println("notifyRemove from: " + getNode ());
-        //System.err.println("notifyRemove: " + nodes);
-        //System.err.println("Current     : " + Arrays.asList (current));
-        //Thread.dumpStack();
-        //Keys.last.printStackTrace();
-        // [TODO] Children do not have always a parent
-        // see Services->FIRST ($SubLevel.class)
-        // during a deserialization it may have parent == null
-        Node[] arr = nodes.toArray(new Node[nodes.size()]);
-
-        if (parent == null) {
-            return arr;
-        }
-
-        // fire change of nodes
-        parent.fireSubNodesChange(false, // remove
-                arr, current, sourceEntry);
-
-        // fire change of parent
-        Iterator it = nodes.iterator();
-
-        while (it.hasNext()) {
-            Node n = (Node) it.next();
-            n.deassignFrom(this);
-            n.fireParentNodeChange(parent, null);
-        }
-
-        return arr;
-    }
-
-    /** Notifies that a set of nodes has been add to
-     * children. It is necessary that the system is already
-     * in consistent state, so any callbacks will return
-     * valid values.
-     *
-     * @param nodes list of removed nodes
-     */
-    void notifyAdd(Collection<Node> nodes, Entry sourceEntry) {
-        // notify about parent change
-        for (Node n : nodes) {
-            n.assignTo(this, -1);
-            n.fireParentNodeChange(null, parent);
-        }
-
-        Node[] arr = nodes.toArray(new Node[nodes.size()]);
-
-        Node n = parent;
-
-        if (n != null) {
-            n.fireSubNodesChange(true, arr, null, sourceEntry);
-        }
-    }
 
     /** Interface that provides a set of nodes.
     */
@@ -1456,20 +1406,11 @@ public abstract class Children extends Object {
         *
         * @param arr array of deleted nodes
         */
+        @Override
         protected void destroyNodes(Node[] arr) {
             for (int i = 0; i < arr.length; i++) {
                 arr[i].fireNodeDestroyed();
             }
-        }
-
-        /** Notifies the children class that nodes has been released.
-        */
-        @Override
-        Node[] notifyRemove(Collection<Node> nodes, Node[] current, Entry sourceEntry) {
-            Node[] arr = super.notifyRemove(nodes, current, sourceEntry);
-            destroyNodes(arr);
-
-            return arr;
         }
 
         /** Enter of setKeys.
