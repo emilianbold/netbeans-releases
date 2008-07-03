@@ -174,7 +174,7 @@ public class PHPIndex {
         if (inheritanceLine != null){
             for (IndexedClass clazz : inheritanceLine){
                 int mask = inheritanceLine.get(0) == clazz ? attrMask : (attrMask & (~Modifier.PRIVATE));
-                methods.addAll(getMethods(context, clazz.getName(), "", kind, mask)); //NOI18N
+                methods.addAll(getMethods(context, clazz.getName(), name, kind, mask)); //NOI18N
             }
         }
         
@@ -189,7 +189,7 @@ public class PHPIndex {
         if (inheritanceLine != null){
             for (IndexedClass clazz : inheritanceLine){
                 int mask = inheritanceLine.get(0) == clazz ? attrMask : (attrMask & (~Modifier.PRIVATE));
-                properties.addAll(getProperties(context, clazz.getName(), "", NameKind.PREFIX, mask)); //NOI18N
+                properties.addAll(getProperties(context, clazz.getName(), name, NameKind.PREFIX, mask)); //NOI18N
             }
         }
         
@@ -324,13 +324,6 @@ public class PHPIndex {
             if (!className.equals(foundClassName)) {
                 continue;
             }
-            
-            if(kind == NameKind.PREFIX) {
-                //case sensitive
-                if(!foundClassName.startsWith(className)) {
-                    continue;
-                }
-            }
 
             for (String signature : rawSignatures) {
                 String elemName = getSignatureItem(signature, 0);
@@ -339,8 +332,8 @@ public class PHPIndex {
                 // according to 'kind'
                 if((kind == NameKind.CASE_INSENSITIVE_PREFIX 
                         && elemName.toLowerCase().startsWith(name.toLowerCase()))
-                        || (kind == NameKind.PREFIX 
-                        && elemName.startsWith(name))) {
+                        || (kind == NameKind.PREFIX && elemName.startsWith(name))
+                        || (kind == NameKind.EXACT_NAME && elemName.equals(name))) {
                         signatures.put(signature, persistentURL);
                 }
                 
