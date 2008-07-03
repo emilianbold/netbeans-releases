@@ -90,6 +90,7 @@ public class XSLTDataLoader extends UniFileLoader {
     /**
      * Lazy init name.
      */
+    @Override
     protected String defaultDisplayName() {
         return NbBundle.getMessage(XSLTDataLoader.class, LOADER_NAME ); 
     }

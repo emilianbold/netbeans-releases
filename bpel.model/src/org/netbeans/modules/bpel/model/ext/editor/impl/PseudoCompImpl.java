@@ -19,6 +19,7 @@
 package org.netbeans.modules.bpel.model.ext.editor.impl;
 
 import java.util.concurrent.atomic.AtomicReference;
+import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.ExtensionEntity;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
@@ -65,8 +66,10 @@ public class PseudoCompImpl extends EditorEntityImpl implements PseudoComp {
         if ( myAttributes.get() == null ){
             Attribute[] ret = new Attribute[] {
                 EditorAttributes.SOURCE,
-                EditorAttributes.PATH,
+                EditorAttributes.PARENT_PATH,
                 EditorAttributes.TYPE, 
+                EditorAttributes.QNAME, 
+                EditorAttributes.IS_ATTRIBUTE,
             };
             myAttributes.compareAndSet( null ,  ret);
         }
@@ -140,40 +143,22 @@ public class PseudoCompImpl extends EditorEntityImpl implements PseudoComp {
         removeAttribute(EditorAttributes.TYPE);
     }
 
-    public String getName() {
+    public QName getName() {
         readLock();
         try {
-            return getAttribute(EditorAttributes.NAME);
+            return getQNameAttribute(EditorAttributes.QNAME);
         }
         finally {
             readUnlock();
         }
     }
 
-    public void setName(String value) throws VetoException {
-        setBpelAttribute(EditorAttributes.NAME, value);
+    public void setName(QName value) throws VetoException {
+        setBpelAttribute(EditorAttributes.QNAME, value);
     }
 
     public void removeName() {
-        removeAttribute(EditorAttributes.NAME);
-    }
-
-    public String getNamespace() {
-        readLock();
-        try {
-            return getAttribute(EditorAttributes.NAMESPACE);
-        }
-        finally {
-            readUnlock();
-        }
-    }
-
-    public void setNamespace(String newValue) throws VetoException {
-        setBpelAttribute(EditorAttributes.NAMESPACE, newValue);
-    }
-
-    public void removeNamespace() {
-        removeAttribute(EditorAttributes.NAMESPACE);
+        removeAttribute(EditorAttributes.QNAME);
     }
 
     public boolean isAttribute() {
