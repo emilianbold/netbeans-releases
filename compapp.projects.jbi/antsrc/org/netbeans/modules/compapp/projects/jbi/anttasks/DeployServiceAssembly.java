@@ -44,9 +44,13 @@ package org.netbeans.modules.compapp.projects.jbi.anttasks;
 import com.sun.esb.management.api.deployment.DeploymentService;
 import com.sun.esb.management.common.ManagementRemoteException;
 import com.sun.jbi.ui.common.ServiceAssemblyInfo;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.StringReader;
 
-import java.util.List;
+import java.nio.channels.FileChannel;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -55,6 +59,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.netbeans.modules.compapp.jbiserver.JbiManager;
 import org.netbeans.modules.compapp.projects.jbi.AdministrationServiceHelper;
+import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 import org.openide.util.Exceptions;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -217,14 +222,51 @@ public class DeployServiceAssembly extends Task {
     public String getJ2eeServerInstance() {
         return j2eeServerInstance;
     }
-    
+        
     /**
      * DOCUMENT ME!
      *
      * @throws BuildException
      *             DOCUMENT ME!
      */
+    @Override
     public void execute() throws BuildException {
+        
+        // 4/11/08, copy SA over to autodeploy directory if OSGi is enabled
+        Project p = this.getProject();
+        String osgisupport = p.getProperty(JbiProjectProperties.OSGI_SUPPORT);
+        if ((osgisupport != null) && osgisupport.equalsIgnoreCase("true")) {
+            
+            String osgiDirPath = 
+                p.getProperty(JbiProjectProperties.OSGI_CONTAINER_DIR);
+            if (osgiDirPath == null || osgiDirPath.trim().length() == 0) {
+                throw new BuildException("OSGi container directory is not specified.");
+            }
+            
+            File osgiDir = new File(osgiDirPath);
+            if (!osgiDir.exists() || osgiDir.isFile()) {
+                throw new BuildException("Invalid OSGi container directory: " + osgiDirPath);                
+            }
+            
+            File autoDeployDir = new File(osgiDirPath + "/jbi/autodeploy/");
+            File srcFile = new File(serviceAssemblyLocation);
+            File targetFile = new File(autoDeployDir, srcFile.getName());
+            
+            if (undeployServiceAssembly.equalsIgnoreCase("true")) { // NOI18N
+                log("  remove " + targetFile.getAbsolutePath());
+                targetFile.delete();
+            } else {
+                try {
+                    log("  copy " + srcFile.getAbsolutePath() + " to " + 
+                            autoDeployDir.getAbsolutePath());
+                    copyFile(srcFile, targetFile);
+                } catch (IOException ex) {
+                    throw new BuildException(ex.getMessage());
+                }
+            }
+            return;
+        }            
+            
         if (serviceAssemblyID != null && 
                 serviceAssemblyID.equals("${org.netbeans.modules.compapp.projects.jbi.descriptor.uuid.assembly-unit}")) {
             String msg = "Unknown Service Assembly ID: " + serviceAssemblyID + 
@@ -301,7 +343,7 @@ public class DeployServiceAssembly extends Task {
                 try {
                     deployServiceAssembly(deploymentService);
                 } catch (BuildException e) {
-                    
+                                        
                     Object[] processResult = JBIMBeanTaskResultHandler.getProcessResult(
                             GenericConstants.DEPLOY_SERVICE_ASSEMBLY_OPERATION_NAME,
                             serviceAssemblyID, e.getMessage(), false);                    
@@ -492,6 +534,24 @@ public class DeployServiceAssembly extends Task {
         } catch (Exception e) {
             System.out.println("Error parsing XML: " + e);
             return null;
+        }
+    }
+        
+    private static void copyFile(File src, File target)
+            throws IOException {
+        FileChannel inChannel = new FileInputStream(src).getChannel();
+        FileChannel outChannel = new FileOutputStream(target).getChannel();
+        try {
+            inChannel.transferTo(0, inChannel.size(), outChannel);
+        } catch (IOException e) {
+            throw e;
+        } finally {
+            if (inChannel != null) {
+                inChannel.close();
+            }
+            if (outChannel != null) {
+                outChannel.close();
+            }
         }
     }
     
