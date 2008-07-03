@@ -219,6 +219,7 @@ public class CompilerSetManager implements PlatformTypes {
             platform = getPlatform();
             state = STATE_COMPLETE;
         } else {
+            System.err.println("initializing remote compiler set for: " + hkey);
             initRemoteCompilerSets(hkey);
         }
     }

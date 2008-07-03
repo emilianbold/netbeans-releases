@@ -24,18 +24,23 @@ import org.w3c.dom.svg.SVGLocatableElement;
  * Suggested SVG snippet :
  * <pre>
  * &lt;g id="checkbox_online" transform="translate(130,220)">
- *       &lt;rect x="0" y="0" rx="5" ry="5" width="200" height="30" fill="none" stroke="rgb(255,165,0)" stroke-width="2" visibility="hidden">
- *           &lt;set attributeName="visibility" attributeType="XML" begin="checkbox_online.focusin" fill="freeze" to="visible"/>
- *           &lt;set attributeName="visibility" attributeType="XML" begin="checkbox_online.focusout" fill="freeze" to="hidden"/>
- *       &lt;/rect>
- *       &lt;rect x="7.4" y="5" width="20" height="20" fill="white" stroke="black" stroke-width="2"/>
- *       &lt;path  transform="translate(12.5,15.5)"  d="M 0,0 5,5 5,-12" fill="none" stroke="black" stroke-width="2">
- *       &lt;metadata> &lt;text>type=mark&lt;/text> &lt;/metadata>
- *   &lt;/path>
- *       &lt;text  x="33.8" y="21.6" stroke="gray" font-size="15">
- *       &lt;metadata> &lt;text>type=text&lt;/text> &lt;/metadata>
- *       Online&lt;/text>
- *   &lt;/g>
+ *      &lt;!-- Metadata information. Please don't edit. -->
+ *      &lt;text display="none">type=checkbox&lt;/text>
+ *
+ *      &lt;rect x="0" y="0" rx="5" ry="5" width="200" height="30" fill="none" stroke="rgb(255,165,0)" stroke-width="2" visibility="hidden">
+ *          &lt;set attributeName="visibility" attributeType="XML" begin="checkbox_online.focusin" fill="freeze" to="visible"/>
+ *          &lt;set attributeName="visibility" attributeType="XML" begin="checkbox_online.focusout" fill="freeze" to="hidden"/>
+ *      &lt;/rect>
+ *      &lt;rect x="7.4" y="5" width="20" height="20" fill="white" stroke="black" stroke-width="2"/>
+ *      &lt;path  transform="translate(12.5,15.5)"  d="M 0,0 5,5 5,-12" fill="none" stroke="black" stroke-width="2">
+ *          &lt;!-- Metadata information. Please don't edit. -->
+ *          &lt;text display="none">type=mark&lt;/text>
+ *      &lt;/path>
+ *      &lt;text  x="33.8" y="21.6" stroke="gray" font-size="15">
+ *          &lt;!-- Metadata information. Please don't edit. -->
+ *          &lt;text display="none">type=text&lt;/text>
+ *      Online&lt;/text>
+ *  &lt;/g
  * </pre>
  * @author Pavel Benes
  * @author ads

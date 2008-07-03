@@ -252,7 +252,7 @@ public class PHPIndex {
         for (String signature : signaturesMap.keySet()) {
             //items are not indexed, no case insensitive search key user
             Signature sig = Signature.get(signature);
-            int flags = sig.integer(3);
+            int flags = sig.integer(4);
             
             if ((flags & (Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE)) == 0){
                 flags |= Modifier.PUBLIC; // default modifier
@@ -266,7 +266,7 @@ public class PHPIndex {
                 IndexedFunction func = new IndexedFunction(funcName, className,
                         this, signaturesMap.get(signature), args, offset, flags, ElementKind.METHOD);
                 
-                int defParamCount = sig.integer(4);
+                int defParamCount = sig.integer(3);
                 func.setDefaultParameterCount(defParamCount);
 
                 methods.add(func);

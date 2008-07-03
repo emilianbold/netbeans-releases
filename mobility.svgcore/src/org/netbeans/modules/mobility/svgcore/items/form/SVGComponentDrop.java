@@ -43,8 +43,6 @@ import java.util.logging.Level;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 import org.openide.text.ActiveEditorDrop;
 
 /**
@@ -52,9 +50,6 @@ import org.openide.text.ActiveEditorDrop;
  * @author avk
  */
 public abstract class SVGComponentDrop implements  ActiveEditorDrop{
-
-    private static final String TEMPLATES_LAYER_FOLDER        
-                                    = "Templates/SVGComposerSnippets/";// NOI18N
 
     protected abstract boolean doTransfer();
     
@@ -79,13 +74,6 @@ public abstract class SVGComponentDrop implements  ActiveEditorDrop{
     
     protected SVGDataObject getSVGDataObject(){
         return mySvgDataObject;
-    }
-
-    protected static FileObject getTemplate(String name) {
-        FileObject f = Repository.getDefault().getDefaultFileSystem().
-                findResource(TEMPLATES_LAYER_FOLDER + name);
-        assert f != null : name;
-        return f;
     }
 
     private SVGDataObject mySvgDataObject;
