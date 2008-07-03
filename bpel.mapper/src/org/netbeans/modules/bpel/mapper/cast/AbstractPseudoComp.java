@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.bpel.mapper.cast;
 
-import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeInfoProvider;
+import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
@@ -176,7 +176,7 @@ public abstract class AbstractPseudoComp implements XPathPseudoComp {
         target.setType(typeRef);
         //
         try {
-            target.setName(getName());
+            String localName = getName();
             //
             String namespace = getNamespace();
             if (namespace != null && namespace.length() != 0) {
@@ -185,7 +185,8 @@ public abstract class AbstractPseudoComp implements XPathPseudoComp {
                 nsContext.addNamespace(namespace);
             }
             //        
-            target.setNamespace(namespace);
+            QName qName = new QName(namespace, localName);
+            target.setName(qName);
             target.setIsAttribute(isAttribute());
         } catch (VetoException ex) {
             throw new ExtRegistrationException(ex);

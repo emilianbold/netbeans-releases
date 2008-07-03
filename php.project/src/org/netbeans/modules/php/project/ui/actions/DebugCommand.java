@@ -89,17 +89,28 @@ public class DebugCommand extends Command implements Displayable {
                 //temporary; after narrowing deps. will be changed
                 XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
                 if (dbgStarter != null) {
-                    final FileObject fileForProject = fileForProject();
-                    if (fileForProject != null) {
-                        dbgStarter.start(getProject(), runnable, fileForProject, useInterpreter());
+                    if (dbgStarter.isAlreadyRunning()) {
+                        String message = NbBundle.getMessage(DebugCommand.class, "MSG_NoMoreDebugSession");
+                        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(message,
+                                NotifyDescriptor.OK_CANCEL_OPTION); //NOI18N
+                        boolean confirmed = DialogDisplayer.getDefault().notify(descriptor).equals(NotifyDescriptor.OK_OPTION);
+                        if (confirmed) {
+                            dbgStarter.stop();
+                            invokeAction(context);
+                        }
                     } else {
-                        String idxFileName = getProperty(PhpProjectProperties.INDEX_FILE);
-                        String err = NbBundle.getMessage(DebugLocalCommand.class,
-                                "ERR_Missing_IndexFile", idxFileName);//NOI18N
+                        final FileObject fileForProject = fileForProject();
+                        if (fileForProject != null) {
+                            dbgStarter.start(getProject(), runnable, fileForProject, useInterpreter());
+                        } else {
+                            String idxFileName = getProperty(PhpProjectProperties.INDEX_FILE);
+                            String err = NbBundle.getMessage(DebugLocalCommand.class,
+                                    "ERR_Missing_IndexFile", idxFileName);//NOI18N
 
-                        final Message messageDecriptor = new NotifyDescriptor.Message(err,
-                                NotifyDescriptor.WARNING_MESSAGE);
-                        DialogDisplayer.getDefault().notify(messageDecriptor);
+                            final Message messageDecriptor = new NotifyDescriptor.Message(err,
+                                    NotifyDescriptor.WARNING_MESSAGE);
+                            DialogDisplayer.getDefault().notify(messageDecriptor);
+                        }
                     }
                 }
             } else {

@@ -87,7 +87,8 @@ public final class LexerTestUtilities {
     public static void assertConsistency(TokenHierarchy<?> hi) {
         String error = LexerApiPackageAccessor.get().tokenHierarchyOperation(hi).checkConsistency();
         if (error != null) {
-            TestCase.fail("\n\nToken Hierarchy CONSISTENCY ERROR!!!!!!!\n" + error + "\n\nINCONSISTENT TOKEN HIERARCHY:\n" + hi);
+            TestCase.fail("\n\n!!!!!->->->->->-> CONSISTENCY ERROR in Token Hierarchy <-<-<-<-<-<-!!!!!!!\n" +
+                    error + "\n\nINCONSISTENT TOKEN HIERARCHY:\n" + hi);
         }
     }
     
