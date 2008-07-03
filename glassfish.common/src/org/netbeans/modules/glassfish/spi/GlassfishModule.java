@@ -155,6 +155,18 @@ public interface GlassfishModule {
     public Future<OperationState> stopServer(OperationStateListener stateListener);
 
     /**
+     * Restart the server.  Starts the server if it's not running.  Stops and
+     * then starts the server if it is currently running.
+     *
+     * @param stateListener listener to listen message describing the startup
+     *   process as it progresses.  Can be null.
+     *
+     * @return Future instance that finishes when the server startup has
+     *   completed (or failed).
+     */
+    public Future<OperationState> restartServer(OperationStateListener stateListener);
+
+    /**
      * Deploy the specified directory or application archive onto the server.
      * 
      * @param stateListener listener to listen message describing the deploy 
