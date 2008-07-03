@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,44 +31,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.source;
+package org.netbeans.spi.java.project.runner;
 
-import org.apache.tools.ant.module.spi.AntEvent;
-import org.apache.tools.ant.module.spi.AntLogger;
-import org.apache.tools.ant.module.spi.AntSession;
+import java.io.IOException;
+import java.util.Properties;
+import org.netbeans.api.java.project.runner.ProjectRunner;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
+ * Implementation of {@link ProjectRunner}. Looked-up in the default {@link Lookup}.
  *
+ * @since 1.19
+ * 
  * @author Jan Lahoda
  */
-public class HideOverrideTaskWarning extends AntLogger {
+public interface ProjectRunnerImplementation {
 
-    @Override
-    public int[] interestedInLogLevels(AntSession session) {
-        return new int[] {AntEvent.LOG_WARN};
-    }
+    /**
+     * Implementation of {@link ProjectRunner#isSupported(java.lang.String, org.openide.filesystems.FileObject)}.
+     * 
+     * @param command command name
+     * @param toRun either the file that would be executed, or the project folder
+     * @return true if and only if the given command is supported for given file/folder
+     *
+     * @since 1.19
+     */
+    public boolean isSupported(String command, FileObject file);
 
-    @Override
-    public boolean interestedInSession(AntSession session) {
-        return true;
-    }
-
-    @Override
-    public boolean interestedInAllScripts(AntSession session) {
-        return true;
-    }
+    /**
+     * Implementation of {@link ProjectRunner#execute(java.lang.String, java.util.Properties, org.openide.filesystems.FileObject)}.
+     *
+     * @param command command to execute
+     * @param props properties
+     * @param toRun file to run
+     * @throws java.io.IOException if execution fails
+     *
+     * @since 1.19
+     */
+    public void execute(String command, Properties props, FileObject toRun) throws IOException;
     
-    @Override
-    public void messageLogged(AntEvent event) {
-        if (event.getMessage().startsWith("Trying to override old definition of task javac")) { // NOI18N
-            event.consume();
-        }
-    }
-
 }

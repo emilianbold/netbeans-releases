@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -70,6 +70,7 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.runner.ProjectRunner;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -88,7 +89,6 @@ import org.netbeans.modules.java.j2seproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassWarning;
-import org.netbeans.spi.java.project.runner.ProjectRunner;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -183,7 +183,7 @@ class J2SEActionProvider implements ActionProvider {
 
     private Sources src;
     private List<FileObject> roots;
-    
+
     // Used only from unit tests to suppress detection of top level classes. If value
     // is different from null it will be returned instead.
     String unitTestingSupport_fixClasses;
@@ -214,9 +214,9 @@ class J2SEActionProvider implements ActionProvider {
         ));
 
         this.updateHelper = updateHelper;
-        this.project = project;        
+        this.project = project;
     }
-    
+
     private final FileChangeListener modificationListener = new FileChangeAdapter() {
         public @Override void fileChanged(FileEvent fe) {
             modification(fe.getFile());
@@ -234,8 +234,8 @@ class J2SEActionProvider implements ActionProvider {
             }
         }
     };
-    
-    
+
+
     void startFSListener () {
         //Listener has to be started when the project's lookup is initialized
         try {
@@ -333,13 +333,13 @@ class J2SEActionProvider implements ActionProvider {
                 if (    (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command))
                      && Boolean.valueOf(project.evaluator().getProperty(J2SEProjectProperties.QUICK_RUN))) {
                     bypassAntBuildScript(command, context, p);
-                    
+
                     return ;
                 }
                 if (    (COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command))
                      && Boolean.valueOf(project.evaluator().getProperty(J2SEProjectProperties.QUICK_RUN_SINGLE))) {
                     bypassAntBuildScript(command, context, p);
-                    
+
                     return ;
                 }
                 if (    (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command))
@@ -569,7 +569,7 @@ class J2SEActionProvider implements ActionProvider {
                         return null;
                     }
                 } else {
-                    if (!hasMainClassFromTest) {                    
+                    if (!hasMainClassFromTest) {
                         if (mainClasses.size() == 1) {
                             //Just one main class
                             clazz = mainClasses.iterator().next().getBinaryName();
@@ -759,8 +759,8 @@ class J2SEActionProvider implements ActionProvider {
 
     private static final Pattern SRCDIRJAVA = Pattern.compile("\\.java$"); // NOI18N
     private static final String SUBST = "Test.java"; // NOI18N
-    
-    
+
+
     /**
      * Lists all top level classes in a String, classes are separated by space (" ")
      * Used by debuger fix and continue (list of files to fix)
@@ -943,7 +943,7 @@ class J2SEActionProvider implements ActionProvider {
         } else {
             //run single:
             FileObject[] files = findSources(context);
-            
+
             if (files == null || files.length != 1) {
                 files = findTestSources(context, false);
                 run = false;
@@ -952,7 +952,7 @@ class J2SEActionProvider implements ActionProvider {
             if (files == null || files.length != 1) {
                 return ;//warn the user
             }
-            
+
             toRun = files[0];
         }
         boolean debug = COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_SINGLE.equals(command);
@@ -966,7 +966,7 @@ class J2SEActionProvider implements ActionProvider {
             Exceptions.printStackTrace(ex);
         }
     }
-            
+
     private static enum MainClassStatus {
         SET_AND_VALID,
         SET_BUT_INVALID,
@@ -1076,13 +1076,13 @@ class J2SEActionProvider implements ActionProvider {
 
         return canceled;
     }
-    
+
     private String showMainClassWarning (final FileObject file, final Collection<ElementHandle<TypeElement>> mainClasses) {
         assert mainClasses != null;
         String mainClass = null;
         final JButton okButton = new JButton (NbBundle.getMessage (MainClassWarning.class, "LBL_MainClassWarning_ChooseMainClass_OK")); // NOI18N
         okButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (MainClassWarning.class, "AD_MainClassWarning_ChooseMainClass_OK"));
-        
+
         final MainClassWarning panel = new MainClassWarning (NbBundle.getMessage(MainClassWarning.class, "CTL_FileMultipleMain", file.getNameExt()),mainClasses);
         Object[] options = new Object[] {
             okButton,

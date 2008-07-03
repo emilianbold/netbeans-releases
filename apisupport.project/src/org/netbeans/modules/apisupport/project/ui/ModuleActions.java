@@ -56,6 +56,7 @@ import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.runner.ProjectRunner;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
@@ -65,7 +66,6 @@ import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderI
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
-import org.netbeans.spi.java.project.runner.ProjectRunner;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -340,8 +340,9 @@ public final class ModuleActions implements ActionProvider {
             TestSources testSources = findTestSources(context, false);
             String enableQuickTest = project.evaluator().getProperty("quick.test.single"); // NOI18N
             if ((enableQuickTest == null || Boolean.parseBoolean(enableQuickTest)) && "unit".equals(testSources.testType)) { // NOI18N
-                    bypassAntBuildScript(command, testSources.sources);
+                if (bypassAntBuildScript(command, testSources.sources)) {
                     return ;
+                }
             }
             targetNames = setupTestSingle(p, testSources);
         } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
@@ -431,7 +432,7 @@ public final class ModuleActions implements ActionProvider {
         return new String[] {"debug-test-single-nb"}; // NOI18N
     }
     
-    private void bypassAntBuildScript(String command, FileObject[] files) throws IllegalArgumentException {
+    private boolean bypassAntBuildScript(String command, FileObject[] files) throws IllegalArgumentException {
         FileObject toRun = null;
 
         if (COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command)) {
@@ -439,12 +440,20 @@ public final class ModuleActions implements ActionProvider {
         }
         
         if (toRun != null) {
+            String commandToExecute = COMMAND_RUN_SINGLE.equals(command) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG;
+            if (!ProjectRunner.isSupported(commandToExecute, toRun)) {
+                return false;
+            }
             try {
-                ProjectRunner.execute(COMMAND_RUN_SINGLE.equals(command) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG, new Properties(), toRun);
+                ProjectRunner.execute(commandToExecute, new Properties(), toRun);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
+
+            return true;
         }
+
+        return false;
     }
     
     private static Action createSimpleAction(final NbModuleProject project, final String[] targetNames, String displayName) {

@@ -217,6 +217,7 @@ public class BuildArtifactMapperImpl {
             out = new FileOutputStream(target);
 
             FileUtil.copy(ins, out);
+            target.setLastModified(0);
         } finally {
             if (ins != null) {
                 try {
