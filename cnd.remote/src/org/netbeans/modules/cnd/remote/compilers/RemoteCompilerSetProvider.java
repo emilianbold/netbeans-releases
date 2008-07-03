@@ -59,13 +59,13 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider, PlatformT
     
     public int getPlatform() {
         String platform = manager.getPlatform();
-        if (platform.startsWith("Windows")) {
+        if (platform.startsWith("Windows")) { // NOI18N
             return PLATFORM_WINDOWS;
-        } else if (platform.startsWith("Linux")) {
+        } else if (platform.startsWith("Linux")) { // NOI18N
             return PLATFORM_LINUX;
-        } else if (platform.startsWith("SunOS")) {
-            return platform.contains("86") ? PLATFORM_SOLARIS_INTEL : PLATFORM_SOLARIS_SPARC;
-        } else if (platform.toLowerCase().startsWith("mac")) {
+        } else if (platform.startsWith("SunOS")) { // NOI18N
+            return platform.contains("86") ? PLATFORM_SOLARIS_INTEL : PLATFORM_SOLARIS_SPARC; // NOI18N
+        } else if (platform.toLowerCase().startsWith("mac")) { // NOI18N
             return PLATFORM_MACOSX;
         } else {
             return PLATFORM_GENERIC;

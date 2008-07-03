@@ -80,7 +80,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             String line;
             while ((line = in.readLine()) != null || !channel.isClosed()) {
                 if (line!=null) {
-                    out.write(line + "\n");
+                    out.write(line + "\n"); // NOI18N
                     out.flush();
                 }
                 try {
