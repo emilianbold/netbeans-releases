@@ -531,9 +531,6 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="simple-files"/>
             </file>
         </folder>
-        <folder name="SVGComposerSnippets">
-            <file name="combobox_snippet.xml" url="../items/form/combobox_snippet.xml_template"/>
-        </folder>
     </folder>
     
     <folder name="Menu">
