@@ -196,8 +196,9 @@ public class ColorAndFontAction extends NodeAction
             font = w.getFont();
         }
         Font f = FontChooser.selectFont(font);
-        for (IPresentationElement p : getSelectedElements())
+        for (IPresentationElement p : elements)
         {
+            w = scene.findWidget(p);
             if (w instanceof UMLNodeWidget)
             {
                 ((UMLNodeWidget) w).setNodeFont(f);
@@ -214,6 +215,7 @@ public class ColorAndFontAction extends NodeAction
         Color color = JColorChooser.showDialog(scene.getView(), NbBundle.getMessage(ColorAndFontAction.class, "COLOR_CHOOSER_TITLE"), oldColor);
         for (IPresentationElement p : getSelectedElements())
         {
+            w=scene.findWidget(p);
             if (w instanceof UMLNodeWidget)
             {
                 ((UMLNodeWidget) w).setNodeForeground(color);
