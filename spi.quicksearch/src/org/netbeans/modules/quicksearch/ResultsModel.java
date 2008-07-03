@@ -149,7 +149,8 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
                 String displayHint) {
             this.category = category;
             this.action = action;
-            this.displayName = highlightSubstring(displayName, sRequest);
+            this.displayName = sRequest != null ? 
+                highlightSubstring(displayName, sRequest) : displayName;
             this.shortcut = shortcut;
             this.displayHint = displayHint;
         }
