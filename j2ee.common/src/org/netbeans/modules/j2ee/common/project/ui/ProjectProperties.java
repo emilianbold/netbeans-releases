@@ -98,6 +98,9 @@ public final class ProjectProperties {
     public static ImageIcon ICON_JAVADOC_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_JAVADOC_BADGE ) );
     public static ImageIcon ICON_SOURCE_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_SOURCE_BADGE ) );
     public static ImageIcon ICON_CLASSPATH  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_CLASSPATH ) );
+
+    public static final String INCLUDES = "includes"; // NOI18N
+    public static final String EXCLUDES = "excludes"; // NOI18N
     
     /**
      * Remove obsolete properties from private properties.

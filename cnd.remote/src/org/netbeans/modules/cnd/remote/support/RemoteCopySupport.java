@@ -71,12 +71,12 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
 
     @Override
     protected Channel createChannel() throws JSchException {
-        return session.openChannel("exec");
+        return session.openChannel("exec"); // NOI18N
 
     }
 
     private void setChannelCommand(String cmd) {
-        ((ChannelExec) getChannel()).setCommand(cmd); //NOI18N
+        ((ChannelExec) getChannel()).setCommand(cmd);
     }
     // TODO: not sure why we can't recreate channels through session?
     private void revitalize() {
@@ -225,13 +225,13 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
 
             // send "C0644 filesize filename", where filename should not include '/'
             long filesize = (new File(localFile)).length();
-            command = "C0644 " + filesize + " ";
+            command = "C0644 " + filesize + " "; //NOI18N
             if (localFile.lastIndexOf(File.separator) > 0) {
                 command += localFile.substring(localFile.lastIndexOf(File.separator) + 1);
             } else {
                 command += localFile;
             }
-            command += "\n";
+            command += "\n"; //NOI18N
             out.write(command.getBytes());
             out.flush();
             if (checkAck(in) != 0) {

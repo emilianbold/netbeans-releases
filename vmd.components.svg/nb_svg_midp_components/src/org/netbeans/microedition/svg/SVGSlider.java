@@ -69,11 +69,13 @@ import org.w3c.dom.svg.SVGRect;
  *
  */
 public class SVGSlider extends SVGComponent {
+
+    private static final String TRANSFORM   = "transform";      // NOI18N
+
+    private static final int DEFAULT_MAX    = 10;
     
-    private static final int DEFAULT_MAX = 10;
-    
-    private static final String KNOB    = "knob";           // NOI18N
-    private static final String RULE    = "rule";           // NOI18N
+    private static final String KNOB        = "knob";           // NOI18N
+    private static final String RULE        = "rule";           // NOI18N
     
     public SVGSlider( SVGForm form, String elemId ) {
         super(form, elemId);
@@ -106,10 +108,28 @@ public class SVGSlider extends SVGComponent {
         
         SVGRect rect = myRuleElement.getBBox();
         float width = rect.getWidth();
-        SVGMatrix matrix = myKnobElement.getMatrixTrait( "transform" );
+        SVGMatrix matrix = myKnobElement.getMatrixTrait( TRANSFORM );
         matrix.mTranslate( (value -myValue )*width/(myMax - myMin), 0);
         myValue = value;
-        myKnobElement.setMatrixTrait("transform", matrix);
+        myKnobElement.setMatrixTrait(TRANSFORM, matrix);
+        
+        fireActionPerformed();
+    }
+    
+    public void setMin( int min ){
+        myMin = min;
+    }
+    
+    public void setMax( int max ){
+        myMax = max;
+    }
+    
+    public int getMin(){
+        return myMin;
+    }
+    
+    public int getMax(){
+        return myMax;
     }
     
     private class SliderInputHandler extends InputHandler {
