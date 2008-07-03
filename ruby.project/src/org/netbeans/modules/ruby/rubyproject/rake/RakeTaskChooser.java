@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -69,11 +69,14 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 public final class RakeTaskChooser extends JPanel {
-    
+
     private final static Object NO_TASK_ITEM = getMessage("RakeTaskChooser.no.matching.task");
 
     /** Remember checkbox state per IDE sessions. */
     private static boolean debug;
+
+    /** Preselect lastly used task for more convenience. */
+    private static String lastTask;
 
     private final RubyBaseProject project;
     private final List<RakeTask> allTasks;
@@ -125,22 +128,23 @@ public final class RakeTaskChooser extends JPanel {
         dialog.getAccessibleContext().setAccessibleName(getMessage("RakeTaskChooser.accessibleName"));
         dialog.getAccessibleContext().setAccessibleDescription(getMessage("RakeTaskChooser.accessibleDescription"));
         dialog.setVisible(true);
-        
+
         if (descriptor.getValue() == runButton) {
             RakeTask task = (RakeTask) chooserPanel.matchingTaskList.getSelectedValue();
             RakeTaskChooser.debug = chooserPanel.debugCheckbox.isSelected();
+            RakeTaskChooser.lastTask = task.getTask();
             return new TaskDescriptor(task, RakeTaskChooser.debug);
         }
         return null;
     }
-    
+
     private static void setRunButtonState(final JButton runButton, final RakeTaskChooser chooserPanel) {
         Object val = chooserPanel.matchingTaskList.getSelectedValue();
         runButton.setEnabled(val != null && !NO_TASK_ITEM.equals(val));
     }
 
     static class TaskDescriptor {
-        
+
         private final RakeTask task;
         private final boolean debug;
 
@@ -157,7 +161,7 @@ public final class RakeTaskChooser extends JPanel {
             return debug;
         }
     }
-    
+
     private RakeTaskChooser(RubyBaseProject project) {
         this.allTasks = new ArrayList<RakeTask>();
         this.project = project;
@@ -171,6 +175,18 @@ public final class RakeTaskChooser extends JPanel {
             public void insertUpdate(DocumentEvent e) { refreshTaskList(); }
             public void removeUpdate(DocumentEvent e) { refreshTaskList(); }
         });
+        preselectLastlySelected();
+    }
+
+    private void preselectLastlySelected() {
+        if (lastTask == null) {
+            return;
+        }
+        for (RakeTask task : allTasks) {
+            if (lastTask.equals(task.getTask())) {
+                matchingTaskList.setSelectedValue(task, true);
+            }
+        }
     }
 
     /** Reloads all tasks for the current project. */
@@ -204,7 +220,7 @@ public final class RakeTaskChooser extends JPanel {
         }
         matchingTaskList.setSelectedIndex(0);
     }
-    
+
     private void reloadTasks(final Runnable uiFinishAction) {
         final Object task = matchingTaskList.getSelectedValue();
         final JComponent[] comps = new JComponent[] {
@@ -229,18 +245,18 @@ public final class RakeTaskChooser extends JPanel {
             }
         }, "Rake Tasks Refresher").start(); // NOI18N
     }
-    
+
     private void setEnabled(final JComponent[] comps, final boolean enabled) {
         for (JComponent comp : comps) {
             comp.setEnabled(enabled);
         }
-        
+
     }
 
     private static String getMessage(final String key, final String... args) {
         return NbBundle.getMessage(RakeTaskChooser.class, key, args);
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -313,24 +329,24 @@ public final class RakeTaskChooser extends JPanel {
         // see JavaFastOpen.boundScrollingKey()
         boolean isListScrollAction =
                 "selectPreviousRow".equals(actionKey) || // NOI18N
-                "selectPreviousRowExtendSelection".equals(actionKey) || // NOI18N            
+                "selectPreviousRowExtendSelection".equals(actionKey) || // NOI18N
                 "selectNextRow".equals(actionKey) || // NOI18N
                 "selectNextRowExtendSelection".equals(actionKey) || // NOI18N
                 // "selectFirstRow".equals(action) || // NOI18N
                 // "selectLastRow".equals(action) || // NOI18N
-                "scrollUp".equals(actionKey) || // NOI18N            
-                "scrollUpExtendSelection".equals(actionKey) || // NOI18N            
-                "scrollDown".equals(actionKey) || // NOI18N
+                "scrollUp".equals(actionKey) || // NOI18N
+                "scrollUpExtendSelection".equals(actionKey) || // NOI18N
+                "scrollDown".equals(actionKey) || // NOI18N//GEN-LAST:event_rakeTaskFieldKeyPressed
                 "scrollDownExtendSelection".equals(actionKey); // NOI18N
 
 
         int selectedIndex = matchingTaskList.getSelectedIndex();
         ListModel model = matchingTaskList.getModel();
-        int modelSize = model.getSize();
+        int modelSize = model.getSize();                                        
 
         // Wrap around
         if ("selectNextRow".equals(actionKey) && selectedIndex == modelSize - 1) { // NOI18N
-            matchingTaskList.setSelectedIndex(0);//GEN-LAST:event_rakeTaskFieldKeyPressed
+            matchingTaskList.setSelectedIndex(0);
             matchingTaskList.ensureIndexIsVisible(0);
             return;
         } else if ("selectPreviousRow".equals(actionKey) && selectedIndex == 0) { // NOI18N
@@ -341,11 +357,11 @@ public final class RakeTaskChooser extends JPanel {
         }
 
         if (isListScrollAction) {
-            Action action = matchingTaskList.getActionMap().get(actionKey);                                        
+            Action action = matchingTaskList.getActionMap().get(actionKey);
             action.actionPerformed(new ActionEvent(matchingTaskList, 0, (String) actionKey));
             evt.consume();
         }
-    }                                        
+    }
 
     private static class RakeTaskRenderer extends JLabel implements ListCellRenderer {
 
