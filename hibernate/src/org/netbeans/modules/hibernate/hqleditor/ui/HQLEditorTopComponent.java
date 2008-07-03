@@ -553,6 +553,12 @@ private void sqlToggleButtonItemStateChanged(java.awt.event.ItemEvent evt) {//GE
 }
 
 private void runHQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runHQLButtonActionPerformed
+    // Fix - 138856
+    if(hqlEditor.getText().trim().equals("")) {
+        switchToResultView();
+        setStatus(NbBundle.getMessage(HQLEditorTopComponent.class, "emptyQuery"));
+        return;
+    }
     runHQLButton.setEnabled(false);                                            
     try {
         ph = ProgressHandleFactory.createHandle(//GEN-HEADEREND:event_runHQLButtonActionPerformed
