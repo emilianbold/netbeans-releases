@@ -866,7 +866,8 @@ return null;
         // NOTE - the END offset is AFTER the left parenthesis! We don't 
         // want to include it since we're not creating a node wrapping the
         // parens!
-        int startOffset = getEndOffset();
+        peekToken();
+        int startOffset = peekedTokenStart;
         // </netbeans>
         Node pn = expr(false);
         // <netbeans>
@@ -2922,11 +2923,7 @@ return null;
                 pn = nf.createName(name);
             }
             // <netbeans>
-            if (pn.getType() == Token.NAME) {
-                pn.setSourceBounds(startOffset, startOffset+name.length());
-            } else {
-                setSourceOffsets(pn, startOffset);
-            }
+            setSourceOffsets(pn, startOffset);
             // </netbeans>
             return pn;
           }

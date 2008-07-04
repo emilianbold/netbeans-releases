@@ -152,7 +152,10 @@ public final class UpdaterDispatcher implements Runnable {
         try {
             File stamp = new File (cluster, ".lastModified"); // NOI18N
             if (! stamp.createNewFile ()) {
-                stamp.setLastModified (System.currentTimeMillis ());
+                if (stamp.setLastModified (System.currentTimeMillis ())) {
+                    stamp.delete ();
+                    stamp = new File (cluster, ".lastModified"); // NOI18N
+                }
             }
         } catch (IOException ex) {
             ex.printStackTrace ();
