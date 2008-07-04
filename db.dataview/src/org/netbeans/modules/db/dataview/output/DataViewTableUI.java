@@ -96,7 +96,56 @@ class DataViewTableUI extends JTable {
     public DataViewTableUI(final DataViewTablePanel tablePanel, final DataViewActionHandler handler, final DataView dataView) {
         this.tablePanel = tablePanel;
         addKeyListener(new Control0KeyListener());
+        getTableHeader().setReorderingAllowed(false);
 
+        setDefaultRenderer(Object.class, new ResultSetCellRenderer());
+        setDefaultRenderer(Number.class, new ResultSetCellRenderer());
+        setDefaultRenderer(Date.class, new ResultSetCellRenderer());
+
+        setDefaultEditor(Object.class, new ResultSetTableCellEditor(new JTextField()));
+        setDefaultEditor(Number.class, new NumberEditor(new JTextField()));
+
+        setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        multiplier = getFontMetrics(getFont()).stringWidth(data) / data.length() + 5;
+
+        createPopupMenu(handler, dataView);
+    }
+
+    @Override
+    //Implement table header tool tips.
+    protected JTableHeader createDefaultTableHeader() {
+        return new JTableHeaderImpl(columnModel);
+    }
+
+    protected int getMultiplier() {
+        return multiplier;
+    }
+
+    protected void setColumnToolTips(String[] columnToolTips) {
+        this.columnToolTips = columnToolTips;
+    }
+
+    @Override
+    public String getToolTipText(MouseEvent e) {
+        return getColumnToolTipText(e);
+    }
+
+    private String getColumnToolTipText(MouseEvent e) {
+        java.awt.Point p = e.getPoint();
+        int index = columnModel.getColumnIndexAtX(p.x);
+        try {
+            int realIndex = columnModel.getColumn(index).getModelIndex();
+            return columnToolTips[realIndex];
+        } catch (ArrayIndexOutOfBoundsException aio) {
+            return null;
+        }
+    }
+
+    private UpdatedRowContext getResultSetRowContext() {
+        return tablePanel.getUpdatedRowContext();
+    }
+
+    private void createPopupMenu(final DataViewActionHandler handler, final DataView dataView) {
         // content popup menu on table with results
         tablePopupMenu = new JPopupMenu();
         String nbBundle18 = mLoc.t("RESC018: Insert Record");
@@ -289,19 +338,6 @@ class DataViewTableUI extends JTable {
         });
         tablePopupMenu.add(miRefreshAction);
 
-
-        getTableHeader().setReorderingAllowed(false);
-        setDefaultRenderer(Object.class, new ResultSetCellRenderer());
-        setDefaultRenderer(Number.class, new ResultSetCellRenderer());
-        setDefaultRenderer(Date.class, new ResultSetCellRenderer());
-
-        setDefaultEditor(Object.class, new ResultSetTableCellEditor(new JTextField()));
-        setDefaultEditor(Number.class, new NumberEditor(new JTextField()));
-
-        setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-
-        multiplier = getFontMetrics(getFont()).stringWidth(data) / data.length() + 5;
-
         addMouseListener(new MouseAdapter() {
 
             @Override
@@ -336,48 +372,21 @@ class DataViewTableUI extends JTable {
                         miTruncateRecord.setEnabled(false);
                         miInsertSQLScript.setEnabled(false);
                         miDeleteSQLScript.setEnabled(false);
+                    }
+
+                    if (!tablePanel.isCommitEnabled()) {
                         miCommitAction.setEnabled(false);
                         miCancelEdits.setEnabled(false);
                         miCommitSQLScript.setEnabled(false);
+                    } else {
+                        miCommitAction.setEnabled(true);
+                        miCancelEdits.setEnabled(true);
+                        miCommitSQLScript.setEnabled(true);
                     }
                     tablePopupMenu.show(DataViewTableUI.this, e.getX(), e.getY());
                 }
             }
         });
-    }
-
-    @Override
-    //Implement table header tool tips.
-    protected JTableHeader createDefaultTableHeader() {
-        return new JTableHeaderImpl(columnModel);
-    }
-
-    protected int getMultiplier() {
-        return multiplier;
-    }
-
-    protected void setColumnToolTips(String[] columnToolTips) {
-        this.columnToolTips = columnToolTips;
-    }
-
-    @Override
-    public String getToolTipText(MouseEvent e) {
-        return getColumnToolTipText(e);
-    }
-
-    private String getColumnToolTipText(MouseEvent e) {
-        java.awt.Point p = e.getPoint();
-        int index = columnModel.getColumnIndexAtX(p.x);
-        try {
-            int realIndex = columnModel.getColumn(index).getModelIndex();
-            return columnToolTips[realIndex];
-        } catch (ArrayIndexOutOfBoundsException aio) {
-            return null;
-        }
-    }
-
-    private UpdatedRowContext getResultSetRowContext() {
-        return tablePanel.getUpdatedRowContext();
     }
 
     private void copyRowValues(boolean withHeader) {
@@ -649,10 +658,10 @@ class DataViewTableUI extends JTable {
 
                 int row = getSelectedRow();
                 int col = getSelectedColumn();
-                if(row == -1) {
+                if (row == -1) {
                     return;
                 }
-                    editCellAt(row, col);
+                editCellAt(row, col);
 
                 TableCellEditor editor = getCellEditor();
                 if (editor != null) {
