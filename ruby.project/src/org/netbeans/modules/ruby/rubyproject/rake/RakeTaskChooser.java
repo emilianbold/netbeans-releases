@@ -193,6 +193,7 @@ public final class RakeTaskChooser extends JPanel {
         for (RakeTask task : allTasks) {
             if (lastTask.equals(task.getTask())) {
                 matchingTaskList.setSelectedValue(task, true);
+                break;
             }
         }
     }
