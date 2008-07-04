@@ -82,6 +82,13 @@ public class CopyNode extends BpelNode<Copy> {
         PropertyUtils.registerProperty(this, mainPropertySet,
                 DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
         //
+// TODO add after the runtime will supported it
+//        PropertyUtils.registerProperty(this, mainPropertySet,
+//                KEEP_SRC_ELEMENT_NAME, "getKeepSrcElementName", "setKeepSrcElementName", "removeKeepSrcElementName"); // NOI18N
+//        //
+        PropertyUtils.registerProperty(this, mainPropertySet,
+                IGNORE_MISSING_FROM_DATA, "getIgnoreMissingFromData", "setIgnoreMissingFromData", "removeIgnoreMissingFromData"); // NOI18N
+        //
         return sheet;
     }
     

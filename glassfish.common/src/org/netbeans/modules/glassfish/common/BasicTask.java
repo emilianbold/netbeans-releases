@@ -41,6 +41,7 @@ package org.netbeans.modules.glassfish.common;
 
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
@@ -58,8 +59,17 @@ public abstract class BasicTask<V> implements Callable<V> {
     
     /** Maximum amount of time (in ms) to wait for server to start.
      */
-    public static final int TIMEOUT = 120000;
+    public static final int START_TIMEOUT = 120000;
     
+    /** Maximum amount of time (in ms) to wait for server to stop.
+     */
+    public static final int STOP_TIMEOUT = 10000;
+
+    /** Unit (ms) for the DELAY and START_TIMEOUT constants
+     */
+    public static final TimeUnit TIMEUNIT = TimeUnit.MILLISECONDS;
+
+
     protected final Map<String, String> ip;
     protected OperationStateListener [] stateListener;
     protected String instanceName;

@@ -81,7 +81,7 @@ public class overallValidationTestSuite extends JellyTestCase {
                 .addTest(CommittingCvs11Test.class, "testCheckOutProject", "testCommitModified", "removeAllData")
                 .addTest(CommittingCvs12Test.class, "testCheckOutProject", "testCommitModifiedCvs12", "removeAllData")
                 .addTest(DeleteTest.class, "testCheckOutProject", "testDeleteFile", "removeAllData")
-                .addTest(UpdateErrorTest.class, "testCheckOutProject", "testUpdate", "removeAllData")
+                //.addTest(UpdateErrorTest.class, "testCheckOutProject", "testUpdate", "removeAllData")
                 .addTest(IgnoreUnignoreTest.class, "testCheckOutProject", "testIgnoreUnignoreFile", "testIgnoreUnignoreGuiForm", "removeAllData")
                 //.addTest(ResolveConflictsAndRevertTest.class, "testCheckOutProject", "testResolveConflicts", "testRevertModifications")
                 .addTest(ShowAnnotationsAndSearchHistoryTest.class, "testCheckOutProject", "testShowAnnotations", "removeAllData")

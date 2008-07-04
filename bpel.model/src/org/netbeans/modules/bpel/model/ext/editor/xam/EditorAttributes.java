@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.model.ext.editor.xam;
 
+import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.model.ext.editor.api.Source;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.xam.dom.Attribute;
@@ -29,19 +30,19 @@ import org.netbeans.modules.xml.xam.dom.Attribute;
  */
 public enum EditorAttributes implements Attribute {
     TYPE("type", GlobalType.class), //NOI18N
-    PATH("path", String.class), //NOI18N
+    PATH("path", String.class, AttrType.PATH), //NOI18N
     SOURCE("source", Source.class), //NOI18N
-    PARENT_PATH("parentPath", String.class), //NOI18N
-    NAME("name", String.class), //NOI18N
-    NAMESPACE("namespace", String.class), //NOI18N
+    PARENT_PATH("parentPath", String.class, AttrType.PATH), //NOI18N
+    QNAME("qName", QName.class, AttrType.QNAME), //NOI18N
     IS_ATTRIBUTE("isAttribute", boolean.class), //NOI18N
     ;
     
     public static enum AttrType {
         STRING,
+        QNAME, 
         NCNAME,
         URI,
-        VARIABLE
+        PATH
     }
 
     EditorAttributes( String name, Class type ) {

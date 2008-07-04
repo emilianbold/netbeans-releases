@@ -41,6 +41,7 @@ package org.netbeans.modules.vmd.midp.components.databinding;
 import java.util.Collection;
 import java.util.HashSet;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.categories.DatabindingCategoryCD;
 
@@ -77,6 +78,15 @@ public final class MidpDatabindingSupport {
                     connectors.add(connector);
                 }
             }
+        }
+        return connectors;
+    }
+
+    public static Collection<DesignComponent> getAllConnectors(DesignDocument document) {
+        DesignComponent category = MidpDocumentSupport.getCategoryComponent(document, DatabindingCategoryCD.TYPEID);
+        HashSet<DesignComponent> connectors = new HashSet<DesignComponent>();
+        for (DesignComponent dataSet : category.getComponents()) {
+            connectors.addAll(dataSet.getComponents());
         }
         return connectors;
     }
