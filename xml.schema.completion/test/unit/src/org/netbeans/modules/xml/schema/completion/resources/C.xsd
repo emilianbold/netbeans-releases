@@ -7,6 +7,7 @@
     <xsd:element name="rootC1">
         <xsd:complexType>
             <xsd:sequence>
+                <xsd:any minOccurs="0"/>
                 <xsd:element name="C11"/>
                 <xsd:element name="C12"/>
             </xsd:sequence>

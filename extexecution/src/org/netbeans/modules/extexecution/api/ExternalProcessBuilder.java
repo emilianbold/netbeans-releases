@@ -78,6 +78,8 @@ public final class ExternalProcessBuilder {
 
     private boolean pwdToPath;
 
+    private boolean redirectErrorStream;
+
     private final List<String> arguments = new ArrayList<String>();
 
     private final List<File> paths = new ArrayList<File>();
@@ -126,6 +128,22 @@ public final class ExternalProcessBuilder {
      */
     public ExternalProcessBuilder pwdToPath(boolean pwdTopath) {
         this.pwdToPath = pwdTopath;
+        return this;
+    }
+
+    /**
+     * Configures whether the error stream of created process should be
+     * redirected to standard output.
+     * <p>
+     * If passed value is <code>true</code> error stream will be redirected
+     * to standard output.
+     *
+     * @param redirectErrorStream if <code>true</code> error stream will be
+     *             redirected to standard output
+     * @return this process builder
+     */
+    public ExternalProcessBuilder redirectErrorStream(boolean redirectErrorStream) {
+        this.redirectErrorStream = redirectErrorStream;
         return this;
     }
 
@@ -277,6 +295,7 @@ public final class ExternalProcessBuilder {
         Map<String, String> env = buildEnvironment(pbEnv);
         pbEnv.putAll(env);
         adjustProxy(pb);
+        pb.redirectErrorStream(redirectErrorStream);
         return pb.start();
     }
 

@@ -48,10 +48,22 @@ import org.openide.filesystems.FileObject;
  */
 public interface XDebugStarter {
     /**
+     * Starts session
      * @param project
      * @param run code that should initiate connection. Is called after listening
      *            on defined port (typically 9000) started.
      * @param startFile file to debug.
+     * @param closeSession
      */
     void start(Project project, Runnable run, FileObject startFile, boolean closeSession);
+
+    /**
+     * @return true if session is already running
+     */
+    boolean isAlreadyRunning();
+
+    /**
+     * Stops session
+     */
+    void stop();    
 }

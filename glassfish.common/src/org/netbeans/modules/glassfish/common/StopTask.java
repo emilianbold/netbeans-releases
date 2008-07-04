@@ -104,7 +104,7 @@ public class StopTask extends BasicTask<OperationState> {
                 "MSG_STOP_SERVER_IN_PROGRESS", instanceName);
         
         // Waiting for server to stop
-        while(System.currentTimeMillis() - start < TIMEOUT) {
+        while(System.currentTimeMillis() - start < STOP_TIMEOUT) {
             // Send the 'completed' event and return when the server is stopped
             if(!CommonServerSupport.isRunning(host, port)) {
                 try {

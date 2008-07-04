@@ -27,6 +27,7 @@
 //
 package org.netbeans.modules.bpel.model.ext.editor.api;
 
+import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.ExtensionEntity;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
@@ -50,13 +51,9 @@ public interface PseudoComp extends ExtensionEntity, BpelContainer,
     void setType(SchemaReference<? extends GlobalType> type);
     void removeType();
     
-    String getName();
-    void setName(String newValue) throws VetoException;
+    QName getName();
+    void setName(QName newValue) throws VetoException;
     void removeName();
-
-    String getNamespace();
-    void setNamespace(String newValue) throws VetoException;
-    void removeNamespace();
 
     /**
      * The isAttribute indicates if the pseudo component is element or attribute

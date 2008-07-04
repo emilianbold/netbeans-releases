@@ -70,7 +70,7 @@ public abstract class Accessor {
     
     public abstract SearchRequest createRequest (String text, List<? extends KeyStroke> stroke);
     
-    public abstract SearchResponse createResponse (CategoryResult catResult);
+    public abstract SearchResponse createResponse (CategoryResult catResult, SearchRequest sRequest);
         
 }
 

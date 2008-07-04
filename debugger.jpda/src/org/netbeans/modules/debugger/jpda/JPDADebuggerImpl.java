@@ -847,16 +847,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 }
                 ThreadReference tr = getEvaluationThread();
                 thread = (JPDAThreadImpl) getThread(tr);
-                synchronized (thread) {
-                    threadSuspended = thread.isSuspended();
-                    if (!threadSuspended) {
-                        throw new InvalidExpressionException ("No current context");
-                    }
-                    try {
-                        thread.notifyMethodInvoking();
-                    } catch (PropertyVetoException pvex) {
-                        throw new InvalidExpressionException (pvex.getMessage());
-                    }
+                try {
+                    thread.notifyMethodInvoking();
+                    threadSuspended = true;
+                } catch (PropertyVetoException pvex) {
+                    throw new InvalidExpressionException (pvex.getMessage());
                 }
                 l = disableAllBreakpoints ();
                 return org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.

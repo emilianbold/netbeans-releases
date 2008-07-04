@@ -54,13 +54,15 @@ import org.netbeans.modules.quicksearch.ResultsModel;
 public final class SearchResponse {
 
     private CategoryResult catResult;
+    private SearchRequest sRequest;
    
     /** Package private creation, made available to other packages via
      * Accessor pattern.
      * @param catResult CategoryResult for storing response data 
      */
-    SearchResponse (CategoryResult catResult) {
+    SearchResponse (CategoryResult catResult, SearchRequest sRequest) {
         this.catResult = catResult;
+        this.sRequest = sRequest;
     }
 
     /**
@@ -118,7 +120,7 @@ public final class SearchResponse {
     public boolean addResult (Runnable action, String htmlDisplayName,
                             String displayHint, List <? extends KeyStroke> shortcut) {
         return catResult.addItem(
-                new ResultsModel.ItemResult(catResult, action,
+                new ResultsModel.ItemResult(catResult, sRequest, action,
                 htmlDisplayName, shortcut, displayHint));
     }
 
