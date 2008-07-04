@@ -265,6 +265,9 @@ public final class DBMetaDataFactory {
             }
 
             for (DBTable table : tables.values()) {
+                if(DataViewUtils.isNullString(table.getName())){
+                    continue;
+                }
                 checkPrimaryKeys(table);
                 checkForeignKeys(table);
             }
