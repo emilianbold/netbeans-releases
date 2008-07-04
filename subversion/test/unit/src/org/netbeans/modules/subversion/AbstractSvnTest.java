@@ -89,7 +89,6 @@ public abstract class AbstractSvnTest extends NbTestCase {
         }
         
         wc = new File(workDir, getName() + "_wc");        
-        CmdLineClientAdapterFactory.setup13(null);                                         
     }   
 
     @Override
@@ -343,7 +342,7 @@ public abstract class AbstractSvnTest extends NbTestCase {
         if(files != null) {
             for (File file : files) {
                 if(!isMetadata(file)) {
-                    client.addFile(new File[] {file}, true);   
+                    client.addFile(file);
                 }                
             }
             client.commit(new File[] {wc}, "commit", true);                    
@@ -359,7 +358,7 @@ public abstract class AbstractSvnTest extends NbTestCase {
         if(files != null) {
             for (File file : files) {
                 if(!isMetadata(file)) {
-                    client.addFile(new File[] {file}, true);   
+                    client.addFile(file);
                 }                
             }
             client.commit(new File[] {folder}, "commit", true);                    

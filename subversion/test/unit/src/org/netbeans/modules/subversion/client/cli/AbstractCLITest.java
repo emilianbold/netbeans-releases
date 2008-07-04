@@ -87,7 +87,7 @@ public abstract class AbstractCLITest extends AbstractSvnTest {
         if(getName().startsWith("testCheckout") ) {
             cleanUpRepo(new String[] {CI_FOLDER});
         }        
-        CmdLineClientAdapterFactory.setup13(null);      
+        CmdLineClientAdapterFactory.setup();
     }
     
     @Override
