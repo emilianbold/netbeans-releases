@@ -143,6 +143,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
     //private DebuggerEngine              debuggerEngine;
     private VirtualMachine              virtualMachine = null;
+    private final Object                virtualMachineLock = new Object();
     private Exception                   exception;
     private int                         state = 0;
     private Operator                    operator;
@@ -151,6 +152,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private PropertyChangeSupport       threadsChangeSupport = new PropertyChangeSupport(this);
     private JPDAThreadImpl              currentThread;
     private CallStackFrame              currentCallStackFrame;
+    private final Object                currentThreadAndFrameLock = new Object();
     private int                         suspend = (SINGLE_THREAD_STEPPING) ? SUSPEND_EVENT_THREAD : SUSPEND_ALL;
     public final Object                 LOCK = new Object ();
     private final Object                LOCK2 = new Object ();
@@ -166,6 +168,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private ThreadsCache                threadsCache;
     private DeadlockDetector            deadlockDetector;
     private ThreadsCollector            threadsCollector;
+    private final Object                threadsCollectorLock = new Object();
 
     private StackFrame      altCSF = null;  //PATCH 48174
 
@@ -236,7 +239,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * @return current thread or null
      */
     public JPDAThread getCurrentThread () {
-        return currentThread;
+        synchronized (currentThreadAndFrameLock) {
+            return currentThread;
+        }
     }
 
     /**
@@ -244,22 +249,24 @@ public class JPDADebuggerImpl extends JPDADebugger {
      *
      * @return current stack frame or null
      */
-    public synchronized CallStackFrame getCurrentCallStackFrame () {
-        if (currentCallStackFrame != null) {
-            try {
-                if (!currentCallStackFrame.getThread().isSuspended()) {
+    public CallStackFrame getCurrentCallStackFrame () {
+        synchronized (currentThreadAndFrameLock) {
+            if (currentCallStackFrame != null) {
+                try {
+                    if (!currentCallStackFrame.getThread().isSuspended()) {
+                        currentCallStackFrame = null;
+                    }
+                } catch (InvalidStackFrameException isfex) {
                     currentCallStackFrame = null;
                 }
-            } catch (InvalidStackFrameException isfex) {
-                currentCallStackFrame = null;
             }
+            if (currentCallStackFrame == null && currentThread != null) {
+                try {
+                    currentCallStackFrame = currentThread.getCallStack(0, 1)[0];
+                } catch (Exception ex) {}
+            }
+            return currentCallStackFrame;
         }
-        if (currentCallStackFrame == null && currentThread != null) {
-            try {
-                currentCallStackFrame = currentThread.getCallStack(0, 1)[0];
-            } catch (Exception ex) {}
-        }
-        return currentCallStackFrame;
     }
 
     /**
@@ -551,13 +558,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
     public void setCurrentThread (JPDAThread thread) {
         Object oldT;
-        synchronized (LOCK) {
+        synchronized (currentThreadAndFrameLock) {
             oldT = currentThread;
             currentThread = (JPDAThreadImpl) thread;
         }
         PropertyChangeEvent event = updateCurrentCallStackFrameNoFire(thread);
         if (thread != oldT) {
-            firePropertyChange (PROP_CURRENT_THREAD, oldT, currentThread);
+            firePropertyChange (PROP_CURRENT_THREAD, oldT, thread);
         }
         if (event != null) {
             firePropertyChange(event);
@@ -574,13 +581,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
      */
     private PropertyChangeEvent setCurrentThreadNoFire(JPDAThread thread) {
         Object oldT;
-        synchronized (LOCK) {
+        synchronized (currentThreadAndFrameLock) {
             oldT = currentThread;
             currentThread = (JPDAThreadImpl) thread;
         }
         PropertyChangeEvent evt = null;
         if (thread != oldT)
-            evt = new PropertyChangeEvent(this, PROP_CURRENT_THREAD, oldT, currentThread);
+            evt = new PropertyChangeEvent(this, PROP_CURRENT_THREAD, oldT, thread);
         PropertyChangeEvent evt2 = updateCurrentCallStackFrameNoFire(thread);
         if (evt == null) evt = evt2;
         else if (evt2 != null) evt.setPropagationId(evt2);
@@ -599,7 +606,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     
     private CallStackFrame setCurrentCallStackFrameNoFire (CallStackFrame callStackFrame) {
         CallStackFrame old;
-        synchronized (this) {
+        synchronized (currentThreadAndFrameLock) {
             if (callStackFrame == currentCallStackFrame) return callStackFrame;
             old = currentCallStackFrame;
             currentCallStackFrame = callStackFrame;
@@ -826,8 +833,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
         Method method,
         Value[] arguments
     ) throws InvalidExpressionException {
-        if (currentThread == null)
-            throw new InvalidExpressionException ("No current context");
+        synchronized (currentThreadAndFrameLock) {
+            if (currentThread == null)
+                throw new InvalidExpressionException ("No current context");
+        }
         synchronized (LOCK) {
             if (methodCallsUnsupportedExc != null) {
                 throw methodCallsUnsupportedExc;
@@ -919,12 +928,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
 
-    public synchronized VirtualMachine getVirtualMachine () {
-        return virtualMachine;
+    public VirtualMachine getVirtualMachine () {
+        synchronized (virtualMachineLock) {
+            return virtualMachine;
+        }
     }
 
-    public synchronized Operator getOperator () {
-        return operator;
+    public Operator getOperator () {
+        synchronized (virtualMachineLock) {
+            return operator;
+        }
     }
 
     public void setStarting () {
@@ -943,7 +956,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         synchronized (LOCK2) {
             starting = true;
         }
-        synchronized (this) {
+        synchronized (virtualMachineLock) {
             virtualMachine = vm;
             operator = o;
         }
@@ -978,14 +991,14 @@ public class JPDADebuggerImpl extends JPDADebugger {
 //            }
 //        }
         
-        synchronized (this) {
+        synchronized (threadsCollectorLock) {
             if (threadsCache != null) {
                 threadsCache.setVirtualMachine(vm);
             }
         }
         
         setState (STATE_RUNNING);
-        synchronized (this) {
+        synchronized (virtualMachineLock) {
             vm = virtualMachine; // re-take the VM, it can be nulled by finish()
         }
         if (vm != null) {
@@ -1117,7 +1130,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 // We do not want to start it anyway when we're finishing - do not bother
             }
             VirtualMachine vm;
-            synchronized (this) {
+            synchronized (virtualMachineLock) {
                 vm = virtualMachine;
             }
             if (vm != null) {
@@ -1134,7 +1147,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     // debugee VM is already disconnected (it finished normally)
                 }
             }
-            synchronized (this) {
+            synchronized (virtualMachineLock) {
                 virtualMachine = null;
             }
             setState (STATE_DISCONNECTED);
@@ -1165,7 +1178,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
      */
     public void suspend () {
         VirtualMachine vm;
-        synchronized (this) {
+        synchronized (virtualMachineLock) {
             vm = virtualMachine;
         }
         synchronized (LOCK) {
@@ -1225,7 +1238,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         setState (STATE_RUNNING);
         notifyToBeResumedAll();
         VirtualMachine vm;
-        synchronized (this) {
+        synchronized (virtualMachineLock) {
             vm = virtualMachine;
         }
         synchronized (LOCK) {
@@ -1264,7 +1277,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
             return ;
         }
         setState (STATE_RUNNING);
-        currentThread.resume();
+        synchronized (currentThreadAndFrameLock) {
+            currentThread.resume();
+        }
     }
     
     public void notifyToBeResumedAll() {
@@ -1285,26 +1300,28 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
     
-    public synchronized ThreadsCache getThreadsCache() {
-        if (threadsCache == null) {
-            threadsCache = new ThreadsCache(this);
-            threadsCache.addPropertyChangeListener(new PropertyChangeListener() {
-                //  Re-fire the changes
-                public void propertyChange(PropertyChangeEvent evt) {
-                    String propertyName = evt.getPropertyName();
-                    if (ThreadsCache.PROP_THREAD_STARTED.equals(propertyName)) {
-                        firePropertyChange(PROP_THREAD_STARTED, null, getThread((ThreadReference) evt.getNewValue()));
+    public ThreadsCache getThreadsCache() {
+        synchronized (threadsCollectorLock) {
+            if (threadsCache == null) {
+                threadsCache = new ThreadsCache(this);
+                threadsCache.addPropertyChangeListener(new PropertyChangeListener() {
+                    //  Re-fire the changes
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        String propertyName = evt.getPropertyName();
+                        if (ThreadsCache.PROP_THREAD_STARTED.equals(propertyName)) {
+                            firePropertyChange(PROP_THREAD_STARTED, null, getThread((ThreadReference) evt.getNewValue()));
+                        }
+                        if (ThreadsCache.PROP_THREAD_DIED.equals(propertyName)) {
+                            firePropertyChange(PROP_THREAD_DIED, getThread((ThreadReference) evt.getOldValue()), null);
+                        }
+                        if (ThreadsCache.PROP_GROUP_ADDED.equals(propertyName)) {
+                            firePropertyChange(PROP_THREAD_GROUP_ADDED, null, getThreadGroup((ThreadGroupReference) evt.getNewValue()));
+                        }
                     }
-                    if (ThreadsCache.PROP_THREAD_DIED.equals(propertyName)) {
-                        firePropertyChange(PROP_THREAD_DIED, getThread((ThreadReference) evt.getOldValue()), null);
-                    }
-                    if (ThreadsCache.PROP_GROUP_ADDED.equals(propertyName)) {
-                        firePropertyChange(PROP_THREAD_GROUP_ADDED, null, getThreadGroup((ThreadGroupReference) evt.getNewValue()));
-                    }
-                }
-            });
+                });
+            }
+            return threadsCache;
         }
-        return threadsCache;
     }
     
     List<JPDAThread> getAllThreads() {
@@ -1391,7 +1408,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         tcGenericSignatureMethod = null;
         if (Bootstrap.virtualMachineManager ().minorInterfaceVersion () >= 5) {
             VirtualMachine vm;
-            synchronized (this) {
+            synchronized (virtualMachineLock) {
                 vm = virtualMachine;
             }
             if (vm == null) return ;
@@ -1463,9 +1480,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     private ThreadReference getEvaluationThread () {
-        if (currentThread != null) return currentThread.getThreadReference ();
+        synchronized (currentThreadAndFrameLock) {
+            if (currentThread != null) return currentThread.getThreadReference ();
+        }
         VirtualMachine vm;
-        synchronized (this) {
+        synchronized (virtualMachineLock) {
             vm = virtualMachine;
         }
         if (vm == null) return null;
@@ -1626,7 +1645,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     
     public List<JPDAClassType> getAllClasses() {
         List<ReferenceType> classes;
-        synchronized (this) {
+        synchronized (virtualMachineLock) {
             if (virtualMachine == null) {
                 classes = Collections.emptyList();
             } else {
@@ -1638,7 +1657,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     
     public List<JPDAClassType> getClassesByName(String name) {
         List<ReferenceType> classes;
-        synchronized (this) {
+        synchronized (virtualMachineLock) {
             if (virtualMachine == null) {
                 classes = Collections.emptyList();
             } else {
@@ -1651,7 +1670,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public long[] getInstanceCounts(List<JPDAClassType> classTypes) throws UnsupportedOperationException {
         if (Java6Methods.isJDK6()) {
             VirtualMachine vm;
-            synchronized (this) {
+            synchronized (virtualMachineLock) {
                 vm = virtualMachine;
             }
             if (vm == null) {
@@ -1672,8 +1691,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
     
-    public synchronized boolean canGetInstanceInfo() {
-        return virtualMachine != null && canGetInstanceInfo(virtualMachine);
+    public boolean canGetInstanceInfo() {
+        synchronized (virtualMachineLock) {
+            return virtualMachine != null && canGetInstanceInfo(virtualMachine);
+        }
     }
     
     private static boolean canGetInstanceInfo(VirtualMachine vm) {
@@ -1690,18 +1711,22 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     @Override
-    public synchronized ThreadsCollector getThreadsCollector() {
-        if (threadsCollector == null) {
-            threadsCollector = new ThreadsCollectorImpl(this);
+    public ThreadsCollector getThreadsCollector() {
+        synchronized (threadsCollectorLock) {
+            if (threadsCollector == null) {
+                threadsCollector = new ThreadsCollectorImpl(this);
+            }
+            return threadsCollector;
         }
-        return threadsCollector;
     }
 
-    synchronized DeadlockDetector getDeadlockDetector() {
-        if (deadlockDetector == null) {
-            deadlockDetector = new DeadlockDetectorImpl(this);
+    DeadlockDetector getDeadlockDetector() {
+        synchronized (threadsCollectorLock) {
+            if (deadlockDetector == null) {
+                deadlockDetector = new DeadlockDetectorImpl(this);
+            }
+            return deadlockDetector;
         }
-        return deadlockDetector;
     }
     
 }
