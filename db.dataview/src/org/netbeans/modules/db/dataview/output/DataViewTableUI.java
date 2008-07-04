@@ -615,20 +615,18 @@ class DataViewTableUI extends JTable {
                 @Override
                 public Object getCellEditorValue() {
                     String txtVal = textField.getText();
-                    if (val == null && textField.getText().equals("")) { // NOI18N
-                        val = null;
+                    if (val == null && txtVal.equals("")) { // NOI18N
+                        return null;
                     } else {
                         try {
                             int col = getEditingColumn();
                             DBColumn dbcol = DataViewTableUI.this.tablePanel.getDataViewDBTable().getColumn(col);
-
-                            val = DBReadWriteHelper.validate(txtVal, dbcol);
+                            return DBReadWriteHelper.validate(txtVal, dbcol);
                         } catch (Exception ex) {
                             StatusDisplayer.getDefault().setStatusText(ex.getMessage());
                             return txtVal;
                         }
                     }
-                    return val;
                 }
             };
             textField.addActionListener(delegate);
@@ -657,7 +655,7 @@ class DataViewTableUI extends JTable {
 
                 int row = getSelectedRow();
                 int col = getSelectedColumn();
-                if(row == -1) {
+                if (row == -1) {
                     return;
                 }
                 editCellAt(row, col);
