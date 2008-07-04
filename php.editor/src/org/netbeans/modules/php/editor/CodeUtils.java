@@ -42,8 +42,12 @@ import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 
 /**
@@ -100,16 +104,56 @@ public class CodeUtils {
     }
     
     public static String extractFunctionName(FunctionInvocation functionInvocation){
-        if (functionInvocation.getFunctionName().getName() instanceof Identifier) {
-            Identifier id = (Identifier) functionInvocation.getFunctionName().getName();
+        return extractFunctionName(functionInvocation.getFunctionName());
+    }
+    
+    public static String extractFunctionName(FunctionDeclaration functionDeclaration){
+        return functionDeclaration.getFunctionName().getName();
+    }
+    
+    public static String extractFunctionName(FunctionName functionName){
+        if (functionName.getName() instanceof Identifier) {
+            Identifier id = (Identifier) functionName.getName();
             return id.getName();
         }
         
-        if (functionInvocation.getFunctionName().getName() instanceof Variable) {
-            Variable var = (Variable) functionInvocation.getFunctionName().getName();
+        if (functionName.getName() instanceof Variable) {
+            Variable var = (Variable) functionName.getName();
             return extractVariableName(var);
         }
         
         return null;
+    }
+    
+    public static String getParamDisplayName(FormalParameter param) {
+        Expression paramNameExpr = param.getParameterName();
+        StringBuilder paramName = new StringBuilder();
+
+        if (paramNameExpr instanceof Variable) {
+            Variable var = (Variable) paramNameExpr;
+            Identifier id = (Identifier) var.getName();
+
+            if (var.isDollared()) {
+                paramName.append("$"); //NOI18N
+            }
+            
+            paramName.append(id.getName());
+        } else if (paramNameExpr instanceof Reference) {
+            paramName.append("&");
+            Reference reference = (Reference) paramNameExpr;
+
+            if (reference.getExpression() instanceof Variable) {
+                Variable var = (Variable) reference.getExpression();
+                
+                if (var.isDollared()) {
+                    paramName.append("$"); //NOI18N
+                }
+                
+                Identifier id = (Identifier) var.getName();
+                paramName.append(id.getName());
+            }
+        }
+        
+        return paramName.length() == 0 ? null : paramName.toString();
     }
 }
