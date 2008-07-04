@@ -330,7 +330,7 @@ public class SvnClientFactory {
                 return ConnectionType.cli;
             }
         };
-        Subversion.LOG.fine("running on commandline");
+        Subversion.LOG.info("running on commandline");
     }
 
     private abstract class ClientAdapterFactory {
