@@ -336,6 +336,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("IZ138551.cc"); // NOI18N
     }
 
+    public void testArrayCast() throws Exception {
+        // IZ 138899 : parser fails on conversion "(int(*)[4][4])"
+        performTest("array_cast.cc");
+    }
+
     public void testStringizeMacro() throws Exception {
         // IZ 137465 : wrong macro expansion for #x
         performPreprocessorTest("stringize_macro.cc"); // NOI18N

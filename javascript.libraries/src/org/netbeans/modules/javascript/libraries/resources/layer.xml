@@ -18,16 +18,14 @@
                 </file>
             </folder>
         </folder>
-        <!-- XXX Not working for PHP projects yet
         <folder name="org-netbeans-modules-php-project">
             <folder name="Customizer">
                 <file name="JSLib.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript.libraries.ui.customizer.JSLibraryCustomizerProvider.createJSLibraries"/>
-                    <attr name="position" intvalue="400"/>
+                    <attr name="position" intvalue="375"/>
                 </file>
             </folder>
         </folder>
-        -->
     </folder>
     
     <folder name="org-netbeans-api-project-libraries">

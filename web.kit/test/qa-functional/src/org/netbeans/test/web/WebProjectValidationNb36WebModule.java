@@ -72,6 +72,11 @@ public class WebProjectValidationNb36WebModule extends WebProjectValidation {
         super(name);
     }
     
+    /** Need to be defined because of JUnit */
+    public WebProjectValidationNb36WebModule() {
+        super();
+    }
+
     /** Use for execution inside IDE */
     public static void main(java.lang.String[] args) {
         // run whole suite

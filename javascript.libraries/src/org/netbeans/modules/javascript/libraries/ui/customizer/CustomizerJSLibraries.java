@@ -52,9 +52,7 @@ import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.javascript.libraries.util.JSLibraryProjectUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -199,9 +197,7 @@ private void addLibraryJButtonActionPerformed(java.awt.event.ActionEvent evt) {/
         for (Library library : addedLibraries) {
             boolean addLibrary = true;
             if (!JSLibraryProjectUtils.isLibraryFolderEmpty(project, library)) {
-                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(NbBundle.getMessage(CustomizerJSLibraries.class, "ExtractLibraries_Overwrite_Msg"), NbBundle.getMessage(CustomizerJSLibraries.class, "ExtractLibraries_Overwrite_Title"), NotifyDescriptor.YES_NO_OPTION);
-
-                Object result = DialogDisplayer.getDefault().notify(nd);
+                Object result = JSLibraryProjectUtils.displayLibraryOverwriteDialog(library);
                 addLibrary = (result == NotifyDescriptor.YES_OPTION);
             }
 
@@ -225,11 +221,45 @@ private void removeLibraryJButtonActionPerformed(java.awt.event.ActionEvent evt)
     
     List<Library> removedLibraries = new ArrayList<Library>();
     for (int i = removedLibIndices.length-1; i >= 0; i--) {
-        removedLibraries.add(((NamedLibrary)libraryListModel.remove(removedLibIndices[i])).getLibrary());
+        removedLibraries.add(((NamedLibrary)libraryListModel.getElementAt(removedLibIndices[i])).getLibrary());
     }
     
-    JSLibraryProjectUtils.removeJSLibraryMetadata(project, removedLibraries);
-    JSLibraryProjectUtils.deleteLibrariesWithProgress(project, removedLibraries, JSLibraryProjectUtils.getJSLibrarySourcePath(project));
+    List<Library> confirmedLibraries = new ArrayList<Library>();
+    Set<Library> removeLibraryMetadata = new LinkedHashSet<Library>();
+    removeLibraryMetadata.addAll(removedLibraries);
+    
+    for (Library library : removedLibraries) {
+        boolean removeLibrary;
+        if (!JSLibraryProjectUtils.isLibraryFolderEmpty(project, library)) {
+            Object result = JSLibraryProjectUtils.displayLibraryDeleteConfirm(library);
+            removeLibrary = (result == NotifyDescriptor.YES_OPTION);
+            
+            if (result == NotifyDescriptor.CANCEL_OPTION) {
+                removeLibraryMetadata.remove(library);
+            }
+        } else {
+            removeLibrary = true;
+        }
+        
+        if (removeLibrary) {
+            confirmedLibraries.add(library);
+        }
+    }
+    
+    if (removeLibraryMetadata.size() > 0) {
+        for (int i = removedLibIndices.length-1; i >= 0; i--) {
+            Library lib = ((NamedLibrary)libraryListModel.getElementAt(removedLibIndices[i])).getLibrary();
+            if (removeLibraryMetadata.contains(lib)) {
+                libraryListModel.remove(i);
+            }
+        }
+        
+        JSLibraryProjectUtils.removeJSLibraryMetadata(project, removeLibraryMetadata);
+    }
+    
+    if (confirmedLibraries.size() > 0) {
+        JSLibraryProjectUtils.deleteLibrariesWithProgress(project, confirmedLibraries, JSLibraryProjectUtils.getJSLibrarySourcePath(project));
+    }
 }//GEN-LAST:event_removeLibraryJButtonActionPerformed
 
     private static final class NamedLibrary {

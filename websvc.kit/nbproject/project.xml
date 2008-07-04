@@ -231,29 +231,17 @@ made subject to such option by the copyright holder.
                 <test-type>
                     <name>qa-functional</name>
                     <test-dependency>
-                        <code-name-base>org.netbeans.api.visual</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.libs.junit4</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.netbeans.modules.j2ee.dd</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.java.j2seproject</code-name-base>
-                        <recursive/>
                         <compile-dependency/>
                         <test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.jellytools</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.jemmy</code-name-base>
+                        <recursive/>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
@@ -261,10 +249,6 @@ made subject to such option by the copyright holder.
                         <recursive/>
                         <compile-dependency/>
                         <test/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.projectapi</code-name-base>
-                        <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.projectui</code-name-base>
@@ -293,26 +277,6 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.spi.editor.hints</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.openide.filesystems</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.openide.loaders</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.openide.nodes</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.openide.text</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.openide.util</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                 </test-type>

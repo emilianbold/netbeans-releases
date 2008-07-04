@@ -71,12 +71,12 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
 
     @Override
     protected Channel createChannel() throws JSchException {
-        return session.openChannel("exec");
+        return session.openChannel("exec"); // NOI18N
 
     }
 
     private void setChannelCommand(String cmd) {
-        ((ChannelExec) getChannel()).setCommand(cmd); //NOI18N
+        ((ChannelExec) getChannel()).setCommand(cmd);
     }
     // TODO: not sure why we can't recreate channels through session?
     private void revitalize() {
@@ -85,6 +85,11 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
         } catch (JSchException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+    
+    public static boolean copyFrom(String key, String remoteName, String localName) {
+        RemoteCopySupport support = new RemoteCopySupport(key);
+        return support.copyFrom(remoteName, localName);
     }
 
     public boolean copyFrom(String remoteName, String localName) {
@@ -192,6 +197,7 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
             return false;
         } finally {
             if (channel.isConnected()) {
+                setExitStatus(channel.getExitStatus());
                 channel.disconnect();
             }
             try {
@@ -203,7 +209,12 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
         }
 
         revitalize();
-        return true;
+        return getExitStatus() == 0;
+    }
+    
+    public static boolean copyTo(String key, String localFile, String remotePath) {
+        RemoteCopySupport support = new RemoteCopySupport(key);
+        return support.copyTo(localFile, remotePath);
     }
 
     public boolean copyTo(String localFile, String remotePath) {
@@ -225,13 +236,13 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
 
             // send "C0644 filesize filename", where filename should not include '/'
             long filesize = (new File(localFile)).length();
-            command = "C0644 " + filesize + " ";
+            command = "C0644 " + filesize + " "; //NOI18N
             if (localFile.lastIndexOf(File.separator) > 0) {
                 command += localFile.substring(localFile.lastIndexOf(File.separator) + 1);
             } else {
                 command += localFile;
             }
-            command += "\n";
+            command += "\n"; //NOI18N
             out.write(command.getBytes());
             out.flush();
             if (checkAck(in) != 0) {
@@ -273,7 +284,7 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
             } catch (Exception ee) {
             }
         }
-        return true;
+        return getExitStatus() == 0;
     }
 
     private static int checkAck(InputStream in) throws IOException {

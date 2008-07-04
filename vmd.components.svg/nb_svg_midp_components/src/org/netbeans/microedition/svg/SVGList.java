@@ -55,23 +55,29 @@ import org.w3c.dom.svg.SVGLocatableElement;
  * Suggested svg snippet:
  * <pre>
  *  &lt;g id="list" transform="translate(20,220)" >
- *   &lt;rect  x="5" y="0" stroke="black" stroke-width="1" fill="rgb(200,200,255)" visibility="inherit" width="80" height="0">
- *       &lt;metadata> &lt;text>type=selection&lt;/text> &lt;/metadata>
- *   &lt;/rect>
- *   &lt;text id="_51" visibility="hidden" x="10" y="13" stroke="black" font-size="15" font-family="SunSansSemiBold">
- *       &lt;metadata> &lt;text>type=hidden_text&lt;/text> &lt;/metadata>
- *       HIDDEN TEXT
+ *       &lt;g>
+ *       &lt;!-- Metadata information. Please don't edit. -->
+ *       &lt;text display="none">type=selection&lt;/text>
+ *       
+ *       &lt;rect  x="5" y="0" stroke="black" stroke-width="1" fill="rgb(200,200,255)" visibility="inherit" width="80" height="0"/>
+ *       &lt;/g>
+ *   &lt;text  visibility="hidden" x="10" y="13" stroke="black" font-size="15" font-family="SunSansSemiBold">
+ *       &lt;text display="none">type=hidden_text&lt;/text>
  *   &lt;/text>
- *   &lt;g>
- *       &lt;metadata> &lt;text>type=content&lt;/text> &lt;/metadata>
+ *   &lt;g> 
+ *       &lt;!-- Metadata information. Please don't edit. -->
+ *       &lt;text display="none">type=content&lt;/text> 
  *   &lt;/g>
  *       &lt;rect x="0" y="-5" rx="5" ry="5" width="90" height="70" fill="none" stroke="rgb(255,165,0)" stroke-width="2" visibility="hidden">
  *           &lt;set attributeName="visibility" attributeType="XML" begin="list.focusin" fill="freeze" to="visible"/>
  *           &lt;set attributeName="visibility" attributeType="XML" begin="list.focusout" fill="freeze" to="hidden"/>
  *       &lt;/rect>
- *       &lt;rect  x="5.0" y="0.0" width="80" height="60" fill="none" stroke="black" stroke-width="2">
- *       &lt;metadata> &lt;text>type=bound&lt;/text> &lt;/metadata>
- *   &lt;/rect>
+ *   &lt;g>
+ *           &lt;!-- Metadata information. Please don't edit. -->
+ *       &lt;text display="none">type=bound&lt;/text>
+ *
+ *       &lt;rect  x="5.0" y="0.0" width="80" height="60" fill="none" stroke="black" stroke-width="2"/>
+ *   &lt;/g>
  *   &lt;/g>
  * </pre>
  * @author ads
@@ -92,7 +98,7 @@ public class SVGList extends SVGComponent implements DataListener {
                 getElement(), TYPE, SVGDefaultListCellRenderer.BOUNDS) ;
         
         
-        hiddenText.setTrait( TRAIT_VISIBILITY, TR_VALUE_HIDDEN);
+        //setTraitSafely( hiddenText, TRAIT_VISIBILITY, TR_VALUE_HIDDEN);
         
         myCount = (int)(bounds.getBBox().getHeight()/height);
         
@@ -183,8 +189,8 @@ public class SVGList extends SVGComponent implements DataListener {
     }
 
     private void removeContent() {
-        SVGLocatableElement content = (SVGLocatableElement)
-        SVGComponent.getElementByMeta(getElement(), TYPE, SVGList.CONTENT );    
+        SVGLocatableElement content = (SVGLocatableElement)getElementByMeta(
+                getElement(), TYPE, SVGList.CONTENT );    
         Node node = content.getFirstElementChild();
         while ( node != null ){
             Element next = null;
@@ -193,6 +199,12 @@ public class SVGList extends SVGComponent implements DataListener {
             }
             if ( !MetaData.METADATA.equals(node.getLocalName())){
                 content.removeChild( node );
+            }
+            else if ( node instanceof SVGElement ){
+                String display = ((SVGElement)node).getTrait( MetaData.DISPLAY );
+                if ( !MetaData.NONE.equals( display )){
+                    content.removeChild( node );
+                }
             }
             node = next;
         }

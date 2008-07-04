@@ -166,7 +166,7 @@ public class UpdateErrorTest extends JellyTestCase {
         String allCVSRoots;
         org.openide.nodes.Node nodeIDE;
         PROTOCOL_FOLDER = "protocol" + File.separator + "update_access_denied";
-        
+        Thread.sleep(3000);
         vo = VersioningOperator.invoke();
         oo = OutputOperator.invoke();
         oto = new OutputTabOperator(sessionCVSroot);
@@ -188,8 +188,8 @@ public class UpdateErrorTest extends JellyTestCase {
         node = new Node(new SourcePackagesNode("ForImport"), "forimport");
         node.performPopupAction("CVS|Show Changes");
         Thread.sleep(1000);
-        oto.waitText("Refreshing");
-        oto.waitText("finished");
+//        oto.waitText("Refreshing");
+//        oto.waitText("finished");
         cvss.stop();
         
         assertEquals("File should be listed in Versioning view", "Main.java", vo.tabFiles().getValueAt(0, 0).toString());
@@ -210,9 +210,9 @@ public class UpdateErrorTest extends JellyTestCase {
         node.performPopupAction("CVS|Update");
         Thread.sleep(1000);
         cvss.stop();
-        oto = new OutputTabOperator(sessionCVSroot);
-        oto.waitText("Updating");
-        oto.waitText("finished");
+//        oto = new OutputTabOperator(sessionCVSroot);
+//        oto.waitText("Updating");
+//        oto.waitText("finished");
         
         NbDialogOperator dialog = new NbDialogOperator("Command");
         JButtonOperator btn = new JButtonOperator(dialog, "Ok");

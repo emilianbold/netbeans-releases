@@ -58,6 +58,8 @@ import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerE
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerEventListener;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerState;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessage;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessageEvent;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessageEventListener;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSProperty;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSSource;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSWindow;
@@ -80,7 +82,8 @@ public abstract class JSAbstractDebugger implements JSDebugger {
     private JSCallStackFrame[] callStackFrames = JSCallStackFrame.EMPTY_ARRAY;
 
     private final List<JSDebuggerEventListener> listeners;
-    private final List<JSDebuggerConsoleEventListener> consoleListeners;    
+    private final List<JSDebuggerConsoleEventListener> consoleListeners;
+    private final List<JSHttpMessageEventListener> httpListeners;
     protected final PropertyChangeSupport propertyChangeSupport;
 
     private static AtomicLong sequenceIdGenerator = new AtomicLong(-1);
@@ -92,6 +95,7 @@ public abstract class JSAbstractDebugger implements JSDebugger {
         sequenceId = sequenceIdGenerator.incrementAndGet();
         listeners = new CopyOnWriteArrayList<JSDebuggerEventListener>();
         consoleListeners = new CopyOnWriteArrayList<JSDebuggerConsoleEventListener>();
+        httpListeners = new CopyOnWriteArrayList<JSHttpMessageEventListener>();
         propertyChangeSupport = new PropertyChangeSupport(this);
     }
 
@@ -150,7 +154,7 @@ public abstract class JSAbstractDebugger implements JSDebugger {
     }
 
     protected void setHttpMessage(JSHttpMessage message){
-        //Logger.getLogger(this.getClass().getName()).info("****** HTTP MESSAGE RECEIVED AND TRIGGERED ********");
+        fireJSHttpMessageEvent(new JSHttpMessageEvent(this, message));
     }
 
 
@@ -166,16 +170,16 @@ public abstract class JSAbstractDebugger implements JSDebugger {
                 oldjsSources,
                 this.sources);
     }
-    
+
     public InputStream getInputStreamForURL(URL url) {
         if (url == null) {
             return null;
         }
         return getInputStreamForURLImpl(url);
     }
-    
-    protected abstract InputStream getInputStreamForURLImpl(URL url); 
-    
+
+    protected abstract InputStream getInputStreamForURLImpl(URL url);
+
     public JSCallStackFrame[] getCallStackFrames() {
         return callStackFrames;
     }
@@ -191,25 +195,25 @@ public abstract class JSAbstractDebugger implements JSDebugger {
     public JSProperty getThis(JSCallStackFrame callStackFrame) {
         return getThisImpl(callStackFrame);
     }
-    
+
     protected abstract JSProperty getThisImpl(JSCallStackFrame callStackFrame);
-    
+
     public JSProperty eval(JSCallStackFrame callStackFrame, String expression) {
         return evalImpl(callStackFrame, expression);
     }
-    
-    protected abstract JSProperty evalImpl(JSCallStackFrame callStackFrame, String expression);        
-    
+
+    protected abstract JSProperty evalImpl(JSCallStackFrame callStackFrame, String expression);
+
     public JSProperty getProperty(JSCallStackFrame callStackFrame, String fullName) {
         return getPropertyImpl(callStackFrame, fullName);
     }
-    
-    protected abstract JSProperty getPropertyImpl(JSCallStackFrame callStackFrame, String fullName);    
+
+    protected abstract JSProperty getPropertyImpl(JSCallStackFrame callStackFrame, String fullName);
 
     public JSProperty[] getProperties(JSCallStackFrame callStackFrame, String fullName) {
         return getPropertiesImpl(callStackFrame, fullName);
     }
-    
+
     protected abstract JSProperty[] getPropertiesImpl(JSCallStackFrame callStackFrame, String fullName);
 
     public void setCallStackFrames(JSCallStackFrame[] callSTackFrames) {
@@ -226,14 +230,14 @@ public abstract class JSAbstractDebugger implements JSDebugger {
 
     public void removeJSDebuggerEventListener(JSDebuggerEventListener debuggerEventListener) {
         listeners.remove(debuggerEventListener);
-    }    
-    
+    }
+
     protected void fireJSDebuggerEvent(JSDebuggerEvent debuggerEvent) {
         for (JSDebuggerEventListener listener : listeners) {
             listener.onDebuggerEvent(debuggerEvent);
         }
-    }   
-    
+    }
+
     public void addJSDebuggerConsoleEventListener(JSDebuggerConsoleEventListener consoleEventListener) {
         consoleListeners.add(consoleEventListener);
     }
@@ -241,12 +245,26 @@ public abstract class JSAbstractDebugger implements JSDebugger {
     public void removeJSDebuggerConsoleEventListener(JSDebuggerConsoleEventListener consoleEventListener) {
         consoleListeners.remove(consoleEventListener);
     }
-    
+
     protected void fireJSDebuggerConsoleEvent(JSDebuggerConsoleEvent consoleEvent) {
         for (JSDebuggerConsoleEventListener listener : consoleListeners) {
             listener.onConsoleEvent(consoleEvent);
         }
-    }    
+    }
+
+    public void addJSHttpMessageEventListener(JSHttpMessageEventListener httpListener) {
+        httpListeners.add(httpListener);
+    }
+
+    public void removeJSHttpMessageEventListener(JSHttpMessageEventListener httpListener) {
+        httpListeners.remove(httpListener);
+    }
+
+    protected void fireJSHttpMessageEvent(JSHttpMessageEvent httpMessageEvent) {
+        for (JSHttpMessageEventListener listener : httpListeners) {
+            listener.onHttpMessageEvent(httpMessageEvent);
+        }
+    }
 
     // Property Change Listeners
     public void addPropertyChangeListener(PropertyChangeListener l) {
