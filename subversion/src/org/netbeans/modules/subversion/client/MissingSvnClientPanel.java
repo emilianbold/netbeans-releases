@@ -40,6 +40,14 @@
  */
 package org.netbeans.modules.subversion.client;
 
+import java.awt.Font;
+import java.net.URL;
+import javax.swing.JLabel;
+import javax.swing.event.HyperlinkEvent.EventType;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
+import org.netbeans.modules.subversion.Subversion;
+import org.openide.awt.HtmlBrowser;
 import org.openide.util.Utilities;
 
 /**
@@ -56,6 +64,24 @@ public class MissingSvnClientPanel extends javax.swing.JPanel {
         } else {
             jLabel1.setText(org.openide.util.NbBundle.getMessage(MissingSvnClientPanel.class, "MissingSvnClientPanel.jLabel1.unix.text"));
         }
+        String text = org.openide.util.NbBundle.getMessage(MissingSvnClientPanel.class, "MissingSvnClientPanel.jLabel2.text");
+        textPane.setText(text);
+        HTMLEditorKit kit = (HTMLEditorKit) textPane.getEditorKit();
+        StyleSheet css = kit.getStyleSheet();
+        if (css.getStyleSheets() == null) {
+            StyleSheet css2 = new StyleSheet();
+            Font f = new JLabel().getFont();
+            int size = f.getSize();
+            css2.addRule(new StringBuffer("body { font-size: ").append(size) // NOI18N
+                    .append("; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
+            css2.addStyleSheet(css);
+            kit.setStyleSheet(css2);
+        }
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
     }
 
     /** This method is called from within the constructor to
@@ -66,15 +92,20 @@ public class MissingSvnClientPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel2 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
+        textPane = new javax.swing.JTextPane();
         jLabel1 = new javax.swing.JLabel();
 
+        textPane.setBackground(jLabel1.getBackground());
+        textPane.setBorder(null);
+        textPane.setContentType(org.openide.util.NbBundle.getMessage(MissingSvnClientPanel.class, "MissingSvnClientPanel.textPane.contentType_1")); // NOI18N
+        textPane.setEditable(false);
+        textPane.addHyperlinkListener(new javax.swing.event.HyperlinkListener() {
+            public void hyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {
+                textPaneHyperlinkUpdate(evt);
+            }
+        });
+
         browseButton.setText(org.openide.util.NbBundle.getMessage(MissingSvnClientPanel.class, "MissingSvnClientPanel.browseButton.text")); // NOI18N
-
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(MissingSvnClientPanel.class, "MissingSvnClientPanel.jLabel2.text")); // NOI18N
-
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(MissingSvnClientPanel.class, "MissingSvnClientPanel.jLabel4.text")); // NOI18N
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(MissingSvnClientPanel.class, "MissingSvnClientPanel.jLabel1.windows.text")); // NOI18N
 
@@ -82,40 +113,48 @@ public class MissingSvnClientPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(executablePathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(browseButton)
+                .add(22, 22, 22))
+            .add(textPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 529, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(executablePathTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 460, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(browseButton))
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .add(jLabel1))
+                .add(jLabel1)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel4)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(textPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 117, Short.MAX_VALUE)
+                .add(8, 8, 8)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(browseButton)
-                    .add(executablePathTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(1, 1, 1)
+                    .add(executablePathTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(browseButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel1))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void textPaneHyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {//GEN-FIRST:event_textPaneHyperlinkUpdate
+        if (EventType.ACTIVATED == evt.getEventType()) {
+            URL url = evt.getURL();
+            assert url != null;
+            HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
+            assert displayer != null : "HtmlBrowser.URLDisplayer found.";
+            if (displayer != null) {
+                displayer.showURL (url);
+            } else {
+                Subversion.LOG.info("No URLDisplayer found.");
+            }
+        }
+    }//GEN-LAST:event_textPaneHyperlinkUpdate
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JButton browseButton = new javax.swing.JButton();
     final javax.swing.JTextField executablePathTextField = new javax.swing.JTextField();
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel4;
+    private javax.swing.JTextPane textPane;
     // End of variables declaration//GEN-END:variables
 
 }
