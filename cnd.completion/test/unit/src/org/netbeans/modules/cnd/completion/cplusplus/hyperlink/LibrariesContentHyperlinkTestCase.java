@@ -118,4 +118,9 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("sys_include/include1.h", 40, 15, "sys_include/include1.h", 37, 1);
     }
 
+    public void testEndl() throws Exception {
+        performTest("src/main2.cc", 7, 8, "sys_include/iostream", 20, 5);
+        performTest("src/main2.cc", 7, 26, "sys_include/iostream", 14, 5);
+    }
+
 }
