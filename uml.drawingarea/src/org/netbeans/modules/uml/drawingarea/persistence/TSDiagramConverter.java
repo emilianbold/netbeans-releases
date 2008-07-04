@@ -468,6 +468,7 @@ public class TSDiagramConverter
                             {
                                 nodeInfo.setProperty("Orientation",SeparatorWidget.Orientation.VERTICAL.toString());
                             }
+                            if(nodeInfo.getProperty("ShowTransitions")==null)nodeInfo.setProperty("ShowTransitions", Boolean.FALSE);
                         }
                         ((UMLNodeWidget) widget).load(nodeInfo);
                         if(nodeInfo.getModelElement() instanceof ICombinedFragment)
@@ -1161,6 +1162,7 @@ public class TSDiagramConverter
                     {
                         String name=readerPres.getAttributeValue(null, "name");
                             String orientation=readerPres.getAttributeValue(null, "orientation");
+                            String value=readerPres.getAttributeValue(null, "value");
                             if(orientation!=null && orientation.length()>0)
                             {
                                 if("0".equals(orientation))
@@ -1177,6 +1179,11 @@ public class TSDiagramConverter
                                 {
                                     System.out.println("***WARNING: UNKNOWN ORIENTATION: "+orientation);
                                 }
+                            }
+                            if("Transitions".equals(value))
+                            {
+                                //it's in State widget
+                                ninfo.setProperty("ShowTransitions", Boolean.TRUE);
                             }
                     }
                 }

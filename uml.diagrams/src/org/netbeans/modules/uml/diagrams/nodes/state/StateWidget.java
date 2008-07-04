@@ -87,7 +87,7 @@ public class StateWidget extends UMLNodeWidget
     private ProcedureWidget exitWidget;
     private ProcedureWidget doWidget;
     private State state;
-    public static String SHOW_TRANSITIONS = "ShowTransitions";
+    public static String SHOW_TRANSITIONS = "ShowTransitions";//do not change, the same value is used in 6.1 importing
 
     public StateWidget(Scene scene)
     {
@@ -236,12 +236,15 @@ public class StateWidget extends UMLNodeWidget
 
     public boolean isDetailVisible()
     {
-        return state.getIsSubmachineState() && detailWidget.isVisible();
+        return state!=null && detailWidget!=null && state.getIsSubmachineState() && detailWidget.isVisible();
     }
 
     public void setDetailVisible(boolean visible)
     {
-        detailWidget.setVisible(visible);
+        if(detailWidget!=null)
+        {
+            detailWidget.setVisible(visible);
+        }
         if (visible)
         {
             state.setIsSubmachineState(true);
