@@ -64,6 +64,7 @@ import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
@@ -740,12 +741,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         if (element instanceof IndexedElement) {
             final IndexedElement indexedElement = (IndexedElement) element;
             StringBuilder description = new StringBuilder();
-            final StringBuilder header = new StringBuilder();
+            final CCDocHtmlFormatter header = new CCDocHtmlFormatter();
             
             String location = indexedElement.getFile().isPlatform() ? NbBundle.getMessage(PHPCodeCompletion.class, "PHPPlatform")
                     : indexedElement.getFilenameUrl();
             
-            header.append(String.format("<font size=-1>%s</font>", location));
+            header.appendHtml(String.format("<font size=-1>%s</font>", location));
             
             final StringBuilder phpDoc = new StringBuilder();
             
@@ -765,67 +766,155 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                             
                             if (program != null) {
                                 ASTNode node = Utils.getNodeAtOffset(program, indexedElement.getOffset());
-                                String displayName = null;
+                                header.appendHtml("<p><font size=+1>"); //NOI18N
                                 
                                 if (node instanceof FunctionDeclaration) {
                                     FunctionDeclaration functionDeclaration = (FunctionDeclaration) node;
-                                    StringBuilder displayNameBldr = new StringBuilder();
                                     String fname = CodeUtils.extractFunctionName(functionDeclaration);
-                                    displayNameBldr.append(fname);
-                                    displayNameBldr.append('(');
+                                    header.name(ElementKind.METHOD, true);
+                                    header.appendText(fname);
+                                    header.name(ElementKind.METHOD, false);
+                                    header.appendHtml("</font>");
+                                    
+                                    header.parameters(true);
+                                    header.appendText("("); //NOI18N
                                     int paramCount = functionDeclaration.getFormalParameters().size();
                                     
                                     for (int i = 0; i < paramCount; i++) {
                                         FormalParameter param = functionDeclaration.getFormalParameters().get(i);
                                         
                                         if (param.getParameterType() != null){
-                                            displayNameBldr.append(param.getParameterType().getName() + " "); //NOI18N
+                                            header.type(true);
+                                            header.appendText(param.getParameterType().getName() + " "); //NOI18N
+                                            header.type(false);
                                         }
                                         
-                                        displayNameBldr.append(CodeUtils.getParamDisplayName(param));
+                                        header.appendText(CodeUtils.getParamDisplayName(param));
                                         
                                         if (param.getDefaultValue() != null){
-                                            displayNameBldr.append("=");
+                                            header.type(true);
+                                            header.appendText("=");
                                             
                                             if (param.getDefaultValue() instanceof Scalar) {
                                                 Scalar scalar = (Scalar) param.getDefaultValue();
-                                                displayNameBldr.append(scalar.getStringValue());
+                                                header.appendText(scalar.getStringValue());
                                             }
+                                            
+                                            header.type(false);
                                         }
                                         
                                         if (i + 1 < paramCount){
-                                            displayNameBldr.append(", ");
+                                            header.appendText(", "); //NOI18N
                                         }
                                     }
                                     
-                                    displayNameBldr.append(')');
+                                    header.appendText(")");
+                                    header.parameters(false);
                                     
-                                    displayName = displayNameBldr.toString();
                                 } else{
-                                    displayName = indexedElement.getDisplayName();
+                                    header.name(indexedElement.getKind(), true);
+                                    header.appendText(indexedElement.getDisplayName());
+                                    header.name(indexedElement.getKind(), false);
                                 }
                                 
-                                header.append(String.format(
-                                        "<p><font size=+1><code><b>%s</b></code></font></p><br>", //NOI18N
-                                        displayName));
+                                header.appendHtml("</p><br>"); //NOI18N
                                 
                                 Comment comment = Utils.getCommentForNode(program, node);
 
                                 if (comment instanceof PHPDocBlock) {
+                                    StringBuilder params = new StringBuilder();
+                                    StringBuilder links = new StringBuilder();
+                                    StringBuilder returnValue = new StringBuilder();
+                                    StringBuilder others = new StringBuilder();
+                                    
+                                    
                                     PHPDocBlock pHPDocBlock = (PHPDocBlock) comment;
                                     phpDoc.append(pHPDocBlock.getDescription());
 
                                     // list PHPDoc tags
                                     // TODO a better support for PHPDoc tags
-                                    phpDoc.append("<br><br><br><table>\n"); //NOI18N
+                                    phpDoc.append("<br>\n"); //NOI18N
 
                                     for (PHPDocTag tag : pHPDocBlock.getTags()) {
-                                        phpDoc.append(String.format("<tr><td>%s</td><td>%s</td></tr>\n", //NOI18N
-                                                tag.getKind().toString(), tag.getValue()));
+                                        
+                                        switch (tag.getKind()){
+                                            case PARAM:
+                                                String parts[] = tag.getValue().split("\\s+", 3); //NOI18N
+                                                String paramName, paramType, paramDesc; 
+                                                paramName = paramType = paramDesc = ""; //NOI18N
+                                                
+                                                if (parts.length > 0){
+                                                    paramName = parts[0];
+                                                    if (parts.length > 1){
+                                                        paramType = parts[1];
+                                                        if (parts.length > 2){
+                                                            paramDesc = parts[2];
+                                                        }
+                                                    }
+                                                }
+                                                
+                                                String optionalStr = "[optional]"; //NOI18N
+                                                if (paramType.endsWith(optionalStr)){
+                                                    paramType = paramType.substring(0, paramType.length() - optionalStr.length());
+                                                }
+                                                
+                                                String pline = String.format("<tr><td align=\"right\">%s</td><th  align=\"left\">$%s</th><td>%s</td></tr>\n", //NOI18N
+                                                        paramType, paramName, paramDesc);
+                                                
+                                                params.append(pline);
+                                                break;
+                                            case LINK:
+                                                String lline = String.format("<a href=\"%s\">%s</a><br>\n", //NOI18N
+                                                        tag.getValue(), tag.getValue());
+                                                
+                                                links.append(lline);
+                                                break;
+                                            case RETURN:
+                                                String rparts[] = tag.getValue().split("\\s+", 2); //NOI18N
+                                                
+                                                if (rparts.length > 0){
+                                                    String type = rparts[0];
+                                                    returnValue.append(String.format("<b>%s:</b> %s<br><br>", //NOI18N
+                                                            NbBundle.getMessage(PHPCodeCompletion.class, "Type"), type)); 
+                                                    
+                                                    if (rparts.length > 1){
+                                                        String desc = rparts[1];
+                                                        returnValue.append(desc);
+                                                    }
+                                                }
+                                                
+                                                break;
+                                            default:
+                                                String oline = String.format("<tr><th>%s</th><td>%s</td></tr>\n", //NOI18N
+                                                        tag.getKind().toString(), tag.getValue());
+                                                
+                                                links.append(oline);
+                                                break;
+                                        }
+                                    }
+                                    
+                                    
+                                    if (params.length() > 0){
+                                        phpDoc.append("<h3>"); //NOI18N
+                                        phpDoc.append(NbBundle.getMessage(PHPCodeCompletion.class, "Parameters"));
+                                        phpDoc.append("</h3>\n<table>\n" + params + "</table>\n"); //NOI18N
                                     }
 
-                                    phpDoc.append("</table>\n"); //NOI18N
-
+                                    if (returnValue.length() > 0){
+                                        phpDoc.append("<h3>"); //NOI18N
+                                        phpDoc.append(NbBundle.getMessage(PHPCodeCompletion.class, "ReturnValue"));
+                                        phpDoc.append("</h3>\n" + returnValue); //NOI18N
+                                    }
+                                    
+                                    if (links.length() > 0){
+                                        phpDoc.append("<h3>"); //NOI18N
+                                        phpDoc.append(NbBundle.getMessage(PHPCodeCompletion.class, "OnlineDocs"));
+                                        phpDoc.append("</h3>\n" + links); //NOI18N
+                                    }
+                                    
+                                    if (others.length() > 0){
+                                        phpDoc.append("<table>\n" + others + "</table>\n"); //NOI18N
+                                    }
                                 }
                             }
 
@@ -843,7 +932,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 description.append(NbBundle.getMessage(PHPCodeCompletion.class, "PHPDocNotFound"));
             }
 
-            return header.toString() + description.toString();
+            return header.getText() + description.toString();
         }
 
         return null;

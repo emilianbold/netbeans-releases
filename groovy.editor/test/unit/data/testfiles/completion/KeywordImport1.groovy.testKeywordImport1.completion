@@ -1,0 +1,6 @@
+Code completion result for source line:
+import java.lang.Ab|
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+KEYWORD    AbstractMethodError                        null
+KEYWORD    AbstractStringBuilder                      null

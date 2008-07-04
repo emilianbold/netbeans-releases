@@ -1,0 +1,5 @@
+Code completion result for source line:
+ab|
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+KEYWORD    abstract                                   null
