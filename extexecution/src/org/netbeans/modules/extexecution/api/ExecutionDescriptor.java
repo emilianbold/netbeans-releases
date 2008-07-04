@@ -79,6 +79,8 @@ public final class ExecutionDescriptor {
 
     private RerunCondition rerunCondition;
 
+    private String optionsPath;
+
     private ExecutionDescriptor(Builder builder) {
         this.preExecution = builder.preExecution;
         this.postExecution = builder.postExecution;
@@ -93,12 +95,17 @@ public final class ExecutionDescriptor {
         this.errProcessorFactory = builder.errProcessorFactory;
         this.inputOutput = builder.inputOutput;
         this.rerunCondition = builder.rerunCondition;
+        this.optionsPath = builder.optionsPath;
     }
 
     /**
      * Returns the <i>custom</i> io to use. May return <code>null</code>
      * which means that client is fine with infrustructure provided io (visible
      * as tab in output pane).
+     * <p>
+     * If returned value is not <code>null</code> methods {@link #isControllable()},
+     * {@link #getRerunCondition()} and {@link #getOptionsPath()} have
+     * no meaning and are ignored.
      *
      * @return the <i>custom</i> io to use; may return <code>null</code>
      */
@@ -236,6 +243,20 @@ public final class ExecutionDescriptor {
     }
 
     /**
+     * Returns the options path, may be <code>null</code>. If not
+     * <code>null</code> the {@link ExecutionService} will display the button
+     * in the output tab displaying the proper options when pressed.
+     * <p>
+     * Format of the parameter is described in
+     * {@link org.netbeans.api.options.OptionsDisplayer.OptionsDisplayer#open(java.lang.String)}.
+     *
+     * @return the options path if any, may be <code>null</code>
+     */
+    public String getOptionsPath() {
+        return optionsPath;
+    }
+
+    /**
      * Represents the possibility of reruning the action.
      */
     public interface RerunCondition {
@@ -325,6 +346,8 @@ public final class ExecutionDescriptor {
         private InputOutput inputOutput;
 
         private ExecutionDescriptor.RerunCondition rerunCondition;
+
+        private String optionsPath;
 
         /**
          * Creates the new builder. All properites of the builder are configured
@@ -517,6 +540,20 @@ public final class ExecutionDescriptor {
          */
         public Builder rerunCondition(ExecutionDescriptor.RerunCondition rerunCondition) {
             this.rerunCondition = rerunCondition;
+            return this;
+        }
+
+        /**
+         * Sets this builder's options path. ExecutionDescriptor
+         * subsequently created by {@link #create()} method will return this
+         * path on {@link ExecutionDescriptor#getOptionsPath()}.
+         *
+         * @param optionsPath options path, <code>null</code> allowed
+         * @return this descriptor builder
+         * @see ExecutionDescriptor#getOptionsPath()
+         */
+        public Builder optionsPath(String optionsPath) {
+            this.optionsPath = optionsPath;
             return this;
         }
 
