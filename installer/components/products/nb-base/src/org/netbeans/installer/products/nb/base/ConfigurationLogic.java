@@ -463,6 +463,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         try {
             filesList.add(new File(nbCluster,"servicetag/registration.xml"));
             filesList.add(new File(nbCluster,"servicetag"));
+            filesList.add(new File(nbCluster,NetBeansUtils.METRICS_ENABLED));
         } catch (IOException e) {
             LogManager.log(e);
         }

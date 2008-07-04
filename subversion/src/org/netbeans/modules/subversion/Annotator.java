@@ -271,7 +271,8 @@ public class Annotator {
                 
         ISVNStatus snvStatus = info.getEntry(file);
         if (snvStatus != null) {
-            revisionString = snvStatus.getRevision().toString();
+            SVNRevision rev = snvStatus.getRevision();
+            revisionString = rev != null ? rev.toString() : "";
             if(mimeTypeFlag) {
                 binaryString = getMimeType(file);                
             }

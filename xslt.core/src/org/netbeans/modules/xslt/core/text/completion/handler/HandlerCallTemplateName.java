@@ -67,13 +67,13 @@ public class HandlerCallTemplateName extends BaseCompletionHandler {
     private List<XSLTCompletionResultItem> getNamedTemplateNameList() {
         if ((schemaModel == null) || (surroundTag == null) || 
             (attributeName == null) || (xslModel == null)) 
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         
         String tagName = surroundTag.getTagName(); //getLocalName();
         if (! tagName.contains(XSLT_TAG_NAME_CALL_TEMPLATE))
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         if (! attributeName.equals(XSLTCompletionUtil.ATTRIB_NAME))
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
 
         if ((xslModel != null) && (xslModel.getState().equals(State.NOT_WELL_FORMED))) {
             return getIncorrectDocumentResultItem();
@@ -84,7 +84,7 @@ public class HandlerCallTemplateName extends BaseCompletionHandler {
     private List<XSLTCompletionResultItem> findNamedTemplates() {
         Stylesheet stylesheet = xslModel.getStylesheet();
         List<Template> templateList = stylesheet.getChildren(Template.class);
-        if (templateList.isEmpty()) return Collections.EMPTY_LIST;
+        if (templateList.isEmpty()) return Collections.emptyList();
         
         List<XSLTCompletionResultItem> resultItemList = 
             new ArrayList<XSLTCompletionResultItem>();
