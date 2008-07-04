@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
  */
 public class JavaMELibsPreviewHelper extends JavaMELibsConfigurationHelper{
     
-    private static final String MSG_ERR_CANT_FIND_JAR = "MSG_ERR_CantFindLibJar";       // NOI18N
+    //private static final String MSG_ERR_CANT_FIND_JAR = "MSG_ERR_CantFindLibJar";       // NOI18N
         
     /**
      * parses library content. For each archive or folder registered 
@@ -69,7 +69,7 @@ public class JavaMELibsPreviewHelper extends JavaMELibsConfigurationHelper{
      * @return target path relative to project directory.
      */
     public static List<String> extractLibraryJarsPaths(Library library, String libName)
-            throws LibraryParsingException
+            //throws LibraryParsingException
     {
         List<String> list = new ArrayList<String>();
 
@@ -89,7 +89,7 @@ public class JavaMELibsPreviewHelper extends JavaMELibsConfigurationHelper{
     
     private static List<String> getFinalJarsPaths(Iterator<URL> it, 
             String pathPrefix, String libName) 
-            throws LibraryParsingException
+            //throws LibraryParsingException
     {
         List<String> archives = new ArrayList<String>();
         while (it.hasNext()) {
@@ -108,7 +108,7 @@ public class JavaMELibsPreviewHelper extends JavaMELibsConfigurationHelper{
      */
     private static String createFinalPath(URL originalURL, 
             String pathPrefix, String libName) 
-            throws LibraryParsingException
+            //throws LibraryParsingException
     {
         URL archivURL = FileUtil.getArchiveFile(originalURL);
         
@@ -120,14 +120,16 @@ public class JavaMELibsPreviewHelper extends JavaMELibsConfigurationHelper{
     }
     
     private static String createFinalPath4Archive(URL archivURL, String pathPrefix) 
-            throws LibraryParsingException
+            //throws LibraryParsingException
     {
         FileObject archiv = URLMapper.findFileObject(archivURL);
         
-        // #129617
+        // null processing was fix for #129617. 
+        // returning null is fix for #138126
         if (archiv == null){
-            String msg = getMessage(MSG_ERR_CANT_FIND_JAR, archivURL);
-            throw new JavaMELibsPreviewHelper.LibraryParsingException(msg);
+            return null;
+            //String msg = getMessage(MSG_ERR_CANT_FIND_JAR, archivURL);
+            //throw new JavaMELibsPreviewHelper.LibraryParsingException(msg);
         }
         
         String name = archiv.getNameExt();
@@ -156,6 +158,7 @@ public class JavaMELibsPreviewHelper extends JavaMELibsConfigurationHelper{
         return NbBundle.getMessage(JavaMELibsPreviewHelper.class, key, args);
     }
 
+    /*
     public static class LibraryParsingException extends Exception {
 
         // no need in other constructors. want only to set error message.
@@ -163,5 +166,6 @@ public class JavaMELibsPreviewHelper extends JavaMELibsConfigurationHelper{
             super(message);
         }
     }
+     */
 
 }
