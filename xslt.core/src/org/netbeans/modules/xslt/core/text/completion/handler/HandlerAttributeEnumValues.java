@@ -49,6 +49,7 @@ import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.Enumeration;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xam.NamedReferenceable;
 
 /**
@@ -59,26 +60,26 @@ public class HandlerAttributeEnumValues extends BaseCompletionHandler {
     public List<XSLTCompletionResultItem> getResultItemList(
         XSLTEditorComponentHolder editorComponentHolder) {
         initHandler(editorComponentHolder);
-        if (schemaModel == null) return Collections.EMPTY_LIST;
+        if (schemaModel == null) return Collections.emptyList();
         return getAttributeEnumValueList();
     }
     
     private List<XSLTCompletionResultItem> getAttributeEnumValueList() {
         if ((schemaModel == null) || (surroundTag == null) || (attributeName == null)) 
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         
-        NamedReferenceable refSchemaComponent = schemaModel.findByNameAndType(
-            XSLTCompletionUtil.ignoreNamespace(surroundTag.getTagName()), 
-            GlobalElement.class);
-        if (refSchemaComponent == null) return Collections.EMPTY_LIST;    
+        NamedReferenceable<SchemaComponent> refSchemaComponent = 
+            schemaModel.findByNameAndType(XSLTCompletionUtil.ignoreNamespace(
+            surroundTag.getTagName()), GlobalElement.class);
+        if (refSchemaComponent == null) return Collections.emptyList();    
         
-        List children = refSchemaComponent.getChildren();
-        List attributes = XSLTCompletionUtil.collectChildrenOfType(
+        List<SchemaComponent> children = refSchemaComponent.getChildren();
+        List<Attribute> attributes = XSLTCompletionUtil.collectChildrenOfType(
             children, Attribute.class);
 
         String attrTypeName = XSLTCompletionUtil.getAttributeType(
             attributes, attributeName);
-        if (attrTypeName == null) return Collections.EMPTY_LIST; 
+        if (attrTypeName == null) return Collections.emptyList(); 
 
         attrTypeName = XSLTCompletionUtil.ignoreNamespace(attrTypeName);
         refSchemaComponent = schemaModel.findByNameAndType(
@@ -89,7 +90,7 @@ public class HandlerAttributeEnumValues extends BaseCompletionHandler {
             children, Enumeration.class);
 
         if ((enumerations == null) || (enumerations.isEmpty())) 
-            return Collections.EMPTY_LIST; 
+            return Collections.emptyList(); 
             
         List<XSLTCompletionResultItem> resultItemList = 
             new ArrayList<XSLTCompletionResultItem>();

@@ -50,6 +50,7 @@ public final class GenerateAllAction extends NodeAction {
         ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
         builder.controllable(true).frontWindow(true).inputVisible(true).showProgress(true);
         builder.postExecution(new RefreshProjectRunnable(prj));
+        builder.optionsPath("org-netbeans-modules-groovy-support-options-GroovyOptionsCategory"); // NOI18N
 
         ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
         service.run();

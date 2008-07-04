@@ -57,56 +57,76 @@ import org.openide.windows.TopComponent;
 /**
  * @author Alex Petrov (30.04.2008)
  */
-public class XSLTCompletionUtil {
-    public static final String 
-        PATTERN_ATTRIB_VALUE_PREFIX = "=\"",
-        ATTRIB_NAME = "name",
-        ATTRIB_TYPE = "type";
+public class XSLTCompletionUtil implements XSLTCompletionConstants {
+    private static enum AttributeNameParsingState {
+        START_PARSING, LEFT_QUOTE_FOUND, EQUAL_SIGN_FOUND, CHAR_OF_NAME_FOUND
+    };
     
-    public static boolean attributeValueExpected(Document document, int caretOffset) {
-        int startPos = caretOffset - PATTERN_ATTRIB_VALUE_PREFIX.length();
-        try {
-            boolean result = document.getText(startPos, 
-                PATTERN_ATTRIB_VALUE_PREFIX.length()).equals(PATTERN_ATTRIB_VALUE_PREFIX);
-            return result;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-    
-    public static String extractAttributeName(Document document, int caretOffset, 
+    public static String getAttributeNameBeforeCaret(Document document, int caretOffset, 
         SyntaxElement surroundTag) {
         if ((document == null) || (surroundTag == null) || (caretOffset < 0)) 
             return null;
         
-        int startTagPos = surroundTag.getElementOffset(),
-            startPos = caretOffset - PATTERN_ATTRIB_VALUE_PREFIX.length();
+        int startTagPos = surroundTag.getElementOffset();
+        if (startTagPos < 0) return null;
         try {
-            int currentPos = startPos - 1;
-            StringBuffer strBuf = new StringBuffer();
-            while (true) {
-                String text = document.getText(currentPos, 1);
-                if (! Character.isWhitespace(text.charAt(0))) {
-                    strBuf.insert(0, text);
-                } else {
-                    break;
-                }
-                if ((--currentPos) <= startTagPos) break;
-            }
-            return strBuf.toString();
+            StringBuffer attributeNameBuf = new StringBuffer();
+            getAttributeNameBeforeCaret(attributeNameBuf, document, startTagPos, 
+                caretOffset, AttributeNameParsingState.START_PARSING);
+            return (attributeNameBuf.length() < 1 ? null : attributeNameBuf.toString());
         } catch (Exception e) {
+            Logger.getLogger(XSLTCompletionUtil.class.getName()).log(Level.INFO, 
+                e.getMessage(), e);
             return null;
         }
     }
     
-    public static List collectChildrenOfType(List children, Class requiredChildClass) {
-        List resultList = new ArrayList();
-        for (Object child : children) {
+    private static void getAttributeNameBeforeCaret(StringBuffer attributeNameBuf, 
+        Document document, int startTagPos, int currentPos, 
+        AttributeNameParsingState parsingState) throws Exception {
+        while (currentPos > startTagPos) {
+            --currentPos;
+            if (currentPos <= startTagPos) break;
+
+            String text = document.getText(currentPos, 1);
+            char lastChar = text.charAt(0);
+        
+            if (parsingState.equals(AttributeNameParsingState.START_PARSING)) {
+                if (lastChar == '"') {
+                    parsingState = AttributeNameParsingState.LEFT_QUOTE_FOUND;
+                }
+            } else if (parsingState.equals(AttributeNameParsingState.LEFT_QUOTE_FOUND)) {
+                if (lastChar == '=') {
+                    parsingState = AttributeNameParsingState.EQUAL_SIGN_FOUND;
+                } else if (! Character.isSpaceChar(lastChar)) {
+                    break;
+                }
+            } else if (parsingState.equals(AttributeNameParsingState.EQUAL_SIGN_FOUND)) {
+                if (! Character.isSpaceChar(lastChar)) {
+                    parsingState = AttributeNameParsingState.CHAR_OF_NAME_FOUND;
+                    attributeNameBuf.insert(0, text);
+                }
+            } else if (parsingState.equals(AttributeNameParsingState.CHAR_OF_NAME_FOUND)) {
+                if (! Character.isSpaceChar(lastChar)) {
+                    attributeNameBuf.insert(0, text);
+                } else {
+                    break;
+                }
+            }
+        }
+    } 
+    
+    public static <T extends SchemaComponent> List<T> collectChildrenOfType(
+        List<SchemaComponent> children, Class<T> requiredChildClass) {
+        List<T> resultList = new ArrayList<T>();
+        for (SchemaComponent child : children) {
+            if (child == null) continue;
+            
             if (requiredChildClass.isAssignableFrom(child.getClass())) {
-                resultList.add(child);
+                resultList.add((T) child);
             } else {
-                List nestedChildren = ((SchemaComponent) child).getChildren();
-                List nestedResultList = collectChildrenOfType(nestedChildren, 
+                List<SchemaComponent> nestedChildren = child.getChildren();
+                List<T> nestedResultList = collectChildrenOfType(nestedChildren, 
                     requiredChildClass);
                 if ((nestedResultList != null) && (! nestedResultList.isEmpty())) {
                     resultList.addAll(nestedResultList);
@@ -116,9 +136,8 @@ public class XSLTCompletionUtil {
         return resultList;
     }
     
-    public static String getAttributeType(List attributes, String attributeName) {
-        for (Object obj : attributes) {
-            Attribute attribute = (Attribute) obj;
+    public static String getAttributeType(List<Attribute> attributes, String attributeName) {
+        for (Attribute attribute : attributes) {
             String name = attribute.getPeer().getAttribute(ATTRIB_NAME);
             if ((name != null) && (name.equals(attributeName))) {
                 String attrTypeName = attribute.getPeer().getAttribute(ATTRIB_TYPE);
@@ -150,13 +169,10 @@ public class XSLTCompletionUtil {
         }
     }
     
-    public static XslModel getXslModel(Document doc) {
-        if (doc == null) return null;
-        if (getXsltDataEditorSupport() == null) return null;
-        
-        ModelSource modelSource = new ModelSource(Lookups.singleton(doc), false);
-        XslModelFactory xslModelFactory = XslModelFactory.XslModelFactoryAccess.getFactory();
-        XslModel xslModel = xslModelFactory.getModel(modelSource);
+    public static XslModel getXslModel() {
+        XSLTDataEditorSupport editorSupport = getXsltDataEditorSupport();
+        if (editorSupport == null) return null;
+        XslModel xslModel = editorSupport.getXslModel();
         return xslModel;
     }
 }

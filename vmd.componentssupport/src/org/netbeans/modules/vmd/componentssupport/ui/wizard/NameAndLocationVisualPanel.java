@@ -51,9 +51,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.vmd.componentssupport.ui.UIUtils;
 import org.netbeans.modules.vmd.componentssupport.ui.helpers.JavaMELibsConfigurationHelper;
 import org.netbeans.modules.vmd.componentssupport.ui.helpers.JavaMELibsPreviewHelper;
-import org.netbeans.modules.vmd.componentssupport.ui.helpers.JavaMELibsPreviewHelper.LibraryParsingException;
 import org.openide.WizardDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -133,22 +131,22 @@ final class NameAndLocationVisualPanel extends JPanel {
     private void addLibJarToList(List<String> created, List<String> modified){
         List<String> existingArchives = getExistingArchives(getExistingLibraries(), getExistingLibraryNames());
 
-        libraryErrors.clear();
+        //libraryErrors.clear();
         
         // add archibes from new lib if are not added yet
         Library library = (Library) mySettings.getProperty(
                 NewLibraryDescriptor.LIBRARY);
 
-        try {
+        //try {
             List<String> archives = JavaMELibsPreviewHelper.extractLibraryJarsPaths(library, getLibNameValue());
             for (String arch : archives) {
                 if (!existingArchives.contains(arch)) {
                     created.add(arch);
                 }
             }
-        } catch (LibraryParsingException ex) {
-            libraryErrors.add(ex.getMessage());
-        }
+        //} catch (LibraryParsingException ex) {
+        //    libraryErrors.add(ex.getMessage());
+        //}
     }
 
     private static List<String> getExistingArchives(List<Library> existingLibs, 
@@ -166,12 +164,12 @@ final class NameAndLocationVisualPanel extends JPanel {
             Library library = itLib.next();
             String name = itName.next();
 
-            try{
+            //try{
             existingArchives.addAll(
                     JavaMELibsPreviewHelper.extractLibraryJarsPaths(library, name) );
-            } catch (LibraryParsingException ex){
-                // nothing to do. archives stored in main wizard should correct
-            }
+            //} catch (LibraryParsingException ex){
+            //    // nothing to do. archives stored in main wizard should correct
+            //}
         }
         return existingArchives;
     }
@@ -251,10 +249,11 @@ final class NameAndLocationVisualPanel extends JPanel {
     
     private boolean checkValidity(){
         
-        if (!libraryErrors.isEmpty()){
-            setError(libraryErrors.get(0));
-            return false;
-        } else if (!isValidLibraryName()){
+        //if (!libraryErrors.isEmpty()){
+        //    setError(libraryErrors.get(0));
+        //    return false;
+        //} else 
+        if (!isValidLibraryName()){
             setError( getMessage(MSG_EMPTY_LIB_NAME) );
             return false;
         } else if (!isValidLibraryDisplayName()){
@@ -503,6 +502,6 @@ final class NameAndLocationVisualPanel extends JPanel {
     
     private WizardDescriptor mySettings;
     private NameAndLocationWizardPanel myPanel;
-    private List<String> libraryErrors = new ArrayList<String>();
+    //private List<String> libraryErrors = new ArrayList<String>();
     
 }
