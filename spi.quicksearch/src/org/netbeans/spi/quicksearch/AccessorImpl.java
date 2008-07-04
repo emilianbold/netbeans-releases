@@ -60,8 +60,8 @@ class AccessorImpl extends Accessor {
     }
 
     @Override
-    public SearchResponse createResponse (CategoryResult catResult) {
-        return new SearchResponse(catResult);
+    public SearchResponse createResponse (CategoryResult catResult, SearchRequest sRequest) {
+        return new SearchResponse(catResult, sRequest);
     }
     
 }

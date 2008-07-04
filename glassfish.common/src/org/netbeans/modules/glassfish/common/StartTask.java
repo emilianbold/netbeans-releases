@@ -125,7 +125,7 @@ public class StartTask extends BasicTask<OperationState> {
         logger.readInputStreams(serverProcess.getInputStream(), serverProcess.getErrorStream());
 
         // Waiting for server to start
-        while(System.currentTimeMillis() - start < TIMEOUT) {
+        while(System.currentTimeMillis() - start < START_TIMEOUT) {
             // Send the 'completed' event and return when the server is running
             if(CommonServerSupport.isRunning(host, port)) {
                 // !PW FIXME V3 as of March 12 is starting Grizzly & listening

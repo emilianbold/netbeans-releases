@@ -109,6 +109,8 @@ public class ToolbarRow {
      */
     void addToolbar (ToolbarConstraints newTC, int pos) {
         int index = newTC.checkInitialIndexInRow();
+        if( newTC.isAlwaysRight() )
+            index = toolbars.size();
         if( index >= 0 ) {
             //the toolbar is being added for the first time so get its index
             //from the order of declarations in layers xml
@@ -123,6 +125,13 @@ public class ToolbarRow {
                     break;
                 index++;
             }
+        }
+        //make sure alwaysRigt toolbar stays always the last element
+        if( index == toolbars.size() 
+                && !newTC.isAlwaysRight() 
+                && toolbars.size() > 0 
+                && toolbars.lastElement().isAlwaysRight() ) {
+            index--;
         }
         addToolbar2 (newTC, index);
     }

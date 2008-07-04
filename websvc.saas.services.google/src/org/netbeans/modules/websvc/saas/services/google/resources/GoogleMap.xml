@@ -59,10 +59,16 @@
         </group>
         <code-gen>
             <artifacts targets="servlet,resource,jsp">
-                <artifact id="GoogleMapService" type="template" requires="profile.properties"
-                    url="Templates/SaaSServices/GoogleMapResource.java"/>
+                <artifact id="GoogleMapService" type="template"
+                    url="Templates/SaaSServices/GoogleMapService.java"/>
                 <artifact id="googlemapservice" type="template"
-                    url="Templates/SaaSServices/apikey.properties"/>
+                    url="Templates/SaaSServices/googlemapservice.properties"/>
+            </artifacts>
+            <artifacts targets="php">
+                <artifact id="GoogleMapService" type="template"
+                    url="Templates/SaaSServices/GoogleMapService.php"/>
+                <artifact id="GoogleMapServiceProfile" type="template"
+                    url="Templates/SaaSServices/GoogleMapServiceProfile.php"/>
             </artifacts>
         </code-gen>
         <!-- http-basic, api-key, custom -->

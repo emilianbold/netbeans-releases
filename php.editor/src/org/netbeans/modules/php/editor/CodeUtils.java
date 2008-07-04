@@ -58,7 +58,14 @@ public class CodeUtils {
     public static String extractVariableName(Variable var) {
         if (var.getName() instanceof Identifier) {
             Identifier id = (Identifier) var.getName();
-            return "$" + id.getName(); //NOI18N
+            StringBuilder varName = new StringBuilder();
+            
+            if (var.isDollared()){
+                varName.append("$");
+            }
+            
+            varName.append(id.getName());
+            return varName.toString();
         } else {
             if (var.getName() instanceof Variable) {
                 Variable name = (Variable) var.getName();
@@ -96,6 +103,11 @@ public class CodeUtils {
         if (functionInvocation.getFunctionName().getName() instanceof Identifier) {
             Identifier id = (Identifier) functionInvocation.getFunctionName().getName();
             return id.getName();
+        }
+        
+        if (functionInvocation.getFunctionName().getName() instanceof Variable) {
+            Variable var = (Variable) functionInvocation.getFunctionName().getName();
+            return extractVariableName(var);
         }
         
         return null;
