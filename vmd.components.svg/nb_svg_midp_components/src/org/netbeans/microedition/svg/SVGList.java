@@ -189,25 +189,32 @@ public class SVGList extends SVGComponent implements DataListener {
     }
 
     private void removeContent() {
-        SVGLocatableElement content = (SVGLocatableElement)getElementByMeta(
-                getElement(), TYPE, SVGList.CONTENT );    
-        Node node = content.getFirstElementChild();
-        while ( node != null ){
-            Element next = null;
-            if ( node instanceof SVGElement ){
-                next = ((SVGElement)node).getNextElementSibling();
-            }
-            if ( !MetaData.METADATA.equals(node.getLocalName())){
-                content.removeChild( node );
-            }
-            else if ( node instanceof SVGElement ){
-                String display = ((SVGElement)node).getTrait( MetaData.DISPLAY );
-                if ( !MetaData.NONE.equals( display )){
-                    content.removeChild( node );
+        getForm().invokeLaterSafely(new Runnable() {
+
+            public void run() {
+                final SVGLocatableElement content = (SVGLocatableElement) getElementByMeta(
+                        getElement(), TYPE, SVGList.CONTENT);
+                Node node = content.getFirstElementChild();
+                while (node != null) {
+                    Element next = null;
+                    if (node instanceof SVGElement) {
+                        next = ((SVGElement) node).getNextElementSibling();
+                    }
+                    if (!MetaData.METADATA.equals(node.getLocalName())) {
+                        content.removeChild(node);
+                    }
+                    else if (node instanceof SVGElement) {
+                        String display = ((SVGElement) node)
+                                .getTrait(MetaData.DISPLAY);
+                        if (!MetaData.NONE.equals(display)) {
+                            final Node forRemove = node;
+                            content.removeChild(forRemove);
+                        }
+                    }
+                    node = next;
                 }
             }
-            node = next;
-        }
+        });
     }
 
     public interface ListModel {
@@ -349,7 +356,8 @@ public class SVGList extends SVGComponent implements DataListener {
                     ret = true;
                 }
                 else if ( keyCode == RIGHT ){
-                    myCurrentIndex = Math.min( myCurrentIndex +1 , getModel().getSize() -1  );
+                    myCurrentIndex = Math.min( myCurrentIndex +1 , 
+                            getModel().getSize() -1  );
                     synchronized (myUILock) {
                         isUIAction = true;
                         getSelectionModel().clearSelection();

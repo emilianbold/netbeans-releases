@@ -130,7 +130,7 @@ public class CodeCompleter implements CodeCompletionHandler {
     Set<GroovyKeyword> keywords;
 
     public CodeCompleter() {
-//        LOG.setLevel(Level.FINEST);
+        LOG.setLevel(Level.OFF);
 
         JavaPlatformManager platformMan = JavaPlatformManager.getDefault();
         JavaPlatform platform = platformMan.getDefaultPlatform();
@@ -1343,9 +1343,10 @@ public class CodeCompleter implements CodeCompletionHandler {
                 singlePackage = singlePackage.substring(packageRequest.basePackage.length() + 1);
             }
 
-            if (singlePackage.length() > 0) {
+            if(singlePackage.startsWith(packageRequest.prefix) && singlePackage.length() > 0){
                 proposals.add(new PackageItem(singlePackage, anchor, request));
             }
+
         }
 
         return false;

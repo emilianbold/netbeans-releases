@@ -82,7 +82,7 @@ public class SVGLabel extends SVGComponent {
         if ( myText == null  ){
             throw new IllegalArgumentException("No nested text element found"); // NOI18N
         }
-        myText.setTrait( TRAIT_TEXT,  text );
+        setTraitSafely( myText , TRAIT_TEXT,  text );
     }
     
     public String getText(){

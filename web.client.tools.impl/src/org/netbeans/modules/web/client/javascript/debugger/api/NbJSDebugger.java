@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.client.javascript.debugger.api;
 
 import java.beans.PropertyChangeEvent;
@@ -52,6 +51,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.api.debugger.DebuggerEngine.Destructor;
@@ -74,6 +74,7 @@ import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerC
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerEvent;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerEventListener;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerState;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessageEvent;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSSource;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSURILocation;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSWindow;
@@ -89,6 +90,7 @@ import org.netbeans.modules.web.client.tools.api.JSLocation;
 import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.NbJSLocation;
 import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessageEventListener;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Factory;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
@@ -111,79 +113,88 @@ public final class NbJSDebugger {
     private final URI uri;
     private final Factory browser;
     private Lookup lookup;
-
     private final List<JSDebuggerEventListener> listeners;
-
+    private final List<JSHttpMessageEventListener> httpListeners;
     private final PropertyChangeSupport propertyChangeSupport;
-
     public static final String PROPERTY_SELECTED_FRAME = "selectedFrame"; // NOI18N
-    private JSCallStackFrame selectedFrame;    
-
+    private JSCallStackFrame selectedFrame;
     public static final String PROPERTY_SOURCES = JSDebugger.PROPERTY_SOURCES;
     public static final String PROPERTY_WINDOWS = JSDebugger.PROPERTY_WINDOWS;
-    
     private URLContentProvider contentProvider;
-
     private JSDebugger debugger;
-    
     private HashMap<Breakpoint, JSBreakpointImpl> breakpointsMap = new HashMap<Breakpoint, JSBreakpointImpl>();
 
     private class JSDebuggerEventListenerImpl implements JSDebuggerEventListener {
+
         public void onDebuggerEvent(JSDebuggerEvent debuggerEvent) {
             final JSDebuggerState debuggerState = debuggerEvent.getDebuggerState();
             setState(debuggerState);
         }
     }
-    
+
     private class JSDebuggerConsoleEventListenerImpl implements JSDebuggerConsoleEventListener {
+
         public void onConsoleEvent(JSDebuggerConsoleEvent consoleEvent) {
             if (console != null) {
                 String message = consoleEvent.getMessage();
                 switch (consoleEvent.getType()) {
-                case STDERR:
-                    console.getErr().println(message);
-                    break;
-                case STDOUT:
-                    console.getOut().println(message);
-                    break;
+                    case STDERR:
+                        console.getErr().println(message);
+                        break;
+                    case STDOUT:
+                        console.getOut().println(message);
+                        break;
                 }
             }
         }
     }
-    
-    private class DebuggerManagerListenerImpl extends DebuggerManagerAdapter {
-        @Override
-        public void breakpointAdded(Breakpoint bp) {
-            if(bp instanceof NbJSBreakpoint) {
-                setBreakpoint((NbJSBreakpoint)bp);
+
+    private class JSHttpMessageEventListenerImpl implements JSHttpMessageEventListener {
+
+        public void onHttpMessageEvent(JSHttpMessageEvent jsHttpMessageEvent) {
+            if (jsHttpMessageEvent != null) {
+                fireJSHttpMessageEvent(jsHttpMessageEvent);
             }
         }
-        
+    }
+
+    /* Joelle: Create your Implementation of JSHttpMessageEventListenerImpl here*/
+    private class DebuggerManagerListenerImpl extends DebuggerManagerAdapter {
+
+        @Override
+        public void breakpointAdded(Breakpoint bp) {
+            if (bp instanceof NbJSBreakpoint) {
+                setBreakpoint((NbJSBreakpoint) bp);
+            }
+        }
+
         @Override
         public void breakpointRemoved(Breakpoint bp) {
-            if(bp instanceof NbJSBreakpoint) {
+            if (bp instanceof NbJSBreakpoint) {
                 removeBreakpoint(bp);
-            }            
+            }
         }
     }
 
     private class PropertyChangeListenerImpl implements PropertyChangeListener {
+
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(JSDebugger.PROPERTY_SOURCES) ||
-                evt.getPropertyName().equals(JSDebugger.PROPERTY_WINDOWS)) {
+                    evt.getPropertyName().equals(JSDebugger.PROPERTY_WINDOWS)) {
                 try {
-                propertyChangeSupport.firePropertyChange(
-                            evt.getPropertyName(), 
+                    propertyChangeSupport.firePropertyChange(
+                            evt.getPropertyName(),
                             evt.getOldValue(),
                             evt.getNewValue());
-                }catch(RuntimeException re) {
+                } catch (RuntimeException re) {
                     Log.getLogger().log(Level.INFO, re.getMessage(), re);
                 }
             }
         }
     }
-    
+
     private class BreakpointPropertyChangeListener implements PropertyChangeListener {
+
         public void propertyChange(PropertyChangeEvent evt) {
             Object source = evt.getSource();
             if (source instanceof NbJSBreakpoint) {
@@ -195,20 +206,19 @@ public final class NbJSDebugger {
                     // This is because the line number is
                     // part of breakpoint id.
                     removeBreakpoint(bp);
-                    setBreakpoint((NbJSBreakpoint)bp);
+                    setBreakpoint((NbJSBreakpoint) bp);
                 } else if (evt.getPropertyName().equals(NbJSBreakpoint.PROP_UPDATED)) {
                     updateBreakpoint(bp);
                 }
             }
         }
     }
-
     private JSDebuggerEventListener debuggerListener;
     private JSDebuggerConsoleEventListener debuggerConsoleEventListener;
+    private JSHttpMessageEventListener httpMessageEventListener;
     private PropertyChangeListener propertyChangeListener;
     private DebuggerManagerListenerImpl debuggerManagerListener;
     private BreakpointPropertyChangeListener breakpointPropertyChangeListener;
-    
     private InputOutput console;
 
     NbJSDebugger(URI uri, HtmlBrowser.Factory browser, Lookup lookup, JSDebugger debugger) {
@@ -219,7 +229,7 @@ public final class NbJSDebugger {
 
         listeners = new CopyOnWriteArrayList<JSDebuggerEventListener>();
         propertyChangeSupport = new PropertyChangeSupport(this);
-        contentProvider = new NbJSDebuggerContentProvider(this);        
+        contentProvider = new NbJSDebuggerContentProvider(this);
 
         // Add listener to JSDebugger
         debuggerListener = new JSDebuggerEventListenerImpl();
@@ -227,27 +237,35 @@ public final class NbJSDebugger {
                 JSDebuggerEventListener.class,
                 debuggerListener,
                 this.debugger));
-        
+
         debuggerConsoleEventListener = new JSDebuggerConsoleEventListenerImpl();
         this.debugger.addJSDebuggerConsoleEventListener(WeakListeners.create(
                 JSDebuggerConsoleEventListener.class,
                 debuggerConsoleEventListener,
                 this.debugger));
-        
+
+        // Add HttpMessageEventListener
+        httpListeners = new CopyOnWriteArrayList<JSHttpMessageEventListener>();
+        httpMessageEventListener = new JSHttpMessageEventListenerImpl();
+        this.debugger.addJSHttpMessageEventListener(WeakListeners.create(
+                JSHttpMessageEventListener.class,
+                httpMessageEventListener,
+                this.debugger));
+
         // Add DebuggerManagerListener
         debuggerManagerListener = new DebuggerManagerListenerImpl();
         DebuggerManager.getDebuggerManager().addDebuggerListener(WeakListeners.create(
                 DebuggerManagerListener.class,
                 debuggerManagerListener,
-                DebuggerManager.getDebuggerManager()));        
-        
+                DebuggerManager.getDebuggerManager()));
+
         propertyChangeListener = new PropertyChangeListenerImpl();
         this.debugger.addPropertyChangeListener(WeakListeners.propertyChange(propertyChangeListener, debugger));
-        
+
         breakpointPropertyChangeListener = new BreakpointPropertyChangeListener();
-        
+
         console = IOProvider.getDefault().getIO(
-                NbBundle.getMessage(NbJSDebugger.class,  "TITLE_CONSOLE", getURI(), getID()), true); // NOI18N
+                NbBundle.getMessage(NbJSDebugger.class, "TITLE_CONSOLE", getURI(), getID()), true); // NOI18N
     }
 
     public static void startDebugging(URI uri, HtmlBrowser.Factory browser, Lookup lookup) {
@@ -313,6 +331,29 @@ public final class NbJSDebugger {
         }
     }
 
+
+    // Http Event listener
+    public void addJSHttpMessageEventListener(JSHttpMessageEventListener httpMessageEventListener) {
+        httpListeners.add(httpMessageEventListener);
+    }
+
+    public void removeJSHttpMessageEventListener(JSHttpMessageEventListener httpMessageEventListener) {
+        httpListeners.remove(httpMessageEventListener);
+    }
+
+    private void fireJSHttpMessageEvent(JSHttpMessageEvent httpMessageEvent) {
+
+        //Logger.getLogger(this.getClass().getName()).info("****** HTTP MESSAGE RECEIVED AND TRIGGERED ********: " + httpMessageEvent);
+        for (JSHttpMessageEventListener httpListener : httpListeners) {
+            try {
+                httpListener.onHttpMessageEvent(httpMessageEvent);
+            } catch (RuntimeException re) {
+                Log.getLogger().log(Level.INFO, re.getMessage(), re);
+            }
+        }
+    }
+
+
     // Property Change Listeners
     public void addPropertyChangeListener(PropertyChangeListener l) {
         propertyChangeSupport.addPropertyChangeListener(l);
@@ -331,10 +372,10 @@ public final class NbJSDebugger {
 
     void setState(JSDebuggerState state) {
         this.state = state;
-        if (state == JSDebuggerState.STARTING_INIT){
+        if (state == JSDebuggerState.STARTING_INIT) {
             // Set the initial feature set
             NbJSPreferences preferences = NbJSPreferences.getInstance();
-            
+
             debugger.setBooleanFeature(Feature.Name.SHOW_FUNCTIONS, preferences.getShowFunctions());
             debugger.setBooleanFeature(Feature.Name.SHOW_CONSTANTS, preferences.getShowConstants());
             debugger.setBooleanFeature(Feature.Name.BYPASS_CONSTRUCTORS, preferences.getBypassConstructors());
@@ -343,13 +384,13 @@ public final class NbJSDebugger {
             debugger.setBooleanFeature(Feature.Name.SUSPEND_ON_EXCEPTIONS, preferences.getSuspendOnExceptions());
             debugger.setBooleanFeature(Feature.Name.SUSPEND_ON_ERRORS, preferences.getSuspendOnErrors());
             debugger.setBooleanFeature(Feature.Name.SUSPEND_ON_DEBUGGERKEYWORD, preferences.getSuspendOnDebuggerKeyword());
-            
+
             //We probably need to figure out the best place to specify the Http Monitor being on or off by default.  
             debugger.setBooleanFeature(Feature.Name.HTTP_MONITOR, preferences.getHttpMonitor());
-            
+
             setBreakPoints();
         }
-        if (state == JSDebuggerState.STARTING_READY){
+        if (state == JSDebuggerState.STARTING_READY) {
             if (console != null) {
                 console.getOut().print("NetBeans JavaScript Debugger Console Started.");
             }
@@ -363,9 +404,9 @@ public final class NbJSDebugger {
             }
         } else {
             selectFrame(null);
-        }        
+        }
         JSDebuggerEvent resourcedDebuggerEvent =
-                    new JSDebuggerEvent(NbJSDebugger.this, this.state);
+                new JSDebuggerEvent(NbJSDebugger.this, this.state);
         fireJSDebuggerEvent(resourcedDebuggerEvent);
         if (state.getState() == JSDebuggerState.State.DISCONNECTED) {
             if (console != null) {
@@ -376,16 +417,16 @@ public final class NbJSDebugger {
     }
 
     private void setBreakPoints() {
-        for(Breakpoint bp : DebuggerManager.getDebuggerManager().getBreakpoints()) {
-            if(bp instanceof NbJSBreakpoint) {
+        for (Breakpoint bp : DebuggerManager.getDebuggerManager().getBreakpoints()) {
+            if (bp instanceof NbJSBreakpoint) {
                 setBreakpoint((NbJSBreakpoint) bp);
             }
         }
     }
-    
+
     private void setBreakpoint(NbJSBreakpoint bp) {
         JSBreakpointImpl bpImpl = breakpointsMap.get(bp);
-        if(bpImpl != null) {
+        if (bpImpl != null) {
             return;
         }
         JSURILocation jsURILocation = null;
@@ -399,7 +440,7 @@ public final class NbJSDebugger {
             //TODO set the type correctly for other types of breakpoints
             bpImpl.setType(JSBreakpoint.Type.LINE);
             bpImpl.setEnabled(bp.isEnabled());
-            
+
             bpImpl.setHitValue(0);
             bpImpl.setHitCondition(HIT_COUNT_FILTERING_STYLE.EQUAL);
             HIT_COUNT_FILTERING_STYLE hitCountFilteringStyle = bp.getHitCountFilteringStyle();
@@ -408,25 +449,25 @@ public final class NbJSDebugger {
                 bpImpl.setHitValue(bp.getHitCountFilter());
                 bpImpl.setHitCondition(hitCountFilteringStyle);
             }
-            
+
             String condition = bp.getCondition();
             if (condition == null) {
                 condition = "";
             }
             bpImpl.setCondition(condition);
-            
+
             String bpId = debugger.setBreakpoint(bpImpl);
-            if(bpId != null) {
+            if (bpId != null) {
                 bpImpl.setId(bpId);
                 breakpointsMap.put(bp, bpImpl);
-                bp.addPropertyChangeListener(WeakListeners.propertyChange(breakpointPropertyChangeListener, bp));                
+                bp.addPropertyChangeListener(WeakListeners.propertyChange(breakpointPropertyChangeListener, bp));
             }
         }
     }
-    
+
     private void removeBreakpoint(Breakpoint bp) {
         JSBreakpointImpl bpImpl = breakpointsMap.get(bp);
-        if(bpImpl != null) {
+        if (bpImpl != null) {
             String id = bpImpl.getId();
             // commented since remove is not implemented on extension side            
             boolean removed = debugger.removeBreakpoint(id);
@@ -435,10 +476,10 @@ public final class NbJSDebugger {
             }
         }
     }
-    
+
     private void updateBreakpoint(NbJSBreakpoint bp) {
         JSBreakpointImpl bpImpl = breakpointsMap.get(bp);
-        if(bpImpl == null) {
+        if (bpImpl == null) {
             Log.getLogger().log(Level.INFO, "Cannot update non existing breakpoint");   //NOI18N
             return;
         }
@@ -447,22 +488,22 @@ public final class NbJSDebugger {
         int line = -1;
         int hitValue = bp.getHitCountFilter();
         HIT_COUNT_FILTERING_STYLE hitCondition = bp.getHitCountFilteringStyle();
-        String condition =  bp.getCondition();      
+        String condition = bp.getCondition();
         if (hitCondition == null) {
             hitValue = 0;
             hitCondition = HIT_COUNT_FILTERING_STYLE.EQUAL;
         }
-        if(condition == null) {
+        if (condition == null) {
             condition = "";
         }
-        
+
         String id = bpImpl.getId();
         debugger.updateBreakpoint(id, enabled, line, hitValue, hitCondition, condition);
     }
-    
+
     private JSLocation getJSLocation(JSAbstractLocation nbJSLocation) {
         Session session = DebuggerManager.getDebuggerManager().getCurrentSession();
-        if(session != null) {
+        if (session != null) {
             NbJSToJSLocationMapper nbJSToJSLocationMapper = session.lookupFirst(null, NbJSToJSLocationMapper.class);
             if (nbJSToJSLocationMapper != null) {
                 JSLocation jsLocation = null;
@@ -474,7 +515,7 @@ public final class NbJSDebugger {
         }
         return null;
     }
-    
+
     // Windows
     public JSWindow[] getWindows() throws IllegalStateException {
         if (debugger != null) {
@@ -494,13 +535,15 @@ public final class NbJSDebugger {
     public FileObject getFileObjectForSource(JSSource source) {
         JSToNbJSLocationMapper mapper = null;
 
-        if (lookup != null) mapper = lookup.lookup(JSToNbJSLocationMapper.class);
+        if (lookup != null) {
+            mapper = lookup.lookup(JSToNbJSLocationMapper.class);
+        }
         JSLocation location = source.getLocation();
 
         if (mapper != null) {
             NbJSLocation foLocation = mapper.getNbJSLocation(location, lookup);
             if (foLocation != null && foLocation instanceof NbJSFileObjectLocation) {
-                return ((NbJSFileObjectLocation)foLocation).getFileObject();
+                return ((NbJSFileObjectLocation) foLocation).getFileObject();
             }
         }
 
@@ -511,14 +554,14 @@ public final class NbJSDebugger {
         URI srcURI = source.getLocation().getURI();
         try {
             return getURLFileObject(srcURI.toURL());
-        }catch (MalformedURLException ex) {
+        } catch (MalformedURLException ex) {
             Log.getLogger().warning("Could not convert URI to URL: " + srcURI.toString());
             return null;
         }
     }
 
     // Callstack
-    public JSCallStackFrame[] getCallStackFrames() throws IllegalStateException {        
+    public JSCallStackFrame[] getCallStackFrames() throws IllegalStateException {
         if (debugger != null) {
             return debugger.getCallStackFrames(); // TODO
         }
@@ -529,11 +572,11 @@ public final class NbJSDebugger {
         return this.selectedFrame == selectedFrame;
     }
 
-    public JSCallStackFrame getSelectedFrame(){
+    public JSCallStackFrame getSelectedFrame() {
         return selectedFrame;
     }
 
-    public boolean isSessionSuspended(){
+    public boolean isSessionSuspended() {
         if (debugger != null) {
             return debugger.isSuspended();
         }
@@ -542,7 +585,6 @@ public final class NbJSDebugger {
 
     // Breakpoints
     public void setBreakpoint(NbJSFileObjectBreakpoint breakpoint) {
-
     }
 
     public boolean isSuspendedWindow(JSWindow window) {
@@ -576,12 +618,12 @@ public final class NbJSDebugger {
             debugger.resume();
         }
     }
-    
+
     public void pause() {
         if (debugger != null) {
             debugger.pause();
         }
-    }    
+    }
 
     public void stepInto() {
         if (debugger != null) {

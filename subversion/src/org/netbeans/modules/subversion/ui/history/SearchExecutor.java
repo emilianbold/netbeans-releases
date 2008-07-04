@@ -224,7 +224,7 @@ class SearchExecutor implements Runnable {
                     }
                     paths[idx++] = p;
                 }                
-                ISVNLogMessage [] messages = client.getLogMessages(rootUrl, paths, fromRevision, toRevision, false, true);
+                ISVNLogMessage [] messages = SvnUtils.getLogMessages(client, rootUrl, paths, fromRevision, toRevision, false, true);
                 appendResults(rootUrl, messages);
             } catch (SVNClientException e) {                
                 try {    
