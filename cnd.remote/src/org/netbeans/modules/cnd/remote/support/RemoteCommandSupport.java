@@ -57,6 +57,11 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
     private BufferedReader in;
     private StringWriter out;
     private String cmd;
+    
+    public static int run(String key, String cmd) {
+        RemoteCommandSupport support = new RemoteCommandSupport(key, cmd);
+        return support.getExitStatus();
+    }
 
     public RemoteCommandSupport(String key, String cmd, int port) {
         super(key, port);
@@ -82,6 +87,7 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
             }
             in.close();
             is.close();
+            setExitStatus(channel.getExitStatus());
         } catch (JSchException jse) {
         } catch (IOException ex) {
         }
