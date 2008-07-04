@@ -62,3 +62,30 @@ template <
 template<unsigned int L, class T, class TList = Loki::NullType> class OrderedStatic {
 
 };
+
+
+template
+<
+class T,
+template <class> class CreationPolicy,
+template <class> class L,
+template <class, class> class M,
+class X
+>
+class SingletonHolder {
+public:
+    void DestroySingleton();
+};
+
+template
+<
+class T2,
+template <class> class CreationPolicy2,
+template <class> class L2,
+template <class, class> class M2,
+class X2
+>
+void
+SingletonHolder<T2, CreationPolicy2, L2, M2, X2>::DestroySingleton() {
+    T2 t;
+}

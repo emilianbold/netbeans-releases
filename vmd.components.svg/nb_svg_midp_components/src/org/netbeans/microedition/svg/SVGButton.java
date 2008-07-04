@@ -53,11 +53,8 @@ import org.w3c.dom.svg.SVGRGBColor;
  * @author ads
  */
 public class SVGButton extends SVGAbstractButton {
-    private static final String TEXT       = "text";            // NOI18N
-    private static final String SHADOW     = "shadow_text";     // NOI18N
     
     private       SVGRGBColor         bodyColor;
-    private       boolean             isSelected = false;
     
     public SVGButton( SVGForm form, String elemId) {
         super(form, elemId);
@@ -93,10 +90,12 @@ public class SVGButton extends SVGAbstractButton {
         return isSelected;
     }
 
-    public void setSelected(boolean isSelected) {
-        if ( this.isSelected != isSelected) {
-            this.isSelected = isSelected;
+    public void setSelected(boolean selected) {
+        if ( isSelected != selected) {
+            isSelected = selected;
             fireActionPerformed();
         }
     }
+    
+    private       boolean             isSelected = false;
 }

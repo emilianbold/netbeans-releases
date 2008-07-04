@@ -68,7 +68,19 @@ Microsystems, Inc. All Rights Reserved.
         perform search in its data model and feed <api group="java" name="SearchResponse" category="official" type="export" url="@TOP@/org/netbeans/spi/quicksearch/SearchResponse.html" />
         response object by results apropriate for given request.
     </p>
- </answer>
+ <api type="export" group="property" name="quicksearch.web.site" category="devel">
+     Resource name from org.netbeans.modules.quicksearch.web.Bundle where it is 
+     possible to specify website to restrict the web search to. When set to e.g.
+     NetBeans.org then the web search provider will search for given text in web pages
+     from NetBeans.org site only.
+</api>
+ <api type="export" group="property" name="quicksearch.web.url_patterns" category="devel">
+     Resource name from org.netbeans.modules.quicksearch.web.Bundle where it is 
+     possible to specify a comma separated list of strings that the search results URLs 
+     must contain. When set to e.g. "docs/myapp,tutorials/myapp" then all the search
+     results will have either "docs/myapp" or "tutorials/myapp" anywhere in the URL.
+</api>
+</answer>
 
 
 
