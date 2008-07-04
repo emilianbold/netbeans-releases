@@ -1,0 +1,3 @@
+Local History  >  Show Local History   H
+                  Revert Deleted       D
+                  Revert to...         R

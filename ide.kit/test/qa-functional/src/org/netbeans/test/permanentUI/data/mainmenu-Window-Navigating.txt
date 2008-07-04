@@ -1,0 +1,3 @@
+Navigating              > Navigator       N
+                          Inspector       I
+                          Hierarchy       H

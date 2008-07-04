@@ -1,0 +1,8 @@
+Output                  > Output                O
+                          Search Results        S
+                          Find Usages Results   F
+                          JUnit Test Results    J
+                          Versioning Output     V
+                          Refactoring Preview   R
+                          Analyzer              A
+                          Call Graph            C

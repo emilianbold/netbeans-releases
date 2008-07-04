@@ -1,0 +1,11 @@
+| Help |                   H (mnemonics)
+========
+Help Contents              C
+Online Docs and Support    D
+Keyboard Shortcuts Card    K
+========================
+Javadoc Index Search       S
+Javadoc References     >   J
+========================
+Start Page                 P
+About                      A
