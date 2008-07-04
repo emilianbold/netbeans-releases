@@ -135,7 +135,7 @@ public abstract class CompletionResultItem implements CompletionItem {
             if(prefix == null)
                 return true;            
             //insert namespace declaration for the new prefix
-            if(!context.isPrefixBeingUsed(prefix)) {
+            if(!context.isSpecialCompletion() && !context.isPrefixBeingUsed(prefix)) {
                 String tns = context.getTargetNamespaceByPrefix(prefix);
                 doc.insertString(CompletionUtil.getNamespaceInsertionOffset(doc), " " +
                         XMLConstants.XMLNS_ATTRIBUTE+":"+prefix+"=\"" +

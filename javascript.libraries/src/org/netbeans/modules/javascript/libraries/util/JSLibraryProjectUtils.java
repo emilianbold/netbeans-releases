@@ -100,7 +100,7 @@ public final class JSLibraryProjectUtils {
     private static final String RUBY_PROJECT_DEFAULT_RELATIVE_PATH = "public"; // NOI18N
     private static final String PHP_PROJECT = "org.netbeans.modules.php.project"; // NOI18N
     private static final String OTHER_PROJECT_DEFAULT_RELATIVE_PATH = "javascript"; // NOI18N
-    
+        
     private static final String LIBRARY_PROPERTIES = "library.properties"; // NOI18N
     private static final String LIBRARY_PATH_PROP = "LibraryRoot"; // NOI18N
 
@@ -569,12 +569,25 @@ public final class JSLibraryProjectUtils {
             }
             
             for (String fileName : fileNames) {
+                if (!fileName.startsWith("/")) {
+                    fileName = "/" + fileName;
+                }
+                
                 if (includePaths != null) {
                     boolean skip = true;
                     for (String includePath : includePaths) {
                         if (isIncluded(fileName, includePath)) {
                             skip = false;
                             break;
+                        } else if (isIncluded(includePath, fileName)) {
+                            // check if the current file is a folder and a parent of
+                            // a LibraryRoot
+                            FileObject toDelete = baseFO.getFileObject(fileName);
+                            if (toDelete != null && toDelete.isFolder() 
+                                    && toDelete.getChildren().length == 0) {
+                                skip = false;
+                                break;
+                            }
                         }
                     }
                     

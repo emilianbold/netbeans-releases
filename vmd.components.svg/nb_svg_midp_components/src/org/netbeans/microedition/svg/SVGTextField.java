@@ -25,20 +25,26 @@ import org.w3c.dom.svg.SVGRect;
 /**
  * Suggested svg snippet :
  * <pre>
- *   &lt;g id="textfield_name" transform="translate(20,40)">
- *       &lt;!-- metadata definition-->
- *       &lt;text display="none">readOnly="false" enabled="true" </text>
+ * &lt;g id="textfield_name" transform="translate(20,40)">
+ *       &lt;!-- Metadata information. Please don't edit. -->
+ *   &lt;text display="none">type=textfield&lt;/text>
+ *       &lt;text display="none">readOnly="false" enabled="true"&lt;/text>
+ *
  *       &lt;rect x="0" y="0" rx="5" ry="5" width="200" height="30" fill="none" stroke="black" stroke-width="2">
  *           &lt;animate attributeName="stroke" attributeType="XML" begin="textfield_name.focusin" dur="0.25s" fill="freeze" to="rgb(255,165,0)"/>
  *           &lt;animate attributeName="stroke" attributeType="XML" begin="textfield_name.focusout" dur="0.25s" fill="freeze" to="black"/>
  *       &lt;/rect>
  *       &lt;text  x="10" y="23" stroke="black" font-size="20" font-family="SunSansSemiBold">John Hilsworths
- *       &lt;metadata>&lt;text>type=text&lt;/text>&lt;/metadata>
+ *       &lt;!-- Metadata information. Please don't edit. -->
+ *       &lt;text display="none">type=text&lt;/text>
  *       &lt;/text>
- *       &lt;rect id="textfield_name_caret" visibility="visible" x="20" y="4" width="3" height="22" fill="black" stroke="black">
- *       &lt;metadata>&lt;text>type=text&lt;/text>&lt;/metadata>
- *       &lt;/rect>
- *   &lt;/g>
+ *   &lt;g>
+ *           &lt;!-- Metadata information. Please don't edit. -->
+ *           &lt;text display="none">type=caret&lt;/text>
+ *
+ *           &lt;rect visibility="visible" x="20" y="4" width="3" height="22" fill="black" stroke="black"/>
+ *       &lt;/g>
+ *   &lt;/g
  * </pre>
  * @author Pavel Benes
  * @author ads

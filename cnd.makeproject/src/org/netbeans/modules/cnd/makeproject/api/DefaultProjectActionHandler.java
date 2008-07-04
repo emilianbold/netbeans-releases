@@ -371,8 +371,8 @@ public class DefaultProjectActionHandler implements ActionListener {
                     }
                     // Append compilerset base to run path. (IZ 120836)
                     ArrayList<String> env1 = new ArrayList<String>();
-                    String csname = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getOption();
-                    CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(csname);
+                    //String csname = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getOption();
+                    CompilerSet cs = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getCompilerSet();
                     if (cs != null) {
                         String csdirs = cs.getDirectory();
                         if (((MakeConfiguration)pae.getConfiguration()).getCompilerSet().getFlavor().equals(CompilerFlavor.MinGW.toString())) {
@@ -400,8 +400,8 @@ public class DefaultProjectActionHandler implements ActionListener {
                     }
                 } else { // Build or Clean
                     String[] env1 = new String[env.length + 1];
-                    String csname = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getOption();
-                    String csdirs = CompilerSetManager.getDefault().getCompilerSet(csname).getDirectory();
+                    //String csname = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getOption();
+                    String csdirs = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getCompilerSet().getDirectory();
                     if (((MakeConfiguration)pae.getConfiguration()).getCompilerSet().getFlavor().equals(CompilerFlavor.MinGW.toString())) {
                         // Also add msys to path. Thet's where sh, mkdir, ... are.
                         String msysBase = CppUtils.getMSysBase();

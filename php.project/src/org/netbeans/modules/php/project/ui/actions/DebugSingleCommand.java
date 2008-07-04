@@ -47,8 +47,11 @@ import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  * @author Radek Matous
@@ -82,7 +85,18 @@ public class DebugSingleCommand extends DebugCommand {
             if (!jsDebuggingAvailable || WebClientToolsProjectUtils.getServerDebugProperty(getProject())) {
                 XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
                 if (dbgStarter != null) {
-                    dbgStarter.start(getProject(), runnable, fileForContext(context), useInterpreter());
+                    if (dbgStarter.isAlreadyRunning()) {
+                        String message = NbBundle.getMessage(DebugSingleCommand.class, "MSG_NoMoreDebugSession");
+                        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(message,
+                                NotifyDescriptor.OK_CANCEL_OPTION); //NOI18N
+                        boolean confirmed = DialogDisplayer.getDefault().notify(descriptor).equals(NotifyDescriptor.OK_OPTION);
+                        if (confirmed) {
+                            dbgStarter.stop();
+                            invokeAction(context);
+                        }
+                    } else {
+                        dbgStarter.start(getProject(), runnable, fileForContext(context), useInterpreter());
+                    }
                 }
             } else {
                 runnable.run();
