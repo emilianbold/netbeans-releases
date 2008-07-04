@@ -349,6 +349,7 @@ public class SvnClientExceptionHandler {
                 directWorks = true;
             } catch (Exception e) {
                 // do nothing
+                Subversion.LOG.log(Level.FINE, null, e);
             }
             if(!directWorks) {
                 proxySocket = new Socket(java.net.Proxy.NO_PROXY); // reusing sockets seems to cause problems - see #138916
