@@ -99,7 +99,9 @@ public final class CompileOnSaveManager {
 
             boolean delayed = true;
             if (current != null && !current.isDone()) {
-                current.cancel(true);
+                // TODO interruption throws exception to user from lower levels :((
+                // this is dummy interruption signal handling :(
+                current.cancel(false);
                 delayed = false;
             }
 
