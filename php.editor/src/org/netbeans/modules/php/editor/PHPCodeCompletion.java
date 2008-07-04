@@ -103,6 +103,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -738,14 +739,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         
         if (element instanceof IndexedElement) {
             final IndexedElement indexedElement = (IndexedElement) element;
-            StringBuilder builder = new StringBuilder();
+            StringBuilder description = new StringBuilder();
+            final StringBuilder header = new StringBuilder();
             
             String location = indexedElement.getFile().isPlatform() ? NbBundle.getMessage(PHPCodeCompletion.class, "PHPPlatform")
                     : indexedElement.getFilenameUrl();
             
-            builder.append(String.format("<font size=-1>%s</font>" +
-                    "<p><font size=+1><code><b>%s</b></code></font></p><br>", //NOI18N
-                    location, indexedElement.getDisplayName()));
+            header.append(String.format("<font size=-1>%s</font>", location));
             
             final StringBuilder phpDoc = new StringBuilder();
             
@@ -765,6 +765,50 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                             
                             if (program != null) {
                                 ASTNode node = Utils.getNodeAtOffset(program, indexedElement.getOffset());
+                                String displayName = null;
+                                
+                                if (node instanceof FunctionDeclaration) {
+                                    FunctionDeclaration functionDeclaration = (FunctionDeclaration) node;
+                                    StringBuilder displayNameBldr = new StringBuilder();
+                                    String fname = CodeUtils.extractFunctionName(functionDeclaration);
+                                    displayNameBldr.append(fname);
+                                    displayNameBldr.append('(');
+                                    int paramCount = functionDeclaration.getFormalParameters().size();
+                                    
+                                    for (int i = 0; i < paramCount; i++) {
+                                        FormalParameter param = functionDeclaration.getFormalParameters().get(i);
+                                        
+                                        if (param.getParameterType() != null){
+                                            displayNameBldr.append(param.getParameterType().getName() + " "); //NOI18N
+                                        }
+                                        
+                                        displayNameBldr.append(CodeUtils.getParamDisplayName(param));
+                                        
+                                        if (param.getDefaultValue() != null){
+                                            displayNameBldr.append("=");
+                                            
+                                            if (param.getDefaultValue() instanceof Scalar) {
+                                                Scalar scalar = (Scalar) param.getDefaultValue();
+                                                displayNameBldr.append(scalar.getStringValue());
+                                            }
+                                        }
+                                        
+                                        if (i + 1 < paramCount){
+                                            displayNameBldr.append(", ");
+                                        }
+                                    }
+                                    
+                                    displayNameBldr.append(')');
+                                    
+                                    displayName = displayNameBldr.toString();
+                                } else{
+                                    displayName = indexedElement.getDisplayName();
+                                }
+                                
+                                header.append(String.format(
+                                        "<p><font size=+1><code><b>%s</b></code></font></p><br>", //NOI18N
+                                        displayName));
+                                
                                 Comment comment = Utils.getCommentForNode(program, node);
 
                                 if (comment instanceof PHPDocBlock) {
@@ -794,12 +838,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
 
             if (phpDoc.length() > 0){
-                builder.append(phpDoc);
+                description.append(phpDoc);
             } else {
-                builder.append(NbBundle.getMessage(PHPCodeCompletion.class, "PHPDocNotFound"));
+                description.append(NbBundle.getMessage(PHPCodeCompletion.class, "PHPDocNotFound"));
             }
 
-            return builder.toString();
+            return header.toString() + description.toString();
         }
 
         return null;
