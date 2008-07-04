@@ -234,7 +234,8 @@ public final class RakeTaskChooser extends JPanel {
         final Object task = matchingTaskList.getSelectedValue();
         final JComponent[] comps = new JComponent[] {
             matchingTaskSP, matchingTaskLabel, matchingTaskLabel,
-            rakeTaskLabel, rakeTaskField, debugCheckbox
+            rakeTaskLabel, rakeTaskField, debugCheckbox,
+            taskParamLabel, taskParamsField
         };
         setEnabled(comps, false);
         matchingTaskList.setListData(new Object[]{getMessage("RakeTaskChooser.reloading.tasks")});
@@ -311,23 +312,21 @@ public final class RakeTaskChooser extends JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 602, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(rakeTaskLabel)
-                                    .add(taskParamLabel))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(taskParamsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 670, Short.MAX_VALUE)
-                                    .add(rakeTaskField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 606, Short.MAX_VALUE)))
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, matchingTaskLabel))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(rakeTaskLabel)
+                            .add(taskParamLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(debugCheckbox)))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(taskParamsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)
+                            .add(rakeTaskField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(debugCheckbox))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, matchingTaskLabel))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -342,19 +341,19 @@ public final class RakeTaskChooser extends JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(taskParamLabel)
                     .add(taskParamsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(matchingTaskLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
+                .add(matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void rakeTaskFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_rakeTaskFieldKeyPressed
-        Object actionKey = matchingTaskList.getInputMap().get(KeyStroke.getKeyStrokeForEvent(evt));//GEN-LAST:event_rakeTaskFieldKeyPressed
+        Object actionKey = matchingTaskList.getInputMap().get(KeyStroke.getKeyStrokeForEvent(evt));                                        
 
-        // see JavaFastOpen.boundScrollingKey()
-        boolean isListScrollAction =
+        // see JavaFastOpen.boundScrollingKey()//GEN-HEADEREND:event_rakeTaskFieldKeyPressed
+        boolean isListScrollAction =//GEN-LAST:event_rakeTaskFieldKeyPressed
                 "selectPreviousRow".equals(actionKey) || // NOI18N
                 "selectPreviousRowExtendSelection".equals(actionKey) || // NOI18N
                 "selectNextRow".equals(actionKey) || // NOI18N
