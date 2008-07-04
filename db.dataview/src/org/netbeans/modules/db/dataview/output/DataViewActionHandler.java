@@ -132,7 +132,7 @@ class DataViewActionHandler {
 
     void insertActionPerformed() {
         InsertRecordDialog dialog = new InsertRecordDialog(dataView);
-        dialog.setLocationRelativeTo(dataViewUI);
+        dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
         dialog.setVisible(true);
     }
 
