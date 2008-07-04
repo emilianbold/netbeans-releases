@@ -314,9 +314,6 @@ public class PropertySheet extends JPanel {
         table.getReusablePropertyEnv().setBeans(null);
         table.getReusablePropertyEnv().setNode(null);
         table.getReusablePropertyModel().setProperty(null);
-        
-        //don't hold anything when not in component hierarchy
-        helperNodes = null;
     }
 
     /** Prepare the initial state of the property sheet */
@@ -585,16 +582,16 @@ public class PropertySheet extends JPanel {
                                 new Runnable() {
                                     public void run() {
                                         final boolean loggable = PropUtils.isLoggable(PropertySheet.class);
-
+                                        Node[] nodesToSet = helperNodes;
                                         if (loggable) {
                                             PropUtils.log(
                                                 PropertySheet.class,
                                                 "Delayed " + "updater setting nodes to " + //NOI18N
-                                                    (null == helperNodes ? "null" : Arrays.asList(helperNodes)) //NOI18N
+                                                    (null == nodesToSet ? "null" : Arrays.asList(nodesToSet)) //NOI18N
                                             );
                                         }
 
-                                        doSetNodes(helperNodes);
+                                        doSetNodes(nodesToSet);
                                     }
                                 }
                             );

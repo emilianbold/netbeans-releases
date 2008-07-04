@@ -11,14 +11,14 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.100.1</specification-version>
+                        <specification-version>0.100.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.gsf.api</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.1.2</specification-version>
+                        <specification-version>1.1.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -59,7 +59,7 @@
                     <code-name-base>org.netbeans.modules.javascript.refactoring</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.59.1</specification-version>
+                        <specification-version>0.59.2</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>

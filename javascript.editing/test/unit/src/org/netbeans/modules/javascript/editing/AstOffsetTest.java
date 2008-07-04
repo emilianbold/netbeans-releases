@@ -172,4 +172,8 @@ public class AstOffsetTest extends JsTestBase {
     public void testOffsetsSwitches() throws Exception {
         checkOffsets("testfiles/switches.js");
     }
+
+    public void testOffsets136162() throws Exception {
+        checkOffsets("testfiles/rename2.js");
+    }
 }

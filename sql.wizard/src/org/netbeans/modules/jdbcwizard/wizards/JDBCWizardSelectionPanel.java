@@ -129,7 +129,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
     }
 
     /**
-     * initializing componentas
+     * initializing components
      */
     public void initialize() {
         this.initComponents();
@@ -173,24 +173,21 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
         this.availableTablesPanel = new javax.swing.JPanel();
         this.selectedTablesPanel = new javax.swing.JPanel();
         this.buttonsPanel = new javax.swing.JPanel();
-        
         this.availableTablesList = new javax.swing.JList();
         this.availableTablesScrollPane = new javax.swing.JScrollPane(this.availableTablesList);
-
         this.selectedTablesList = new javax.swing.JList();
         this.selectedTablesScrollPane = new javax.swing.JScrollPane(this.selectedTablesList);
-
         this.addButton = new javax.swing.JButton(JDBCWizardSelectionPanel.LBL_ADD);
         this.removeButton = new javax.swing.JButton(JDBCWizardSelectionPanel.LBL_REMOVE);
         this.addAllButton = new javax.swing.JButton(JDBCWizardSelectionPanel.LBL_ADD_ALL);
         this.removeAllButton = new javax.swing.JButton(JDBCWizardSelectionPanel.LBL_REMOVE_ALL);
-
         this.availableTablesLabel = new javax.swing.JLabel();
         this.selectedTablesLabel = new javax.swing.JLabel();
         
         java.awt.GridBagConstraints gridBagConstraints;
         
         setLayout(new GridBagLayout());
+        
         dataSourcePanel.add(this.jLabel1);
         dataSourcePanel.add(this.datasourceComboBox);
         
@@ -436,12 +433,11 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
             }
         });
         this.availableTablesList.addListSelectionListener(this);
-
-        this.availableTablesList.setPrototypeCellValue(this.srcRenderer);
+		this.availableTablesList.setPrototypeCellValue(this.srcRenderer);
         this.availableTablesList.setCellRenderer(this.srcRenderer);
         this.availableTablesList.setVisibleRowCount(this.visibleCt);
-
-        this.selectedTablesList = new JList();
+        
+		this.selectedTablesList = new JList();
         this.selectedTablesList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         this.selectedTablesList.addMouseListener(new MouseAdapter() {
             public void mouseClicked(final MouseEvent e) {
@@ -453,11 +449,9 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
                 }
             }
         });
-
-        this.selectedTablesList.setPrototypeCellValue(this.destRenderer);
+		this.selectedTablesList.setPrototypeCellValue(this.destRenderer);
         this.selectedTablesList.setCellRenderer(this.destRenderer);
         this.selectedTablesList.setVisibleRowCount(this.visibleCt);
-
         this.selectedTablesList.addListSelectionListener(this);
         this.availableTablesScrollPane.setViewportView(this.availableTablesList);
         this.selectedTablesScrollPane.setViewportView(this.selectedTablesList);
@@ -1194,7 +1188,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
                 }
             }else if (value instanceof String)
             {
-				this.setText(value.toString());
+		this.setText(value.toString());
             }
 
             return this;

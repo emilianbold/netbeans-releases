@@ -38,6 +38,7 @@
 package org.netbeans.modules.jdbcwizard.wizards;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -101,13 +102,13 @@ public class JNDINamePanel extends javax.swing.JPanel implements WizardDescripto
         this.jLabel1 = new javax.swing.JLabel();
         this.jTextField1 = new javax.swing.JTextField();
         this.jTextField1.setText(JNDINamePanel.JNDI_DEFAULT_NAME);
-
         this.jLabel1.setText(NbBundle.getMessage(JDBCWizardTablePanel.class,"LBL_JNDI_NAME"));
 		this.jLabel1.setHorizontalAlignment(SwingConstants.RIGHT);
 
 		this.setLayout(new FlowLayout());
 		this.add(jLabel1);
 		this.add(jTextField1);
+		//this.jTextField1.setPreferredSize(new Dimension((3*jLabel1.getWidth()),jLabel1.getHeight()));
     }
 
     /**

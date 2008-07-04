@@ -51,8 +51,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -663,7 +661,9 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             assert support != null : "OperationSupport cannot be null because OperationContainer " +
                     "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
             if (panel.restartNow ()) {
-                handleLazyUnits (clearLazyUnits, false);
+                if (clearLazyUnits) {
+                    LazyUnit.storeLazyUnits (model.getOperation (), null);
+                }
                 try {
                     support.doRestart (restarter, null);
                 } catch (OperationException x) {
@@ -672,7 +672,10 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 
             } else {
                 support.doRestartLater (restarter);
-                handleLazyUnits (clearLazyUnits, true);
+                if (clearLazyUnits) {
+                    LazyUnit.storeLazyUnits (model.getOperation (), null);
+                    AutoupdateCheckScheduler.notifyAvailable (null, OperationType.UPDATE);
+                }
                 try {
                     model.doCleanup (false);
                 } catch (OperationException x) {
@@ -700,32 +703,6 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
 
     public synchronized void removeChangeListener(ChangeListener l) {
         listeners.remove(l);
-    }
-    
-    private void handleLazyUnits (boolean clearLazyUnits, boolean notifyUsers) {
-        if (clearLazyUnits) {
-            LazyUnit.storeLazyUnits (model.getOperation (), null);
-            if (notifyUsers) {
-                AutoupdateCheckScheduler.notifyAvailable (null, OperationType.UPDATE);
-            }
-        } else {
-            // get LazyUnit being installed
-            Collection<String> tmp = new HashSet<String> ();
-            for (UpdateElement el : model.getAllUpdateElements ()) {
-                tmp.add (LazyUnit.toString (el));
-            }
-            // remove them from LazyUnits stored for next IDE run
-            Collection<LazyUnit> res = new HashSet<LazyUnit> ();
-            for (LazyUnit lu : LazyUnit.loadLazyUnits (model.getOperation ())) {
-                if (! tmp.contains (lu.toString ())) {
-                    res.add (lu);
-                }
-            }
-            LazyUnit.storeLazyUnits (model.getOperation (), res);
-            if (notifyUsers) {
-                AutoupdateCheckScheduler.notifyAvailable (res, OperationType.UPDATE);
-            }
-        }
     }
 
     private void fireChange() {
