@@ -351,6 +351,7 @@ public class SvnClientExceptionHandler {
                 // do nothing
             }
             if(!directWorks) {
+                proxySocket = new Socket(java.net.Proxy.NO_PROXY); // reusing sockets seems to cause problems - see #138916
                 proxySocket.connect(new InetSocketAddress(proxyHost, proxyPort));           
                 connectProxy(proxySocket, host, port, proxyHost, proxyPort);                       
             }
