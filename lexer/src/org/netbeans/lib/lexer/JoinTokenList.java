@@ -591,10 +591,16 @@ public class JoinTokenList<T extends TokenId> implements TokenList<T> {
         assert (tokenList.embedding().joinSections()) :
                 "Embedding not declared to join sections. " +
                 tokenList.dumpInfo(null);
-        assert (tokenList.tokenCountCurrent() == 0) :
-                "Non-empty embedded token list in JoinTokenList initialization. " +
+        if (tokenList.tokenCountCurrent() > 0) {
+            // Clear all tokens so that it can be initialized by joined lexing.
+            tokenList.clear();
+//                throw new IllegalStateException(
+//                        "Non-empty embedded token list in JoinTokenList initialization. " +
+//                        tokenList.dumpInfo(null) + "\n" + tokenListList
+//                );
+        }
+        assert (tokenList.joinInfo == null) : "Non-null joinInfo in tokenList " +
                 tokenList.dumpInfo(null) + "\n" + tokenListList;
-        assert (tokenList.joinInfo == null);
         tokenList.joinInfo = new EmbeddedJoinInfo(base, joinTokenCount, tokenListIndex);
         return tokenList;
     }

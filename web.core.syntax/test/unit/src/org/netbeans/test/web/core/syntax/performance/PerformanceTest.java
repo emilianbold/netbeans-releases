@@ -48,6 +48,8 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.logging.XMLFormatter;
 import javax.swing.text.StyledDocument;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.EditorCookie.Observable;
@@ -76,6 +78,10 @@ public class PerformanceTest extends NbTestCase {
         logger.addHandler(timerHandler);
         logger.setLevel(Level.FINEST);
     }
+
+    public static Test suite(){
+        return NbModuleSuite.allModules(PerformanceTest.class);
+    }    
 
     @Override
     protected void setUp() throws Exception {

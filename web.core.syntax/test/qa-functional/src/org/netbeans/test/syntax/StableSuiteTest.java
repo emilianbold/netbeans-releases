@@ -57,10 +57,14 @@ public class StableSuiteTest extends J2eeTestCase {
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(StableSuiteTest.class);
+        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
         addServerTests(conf, new String[0]);//register server
         conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(conf.addTest(SuiteCreator.class));
+        if (isRegistered(Server.ANY)){
+            return NbModuleSuite.create(conf.addTest(SuiteCreator.class));
+        }else{
+            return NbModuleSuite.create(conf.addTest(J2eeTestCase.class));
+        }
     }
 
     public static final class SuiteCreator extends NbTestSuite {
