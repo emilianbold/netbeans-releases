@@ -210,10 +210,10 @@ public class NetBeansUtils {
     public static FilesList createMetricsEnabledMarker(File nbLocation) throws IOException {
         File nbCluster = getNbCluster(nbLocation);
         
-        File license_accepted = new File(nbCluster, METRICS_ENABLED);
+        File metricsEnabled = new File(nbCluster, METRICS_ENABLED);
         
-        if (!license_accepted.exists()) {
-            return FileUtils.writeFile(license_accepted, "");
+        if (!metricsEnabled.exists()) {
+            return FileUtils.writeFile(metricsEnabled, "");
         } else {
             return new FilesList();
         }
@@ -222,10 +222,10 @@ public class NetBeansUtils {
     public static void removeMetricsEnabledMarker(File nbLocation) throws IOException {
         File nbCluster = getNbCluster(nbLocation);
         
-        File license_accepted = new File(nbCluster, METRICS_ENABLED);
+        File metricsEnabled = new File(nbCluster, METRICS_ENABLED);
         
-        if (license_accepted.exists()) {
-            FileUtils.deleteFile(license_accepted);
+        if (metricsEnabled.exists()) {
+            FileUtils.deleteFile(metricsEnabled);
         }
     }
     
