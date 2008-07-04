@@ -75,7 +75,7 @@ public class RevertTest extends AbstractCLITest {
         ISVNClientAdapter c = getNbClient();        
         SVNClientException e1 = null;
         try {
-            c.revert(new File[]{}, false);
+            c.revert(null, false);
         } catch (SVNClientException e) {
             e1 = e;
         }
@@ -109,7 +109,9 @@ public class RevertTest extends AbstractCLITest {
         assertStatus(SVNStatusKind.MODIFIED, file3);
         
         ISVNClientAdapter c = getNbClient();        
-        c.revert(new File[] {file1, file2, file3}, false);
+        for(File f : new File[] {file1, file2, file3}) {
+            c.revert(f, false);
+        }
 
         assertStatus(SVNStatusKind.NORMAL, file1);
         assertStatus(SVNStatusKind.NORMAL, file2);
@@ -149,7 +151,9 @@ public class RevertTest extends AbstractCLITest {
         assertStatus(SVNStatusKind.MODIFIED, file111);        
         
         ISVNClientAdapter c = getNbClient();        
-        c.revert(new File[] {folder1}, true);
+        for(File f : new File[] {folder1}) {
+            c.revert(f, true);
+        }
 
         assertStatus(SVNStatusKind.NORMAL, file11);
         assertStatus(SVNStatusKind.NORMAL, file111);
@@ -189,7 +193,9 @@ public class RevertTest extends AbstractCLITest {
         assertStatus(SVNStatusKind.MODIFIED, file111);        
         
         ISVNClientAdapter c = getNbClient();        
-        c.revert(new File[] {folder1}, true);
+        for(File f : new File[] {folder1}) {
+            c.revert(f, true);
+        }
 
         assertStatus(SVNStatusKind.NORMAL, file11);
         assertStatus(SVNStatusKind.NORMAL, file111);
@@ -230,7 +236,9 @@ public class RevertTest extends AbstractCLITest {
         assertStatus(SVNStatusKind.MODIFIED, file2);        
         
         ISVNClientAdapter c = getNbClient();        
-        c.revert(new File[] {folder1, folder2}, true);
+        for(File f : new File[] {folder1, folder2}) {
+            c.revert(f, true);
+        }
 
         assertStatus(SVNStatusKind.NORMAL, file1);
         assertStatus(SVNStatusKind.NORMAL, file2);
