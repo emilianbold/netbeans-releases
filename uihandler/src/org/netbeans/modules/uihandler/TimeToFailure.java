@@ -64,21 +64,18 @@ final class TimeToFailure {
             long time = System.currentTimeMillis();
             if ( time - lastAction < TRESHOLD ) {
                 totalTime += time - lastAction;
-                if(Installer.preferencesWritable) {
-                    prefs.putLong(MTTF,totalTime);
-                }
+                prefs.putLong(MTTF,totalTime);
             } 
             lastAction = time;
         }
+        
     }
 
     static LogRecord logFailure() {
         LogRecord lr = new LogRecord(Level.CONFIG,TimeToFailure.class.getName() + ":" + totalTime);
         totalTime = 0;
         lastAction = 0;
-        if(Installer.preferencesWritable) {
-            prefs.putLong(MTTF,totalTime);
-        }
+        prefs.putLong(MTTF,totalTime);
         return lr;
     }
     
