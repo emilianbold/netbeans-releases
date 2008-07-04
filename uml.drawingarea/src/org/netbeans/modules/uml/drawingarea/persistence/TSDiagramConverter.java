@@ -657,12 +657,14 @@ public class TSDiagramConverter
             {
                 proxyPE = new ProxyPresentationElement(pE, proxyType);
             }
-            if (proxyPE != null)
+            IPresentationElement peToUse=(proxyPE != null) ? proxyPE : pE;
+            connWidget = scene.addEdge(peToUse);
+            if(connWidget==null)
             {
-                connWidget = scene.addEdge(proxyPE);
-            } else
-            {
-                connWidget = scene.addEdge(pE);
+                    if(scene.isEdge(peToUse))scene.removeEdge(peToUse);
+                    peToUse.getFirstSubject().removePresentationElement(peToUse);
+                    edgeReader.getProperties().remove(PRESENTATIONELEMENT);
+                    edgeReader.getProperties().remove(ELEMENT);
             }
         return connWidget;
     }
