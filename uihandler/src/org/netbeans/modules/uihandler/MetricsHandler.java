@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,46 +39,63 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.serviceapi;
+package org.netbeans.modules.uihandler;
 
-import java.util.Collection;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
 
 /**
- * Represent service module container, with information about 
- * service provider-consumer relationships.
  *
- * @author Nam Nguyen
- * @author Chris Webster
- * @author Jiri Kopsa
+ * @author Marek Slama
+ *
  */
-public abstract class IntegrationContainer extends ServiceModuleContainer {
-    /**
-     * Property event for service connection in this container.
-     */
-    public static final String SERVICE_CONNECTION_ADDED_PROPERTY = "sericeConnectionAdded";
-    public static final String SERVICE_CONNECTION_REMOVED_PROPERTY = "sericeConnectionRemoved";
+public class MetricsHandler extends Handler {
+    private static Task lastRecord = Task.EMPTY;
+    private static RequestProcessor FLUSH = new RequestProcessor("Flush Metrics Logs"); // NOI18N
+    private static boolean flushOnRecord;
     
-    /**
-     * @return list of service provider-consumer connections.
-     */
-    public abstract Collection<ServiceConnection> getServiceConnections();
+    public MetricsHandler() {
+        setLevel(Level.FINEST);
+    }
 
-    /**
-     * Creates service connection from given service interface.
-     * @return a connection between the two endpoints; or null if the 
-     * given service interfaces don't match.
-     * @param consumer the consumer service interface
-     * @param provider the provider service interface
-     */
-    public abstract ServiceConnection createConnection(
-            ServiceInterface consumer, ServiceInterface provider);
+    public void publish(LogRecord record) {
+
+        class WriteOut implements Runnable {
+            public LogRecord r;
+            public void run() {
+                Installer.writeOutMetrics(r);
+                r = null;
+            }
+        }
+        WriteOut wo = new WriteOut();
+        wo.r = record;
+        lastRecord = FLUSH.post(wo);
+        
+        if (flushOnRecord) {
+            waitFlushed();
+        }
+    }
+
+    public void flush() {
+        waitFlushed();
+    }
     
-    /**
-     * Removes the service connection.  Note that the service interfaces still 
-     * exist in the containing service module.
-     *
-     * @return true if the connection is removed successfully; otherwise return false.
-     * @param connection the service connection to remove.
-     */
-    public abstract boolean removeConnection(ServiceConnection connection);
+    static final void flushImmediatelly() {
+        flushOnRecord = true;
+    }
+    
+    static final void waitFlushed() {
+        try {
+            lastRecord.waitFinished(1000);
+        } catch (InterruptedException ex) {
+            Installer.LOG.log(Level.FINE, null, ex);
+        }
+    }
+
+    public void close() throws SecurityException {
+    }
+    
 }

@@ -163,9 +163,13 @@ public abstract class Command {
             }
 
             URI clientUrl = url.toURI();
-            
-            // hard-code Firefox until additional browsers are supported
-            HtmlBrowser.Factory browser = WebClientToolsProjectUtils.getFirefoxBrowser();
+                        
+            HtmlBrowser.Factory browser = null;
+            if (WebClientToolsProjectUtils.isInternetExplorer(project)) {
+                browser = WebClientToolsProjectUtils.getInternetExplorerBrowser();
+            } else {
+                browser = WebClientToolsProjectUtils.getFirefoxBrowser();
+            }
             
             if (browser == null) {
                 HtmlBrowser.URLDisplayer.getDefault().showURL(url);

@@ -138,4 +138,20 @@ public class JsAnalyzerTest extends JsTestBase {
         checkStructure("testfiles/classes.js");
         checkFolds("testfiles/classes.js");
     }
+
+    public void testJsonFolds() throws Exception {
+        checkFolds("testfiles/sample.json");
+    }
+
+    public void testJsonStructure() throws Exception {
+        checkStructure("testfiles/sample.json");
+    }
+
+    public void testJsonFolds2() throws Exception {
+        checkFolds("testfiles/sample2.json");
+    }
+
+    public void testJsonStructure2() throws Exception {
+        checkStructure("testfiles/sample2.json");
+    }
 }

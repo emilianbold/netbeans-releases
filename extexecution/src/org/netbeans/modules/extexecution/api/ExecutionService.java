@@ -52,7 +52,9 @@ import java.io.Reader;
 import java.nio.charset.Charset;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -67,6 +69,7 @@ import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.extexecution.ProcessInputStream;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.modules.extexecution.api.input.InputProcessor;
@@ -201,6 +204,11 @@ public final class ExecutionService {
                 Integer ret = null;
                 ExecutorService executor = null;
 
+                ProcessInputStream outStream = null;
+                ProcessInputStream errStream = null;
+                
+                List<InputReaderTask> tasks = new ArrayList<InputReaderTask>();
+
                 try {
                     executed[0] = true;
                     final Runnable pre = descriptor.getPreExecution();
@@ -221,20 +229,26 @@ public final class ExecutionService {
                         return null;
                     }
 
+                    outStream = new ProcessInputStream(process, process.getInputStream());
+                    errStream = new ProcessInputStream(process, process.getErrorStream());
+
                     executor = Executors.newFixedThreadPool(input ? 3 : 2);
 
-                    executor.submit(InputReaderTask.newDrainingTask(
-                        InputReaders.forStream(new BufferedInputStream(process.getInputStream()), Charset.defaultCharset()),
+                    tasks.add(InputReaderTask.newDrainingTask(
+                        InputReaders.forStream(new BufferedInputStream(outStream), Charset.defaultCharset()),
                         createOutProcessor(out)));
-                    executor.submit(InputReaderTask.newDrainingTask(
-                        InputReaders.forStream(new BufferedInputStream(process.getErrorStream()), Charset.defaultCharset()),
+                    tasks.add(InputReaderTask.newDrainingTask(
+                        InputReaders.forStream(new BufferedInputStream(errStream), Charset.defaultCharset()),
                         createErrProcessor(err)));
                     if (input) {
-                        executor.submit(InputReaderTask.newTask(
+                        tasks.add(InputReaderTask.newTask(
                             InputReaders.forReader(in),
                             createInProcessor(process.getOutputStream())));
                     }
-
+                    for (InputReaderTask task : tasks) {
+                        executor.submit(task);
+                    }
+                    
                     process.waitFor();
                 } catch (InterruptedException ex) {
                     LOGGER.log(Level.FINE, null, ex);
@@ -244,6 +258,17 @@ public final class ExecutionService {
                     throw ex;
                 } finally {
                     try {
+                        interrupted = interrupted || Thread.interrupted();
+
+                        if (!interrupted) {
+                            if (outStream != null) {
+                                outStream.close(true);
+                            }
+                            if (errStream != null) {
+                                errStream.close(true);
+                            }
+                        }
+
                         if (process != null) {
                             process.destroy();
                             synchronized (RUNNING_PROCESSES) {
@@ -261,7 +286,7 @@ public final class ExecutionService {
                         throw ex;
                     } finally {
                         try {
-                            cleanup(executor, handle, ioData,
+                            cleanup(tasks, executor, handle, ioData,
                                     ioData.getInputOutput() != descriptor.getInputOutput());
 
                             final Runnable post = descriptor.getPostExecution();
@@ -432,7 +457,7 @@ public final class ExecutionService {
         return handle;
     }
 
-    private void cleanup(final ExecutorService processingExecutor, final ProgressHandle progressHandle,
+    private void cleanup(final List<InputReaderTask> tasks, final ExecutorService processingExecutor, final ProgressHandle progressHandle,
             final InputOutputManager.InputOutputData inputOutputData, final boolean managed) {
 
         boolean interrupted = false;
@@ -440,10 +465,13 @@ public final class ExecutionService {
             try {
                 AccessController.doPrivileged(new PrivilegedAction<Void>() {
                     public Void run() {
-                        processingExecutor.shutdownNow();
+                        processingExecutor.shutdown();
                         return null;
                     }
                 });
+                for (Cancellable cancellable : tasks) {
+                    cancellable.cancel();
+                }
                 while (!processingExecutor.awaitTermination(EXECUTOR_SHUTDOWN_SLICE, TimeUnit.MILLISECONDS)) {
                     LOGGER.log(Level.INFO, "Awaiting processing finish");
                 }

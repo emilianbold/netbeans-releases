@@ -40,11 +40,14 @@ package org.netbeans.modules.web.client.tools.impl.projects;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Customizer panel for the Debug category in the project properties dialog.
@@ -72,9 +75,25 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
         
         this.debugServerJCheckBox.setSelected(serverDebug);
         this.debugClientJCheckBox.setSelected(clientDebug);
+                
+        firefoxRadioButton.setSelected(Utilities.isWindows() || WebClientToolsProjectUtils.isFirefox(project));
+        internetExplorerRadioButton.setSelected((!Utilities.isWindows()) && WebClientToolsProjectUtils.isInternetExplorer(project));
+
+        adjustBrowserRadioButtons();
+        debugClientJCheckBox.addItemListener(new ItemListener() {
+
+            public void itemStateChanged(ItemEvent e) {
+                adjustBrowserRadioButtons();
+            }
+        });
         
         this.category.setStoreListener(this);
         validateCheckBoxes();
+    }
+
+    private void adjustBrowserRadioButtons() {
+        firefoxRadioButton.setEnabled(debugClientJCheckBox.isSelected());
+        internetExplorerRadioButton.setEnabled(Utilities.isWindows() && debugClientJCheckBox.isSelected());
     }
 
     /** This method is called from within the constructor to
@@ -86,8 +105,11 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        browserButtonGroup = new javax.swing.ButtonGroup();
         debugServerJCheckBox = new javax.swing.JCheckBox();
         debugClientJCheckBox = new javax.swing.JCheckBox();
+        firefoxRadioButton = new javax.swing.JRadioButton();
+        internetExplorerRadioButton = new javax.swing.JRadioButton();
 
         org.openide.awt.Mnemonics.setLocalizedText(debugServerJCheckBox, debugServerMsg);
         debugServerJCheckBox.addActionListener(new java.awt.event.ActionListener() {
@@ -103,12 +125,25 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
             }
         });
 
+        browserButtonGroup.add(firefoxRadioButton);
+        firefoxRadioButton.setSelected(true);
+        firefoxRadioButton.setText(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.firefoxRadioButton.text")); // NOI18N
+
+        browserButtonGroup.add(internetExplorerRadioButton);
+        internetExplorerRadioButton.setText(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.internetExplorerRadioButton.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(debugClientJCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)
-            .add(debugServerJCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)
+            .add(debugClientJCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 492, Short.MAX_VALUE)
+            .add(debugServerJCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 492, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(21, 21, 21)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(internetExplorerRadioButton)
+                    .add(firefoxRadioButton))
+                .add(318, 318, 318))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -116,23 +151,27 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
                 .add(debugServerJCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(debugClientJCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(450, 450, 450))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(firefoxRadioButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(internetExplorerRadioButton)
+                .add(397, 397, 397))
         );
 
-        debugServerJCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "ACS_CustomizeDebug_ServerDebug_A11YDesc")); // NOI18N
-        debugClientJCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "ACS_CustomizeDebug_ClientDebug_A11YDesc")); // NOI18N
+        debugServerJCheckBox.getAccessibleContext().setAccessibleDescription("null");
+        debugClientJCheckBox.getAccessibleContext().setAccessibleDescription("null");
     }// </editor-fold>//GEN-END:initComponents
 
 private void debugServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debugServerActionPerformed
-
+//GEN-LAST:event_debugServerActionPerformed
     validateCheckBoxes();
-}//GEN-LAST:event_debugServerActionPerformed
+}                                           
 
 private void debugClientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debugClientActionPerformed
-
+//GEN-LAST:event_debugClientActionPerformed
     validateCheckBoxes();
-}//GEN-LAST:event_debugClientActionPerformed
- 
+}                                           
+
     private void validateCheckBoxes() {
         if (!debugClientJCheckBox.isSelected() && !debugServerJCheckBox.isSelected()) {
             category.setErrorMessage(NbBundle.getMessage(CustomizerDebug.class, "LBL_CustomizeDebug_NoDebug_Error")); // NOI18N
@@ -145,12 +184,17 @@ private void debugClientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.ButtonGroup browserButtonGroup;
     private javax.swing.JCheckBox debugClientJCheckBox;
     private javax.swing.JCheckBox debugServerJCheckBox;
+    private javax.swing.JRadioButton firefoxRadioButton;
+    private javax.swing.JRadioButton internetExplorerRadioButton;
     // End of variables declaration//GEN-END:variables
 
     public void actionPerformed(ActionEvent e) {
-        WebClientToolsProjectUtils.setProjectProperties(project, debugServerJCheckBox.isSelected(), debugClientJCheckBox.isSelected());
+        WebClientToolsProjectUtils.setProjectProperties(project, debugServerJCheckBox.isSelected(), debugClientJCheckBox.isSelected(),
+                (internetExplorerRadioButton.isSelected() ?
+                    WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER : WebClientToolsProjectUtils.Browser.FIREFOX));
     }
 
 }

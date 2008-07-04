@@ -431,32 +431,7 @@ public class PHPIndexer implements Indexer {
                     defaultParamCount ++;
                 }
                 
-                Expression paramNameExpr = param.getParameterName();
-                String paramName = null;
-
-                if (paramNameExpr instanceof Variable) {
-                    Variable var = (Variable) paramNameExpr;
-                    Identifier id = (Identifier) var.getName();
-                    paramName = id.getName();
-                    
-                    if (var.isDollared()){
-                        signature.append("$"); //NOI18N
-                    }
-                } else if (paramNameExpr instanceof Reference) {
-                    signature.append("&");
-                    Reference reference = (Reference) paramNameExpr;
-                    
-                    if (reference.getExpression() instanceof Variable) {
-                        Variable var = (Variable) reference.getExpression();
-                        Identifier id = (Identifier) var.getName();
-                        paramName = id.getName();
-
-                        if (var.isDollared()) {
-                            signature.append("$"); //NOI18N
-                        }
-                    }
-                }
-
+                String paramName = CodeUtils.getParamDisplayName(param);
                 signature.append(paramName);
 
                 if (it.hasNext()) {

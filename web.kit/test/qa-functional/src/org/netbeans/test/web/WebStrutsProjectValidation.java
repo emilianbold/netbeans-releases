@@ -80,6 +80,11 @@ public class WebStrutsProjectValidation extends WebProjectValidationEE5 {
         super(name);
     }
 
+    /** Need to be defined because of JUnit */
+    public WebStrutsProjectValidation() {
+        super();
+    }
+
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebStrutsProjectValidation.class);
         conf = addServerTests(conf, 
