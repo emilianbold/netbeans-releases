@@ -67,12 +67,9 @@ import org.w3c.dom.svg.SVGLocatableElement;
 public class SVGRadioButton extends SVGAbstractButton {
     private static final String DOT      = "dot";           // NOI18N
     
-    private final SVGLocatableElement dotElement;
-    private       boolean             isSelected;
-    
     public SVGRadioButton( SVGForm form, String elemId) {
         super(form, elemId);
-        dotElement = (SVGLocatableElement) getNestedElementByMeta( getElement(), 
+        myDotElement = (SVGLocatableElement) getNestedElementByMeta( getElement(), 
                 TYPE, DOT );
         //isSelected = form.registerRadioButton(this);
         updateTrait();
@@ -98,7 +95,10 @@ public class SVGRadioButton extends SVGAbstractButton {
     }
     
     private void updateTrait() {
-        setTraitSafely(dotElement , TRAIT_VISIBILITY, 
+        setTraitSafely(myDotElement , TRAIT_VISIBILITY, 
                 isSelected ? TR_VALUE_VISIBLE : TR_VALUE_HIDDEN );
     }
+    
+    private final SVGLocatableElement myDotElement;
+    private       boolean             isSelected;
 }

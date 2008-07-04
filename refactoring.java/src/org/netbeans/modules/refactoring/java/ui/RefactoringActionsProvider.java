@@ -163,22 +163,25 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 @Override
                 protected void nodeTranslated(Node node, Collection<TreePathHandle> handles, CompilationInfo javac) {
                     String newName = getName(lookup);
-                    if (newName!=null) {
-                        if (pkg[0]!= null)
-                            ui = new RenameRefactoringUI(pkg[0], newName);
-                        else
-                            ui = new RenameRefactoringUI(javac.getFileObject(), newName, handles==null||handles.isEmpty()?null:handles.iterator().next(), javac);
-                    }
-                    else {
-                        if (pkg[0]!= null)
-                            ui = new RenameRefactoringUI(pkg[0]);
-                        else
-                            ui = new RenameRefactoringUI(javac.getFileObject(), handles==null||handles.isEmpty()?null:handles.iterator().next(), javac);
-                    }
+                    ui = newName != null
+                            ? new RenameRefactoringUI(javac.getFileObject(), newName, handles==null||handles.isEmpty()?null:handles.iterator().next(), javac)
+                            : new RenameRefactoringUI(javac.getFileObject(), handles==null||handles.isEmpty()?null:handles.iterator().next(), javac);
                 }
 
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
+                    if (ui == null) {
+                        String newName = getName(lookup);
+                        if (newName != null) {
+                            ui = pkg[0] != null
+                                    ? new RenameRefactoringUI(pkg[0], newName)
+                                    : new RenameRefactoringUI(selectedElements[0], newName, null, null);
+                        } else {
+                            ui = pkg[0]!= null
+                                    ? new RenameRefactoringUI(pkg[0])
+                                    : new RenameRefactoringUI(selectedElements[0], null, null);
+                        }
+                    }
                     return ui;
                 }
             };

@@ -301,7 +301,7 @@ public class SVGComboBox extends SVGComponent implements
         isListShown = true;
         myList.focusGained();
         
-        myList.getElement().setTrait( TRAIT_VISIBILITY, TR_VALUE_VISIBLE );
+        myList.setTraitSafely( getElement(), TRAIT_VISIBILITY, TR_VALUE_VISIBLE );
         myIndex = getModel().getSelectedIndex();
     }
     
@@ -309,7 +309,7 @@ public class SVGComboBox extends SVGComponent implements
         if ( isListShown ) {
             isListShown = false;
             myList.focusLost();
-            myList.getElement().setTrait( TRAIT_VISIBILITY , TR_VALUE_HIDDEN);
+            myList.setTraitSafely( getElement(), TRAIT_VISIBILITY , TR_VALUE_HIDDEN);
         }
     }
     
@@ -368,7 +368,8 @@ public class SVGComboBox extends SVGComponent implements
             if ( comp instanceof SVGComboBox ){
                 if ( keyCode == LEFT ){
                     if ( isListShown ) {
-                        ret = myList.getInputHandler().handleKeyPress( comp, keyCode);
+                        ret = myList.getInputHandler().handleKeyPress( comp, 
+                                keyCode);
                     }
                     else {
                         ret= true;
@@ -376,16 +377,22 @@ public class SVGComboBox extends SVGComponent implements
                 }
                 else if ( keyCode == RIGHT ){
                     if ( !isListShown ){
-                        myPressedAnimation.beginElementAt(0);
+                        getForm().invokeLaterSafely( new Runnable() {
+                            public void run() {
+                                myPressedAnimation.beginElementAt(0);
+                            }
+                        });
                         ret = true;
                     }
                     else {
-                        ret = myList.getInputHandler().handleKeyPress( myList, keyCode);
+                        ret = myList.getInputHandler().handleKeyPress( myList, 
+                                keyCode);
                     }
                 }
                 else if( keyCode == FIRE ){
                     if ( isListShown ){
-                        ret = myList.getInputHandler().handleKeyPress( myList, keyCode);
+                        ret = myList.getInputHandler().handleKeyPress( myList, 
+                                keyCode);
                     }
                     else {
                         SVGComponent component = getEditor().getEditorComponent();
@@ -408,17 +415,23 @@ public class SVGComboBox extends SVGComponent implements
                 if ( keyCode == LEFT ){
                     if (isListShown) {
                         myIndex = Math.max(0, myIndex - 1);
-                        myList.getInputHandler().handleKeyRelease( myList, keyCode);
+                        myList.getInputHandler().handleKeyRelease( myList, 
+                                keyCode);
                     }
                     ret = true;
                 }
                 else if ( keyCode == RIGHT ){
                     if (isListShown) {
                         myIndex = Math.min(getModel().getSize() - 1, myIndex + 1);
-                        myList.getInputHandler().handleKeyRelease( myList, keyCode);
+                        myList.getInputHandler().handleKeyRelease( myList, 
+                                keyCode);
                     }
                     else {
-                        myReleasedAnimation.beginElementAt( 0 );
+                        getForm().invokeLaterSafely( new Runnable(){
+                            public void run() {
+                                myReleasedAnimation.beginElementAt( 0 );
+                            }
+                        });
                         showList();
                     }
                     ret = true;

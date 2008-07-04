@@ -105,7 +105,7 @@ public abstract class JSAbstractDebugger implements JSDebugger {
         }
 
         startDebuggingImpl();
-    }       
+    }
 
     protected final long getSequenceId() {
         return sequenceId;
@@ -233,7 +233,7 @@ public abstract class JSAbstractDebugger implements JSDebugger {
     }
 
     protected void fireJSDebuggerEvent(JSDebuggerEvent debuggerEvent) {
- for (JSDebuggerEventListener listener : listeners) {
+        for (JSDebuggerEventListener listener : listeners) {
             listener.onDebuggerEvent(debuggerEvent);
         }
     }
@@ -261,8 +261,6 @@ public abstract class JSAbstractDebugger implements JSDebugger {
     }
 
     protected void fireJSHttpMessageEvent(JSHttpMessageEvent httpMessageEvent) {
-       // Logger.getLogger(this.getClass().getName()).info("****** HTTP MESSAGE RECEIVED AND TRIGGERED ********");
-
         for (JSHttpMessageEventListener listener : httpListeners) {
             listener.onHttpMessageEvent(httpMessageEvent);
         }
