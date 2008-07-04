@@ -42,6 +42,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 
@@ -57,7 +58,14 @@ public class CodeUtils {
     public static String extractVariableName(Variable var) {
         if (var.getName() instanceof Identifier) {
             Identifier id = (Identifier) var.getName();
-            return "$" + id.getName(); //NOI18N
+            StringBuilder varName = new StringBuilder();
+            
+            if (var.isDollared()){
+                varName.append("$");
+            }
+            
+            varName.append(id.getName());
+            return varName.toString();
         } else {
             if (var.getName() instanceof Variable) {
                 Variable name = (Variable) var.getName();
@@ -88,6 +96,20 @@ public class CodeUtils {
             return "array"; //NOI18N
         }
 
+        return null;
+    }
+    
+    public static String extractFunctionName(FunctionInvocation functionInvocation){
+        if (functionInvocation.getFunctionName().getName() instanceof Identifier) {
+            Identifier id = (Identifier) functionInvocation.getFunctionName().getName();
+            return id.getName();
+        }
+        
+        if (functionInvocation.getFunctionName().getName() instanceof Variable) {
+            Variable var = (Variable) functionInvocation.getFunctionName().getName();
+            return extractVariableName(var);
+        }
+        
         return null;
     }
 }

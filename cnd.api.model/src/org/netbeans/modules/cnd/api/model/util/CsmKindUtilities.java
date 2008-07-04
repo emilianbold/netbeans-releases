@@ -147,7 +147,7 @@ public class CsmKindUtilities {
     }
     
     public static boolean isTemplate(CsmObject obj) {
-        return (obj instanceof CsmTemplate);
+        return (obj instanceof CsmTemplate) && ((CsmTemplate)obj).isTemplate();
     }
     
     public static boolean isTemplateParameter(CsmObject obj) {

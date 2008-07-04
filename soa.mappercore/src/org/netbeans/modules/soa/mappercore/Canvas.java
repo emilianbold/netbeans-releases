@@ -102,8 +102,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
 
     private InplaceEditor inplaceEditor;
     private GraphSubset bufferCopyPaste;
-    private boolean printMode = false;
-        
+            
     public Canvas(Mapper mapper) {
         super(mapper);
 
@@ -237,13 +236,11 @@ public class Canvas extends MapperPanel implements VertexCanvas,
     
     @Override
     public void print(Graphics g) {
-        LeftTree leftTree = getLeftTree();
-
-        leftTree.setPrintMode(true);
-        printMode = true;
+        Mapper mapper = getMapper();
+        
+        mapper.setPrintMode(true);
         super.print(g);
-        printMode = false;
-        leftTree.setPrintMode(false);
+        mapper.setPrintMode(false);
     }
     @Override
     protected void printComponent(Graphics g) {
@@ -471,7 +468,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
             g2.translate(graphX, 0);
             grid.paintGrid(this, g2, -graphX, nodeY + topInset + 1, getWidth(),
                     contentHeight - size - 2, step,
-                    !node.isSelected() && !printMode);
+                    !node.isSelected() && !getMapper().getPrintMode());
             g2.translate(-graphX, 0);
         }
     }
@@ -893,7 +890,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
 
    @Override
     public int getY() {
-        if (printMode) {
+        if (getMapper().getPrintMode()) {
             return 0; 
         }
         

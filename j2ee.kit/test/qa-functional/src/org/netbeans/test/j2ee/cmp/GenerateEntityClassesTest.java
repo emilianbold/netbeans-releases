@@ -52,7 +52,6 @@ import junit.textui.TestRunner;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.dbschema.SchemaElement;
 import org.netbeans.modules.dbschema.SchemaElementUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.DBSchemaTableProvider;
@@ -94,11 +93,6 @@ public class GenerateEntityClassesTest extends DDTestCase {
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(GenerateEntityClassesTest.class);
         conf = addServerTests(conf,"testOpenProject","testGenerateBeans");
-/*
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new GenerateEntityClassesTest("testOpenProject"));
-        suite.addTest(new GenerateEntityClassesTest("testGenerateBeans"));
-        return suite; */
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
     }

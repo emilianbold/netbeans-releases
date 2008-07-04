@@ -55,9 +55,15 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.plaf.UIResource;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.gsf.GsfDataObject;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -332,6 +338,28 @@ public final class Utils {
      */
     public static boolean isAsciiPrintable(char ch) {
         return ch >= 32 && ch < 127;
+    }
+
+    /**
+     * Browse for a file from sources of a project and update the content of the text field.
+     * @param project project to get sources from.
+     * @param textField textfield to update.
+     */
+    public static void browseSourceFile(Project project, JTextField textField) {
+        SourceGroup[] sourceGroups = org.netbeans.modules.php.project.Utils.getSourceGroups(project);
+        assert sourceGroups.length == 1;
+        assert sourceGroups[0] != null;
+        File rootFolder = FileUtil.toFile(sourceGroups[0].getRootFolder());
+        String preselected = textField.getText().replace(File.separatorChar, '/'); // NOI18N
+        if (preselected.length() > 0) {
+            // searching in nodes => no file extension can be there
+            preselected = preselected.substring(0, preselected.lastIndexOf(".")); // NOI18N
+        }
+        FileObject selected = BrowseFolders.showDialog(sourceGroups, GsfDataObject.class, preselected);
+        if (selected != null) {
+            String relPath = PropertyUtils.relativizeFile(rootFolder, FileUtil.toFile(selected));
+            textField.setText(relPath);
+        }
     }
 
     public static class EncodingModel extends DefaultComboBoxModel {

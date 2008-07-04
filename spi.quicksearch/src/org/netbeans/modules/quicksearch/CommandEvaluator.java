@@ -67,10 +67,14 @@ public class CommandEvaluator {
     /**
      * if command is in form "command arguments" then only providers registered 
      * for given command are called. Otherwise all providers are called.
-     * @param command
-     * @return 
+     *
+     * @param command text to evauate, to search for
+     *
+     * @return task of this evaluation, which waits for all providers to complete
+     * execution. Use returned instance to recognize if this evaluation still
+     * runs and when it actually will finish.
      */
-    public static void evaluate (String command, ResultsModel model) {
+    public static org.openide.util.Task evaluate (String command, ResultsModel model) {
         
         List<CategoryResult> l = new ArrayList<CategoryResult>();
         Matcher m = COMMAND_PATTERN.matcher(command);
@@ -91,6 +95,8 @@ public class CommandEvaluator {
         boolean onlyRecent = text == null || text.trim().equals("");
         
         SearchRequest sRequest = Accessor.DEFAULT.createRequest(text, null);
+
+        List<Task> tasks = new ArrayList<Task>();
         
         for (ProviderModel.Category cat : ProviderRegistry.getInstance().getProviders().getCategories()) {
             // skip all but recent if empty string came
@@ -99,25 +105,37 @@ public class CommandEvaluator {
             }
             
             CategoryResult catResult = new CategoryResult(cat);
-            SearchResponse sResponse = Accessor.DEFAULT.createResponse(catResult);
+            SearchResponse sResponse = Accessor.DEFAULT.createResponse(catResult, sRequest);
             for (SearchProvider provider : cat.getProviders()) {
                 if (commandString != null) {
                     String commandPrefix = cat.getCommandPrefix();
                     if (commandPrefix != null && commandPrefix.equalsIgnoreCase(commandString)) {
-                        runEvaluation(provider, sRequest, sResponse, cat);
+                        Task t = runEvaluation(provider, sRequest, sResponse, cat);
+                        if (t != null) {
+                            tasks.add(t);
+                        }
                     }
                 } else {
-                    runEvaluation(provider, sRequest, sResponse, cat);
+                    Task t = runEvaluation(provider, sRequest, sResponse, cat);
+                    if (t != null) {
+                        tasks.add(t);
+                    }
                 }
             }
             l.add(catResult);
         }
 
         model.setContent(l);
+
+        Wait4AllTask wt = new Wait4AllTask(tasks);
+        // start waiting on all providers execution
+        RequestProcessor.getDefault().post(wt);
+
+        return wt;
     }
     
     private static Task runEvaluation (final SearchProvider provider, final SearchRequest request,
-                                final SearchResponse response, ProviderModel.Category cat) {
+                                final SearchResponse response, final ProviderModel.Category cat) {
         // actions are not happy outside EQ at all
         if ("Actions".equals(cat.getName())) {
             provider.evaluate(request, response);
@@ -129,6 +147,30 @@ public class CommandEvaluator {
                 provider.evaluate(request, response);
             }
         });
+    }
+
+    /** Task implementation that computes nothing itself, it just waits
+     * for all given RequestProcessor tasks to finish and then it finishes as well.
+     */
+    private static class Wait4AllTask extends org.openide.util.Task implements Runnable {
+        private List<Task> tasks;
+
+        private Wait4AllTask (List<Task> tasks) {
+            super();
+            this.tasks = tasks;
+        }
+
+        @Override
+        public void run () {
+            try {
+                notifyRunning();
+                for (Task task : tasks) {
+                    task.waitFinished();
+                }
+            } finally {
+                notifyFinished();
+            }
+        }
     }
 
 }

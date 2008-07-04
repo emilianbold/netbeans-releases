@@ -614,6 +614,52 @@ public abstract class GsfTestBase extends NbTestCase {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    // Parser tests
+    ////////////////////////////////////////////////////////////////////////////
+    protected void checkErrors(String relFilePath) throws Exception {
+        GsfTestCompilationInfo info = getInfo(relFilePath);
+        String text = info.getText();
+        assertNotNull(text);
+
+        ParserResult pr = info.getEmbeddedResult(info.getPreferredMimeType(), 0);
+        assertNotNull(pr);
+
+        List<Error> diagnostics = pr.getDiagnostics();
+        String annotatedSource = annotateErrors(text, diagnostics);
+        assertDescriptionMatches(relFilePath, annotatedSource, false, ".errors");
+    }
+
+    private String annotateErrors(String text, List<Error> errors) {
+        List<String> descs = new ArrayList<String>();
+        for (Error error : errors) {
+            StringBuilder desc = new StringBuilder();
+            if (error.getKey() != null) {
+                desc.append("[");
+                desc.append(error.getKey());
+                desc.append("] ");
+            }
+            desc.append(error.getStartPosition());
+            desc.append("-");
+            desc.append(error.getEndPosition());
+            desc.append(":");
+            desc.append(error.getDisplayName());
+            if (error.getDescription() != null) {
+                desc.append(" ; " );
+                desc.append(error.getDescription());
+            }
+            descs.add(desc.toString());
+        }
+        Collections.sort(descs);
+        StringBuilder summary = new StringBuilder();
+        for (String desc : descs) {
+            summary.append(desc);
+            summary.append("\n");
+        }
+
+        return summary.toString();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     // Keystroke completion tests
     ////////////////////////////////////////////////////////////////////////////
     protected KeystrokeHandler getKeystrokeHandler() {

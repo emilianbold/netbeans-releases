@@ -22,14 +22,18 @@
           <Group type="102" alignment="1" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="argsLabel" alignment="0" min="-2" pref="72" max="-2" attributes="0"/>
-                  <Component id="indexFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="urlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="indexFileLabel" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="hintLabel" alignment="1" min="0" max="32767" attributes="1"/>
                   <Component id="argsTextField" alignment="1" pref="220" max="32767" attributes="1"/>
-                  <Component id="indexFileTextField" alignment="1" pref="220" max="32767" attributes="3"/>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Component id="indexFileTextField" pref="125" max="32767" attributes="3"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="indexFileBrowseButton" min="-2" max="-2" attributes="0"/>
+                  </Group>
                   <Component id="runAsCombo" alignment="1" pref="220" max="32767" attributes="1"/>
                   <Component id="urlTextField" alignment="1" pref="220" max="32767" attributes="3"/>
               </Group>
@@ -51,8 +55,9 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="2" attributes="0">
-                  <Component id="indexFileLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="indexFileBrowseButton" alignment="2" min="-2" max="-2" attributes="0"/>
                   <Component id="indexFileTextField" alignment="2" min="-2" pref="19" max="-2" attributes="0"/>
+                  <Component id="indexFileLabel" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="2" attributes="0">
@@ -67,6 +72,18 @@
     </DimensionLayout>
   </Layout>
   <SubComponents>
+    <Component class="javax.swing.JLabel" name="runAsLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="runAsCombo"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/customizer/Bundle.properties" key="LBL_RunAs" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="runAsCombo">
+    </Component>
     <Component class="javax.swing.JLabel" name="urlLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
@@ -90,6 +107,19 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="indexFileTextField">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="indexFileBrowseButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/customizer/Bundle.properties" key="LBL_Browse" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="indexFileBrowseButtonActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="argsLabel">
       <Properties>
@@ -118,18 +148,6 @@
         <Property name="enabled" type="boolean" value="false"/>
         <Property name="opaque" type="boolean" value="false"/>
       </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="runAsLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="runAsCombo"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/project/ui/customizer/Bundle.properties" key="LBL_RunAs" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JComboBox" name="runAsCombo">
     </Component>
   </SubComponents>
 </Form>

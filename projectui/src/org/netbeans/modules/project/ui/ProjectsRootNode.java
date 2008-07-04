@@ -286,7 +286,7 @@ public class ProjectsRootNode extends AbstractNode {
             LogicalViewProvider lvp = project.getLookup().lookup(LogicalViewProvider.class);
             
             if ( lvp == null ) {
-                LOG.warning("Warning - project " + ProjectUtils.getInformation(project).getName() + " failed to supply a LogicalViewProvider in its lookup"); // NOI18N
+                LOG.warning("Warning - project of " + project.getClass() + " in " + FileUtil.getFileDisplayName(project.getProjectDirectory()) + " failed to supply a LogicalViewProvider in its lookup"); // NOI18N
                 Sources sources = ProjectUtils.getSources(project);
                 sources.removeChangeListener(this);
                 sources.addChangeListener(this);

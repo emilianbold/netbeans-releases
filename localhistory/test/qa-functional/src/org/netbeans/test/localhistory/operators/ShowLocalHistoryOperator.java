@@ -52,6 +52,7 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.test.localhistory.actions.ShowLocalHistoryAction;
+import org.openide.explorer.view.OutlineView;
 
 /** Class implementing all necessary methods for handling "Local History" view.
  */
@@ -84,8 +85,8 @@ public class ShowLocalHistoryOperator extends TopComponentOperator {
     
     private JButtonOperator _btNext;
     private JButtonOperator _btPrevious;
-    private TreeTableOperator _treeTable;
-    
+    private OutlineViewOperator _treeTable;
+
     //******************************
     // Subcomponents definition part
     //******************************
@@ -117,9 +118,9 @@ public class ShowLocalHistoryOperator extends TopComponentOperator {
     /** Tries to find History JList in this dialog.
      * @return JListOperator
      */
-    public TreeTableOperator treeTableHistory() {
+    public OutlineViewOperator treeTableHistory() {
         if (_treeTable == null) {
-            _treeTable = new TreeTableOperator(this);
+            _treeTable = new OutlineViewOperator(this);
         }
         return _treeTable;
     }

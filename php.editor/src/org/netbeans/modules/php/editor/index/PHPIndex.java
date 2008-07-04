@@ -57,8 +57,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchResult;
@@ -130,14 +128,15 @@ public class PHPIndex {
     }
 
     /** Get the FileObject corresponding to a URL returned from the index */
-    public static FileObject getFileObject(String url) {
+    public static FileObject getFileObject(String urlStr) {
         try {
-            if (url.startsWith(CLUSTER_URL)) {
-                url = getClusterUrl() + url.substring(CLUSTER_URL.length()); // NOI18N
+            if (urlStr.startsWith(CLUSTER_URL)) {
+                urlStr = getClusterUrl() + urlStr.substring(CLUSTER_URL.length()); // NOI18N
 
             }
-
-            return URLMapper.findFileObject(new URL(new URL(url).toExternalForm()));
+            
+            URL url = new URL(urlStr);
+            return URLMapper.findFileObject(url);
         } catch (MalformedURLException mue) {
             Exceptions.printStackTrace(mue);
         }
@@ -175,7 +174,7 @@ public class PHPIndex {
         if (inheritanceLine != null){
             for (IndexedClass clazz : inheritanceLine){
                 int mask = inheritanceLine.get(0) == clazz ? attrMask : (attrMask & (~Modifier.PRIVATE));
-                methods.addAll(getMethods(context, clazz.getName(), "", kind, mask)); //NOI18N
+                methods.addAll(getMethods(context, clazz.getName(), name, kind, mask)); //NOI18N
             }
         }
         
@@ -190,7 +189,7 @@ public class PHPIndex {
         if (inheritanceLine != null){
             for (IndexedClass clazz : inheritanceLine){
                 int mask = inheritanceLine.get(0) == clazz ? attrMask : (attrMask & (~Modifier.PRIVATE));
-                properties.addAll(getProperties(context, clazz.getName(), "", NameKind.PREFIX, mask)); //NOI18N
+                properties.addAll(getProperties(context, clazz.getName(), name, NameKind.PREFIX, mask)); //NOI18N
             }
         }
         
@@ -253,7 +252,7 @@ public class PHPIndex {
         for (String signature : signaturesMap.keySet()) {
             //items are not indexed, no case insensitive search key user
             Signature sig = Signature.get(signature);
-            int flags = sig.integer(3);
+            int flags = sig.integer(4);
             
             if ((flags & (Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE)) == 0){
                 flags |= Modifier.PUBLIC; // default modifier
@@ -266,6 +265,9 @@ public class PHPIndex {
 
                 IndexedFunction func = new IndexedFunction(funcName, className,
                         this, signaturesMap.get(signature), args, offset, flags, ElementKind.METHOD);
+                
+                int defParamCount = sig.integer(3);
+                func.setDefaultParameterCount(defParamCount);
 
                 methods.add(func);
             }
@@ -322,13 +324,6 @@ public class PHPIndex {
             if (!className.equals(foundClassName)) {
                 continue;
             }
-            
-            if(kind == NameKind.PREFIX) {
-                //case sensitive
-                if(!foundClassName.startsWith(className)) {
-                    continue;
-                }
-            }
 
             for (String signature : rawSignatures) {
                 String elemName = getSignatureItem(signature, 0);
@@ -337,8 +332,8 @@ public class PHPIndex {
                 // according to 'kind'
                 if((kind == NameKind.CASE_INSENSITIVE_PREFIX 
                         && elemName.toLowerCase().startsWith(name.toLowerCase()))
-                        || (kind == NameKind.PREFIX 
-                        && elemName.startsWith(name))) {
+                        || (kind == NameKind.PREFIX && elemName.startsWith(name))
+                        || (kind == NameKind.EXACT_NAME && elemName.equals(name))) {
                         signatures.put(signature, persistentURL);
                 }
                 
@@ -392,8 +387,12 @@ public class PHPIndex {
                     String funcName = sig.string(1);
                     
                     if(kind == NameKind.PREFIX) {
-                        //case sensitive
+                        //case sensitive - TODO does it make sense?
                         if(!funcName.startsWith(name)) {
+                            continue;
+                        }
+                    } else if (kind == NameKind.EXACT_NAME){
+                        if (!funcName.equalsIgnoreCase(name)){ // PHP func names r case-insensitive
                             continue;
                         }
                     }
@@ -403,6 +402,9 @@ public class PHPIndex {
 
                     IndexedFunction func = new IndexedFunction(funcName, null,
                             this, map.getPersistentUrl(), arguments, offset, 0, ElementKind.METHOD);
+                    
+                    int defParamCount = sig.integer(4);
+                    func.setDefaultParameterCount(defParamCount);
                     
                     func.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
                     functions.add(func);

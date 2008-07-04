@@ -106,11 +106,11 @@ public final class AdvancedPanelController extends OptionsPanelController {
     }
     
     public void addPropertyChangeListener (PropertyChangeListener l) {
-        getAdvancedPanel ().addPropertyChangeListener (l);
+        getAdvancedPanel().addModelPropertyChangeListener(l);
     }
 
     public void removePropertyChangeListener (PropertyChangeListener l) {
-        getAdvancedPanel ().removePropertyChangeListener (l);
+        getAdvancedPanel().removeModelPropertyChangeListener(l);
     }
 
     private AdvancedPanel advancedPanel;

@@ -191,7 +191,7 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         }
 
         public boolean isTemplate() {
-            return ((CsmClass)declaration).isTemplate();
+            return ((CsmTemplate)declaration).isTemplate();
         }
 
         private CsmMember createMember(CsmMember member) {
@@ -346,7 +346,7 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         }
 
         public boolean isTemplate() {
-            return ((CsmFunction)declaration).isTemplate();
+            return ((CsmTemplate)declaration).isTemplate();
         }
 
         public boolean isInline() {
@@ -537,7 +537,7 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         }
 
         public boolean isTemplate() {
-            return ((CsmMethod)declaration).isTemplate();
+            return ((CsmTemplate)declaration).isTemplate();
         }
 
         public boolean isInline() {

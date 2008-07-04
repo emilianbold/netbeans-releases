@@ -542,32 +542,4 @@ public class PatternsTest extends RestTestBase {
                 "testUndeploy"
                 ).enableModules(".*").clusters(".*"));
     }
-    
-//    public static NbTestSuite suite() {
-//        NbTestSuite suite = new NbTestSuite();
-//        suite.addTest(new PatternsTest("testSingletonDef")); //NOI18N
-//        suite.addTest(new PatternsTest("testContainerIDef")); //NOI18N
-//        suite.addTest(new PatternsTest("testCcContainerIDef")); //NOI18N
-//        suite.addTest(new PatternsTest("testSingleton1")); //NOI18N
-//        suite.addTest(new PatternsTest("testCcContainerI1")); //NOI18N
-//        suite.addTest(new PatternsTest("testSingleton2")); //NOI18N
-//        suite.addTest(new PatternsTest("testContainerI1")); //NOI18N
-//        suite.addTest(new PatternsTest("testContainerI2")); //NOI18N
-//        suite.addTest(new PatternsTest("testSingleton3")); //NOI18N
-//        suite.addTest(new PatternsTest("testContainerI3")); //NOI18N
-//        suite.addTest(new PatternsTest("testCcContainerI2")); //NOI18N
-//        suite.addTest(new PatternsTest("testCcContainerI3")); //NOI18N
-//        suite.addTest(new PatternsTest("testNodes")); //NOI18N
-//        suite.addTest(new PatternsTest("testDeploy")); //NOI18N
-//        suite.addTest(new PatternsTest("testUndeploy")); //NOI18N
-//        return suite;
-//    }
-//
-//    /**
-//     * Method allowing test execution directly from the IDE.
-//     */
-//    public static void main(java.lang.String[] args) {
-//        // run whole suite
-//        TestRunner.run(suite());
-//    }
 }

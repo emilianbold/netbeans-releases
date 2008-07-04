@@ -48,7 +48,9 @@ import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.openide.nodes.Node;
 
 public class PlatformNodeProp extends Node.Property {
+    
     private PlatformConfiguration platformConfiguration;
+    private PlatformEditor editor;
     private boolean canWrite;
     private String name;
     private String description;
@@ -59,6 +61,8 @@ public class PlatformNodeProp extends Node.Property {
 	this.canWrite = canWrite;
 	this.name = name;
 	this.description = description;
+        platformConfiguration.setPlatformNodeProp(this);
+        editor = null;
     }
 
     @Override
@@ -112,14 +116,17 @@ public class PlatformNodeProp extends Node.Property {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-	return new IntEditor();
+        if (editor == null) {
+            editor = new PlatformEditor();
+        }
+        return editor;
     }
     
     public void repaint() {
-        //getPropertyEditor().repaint();
+        ((PlatformEditor) getPropertyEditor()).repaint();
     }
 
-    private class IntEditor extends PropertyEditorSupport {
+    private class PlatformEditor extends PropertyEditorSupport {
         @Override
         public String getJavaInitializationString() {
             return getAsText();
@@ -151,7 +158,7 @@ public class PlatformNodeProp extends Node.Property {
         }
         
         public void repaint() {
-            
+            firePropertyChange();
         }
     }
 }

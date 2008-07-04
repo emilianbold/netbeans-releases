@@ -138,9 +138,10 @@ public class CopyImpl extends FromHolderImpl implements Copy, AfterSources {
     protected Attribute[] getDomainAttributes() {
         if ( myAttributes.get() == null ){
             Attribute[] attr = super.getDomainAttributes();
-            Attribute[] ret = new Attribute[ attr.length + 1];
-            System.arraycopy( attr , 0 , ret , 1 , attr.length );
+            Attribute[] ret = new Attribute[ attr.length + 2];
+            System.arraycopy( attr , 0 , ret , 2 , attr.length );
             ret[ 0 ] = BpelAttributes.KEEP_SRC_ELEMENT_NAME;
+            ret[ 1 ] = BpelAttributes.IGNORE_MISSING_FROM_DATA;
             myAttributes.compareAndSet( null ,  ret);
         }
         return myAttributes.get();

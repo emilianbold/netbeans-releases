@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.bpel.model.api.support;
 
+import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComp;
@@ -93,8 +94,14 @@ public class XPathPseudoCompImpl implements XPathPseudoComp {
         result.mPseudoComp = pseudoComp;
         result.myParentPathText = parentPathText;
         result.mType = gType;
-        result.mName = pseudoComp.getName();
-        result.mNamespace = pseudoComp.getNamespace();
+        //
+        QName qName = pseudoComp.getName();
+        if (qName == null) {
+            return null;
+        }
+        result.mName = qName.getLocalPart();
+        result.mNamespace = qName.getNamespaceURI();
+        //
         result.mIsAttribute = pseudoComp.isAttribute();
         //
         return result;

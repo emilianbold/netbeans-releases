@@ -174,8 +174,10 @@
                         <file name="org-netbeans-modules-php-editor-verification-AccidentalAssignementRule.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-WrongOrderOfArgsRule.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-ImproperFieldAccessRule.instance"/>
+                        <file name="org-netbeans-modules-php-editor-verification-ClassNotFoundRule.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-UninitializedVariableRule.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-UnusedVariableRule.instance"/>
+                        <file name="org-netbeans-modules-php-editor-verification-UnknownFunctionRule.instance"/>
                     </folder>    
                 </folder>    
             </folder>

@@ -65,10 +65,7 @@ import org.netbeans.modules.soa.mappercore.model.GraphSubset;
 import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
 /**
  *
@@ -113,6 +110,8 @@ public class Mapper extends JPanel {
 
     private boolean filterLeft = false;
     private boolean filterRight = false;
+
+    private boolean printMode = false;
    
     /** Creates a new instance of RightTree */
     public Mapper(MapperModel model) {
@@ -355,7 +354,15 @@ public class Mapper extends JPanel {
     public MapperContext getContext() {
         return context;
     }
-    
+
+    public boolean getPrintMode() {
+        return printMode;
+    }
+
+    public void setPrintMode(boolean printMode) {
+        this.printMode = printMode;
+    }
+
     public void setSelectedDndPath(TreePath path) {
         pathDndselect = path;
     }

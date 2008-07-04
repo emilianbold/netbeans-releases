@@ -87,7 +87,7 @@ import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 import org.netbeans.modules.j2ee.sun.appsrvapi.PortDetector;
 import org.netbeans.modules.j2ee.sun.ide.editors.AdminAuthenticator;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.ProgressEventSupport;
+import org.netbeans.modules.glassfish.eecommon.api.ProgressEventSupport;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.ViewLogAction;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;

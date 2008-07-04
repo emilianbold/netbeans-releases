@@ -48,4 +48,5 @@ public class WizardProperties {
     public static final String ENTITY_CLASS = "EntityClass"; //NOI18N
     public static final String JSF_FOLDER = "JSFFolder"; //NOI18N
     public static final String JSF_CLASSES_PACKAGE = "ControllerBean"; //NOI18N
+    public static final String AJAXIFY_JSF_CRUD = "AjaxifyJsfCrud"; //NOI18N
 }

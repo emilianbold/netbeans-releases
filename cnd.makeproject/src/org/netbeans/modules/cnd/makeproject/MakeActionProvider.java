@@ -536,7 +536,7 @@ public class MakeActionProvider implements ActionProvider {
                         if (itemConfiguration == null)
                             return;
                         if (itemConfiguration.getExcluded().getValue())
-                            return;;
+                            return;
                             if (itemConfiguration.getTool() == Tool.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified())
                                 return;
                             MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
@@ -757,7 +757,9 @@ public class MakeActionProvider implements ActionProvider {
         String cmd = null;
         CompilerSet2Configuration csconf = conf.getCompilerSet();
         String csname = csconf.getOption();
-        CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(csname);
+        CompilerSet cs = CompilerSetManager.useFakeRemoteCompilerSet ?
+                CompilerSetManager.fakeRemoteCS :
+                CompilerSetManager.getDefault().getCompilerSet(csname);
         if (cs != null) {
             cmd = cs.getTool(Tool.MakeTool).getPath();
         }
@@ -784,6 +786,12 @@ public class MakeActionProvider implements ActionProvider {
         if (validated) {
             return lastValidation;
         }
+
+        // TODO: invent remote validation (another script?)
+        if (!conf.getDevelopmentHost().isLocalhost()) {
+            return true;
+        }
+        
         if (csconf.getFlavor() != null && csconf.getFlavor().equals(CompilerFlavor.Unknown.toString())) {
             // Confiiguration was created with unknown tool set. Use the now default one.
             csname = CppSettings.getDefault().getCompilerSetName();
