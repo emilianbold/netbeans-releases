@@ -75,13 +75,13 @@ class SQLStatementGenerator {
         boolean comma = false;
         for (int i = 0; i < insertedRow.length; i++) {
             DBColumn dbcol = tblMeta.getColumn(i);
-            if(dbcol.isGenerated()) {
+            if (dbcol.isGenerated()) {
                 continue;
             }
 
             if (insertedRow[i] == null && !dbcol.isNullable()) {
-                    String nbBundle58 = mLoc.t("RESC058: Please enter valid values for not nullable columns");
-                    throw new DBException(nbBundle58.substring(15));
+                String nbBundle58 = mLoc.t("RESC058: Please enter valid values for not nullable columns");
+                throw new DBException(nbBundle58.substring(15));
             }
 
             if (comma) {
@@ -161,7 +161,7 @@ class SQLStatementGenerator {
         String columnName = tblMeta.getQualifiedName(i);
         int type = tblMeta.getColumnType(i);
 
-        if(value != null) {
+        if (value != null) {
             values.add(value);
             types.add(type);
             result.append(columnName + " = ? "); // NOI18N
@@ -200,7 +200,7 @@ class SQLStatementGenerator {
     }
 
     private Object getQualifiedValue(int type, Object val) {
-        if(val == null) {
+        if (val == null) {
             return "NULL"; // NOI18N
         }
         if (DataViewUtils.isNumeric(type)) {

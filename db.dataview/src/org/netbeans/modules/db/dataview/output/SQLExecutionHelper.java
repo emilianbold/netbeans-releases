@@ -115,7 +115,9 @@ class SQLExecutionHelper {
             try {
                 cntResultSet = stmt.executeQuery(SQLStatementGenerator.getCountSQLQuery(dv.getSQLString()));
                 execHelper.setTotalCount(cntResultSet);
-            } finally {
+            } catch (SQLException e){
+                execHelper.setTotalCount(null);
+            }  finally {
                 DataViewUtils.closeResources(cntResultSet);
             }
         } finally {
@@ -416,6 +418,8 @@ class SQLExecutionHelper {
                     try {
                         crs = stmt.executeQuery(SQLStatementGenerator.getCountSQLQuery(dataView.getSQLString()));
                         setTotalCount(crs);
+                    } catch (SQLException e) {
+                        setTotalCount(null);
                     } finally {
                         DataViewUtils.closeResources(crs);
                     }
