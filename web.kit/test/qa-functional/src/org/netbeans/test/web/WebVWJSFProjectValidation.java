@@ -79,6 +79,11 @@ public class WebVWJSFProjectValidation extends WebProjectValidationEE5 {
         super(name);
     }
 
+    /** Need to be defined because of JUnit */
+    public WebVWJSFProjectValidation() {
+        super();
+    }
+
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebVWJSFProjectValidation.class);
         conf = addServerTests(conf, 

@@ -66,7 +66,6 @@ import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /**
@@ -91,6 +90,11 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
     /** Need to be defined because of JUnit */
     public WebProjectValidationEE5(String name) {
         super(name);
+    }
+
+    /** Need to be defined because of JUnit */
+    public WebProjectValidationEE5() {
+        super();
     }
 
     public static Test suite() {
