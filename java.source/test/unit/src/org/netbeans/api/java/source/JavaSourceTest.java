@@ -78,6 +78,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -90,6 +92,7 @@ import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
 import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.java.source.usages.ResultConvertor;
+import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
@@ -108,6 +111,8 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.classpath.CacheClassPath;
+import org.netbeans.modules.java.source.parsing.JavacParser;
+import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.usages.IndexFactory;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.java.source.usages.PersistentClassIndex;
@@ -170,15 +175,19 @@ public class JavaSourceTest extends NbTestCase {
         File cacheFolder = new File (workDir, "cache"); //NOI18N
         cacheFolder.mkdirs();
         IndexUtil.setCacheFolder(cacheFolder);
+        FileUtil.setMIMEType("java", JavacParser.MIME_TYPE);    //NOI18N
+        MockMimeLookup.setInstances(MimePath.get(JavacParser.MIME_TYPE), new JavacParserFactory());
     }
 
     protected void tearDown() throws Exception {
     }
 
     public static Test suite() {
-        TestSuite suite = new NbTestSuite(JavaSourceTest.class);        
-//        TestSuite suite = new NbTestSuite ();
-//        suite.addTest(new JavaSourceTest("testRegisterSameTask"));
+//        TestSuite suite = new NbTestSuite(JavaSourceTest.class);        
+        TestSuite suite = new NbTestSuite ();
+        suite.addTest(new JavaSourceTest("testPhaseCompletionTask"));
+        suite.addTest(new JavaSourceTest("testCompileControlJob"));       
+        suite.addTest(new JavaSourceTest("testModificationJob"));        
         return suite;
     }
     
@@ -187,7 +196,8 @@ public class JavaSourceTest extends NbTestCase {
         FileObject test = createTestFile ("Test1");
         ClassPath bootPath = createBootPath ();
         ClassPath compilePath = createCompilePath ();        
-        JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, null), test);
+        ClassPath srcPath = createSourcePath ();
+        JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, srcPath), test);
         DataObject dobj = DataObject.find(test);
         EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);                        
         final StyledDocument doc = ec.openDocument();
@@ -208,7 +218,7 @@ public class JavaSourceTest extends NbTestCase {
         CancellableTask<CompilationInfo> task2 =  new DiagnosticTask(latches2, counter, Phase.PARSED);
         JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js,task1,Phase.RESOLVED,Priority.HIGH);
         JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js,task2,Phase.PARSED,Priority.LOW);
-        assertTrue ("Time out",waitForMultipleObjects(new CountDownLatch[] {latches1[0], latches2[0]}, 15000)); 
+        assertTrue ("Time out",waitForMultipleObjects(new CountDownLatch[] {latches1[0], latches2[0]}, 150000)); 
         assertEquals ("Called more times than expected",2,counter.getAndSet(0));        
         Thread.sleep(1000);  //Making test a more deterministic, when the task is cancelled by DocListener, it's hard for test to recover from it
         NbDocument.runAtomic (doc,
@@ -235,7 +245,8 @@ public class JavaSourceTest extends NbTestCase {
         FileObject test = createTestFile ("Test1");
         ClassPath bootPath = createBootPath ();
         ClassPath compilePath = createCompilePath ();
-        JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, null), test);
+        ClassPath srcPath = createSourcePath();
+        JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, srcPath), test);
         CountDownLatch latch = new CountDownLatch (1);
         js.runUserActionTask(new CompileControlJob(latch),true);
         assertTrue ("Time out",latch.await(15,TimeUnit.SECONDS));
@@ -246,7 +257,8 @@ public class JavaSourceTest extends NbTestCase {
         final FileObject testFile2 = createTestFile("Test2");
         final ClassPath bootPath = createBootPath();
         final ClassPath compilePath = createCompilePath();
-        final JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, null), testFile1, testFile2);
+        final ClassPath srcPath = createSourcePath();
+        final JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, srcPath), testFile1, testFile2);
         CountDownLatch latch = new CountDownLatch (2);
         js.runModificationTask(new WorkingCopyJob (latch)).commit();
         assertTrue ("Time out",latch.await(15,TimeUnit.SECONDS));

@@ -237,8 +237,8 @@ public class JavacParser extends Parser {
             assert file != null;
             this.file = file;
             ClasspathInfo _tmpInfo;
-            if (task instanceof ClasspathInfoTask &&
-                    (_tmpInfo = ((ClasspathInfoTask)task).getClasspathInfo()) != null) {
+            if (task instanceof ClasspathInfoProvider &&
+                    (_tmpInfo = ((ClasspathInfoProvider)task).getClasspathInfo()) != null) {
                 cpInfo = _tmpInfo;
             }
             else {

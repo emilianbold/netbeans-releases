@@ -53,6 +53,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.PositionConverter;
+import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.parsing.api.GenericUserTask;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -233,7 +234,7 @@ public abstract class JavaSourceAccessor {
      */
     public abstract void invalidate (CompilationInfo info);
     
-    private static class CancelableTaskWrapper extends JavaParserResultTask {
+    private static class CancelableTaskWrapper extends JavaParserResultTask implements ClasspathInfoProvider {
         
         private final JavaSource javaSource;
         private final int priority;
@@ -282,6 +283,10 @@ public abstract class JavaSourceAccessor {
         @Override
         public Phase getPhase() {
             return phase;
+        }
+        
+        public ClasspathInfo getClasspathInfo () {
+            return javaSource.getClasspathInfo();
         }
         
         @Override
