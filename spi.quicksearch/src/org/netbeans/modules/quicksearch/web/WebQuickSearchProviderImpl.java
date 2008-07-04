@@ -43,14 +43,12 @@ import java.awt.Toolkit;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 
 /**
  *
@@ -100,9 +98,7 @@ public class WebQuickSearchProviderImpl implements SearchProvider {
         } else {
             res.append('?'); //NOI18N
         }
-        res.append("cid=");
-        final Preferences p = NbPreferences.root().node("/org/netbeans/modules/autoupdate"); // NOI18N
-        res.append( p.get ("ideIdentity", "unknown") ); // NOI18N
+        res.append("cid=925878");
         return res.toString();
     }
 }

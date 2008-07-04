@@ -58,13 +58,13 @@ public class SVGTextField extends SVGComponent {
     
     public SVGTextField( SVGForm form, SVGLocatableElement element ) {
         super(form, element );
-        textElement  = (SVGLocatableElement) getElementByMeta(getElement(), 
+        myTextElement  = (SVGLocatableElement) getElementByMeta(getElement(), 
                 TYPE , TEXT );
-        caretElement = (SVGLocatableElement) getNestedElementByMeta(getElement(), 
+        myCaretElement = (SVGLocatableElement) getNestedElementByMeta(getElement(), 
                 TYPE , CARETELEM );
 
         SVGRect outlineBox = wrapperElement.getBBox();
-        SVGRect textBox    = textElement.getBBox();
+        SVGRect textBox    = myTextElement.getBBox();
         
         if (textBox != null) {
             System.out.println("Text width: " + textBox.getWidth());
@@ -73,27 +73,27 @@ public class SVGTextField extends SVGComponent {
             elemWidth = 0;
         }
 
-        hiddenTextElement = (SVGLocatableElement) form.getDocument().
+        myHiddenTextElement = (SVGLocatableElement) form.getDocument().
                 createElementNS( SVG_NS, TEXT);
-        hiddenTextElement.setFloatTrait( TRAIT_X, 
-                textElement.getFloatTrait(TRAIT_X));
-        hiddenTextElement.setFloatTrait( TRAIT_Y, 
-                textElement.getFloatTrait(TRAIT_Y));
-        hiddenTextElement.setFloatTrait( TRAIT_FONT_SIZE, 
-                textElement.getFloatTrait(TRAIT_FONT_SIZE));
-        hiddenTextElement.setTrait( TRAIT_FONT_FAMILY, 
-                textElement.getTrait( TRAIT_FONT_FAMILY));
-        hiddenTextElement.setTrait( TRAIT_VISIBILITY, TR_VALUE_HIDDEN);
+        myHiddenTextElement.setFloatTrait( TRAIT_X, 
+                myTextElement.getFloatTrait(TRAIT_X));
+        myHiddenTextElement.setFloatTrait( TRAIT_Y, 
+                myTextElement.getFloatTrait(TRAIT_Y));
+        myHiddenTextElement.setFloatTrait( TRAIT_FONT_SIZE, 
+                myTextElement.getFloatTrait(TRAIT_FONT_SIZE));
+        myHiddenTextElement.setTrait( TRAIT_FONT_FAMILY, 
+                myTextElement.getTrait( TRAIT_FONT_FAMILY));
+        myHiddenTextElement.setTrait( TRAIT_VISIBILITY, TR_VALUE_HIDDEN);
         
         getForm().invokeAndWaitSafely( new  Runnable () {
             public void run() {
-                getElement().appendChild(hiddenTextElement);
+                getElement().appendChild(myHiddenTextElement);
             }
         }
         );
         
-        if (caretElement != null) {
-            SVGRect bBox = caretElement.getBBox();
+        if (myCaretElement != null) {
+            SVGRect bBox = myCaretElement.getBBox();
             if ( bBox != null) {
                 caretWidth = bBox.getWidth() / 2;
             }
@@ -123,48 +123,49 @@ public class SVGTextField extends SVGComponent {
     }
     
     public String getText() {
-        return textValue;
+        return myTextValue;
     }
     
     public void setText(String text) {
-        if ( !text.equals(this.textValue)) {
-            this.textValue = text;
+        if ( !text.equals(myTextValue)) {
+            myTextValue = text;
             setTextImpl();
         }    
     }
 
     public int getStartOffset() {
-        return startOffset;
+        return myStartOffset;
     }
     
     public void setStartOffset( int offset) {
-        if ( this.startOffset != offset) {
-            this.startOffset = offset;
+        if ( myStartOffset != offset) {
+            myStartOffset = offset;
             setTextImpl();
         }
     }
     
     public int getCaretPosition() {
-        return caretPos;
+        return myCaretPos;
     }
     
     public void setCaretPosition(int caretPos) {
-        if (caretPos != this.caretPos) {
-            this.caretPos = caretPos;
+        if (caretPos != myCaretPos) {
+            myCaretPos = caretPos;
 
-            if (caretPos < startOffset) {
+            if (caretPos < myStartOffset) {
                 setStartOffset(caretPos);
-            } else if (caretPos > endOffset) {
-                setStartOffset(startOffset + caretPos - endOffset);
+            } else if (caretPos > myEndOffset) {
+                setStartOffset(myStartOffset + caretPos - myEndOffset);
             }
             
-            if (caretElement != null) {
-                float caretLoc = textElement.getFloatTrait(TRAIT_X);
+            if (myCaretElement != null) {
+                float caretLoc = myTextElement.getFloatTrait(TRAIT_X);
                 if ( caretPos > 0) {
-                    String beforeCaret = textValue.substring(startOffset, caretPos);
+                    String beforeCaret = myTextValue.substring(myStartOffset, 
+                            caretPos);
                     caretLoc += getTextWidth(beforeCaret) + caretWidth;
                 }
-                setTraitSafely(caretElement , TRAIT_X, caretLoc);
+                setTraitSafely(myCaretElement , TRAIT_X, caretLoc);
             }
         }
     }
@@ -182,12 +183,12 @@ public class SVGTextField extends SVGComponent {
     }    
     
     public InputHandler getInputHandler() {
-        return form.getNumPadInputHandler();
+        return getForm().getNumPadInputHandler();
     }
     
     private void showCaret(final boolean showCaret) {
-        if ( caretElement != null) {
-            setTraitSafely( caretElement , TRAIT_VISIBILITY, 
+        if ( myCaretElement != null) {
+            setTraitSafely( myCaretElement , TRAIT_VISIBILITY, 
                             showCaret ? TR_VALUE_VISIBLE : TR_VALUE_HIDDEN);
         }
     }   
@@ -198,17 +199,17 @@ public class SVGTextField extends SVGComponent {
      */
     private float getTextWidth(String text) {
         if ( text.endsWith(" ")) {
-            return getTextWidthImpl( text + "i") - getTextWidthImpl("i");
+            return doGetTextWidth( text + "i") - doGetTextWidth("i");
         } else {
-            return getTextWidthImpl(text);
+            return doGetTextWidth(text);
         }
     }
     
-    private float getTextWidthImpl(String text) {
+    private float doGetTextWidth(String text) {
         float width = 0;
         if (text.length() > 0) {
-            setTraitSafely( hiddenTextElement , TRAIT_TEXT, text);
-            SVGRect bBox = hiddenTextElement.getBBox();
+            setTraitSafely( myHiddenTextElement , TRAIT_TEXT, text);
+            SVGRect bBox = myHiddenTextElement.getBBox();
             if ( bBox != null) {
                 width = bBox.getWidth();
             } else {
@@ -219,9 +220,9 @@ public class SVGTextField extends SVGComponent {
     }
     
     private void setTextImpl() {
-        String text = this.textValue;
-        if (startOffset > 0) {
-            text = text.substring(startOffset);
+        String text = myTextValue;
+        if (myStartOffset > 0) {
+            text = text.substring(myStartOffset);
         }
 
         while ( getTextWidth(text) > elemWidth) {
@@ -229,26 +230,26 @@ public class SVGTextField extends SVGComponent {
         }
         
         setTextTrait(text);
-        endOffset = startOffset + text.length();
+        myEndOffset = myStartOffset + text.length();
     }
 
     private String getTextTrait() {
-        return textElement.getTrait( TRAIT_TEXT);
+        return myTextElement.getTrait( TRAIT_TEXT);
     }
     
     private void setTextTrait( String text) {
-        setTraitSafely( textElement, TRAIT_TEXT , text);
+        setTraitSafely( myTextElement, TRAIT_TEXT , text);
     }
     
-    private final SVGLocatableElement textElement;
-    private final SVGLocatableElement caretElement;
-    private final SVGLocatableElement hiddenTextElement;
+    private final SVGLocatableElement myTextElement;
+    private final SVGLocatableElement myCaretElement;
+    private final SVGLocatableElement myHiddenTextElement;
     private final int                 elemWidth;
     
-    private       String              textValue;
-    private       int                 startOffset = 0;
-    private       int                 endOffset   = 0;
-    private       int                 caretPos = -1;
+    private       String              myTextValue;
+    private       int                 myStartOffset = 0;
+    private       int                 myEndOffset   = 0;
+    private       int                 myCaretPos = -1;
     private       float               caretWidth = 0;
     private       String              myTitle;
 

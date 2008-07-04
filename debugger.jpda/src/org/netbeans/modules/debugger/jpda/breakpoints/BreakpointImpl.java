@@ -61,6 +61,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
@@ -279,7 +280,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
     protected boolean perform (
         Event event,
         String condition,
-        ThreadReference thread,
+        ThreadReference threadReference,
         ReferenceType referenceType,
         Value value
     ) {
@@ -299,9 +300,14 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         }
         //PATCH 48174
         try {
-            getDebugger().setAltCSF(thread.frame(0));
+            getDebugger().setAltCSF(threadReference.frame(0));
         } catch (com.sun.jdi.IncompatibleThreadStateException e) {
-            ErrorManager.getDefault().notify(e);
+            String msg = "Thread '" + threadReference.name() +
+                    "': status = " + threadReference.status() +
+                    ", is suspended = " + threadReference.isSuspended() +
+                    ", suspend count = " + threadReference.suspendCount() +
+                    ", is at breakpoint = " + threadReference.isAtBreakpoint();
+            Logger.getLogger(BreakpointImpl.class.getName()).log(Level.INFO, msg, e);
         } catch (java.lang.IndexOutOfBoundsException e) {
             // No frame in case of Thread and "Main" class breakpoints, PATCH 56540 
         } 
@@ -309,7 +315,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         if (getBreakpoint() instanceof MethodBreakpoint &&
                 (((MethodBreakpoint) getBreakpoint()).getBreakpointType()
                  & MethodBreakpoint.TYPE_METHOD_EXIT) != 0) {
-            JPDAThreadImpl jt = (JPDAThreadImpl) getDebugger().getThread(thread);
+            JPDAThreadImpl jt = (JPDAThreadImpl) getDebugger().getThread(threadReference);
             if (value != null) {
                 ReturnVariableImpl retVariable = new ReturnVariableImpl(getDebugger(), value, "", jt.getMethodName());
                 jt.setReturnVariable(retVariable);
@@ -326,7 +332,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                 getBreakpoint (),
                 debugger,
                 JPDABreakpointEvent.CONDITION_NONE,
-                debugger.getThread (thread), 
+                debugger.getThread (threadReference), 
                 referenceType, 
                 variable
             );
@@ -339,7 +345,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         } else {
             resume = evaluateCondition (
                 condition, 
-                thread,
+                threadReference,
                 referenceType,
                 variable
             );
@@ -348,10 +354,10 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         }
         getDebugger().setAltCSF(null);
         if (!resume) {
-            resume = checkWhetherResumeToFinishStep(thread);
+            resume = checkWhetherResumeToFinishStep(threadReference);
         }
         if (!resume) {
-            ((JPDAThreadImpl) getDebugger().getThread(thread)).setCurrentBreakpoint(breakpoint);
+            ((JPDAThreadImpl) getDebugger().getThread(threadReference)).setCurrentBreakpoint(breakpoint);
         }
         //S ystem.out.println("BreakpointImpl.perform end");
         return resume; 
