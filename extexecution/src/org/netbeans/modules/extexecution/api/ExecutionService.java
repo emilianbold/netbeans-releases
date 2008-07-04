@@ -383,7 +383,8 @@ public final class ExecutionService {
         synchronized (InputOutputManager.class) {
             InputOutput io = descriptor.getInputOutput();
             if (io != null) {
-                result = new InputOutputManager.InputOutputData(io, originalDisplayName, null, null);
+                result = new InputOutputManager.InputOutputData(io,
+                        originalDisplayName, null, null, null);
             }
 
             // try to acquire required one (rerun action)
@@ -395,13 +396,13 @@ public final class ExecutionService {
             // try to find free output windows
             if (result == null) {
                 result = InputOutputManager.getInputOutput(
-                        originalDisplayName, descriptor.isControllable());
+                        originalDisplayName, descriptor.isControllable(), descriptor.getOptionsPath());
             }
 
             // free IO was not found, create new one
             if (result == null) {
                 result = InputOutputManager.createInputOutput(
-                        originalDisplayName, descriptor.isControllable());
+                        originalDisplayName, descriptor.isControllable(), descriptor.getOptionsPath());
             }
 
             configureInputOutput(result.getInputOutput());
