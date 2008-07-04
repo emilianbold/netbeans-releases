@@ -38,12 +38,12 @@
  */
 package org.netbeans.test.syntax;
 
+import java.util.Map.Entry;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.web.RecurrentSuiteFactory;
 
 /**
@@ -60,6 +60,9 @@ public class AnnotationsTest extends J2eeTestCase {
     }
 
     public static Test suite() {
+        for (Entry<Object, Object> entry : System.getProperties().entrySet()) {
+            System.out.println(entry.getKey() + ": " + entry.getValue());
+        }
         return createAllModulesServerSuite(J2eeTestCase.Server.ANY, AnnotationsTest.class);
     }
     
@@ -67,6 +70,9 @@ public class AnnotationsTest extends J2eeTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         if (firstTest && isRegistered(Server.ANY)){
+            for (Entry<Object, Object> entry : System.getProperties().entrySet()) {
+                System.out.println(entry.getKey() + ": " + entry.getValue());
+            }
             openDataProjects(projectName);
             RecurrentSuiteFactory.resolveServer(projectName);
             openAllWebFiles();

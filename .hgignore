@@ -31,6 +31,7 @@ derby\.log
 ^cnd/src/org/netbeans/modules/cnd/tags$
 ^cnd.debugger.gdb/src/org/netbeans/modules/cnd/debugger/gdb/tags$
 ^cnd.makeproject/src/org/netbeans/modules/cnd/makeproject/tags$
+^cnd.remote/src/org/netbeans/modules/cnd/remote/tags$
 ^cnd.modelimpl/folding\.cc$
 ^cnd.modelimpl/codemodeltests$
 ^cnd.modelimpl/test\.h$

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,58 +31,20 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.compilers;
+package org.netbeans.modules.web.client.tools.javascript.debugger.api;
 
-import java.util.logging.Logger;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetProvider;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
-import org.netbeans.modules.cnd.remote.support.RemoteScriptSupport;
-import org.netbeans.modules.cnd.remote.support.managers.CompilerSetScriptManager;
+import java.util.EventListener;
 
 /**
  *
- * @author gordonp
+ * @author Sandip V. Chitale <sandipchitale@netbeans.org>
  */
-public class RemoteCompilerSetProvider implements CompilerSetProvider, PlatformTypes {
-    
-    private CompilerSetScriptManager manager;
-    private Logger log = Logger.getLogger("cnd.remote.logger");
-    
-    public void init(String name) {
-        manager = new CompilerSetScriptManager();
-        new RemoteScriptSupport(name, manager);
-    }
-    
-    public int getPlatform() {
-        String platform = manager.getPlatform();
-        if (platform == null || platform.length() == 0) {
-            log.warning("Got null response on platform");
-            platform = "";
-        }
-        if (platform.startsWith("Windows")) { // NOI18N
-            return PLATFORM_WINDOWS;
-        } else if (platform.startsWith("Linux")) { // NOI18N
-            return PLATFORM_LINUX;
-        } else if (platform.startsWith("SunOS")) { // NOI18N
-            return platform.contains("86") ? PLATFORM_SOLARIS_INTEL : PLATFORM_SOLARIS_SPARC; // NOI18N
-        } else if (platform.toLowerCase().startsWith("mac")) { // NOI18N
-            return PLATFORM_MACOSX;
-        } else {
-            return PLATFORM_GENERIC;
-        }
-    }
-
-    public boolean hasMoreCompilerSets() {
-        return manager.hasMoreCompilerSets();
-    }
-
-    public String getNextCompilerSetData() {
-        return manager.getNextCompilerSetData();
-    }
+public interface JSHttpMessageEventListener extends EventListener {
+    void onHttpMessageEvent(JSHttpMessageEvent jsHttpMessageEvent);
 }

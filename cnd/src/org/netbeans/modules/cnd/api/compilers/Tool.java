@@ -172,12 +172,13 @@ public class Tool {
         return TOOL_NAMES[kind];
     }
     
+    @Override
     public String toString() {
-        String name = getName();
-        if (Utilities.isWindows() && name.endsWith(".exe")) { // NOI18N
-            return name.substring(0, name.length() - 4);
+        String n = getName();
+        if (Utilities.isWindows() && n.endsWith(".exe")) { // NOI18N
+            return n.substring(0, n.length() - 4);
         } else {
-            return name;
+            return n;
         }
     }
     

@@ -86,6 +86,11 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
             Exceptions.printStackTrace(ex);
         }
     }
+    
+    public static boolean copyFrom(String key, String remoteName, String localName) {
+        RemoteCopySupport support = new RemoteCopySupport(key);
+        return support.copyFrom(remoteName, localName);
+    }
 
     public boolean copyFrom(String remoteName, String localName) {
         FileOutputStream fos = null;
@@ -192,6 +197,7 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
             return false;
         } finally {
             if (channel.isConnected()) {
+                setExitStatus(channel.getExitStatus());
                 channel.disconnect();
             }
             try {
@@ -203,7 +209,12 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
         }
 
         revitalize();
-        return true;
+        return getExitStatus() == 0;
+    }
+    
+    public static boolean copyTo(String key, String localFile, String remotePath) {
+        RemoteCopySupport support = new RemoteCopySupport(key);
+        return support.copyTo(localFile, remotePath);
     }
 
     public boolean copyTo(String localFile, String remotePath) {
@@ -273,7 +284,7 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
             } catch (Exception ee) {
             }
         }
-        return true;
+        return getExitStatus() == 0;
     }
 
     private static int checkAck(InputStream in) throws IOException {
