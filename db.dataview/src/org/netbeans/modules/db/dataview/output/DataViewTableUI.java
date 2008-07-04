@@ -665,6 +665,7 @@ class DataViewTableUI extends JTable {
                         setValueAt(null, row, col);
                         editor.stopCellEditing();
                     }
+                    setRowSelectionInterval(row, row);
                 }
             }
         }
