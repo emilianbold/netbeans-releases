@@ -207,6 +207,27 @@ public class NetBeansUtils {
             FileUtils.deleteFile(license_accepted);
         }
     }
+    public static FilesList createMetricsEnabledMarker(File nbLocation) throws IOException {
+        File nbCluster = getNbCluster(nbLocation);
+        
+        File license_accepted = new File(nbCluster, METRICS_ENABLED);
+        
+        if (!license_accepted.exists()) {
+            return FileUtils.writeFile(license_accepted, "");
+        } else {
+            return new FilesList();
+        }
+    }
+    
+    public static void removeMetricsEnabledMarker(File nbLocation) throws IOException {
+        File nbCluster = getNbCluster(nbLocation);
+        
+        File license_accepted = new File(nbCluster, METRICS_ENABLED);
+        
+        if (license_accepted.exists()) {
+            FileUtils.deleteFile(license_accepted);
+        }
+    }
     
     public static void setJavaHome(File nbLocation, File javaHome) throws IOException {
         File netbeansconf = new File(nbLocation, NETBEANS_CONF);
@@ -707,7 +728,8 @@ public class NetBeansUtils {
             "config/productid"; // NOI18N
     public static final String LICENSE_ACCEPTED =
             "var/license_accepted"; // NOI18N
-    
+    public static final String METRICS_ENABLED =
+            "var/metrics_enabled";
     public static final String DIGITS_PATTERN =
             "[0-9]+"; // NOI18N
     public static final String CLUSTER_NUMBER_PATTERN =
