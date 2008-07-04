@@ -208,6 +208,7 @@ public final class SourceCache {
     private final Map<EmbeddingProvider,List<Embedding>>
                             embeddingProviderToEmbedings = new HashMap<EmbeddingProvider,List<Embedding>> ();
     
+    //tzezula: probably has race condition
     public Iterable<Embedding> getAllEmbeddings () {
         final Snapshot snapshot = getSnapshot();
         synchronized (this) {
@@ -235,7 +236,8 @@ public final class SourceCache {
 
     //GuardedBy(this)
     private final Set<EmbeddingProvider> upToDateEmbeddingProviders = new HashSet<EmbeddingProvider> ();
-    
+
+    //tzezula: probably has race condition
     void refresh (EmbeddingProvider embeddingProvider, Class<? extends TaskScheduler> schedulerType) {
         final Snapshot snapshot = getSnapshot();
         synchronized (this) {
@@ -316,7 +318,8 @@ public final class SourceCache {
         }
         return tasks;
     }
-    
+
+    //tzezula: probably has race condition
     public void scheduleTasks (Class<? extends TaskScheduler> schedulerType) {
         final List<SchedulerTask> reschedule = new ArrayList<SchedulerTask> ();
         final List<SchedulerTask> add = new ArrayList<SchedulerTask> ();
