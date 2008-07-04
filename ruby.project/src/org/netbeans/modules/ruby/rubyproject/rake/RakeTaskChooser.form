@@ -16,15 +16,26 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="1" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="matchingTaskSP" alignment="0" pref="612" max="32767" attributes="0"/>
-                  <Component id="rakeTaskLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="matchingTaskLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="1" attributes="0">
-                      <Component id="rakeTaskField" pref="538" max="32767" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="matchingTaskSP" alignment="0" pref="602" max="32767" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Group type="102" alignment="0" max="-2" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="rakeTaskLabel" min="-2" max="-2" attributes="0"/>
+                                  <Component id="taskParamLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="taskParamsField" pref="670" max="32767" attributes="0"/>
+                                  <Component id="rakeTaskField" alignment="0" pref="606" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <Component id="matchingTaskLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="debugCheckbox" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -36,16 +47,20 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="rakeTaskLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="rakeTaskLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="debugCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="rakeTaskField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="taskParamLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="taskParamsField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="matchingTaskLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="matchingTaskSP" pref="270" max="32767" attributes="0"/>
+              <Component id="matchingTaskSP" pref="228" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -72,6 +87,23 @@
         <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="rakeTaskFieldKeyPressed"/>
       </Events>
     </Component>
+    <Component class="javax.swing.JLabel" name="taskParamLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="taskParamsField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/ruby/rubyproject/rake/Bundle.properties" key="RakeTaskChooser.taskParamLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="taskParamsField">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/ruby/rubyproject/rake/Bundle.properties" key="RakeTaskChooser.taskParamsField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
     <Component class="javax.swing.JLabel" name="matchingTaskLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
@@ -90,6 +122,9 @@
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
         <Component class="javax.swing.JList" name="matchingTaskList">
+          <Properties>
+            <Property name="selectionMode" type="int" value="0"/>
+          </Properties>
         </Component>
       </SubComponents>
     </Container>

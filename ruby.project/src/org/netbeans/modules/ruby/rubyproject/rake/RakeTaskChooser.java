@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -69,11 +69,14 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 public final class RakeTaskChooser extends JPanel {
-    
+
     private final static Object NO_TASK_ITEM = getMessage("RakeTaskChooser.no.matching.task");
 
     /** Remember checkbox state per IDE sessions. */
     private static boolean debug;
+
+    /** Preselect lastly used task for more convenience. */
+    private static String lastTask;
 
     private final RubyBaseProject project;
     private final List<RakeTask> allTasks;
@@ -125,27 +128,32 @@ public final class RakeTaskChooser extends JPanel {
         dialog.getAccessibleContext().setAccessibleName(getMessage("RakeTaskChooser.accessibleName"));
         dialog.getAccessibleContext().setAccessibleDescription(getMessage("RakeTaskChooser.accessibleDescription"));
         dialog.setVisible(true);
-        
+
         if (descriptor.getValue() == runButton) {
             RakeTask task = (RakeTask) chooserPanel.matchingTaskList.getSelectedValue();
             RakeTaskChooser.debug = chooserPanel.debugCheckbox.isSelected();
-            return new TaskDescriptor(task, RakeTaskChooser.debug);
+            RakeTaskChooser.lastTask = task.getTask();
+            return new TaskDescriptor(task, 
+                    chooserPanel.taskParamsField.getText().trim(),
+                    RakeTaskChooser.debug);
         }
         return null;
     }
-    
+
     private static void setRunButtonState(final JButton runButton, final RakeTaskChooser chooserPanel) {
         Object val = chooserPanel.matchingTaskList.getSelectedValue();
         runButton.setEnabled(val != null && !NO_TASK_ITEM.equals(val));
     }
 
     static class TaskDescriptor {
-        
+
         private final RakeTask task;
+        private final String params;
         private final boolean debug;
 
-        TaskDescriptor(RakeTask task, boolean debug) {
+        TaskDescriptor(RakeTask task, String params, boolean debug) {
             this.task = task;
+            this.params = params;
             this.debug = debug;
         }
 
@@ -153,11 +161,15 @@ public final class RakeTaskChooser extends JPanel {
             return task;
         }
 
+        String getTaskParams() {
+            return params;
+        }
+
         boolean isDebug() {
             return debug;
         }
     }
-    
+
     private RakeTaskChooser(RubyBaseProject project) {
         this.allTasks = new ArrayList<RakeTask>();
         this.project = project;
@@ -171,6 +183,18 @@ public final class RakeTaskChooser extends JPanel {
             public void insertUpdate(DocumentEvent e) { refreshTaskList(); }
             public void removeUpdate(DocumentEvent e) { refreshTaskList(); }
         });
+        preselectLastlySelected();
+    }
+
+    private void preselectLastlySelected() {
+        if (lastTask == null) {
+            return;
+        }
+        for (RakeTask task : allTasks) {
+            if (lastTask.equals(task.getTask())) {
+                matchingTaskList.setSelectedValue(task, true);
+            }
+        }
     }
 
     /** Reloads all tasks for the current project. */
@@ -204,7 +228,7 @@ public final class RakeTaskChooser extends JPanel {
         }
         matchingTaskList.setSelectedIndex(0);
     }
-    
+
     private void reloadTasks(final Runnable uiFinishAction) {
         final Object task = matchingTaskList.getSelectedValue();
         final JComponent[] comps = new JComponent[] {
@@ -229,18 +253,18 @@ public final class RakeTaskChooser extends JPanel {
             }
         }, "Rake Tasks Refresher").start(); // NOI18N
     }
-    
+
     private void setEnabled(final JComponent[] comps, final boolean enabled) {
         for (JComponent comp : comps) {
             comp.setEnabled(enabled);
         }
-        
+
     }
 
     private static String getMessage(final String key, final String... args) {
         return NbBundle.getMessage(RakeTaskChooser.class, key, args);
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -252,6 +276,8 @@ public final class RakeTaskChooser extends JPanel {
 
         rakeTaskLabel = new javax.swing.JLabel();
         rakeTaskField = new javax.swing.JTextField();
+        taskParamLabel = new javax.swing.JLabel();
+        taskParamsField = new javax.swing.JTextField();
         matchingTaskLabel = new javax.swing.JLabel();
         matchingTaskSP = new javax.swing.JScrollPane();
         matchingTaskList = new javax.swing.JList();
@@ -267,9 +293,15 @@ public final class RakeTaskChooser extends JPanel {
             }
         });
 
+        taskParamLabel.setLabelFor(taskParamsField);
+        org.openide.awt.Mnemonics.setLocalizedText(taskParamLabel, org.openide.util.NbBundle.getMessage(RakeTaskChooser.class, "RakeTaskChooser.taskParamLabel.text")); // NOI18N
+
+        taskParamsField.setText(org.openide.util.NbBundle.getMessage(RakeTaskChooser.class, "RakeTaskChooser.taskParamsField.text")); // NOI18N
+
         matchingTaskLabel.setLabelFor(matchingTaskList);
         org.openide.awt.Mnemonics.setLocalizedText(matchingTaskLabel, org.openide.util.NbBundle.getMessage(RakeTaskChooser.class, "RakeTaskChooser.matchingTaskLabel.text")); // NOI18N
 
+        matchingTaskList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         matchingTaskSP.setViewportView(matchingTaskList);
 
         org.openide.awt.Mnemonics.setLocalizedText(debugCheckbox, org.openide.util.NbBundle.getMessage(RakeTaskChooser.class, "RakeTaskChooser.debugCheckbox.text")); // NOI18N
@@ -278,15 +310,22 @@ public final class RakeTaskChooser extends JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 612, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, rakeTaskLabel)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, matchingTaskLabel)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 602, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(rakeTaskField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 538, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(rakeTaskLabel)
+                                    .add(taskParamLabel))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(taskParamsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 670, Short.MAX_VALUE)
+                                    .add(rakeTaskField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 606, Short.MAX_VALUE)))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, matchingTaskLabel))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(debugCheckbox)))
                 .addContainerGap())
         );
@@ -294,43 +333,46 @@ public final class RakeTaskChooser extends JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(rakeTaskLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(rakeTaskLabel)
                     .add(debugCheckbox)
                     .add(rakeTaskField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(taskParamLabel)
+                    .add(taskParamsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(matchingTaskLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
+                .add(matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void rakeTaskFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_rakeTaskFieldKeyPressed
-        Object actionKey = matchingTaskList.getInputMap().get(KeyStroke.getKeyStrokeForEvent(evt));
+        Object actionKey = matchingTaskList.getInputMap().get(KeyStroke.getKeyStrokeForEvent(evt));//GEN-LAST:event_rakeTaskFieldKeyPressed
 
         // see JavaFastOpen.boundScrollingKey()
         boolean isListScrollAction =
                 "selectPreviousRow".equals(actionKey) || // NOI18N
-                "selectPreviousRowExtendSelection".equals(actionKey) || // NOI18N            
+                "selectPreviousRowExtendSelection".equals(actionKey) || // NOI18N
                 "selectNextRow".equals(actionKey) || // NOI18N
                 "selectNextRowExtendSelection".equals(actionKey) || // NOI18N
                 // "selectFirstRow".equals(action) || // NOI18N
                 // "selectLastRow".equals(action) || // NOI18N
-                "scrollUp".equals(actionKey) || // NOI18N            
-                "scrollUpExtendSelection".equals(actionKey) || // NOI18N            
+                "scrollUp".equals(actionKey) || // NOI18N
+                "scrollUpExtendSelection".equals(actionKey) || // NOI18N
                 "scrollDown".equals(actionKey) || // NOI18N
                 "scrollDownExtendSelection".equals(actionKey); // NOI18N
 
 
         int selectedIndex = matchingTaskList.getSelectedIndex();
         ListModel model = matchingTaskList.getModel();
-        int modelSize = model.getSize();
+        int modelSize = model.getSize();                                        
 
         // Wrap around
         if ("selectNextRow".equals(actionKey) && selectedIndex == modelSize - 1) { // NOI18N
-            matchingTaskList.setSelectedIndex(0);//GEN-LAST:event_rakeTaskFieldKeyPressed
+            matchingTaskList.setSelectedIndex(0);
             matchingTaskList.ensureIndexIsVisible(0);
             return;
         } else if ("selectPreviousRow".equals(actionKey) && selectedIndex == 0) { // NOI18N
@@ -341,11 +383,11 @@ public final class RakeTaskChooser extends JPanel {
         }
 
         if (isListScrollAction) {
-            Action action = matchingTaskList.getActionMap().get(actionKey);                                        
+            Action action = matchingTaskList.getActionMap().get(actionKey);
             action.actionPerformed(new ActionEvent(matchingTaskList, 0, (String) actionKey));
             evt.consume();
         }
-    }                                        
+    }
 
     private static class RakeTaskRenderer extends JLabel implements ListCellRenderer {
 
@@ -389,6 +431,8 @@ public final class RakeTaskChooser extends JPanel {
     private javax.swing.JScrollPane matchingTaskSP;
     private javax.swing.JTextField rakeTaskField;
     private javax.swing.JLabel rakeTaskLabel;
+    private javax.swing.JLabel taskParamLabel;
+    private javax.swing.JTextField taskParamsField;
     // End of variables declaration//GEN-END:variables
 
 }
