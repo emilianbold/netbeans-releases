@@ -41,10 +41,13 @@
 package org.netbeans.modules.quicksearch;
 
 import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
 import javax.swing.JList;
 import javax.swing.SwingUtilities;
@@ -80,13 +83,16 @@ public class QuickSearchPopup extends javax.swing.JPanel implements ListDataList
     /** text to search for */
     private String searchedText;
 
+    private int catWidth;
+    private int resultWidth;
+
     /** Creates new form SilverPopup */
     public QuickSearchPopup (QuickSearchComboBar comboBar) {
         this.comboBar = comboBar;
         initComponents();
         rModel = ResultsModel.getInstance();
         jList1.setModel(rModel);
-        jList1.setCellRenderer(new SearchResultRender());
+        jList1.setCellRenderer(new SearchResultRender(this));
         rModel.addListDataListener(this);
     }
 
@@ -230,7 +236,7 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
             // plug this popup into layered pane if needed
             JLayeredPane lPane = JLayeredPane.getLayeredPaneAbove(comboBar);
             if (!isDisplayable()) {
-                lPane.add(this, new Integer(JLayeredPane.POPUP_LAYER-1) );
+                lPane.add(this, new Integer(JLayeredPane.POPUP_LAYER + 1) );
             }
 
             computePopupBounds(popupBounds, lPane, modelSize);
@@ -247,9 +253,25 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
             setVisible(false);
         }
     }
+
+    public int getCategoryWidth () {
+        if (catWidth <= 0) {
+            catWidth = computeWidth(jList1, 20, 30);
+        }
+        return catWidth;
+    }
+
+    public int getResultWidth () {
+        if (resultWidth <= 0) {
+            resultWidth = computeWidth(jList1, 42, 50);
+        }
+        return resultWidth;
+    }
     
     private void computePopupBounds (Rectangle result, JLayeredPane lPane, int modelSize) {
-        Point location = new Point(-SearchResultRender.shift - 6, comboBar.getSize().height - 1);
+        Dimension cSize = comboBar.getSize();
+        int width = getCategoryWidth() + getResultWidth() + 3;
+        Point location = new Point(cSize.width - width - 1, comboBar.getBottomLineY() - 1);
         location = SwingUtilities.convertPoint(comboBar, location, lPane);
         result.setLocation(location);
 
@@ -263,11 +285,24 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
         jList1.setVisibleRowCount(modelSize);
         Dimension preferredSize = jList1.getPreferredSize();
         
-        preferredSize.width += 3;
+        preferredSize.width = width;
         preferredSize.height += 3;
         
         result.setSize(preferredSize);
     }
-    
+
+    /** Computes width of string up to maxCharCount, with font of given JComponent
+     * and with maximum percentage of owning Window that can be taken */
+    private static int computeWidth (JComponent comp, int maxCharCount, int percent) {
+        FontMetrics fm = comp.getFontMetrics(comp.getFont());
+        int charW = fm.charWidth('X');
+        int result = charW * maxCharCount;
+        // limit width to 50% of containing window
+        Window w = SwingUtilities.windowForComponent(comp);
+        if (w != null) {
+            result = Math.min(result, w.getWidth() * percent / 100);
+        }
+        return result;
+    }
 
 }
