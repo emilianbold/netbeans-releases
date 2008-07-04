@@ -69,7 +69,7 @@ class DataViewActionHandler {
     private boolean rejectModifications() {
         boolean doCalculation = true;
         if (dataViewUI.isCommitEnabled()) {
-            String nbBundle5 = mLoc.t("RESC005: You have uncommited Changes in this page. If you continue, you changes will be lost. Do you still want to continue?");
+            String nbBundle5 = mLoc.t("RESC005: You have uncommited Changes in this page. If you continue, your changes will be lost. Do you still want to continue?");
             String msg = nbBundle5.substring(15);
             String nbBundle6 = mLoc.t("RESC006: Confirm Navigation");
             if (showYesAllDialog(msg, nbBundle6.substring(15)) == 1) {
@@ -137,7 +137,7 @@ class DataViewActionHandler {
     }
 
     void truncateActionPerformed() {
-        String nbBundle7 = mLoc.t("RESC007: Truncate contents of table");
+        String nbBundle7 = mLoc.t("RESC007: Truncate contents of table ");
         String confirmMsg = nbBundle7.substring(15) + dataView.getDataViewDBTable().geTable(0).getDisplayName();
         if (showYesAllDialog(confirmMsg, confirmMsg) == 0) {
             execHelper.executeTruncate();
@@ -147,7 +147,7 @@ class DataViewActionHandler {
     void deleteRecordActionPerformed() {
         DataViewTableUI rsTable = dataViewUI.getDataViewTableUI();
         if (rsTable.getSelectedRowCount() == 0) {
-            String nbBundle8 = mLoc.t("RESC008: Please select a row to delete.");
+            String nbBundle8 = mLoc.t("RESC008: Please select row(s) to delete.");
             String msg = nbBundle8.substring(15);
             dataView.setInfoStatusText(msg);
         } else {
