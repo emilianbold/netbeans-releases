@@ -143,7 +143,7 @@ public abstract class Children extends Object {
         }
     }
     
-    private final boolean lazySupport;
+    final boolean lazySupport;
     /**
      * Creates appropriate entry support for this children.
      * Overriden in Children.Keys to sometimes make lazy support.
@@ -460,7 +460,14 @@ public abstract class Children extends Object {
     * @return the count
     */
     public final int getNodesCount() {
-        return entrySupport().getNodesCount();
+        return entrySupport().getNodesCount(false);
+    }
+
+    /** Get the number of nodes in the list
+    * @return the count
+    */
+    public int getNodesCount(boolean optimalResult) {
+        return entrySupport().getNodesCount(optimalResult);
     }
 
     //
@@ -587,8 +594,10 @@ public abstract class Children extends Object {
 
         Array(boolean lazy) {
             super(lazy);
-            nodesEntry = createNodesEntry();
-            entrySupport().setEntries(Collections.singleton(getNodesEntry()));
+            if (!lazy) {
+                nodesEntry = createNodesEntry();
+                entrySupport().setEntries(Collections.singleton(getNodesEntry()));
+            }
         }
 
         /** Clones all nodes that are contained in the children list.
@@ -1295,16 +1304,18 @@ public abstract class Children extends Object {
             }
 
             final List<Entry> l = new ArrayList<Entry>(keysSet.size() + 1);
-
-            if (before) {
-                l.add(getNodesEntry());
-            }
-
             KE updator = new KE();
-            updator.updateList(keysSet, l);
 
-            if (!before) {
-                l.add(getNodesEntry());
+            if (lazySupport) {
+                updator.updateList(keysSet, l);
+            } else {
+                if (before) {
+                    l.add(getNodesEntry());
+                }
+                updator.updateList(keysSet, l);
+                if (!before) {
+                    l.add(getNodesEntry());
+                }
             }
 
             applyKeys(l);
@@ -1330,17 +1341,18 @@ public abstract class Children extends Object {
             }
 
             final List<Entry> l = new ArrayList<Entry>(keys.length + 1);
-
             KE updator = new KE();
 
-            if (before) {
-                l.add(getNodesEntry());
-            }
-
-            updator.updateList(keys, l);
-
-            if (!before) {
-                l.add(getNodesEntry());
+            if (lazySupport) {
+                updator.updateList(keys, l);
+            } else {
+                if (before) {
+                    l.add(getNodesEntry());
+                }
+                updator.updateList(keys, l);
+                if (!before) {
+                    l.add(getNodesEntry());
+                }
             }
 
             applyKeys(l);
@@ -1373,7 +1385,7 @@ public abstract class Children extends Object {
             try {
                 PR.enterWriteAccess();
 
-                if (before != b) {
+                if (before != b && !lazySupport) {
                     List<Entry> l = entrySupport().getEntries();
                     l.remove(getNodesEntry());
                     before = b;

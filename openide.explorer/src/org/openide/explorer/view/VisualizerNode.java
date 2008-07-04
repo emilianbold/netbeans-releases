@@ -319,7 +319,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
             return;
         }
 
-        QUEUE.runSafe(new VisualizerEvent.Added(ch, ev.getDelta(), ev.getDeltaIndices()));
+        QUEUE.runSafe(new VisualizerEvent.Added(ch, null, ev.getDeltaIndices()));
         LOG.log(Level.FINER, "childrenAdded - end"); // NOI18N
     }
 

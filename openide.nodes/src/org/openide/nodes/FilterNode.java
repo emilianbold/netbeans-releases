@@ -1393,9 +1393,7 @@ public class FilterNode extends Node {
         */
         @Override
         public Node findChild(String name) {
-            original.getChildren().findChild(name);
-
-            return super.findChild(name);
+            return support.findChild(name);
         }
                
 
@@ -1469,10 +1467,19 @@ public class FilterNode extends Node {
         public Node[] getNodes(boolean optimalResult) {
             return support.getNodes(optimalResult);
         }
+
+        @Override
+        public int getNodesCount(boolean optimalResult) {
+            return support.getNodesCount(optimalResult);
+        }
         
 
         abstract private class ChildrenSupport {
             abstract protected Node[] getNodes(boolean optimalResult);
+
+            abstract protected int getNodesCount(boolean optimalResult);
+            
+            abstract protected Node findChild(String name);
 
             abstract protected void filterChildrenAdded(NodeMemberEvent ev);
 
@@ -1493,6 +1500,21 @@ public class FilterNode extends Node {
                 }
                 hold = Children.this.getNodes();
                 return hold;
+            }
+
+            @Override
+            protected int getNodesCount(boolean optimalResult) {
+                Node[] hold;
+                if (optimalResult) {
+                    hold = original.getChildren().getNodes(optimalResult);
+                }
+                return Children.this.getNodesCount();
+            }
+
+            @Override
+            protected Node findChild(String name) {
+                original.getChildren().findChild(name);
+                return Children.super.findChild(name);
             }
 
             @Override
@@ -1531,7 +1553,18 @@ public class FilterNode extends Node {
 
             @Override
             protected Node[] getNodes(boolean optimalResult) {
-                return Children.this.getNodes(optimalResult);
+                return Children.this.getNodes();
+            }
+
+            @Override
+            protected int getNodesCount(boolean optimalResult) {
+                return Children.this.getNodesCount();
+            }
+
+            @Override
+            protected Node findChild(String name) {
+                original.getChildren().findChild(name);
+                return Children.super.findChild(name);
             }
 
             @Override
@@ -1565,14 +1598,11 @@ public class FilterNode extends Node {
             private void updateEntries() {
                 ChildrenAdapter cha = nodeL;
                 if (cha != null) {
-
-                    if (!original.getChildren().isInitialized()) {
-                        original.getChildren().entrySupport().notifySetEntries();
-                        //return;
-                    }
+                    int count = original.getChildren().getNodesCount();
 
                     List<Entry> entries = original.getChildren().entrySupport().getEntries();
-                    ArrayList<Entry> filtEntries = new ArrayList<Entry>(entries.size() + 1);
+
+                    /*ArrayList<Entry> filtEntries = new ArrayList<Entry>(entries.size() + 1);
                     boolean b = before;
                     if (b) {
                         filtEntries.add(getNodesEntry());
@@ -1582,8 +1612,19 @@ public class FilterNode extends Node {
                     }
                     if (!b) {
                         filtEntries.add(getNodesEntry());
+                    }*/
+                    
+                    ArrayList<Entry> filtEntries = new ArrayList<Entry>(entries.size());
+                    for (Entry e : entries) {
+                        filtEntries.add(new FilterNodeEntry(e));
                     }
+                    
                     entrySupport().setEntries(filtEntries);
+                    
+                    if (!original.getChildren().isInitialized()) {
+                        original.getChildren().entrySupport().notifySetEntries();
+                        return;
+                    }                    
                 }
             }
 

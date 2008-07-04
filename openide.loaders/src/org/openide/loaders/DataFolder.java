@@ -893,7 +893,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
         /* Returns count of the nodes.
         */
         public int getNodesCount () {
-            return node.getChildren().getNodes(FolderChildren.checkChildrenMutex()).length;
+            return node.getChildren().getNodesCount(FolderChildren.checkChildrenMutex());
         }
 
         /* Returns array of subnodes

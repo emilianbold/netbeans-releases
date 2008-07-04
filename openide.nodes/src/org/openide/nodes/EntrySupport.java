@@ -78,7 +78,7 @@ abstract class EntrySupport {
     //
     // API methods to be called from Children
     //
-    public abstract int getNodesCount();
+    public abstract int getNodesCount(boolean optimalResult);
 
     public abstract Node[] getNodes(boolean optimalResult);
 
@@ -196,8 +196,8 @@ abstract class EntrySupport {
             return getNodes();
         }
 
-        public final int getNodesCount() {
-            return getNodes().length;
+        public final int getNodesCount(boolean optimalResult) {
+            return getNodes(optimalResult).length;
         }
 
         @Override
@@ -1092,13 +1092,13 @@ abstract class EntrySupport {
         @Override
         public Node[] testNodes() {
             return nodesCreated ? getNodes(false) : null;
-        }        
-        
+        }
+
         @Override
-        public synchronized int getNodesCount() {
+        public synchronized int getNodesCount(boolean optimalResult) {
             if (!checkInit()) {
                 return 0;
-            }            
+            }
             try {
                 Children.PR.enterReadAccess();
                 return entries.size();
@@ -1132,11 +1132,12 @@ abstract class EntrySupport {
                 return;
             }
             
-            oldNode.deassignFrom(children);
-            info.useNode(oldNode);
-            fireSubNodesChangeIdx(false, new int[]{info.getIndex()});
-
-            children.destroyNodes(new Node[]{oldNode});
+            if (oldNode != null) {
+                oldNode.deassignFrom(children);
+                info.useNode(oldNode);
+                fireSubNodesChangeIdx(false, new int[]{info.getIndex()});
+                children.destroyNodes(new Node[]{oldNode});
+            }
 
             info.useNode(newNode);
             fireSubNodesChangeIdx(true, new int[]{info.getIndex()});
@@ -1164,12 +1165,12 @@ abstract class EntrySupport {
         void setEntries(Collection<? extends Entry> newEntries) {
             assert entries.size() == entryToInfo.size();
 
-            if (!mustNotifySetEnties && entries.isEmpty()) {
+            if (!mustNotifySetEnties && !inited) {
                 entries = new ArrayList<Entry>(newEntries);
                 for (int i = 0; i < entries.size(); i++) {
                     Entry entry = entries.get(i);
                     EntryInfo info = new EntryInfo(entry);
-                    info.setIndex(i++);
+                    info.setIndex(i);
                     entryToInfo.put(entry, info);
                 }
                 return;
