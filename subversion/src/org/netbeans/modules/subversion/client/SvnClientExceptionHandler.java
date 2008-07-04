@@ -345,15 +345,15 @@ public class SvnClientExceptionHandler {
         } else {
             boolean directWorks = false;
             try {
-                proxySocket.connect(new InetSocketAddress(host, port));                
-                directWorks = true;                
+                proxySocket.connect(new InetSocketAddress(host, port));
+                directWorks = true;
             } catch (Exception e) {
-                // do nothing 
-            }            
+                // do nothing
+            }
             if(!directWorks) {
                 proxySocket.connect(new InetSocketAddress(proxyHost, proxyPort));           
                 connectProxy(proxySocket, host, port, proxyHost, proxyPort);                       
-            }            
+            }
         }
                         
         SSLContext context = SSLContext.getInstance("SSL");                     // NOI18N
@@ -570,8 +570,12 @@ public class SvnClientExceptionHandler {
     }
     
     public static boolean isWrongUrl(String msg) {
+//      javahl:
+//      org.tigris.subversion.javahl.ClientException: Bad URL passed to RA layer
+//      svn: URL 'file:///data/subversion/dilino' non-existent in revision 88
         msg = msg.toLowerCase();
-        return msg.indexOf("(not a valid url)") > - 1;                                      // NOI18N
+        return msg.indexOf("(not a valid url)") > - 1 ||                                      // NOI18N
+               (msg.indexOf("bad url passed to ra layer") > - 1 );
     }
 
     private static boolean isNoHostConnection(String msg) {
@@ -623,8 +627,16 @@ public class SvnClientExceptionHandler {
     }        
 
     public static boolean isFileNotFoundInRevision(String msg) {
+
+//      javahl:
+//      Unable to find repository location for 'file:///data/subversion/JavaApplication31/nbproject/project.xml' in revision 87
+
+//      cli:
+//      svn: File not found: revision 87, path '/JavaApplication31/src/javaapplication31/Main.java'
+
         msg = msg.toLowerCase();
-        return msg.indexOf("file not found: revision") > -1;  // NOI18N
+        return msg.indexOf("file not found: revision") > -1 ||                                                  // NOI18N
+              (msg.indexOf("unable to find repository location for") > -1 && msg.indexOf("in revision") > -1);  // NOI18N
     }      
         
     private static boolean isAlreadyAWorkingCopy(String msg) {   

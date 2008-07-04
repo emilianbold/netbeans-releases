@@ -164,12 +164,18 @@ public class RevertModificationsAction extends ContextAction {
                             deletedFiles.addAll(getDeletedParents(file));
                         }                        
                                 
-                        client.revert(files, recursive);
+                        // XXX JAVAHL client.revert(files, recursive);
+                        for (File file : files) {
+                            client.revert(file, recursive);
+                        }
                         
                         // revert also deleted parent folders
                         // for all undeleted files
                         if(deletedFiles.size() > 0) {
-                            client.revert(deletedFiles.toArray(new File[deletedFiles.size()]), false);   
+                            // XXX JAVAHL client.revert(deletedFiles.toArray(new File[deletedFiles.size()]), false);
+                            for (File file : deletedFiles) {
+                                client.revert(file, false);
+                            }    
                         }                        
                     }
                 }

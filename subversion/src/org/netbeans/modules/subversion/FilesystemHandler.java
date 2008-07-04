@@ -304,7 +304,10 @@ class FilesystemHandler extends VCSInterceptor {
                     // we have a file scheduled for deletion but it's going to be created again,
                     // => it's parent folder can't stay deleted either
                     List<File> deletedParents = getDeletedParents(file, client);
-                    client.revert(deletedParents.toArray(new File[deletedParents.size()]), false);                        
+                    // XXX JAVAHL client.revert(deletedParents.toArray(new File[deletedParents.size()]), false);
+                    for (File parent : deletedParents) {
+                        client.revert(parent, false);
+                    }
                 }        
                         
                 // reverting the file will set the metadata uptodate

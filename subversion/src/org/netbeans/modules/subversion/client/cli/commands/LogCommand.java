@@ -383,6 +383,22 @@ public class LogCommand extends SvnCommand {
         public ISVNLogMessageChangePath[] getChangedPaths() {
             return paths;
         }
+
+        public long getTimeMicros() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public long getTimeMillis() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public long getNumberOfChildren() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public ISVNLogMessage[] getChildMessages() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }    
             
 }
