@@ -20,20 +20,17 @@
 package org.netbeans.microedition.svg.input;
 
 import javax.microedition.lcdui.Canvas;
-import javax.microedition.lcdui.Command;
-import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Display;
-import javax.microedition.lcdui.Displayable;
-import javax.microedition.lcdui.TextBox;
-import javax.microedition.lcdui.TextField;
+
 import org.netbeans.microedition.svg.SVGComponent;
 import org.netbeans.microedition.svg.SVGTextField;
 
 /**
  *
  * @author Pavel
+ * @author ads
  */
-public class NumPadInputHandler extends InputHandler implements CommandListener {
+public class NumPadInputHandler extends TextInputHandler {
     private static final int MAX_REPEAT_TIME  = 1000;
     private static final int CARET_BLINK_TIME =  500;
     
@@ -50,17 +47,14 @@ public class NumPadInputHandler extends InputHandler implements CommandListener 
        "wxyz9ýÿþ"
     };
 
-    private final Display display;
     private final Thread  caretBlinkThread;
     
     private int          nPreviousKey;
     private int          nCharIndex;
     private long         nPrevPressTime;
-    private Displayable  previousDisp = null;
-    private SVGTextField currentTextField = null;
 
     public NumPadInputHandler(Display display) {
-        this.display = display;
+        super( display );
         caretBlinkThread = new Thread() {
             public void run() {
                 int     sleepTime = CARET_BLINK_TIME;
@@ -86,6 +80,10 @@ public class NumPadInputHandler extends InputHandler implements CommandListener 
     }
     
     public boolean handleKeyPress( SVGComponent comp, int nKeyCode ) {
+        if ( nKeyCode == FIRE ){
+            return super.handleKeyPress(comp, nKeyCode);
+        }
+        
         StringBuffer aText = new StringBuffer(getText(comp));
         int nCaret = getCaretPosition(comp);
 
@@ -129,9 +127,6 @@ public class NumPadInputHandler extends InputHandler implements CommandListener 
                         return true;
                     }
                     break;
-                case FIRE:
-                    showTextBox(comp);
-                    break;
                 case BACKSPACE:
                     if (nCaret > 0) {
                         aText.deleteCharAt(--nCaret);
@@ -162,10 +157,6 @@ public class NumPadInputHandler extends InputHandler implements CommandListener 
         return false;
     }
 
-    public boolean handleKeyRelease(SVGComponent comp, int nKeyCode) {        
-            return false;
-    }
-    
     protected void setCaretPosition( SVGComponent comp , int position){
         if ( comp instanceof SVGTextField  ) {
             SVGTextField field = (SVGTextField) comp;
@@ -196,42 +187,9 @@ public class NumPadInputHandler extends InputHandler implements CommandListener 
         return null;
     }
     
-    protected void showTextBox( SVGComponent comp ) {
-        if ( !(comp instanceof SVGTextField )){
-            return;
-        }
-        SVGTextField svgField = (SVGTextField) comp;
-        currentTextField = svgField;
-        TextBox lcduiText = new TextBox( svgField.getTitle(), svgField.getText(), 100, TextField.ANY);
-        lcduiText.addCommand(new Command( "OK", Command.OK, 0));
-        lcduiText.setCommandListener(this);
-        
-        previousDisp = display.getCurrent();
-        display.setCurrent(lcduiText);
-    }
-    
     private void resetKeyState() {
         nPreviousKey   = 0;
         nCharIndex     = 0;
         nPrevPressTime = 0;
-    }
-
-    
-
-    public void commandAction(Command cmd, Displayable disp) {
-        TextBox lcduiText = (TextBox) disp;
-        final String text = lcduiText.getString();
-        final int    pos  = lcduiText.getCaretPosition();
-            
-        display.setCurrent(previousDisp);
-        previousDisp = null;
-
-        display.callSerially( new Runnable() {
-            public void run() {
-                currentTextField.setText(text);
-                currentTextField.setCaretPosition(pos);
-                currentTextField = null;
-            }
-        });
     }
 }
