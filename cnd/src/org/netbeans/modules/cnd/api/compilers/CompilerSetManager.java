@@ -339,13 +339,36 @@ public class CompilerSetManager implements PlatformTypes {
                         StringTokenizer st = new StringTokenizer(tools, ";"); // NOI18N
                         while (st.hasMoreTokens()) {
                             String name = st.nextToken();
-                            int kind;
+                            int kind = -1;
+                            String p = path + '/' + name;
                             if (flavor.startsWith("Sun")) { // NOI18N
-                                kind = name.equals("CC") ? Tool.CCompiler : Tool.CCCompiler; // NOI18N
+                                if (name.equals("cc")) { // NOI18N
+                                    kind = Tool.CCompiler;
+                                } else if (name.equals("CC")) { // NOI18N
+                                    kind = Tool.CCCompiler;
+                                } else if (name.equals("dmake")) { // NOI18N
+                                    kind = Tool.MakeTool;
+                                } else if (name.startsWith("gdb=")) { // NOI18N
+                                    kind = Tool.DebuggerTool;
+                                    i1 = name.indexOf('=');
+                                    p = name.substring(i1 + 1);
+                                }
                             } else {
-                                kind = name.equals("gcc") ? Tool.CCompiler : Tool.CCCompiler; // NOI18N
+                                if (name.equals("gcc")) { // NOI18N
+                                    kind = Tool.CCompiler;
+                                } else if (name.equals("g++")) { // NOI18N
+                                    kind = Tool.CCCompiler;
+                                } else if (name.equals("make") ||  // NOI18N
+                                        ((platform == PLATFORM_SOLARIS_INTEL || platform == PLATFORM_SOLARIS_SPARC) &&
+                                                name.equals("gmake"))) { // NOI18N
+                                    kind = Tool.MakeTool;
+                                } else if (name.startsWith("gdb")) { // NOI18N
+                                    kind = Tool.DebuggerTool;
+                                }
                             }
-                            cs.addTool(name, path + '/' + name, kind);
+                            if (kind != -1) {
+                                cs.addTool(name, p, kind);
+                            }
                         }
                         add(cs);
                     }
@@ -416,7 +439,7 @@ public class CompilerSetManager implements PlatformTypes {
             for (String name : list) {
                 File file = new File(dir, name);
                 if (file.exists() && !file.isDirectory() && (name.equals(best) || name.equals(best + ".exe"))) { // NOI18N
-                    cs.addTool(name, path, kind);
+                    cs.addTool(name, file.getAbsolutePath(), kind);
                     break;
                 }
             }
@@ -461,8 +484,9 @@ public class CompilerSetManager implements PlatformTypes {
                 if (isWindows()) {
                     name = name + ".exe"; // NOI18N
                 }
-                if (new File(dir, name).exists() && !new File(dir, name).isDirectory()) { // NOI18N
-                    cs.addTool(name, path, kind);
+                File file = new File(dir, name);
+                if (file.exists() && !file.isDirectory()) {
+                    cs.addTool(name, file.getAbsolutePath(), kind);
                     return;
                 }
             }
@@ -499,8 +523,9 @@ public class CompilerSetManager implements PlatformTypes {
                 if (isWindows()) {
                     name = name + ".exe"; // NOI18N
                 }
-                if (new File(dir, name).exists() && !new File(dir, name).isDirectory()) { // NOI18N
-                    cs.addTool(name, path, kind);
+                File file = new File(dir, name);
+                if (file.exists() && !file.isDirectory()) { // NOI18N
+                    cs.addTool(name, file.getAbsolutePath(), kind);
                     return;
                 }
             }
@@ -537,8 +562,9 @@ public class CompilerSetManager implements PlatformTypes {
                 if (isWindows()) {
                     name = name + ".exe"; // NOI18N
                 }
-                if (new File(dir, name).exists() && !new File(dir, name).isDirectory()) { // NOI18N
-                    cs.addTool(name, path, kind);
+                File file = new File(dir, name);
+                if (file.exists() && !file.isDirectory()) { // NOI18N
+                    cs.addTool(name, file.getAbsolutePath(), kind);
                     return;
                 }
             }
@@ -746,6 +772,7 @@ public class CompilerSetManager implements PlatformTypes {
         for (CompilerSet cs : sets) {
             if (cs.getName().equals(name)) {
                 current = i;
+                getPreferences().putInt(CSM + hkey + CURRENT_SET_NAME, current);
                 return;
             }
             i++;

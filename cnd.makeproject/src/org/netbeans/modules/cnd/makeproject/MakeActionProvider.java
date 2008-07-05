@@ -351,7 +351,8 @@ public class MakeActionProvider implements ActionProvider {
                             path = FilePathAdaptor.naturalize(path);
                             path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
                             path = FilePathAdaptor.naturalize(path);
-                            CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue());
+                            String hkey = conf.getDevelopmentHost().getName();
+                            CompilerSet compilerSet = CompilerSetManager.getDefault(hkey).getCompilerSet(conf.getCompilerSet().getValue());
                             if (compilerSet != null && compilerSet.getCompilerFlavor() == CompilerFlavor.MinGW) {
                                 // IZ 120352
                                 path = FilePathAdaptor.normalize(path);
@@ -759,7 +760,7 @@ public class MakeActionProvider implements ActionProvider {
         String csname = csconf.getOption();
         CompilerSet cs = CompilerSetManager.useFakeRemoteCompilerSet ?
                 CompilerSetManager.fakeRemoteCS :
-                CompilerSetManager.getDefault().getCompilerSet(csname);
+                CompilerSetManager.getDefault(conf.getDevelopmentHost().getName()).getCompilerSet(csname);
         if (cs != null) {
             cmd = cs.getTool(Tool.MakeTool).getPath();
         }
@@ -773,6 +774,7 @@ public class MakeActionProvider implements ActionProvider {
     
     public boolean validateBuildSystem(MakeConfigurationDescriptor pd, MakeConfiguration conf, boolean validated) {
         CompilerSet2Configuration csconf = conf.getCompilerSet();
+        String hkey = conf.getDevelopmentHost().getName();
         ArrayList<String> errs = new ArrayList<String>();
         CompilerSet cs;
         BuildToolsAction bt = null;
@@ -794,19 +796,19 @@ public class MakeActionProvider implements ActionProvider {
         
         if (csconf.getFlavor() != null && csconf.getFlavor().equals(CompilerFlavor.Unknown.toString())) {
             // Confiiguration was created with unknown tool set. Use the now default one.
-            csname = CppSettings.getDefault().getCompilerSetName();
-            cs = CompilerSetManager.getDefault().getCompilerSet(csname);
+            csname = csconf.getOption();
+            cs = CompilerSetManager.getDefault(hkey).getCompilerSet(csname);
             if (cs == null) {
-                cs = CompilerSetManager.getDefault().getCompilerSet(csconf.getOption());
+                cs = CompilerSetManager.getDefault(hkey).getCompilerSet(csconf.getOption());
             }
-            if (cs == null && CompilerSetManager.getDefault().getCompilerSets().size() > 0) {
-                cs = CompilerSetManager.getDefault().getCompilerSet(0);
+            if (cs == null && CompilerSetManager.getDefault(hkey).getCompilerSets().size() > 0) {
+                cs = CompilerSetManager.getDefault(hkey).getCompilerSet(0);
             }
             runBTA = true;
         }
         else if (csconf.isValid()) {
             csname = csconf.getOption();
-            cs = CompilerSetManager.getDefault().getCompilerSet(csname);
+            cs = CompilerSetManager.getDefault(hkey).getCompilerSet(csname);
         } else {
             csname = csconf.getOldName();
             CompilerFlavor flavor = null;
@@ -817,7 +819,7 @@ public class MakeActionProvider implements ActionProvider {
                 flavor = CompilerFlavor.GNU;
             }
             cs = CompilerSet.getCustomCompilerSet("", flavor, csconf.getOldName());
-            CompilerSetManager.getDefault().add(cs);
+            CompilerSetManager.getDefault(hkey).add(cs);
             csconf.setValid();
         }
         
