@@ -253,7 +253,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     
     public String getFlavor() {
         if (flavor == null) {
-            CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(getOption());
+            CompilerSet cs = getCompilerSet();
             if (cs != null)
                 this.flavor = cs.getCompilerFlavor().toString();
             
