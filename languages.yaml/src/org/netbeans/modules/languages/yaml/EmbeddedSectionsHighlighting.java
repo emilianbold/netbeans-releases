@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.ruby.rhtml;
+package org.netbeans.modules.languages.yaml;
 
 import java.awt.Color;
 import java.util.NoSuchElementException;
@@ -55,12 +55,10 @@ import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
@@ -91,7 +89,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
         String mimeType = (String) document.getProperty("mimeType"); //NOI18N
         FontColorSettings fcs = MimeLookup.getLookup(mimeType).lookup(FontColorSettings.class);
         if (fcs != null) {
-            Color jsBC = getColoring(fcs, RhtmlTokenId.RUBY.primaryCategory());
+            Color jsBC = getColoring(fcs, YamlTokenId.RUBY.primaryCategory());
             if (jsBC != null) {
                  attribs = AttributesUtilities.createImmutable(
                     StyleConstants.Background, jsBC, 
@@ -182,10 +180,10 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
 
                     int delimiterSize = 0;
                     while (sequence.moveNext() && sequence.offset() < endOffset) {
-                        if (sequence.token().id() == RhtmlTokenId.DELIMITER) {
+                        if (sequence.token().id() == YamlTokenId.DELIMITER) {
                             // opening delimiters can have different lenght
                             delimiterSize = sequence.token().length();
-                        } else if (RhtmlTokenId.isRuby(sequence.token().id())) {
+                        } else if (YamlTokenId.isRuby(sequence.token().id())) {
                             sectionStart = sequence.offset();
                             sectionEnd = sequence.offset() + sequence.token().length();
 

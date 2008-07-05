@@ -6,9 +6,9 @@
     <fontcolor default="keyword" name="mod-method">
         <font style="bold" />
     </fontcolor>
-    <fontcolor default="default" foreColor="ff80a6c1" name="ruby-delimiter">
+    <fontcolor name="ruby-delimiter" default="default">
         <font style="bold"/>
     </fontcolor>
-    <fontcolor bgColor="ffd8eed2" default="comment" name="RUBYCOMMENT"/>
-    <fontcolor default="default" name="ruby"/>
+    <fontcolor name="ruby" default="default"/>
+    <fontcolor name="RUBYCOMMENT" default="comment"/>
 </fontscolors>

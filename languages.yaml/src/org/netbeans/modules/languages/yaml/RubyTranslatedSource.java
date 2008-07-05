@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -39,40 +39,50 @@
 
 package org.netbeans.modules.languages.yaml;
 
-import org.netbeans.lib.lexer.test.LexerTestUtilities;
+
+import org.netbeans.modules.gsf.api.EditHistory;
+import org.netbeans.modules.gsf.api.EmbeddingModel;
+import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 
 /**
  *
- * @author tor
+ * @author Tor Norbye
  */
-public class YamlLexerTest extends YamlTestBase {
-    
-    public YamlLexerTest(String testName) {
-        super(testName);
-    }            
+public class RubyTranslatedSource implements TranslatedSource {
+    private RubyModel model;
+    private RubyEmbeddingModel embeddingModel;
 
-    @Override
-    protected void setUp() throws java.lang.Exception {
-        // Set-up testing environment
-        LexerTestUtilities.setTesting(true);
+    public RubyTranslatedSource(RubyEmbeddingModel embeddingModel, RubyModel model) {
+        this.embeddingModel = embeddingModel;
+        this.model = model;
     }
 
-    @Override
-    protected void tearDown() throws java.lang.Exception {
+    public int getAstOffset(int lexicalOffset) {
+        return model.sourceToGeneratedPos(lexicalOffset);
     }
 
-    public void testInput() throws Exception {
-        LexerTestUtilities.checkTokenDump(this, "testfiles/input.yaml.txt",
-                YamlTokenId.language());
+    public int getLexicalOffset(int astOffset) {
+        return model.generatedToSourcePos(astOffset);
     }
 
-    public void testInput2() throws Exception {
-        LexerTestUtilities.checkTokenDump(this, "testfiles/input2.yaml.txt",
-                YamlTokenId.language());
+    public String getSource() {
+        return model.getRubyCode();
     }
 
-    public void testInput3() throws Exception {
-        LexerTestUtilities.checkTokenDump(this, "testfiles/input3.yaml.txt",
-                YamlTokenId.language());
+    public EmbeddingModel getModel() {
+        return embeddingModel;
+    }
+
+    public int getSourceStartOffset() {
+        return 0;
+    }
+
+    public int getSourceEndOffset() {
+        return model.getRubyCode().length();
+    }
+
+    IncrementalEmbeddingModel.UpdateState incrementalUpdate(EditHistory history) {
+        return model.incrementalUpdate(history);
     }
 }

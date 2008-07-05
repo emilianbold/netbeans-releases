@@ -101,4 +101,15 @@ public class YamlSemanticAnalyzerTest extends YamlTestBase {
         checkSemantic("testfiles/ordered.yaml");
     }
 
+    public void testErb1() throws Exception {
+        checkSemantic("testfiles/fixture.yml");
+    }
+
+    public void testErb2() throws Exception {
+        checkSemantic("testfiles/fixture2.yml");
+    }
+
+    public void testErb3() throws Exception {
+        checkSemantic("testfiles/fixture3.yml");
+    }
 }

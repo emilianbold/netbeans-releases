@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -39,40 +39,40 @@
 
 package org.netbeans.modules.languages.yaml;
 
-import org.netbeans.lib.lexer.test.LexerTestUtilities;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
+import javax.swing.text.Document;
+import org.netbeans.modules.gsf.api.EditHistory;
+import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
+import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.ruby.RubyMimeResolver;
 
 /**
  *
- * @author tor
+ * @author Tor Norbye
  */
-public class YamlLexerTest extends YamlTestBase {
+public class RubyEmbeddingModel implements IncrementalEmbeddingModel {
+    final Set<String> sourceMimeTypes = Collections.singleton(YamlTokenId.YAML_MIME_TYPE);
+
+    public RubyEmbeddingModel() {
+    }
     
-    public YamlLexerTest(String testName) {
-        super(testName);
-    }            
-
-    @Override
-    protected void setUp() throws java.lang.Exception {
-        // Set-up testing environment
-        LexerTestUtilities.setTesting(true);
+    public String getTargetMimeType() {
+        return RubyMimeResolver.RUBY_MIME_TYPE;
     }
 
-    @Override
-    protected void tearDown() throws java.lang.Exception {
+    public Set<String> getSourceMimeTypes() {
+        return sourceMimeTypes;
     }
 
-    public void testInput() throws Exception {
-        LexerTestUtilities.checkTokenDump(this, "testfiles/input.yaml.txt",
-                YamlTokenId.language());
+    public Collection<? extends TranslatedSource> translate(Document doc) {
+        // This will cache
+        RubyModel model = RubyModel.get(doc);
+        return Collections.singletonList(new RubyTranslatedSource(this, model));
     }
 
-    public void testInput2() throws Exception {
-        LexerTestUtilities.checkTokenDump(this, "testfiles/input2.yaml.txt",
-                YamlTokenId.language());
-    }
-
-    public void testInput3() throws Exception {
-        LexerTestUtilities.checkTokenDump(this, "testfiles/input3.yaml.txt",
-                YamlTokenId.language());
+    public IncrementalEmbeddingModel.UpdateState update(EditHistory history, Collection<? extends TranslatedSource> previousTranslation) {
+        return ((RubyTranslatedSource)previousTranslation.iterator().next()).incrementalUpdate(history);
     }
 }

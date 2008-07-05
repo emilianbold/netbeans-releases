@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.languages.yaml;
 
+import java.io.CharConversionException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -56,6 +57,8 @@ import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.modules.gsf.api.StructureScanner;
+import org.openide.util.Exceptions;
+import org.openide.xml.XMLUtil;
 
 /**
  * Structure Scanner for YAML
@@ -134,7 +137,13 @@ public class YamlScanner implements StructureScanner {
         }
 
         public String getHtml() {
-            return getName();
+            String s = getName();
+            try {
+                return XMLUtil.toElementContent(s);
+            } catch (CharConversionException cce) {
+                Exceptions.printStackTrace(cce);
+                return s;
+            }
         }
 
         public ElementHandle getElementHandle() {

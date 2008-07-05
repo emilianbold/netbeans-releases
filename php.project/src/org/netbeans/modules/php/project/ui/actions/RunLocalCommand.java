@@ -77,7 +77,8 @@ public class RunLocalCommand extends Command implements Displayable {
             return;
         }
         ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
-        builder.controllable(isControllable()).frontWindow(true).inputVisible(false).showProgress(true);        
+        builder.controllable(isControllable()).frontWindow(true).inputVisible(false);
+        builder.showProgress(true).optionsPath("Advanced/PHP");//NOI18N
         try {
             InOutPostRedirector redirector = new InOutPostRedirector(scriptFile);
             builder.outProcessorFactory(redirector);
