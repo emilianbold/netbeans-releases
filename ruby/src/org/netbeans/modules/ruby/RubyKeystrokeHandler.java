@@ -1725,7 +1725,7 @@ public class RubyKeystrokeHandler implements org.netbeans.modules.gsf.api.Keystr
 
             char chr = doc.getChars(firstNonWhiteFwd, 1)[0];
 
-            if (chr == '%' && RubyUtils.isRhtmlDocument(doc)) {
+            if (chr == '%' && (RubyUtils.isRhtmlDocument(doc) || RubyUtils.isYamlDocument(doc)) ) {
                 return true;
             }
 
@@ -1797,7 +1797,7 @@ public class RubyKeystrokeHandler implements org.netbeans.modules.gsf.api.Keystr
             }
             length = doc.getLength();
 
-            if (RubyUtils.isRhtmlDocument(doc)) {
+            if (RubyUtils.isRhtmlDocument(doc) || RubyUtils.isYamlDocument(doc)) {
                 TokenHierarchy th = TokenHierarchy.get(doc);
                 TokenSequence ts = th.tokenSequence();
                 ts.move(caretOffset);
