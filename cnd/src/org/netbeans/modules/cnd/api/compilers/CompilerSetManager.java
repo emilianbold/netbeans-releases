@@ -982,12 +982,7 @@ public class CompilerSetManager implements PlatformTypes {
     }
 
     private boolean isWindows() {
-        //TODO: use fake set for remote until remote compiler set retrieving would work
-        if (useFakeRemoteCompilerSet) {
-            return false;
-        } else {
-            return platform == PLATFORM_WINDOWS;
-        }
+        return platform == PLATFORM_WINDOWS;
     }
     
 

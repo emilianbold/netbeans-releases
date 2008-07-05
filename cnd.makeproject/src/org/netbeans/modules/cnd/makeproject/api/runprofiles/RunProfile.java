@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileXMLCodec;
@@ -62,6 +63,7 @@ import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -71,7 +73,7 @@ import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-public class RunProfile implements ConfigurationAuxObject {
+public class RunProfile implements ConfigurationAuxObject, PlatformTypes {
     private static final boolean NO_EXEPTION = Boolean.getBoolean("org.netbeans.modules.cnd.makeproject.api.runprofiles");
 
     public static final String PROFILE_ID = "runprofile"; // NOI18N
@@ -124,13 +126,17 @@ public class RunProfile implements ConfigurationAuxObject {
     private HashMap termPaths;
     private HashMap termOptions;
     
-    public RunProfile(String baseDir) {
+    private final int platform;
+    
+    public RunProfile(String baseDir, int platform) {
+        this.platform = platform;
         this.baseDir = baseDir;
         this.pcs = null;
         initialize();
     }
     
     public RunProfile(String baseDir, PropertyChangeSupport pcs) {
+        platform = Platform.getDefaultPlatform(); //TODO: it's not always right
         this.baseDir = baseDir;
         this.pcs = pcs;
         initialize();
@@ -166,11 +172,7 @@ public class RunProfile implements ConfigurationAuxObject {
     }
     
     private boolean isWindows() {
-        //TODO: RunProfile should be fully aware of remote mode
-        if (CompilerSetManager.useFakeRemoteCompilerSet) {
-            return false;
-        }
-        return Utilities.isWindows();
+        return platform == PLATFORM_WINDOWS;
     }
     
     private String[] setTerminalTypeNames() {
@@ -633,7 +635,7 @@ public class RunProfile implements ConfigurationAuxObject {
      */
     @Override
     public Object clone() {
-        RunProfile p = new RunProfile(getBaseDir());
+        RunProfile p = new RunProfile(getBaseDir(), this.platform);
         //p.setParent(getParent());
         p.setCloneOf(this);
         p.setDefault(isDefault());
