@@ -23,8 +23,6 @@ import org.netbeans.modules.xml.xpath.ext.spi.*;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.modules.xml.schema.model.GlobalType;
-import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
-import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
 
 /**
@@ -39,6 +37,8 @@ public class CastSchemaContext implements XPathSchemaContext {
     private XPathCast mXPathCast;
     
     private Set<SchemaCompPair> mCompPairSet;
+
+    private boolean lastInChain = false;
     
     public CastSchemaContext(XPathSchemaContext baseContext, 
             XPathCast xPathCast) {
@@ -139,5 +139,13 @@ public class CastSchemaContext implements XPathSchemaContext {
             return true;
         }
         return false;
+    }
+
+    public boolean isLastInChain() {
+        return lastInChain;
+    }
+
+    public void setLastInChain(boolean value) {
+        lastInChain = value;
     }
 }

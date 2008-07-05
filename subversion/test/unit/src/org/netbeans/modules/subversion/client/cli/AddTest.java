@@ -123,23 +123,24 @@ public class AddTest extends AbstractCLITest {
         
         assertNotifiedFiles(new File[]{});  
     }
-    
-    public void testAddFileRecursivelly() throws Exception {
-        File folder = createFolder("folder");
-        File file = createFile(folder, "file");
-        
-        assertStatus(SVNStatusKind.UNVERSIONED, file);        
-        assertStatus(SVNStatusKind.UNVERSIONED, folder);        
-        
-        ISVNClientAdapter c = getNbClient();
-        
-        c.addFile(new File[] {folder}, true);      
 
-        assertStatus(SVNStatusKind.ADDED, folder);        
-        assertStatus(SVNStatusKind.ADDED, file);
-        
-        assertNotifiedFiles(new File[]{file, folder});
-    }
+//    XXX no more api !!!
+//    public void testAddFileRecursivelly() throws Exception {
+//        File folder = createFolder("folder");
+//        File file = createFile(folder, "file");
+//
+//        assertStatus(SVNStatusKind.UNVERSIONED, file);
+//        assertStatus(SVNStatusKind.UNVERSIONED, folder);
+//
+//        ISVNClientAdapter c = getNbClient();
+//
+//        c.addFile(new File[] {folder}, true);
+//
+//        assertStatus(SVNStatusKind.ADDED, folder);
+//        assertStatus(SVNStatusKind.ADDED, file);
+//
+//        assertNotifiedFiles(new File[]{file, folder});
+//    }
     
     public void testAddFileNonRecursivelly() throws Exception {
         File folder = createFolder("folder");
@@ -149,7 +150,7 @@ public class AddTest extends AbstractCLITest {
         assertStatus(SVNStatusKind.UNVERSIONED, folder);        
         
         ISVNClientAdapter c = getNbClient();
-        c.addFile(new File[] {folder}, false);      
+        c.addFile(folder);
                 
         assertStatus(SVNStatusKind.ADDED, folder);
         assertStatus(SVNStatusKind.UNVERSIONED, file);

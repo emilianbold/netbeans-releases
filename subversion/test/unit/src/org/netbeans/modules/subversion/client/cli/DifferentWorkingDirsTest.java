@@ -66,7 +66,9 @@ public class DifferentWorkingDirsTest extends AbstractCLITest {
         File folder2111 = createFolder(folder211,"folder2");                                
         
         ISVNClientAdapter c = getNbClient();
-        c.addFile(new File[] {folder1, folder11, folder12, folder2, folder21, folder211, folder2111}, false);                
+        for(File f : new File[] {folder1, folder11, folder12, folder2, folder21, folder211, folder2111}) {
+            c.addFile(f);
+        }
                 
         c.commit(new File[] {folder1, folder11, folder12, folder2, folder21, folder211, folder2111}, "msg", false);                
         
@@ -101,7 +103,9 @@ public class DifferentWorkingDirsTest extends AbstractCLITest {
         // client
         ISVNClientAdapter c = getNbClient();
         
-        c.addFile(new File[] {folder1, folder11, folder12, file1_12, file2_12, tmpFile}, false);        
+        for(File f : new File[] {folder1, folder11, folder12, file1_12, file2_12, tmpFile}) {
+            c.addFile(f);
+        }
         
         // commit
         c.commit(new File[] {folder1, folder11, folder12, file1_12, file2_12, tmpFile}, "msg", false);        
@@ -127,7 +131,9 @@ public class DifferentWorkingDirsTest extends AbstractCLITest {
         
         ISVNClientAdapter c = getNbClient();
         
-        c.addFile(new File[] {file1, file2}, false);        
+        for(File f : new File[] {file1, file2}) {
+            c.addFile(f);
+        }
         
         c.commit(new File[] {file1, file2}, "msg", false);        
         

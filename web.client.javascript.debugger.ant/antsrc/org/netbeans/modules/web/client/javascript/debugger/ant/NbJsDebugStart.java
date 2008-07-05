@@ -142,8 +142,12 @@ public class NbJsDebugStart extends Task {
 
             URI clientUrl = new URI(webUrl);
             
-            // hard-code Firefox until additional browsers are supported
-            HtmlBrowser.Factory browser = WebClientToolsProjectUtils.getFirefoxBrowser();
+            HtmlBrowser.Factory browser = null;
+            if (WebClientToolsProjectUtils.isInternetExplorer(nbProject)) {
+                browser = WebClientToolsProjectUtils.getInternetExplorerBrowser();
+            } else {
+                browser = WebClientToolsProjectUtils.getFirefoxBrowser();
+            }
             
             if (browser == null) {
                 throw new BuildException("The configured debugging browser could not be found"); // NOI18N

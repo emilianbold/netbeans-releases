@@ -72,21 +72,33 @@ public class WebQuickSearchProviderImpl implements SearchProvider {
         } while( !res.isSearchFinished() );
     }
 
-    private Runnable createAction( final String url ) {
+    private static Runnable createAction( final String url ) {
         return new Runnable() {
             public void run() {
+                String extendedUrl = appendId( url );
                 try {
                     HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault();
                     if (displayer != null) {
-                        displayer.showURL(new URL(url));
+                        displayer.showURL(new URL(extendedUrl));
                     }
                 } catch (Exception e) {
                     StatusDisplayer.getDefault().setStatusText(
-                            NbBundle.getMessage(WebQuickSearchProviderImpl.class, "Err_CannotDisplayURL", url) ); //NOI18N
+                            NbBundle.getMessage(WebQuickSearchProviderImpl.class, "Err_CannotDisplayURL", extendedUrl) ); //NOI18N
                     Toolkit.getDefaultToolkit().beep();
                     Logger.getLogger(WebQuickSearchProviderImpl.class.getName()).log(Level.FINE, null, e);
                 }
             }
         };
+    }
+    
+    private static String appendId( String url ) {
+        StringBuffer res = new StringBuffer(url);
+        if( url.contains("?") ) { //NOI18N
+            res.append('&'); //NOI18N
+        } else {
+            res.append('?'); //NOI18N
+        }
+        res.append("cid=925878");
+        return res.toString();
     }
 }

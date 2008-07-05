@@ -54,6 +54,10 @@ public class SequentialTest extends JellyTestCase {
         super("dummy");
     }
     
+    public SequentialTest(String s) {
+        super(s);
+    }
+    
     public void setupOnce() {
     }
     

@@ -734,14 +734,20 @@ public class CommitAction extends ContextAction {
             }
         }
         if(dirsToAdd.size() > 0) {
-            client.addFile(dirsToAdd.toArray(new File[dirsToAdd.size()]), false);
+            // XXX JAVAHL client.addFile(dirsToAdd.toArray(new File[dirsToAdd.size()]), false);
+            for (File file : dirsToAdd) {
+                client.addFile(file);
+            }
         }
         if(support.isCanceled()) {
             return;
         }
 
         if(addFiles.size() > 0) {
-            client.addFile(addFiles.toArray(new File[addFiles.size()]), false);       
+            // XXX JAVAHL client.addFile(addFiles.toArray(new File[addFiles.size()]), false);
+            for (File file : addFiles) {
+                client.addFile(file);
+            }
         }
     }
     

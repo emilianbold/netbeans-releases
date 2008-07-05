@@ -50,7 +50,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *  &lt;g id="label" transform="translate(130,200)">
  *   &lt;metadata>type=label&lt;/metadata>
  *   &lt;text x="5" y="5" stroke="black" font-size="15"  font-family="SunSansSemiBold">
- *       &lt;metadata> &lt;text>type=text&lt;/text> &lt;/metadata>
+ *       &lt;text display="none">type=text&lt;/text>
  *       Label
  *   &lt;/text>
  *   &lt;/g>
@@ -82,7 +82,7 @@ public class SVGLabel extends SVGComponent {
         if ( myText == null  ){
             throw new IllegalArgumentException("No nested text element found"); // NOI18N
         }
-        myText.setTrait( TRAIT_TEXT,  text );
+        setTraitSafely( myText , TRAIT_TEXT,  text );
     }
     
     public String getText(){

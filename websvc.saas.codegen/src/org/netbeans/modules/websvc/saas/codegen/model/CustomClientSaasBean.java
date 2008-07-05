@@ -64,9 +64,10 @@ import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.CodeGen;
 public class CustomClientSaasBean extends SaasBean {
 
     public static final String ARTIFACT_TYPE_TEMPLATE = "template";
+    public static final String ARTIFACT_TYPE_LIB = "lib";
     private String url;
     private CustomSaasMethod m;
-    private Map<String, String> templates;
+    private Map<String, Map<String, String>> templates;
     private Map<String, String> libs;
     private boolean canGenerateJaxb;
     private String serviceMethodName;
@@ -101,18 +102,23 @@ public class CustomClientSaasBean extends SaasBean {
             findSaasMediaType(mimeTypes, out.getMedia());
 
             if(mimeTypes.size() > 0)
-                this.setMimeTypes(mimeTypes.toArray(new MimeType[mimeTypes.size()]));
+                setMimeTypes(mimeTypes.toArray(new MimeType[mimeTypes.size()]));
         } catch (Exception ex) {
             throw new IOException(ex.getMessage());
         } 
         
-        templates = new HashMap<String, String>();
+        templates = new HashMap<String, Map<String, String>>();
         libs = new HashMap<String, String>();
         CodeGen codegen = m.getSaas().getSaasMetadata().getCodeGen();
         if(codegen != null) {
             List<Artifacts> artifactsList = codegen.getArtifacts();
             if(artifactsList != null) {
                 for(Artifacts artifacts: artifactsList) {
+                    Map<String, String> artifactMap = new HashMap<String, String>();
+                    String targets = artifacts.getTargets();
+                    for(String target:targets.split(",")) {
+                        addArtifactTemplates(target, artifactMap);
+                    }
                     List<Artifact> artifactList = artifacts.getArtifact();
                     if(artifactList != null) {
                         for(Artifact artifact: artifactList) {
@@ -127,10 +133,12 @@ public class CustomClientSaasBean extends SaasBean {
                             if(id == null || artifactUrl == null)
                                 throw new IOException("saas-metadata/code-gen/artifacts/artifact/@id|@url value is null.");
                             if(type.equals(ARTIFACT_TYPE_TEMPLATE)) {
-                                templates.put(id, artifactUrl);
-                                if(getResourceClassTemplate().equals(artifact.getId()))
-                                    setResourceClassTemplate(artifactUrl);
-                            } else if(type.equals(ARTIFACT_TYPE_TEMPLATE)) {
+                                if(artifactMap.get(id) != null)
+                                    throw new IOException("saas-metadata/code-gen/artifacts/artifact/@"+id+" already exists.");
+                                artifactMap.put(id, artifactUrl);
+                            } else if(type.equals(ARTIFACT_TYPE_LIB)) {
+                                if(libs.get(id) != null)
+                                    throw new IOException("saas-metadata/code-gen/artifacts/artifact/@"+id+" already exists.");
                                 libs.put(id, artifactUrl);
                             }
                         }
@@ -191,12 +199,12 @@ public class CustomClientSaasBean extends SaasBean {
         this.libs = libs;
     }
     
-    public Map<String, String> getArtifactTemplates() {
-        return templates;
+    public Map<String, String> getArtifactTemplates(String target) {
+        return this.templates.get(target);
     }
     
-    public void setArtifactTemplates(Map<String, String> templates) {
-        this.templates = templates;
+    public void addArtifactTemplates(String target, Map<String, String> templates) {
+        this.templates.put(target, templates);
     }
     
     public boolean canGenerateJAXBUnmarshaller() {

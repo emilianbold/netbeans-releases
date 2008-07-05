@@ -72,15 +72,6 @@ class JavaHelpQuery implements Comparator<SearchTOCItem> {
     private SearchEngine engine;
     
     private JavaHelpQuery() {
-        Help h = (Help)Lookup.getDefault().lookup(Help.class);
-        if (h != null && h instanceof JavaHelp ) {
-            JavaHelp jh = (JavaHelp)h;
-            engine = jh.createSearchEngine();
-            if( null == engine ) {
-                Logger.getLogger(JavaHelpQuery.class.getName()).log(Level.INFO, 
-                        NbBundle.getMessage(JavaHelpQuery.class, "Err_CreateJavaHelpSearchEngine")); //NOI18N
-            }
-        }
     }
     
     public static JavaHelpQuery getDefault() {
@@ -90,6 +81,9 @@ class JavaHelpQuery implements Comparator<SearchTOCItem> {
     }
     
     public List<SearchTOCItem> search( String searchString ) {
+        if( null == engine ) {
+            engine = createSearchEngine();
+        }
         abort();
         List<SearchTOCItem> res = new ArrayList<SearchTOCItem>();
         searchThread = new Thread( createSearch( searchString, res ) );
@@ -190,5 +184,66 @@ class JavaHelpQuery implements Comparator<SearchTOCItem> {
                 res = 1;
         }
         return res;
+    }
+    
+    private SearchEngine createSearchEngine() {
+        SearchEngine se = null;
+        Help h = (Help)Lookup.getDefault().lookup(Help.class);
+        if (h != null && h instanceof JavaHelp ) {
+            JavaHelp jh = (JavaHelp)h;
+            se = jh.createSearchEngine();
+            if( null == se ) {
+                Logger.getLogger(JavaHelpQuery.class.getName()).log(Level.INFO, 
+                        NbBundle.getMessage(JavaHelpQuery.class, "Err_CreateJavaHelpSearchEngine")); //NOI18N
+                se = new DummySearchEngine();
+            }
+        }
+        return se;
+    }
+    
+    private static class DummySearchEngine extends SearchEngine {
+        @Override
+        public SearchQuery createQuery() throws IllegalStateException {
+            return new DummySearchQuery( this );
+        }
+    }
+    
+    private static class DummySearchQuery extends SearchQuery {
+        
+        private List<SearchListener> listeners = new ArrayList<SearchListener>(1);
+        
+        public DummySearchQuery( DummySearchEngine se ) {
+            super( se );
+        }
+
+        @Override
+        public void addSearchListener(SearchListener arg0) {
+            listeners.add( arg0 );
+        }
+
+        @Override
+        public void removeSearchListener(SearchListener arg0) {
+            listeners.remove( arg0 );
+        }
+
+        @Override
+        public void start(String arg0, Locale arg1) throws IllegalArgumentException, IllegalStateException {
+            SearchEvent se = new SearchEvent( this, "", false );
+            for( SearchListener sl : listeners ) {
+                sl.searchStarted(se);
+                sl.searchFinished(se);
+            }
+        }
+
+        @Override
+        public void stop() throws IllegalStateException {
+            //do nothing
+        }
+        
+        @Override
+        public boolean isActive() {
+            return false;
+        }
+        
     }
 }

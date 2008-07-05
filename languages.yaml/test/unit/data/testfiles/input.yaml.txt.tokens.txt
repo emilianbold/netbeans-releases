@@ -1,10 +1,13 @@
 .t.e.s.t. Comments
-COMMENT         "# Comment", la=1
-TEXT            "\n", la=1
-COMMENT         "# Comment 2", la=1
-TEXT            "\ndevelopment:\n  adapter:  mysql ", la=1
-COMMENT         "# Suffix comment", la=1
-TEXT            "\n  socket:   /tmp/mysql.sock\n  encoding: utf8\n  database: newsletter_development\n  username: the-username\n  password: the-password\n", la=1
+COMMENT         "# Comment\n", st=0
+COMMENT         "# Comment 2\n", st=0
+TEXT            "development:\n", st=0
+TEXT            "  adapter:  mysql # Suffix comment\n", st=0
+TEXT            "  socket:   /tmp/mysql.sock\n", st=0
+TEXT            "  encoding: utf8\n", st=0
+TEXT            "  database: newsletter_development\n", st=0
+TEXT            "  username: the-username\n", st=0
+TEXT            "  password: the-password", la=1, st=10
 ----- EOF -----
 
 <Unnamed test>

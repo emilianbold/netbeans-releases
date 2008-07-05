@@ -99,7 +99,7 @@ public interface KeystrokeHandler {
      * @todo rip out return value
      * @todo Document why both caretOffset and caret is passed in!
      */
-    int beforeBreak(@NonNull Document doc, int caretOffset, @NonNull JTextComponent caret)
+    int beforeBreak(@NonNull Document doc, int caretOffset, @NonNull JTextComponent target)
         throws BadLocationException;
 
     /**

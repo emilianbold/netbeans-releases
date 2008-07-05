@@ -115,8 +115,43 @@ public class GroovyCodeCompletionTest extends GroovyTestBase {
         checkCompletion(TEST_BASE + "ClassMethodFieldLong2.groovy", "longField.comp^", false);
     }
 
+    public void testClassMethodLocalLong1() throws Exception {
+        checkCompletion(TEST_BASE + "ClassMethodLocalLong1.groovy", "localLong.M^", false);
+    }
+
+    public void testClassMethodLocalLong2() throws Exception {
+        checkCompletion(TEST_BASE + "ClassMethodLocalLong2.groovy", "localLong.comp^", false);
+    }
+
+    public void testClassMethodLocalString1() throws Exception {
+        checkCompletion(TEST_BASE + "ClassMethodLocalString1.groovy", "localString.toL^", false);
+    }
+
+    public void testClassMethodLocalString2() throws Exception {
+        checkCompletion(TEST_BASE + "ClassMethodLocalString2.groovy", "localString.get^", false);
+    }
+
+    public void testKeywordImport1() throws Exception {
+        checkCompletion(TEST_BASE + "KeywordImport1.groovy", "import java.lang.Ab^", false);
+    }
+
+    public void testKeywordAboveClass1() throws Exception {
+        checkCompletion(TEST_BASE + "KeywordAboveClass1.groovy", "ab^", false);
+    }
+
+    // Package completion could not be tested at the moment, since this statement returns nothing for "java.n|":
+//    pkgSet = pathInfo.getClassIndex().getPackageNames(packageRequest.fullString, true, EnumSet.allOf(ClassIndex.SearchScope.class));
+
+//    public void testKeywordImport2() throws Exception {
+//        checkCompletion(TEST_BASE + "KeywordImport2.groovy", "import java.n^", false);
+//        assertTrue(false);
+//    }
+
+
+//    Testing all completion possibilities for java.lang.String is broken
+
 //    public void testClassMethodLocalStringConst1() throws Exception {
-//        checkCompletion(TEST_BASE + "ClassMethodLocalStringConst1.groovy", "\" ddd \".toS^", false);
+//        checkCompletion(TEST_BASE + "ClassMethodLocalStringConst1.groovy", "\" ddd \".^", false);
 //    }
 
 }

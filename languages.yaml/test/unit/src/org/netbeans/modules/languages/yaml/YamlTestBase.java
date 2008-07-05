@@ -40,6 +40,7 @@
 package org.netbeans.modules.languages.yaml;
 
 import org.netbeans.modules.gsf.GsfTestBase;
+import org.netbeans.modules.gsf.api.Formatter;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 
 /**
@@ -60,5 +61,10 @@ public class YamlTestBase extends GsfTestBase {
     @Override
     protected String getPreferredMimeType() {
         return YamlTokenId.YAML_MIME_TYPE;
+    }
+
+    @Override
+    protected Formatter getFormatter(IndentPrefs preferences) {
+        return null;
     }
 }

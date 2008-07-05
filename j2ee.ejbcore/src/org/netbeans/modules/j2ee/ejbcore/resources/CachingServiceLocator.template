@@ -29,7 +29,11 @@ import javax.mail.Session;
 public class ${name} {
     
     private InitialContext ic;
+<#if java15style??>
+    private Map<String,Object> cache;
+<#else>
     private Map cache;
+</#if>
     
     private static ${name} me;
     
@@ -43,7 +47,11 @@ public class ${name} {
     
     private ${name}() throws NamingException  {
         ic = new InitialContext();
+<#if java15style??>
+        cache = Collections.synchronizedMap(new HashMap<String,Object>());
+<#else>
         cache = Collections.synchronizedMap(new HashMap());
+</#if>
     }
     
     public static ${name} getInstance() {
@@ -60,7 +68,7 @@ public class ${name} {
     }
     
     /**
-     * will get the ejb Local home factory. If this ejb home factory has already been
+     * Returns the ejb Local home factory. If this ejb home factory has already been
      * clients need to cast to the type of EJBHome they desire
      *
      * @return the EJB Home corresponding to the homeName
@@ -70,7 +78,7 @@ public class ${name} {
     }
     
     /**
-     * will get the ejb Remote home factory. If this ejb home factory has already been
+     * Returns the ejb Remote home factory. If this ejb home factory has already been
      * clients need to cast to the type of EJBHome they desire
      *
      * @return the EJB Home corresponding to the homeName
@@ -113,14 +121,15 @@ public class ${name} {
     }
     
     /**
-     * @return the URL value corresponding
-     * to the env entry name.
+     * This method obtains the URL
+     * @return the URL value corresponding to the env entry name.
      */
     public URL getUrl(String envName) throws NamingException {
         return (URL) lookup(envName);
     }
     
     /**
+     * This method obtains the boolean
      * @return the boolean value corresponding
      * to the env entry such as SEND_CONFIRMATION_MAIL property.
      */
@@ -130,8 +139,8 @@ public class ${name} {
     }
     
     /**
-     * @return the String value corresponding
-     * to the env entry name.
+     * This method obtains the String
+     * @return the String value corresponding to the env entry name.
      */
     public String getString(String envName) throws NamingException {
         return (String) lookup(envName);

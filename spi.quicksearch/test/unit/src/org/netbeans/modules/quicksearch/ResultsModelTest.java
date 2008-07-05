@@ -108,7 +108,7 @@ public class ResultsModelTest extends NbTestCase {
         RequestProcessor.Task writer = RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 for (int i = 0; i < CategoryResult.MAX_RESULTS; i++) {
-                    cr.addItem(new ResultsModel.ItemResult(null, this, String.valueOf(i)));
+                    cr.addItem(new ResultsModel.ItemResult(null, null, this, String.valueOf(i)));
                     try {
                         // wait longer each second iteration
                         int waitTime = i % 2 == 0 ? ResultsModel.COALESCE_TIME * 2 
