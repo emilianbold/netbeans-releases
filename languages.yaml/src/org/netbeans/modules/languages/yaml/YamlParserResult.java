@@ -38,9 +38,11 @@
  */
 package org.netbeans.modules.languages.yaml;
 
+import java.util.List;
 import org.jvyamlb.nodes.Node;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.StructureItem;
 
 /**
  * A result from Parsing YAML
@@ -50,6 +52,7 @@ import org.netbeans.modules.gsf.api.ParserResult;
 public class YamlParserResult extends ParserResult {
 
     private Node node;
+    private List<? extends StructureItem> items;
 
     public YamlParserResult(Node node, YamlParser parser, ParserFile file) {
         super(parser, file, YamlTokenId.YAML_MIME_TYPE);
@@ -63,5 +66,17 @@ public class YamlParserResult extends ParserResult {
     @Override
     public AstTreeNode getAst() {
         return null;
+    }
+
+    public List<? extends StructureItem> getItems() {
+        if (items == null) {
+            items = new YamlScanner().scanStructure(this);
+        }
+
+        return items;
+    }
+
+    public void setItems(List<? extends StructureItem> items) {
+        this.items = items;
     }
 }
