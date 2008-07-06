@@ -41,8 +41,11 @@
 
 package org.netbeans.modules.extexecution;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -54,6 +57,8 @@ import javax.swing.Action;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.openide.windows.OutputListener;
+import org.openide.windows.OutputWriter;
 
 public final class InputOutputManager {
 
@@ -267,6 +272,5 @@ public final class InputOutputManager {
         public int compareTo(InputOutputData o) {
             return displayName.compareTo(o.displayName);
         }
-
     }
 }

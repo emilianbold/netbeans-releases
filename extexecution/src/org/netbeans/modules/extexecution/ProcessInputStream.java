@@ -61,7 +61,7 @@ public final class ProcessInputStream extends FilterInputStream {
     private int position;
 
     private boolean closed;
-    
+
     private boolean exhausted;
 
     public ProcessInputStream(Process process, InputStream in) {
