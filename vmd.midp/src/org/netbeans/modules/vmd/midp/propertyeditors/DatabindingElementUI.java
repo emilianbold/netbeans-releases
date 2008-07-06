@@ -15,14 +15,15 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JRadioButton;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
-import org.netbeans.editor.AnnotationType.CombinationMember;
 import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
@@ -47,7 +48,7 @@ import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
  */
 public class DatabindingElementUI extends javax.swing.JPanel {
 
-    private static String NULL = "<null>"; //TODO Localized
+    private static String NULL = "<Not Defined>"; //TODO Localized
     private DesignPropertyEditor propertyEditor;
     private JRadioButton radioButton;
     private static String INDEXABLE = "[IndexableDataSet]"; //NOI18N
@@ -59,28 +60,38 @@ public class DatabindingElementUI extends javax.swing.JPanel {
         this.propertyEditor = propertyEditor;
         this.radioButton = radioButton;
         initComponents();
-        jComboBoxDatasets.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                updateDataSetRelatedUI();
-                updateWarning();
-                updateIndexableUIComponents();
-            }
-        });
+        jComboBoxDatasets.addActionListener(new UpdateUIListener());
         updateDataSetRelatedUI();
         ComponentFocusAdapter focusListener = new ComponentFocusAdapter();
-        jTextFieldExpression.addFocusListener(focusListener);
+        jTextFieldExpressionRead.addFocusListener(focusListener);
         jComboBoxCommandUpdate.addFocusListener(focusListener);
         jComboBoxDatasets.addFocusListener(focusListener);
         jComboBoxIndexNames.addFocusListener(focusListener);
+        jComboBoxIndexNames.addActionListener(new UpdateUIListener());
         jComboBoxCommandsIndexablePrevious.addFocusListener(focusListener);
         jComboBoxIndexableNext.addFocusListener(focusListener);
+        jCheckBox1.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                if (jCheckBox1.isSelected()) {
+                    jTextFieldExpressionWrite.setEnabled(false);
+                    jTextFieldExpressionWrite.setText(jTextFieldExpressionRead.getText());
+                } else {
+                    jTextFieldExpressionWrite.setEnabled(true);
+                    jTextFieldExpressionWrite.setText(null);
+                }
+            }
+        });
         
-        jTextFieldExpression.addKeyListener(new KeyAdapter() {
+        jTextFieldExpressionRead.addKeyListener(new KeyAdapter() {
 
             @Override
             public void keyReleased(KeyEvent e) {
                 updateWarning();
+                jTextFieldExpressionRead.setText(jTextFieldExpressionRead.getText().trim());
+                if (jCheckBox1.isSelected()) {
+                    jTextFieldExpressionWrite.setText(jTextFieldExpressionRead.getText());
+                }
             }
         });
         radioButton.addItemListener(new ItemListener() {
@@ -88,6 +99,8 @@ public class DatabindingElementUI extends javax.swing.JPanel {
             public void itemStateChanged(ItemEvent e) {
                 if (!radioButton.isSelected()) {
                     jLabelWarning.setText(null);
+                    //jLabelWarning1.setText(null);
+                    jLabelWarning2.setText(null);
                 } else {
                     updateWarning();
                 }
@@ -100,26 +113,72 @@ public class DatabindingElementUI extends javax.swing.JPanel {
     private boolean updateWarning() {
 
         if (radioButton.isSelected()) {
+            StringBuffer warning = new StringBuffer(); 
             if (jComboBoxDatasets.getSelectedItem() == null || jComboBoxDatasets.getSelectedItem() == NULL) {
-                jLabelWarning.setText("Warning: Dataset not Selected.");
-                return false;
-            } else if (jTextFieldExpression.getText() == null || jTextFieldExpression.getText().length() == 0) {
-                jLabelWarning.setText("Warning: Empty expression.");
+                warning.append("Dataset not Selected");
+            }
+            if (jTextFieldExpressionRead.getText() == null || jTextFieldExpressionRead.getText().length() == 0) {
+                if (warning.length() != 0) {
+                    warning.append(" and ");
+                }
+                warning.append(" Empty expression");
+            }
+            if (jComboBoxIndexNames.getSelectedItem() == null || jComboBoxIndexNames.getSelectedItem() == NULL) {
+                if (jComboBoxDatasets.getSelectedItem() != null && ((String) jComboBoxDatasets.getSelectedItem()).contains(INDEXABLE)) {
+                    if (warning.length() != 0) {
+                        warning.append(" and ");
+                    }
+                    warning.append("No index set for Indexable DataSet");
+                }
+            }
+            if (warning.length() != 0) {
+                jLabelWarning.setText(warning.toString());
+                //jLabelWarning1.setText(warning.toString());
+                jLabelWarning2.setText(warning.toString());
                 return false;
             } else {
                 jLabelWarning.setText(null);
+                //jLabelWarning1.setText(null);
+                jLabelWarning2.setText(null);
             }
         } else {
             jLabelWarning.setText(null);
+            //jLabelWarning1.setText(null);
+            jLabelWarning2.setText(null);
         }
         return true;
     }
 
     private void updateDataSetRelatedUI() {
         if (jComboBoxDatasets.getSelectedItem() != null && jComboBoxDatasets.getSelectedItem() != NULL) {
-            jTextFieldExpression.setEnabled(true);
+            jTextFieldExpressionRead.setEnabled(true);
+            
+            if (jTextFieldExpressionRead.getText().equals(jTextFieldExpressionWrite.getText())) {
+                jCheckBox1.setSelected(true);
+                jTextFieldExpressionWrite.setEnabled(false);
+            } else {
+                jCheckBox1.setSelected(false);
+                jTextFieldExpressionWrite.setEnabled(true);
+            }
+            jComboBoxCommandUpdate.setEnabled(true);
         } else {
-            jTextFieldExpression.setEnabled(false);
+            jCheckBox1.setEnabled(true);
+            jCheckBox1.setSelected(true);
+            jTextFieldExpressionWrite.setEnabled(false);
+            jTextFieldExpressionRead.setEnabled(false);
+            jComboBoxCommandUpdate.setEnabled(false);
+        }
+        if (!(jComboBoxDatasets.getModel() instanceof Model))
+            return;
+        Model model = (Model) jComboBoxDatasets.getModel();
+        if (model.isSelectedDataSetReadOnly() != null) {
+            if (model.isSelectedDataSetReadOnly()) {
+                jLabelReadOnly.setText("Read Only");
+            } else {
+                jLabelReadOnly.setText("Read/Write");
+            }
+        } else {
+            jLabelReadOnly.setText("Not Defined");
         }
     }
 
@@ -129,7 +188,7 @@ public class DatabindingElementUI extends javax.swing.JPanel {
             jComboBoxCommandsIndexablePrevious.setEnabled(true);
             jComboBoxIndexableNext.setEnabled(true);
             jComboBoxIndexNames.setEnabled(true);
-        } else if (name != null && name.contains(DATASET)) {
+        } else if (name != null && name.contains(DATASET) || name != null && name.equals(NULL)) {
             jComboBoxCommandsIndexablePrevious.setEnabled(false);
             jComboBoxCommandsIndexablePrevious.setSelectedItem(NULL);
             jComboBoxIndexableNext.setEnabled(false);
@@ -153,24 +212,31 @@ public class DatabindingElementUI extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jComboBoxDatasets = new javax.swing.JComboBox();
-        jTextFieldExpression = new javax.swing.JTextField();
+        jTextFieldExpressionRead = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        jLabelReadOnly = new javax.swing.JLabel();
         jLabelWarning = new javax.swing.JLabel();
         jComboBoxIndexNames = new javax.swing.JComboBox();
         jLabel3 = new javax.swing.JLabel();
+        jPanel5 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel8 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jComboBoxCommandUpdate = new javax.swing.JComboBox();
+        jTextFieldExpressionWrite = new javax.swing.JTextField();
+        jLabel9 = new javax.swing.JLabel();
+        jCheckBox1 = new javax.swing.JCheckBox();
+        jLabelWarning2 = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         jLabel6 = new javax.swing.JLabel();
         jComboBoxIndexableNext = new javax.swing.JComboBox();
         jLabel7 = new javax.swing.JLabel();
         jComboBoxCommandsIndexablePrevious = new javax.swing.JComboBox();
-        jPanel2 = new javax.swing.JPanel();
-        jLabel8 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
-        jComboBoxCommandUpdate = new javax.swing.JComboBox();
 
         setMaximumSize(new java.awt.Dimension(0, 0));
-        setMinimumSize(new java.awt.Dimension(100, 100));
-        setPreferredSize(new java.awt.Dimension(390, 200));
+        setMinimumSize(new java.awt.Dimension(0, 0));
+        setPreferredSize(new java.awt.Dimension(355, 225));
 
         jTabbedPane1.setMinimumSize(new java.awt.Dimension(0, 0));
         jTabbedPane1.setPreferredSize(new java.awt.Dimension(0, 0));
@@ -179,11 +245,16 @@ public class DatabindingElementUI extends javax.swing.JPanel {
         jPanel1.setFocusable(false);
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jLabel1.text")); // NOI18N
+        jLabel1.setPreferredSize(new java.awt.Dimension(68, 16));
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jLabel2.text")); // NOI18N
 
-        jTextFieldExpression.setText(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jTextFieldExpression.text")); // NOI18N
-        jTextFieldExpression.setEnabled(false);
+        jTextFieldExpressionRead.setText(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jTextFieldExpressionRead.text")); // NOI18N
+        jTextFieldExpressionRead.setEnabled(false);
+
+        jLabel4.setText(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jLabel4.text_1")); // NOI18N
+
+        jLabelReadOnly.setText(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jLabelReadOnly.text")); // NOI18N
 
         jLabelWarning.setForeground(new java.awt.Color(255, 0, 0));
         jLabelWarning.setText(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jLabelWarning.text_1")); // NOI18N
@@ -195,41 +266,126 @@ public class DatabindingElementUI extends javax.swing.JPanel {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jLabelWarning, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE)
-            .add(jPanel1Layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel1Layout.createSequentialGroup()
-                        .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 75, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                    .add(jPanel1Layout.createSequentialGroup()
-                        .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE)
-                        .add(16, 16, 16)))
+                    .add(jLabel2)
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel3)
+                    .add(jLabel4))
+                .add(8, 8, 8)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jComboBoxIndexNames, 0, 272, Short.MAX_VALUE)
-                    .add(jTextFieldExpression, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 272, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jComboBoxDatasets, 0, 272, Short.MAX_VALUE)))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabelReadOnly, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
+                    .add(jComboBoxIndexNames, 0, 234, Short.MAX_VALUE)
+                    .add(jTextFieldExpressionRead, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
+                    .add(jComboBoxDatasets, 0, 234, Short.MAX_VALUE))
+                .add(12, 12, 12))
+            .add(jLabelWarning, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
         );
+
+        jPanel1Layout.linkSize(new java.awt.Component[] {jLabel1, jLabel2, jLabel3}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jComboBoxDatasets, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jTextFieldExpression, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel2))
+                    .add(jLabel2)
+                    .add(jTextFieldExpressionRead, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel3)
                     .add(jComboBoxIndexNames, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 30, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel4)
+                    .add(jLabelReadOnly))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(jLabelWarning))
         );
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jPanel1.TabConstraints.tabTitle"), jPanel1); // NOI18N
+
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jPanel2.border.title"))); // NOI18N
+        jPanel2.setFocusable(false);
+
+        jLabel8.setText(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jLabel8.text")); // NOI18N
+
+        jLabel5.setText(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jLabel5.text")); // NOI18N
+
+        jTextFieldExpressionWrite.setText(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jTextFieldExpressionWrite.text")); // NOI18N
+        jTextFieldExpressionWrite.setEnabled(false);
+
+        jLabel9.setText(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jLabel9.text")); // NOI18N
+
+        jCheckBox1.setSelected(true);
+        jCheckBox1.setText(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jCheckBox1.text")); // NOI18N
+        jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckBox1ActionPerformed(evt);
+            }
+        });
+
+        jLabelWarning2.setForeground(new java.awt.Color(255, 0, 0));
+        jLabelWarning2.setText(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jLabelWarning2.text")); // NOI18N
+        jLabelWarning2.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
+
+        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(jLabel9, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE))
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jPanel2Layout.createSequentialGroup()
+                        .add(262, 262, 262)
+                        .add(jLabel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(jPanel2Layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jCheckBox1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 232, Short.MAX_VALUE)
+                            .add(jTextFieldExpressionWrite, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 232, Short.MAX_VALUE)
+                            .add(jComboBoxCommandUpdate, 0, 232, Short.MAX_VALUE))
+                        .addContainerGap())))
+            .add(jLabelWarning2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE)
+        );
+
+        jPanel2Layout.linkSize(new java.awt.Component[] {jLabel5, jLabel9}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel5)
+                    .add(jComboBoxCommandUpdate, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(5, 5, 5)
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel9)
+                    .add(jTextFieldExpressionWrite, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel8)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jCheckBox1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 31, Short.MAX_VALUE)
+                .add(jLabelWarning2))
+        );
+
+        org.jdesktop.layout.GroupLayout jPanel5Layout = new org.jdesktop.layout.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+
+        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jPanel5.TabConstraints.tabTitle"), jPanel5); // NOI18N
 
         jPanel4.setPreferredSize(new java.awt.Dimension(0, 0));
 
@@ -239,6 +395,7 @@ public class DatabindingElementUI extends javax.swing.JPanel {
         jPanel3.setPreferredSize(new java.awt.Dimension(0, 0));
 
         jLabel6.setText(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jLabel6.text")); // NOI18N
+        jLabel6.setPreferredSize(new java.awt.Dimension(68, 16));
 
         jComboBoxIndexableNext.setEnabled(false);
 
@@ -252,69 +409,39 @@ public class DatabindingElementUI extends javax.swing.JPanel {
             jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel3Layout.createSequentialGroup()
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(jLabel6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 77, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(jLabel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jComboBoxIndexableNext, 0, 275, Short.MAX_VALUE)
-                    .add(jComboBoxCommandsIndexablePrevious, 0, 275, Short.MAX_VALUE)))
+                    .add(jComboBoxCommandsIndexablePrevious, 0, 232, Short.MAX_VALUE)
+                    .add(jComboBoxIndexableNext, 0, 232, Short.MAX_VALUE))
+                .addContainerGap())
         );
+
+        jPanel3Layout.linkSize(new java.awt.Component[] {jLabel6, jLabel7}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel3Layout.createSequentialGroup()
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel6)
+                    .add(jLabel6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jComboBoxIndexableNext, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel7)
                     .add(jComboBoxCommandsIndexablePrevious, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jPanel2.border.title"))); // NOI18N
-        jPanel2.setFocusable(false);
-
-        jLabel8.setText(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jLabel8.text")); // NOI18N
-
-        jLabel5.setText(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jLabel5.text")); // NOI18N
-
-        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
-                .add(67, 67, 67)
-                .add(jLabel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE))
-            .add(jPanel2Layout.createSequentialGroup()
-                .add(jLabel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 77, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jComboBoxCommandUpdate, 0, 275, Short.MAX_VALUE))
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel5)
-                    .add(jComboBoxCommandUpdate, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(41, 41, 41)
-                .add(jLabel8))
+                .addContainerGap(79, Short.MAX_VALUE))
         );
 
         org.jdesktop.layout.GroupLayout jPanel4Layout = new org.jdesktop.layout.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE)
-            .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel4Layout.createSequentialGroup()
-                .add(jPanel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 91, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 60, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .add(jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(DatabindingElementUI.class, "DatabindingElementUI.jPanel4.TabConstraints.tabTitle"), jPanel4); // NOI18N
@@ -323,13 +450,19 @@ public class DatabindingElementUI extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
+            .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
+
+private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
+// TODO add your handling code here:
+}//GEN-LAST:event_jCheckBox1ActionPerformed
 
     public void updateComponent(final DesignComponent component) {
         if (component == null)
@@ -351,12 +484,17 @@ public class DatabindingElementUI extends javax.swing.JPanel {
                     radioButton.setSelected(true);
                     String dataSetName =  createDataSetName((String) connector.getParentComponent().readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue(), connector.getParentComponent());
                     jComboBoxDatasets.setSelectedItem(dataSetName);
-                    jTextFieldExpression.setText((String) connector.readProperty(DataSetConnectorCD.PROP_EXPRESSION).getPrimitiveValue());
+                    String readExpression = (String) connector.readProperty(DataSetConnectorCD.PROP_EXPRESSION_READ).getPrimitiveValue();
+                    String writeExpression = (String) connector.readProperty(DataSetConnectorCD.PROP_EXPRESSION_WRITE).getPrimitiveValue();
+                    jTextFieldExpressionRead.setText(readExpression);
+                    jTextFieldExpressionWrite.setText(writeExpression);
+                    
                     jComboBoxIndexNames.setSelectedItem(connector.readProperty(DataSetConnectorCD.PROP_INDEX_NAME).getPrimitiveValue());
                    
                     setCommandComboBox(connector, jComboBoxCommandUpdate, DataSetConnectorCD.PROP_UPDATE_COMMAND);
                     setCommandComboBox(connector, jComboBoxIndexableNext, DataSetConnectorCD.PROP_NEXT_COMMAND);
                     setCommandComboBox(connector, jComboBoxCommandsIndexablePrevious, DataSetConnectorCD.PROP_PREVIOUS_COMMAND);
+                    setReadOnlyLabel(connector);
                 }
             }
         });
@@ -364,6 +502,14 @@ public class DatabindingElementUI extends javax.swing.JPanel {
         updateWarning();
     }
     
+    private void setReadOnlyLabel(DesignComponent connector) {
+        PropertyValue value = connector.getParentComponent().readProperty(DataSetAbstractCD.PROP_READ_ONLY);
+        if (value != PropertyValue.createNull() && value.getPrimitiveValue() == Boolean.TRUE) {
+            jLabelReadOnly.setText("Read Only");
+        } else {
+            jLabelReadOnly.setText("Read/Write");
+        }
+    }
     private void setCommandComboBox(DesignComponent connector, JComboBox comboBox, String propertyName) {
         DesignComponent command = connector.readProperty(propertyName).getComponent();
         if (command != null) {
@@ -406,7 +552,8 @@ public class DatabindingElementUI extends javax.swing.JPanel {
                         }
                         
                         connector.writeProperty(DataSetConnectorCD.PROP_COMPONENT_ID, MidpTypes.createLongValue(component.getComponentID()));
-                        connector.writeProperty(DataSetConnectorCD.PROP_EXPRESSION, MidpTypes.createStringValue(jTextFieldExpression.getText())); //NOI18N
+                        connector.writeProperty(DataSetConnectorCD.PROP_EXPRESSION_READ, MidpTypes.createStringValue(jTextFieldExpressionRead.getText().trim()));
+                        connector.writeProperty(DataSetConnectorCD.PROP_EXPRESSION_WRITE, MidpTypes.createStringValue(jTextFieldExpressionWrite.getText().trim()));
                         
                         saveCommands(document, connector, selectedUpdateCommand, DataSetConnectorCD.PROP_UPDATE_COMMAND);
                         saveCommands(document, connector, selectedNextCommand, DataSetConnectorCD.PROP_NEXT_COMMAND);
@@ -438,8 +585,13 @@ public class DatabindingElementUI extends javax.swing.JPanel {
         jComboBoxDatasets.setSelectedItem(null);
         jComboBoxCommandsIndexablePrevious.setSelectedItem(null);
         jComboBoxIndexableNext.setSelectedItem(null);
-        jTextFieldExpression.setText(null);
-        jTextFieldExpression.setEnabled(false);
+        jTextFieldExpressionRead.setText(null);
+        jTextFieldExpressionRead.setEnabled(false);
+        jTextFieldExpressionWrite.setText(null);
+        jTextFieldExpressionWrite.setEnabled(false);
+        jCheckBox1.setSelected(true);
+        jCheckBox1.setEnabled(false);
+        jLabelReadOnly.setText("Not defined");
         jComboBoxIndexNames.setSelectedItem(null);
         updateWarning();
         updateIndexableUIComponents();
@@ -476,6 +628,7 @@ public class DatabindingElementUI extends javax.swing.JPanel {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JComboBox jComboBoxCommandUpdate;
     private javax.swing.JComboBox jComboBoxCommandsIndexablePrevious;
     private javax.swing.JComboBox jComboBoxDatasets;
@@ -484,17 +637,23 @@ public class DatabindingElementUI extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
+    private javax.swing.JLabel jLabelReadOnly;
     private javax.swing.JLabel jLabelWarning;
+    private javax.swing.JLabel jLabelWarning2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JTextField jTextFieldExpression;
+    private javax.swing.JTextField jTextFieldExpressionRead;
+    private javax.swing.JTextField jTextFieldExpressionWrite;
     // End of variables declaration//GEN-END:variables
 
     private class Model implements ComboBoxModel {
@@ -503,6 +662,7 @@ public class DatabindingElementUI extends javax.swing.JPanel {
         private String selectedItem;
         private TypeID categoryType;
         private ListDataListener lisener;
+        private Map<String, Boolean> dataSetWriteCapability;
         
         Model(DesignComponent component) {
             Collection<DesignComponent> connectors = MidpDatabindingSupport.getAllConnectors(component.getDocument()); 
@@ -530,7 +690,20 @@ public class DatabindingElementUI extends javax.swing.JPanel {
             for (DesignComponent component_ : components) {
                 String name = (String) component_.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue();
                 if (name != null && !name.trim().equals("")) { //NOI18N
+                    DescriptorRegistry registry = component_.getDocument().getDescriptorRegistry();
                     name = createDataSetName(name, component_);
+                    if (registry.isInHierarchy(IndexableDataAbstractSetCD.TYPEID, component_.getType())) {
+                        if (dataSetWriteCapability == null) {
+                            dataSetWriteCapability = new HashMap<String, Boolean>();
+                        }
+                        PropertyValue value = component_.readProperty(DataSetAbstractCD.PROP_READ_ONLY);
+                        if (value != PropertyValue.createNull() && value.getPrimitiveValue().equals(Boolean.TRUE)) {
+                            dataSetWriteCapability.put(name, Boolean.TRUE);
+                        } else {
+                            dataSetWriteCapability.put(name, Boolean.FALSE);
+                        }
+                    }
+                    
                     if (categoryType == CommandsCategoryCD.TYPEID) {
                         Collection<String> activeCommands = new HashSet<String>();
                         Collection<DesignComponent> eventSources = DocumentSupport.gatherAllComponentsOfTypeID(component.getDocument(), CommandEventSourceCD.TYPEID);
@@ -556,6 +729,18 @@ public class DatabindingElementUI extends javax.swing.JPanel {
                 this.selectedItem = (String) item;
             }
         }
+        
+        public Boolean isSelectedDataSetReadOnly() {
+            if (dataSetWriteCapability == null) {
+                return null;
+            }
+            Boolean readOnly = dataSetWriteCapability.get(selectedItem);
+            if ( readOnly != null) {
+                return readOnly;
+            }
+            return null;
+            
+        }
 
         public Object getSelectedItem() {
             return this.selectedItem;
@@ -571,7 +756,9 @@ public class DatabindingElementUI extends javax.swing.JPanel {
         }
 
         public void addListDataListener(ListDataListener listener) {
-            this.lisener = listener;
+            if (listener instanceof Listener) {
+                this.lisener = listener;
+            }
         }
 
         public void removeListDataListener(ListDataListener listener) {
@@ -604,9 +791,9 @@ public class DatabindingElementUI extends javax.swing.JPanel {
         }
 
         public void contentsChanged(ListDataEvent e) {
-                String nameDataSet = cleanUpDataSetName((String) jComboBoxDatasets.getSelectedItem());
-                nameDataSet = nameDataSet.substring(0,1).toUpperCase() + nameDataSet.substring(1);
-                String name = "index" + nameDataSet;
+                //String nameDataSet = cleanUpDataSetName((String) jComboBoxDatasets.getSelectedItem());
+                //nameDataSet = nameDataSet.substring(0,1).toUpperCase() + nameDataSet.substring(1);
+                String name = "index";//NOI18N + nameDataSet;
                 List<String> names= ((Model) jComboBoxIndexNames.getModel()).getItems();
                 names.remove(CREATE_INDEX);
                 int i = 0;
@@ -621,7 +808,19 @@ public class DatabindingElementUI extends javax.swing.JPanel {
                 jComboBoxIndexNames.setSelectedItem(name);
                 
         }
-        
+
     }
     
+    private class UpdateUIListener implements ActionListener {
+
+       public void actionPerformed(ActionEvent e) {
+            updateDataSetRelatedUI();
+            updateWarning();
+            updateIndexableUIComponents();
+            
+       }
+        
+    }
 }
+    
+    
