@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.uml.ui.controls.newdialog;
 
+import org.openide.WizardDescriptor;
+
 /**
  *
  * @author Thuy
@@ -55,7 +57,7 @@ public interface INewUMLFileTemplates
    
    public static final String PROP_PROJECT_NAME = "name"; //NOI18N
    public static final String PROP_PROJECT = "project"; //NOI18N
-   public static final String PROP_WIZARD_ERROR_MESSAGE = "WizardPanel_errorMessage"; //NOI18N
+   public static final String PROP_WIZARD_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE; //NOI18N
    
    public static final String DIAGRAM_DETAILS = "DIAGRAM_DETAILS";    //NOI18N
    public static final String PROP_DIAG_KIND = "DIAGRAM_KIND"; //NOI18N

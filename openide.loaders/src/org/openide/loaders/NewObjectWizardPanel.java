@@ -148,7 +148,7 @@ final class NewObjectWizardPanel implements WizardDescriptor.FinishablePanel<Wiz
                 
             }
         }
-        wizard.putProperty("WizardPanel_errorMessage", errorMsg);//NOI18N
+        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMsg);//NOI18N
         return isOK;
     }
     

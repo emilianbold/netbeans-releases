@@ -550,7 +550,7 @@ public class MasterPanel implements WizardDescriptor.Panel {
                 ClassPath cp = ClassPath.getClassPath(fob, ClassPath.SOURCE);
                 String name = cp.getResourceName(fob).trim();
                 valid = (name.length() != 0);
-                wizard.putProperty("WizardPanel_errorMessage", valid ? null : NbBundle.getMessage(getClass(), "MSG_MasterDefaultPackage")); // NOI18N
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, valid ? null : NbBundle.getMessage(getClass(), "MSG_MasterDefaultPackage")); // NOI18N
             } catch (IOException ioex) {
                 Logger.getLogger(getClass().getName()).log(Level.INFO, ioex.getMessage(), ioex);
             }

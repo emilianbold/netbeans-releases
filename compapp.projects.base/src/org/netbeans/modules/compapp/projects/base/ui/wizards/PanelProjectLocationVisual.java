@@ -183,13 +183,13 @@ class PanelProjectLocationVisual
                 || projectName.indexOf("\\") >= 0         //NOI18N
                 || projectName.indexOf(':')  >= 0
                 || !isValidName(projectName)) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getBundle(WIZARD_BUNDLE).getString("MSG_IllegalProjectName")); //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getBundle(WIZARD_BUNDLE).getString("MSG_IllegalProjectName")); //NOI18N
             return false; // Display name not specified
         }
         
 
         if (projectName.indexOf(' ')  >= 0) {        //NOI18N
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectNameWithWhiteSpace"));
             return false;
         }
@@ -197,14 +197,14 @@ class PanelProjectLocationVisual
         File f = new File(projectLocationTextField.getText()).getAbsoluteFile();
         if (getCanonicalFile(f)==null) {
             String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectLocation");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
             return false;
         }
 
         File destFolder = new File(createdFolderTextField.getText());
         if (getCanonicalFile(destFolder) == null) {
             String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectName");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
             return false;
         }
         
@@ -213,25 +213,25 @@ class PanelProjectLocationVisual
             projLoc = projLoc.getParentFile();
         }
         if (projLoc == null || !projLoc.canWrite()) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectFolderReadOnly"));
             return false;
         }
 
         if (FileUtil.toFileObject(projLoc) == null) {
             String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectLocation");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
             return false;
         }
 
         File[] children = destFolder.listFiles();
         if (destFolder.exists() && children != null && children.length > 0) {
             // Folder exists and is not empty
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getBundle(WIZARD_BUNDLE).getString("MSG_ProjectFolderExists")); //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getBundle(WIZARD_BUNDLE).getString("MSG_ProjectFolderExists")); //NOI18N
             return false;
         }
                 
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
         return true;
     }
     

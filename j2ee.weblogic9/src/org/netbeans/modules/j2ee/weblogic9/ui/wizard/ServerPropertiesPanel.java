@@ -93,7 +93,7 @@ public class ServerPropertiesPanel extends javax.swing.JPanel implements WizardD
      * Since the WizardDescriptor does not expose the property name for the
      * error message label, we have to keep it here also
      */
-    private static final String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
+    private static final String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE; // NOI18N
 
     /**
      * The parent wizard descriptor handle
@@ -121,8 +121,8 @@ public class ServerPropertiesPanel extends javax.swing.JPanel implements WizardD
 
         // set the required properties, so that the panel appear correct in
         // the steps
-        putClientProperty("WizardPanel_contentData", steps); // NOI18N
-        putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(index)); // NOI18N
+        putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
+        putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(index)); // NOI18N
 
         // register the supplied listener
         addChangeListener(listener);

@@ -88,7 +88,7 @@ final class ParserConfigurationDescriptorPanel implements WizardDescriptor.Panel
     public boolean isValid() {
 	boolean valid = ((ParserConfigurationPanel)getComponent()).valid(wizardDescriptor);
 	if (valid)
-	    wizardDescriptor.putProperty( "WizardPanel_errorMessage", ""); // NOI18N
+	    wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
 	return valid;
     }
     

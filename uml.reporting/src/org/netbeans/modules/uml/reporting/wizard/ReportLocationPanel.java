@@ -146,18 +146,18 @@ public class ReportLocationPanel extends WizardPanelBase implements WizardDescri
 		String location = locationTextField.getText().trim();
 		File dir = new File(location);
 		
-		wizardDescriptor.putProperty("WizardPanel_errorMessage", null);
+		wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
 		if (dir.exists() && !dir.isDirectory())
 		{
 			setValid(false);
-			wizardDescriptor.putProperty("WizardPanel_errorMessage", 
+			wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
 					NbBundle.getMessage(ReportLocationPanel.class, 
 					"MSG_ReportLocationPanel_InvalidFolder"));
 		}
 		else if (dir.exists() && dir.listFiles()!=null && dir.listFiles().length>0 )
 		{
 			setValid(true);
-			wizardDescriptor.putProperty("WizardPanel_errorMessage", 
+			wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
 					NbBundle.getMessage(ReportLocationPanel.class, 
 					"MSG_ReportLocationPanel_FolderExists"));
 		}

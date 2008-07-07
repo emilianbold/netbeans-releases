@@ -644,7 +644,7 @@ final class HardStringWizardPanel extends JPanel {
             
             panel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(HardStringWizardPanel.class).getString("ACS_HardStringWizardPanel"));            
             
-            panel.putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(3)); // NOI18N
+            panel.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(3)); // NOI18N
             panel.setName(NbBundle.getBundle(HardStringWizardPanel.class).getString("TXT_ModifyStrings"));
             panel.setPreferredSize(I18nWizardDescriptor.PREFERRED_DIMENSION);        
 

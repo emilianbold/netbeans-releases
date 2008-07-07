@@ -121,11 +121,11 @@ public class PageLayoutChooserPanel implements WizardDescriptor.Panel<WizardDesc
         } 
         String panelName = NbBundle.getBundle(SimpleTargetChooserPanel.class).getString("LBL_PageLayoutsPanel_Name");
         wizard.putProperty("NewFileWizard_Title", displayName); // NOI18N
-        String[] wizardSteps = (String[]) wizard.getProperty("WizardPanel_contentData");
+        String[] wizardSteps = (String[]) wizard.getProperty(WizardDescriptor.PROP_CONTENT_DATA);
         String[] newWizardSteps = new String[wizardSteps.length + 1];
         System.arraycopy(wizardSteps, 0, newWizardSteps, 0, wizardSteps.length);
         newWizardSteps[wizardSteps.length] = panelName;
-        wizard.putProperty ("WizardPanel_contentData", newWizardSteps);
+        wizard.putProperty (WizardDescriptor.PROP_CONTENT_DATA, newWizardSteps);
     }
 
     public boolean isFinishPanel() {

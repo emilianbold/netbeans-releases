@@ -385,9 +385,9 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", (Integer) i);//NO18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, (Integer) i);//NO18N
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps);//NO18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);//NO18N
             }
         }
     }

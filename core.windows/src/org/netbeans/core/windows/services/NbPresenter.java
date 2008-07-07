@@ -477,7 +477,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager ().getFocusOwner ();
 
         boolean dontShowHelp = Constants.DO_NOT_SHOW_HELP_IN_DIALOGS ||
-                ( descriptor instanceof WizardDescriptor && ( Boolean.FALSE.equals (((WizardDescriptor)descriptor).getProperty ("WizardPanel_helpDisplayed")) )); // NOI18N
+                ( descriptor instanceof WizardDescriptor && ( Boolean.FALSE.equals (((WizardDescriptor)descriptor).getProperty (WizardDescriptor.PROP_HELP_DISPLAYED)) )); // NOI18N
         boolean helpButtonShown =
             stdHelpButton.isShowing() || ( descriptor instanceof WizardDescriptor && !dontShowHelp );
         

@@ -167,9 +167,9 @@ public class NewJ2SEFreeformProjectWizardIterator implements WizardDescriptor.Pr
             assert c instanceof JComponent;
             JComponent jc = (JComponent)c;
             // Step #.
-            jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));
             // Step name (actually the whole list for reference).
-            jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
             // set title
             jc.putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage (NewJ2SEFreeformProjectWizardIterator.class, "TXT_NewJ2SEFreeformProjectWizardIterator_NewProjectWizardTitle")); // NOI18N
         }

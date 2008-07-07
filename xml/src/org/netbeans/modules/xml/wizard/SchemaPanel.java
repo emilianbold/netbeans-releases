@@ -98,6 +98,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.tree.TreePath;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.WizardDescriptor;
 import org.openide.explorer.view.Visualizer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -612,10 +613,10 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
                     SchemaObject obj = (SchemaObject)getValueAt(row, SCHEMA_COL);
                     if(obj.getRootElements()  == null || obj.getRootElements().length == 0) {
                         String errMsg =  org.openide.util.NbBundle.getMessage(SchemaPanel.class, "MSG_SchemaPanel_Incorrect_Primary");
-                        templateWizard.putProperty("WizardPanel_errorMessage", errMsg);
+                        templateWizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errMsg);
                         return;
                     } else
-                        templateWizard.putProperty("WizardPanel_errorMessage", "");
+                        templateWizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");
                 
 		    for (int i = 0; i < getRowCount(); i++) {
 			if (i != row) {
@@ -674,7 +675,7 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
             } else {
                 rowVector.set(col, value);
             }
-            templateWizard.putProperty("WizardPanel_errorMessage", "");
+            templateWizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");
             fireChange();
             fireTableCellUpdated(row, col);
       }

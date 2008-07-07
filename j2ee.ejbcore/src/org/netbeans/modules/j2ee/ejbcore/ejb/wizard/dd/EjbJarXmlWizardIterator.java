@@ -90,15 +90,15 @@ public final class EjbJarXmlWizardIterator implements WizardDescriptor.Instantia
                 if (component instanceof JComponent) { // assume Swing components
                     JComponent jComponent = (JComponent) component;
                     // Sets step number of a component
-                    jComponent.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+                    jComponent.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));
                     // Sets steps names for a panel
-                    jComponent.putClientProperty("WizardPanel_contentData", steps);
+                    jComponent.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
                     // Turn on subtitle creation on each step
-                    jComponent.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
+                    jComponent.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
                     // Show steps on the left side with the image on the background
-                    jComponent.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
+                    jComponent.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);
                     // Turn on numbering of all steps
-                    jComponent.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
+                    jComponent.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);
                 }
             }
         }
@@ -193,7 +193,7 @@ public final class EjbJarXmlWizardIterator implements WizardDescriptor.Instantia
     // client code.
     private String[] createSteps() {
         String[] beforeSteps = null;
-        Object prop = wizard.getProperty("WizardPanel_contentData");
+        Object prop = wizard.getProperty(WizardDescriptor.PROP_CONTENT_DATA);
         if (prop != null && prop instanceof String[]) {
             beforeSteps = (String[]) prop;
         }

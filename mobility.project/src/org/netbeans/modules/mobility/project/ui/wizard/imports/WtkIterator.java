@@ -56,6 +56,7 @@ import org.netbeans.modules.mobility.project.ui.wizard.PlatformInstallPanel;
 import org.netbeans.modules.mobility.project.ui.wizard.PlatformSelectionPanel;
 import org.netbeans.modules.mobility.project.ui.wizard.ProjectPanel;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
@@ -192,8 +193,8 @@ public class WtkIterator implements TemplateWizard.Iterator {
                 NbBundle.getMessage(PlatformSelectionPanel.class, "TITLE_PlatformSelection"), // NOI18N
             };
         }
-        component.putClientProperty("WizardPanel_contentData", list); // NOI18N
-        component.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(currentIndex)); // NOI18N
+        component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, list); // NOI18N
+        component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(currentIndex)); // NOI18N
     }
     
 }

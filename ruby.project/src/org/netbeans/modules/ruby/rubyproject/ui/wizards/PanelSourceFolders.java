@@ -148,11 +148,11 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         File[] testRoots = ((FolderList)this.testsPanel).getFiles();
         String result = checkValidity (projectLocation, sourceRoots, testRoots);
         if (result == null) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage","");   //NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE,"");   //NOI18N
             return true;
         }
         else {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage",result);       //NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE,result);       //NOI18N
             return false;
         }
     }

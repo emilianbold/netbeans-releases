@@ -94,7 +94,7 @@ import org.openide.util.Utilities;
  */
 public final class ClientInfo extends JPanel implements WsdlRetriever.MessageReceiver {
     
-    private static final String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
+    private static final String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE; // NOI18N
     
     private static final int WSDL_FROM_FILE = 1;
     private static final int WSDL_FROM_SERVICE = 2;

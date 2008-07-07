@@ -302,7 +302,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
         
         public boolean isValid() {
             if (!ProviderUtil.isValidServerInstanceOrNone(getProject())) {
-                getWizardDescriptor().putProperty("WizardPanel_errorMessage",
+                getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_MissingServer")); // NOI18N
                 return false;
             }

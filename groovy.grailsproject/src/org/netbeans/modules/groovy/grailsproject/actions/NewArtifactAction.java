@@ -95,9 +95,9 @@ public class NewArtifactAction extends AbstractAction {
         
         assert wiz != null;
         
-        wiz.putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
-        wiz.putProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
-        wiz.putProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
+        wiz.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
+        wiz.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
+        wiz.putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
 
         wiz.setTitleFormat(new java.text.MessageFormat("{0}")); // NOI18N
         

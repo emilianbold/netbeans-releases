@@ -100,7 +100,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     }// </editor-fold>//GEN-END:initComponents
 
     boolean valid(WizardDescriptor settings) {
-        settings.putProperty("WizardPanel_errorMessage", null); // NOI18N
+        settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null); // NOI18N
         return true;
     }
 
@@ -110,7 +110,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
 //                || fileName.indexOf('/')  > 0         //NOI18N
                 || fileName.indexOf('\\') > 0         //NOI18N
                 || fileName.indexOf(':')  > 0) {      //NOI18N
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(PanelProjectLocationVisual.class, errMsgKey));
             return false;
         }
@@ -118,7 +118,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         final File tmpFile = new File(fileName).getAbsoluteFile();
         if (getCanonicalFile(tmpFile) == null) {
             String message = NbBundle.getMessage(PanelProjectLocationVisual.class, errMsgKey);
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);  // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);  // NOI18N
             return false;
         }
 

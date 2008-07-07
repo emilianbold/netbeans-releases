@@ -99,7 +99,7 @@ final class MIDPTargetChooserPanel implements WizardDescriptor.FinishablePanel, 
         else if (! isValidJavaFolderName(gui.getPackageFileName()))
             message = "ERR_File_InvalidPackageName"; // NOI18N
         if (templateWizard != null)
-            templateWizard.putProperty("WizardPanel_errorMessage", message != null ? NbBundle.getMessage(MIDPTargetChooserPanel.class, message) : null); // NOI18N
+            templateWizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message != null ? NbBundle.getMessage(MIDPTargetChooserPanel.class, message) : null); // NOI18N
         return message == null;
     }
     

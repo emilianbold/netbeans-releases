@@ -249,8 +249,8 @@ public class EmptyTestCaseWizardIterator
           NbBundle.getMessage(EmptyTestCaseWizardIterator.class,"LBL_panel_chooseFileType"),
           NbBundle.getMessage(EmptyTestCaseWizardIterator.class,"LBL_panel_Target")};
 
-        ((javax.swing.JComponent)getTargetPanel().getComponent()).putClientProperty("WizardPanel_contentData", panelNames); 
-        ((javax.swing.JComponent)getTargetPanel().getComponent()).putClientProperty("WizardPanel_contentSelectedIndex", new Integer(0)); 
+        ((javax.swing.JComponent)getTargetPanel().getComponent()).putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, panelNames); 
+        ((javax.swing.JComponent)getTargetPanel().getComponent()).putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(0)); 
 
 
     }

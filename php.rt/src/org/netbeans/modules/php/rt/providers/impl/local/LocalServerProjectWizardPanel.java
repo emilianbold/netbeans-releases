@@ -58,7 +58,7 @@ public class LocalServerProjectWizardPanel extends LocalServerProjectVisual
     /**
      * The property name for error messages in {@link WizardDescriptor}.
      */
-    private static final String WIZARD_PANEL_ERROR_MSG = "WizardPanel_errorMessage"; //NOI18N
+    private static final String WIZARD_PANEL_ERROR_MSG = WizardDescriptor.PROP_ERROR_MESSAGE; //NOI18N
     
     /**
      * The wizard descriptor providing the settings for this panel.

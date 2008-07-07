@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
  */
 public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeListener {
 
-    private final static String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
+    private final static String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE; // NOI18N
     private WizardDescriptor wizard;
     private AddServerPropertiesVisualPanel component;
     private JBInstantiatingIterator instantiatingIterator;

@@ -178,8 +178,8 @@ public class AccountWizardIterator extends Object implements WizardDescriptor.It
      */
     protected void updateCurrentPanel() {
         currentPanels[index].setPreferredSize(settings.getPreferredPanelSize());
-        currentPanels[index].putClientProperty("WizardPanel_contentSelectedIndex", new Integer(index)); // NOI18N
-        currentPanels[index].putClientProperty("WizardPanel_contentData", getSteps()); // NOI18N
+        currentPanels[index].putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(index)); // NOI18N
+        currentPanels[index].putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, getSteps()); // NOI18N
     }
 
     /**

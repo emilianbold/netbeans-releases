@@ -127,7 +127,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
         FileObject template = Templates.getTemplate( wizard );
 
         String errorMessage = canUseFileName (gui.getTargetGroup().getRootFolder(), gui.getTargetFolder(), gui.getTargetName(), template.getExt (), isFolder);
-        wizard.putProperty ("WizardPanel_errorMessage", errorMessage); // NOI18N
+        wizard.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage); // NOI18N
 
         // <RAVE>
         // return errorMessage == null;
@@ -137,33 +137,33 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
 
         // no support for non-web project
         if (!JsfProjectUtils.isWebProject(project)) {
-            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_NotInWebProject")); // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_NotInWebProject")); // NOI18N
             return false;
         }
 
         // no support for saving project properties
         if (!JsfProjectUtils.supportProjectProperty(project)) {
-            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_NotSupportProperties")); // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_NotSupportProperties")); // NOI18N
             return false;
         }
 
         // Check to make sure that the target name is not illegal
         String targetName = gui.getTargetName();
         if (!JsfProjectUtils.isValidJavaFileName(targetName)) {
-            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_InvalidJavaFileName", targetName)); // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_InvalidJavaFileName", targetName)); // NOI18N
             return false;
         }
 
         // Check to make sure there is valid Source Package Folder
         if (JsfProjectUtils.getSourceRoot(project) == null) {
-            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_NoSourceRoot")); // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_NoSourceRoot")); // NOI18N
             return false;
         }
 
         // Check whether the Visual Web JSF Backwards Compatibility Kit is needed
         String kitMesg = checkBackwardsKit();
         if (kitMesg != null) {
-            wizard.putProperty("WizardPanel_errorMessage", kitMesg);
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, kitMesg);
             return false;
         }
 
@@ -238,7 +238,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
         }
 
         if (!isUnderTargetRoot) {
-            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_NotUnderTargetFolder",
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_NotUnderTargetFolder",
                                folderPath.length() > rootPath.length() ? folderPath.substring(rootPath.length()+1) : folderPath,
                                targetPath.length() > rootPath.length() ? targetPath.substring(rootPath.length()+1) : targetPath)); // NOI18N
             return null;
@@ -249,7 +249,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
         for (int i = 0; i < folderTokens.length; i++) {
             String token = folderTokens[i];
             if (!"".equals(token) && !JsfProjectUtils.isValidJavaFileName(token)) {
-                wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_InvalidJavaFolderName", token)); // NOI18N
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_InvalidJavaFolderName", token)); // NOI18N
                 return null;
             }
         }
@@ -259,7 +259,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
 
     private boolean checkWebForm(String targetName) {
         if (JsfProjectUtils.getPortletSupport(project) != null) {
-            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_PortletIncompatible"));
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_PortletIncompatible"));
             return false;
         }
 
@@ -272,7 +272,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
         // 5046660/6345517 Don't allow pages to be created under here
         // XXX actually '-' already is not a legal Java identifier 
         if (folderPath.indexOf("WEB-INF") != -1) {  // NOI18N
-            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_InvalidTargetFolder", folderPath));
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_InvalidTargetFolder", folderPath));
             return false;
         }
 
@@ -285,7 +285,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
             javaPath = javaPath.substring(1);
         }
         if (javaDir.getFileObject(javaPath) != null) {
-            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_PageBeanNameConflict", javaName, jspName)); // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_PageBeanNameConflict", javaName, jspName)); // NOI18N
             return false;
         }
 
@@ -294,7 +294,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
         FileObject srcDir = javaDir.getFileObject(folderPath);
         if (((folderDir != null) && checkCaseInsensitiveName(folderDir, targetName, "jsp")) ||
             ((srcDir != null) && checkCaseInsensitiveName(srcDir, targetName, "java"))) {  // NOI18N
-            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_FileDifferentByCase", targetName));
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_FileDifferentByCase", targetName));
         }
         
         return true;
@@ -320,7 +320,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
         // Bug 5058134: Warn if page or bean file name differs from existing file by letter case
         FileObject srcDir = javaDir.getFileObject(folderPath);
         if ((srcDir != null) && checkCaseInsensitiveName(srcDir, targetName, "java")) {  // NOI18N
-            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_FileDifferentByCase", targetName));
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_FileDifferentByCase", targetName));
         }
         
         return true;
@@ -450,7 +450,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
             wizard.putProperty ("NewFileWizard_Title", substitute); // NOI18N
         }
         
-        wizard.putProperty ("WizardPanel_contentData", new String[] { // NOI18N
+        wizard.putProperty (WizardDescriptor.PROP_CONTENT_DATA, new String[] { // NOI18N
             NbBundle.getBundle (SimpleTargetChooserPanel.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
             NbBundle.getBundle (SimpleTargetChooserPanel.class).getString ("LBL_SimpleTargetChooserPanel_Name")}); // NOI18N
             

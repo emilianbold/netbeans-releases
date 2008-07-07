@@ -116,9 +116,9 @@ public final class ShortcutWizard extends WizardDescriptor {
         it.initialize(this);
         setPanelsAndSettings(it, this);
         setTitle(NbBundle.getMessage(ShortcutWizard.class, "TITLE_wizard"));
-        putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
-        putProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
-        putProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
+        putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
+        putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
+        putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
         String desc = target.getAttribute("description"); // NOI18n
         putProperty(PROP_DISPLAY_NAME, desc);
         // XXX deal with toolbar short desc somehow: #39985

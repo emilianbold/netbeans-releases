@@ -266,7 +266,7 @@ public class XMLContentPanel extends AbstractPanel {
         if(schemaInfo.roots.size() ==0){
             //TODO: should have some error message
             //String errMsg =  NbBundle.getMessage(XMLContentPanel.class, "MSG_XMLContentPanel_No_Root");
-            //templateWizard.putProperty("WizardPanel_errorMessage", errMsg);
+            //templateWizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errMsg);
             return;
         }
         Iterator it = schemaInfo.roots.iterator();

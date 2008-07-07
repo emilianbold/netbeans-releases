@@ -280,17 +280,17 @@ public class JMXConfigWizardIterator implements TemplateWizard.Iterator
           };
 
         ((javax.swing.JComponent)getTargetPanel().getComponent()).
-                putClientProperty("WizardPanel_contentData", panelNames); // NOI18N
+                putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, panelNames); // NOI18N
         ((javax.swing.JComponent)getTargetPanel().getComponent()).
-                putClientProperty("WizardPanel_contentSelectedIndex", new Integer(0)); // NOI18N
+                putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(0)); // NOI18N
         ((javax.swing.JComponent)getRMIPanel().getComponent()).
-                putClientProperty("WizardPanel_contentData", panelNames); // NOI18N
+                putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, panelNames); // NOI18N
         ((javax.swing.JComponent)getRMIPanel().getComponent()).
-                putClientProperty("WizardPanel_contentSelectedIndex", new Integer(1)); // NOI18N
+                putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(1)); // NOI18N
         ((javax.swing.JComponent)getSNMPPanel().getComponent()).
-                putClientProperty("WizardPanel_contentData", panelNames); // NOI18N
+                putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, panelNames); // NOI18N
         ((javax.swing.JComponent)getSNMPPanel().getComponent()).
-                putClientProperty("WizardPanel_contentSelectedIndex", new Integer(2)); // NOI18N
+                putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(2)); // NOI18N
         
         wiz.putProperty(WizardConstants.RMI_PORT, 
                 Integer.valueOf(NbBundle.getBundle("org.netbeans.modules.jmx.configwizard.Bundle_noi18n").getString("RMI_Port_Default")));// NOI18N

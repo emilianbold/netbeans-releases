@@ -108,10 +108,10 @@ public class TagHandlerSelection implements WizardDescriptor.Panel {
     public boolean isValid() {
         // If it is always OK to press Next or Finish, then:
         if (!isBodyTagSupport() && WebModule.J2EE_13_LEVEL.equals(j2eeVersion)) {
-            wizard.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                 org.openide.util.NbBundle.getMessage(TagHandlerSelection.class, "NOTE_simpleTag"));
         } else {
-            wizard.putProperty("WizardPanel_errorMessage", ""); // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
         }
         return true;
         // If it depends on some condition (form filled out...), then:

@@ -175,13 +175,13 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                 || projectName.indexOf("\\") >= 0         //NOI18N
                 || projectName.indexOf(':')  >= 0
                 || !isValidName(projectName)) {      //NOI18N
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectName"));
             return false; // Display name not specified
         }
 
         if (projectName.indexOf(' ')  >= 0) {        //NOI18N
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectNameWithWhiteSpace"));
             return false;
         }
@@ -189,13 +189,13 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         File f = new File(projectLocationTextField.getText()).getAbsoluteFile();
         if (getCanonicalFile(f)==null) {
             String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectLocation");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
             return false;
         }
         final File destFolder = new File(createdFolderTextField.getText() ).getAbsoluteFile();
         if (getCanonicalFile(destFolder) == null) {
             String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectName");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
             return false;
         }
 
@@ -204,25 +204,25 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             projLoc = projLoc.getParentFile();
         }
         if (projLoc == null || !projLoc.canWrite()) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectFolderReadOnly"));
             return false;
         }
 
         if (FileUtil.toFileObject(projLoc) == null) {
             String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectLocation");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
             return false;
         }
 
         File[] kids = destFolder.listFiles();
         if (destFolder.exists() && kids != null && kids.length > 0) {
             // Folder exists and is not empty
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectFolderExists"));
             return false;
         }
-        wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
+        wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                 "");
         return true;
     }

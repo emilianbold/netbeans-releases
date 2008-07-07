@@ -99,17 +99,17 @@ public class EntityEJBWizardDescriptor implements WizardDescriptor.FinishablePan
         J2eeModuleProvider j2eeModuleProvider = project.getLookup ().lookup (J2eeModuleProvider.class);
         String j2eeVersion = j2eeModuleProvider.getJ2eeModule().getModuleVersion();
         if (EjbJar.VERSION_3_0.equals(j2eeVersion)) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityEJBWizardDescriptor.class,"MSG_DisabledForEJB3")); //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(EntityEJBWizardDescriptor.class,"MSG_DisabledForEJB3")); //NOI18N
             return false;
         }
         boolean isLocal = wizardPanel.isLocal();
         boolean isRemote = wizardPanel.isRemote();
         if (!isLocal && !isRemote) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityEJBWizardDescriptor.class,"ERR_RemoteOrLocal_MustBeSelected")); //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(EntityEJBWizardDescriptor.class,"ERR_RemoteOrLocal_MustBeSelected")); //NOI18N
             return false;
         }
         if (wizardPanel.getPrimaryKeyClassName().trim().equals("")) { //NOI18N
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityEJBWizardDescriptor.class,"ERR_PrimaryKeyNotEmpty")); //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(EntityEJBWizardDescriptor.class,"ERR_PrimaryKeyNotEmpty")); //NOI18N
             return false;
         }
         
@@ -128,7 +128,7 @@ public class EntityEJBWizardDescriptor implements WizardDescriptor.FinishablePan
             }
             for (String name : proposedNames) {
                 if (targetFolder.getFileObject(name + ".java") != null) { // NOI18N
-                    wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+                    wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                             NbBundle.getMessage(EntityEJBWizardDescriptor.class,"ERR_FileAlreadyExists", name + ".java")); //NOI18N
                     return false;
                 }
@@ -148,12 +148,12 @@ public class EntityEJBWizardDescriptor implements WizardDescriptor.FinishablePan
 //                    }
 //                });
 //            }
-//            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SessionEJBWizardPanel.class,"scanning-in-progress")); //NOI18N
+//            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(SessionEJBWizardPanel.class,"scanning-in-progress")); //NOI18N
 //            return false;
 //        }
-        String errorMessage = (String) wizardDescriptor.getProperty("WizardPanel_errorMessage");
+        String errorMessage = (String) wizardDescriptor.getProperty(WizardDescriptor.PROP_ERROR_MESSAGE);
         if (errorMessage == null || errorMessage.trim().equals("")) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", " "); //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, " "); //NOI18N
         }
         return true;
     }

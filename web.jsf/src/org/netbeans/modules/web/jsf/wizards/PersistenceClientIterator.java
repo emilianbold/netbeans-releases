@@ -266,7 +266,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             
             // check that this project has a valid target server
             if (!org.netbeans.modules.j2ee.common.Util.isValidServerInstance(project)) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage",
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(PersistenceClientIterator.class, "ERR_MissingServer")); // NOI18N
                 return false;
             }

@@ -87,7 +87,7 @@ public final class PanelConfigureProjectVisual extends JPanel {
     }
     
     boolean valid( WizardDescriptor wizardDescriptor ) {
-        wizardDescriptor.putProperty( "WizardPanel_errorMessage", "" ); //NOI18N
+        wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, "" ); //NOI18N
         return projectLocationPanel.valid( wizardDescriptor ) && optionsPanel.valid(wizardDescriptor);
     }
     

@@ -109,9 +109,9 @@ public class WebReportWizardIterator implements WizardDescriptor.Iterator {
      */
     protected void updateCurrentPanel() {
         panels[index].putClientProperty(
-                "WizardPanel_contentSelectedIndex",new Integer(index)); // NOI18N
+                WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,new Integer(index)); // NOI18N
         panels[index].putClientProperty(
-                "WizardPanel_contentData",getSteps()); // NOI18N
+                WizardDescriptor.PROP_CONTENT_DATA,getSteps()); // NOI18N
         
     }
     

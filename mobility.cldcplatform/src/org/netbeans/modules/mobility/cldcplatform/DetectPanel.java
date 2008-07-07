@@ -554,7 +554,7 @@ public class DetectPanel extends javax.swing.JPanel {
         
         public void showError(final String message) {
             if (wizard != null)
-                wizard.putProperty("WizardPanel_errorMessage", message); // NOI18N
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
         }
         
         public boolean isValid() {

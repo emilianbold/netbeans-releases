@@ -307,7 +307,7 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel<Wiza
     }
     
     private void setLocalizedErrorMessage (String message) {
-        wizard.putProperty ("WizardPanel_errorMessage", message); // NOI18N
+        wizard.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
     }
     
     private FileObject getTargetFolderFromGUI (WizardDescriptor wd) {

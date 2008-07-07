@@ -79,7 +79,7 @@ public class ServerChooserVisual extends JPanel {
 
     private static final long serialVersionUID = -3170968073330222259L;
     private static final String SELECT_CONFIG_LOCATION = "LBL_Select_config_Location"; // NOI18N
-    private static final String WIZARD_PANEL_ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
+    private static final String WIZARD_PANEL_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE; // NOI18N
     private static final String BROWSE = "BROWSE"; // NOI18N
     private static final String MSG_EMPTY_CONFIG_FILE = "MSG_EmptyConfigFile"; // NOI18N
     // DOTO change to illegal path to config file

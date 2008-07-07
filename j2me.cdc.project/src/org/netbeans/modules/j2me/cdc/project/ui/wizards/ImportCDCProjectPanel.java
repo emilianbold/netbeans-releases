@@ -66,6 +66,7 @@ import org.netbeans.modules.mobility.project.ui.wizard.PlatformSelectionPanel;
 import org.netbeans.modules.mobility.project.ui.wizard.ProjectPanel;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.TemplateWizard;
@@ -300,7 +301,7 @@ public class ImportCDCProjectPanel extends javax.swing.JPanel implements Documen
         
         public void showError(final String message) {
             if (wizard != null)
-                wizard.putProperty("WizardPanel_errorMessage", message); // NOI18N
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
         }
         
         public boolean isValid() {
