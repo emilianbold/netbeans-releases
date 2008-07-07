@@ -1,3 +1,4 @@
+// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -38,8 +39,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+//</editor-fold>
 
-package org.netbeans.modules.j2ee.sun.ide.j2ee;
+package org.netbeans.modules.glassfish.eecommon.api;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -69,13 +71,13 @@ import org.netbeans.modules.schema2beans.Common;
 import org.netbeans.modules.schema2beans.BaseBean;
 import javax.enterprise.deploy.spi.DeploymentManager;
 
-import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
+//import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 
 /** Monitor enabling/disabling utilities for Application Server 8.x.
  *
  * @author Milan.Kuchtiak@sun.com, Petr Jiricka, Ludovic Champenois
  */
-public class HttpMonitorSupport {
+public class HttpMonitorHelper {
 
     // monitor module enable status data
     public static final String MONITOR_ENABLED_PROPERTY_NAME = "monitor_enabled"; // NOI18N
@@ -94,30 +96,30 @@ public class HttpMonitorSupport {
     
 
     
-    public static boolean getMonitorFlag(DeploymentManager tm) {
-        DeploymentManagerProperties ip = new DeploymentManagerProperties(tm);
-        String prop = ip.getHttpMonitorOn();
-        return (prop == null) ? true : Boolean.valueOf(prop).booleanValue();
-    }
-    
-    public static void setMonitorFlag(DeploymentManager tm, boolean enable) {
-        DeploymentManagerProperties ip = new DeploymentManagerProperties(tm);
-        ip.setHttpMonitorOn( Boolean.toString(enable));
-    }
+//    public static boolean getMonitorFlag(DeploymentManager tm) {
+//        DeploymentManagerProperties ip = new DeploymentManagerProperties(tm);
+//        String prop = ip.getHttpMonitorOn();
+//        return (prop == null) ? true : Boolean.valueOf(prop).booleanValue();
+//    }
+//    
+//    public static void setMonitorFlag(DeploymentManager tm, boolean enable) {
+//        DeploymentManagerProperties ip = new DeploymentManagerProperties(tm);
+//        ip.setHttpMonitorOn( Boolean.toString(enable));
+//    }
     
 
 
     
-    public static boolean synchronizeMonitorWithFlag(SunDeploymentManagerInterface tm) throws IOException, SAXException {
-        boolean monitorFlag = getMonitorFlag((DeploymentManager)tm);
-        return synchronizeMonitor(tm,monitorFlag);
-    }
+//    public static boolean synchronizeMonitorWithFlag(SunDeploymentManagerInterface tm) throws IOException, SAXException {
+//        boolean monitorFlag = getMonitorFlag((DeploymentManager)tm);
+//        return synchronizeMonitor(tm,monitorFlag);
+//    }
     
-    public static boolean synchronizeMonitor(SunDeploymentManagerInterface tm, boolean monitorFlag) throws IOException, SAXException {
+    public static boolean synchronizeMonitor(String domainLoc, String domainName, boolean monitorFlag) throws IOException, SAXException {
         boolean monitorModuleAvailable = isMonitorEnabled();
         boolean shouldInstall = monitorModuleAvailable && monitorFlag;
         // find the web.xml file
-        File webXML = getDefaultWebXML(tm);
+        File webXML = getDefaultWebXML(domainLoc, domainName);
         if (webXML == null) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new Exception(""));
             return false;
@@ -131,7 +133,7 @@ public class HttpMonitorSupport {
         boolean result;
         try {
             if (shouldInstall) {
-                addMonitorJars(tm);
+                addMonitorJars(domainLoc,domainName);
                 result = changeFilterMonitor(webApp, true);
                 needsSave = needsSave || result;
                 result = specifyFilterPortParameter(webApp);
@@ -156,11 +158,11 @@ public class HttpMonitorSupport {
         return needsSave;
     }
     
-    private static File getDefaultWebXML(SunDeploymentManagerInterface tm) {
-        DeploymentManagerProperties dmProps = new DeploymentManagerProperties((DeploymentManager)tm);
+    private static File getDefaultWebXML(String domainLoc, String domainName) {
+        //DeploymentManagerProperties dmProps = new DeploymentManagerProperties((DeploymentManager)tm);
         
         //String loc = dmProps.getLocation()+"/domains/"+dmProps.getDomainName()+"/config/default-web.xml";
-        String loc = dmProps.getLocation()+"/"+dmProps.getDomainName()+"/config/default-web.xml";
+        String loc = domainLoc+"/"+domainName+"/config/default-web.xml";
         File webXML = new File(loc);
         if (webXML.exists()) {
             return webXML;
@@ -168,12 +170,8 @@ public class HttpMonitorSupport {
         return null;
     }
     
-    private static void addMonitorJars(SunDeploymentManagerInterface tm) throws IOException {
-        // getting Tomcat4.0 Directory
-        DeploymentManagerProperties dmProps = new DeploymentManagerProperties((DeploymentManager)tm);
-        
-//        String loc = dmProps.getLocation()+"/domains/"+dmProps.getDomainName();
-        String loc = dmProps.getLocation()+"/"+dmProps.getDomainName();
+    private static void addMonitorJars(String domainLoc, String domainName) throws IOException {
+        String loc = domainLoc+"/"+domainName;
         File instDir = new File(loc);
         if (instDir==null) {
             return;
