@@ -56,6 +56,8 @@ public class TestLineProcessor implements LineProcessor {
 
     private int resetCount = 0;
 
+    private boolean closed;
+
     public TestLineProcessor(boolean clearLinesOnReset) {
         this.clearLinesOnReset = clearLinesOnReset;
     }
@@ -72,7 +74,7 @@ public class TestLineProcessor implements LineProcessor {
     }
 
     public void close() {
-        // noop
+        closed = true;
     }
 
     public List<String> getLinesProcessed() {
@@ -83,4 +85,7 @@ public class TestLineProcessor implements LineProcessor {
         return resetCount;
     }
 
+    public boolean isClosed() {
+        return closed;
+    }
 }
