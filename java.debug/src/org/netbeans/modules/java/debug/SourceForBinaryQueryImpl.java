@@ -41,8 +41,12 @@
 package org.netbeans.modules.java.debug;
 
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
@@ -51,17 +55,36 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Mutex.Action;
 
 /**
  *
  * @author Jan Lahoda
  */
 public class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementation {
+
+    private Map<URL,Reference<Result>> url2Result = new WeakHashMap<URL, Reference<Result>>();
+    private Map<Result, URL> result2URL = new WeakHashMap<Result, URL>();
     
     public SourceForBinaryQueryImpl() {
     }
     
-    public synchronized Result findSourceRoots(URL binaryRoot) {
+    public Result findSourceRoots(final URL binaryRoot) {
+        return ProjectManager.mutex().readAccess(new Action<Result>() {
+            public Result run() {
+                return findSourceRootsImpl(binaryRoot);
+            }
+        });
+    }
+
+    private synchronized Result findSourceRootsImpl(URL binaryRoot) {
+        Reference<Result> ref = url2Result.get(binaryRoot);
+        Result r = ref != null ? ref.get() : null;
+
+        if (r != null) {
+            return r;
+        }
+        
         String binaryRootS = binaryRoot.toExternalForm();
         URL[] urls = null;
         if (binaryRootS.startsWith("jar:file:")) { // NOI18N
@@ -81,7 +104,7 @@ public class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementat
                     }
                 }
                 
-                return new Result() {
+                Result result = new Result() {
                     public FileObject[] getRoots() {
                         return new FileObject[]{resultFO};
                     }
@@ -92,6 +115,11 @@ public class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementat
                     public void removeChangeListener(ChangeListener l) {
                     }
                 };
+
+                url2Result.put(binaryRoot, new WeakReference<Result>(result));
+                result2URL.put(result, binaryRoot);
+
+                return result;
             }
         }
         return null;
