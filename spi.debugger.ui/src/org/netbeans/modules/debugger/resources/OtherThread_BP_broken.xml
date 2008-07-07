@@ -49,33 +49,14 @@ made subject to such option by the copyright holder.
     visible='true'
     glyph='nbresloc:/org/netbeans/modules/debugger/resources/editor/other_threads_breakpoint.png'
     highlight='0xBDE6AA'
-    actions='BreakpointActions'
     type='line'
     priority='100'
     custom_sidebar_color='0xBDE6AA'>
     
-    <combination order='200'>
-        <combine annotationtype='Breakpoint_broken' absorb_all='true'/>
-        <combine annotationtype='OtherThread' absorb_all='true'/>
-    </combination>
-    <!--<combination order='200'>
-        <combine annotationtype='CondBreakpoint'/>
+    <combination order='350' min_optionals='1'>
+        <combine annotationtype='Breakpoint_broken' optional='true'/>
+        <combine annotationtype='CondBreakpoint_broken' optional='true'/>
+        <combine annotationtype='debugger-multi_BPCBP_broken' optional='true'/>
         <combine annotationtype='OtherThread'/>
     </combination>
-    <combination order='200'>
-        <combine annotationtype='Breakpoint_broken'/>
-        <combine annotationtype='OtherThread'/>
-    </combination>
-    <combination order='200'>
-        <combine annotationtype='CondBreakpoint_broken'/>
-        <combine annotationtype='OtherThread'/>
-    </combination>
-    <combination order='200'>
-        <combine annotationtype='DisabledBreakpoint'/>
-        <combine annotationtype='OtherThread'/>
-    </combination>
-    <combination order='200'>
-        <combine annotationtype='DisabledCondBreakpoint'/>
-        <combine annotationtype='OtherThread'/>
-    </combination>-->
 </type>

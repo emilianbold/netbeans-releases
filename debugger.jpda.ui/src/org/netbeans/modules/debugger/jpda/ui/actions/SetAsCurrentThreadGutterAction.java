@@ -41,12 +41,18 @@ package org.netbeans.modules.debugger.jpda.ui.actions;
 
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.Action;
+import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.openide.awt.Actions;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -76,27 +82,48 @@ public class SetAsCurrentThreadGutterAction extends SystemAction implements Cont
     }
     
     public Action createContextAwareInstance(Lookup actionContext) {
+        Collection<? extends Lookup.Provider> annotationLookupProviders =
+                actionContext.lookupAll(Lookup.Provider.class);
+        System.err.println("SetAsCurrentThreadGutterAction: actionContext = "+actionContext+", lookupProviders = "+annotationLookupProviders);
+        List<JPDAThread> threads = new ArrayList<JPDAThread>(annotationLookupProviders.size());
+        for (Lookup.Provider lp : annotationLookupProviders) {
+            threads.addAll(lp.getLookup().lookupAll(JPDAThread.class));
+        }
+        System.err.println("SetAsCurrentThreadGutterAction: all threads = "+threads);
+        if (threads.size() > 0) {
+            return new ThreadAwareAction(threads);
+        } else {
+            return this;
+        }
+        /*
         Lookup.Provider annotationLookupProvider = actionContext.lookup(Lookup.Provider.class);
+        //System.err.println("SetAsCurrentThreadGutterAction: actionContext = "+actionContext+", lookupProvider = "+annotationLookupProvider);
         if (annotationLookupProvider != null) {
             JPDAThread thread = annotationLookupProvider.getLookup().lookup(JPDAThread.class);
+            //System.err.println("SetAsCurrentThreadGutterAction, lookup = "+annotationLookupProvider.getLookup()+", ALL threads = "+annotationLookupProvider.getLookup().lookupAll(JPDAThread.class));
             return new ThreadAwareAction(thread);
         } else {
             //Exceptions.printStackTrace(new IllegalStateException("expecting BreakpointAnnotation object in lookup "+actionContext));
             return this;
         }
+         */
     }
     
     private static class ThreadAwareAction implements Action, Popup {
         
-        private JPDAThread thread;
+        private List<JPDAThread> threads;
         
-        public ThreadAwareAction(JPDAThread thread) {
-            this.thread = thread;
+        public ThreadAwareAction(List<JPDAThread> threads) {
+            this.threads = threads;
+        }
+
+        private ThreadAwareAction(JPDAThread thread) {
+            this.threads = Collections.singletonList(thread);
         }
 
         public Object getValue(String key) {
             if (Action.NAME.equals(key)) {
-                return NbBundle.getMessage(SetAsCurrentThreadGutterAction.class, "CTL_setAsCurrentThreadT", thread.getName());
+                return NbBundle.getMessage(SetAsCurrentThreadGutterAction.class, "CTL_setAsCurrentThreadT", threads.get(0).getName());
             } else {
                 return null;
             }
@@ -115,11 +142,32 @@ public class SetAsCurrentThreadGutterAction extends SystemAction implements Cont
         public void removePropertyChangeListener(PropertyChangeListener listener) {}
 
         public void actionPerformed(ActionEvent e) {
-            thread.makeCurrent();
+            threads.get(0).makeCurrent();
         }
 
         public JMenuItem getPopupPresenter() {
-            return new Actions.MenuItem (this, false);
+            if (threads.size() == 1) {
+                return new Actions.MenuItem (this, false);
+            } else {
+                return new MultiThreadsMenu();
+            }
+        }
+
+        private class MultiThreadsMenu extends JMenuItem implements DynamicMenuContent {
+
+            public JComponent[] getMenuPresenters() {
+                JComponent[] cs = new JComponent[threads.size()];
+                for (int i = 0; i < cs.length; i++) {
+                    cs[i] = new ThreadAwareAction(threads.get(i)).getPopupPresenter();
+                }
+                System.err.println("MultiThreadsMenu.getMenuPresenters() = "+java.util.Arrays.asList(cs));
+                return cs;
+            }
+
+            public JComponent[] synchMenuPresenters(JComponent[] items) {
+                return items;
+            }
+
         }
         
     }

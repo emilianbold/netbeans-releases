@@ -46,6 +46,8 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collection;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.text.BadLocationException;
@@ -84,8 +86,8 @@ public class BreakpointEnableAction extends BooleanStateAction implements Contex
     }
     
     public Action createContextAwareInstance(Lookup actionContext) {
-        BreakpointAnnotation ann = actionContext.lookup(BreakpointAnnotation.class);
-        if (ann != null) {
+        Collection<? extends BreakpointAnnotation> ann = actionContext.lookupAll(BreakpointAnnotation.class);
+        if (!ann.isEmpty()) {
             BreakpointAwareAction a = new BreakpointAwareAction(ann);
             return a;
         } else {
@@ -95,10 +97,10 @@ public class BreakpointEnableAction extends BooleanStateAction implements Contex
     
     private class BreakpointAwareAction implements Action, Presenter.Menu, Presenter.Popup {
         
-        private BreakpointAnnotation ann;
+        private Collection<? extends BreakpointAnnotation> ann;
         private HiddenBooleanStateAction hba;
         
-        public BreakpointAwareAction(BreakpointAnnotation ann) {
+        public BreakpointAwareAction(Collection<? extends BreakpointAnnotation> ann) {
             this.ann = ann;
             hba = SystemAction.get(HiddenBooleanStateAction.class);
         }
@@ -115,8 +117,16 @@ public class BreakpointEnableAction extends BooleanStateAction implements Contex
             //BreakpointEnableAction.this.setEnabled(b);
         }
 
+        private void setBreakpoints() {
+            Collection<Breakpoint> breakpoints = new ArrayList<Breakpoint>(ann.size());
+            for (BreakpointAnnotation an : ann) {
+                breakpoints.add(an.getBreakpoint());
+            }
+            hba.setFor(breakpoints);
+        }
+
         public boolean isEnabled() {
-            hba.setFor(ann.getBreakpoint());
+            setBreakpoints();
             return true;
         }
 
@@ -133,12 +143,12 @@ public class BreakpointEnableAction extends BooleanStateAction implements Contex
         }
 
         public JMenuItem getMenuPresenter() {
-            hba.setFor(ann.getBreakpoint());
+            setBreakpoints();
             return hba.getMenuPresenter();
         }
 
         public JMenuItem getPopupPresenter() {
-            hba.setFor(ann.getBreakpoint());
+            setBreakpoints();
             return hba.getPopupPresenter();
         }
         
@@ -146,15 +156,29 @@ public class BreakpointEnableAction extends BooleanStateAction implements Contex
     
     private static class HiddenBooleanStateAction extends BooleanStateAction {
         
-        private Reference<Breakpoint> bRef = new WeakReference<Breakpoint>(null);
+        private Collection<Reference<Breakpoint>> bRefs;// = new WeakReference<Breakpoint>(null);
         
         public HiddenBooleanStateAction() {
             setEnabled(true);
         }
         
-        public void setFor(Breakpoint b) {
-            bRef = new WeakReference<Breakpoint>(b);
-            setBooleanState(b.isEnabled());
+        public void setFor(Collection<Breakpoint> breakpoints) {
+            bRefs = new ArrayList<Reference<Breakpoint>>(breakpoints.size());
+            for (Breakpoint b : breakpoints) {
+                bRefs.add(new WeakReference<Breakpoint>(b));
+            }
+            setBooleanState(areBreakpointsEnabled());
+        }
+
+        private boolean areBreakpointsEnabled() {
+            boolean isEnabled = true;
+            for (Reference<Breakpoint> br : bRefs) {
+                Breakpoint b = br.get();
+                if (b != null && !b.isEnabled()) {
+                    isEnabled = false;
+                }
+            }
+            return isEnabled;
         }
 
         @Override
@@ -170,14 +194,15 @@ public class BreakpointEnableAction extends BooleanStateAction implements Contex
         @Override
         public void actionPerformed(ActionEvent ev) {
             super.actionPerformed(ev);
-            Breakpoint b = bRef.get();
-            if (b != null) {
-                boolean enabled = b.isEnabled();
-                enabled = !enabled;
-                if (enabled) {
-                    b.enable();
-                } else {
-                    b.disable();
+            boolean enabled = !areBreakpointsEnabled();
+            for (Reference<Breakpoint> br : bRefs) {
+                Breakpoint b = br.get();
+                if (b != null) {
+                    if (enabled) {
+                        b.enable();
+                    } else {
+                        b.disable();
+                    }
                 }
             }
         }

@@ -50,12 +50,11 @@ made subject to such option by the copyright holder.
     glyph='nbresloc:/org/netbeans/modules/debugger/resources/editor/MultiBreakpoint+PC_broken.png'
     highlight='0xBDE6AA'
     type='line'
-    actions='BreakpointActions'
     severity='ok'
     priority='100'
     custom_sidebar_color='0xFF8FD5'>
 
-    <combination tiptext_key='HINT_PC_MIXED_BREAKPOINTS_TOOLTIP' order='400'>
+    <combination tiptext_key='HINT_PC_MIXED_BREAKPOINTS_TOOLTIP' order='600'>
         <combine annotationtype='debugger-mixed_BP_broken'/>
         <combine annotationtype='CurrentPC'/>
     </combination>

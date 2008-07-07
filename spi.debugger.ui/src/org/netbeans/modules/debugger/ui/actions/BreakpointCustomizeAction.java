@@ -50,6 +50,7 @@ import java.beans.BeanInfo;
 import java.beans.Customizer;
 import java.beans.Introspector;
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 
@@ -79,7 +80,7 @@ public class BreakpointCustomizeAction extends SystemAction implements ContextAw
     public BreakpointCustomizeAction() {
         setEnabled(false);
     }
-    
+
     public String getName() {
         return NbBundle.getMessage(BreakpointCustomizeAction.class, "CTL_customize");
     }
@@ -92,9 +93,9 @@ public class BreakpointCustomizeAction extends SystemAction implements ContextAw
     }
     
     public Action createContextAwareInstance(Lookup actionContext) {
-        BreakpointAnnotation ann = actionContext.lookup(BreakpointAnnotation.class);
-        if (ann != null) {
-            return new BreakpointAwareAction(ann);
+        Collection<? extends BreakpointAnnotation> ann = actionContext.lookupAll(BreakpointAnnotation.class);
+        if (ann.size() == 1) {
+            return new BreakpointAwareAction(ann.iterator().next());
         } else {
             //Exceptions.printStackTrace(new IllegalStateException("expecting BreakpointAnnotation object in lookup "+actionContext));
             return this;

@@ -405,17 +405,16 @@ made subject to such option by the copyright holder.
             <file name="CurrentExpressionLine_DCBP.xml" url="CurrentExpressionLine_DCBP.xml"/>
             <file name="CurrentExpression.xml" url="CurrentExpression.xml"/>
             <file name="OtherThread.xml" url="OtherThread.xml"/>
+            <file name="OtherThreads.xml" url="OtherThreads.xml"/>
             <file name="OtherThread_BP.xml" url="OtherThread_BP.xml"/>
+            <file name="OtherThreads_BP.xml" url="OtherThreads_BP.xml"/>
             <file name="OtherThread_BP_broken.xml" url="OtherThread_BP_broken.xml"/>
-            <file name="OtherThread_CBP.xml" url="OtherThread_CBP.xml"/>
-            <file name="OtherThread_CBP_broken.xml" url="OtherThread_CBP_broken.xml"/>
+            <file name="OtherThreads_BP_broken.xml" url="OtherThreads_BP_broken.xml"/>
             <file name="OtherThread_DBP.xml" url="OtherThread_DBP.xml"/>
-            <file name="OtherThread_DCBP.xml" url="OtherThread_DCBP.xml"/>
+            <file name="OtherThreads_DBP.xml" url="OtherThreads_DBP.xml"/>
             <file name="OtherThread_PC.xml" url="OtherThread_PC.xml"/>
             <file name="OtherThread_PC_BP.xml" url="OtherThread_PC_BP.xml"/>
-            <file name="OtherThread_PC_CBP.xml" url="OtherThread_PC_CBP.xml"/>
-            <file name="OtherThread_PC_DBP.xml" url="OtherThread_PC_DBP.xml"/>
-            <file name="OtherThread_PC_DCBP.xml" url="OtherThread_PC_DCBP.xml"/>
+            <file name="OtherThreads_PC_BP.xml" url="OtherThreads_PC_BP.xml"/>
             <file name="BreakpointableLine.xml" url="BreakpointableLine.xml"/>
             <file name="PC_BP.xml" url="PC_BP.xml"/>
             <file name="PC_BP_broken.xml" url="PC_BP_broken.xml"/>
