@@ -62,6 +62,7 @@ import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.ViewLogAction;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
+import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
 import org.netbeans.modules.j2ee.sun.api.ServerInterface;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
@@ -198,8 +199,6 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
         return ((IncrementalDeployment)inner).incrementalDeploy(module, changes);
     }
     
-    
-    
     public File getDirectoryForNewApplication(String deploymentName, Target target, DeploymentConfiguration configuration){
         SunONEDeploymentConfiguration s1dc =(SunONEDeploymentConfiguration) configuration;
         s1dc.setDeploymentModuleName(deploymentName);
@@ -314,6 +313,16 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
     
     public void notifyDeployment(TargetModuleID module) {
         super.notifyDeployment(module);
+    }
+
+    @Override
+    public ProgressObject deployOnSave(TargetModuleID module, DeploymentChangeDescriptor desc) {
+        return incrementalDeploy(module, desc);
+    }
+
+    @Override
+    public boolean isDeployOnSaveSupported() {
+        return true;
     }
     
 }
