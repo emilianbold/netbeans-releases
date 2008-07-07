@@ -148,6 +148,12 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
      */
     public boolean isRemote(String lpath) {
         String ulpath = unifySeparators(lpath);
+        for (Map.Entry<String, String> entry : entrySet()) {
+            String mpoint = entry.getValue();
+            if (ulpath.startsWith(mpoint)) {
+                return true;
+            }
+        }
         for (String mpoint : keySet()) {
             if (ulpath.startsWith(mpoint)) {
                 return true;
