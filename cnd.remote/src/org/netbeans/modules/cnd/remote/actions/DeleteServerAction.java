@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.remote.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.openide.util.NbBundle;
@@ -64,6 +65,6 @@ public class DeleteServerAction extends AbstractAction {
 
     @Override
     public boolean isEnabled() {
-        return !record.getName().equals("localhost"); // NOI18N
+        return !record.getName().equals(CompilerSetManager.LOCALHOST);
     }
 }

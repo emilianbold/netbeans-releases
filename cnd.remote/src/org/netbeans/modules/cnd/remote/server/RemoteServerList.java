@@ -84,7 +84,7 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         cs = new ChangeSupport(this);
         
         // Creates the "localhost" record and any remote records cached in remote.preferences
-        add("localhost", true); // NOI18N
+        add(CompilerSetManager.LOCALHOST, true); 
         if (slist != null) {
             for (String hkey : slist.split(",")) { // NOI18N
                 add(hkey, active != null && active.equals(hkey));
@@ -127,7 +127,7 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
                 }
             }
         } catch (Exception ex) {
-            return new String[] { "localhost" }; // NOI18N
+            return new String[] { CompilerSetManager.LOCALHOST };
         }
         return sa;
     }
@@ -142,7 +142,7 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         // SystemIncludesUtils.load(record);
         
         // Register the new server
-        if (!name.equals("localhost")) { // NOI18N
+        if (!name.equals(CompilerSetManager.LOCALHOST)) {
             String slist = getPreferences().get(REMOTE_SERVERS, null);
             if (slist == null) {
                 getPreferences().put(REMOTE_SERVERS, name);
