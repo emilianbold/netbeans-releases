@@ -195,8 +195,9 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
                 SVNUrl url = rc.getSvnUrl();
                 try {
                     int handledExceptions = (SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS) ^ // the default without
-                                            (SvnClientExceptionHandler.EX_NO_HOST_CONNECTION |        // host connection errors (misspeled host or proxy urls, ...)
-                                             SvnClientExceptionHandler.EX_AUTHENTICATION) ;           // authentication errors 
+                                            (SvnClientExceptionHandler.EX_NO_HOST_CONNECTION |          // host connection errors (misspeled host or proxy urls, ...)
+                                             SvnClientExceptionHandler.EX_AUTHENTICATION |              // authentication errors
+                                             SvnClientExceptionHandler.EX_SSL_NEGOTIATION_FAILED);      // client cert errors
                     client = Subversion.getInstance().getClient(url, rc.getUsername(), rc.getPassword(), handledExceptions);
                 } catch (SVNClientException ex) {
                     SvnClientExceptionHandler.notifyException(ex, true, true);

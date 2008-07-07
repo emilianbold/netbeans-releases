@@ -62,6 +62,8 @@ public class SvnModuleConfig {
     public static final String PROP_COMMIT_EXCLUSIONS       = "commitExclusions";                           // NOI18N
     public static final String PROP_DEFAULT_VALUES          = "defaultValues";                              // NOI18N
     public static final String KEY_EXECUTABLE_BINARY        = "svnExecBinary";                              // NOI18N
+    public static final String KEY_CERT_FILE_PATH           = "certFilePath";                               // NOI18N
+    public static final String KEY_CLIENT_KEY_PASSWORD      = "clientKeyPassword";                          // NOI18N
     public static final String KEY_ANNOTATION_FORMAT        = "annotationFormat";                           // NOI18N
     public static final String SAVE_PASSWORD                = "savePassword";                               // NOI18N
     
@@ -200,8 +202,9 @@ public class SvnModuleConfig {
         for (Iterator<String> it = urls.iterator(); it.hasNext();) {
             RepositoryConnection rc = RepositoryConnection.parse(it.next());
             if(getUrlCredentials().containsKey(rc.getUrl())) {
-                String[] creds = getUrlCredentials().get(rc.getUrl());                 
-                rc = new RepositoryConnection(rc.getUrl(), creds[0], creds[1], rc.getExternalCommand(), rc.getSavePassword());
+                String[] creds = getUrlCredentials().get(rc.getUrl());
+                if(creds.length < 2) continue; //skip garbage
+                rc = new RepositoryConnection(rc.getUrl(), creds[0], creds[1], rc.getExternalCommand(), rc.getSavePassword(), rc.getCertFile(), rc.getCertPassword());
             }
             ret.add(rc);
         }

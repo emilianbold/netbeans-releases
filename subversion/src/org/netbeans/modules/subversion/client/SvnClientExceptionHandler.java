@@ -138,9 +138,10 @@ public class SvnClientExceptionHandler {
     public final static int EX_IS_OUT_OF_DATE = 16384;            
     public final static int EX_NO_SVN_CLIENT = 32768;            
     public final static int EX_HTTP_FORBIDDEN = 65536;      
+    public final static int EX_SSL_NEGOTIATION_FAILED = 131072;
           
   
-    public final static int EX_HANDLED_EXCEPTIONS = EX_AUTHENTICATION | EX_NO_CERTIFICATE | EX_NO_HOST_CONNECTION;
+    public final static int EX_HANDLED_EXCEPTIONS = EX_AUTHENTICATION | EX_NO_CERTIFICATE | EX_NO_HOST_CONNECTION | EX_SSL_NEGOTIATION_FAILED;
     public final static int EX_DEFAULT_HANDLED_EXCEPTIONS = EX_HANDLED_EXCEPTIONS;
     
     private final SVNClientException exception;
@@ -156,7 +157,7 @@ public class SvnClientExceptionHandler {
         this.handledExceptions = handledExceptions;
         exceptionMask = getMask(exception.getMessage());
     }      
-    
+
     public boolean handleException() throws Exception {
         if(exceptionMask != EX_UNKNOWN) {
             if( (handledExceptions & exceptionMask & EX_NO_HOST_CONNECTION) == exceptionMask) {
@@ -164,6 +165,8 @@ public class SvnClientExceptionHandler {
             } if( (handledExceptions & exceptionMask & EX_NO_CERTIFICATE) == exceptionMask) {                        
                 return handleNoCertificateError();
             } if( (handledExceptions &  exceptionMask & EX_AUTHENTICATION) == exceptionMask) {
+                return handleRepositoryConnectError();
+            } if( (handledExceptions &  exceptionMask & EX_SSL_NEGOTIATION_FAILED) == exceptionMask) {
                 return handleRepositoryConnectError();
             }
         }
@@ -550,6 +553,8 @@ public class SvnClientExceptionHandler {
             return EX_NO_SVN_CLIENT;
         } else if(isHTTP403(msg)) {
             return EX_HTTP_FORBIDDEN;
+        } else if(isSSLNegotiation(msg)) {
+            return EX_SSL_NEGOTIATION_FAILED;
         }
         return EX_UNKNOWN;
     }
@@ -614,6 +619,11 @@ public class SvnClientExceptionHandler {
         return msg.indexOf("403") > -1;                                                     // NOI18N
     }
     
+    public static boolean isSSLNegotiation(String msg) {
+        msg = msg.toLowerCase();
+        return msg.indexOf("ssl negotiation failed: ssl error: sslv3 alert handshake failure") > -1;                                                     // NOI18N
+    }
+
     public static boolean isReportOf200(String msg) {  
         msg = msg.toLowerCase();
         int idx = msg.indexOf("svn: report of");            // NOI18N

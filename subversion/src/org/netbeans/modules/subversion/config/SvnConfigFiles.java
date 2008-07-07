@@ -54,6 +54,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.ini4j.Ini;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.ProxySettings;
 import org.netbeans.modules.subversion.util.SvnUtils;
@@ -96,7 +98,7 @@ public class SvnConfigFiles {
     private static final String WINDOWS_GLOBAL_CONFIG_DIR = getGlobalAPPDATA() + "\\Subversion";                                // NOI18N
     private static final List<String> DEFAULT_GLOBAL_IGNORES = 
             parseGlobalIgnores("*.o *.lo *.la #*# .*.rej *.rej .*~ *~ .#* .DS_Store");                                          // NOI18N
-    
+
     private interface IniFilePatcher {
         void patch(Ini file);
     }
@@ -149,23 +151,50 @@ public class SvnConfigFiles {
     }
 
     /**
-     * Stores the proxy host, port, username and password from the given  
-     * {@link org.netbeans.modules.subversion.config.ProxyDescriptor} in the 
+     * Stores the cert file and password, proxy host, port, username and password for the given
+     * {@link SVNUrl} in the
      * <b>servers</b> file used by the Subversion module.  
      *     
      * @param host the host
      */
-    public void setProxy(SVNUrl url) {
+    public void storeSvnServersSettings(SVNUrl url) {
                         
         assert url != null : "can\'t do anything for a null host";               // NOI18N
                          
         if(!(url.getProtocol().startsWith("http") ||
              url.getProtocol().startsWith("https")) ) 
         {            
-            // a proxy will be needed only for remote http and https repositories
+            // we need the settings only for remote http and https repositories
             return;
         }
         
+        Ini nbServers = new Ini();   
+        Ini.Section nbGlobalSection = nbServers.add(GLOBAL_SECTION);
+        if(url.getProtocol().startsWith("https")) {
+            setCert(url, nbGlobalSection);
+        }
+        setProxy(url, nbGlobalSection);
+        storeIni(nbServers, "servers");                                                       // NOI18N    
+    }        
+
+    private void setCert(SVNUrl url, Ini.Section nbGlobalSection) {
+        RepositoryConnection rc = SvnModuleConfig.getDefault().getRepositoryConnection(url.toString());
+        if(rc == null) {
+            return;
+        }
+        String certFile = rc.getCertFile();
+        if(certFile == null || certFile.equals("")) {
+            return;
+        }
+        String certPassword = rc.getCertPassword();
+        if(certPassword == null || certPassword.equals("")) {
+            return;
+        }
+        nbGlobalSection.put("ssl-client-cert-file", certFile);
+        nbGlobalSection.put("ssl-client-cert-password", certPassword);
+    }
+
+    private void setProxy(SVNUrl url, Ini.Section nbGlobalSection) {
         String host =  SvnUtils.ripUserFromHost(url.getHost());
         ProxySettings ps = new ProxySettings();
         if(proxySettings != null && ps.equals(proxySettings)) {
@@ -173,49 +202,45 @@ public class SvnConfigFiles {
         } else {
             proxySettings = ps;
         }
-        
-        Ini nbServers = new Ini();
-        Ini.Section nbGlobalSection = nbServers.add(GLOBAL_SECTION);
+
         Ini.Section svnGlobalSection = svnServers.get(GLOBAL_SECTION);
         if(!proxySettings.isDirect()) {
             String proxyHost = "";
-            int proxyPort = -1;                       
+            int proxyPort = -1;
             if(url.getProtocol().startsWith("https")) {
                 proxyHost = proxySettings.getHttpsHost();
                 proxyPort = proxySettings.getHttpsPort();
-            }            
+            }
             if(proxyHost.equals("")) {
                 proxyHost = proxySettings.getHttpHost();
-                proxyPort = proxySettings.getHttpPort();                
+                proxyPort = proxySettings.getHttpPort();
             }
             String exceptions = proxySettings.getNotProxyHosts();
-             
+
             if(proxyHost != null && !proxyHost.equals("")) {
                 nbGlobalSection.put("http-proxy-host", proxyHost);                     // NOI18N
-                nbGlobalSection.put("http-proxy-port", Integer.toString(proxyPort));   // NOI18N            
+                nbGlobalSection.put("http-proxy-port", Integer.toString(proxyPort));   // NOI18N
                 if(!exceptions.equals("")) {
                     nbGlobalSection.put("http-proxy-exceptions", exceptions);   // NOI18N
-                }            
+                }
 
                 // and the authentication
-                Preferences prefs = org.openide.util.NbPreferences.root ().node ("org/netbeans/core");  // NOI18N    
-                boolean useAuth = prefs.getBoolean ("useProxyAuthentication", false);                   // NOI18N    
+                Preferences prefs = org.openide.util.NbPreferences.root ().node ("org/netbeans/core");  // NOI18N
+                boolean useAuth = prefs.getBoolean ("useProxyAuthentication", false);                   // NOI18N
                 if(useAuth) {
                     String username = prefs.get ("proxyAuthenticationUsername", "");                    // NOI18N
-                    String password = prefs.get ("proxyAuthenticationPassword", "");                    // NOI18N    
+                    String password = prefs.get ("proxyAuthenticationPassword", "");                    // NOI18N
 
                     nbGlobalSection.put("http-proxy-username", username);                               // NOI18N
-                    nbGlobalSection.put("http-proxy-password", password);                               // NOI18N            
-                }                        
-            } 
-        }        
-        // check if there are also some no proxy settings 
-        // we should get from the original svn servers file     
-        mergeNonProxyKeys(host, svnGlobalSection, nbGlobalSection);                
-        
-        storeIni(nbServers, "servers");                                                       // NOI18N    
-    }        
-    
+                    nbGlobalSection.put("http-proxy-password", password);                               // NOI18N
+                }
+            }
+        }
+        // check if there are also some no proxy settings
+        // we should get from the original svn servers file
+        mergeNonProxyKeys(host, svnGlobalSection, nbGlobalSection);
+    }
+
     private void mergeNonProxyKeys(String host, Ini.Section svnGlobalSection, Ini.Section nbGlobalSection) {                             
         if(svnGlobalSection != null) {
             // if there is a global section, than get the no proxy settings                                                                 
