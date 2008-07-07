@@ -182,13 +182,11 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="2500"/>
             </file>
         </folder>
-		<!--
          <folder name="Window">
             <file name="HttpMonitorAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-web-client-javascript-debugger-http-ui-HttpMonitorAction.instance"/>
             </file>
         </folder>
-		-->
 	</folder>
     <folder name="OptionsDialog">
         <folder name="Advanced">
