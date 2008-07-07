@@ -307,6 +307,8 @@ final class TaskListTopComponent extends TopComponent {
             panel.setBackground( background );
         JLabel msg = new JLabel( NbBundle.getMessage(TaskListTopComponent.class, "LBL_NoTasks" ) ); //NOI18N
         msg.setHorizontalAlignment(JLabel.CENTER);
+        msg.setEnabled(false);
+        msg.setOpaque(false);
         panel.add( msg, BorderLayout.CENTER );
         return panel;
     }
