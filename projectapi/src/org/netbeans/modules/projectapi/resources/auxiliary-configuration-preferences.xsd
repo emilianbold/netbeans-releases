@@ -54,25 +54,19 @@ made subject to such option by the copyright holder.
         </xsd:complexType>
     </xsd:element>
 
-    <xsd:element name="module-or-node">
-        <xsd:simpleContent>
-            <xsd:attribute name="name" />
-        </xsd:simpleContent>
-        <xsd:complexType>
-            <xsd:sequence>
-                <xsd:choice minOccurs="0" maxOccurs="unbounded">
-                    <xsd:element name="property" type="property"/>
-                    <xsd:element name="node" type="module-or-node"/>
-                </xsd:choice>
-            </xsd:sequence>
-        </xsd:complexType>
-    </xsd:element>
-
-    <xsd:element name="property">
-        <xsd:simpleContent>
-            <xsd:attribute name="name" />
-            <xsd:attribute name="value" />
-        </xsd:simpleContent>
-    </xsd:element>
+    <xsd:complexType name="module-or-node">
+        <xsd:sequence>
+            <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                <xsd:element name="property">
+                    <xsd:complexType>
+                        <xsd:attribute name="name" use="required"/>
+                        <xsd:attribute name="value" use="required"/>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="node" type="module-or-node"/>
+            </xsd:choice>
+        </xsd:sequence>
+        <xsd:attribute name="name" use="required"/>
+    </xsd:complexType>
 
 </xsd:schema>
