@@ -39,7 +39,8 @@
 
 package org.netbeans.modules.web.client.javascript.debugger.http.ui.models;
 
-import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -48,7 +49,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.Action;
 import org.netbeans.modules.web.client.javascript.debugger.api.NbJSDebugger;
 import org.netbeans.modules.web.client.javascript.debugger.http.api.HttpActivity;
-import org.netbeans.modules.web.client.tools.common.dbgp.HttpMessage;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessage;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessageEvent;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessageEventListener;
@@ -130,13 +130,21 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
             HttpActivity activity = (HttpActivity)node;
             
             if ( METHOD_COLUMN.equals(columnID)){
-                return activity.getRequest().getMethod();
+                return activity.getRequest().getMethod().toString().toUpperCase();
             } else if ( SENT_COLUMN.equals(columnID) ) {
-                return activity.getRequest().getTimeStamp();
+
+               // Date date = new Date(activity.getRequest().getTimeStamp());
+                Calendar cal = Calendar.getInstance();
+                long l = Long.parseLong(activity.getRequest().getTimeStamp());
+                cal.setTimeInMillis(l);
+                return cal.getTime().toString();
             } else if ( RESPONSE_COLUMN.equals(columnID) ){
                 JSHttpMessage response = activity.getResponse();
                 if( response != null ){
-                    return response.getTimeStamp();
+                    Calendar cal = Calendar.getInstance();
+                    long l = Long.parseLong(response.getTimeStamp());
+                    cal.setTimeInMillis(l);
+                    return cal.getTime().toString();
                 } 
                 return "";
             }
