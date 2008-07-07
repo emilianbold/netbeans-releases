@@ -480,7 +480,7 @@ public class MakeActionProvider implements ActionProvider {
                         args = buildCommand.substring(index+1);
                         buildCommand = buildCommand.substring(0, index);
                     }
-                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory());
+                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getPlatform().getValue());
                     profile.setArgs(args);
                     ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                             project,
@@ -509,7 +509,7 @@ public class MakeActionProvider implements ActionProvider {
                         args = buildCommand.substring(index+1);
                         buildCommand = buildCommand.substring(0, index);
                     }
-                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory());
+                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getPlatform().getValue());
                     profile.setArgs(args);
                     ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                             project,
@@ -563,7 +563,7 @@ public class MakeActionProvider implements ActionProvider {
                                 args = commandLine.substring(index+1);
                                 commandLine = commandLine.substring(0, index);
                             }
-                            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory());
+                            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getPlatform().getValue());
                             profile.setArgs(args);
                             ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                                     project,
@@ -583,7 +583,7 @@ public class MakeActionProvider implements ActionProvider {
                                 commandLine = commandLine.substring(0, index);
                             }
                             // Add the build commandLine
-                            profile = new RunProfile(makeArtifact.getWorkingDirectory());
+                            profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getPlatform().getValue());
                             profile.setArgs(args);
                             projectActionEvent = new ProjectActionEvent(
                                     project,
@@ -756,15 +756,22 @@ public class MakeActionProvider implements ActionProvider {
     
     private String getMakeCommand(MakeConfigurationDescriptor pd, MakeConfiguration conf) {
         String cmd = null;
-        CompilerSet2Configuration csconf = conf.getCompilerSet();
-        String csname = csconf.getOption();
-        CompilerSet cs = CompilerSetManager.useFakeRemoteCompilerSet ?
-                CompilerSetManager.fakeRemoteCS :
-                CompilerSetManager.getDefault(conf.getDevelopmentHost().getName()).getCompilerSet(csname);
+        // old way...
+//        CompilerSet2Configuration csconf = conf.getCompilerSet();
+//        String csname = csconf.getOption();
+//        CompilerSet cs = CompilerSetManager.useFakeRemoteCompilerSet ?
+//                CompilerSetManager.fakeRemoteCS :
+//                CompilerSetManager.getDefault(conf.getDevelopmentHost().getName()).getCompilerSet(csname);
+        // Sergey's way...
+//        CompilerSet cs =
+//                conf.getDevelopmentHost().isLocalhost()
+//                ? conf.getCompilerSet().getCompilerSet()
+//                : CompilerSetManager.fakeRemoteCS;
+        String csname = conf.getCompilerSet().getOption();
+        CompilerSet cs = CompilerSetManager.getDefault(conf.getDevelopmentHost().getName()).getCompilerSet(csname);
         if (cs != null) {
             cmd = cs.getTool(Tool.MakeTool).getPath();
-        }
-        else {
+        } else {
             assert false;
             cmd = "make"; // NOI18N
         }
