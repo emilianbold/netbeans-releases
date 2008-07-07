@@ -104,7 +104,7 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
             categoryLabel.setText(cr.getCategory().getDisplayName());
             if (index > 0) {
                 JPanel x = new JPanel();
-                x.setBackground(QuickSearchComboBar.getShadowColor());
+                x.setBackground(QuickSearchComboBar.getPopupBorderColor());
                 x.setPreferredSize(new Dimension(x.getPreferredSize().width, 1));
                 rendererComponent.add(x, BorderLayout.NORTH);
             }
