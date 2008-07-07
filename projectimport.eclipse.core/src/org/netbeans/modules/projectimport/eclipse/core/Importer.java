@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -159,7 +160,8 @@ final class Importer {
                 try {
                     importProjectStage0(eclProject, projectImportProblems);
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    logger.log(Level.SEVERE, "import of Eclipse proejct "+eclProject.getDirectory().getPath()+" failed", ex); // NOI18N
+                    projectImportProblems.add("Import failed due to "+ex.getMessage()+". More details can be found in IDE's log file.");
                     return Boolean.FALSE;
                 }
                 return Boolean.TRUE;
@@ -173,7 +175,8 @@ final class Importer {
                 try {
                     return importProjectStage1(eclProject, importProblems, projectImportProblems);
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    logger.log(Level.SEVERE, "import of Eclipse proejct "+eclProject.getDirectory().getPath()+" failed", ex); // NOI18N
+                    projectImportProblems.add("Import failed due to "+ex.getMessage()+". More details can be found in IDE's log file.");
                     return null;
                 }
             }});

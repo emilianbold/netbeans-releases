@@ -158,6 +158,9 @@ public class WebProjectFactory implements ProjectTypeUpdater {
 
     private static WebContentData parseWebContent(File eclipseProject) throws IOException {
         File f = new File(eclipseProject, ".settings/org.eclipse.wst.common.component"); // NOI18N
+        if (!f.exists()) {
+            f = new File(eclipseProject, ".settings/.component"); // NOI18N
+        }
         Document webContent;
         try {
             webContent = XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
