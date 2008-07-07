@@ -119,6 +119,9 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         createData.setServerLibraryName(null);
 
         FileObject root = FileUtil.toFileObject(model.getEclipseProjectFolder());
+        if (root.getFileObject(webData.webRoot) == null) {
+            importProblems.add("web document root does not exist ('" + webData.webRoot + "'). project will not be imported.");
+        }
         createData.setWebModuleFO(root);
         createData.setSourceFolders(model.getEclipseSourceRootsAsFileArray());
         createData.setTestFolders(model.getEclipseTestSourceRootsAsFileArray());
