@@ -60,7 +60,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -124,7 +123,7 @@ public class CompilerSetManager implements PlatformTypes {
     public static final String GNU = "GNU"; // NOI18N
     
     private ArrayList<CompilerSet> sets = new ArrayList();
-    private String hkey;
+    private final String hkey;
     private Object state;
     private int platform = -1;
     private int current;
