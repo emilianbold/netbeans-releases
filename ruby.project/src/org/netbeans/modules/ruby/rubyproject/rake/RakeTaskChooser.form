@@ -19,7 +19,7 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="matchingTaskSP" alignment="0" pref="556" max="32767" attributes="0"/>
+                  <Component id="matchingTaskSP" alignment="0" pref="713" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="rakeTaskLabel" min="-2" max="-2" attributes="0"/>
@@ -27,8 +27,8 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="taskParamsField" pref="472" max="32767" attributes="0"/>
-                          <Component id="rakeTaskField" alignment="0" pref="472" max="32767" attributes="0"/>
+                          <Component id="taskParamsField" pref="629" max="32767" attributes="0"/>
+                          <Component id="rakeTaskField" alignment="0" pref="629" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Component id="matchingTaskLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -58,7 +58,7 @@
               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Component id="matchingTaskLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="matchingTaskSP" pref="192" max="32767" attributes="0"/>
+              <Component id="matchingTaskSP" pref="322" max="32767" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="debugCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>

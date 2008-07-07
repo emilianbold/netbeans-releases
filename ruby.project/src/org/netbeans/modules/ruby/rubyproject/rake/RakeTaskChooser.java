@@ -175,10 +175,10 @@ public final class RakeTaskChooser extends JPanel {
         this.allTasks = new ArrayList<RakeTask>();
         this.project = project;
         initComponents();
+        matchingTaskList.setCellRenderer(new RakeTaskChooser.RakeTaskRenderer());
         debugCheckbox.setSelected(debug);
         reloadAllTasks();
         refreshTaskList();
-        matchingTaskList.setCellRenderer(new RakeTaskChooser.RakeTaskRenderer());
         rakeTaskField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) { refreshTaskList(); }
             public void insertUpdate(DocumentEvent e) { refreshTaskList(); }
@@ -328,15 +328,15 @@ public final class RakeTaskChooser extends JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE)
+                    .add(matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 713, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(rakeTaskLabel)
                             .add(taskParamLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(taskParamsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
-                            .add(rakeTaskField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)))
+                            .add(taskParamsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 629, Short.MAX_VALUE)
+                            .add(rakeTaskField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 629, Short.MAX_VALUE)))
                     .add(matchingTaskLabel)
                     .add(layout.createSequentialGroup()
                         .add(debugCheckbox)
@@ -358,7 +358,7 @@ public final class RakeTaskChooser extends JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(matchingTaskLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 192, Short.MAX_VALUE)
+                .add(matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(debugCheckbox)
@@ -368,7 +368,7 @@ public final class RakeTaskChooser extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void rakeTaskFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_rakeTaskFieldKeyPressed
-        Object actionKey = matchingTaskList.getInputMap().get(KeyStroke.getKeyStrokeForEvent(evt));
+        Object actionKey = matchingTaskList.getInputMap().get(KeyStroke.getKeyStrokeForEvent(evt));//GEN-HEADEREND:event_rakeTaskFieldKeyPressed
 
         // see JavaFastOpen.boundScrollingKey()
         boolean isListScrollAction =
@@ -405,12 +405,12 @@ public final class RakeTaskChooser extends JPanel {
             action.actionPerformed(new ActionEvent(matchingTaskList, 0, (String) actionKey));
             evt.consume();
         }
-    }//GEN-LAST:event_rakeTaskFieldKeyPressed
+    }                                        
 
-    private void showAllCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showAllCheckboxActionPerformed
-        refreshTaskList();
-    }//GEN-LAST:event_showAllCheckboxActionPerformed
-
+    private void showAllCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-LAST:event_rakeTaskFieldKeyPressed
+        refreshTaskList();//GEN-FIRST:event_showAllCheckboxActionPerformed
+    }//GEN-HEADEREND:event_showAllCheckboxActionPerformed
+//GEN-LAST:event_showAllCheckboxActionPerformed
     private static class RakeTaskRenderer extends JLabel implements ListCellRenderer {
 
         public RakeTaskRenderer() {
@@ -425,9 +425,15 @@ public final class RakeTaskChooser extends JPanel {
                 setBackground(list.getSelectionBackground());
                 setForeground(list.getSelectionForeground());
             } else {
-                setBackground(list.getBackground());
+                Color bgColor = list.getBackground();
+                Color bgColorDarker = new Color(
+                        Math.abs(bgColor.getRed() - 10),
+                        Math.abs(bgColor.getGreen() - 10),
+                        Math.abs(bgColor.getBlue() - 10));
+                setBackground(index % 2 == 0 ? bgColor : bgColorDarker);
                 setForeground(list.getForeground());
             }
+            setFont(list.getFont());
 
             if (value instanceof RakeTask) {
                 RakeTask task = ((RakeTask) value);
