@@ -49,6 +49,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.java.platform.FallbackDefaultJavaPlatform;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
 import org.openide.util.Lookup;
@@ -112,10 +113,11 @@ public final class JavaPlatformManager {
      */
     public synchronized JavaPlatform[] getInstalledPlatforms() {
         if (cachedPlatforms == null) {
-            cachedPlatforms = new HashSet<JavaPlatform>();
+            Set<JavaPlatform> _cachedPlatforms = new HashSet<JavaPlatform>();
             for (JavaPlatformProvider provider : getProviders()) {
-                cachedPlatforms.addAll(Arrays.asList(provider.getInstalledPlatforms()));
+                _cachedPlatforms.addAll(Arrays.asList(provider.getInstalledPlatforms()));
             }
+            cachedPlatforms = _cachedPlatforms;
         }
         return cachedPlatforms.toArray(new JavaPlatform[cachedPlatforms.size()]);
     }
