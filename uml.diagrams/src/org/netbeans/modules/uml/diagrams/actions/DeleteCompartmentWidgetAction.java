@@ -39,9 +39,11 @@
 package org.netbeans.modules.uml.diagrams.actions;
 
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.AbstractAction;
+import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.model.ObjectScene;
-import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
@@ -57,39 +59,64 @@ import org.openide.util.NbBundle;
 public class DeleteCompartmentWidgetAction extends AbstractAction
 {
 
-    Widget widget;
+    private Widget widget;
+    private GraphScene scene;
 
     public DeleteCompartmentWidgetAction(Widget widget, String name)
     {
         super(name);
         this.widget = widget;
+        if (widget.getScene() instanceof GraphScene)
+        {
+            scene = (GraphScene)widget.getScene();
+        }
     }
 
     public void actionPerformed(ActionEvent e)
     {
-        Scene scene = widget.getScene();
-        if (scene instanceof ObjectScene)
+        if (scene == null)
+            return;
+        
+        Object obj = ((ObjectScene) scene).findObject(widget);
+        if (obj instanceof IPresentationElement)
         {
-            Object obj = ((ObjectScene) scene).findObject(widget);
-            if (obj instanceof IPresentationElement)
+            IElement element = ((IPresentationElement) obj).getFirstSubject();
+            String subComponentName = "";
+            if (element instanceof INamedElement)
             {
-                IElement element = ((IPresentationElement) obj).getFirstSubject();
-                String subComponentName = "";
-                if (element instanceof INamedElement)
-                {
-                    subComponentName = ((INamedElement) element).getNameWithAlias();
-                }
-                NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
-                        NbBundle.getMessage(DeleteCompartmentWidgetAction.class,
-                        "LBL_DeleteCompartment", subComponentName),
-                        NbBundle.getMessage(DeleteCompartmentWidgetAction.class, "LBL_DeleteCompartmentTitle"),
-                        NotifyDescriptor.YES_NO_OPTION);
+                subComponentName = ((INamedElement) element).getNameWithAlias();
+            }
+            NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
+                    NbBundle.getMessage(DeleteCompartmentWidgetAction.class,
+                    "LBL_DeleteCompartment", subComponentName),
+                    NbBundle.getMessage(DeleteCompartmentWidgetAction.class, "LBL_DeleteCompartmentTitle"),
+                    NotifyDescriptor.YES_NO_OPTION);
 
-                if (DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION)
+            if (DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION)
+            {
+                for (Object o : getAllChildren(new ArrayList<Object>(), widget))
                 {
-                    element.delete();
+                    if (scene.isNode(o))
+                    {
+                        scene.removeNodeWithEdges(o);
+                    }
                 }
+                element.delete();
             }
         }
+    }
+
+    private List<Object> getAllChildren(List<Object> list, Widget widget)
+    {
+        for (Widget child : widget.getChildren())
+        {
+            Object pe = scene.findObject(widget);
+            if (scene.isNode(pe))
+            {
+                list.add(pe);
+            }
+            list = getAllChildren(list, child);
+        }
+        return list;
     }
 }
