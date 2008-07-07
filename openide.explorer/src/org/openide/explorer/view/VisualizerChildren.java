@@ -162,7 +162,6 @@ final class VisualizerChildren extends Object {
         boolean empty = !it.hasNext();
 
         int[] indxs = ev.getArray();
-        Node[] nodes = ev.getAdded();
 
         int current = 0;
         int inIndxs = 0;
@@ -195,6 +194,7 @@ final class VisualizerChildren extends Object {
      * and fires info to all listeners.
      */
     public void removed(VisualizerEvent.Removed ev) {
+        /*
         List remList = Arrays.asList(ev.getRemovedNodes());
         Iterator it = visNodes.iterator();
         VisualizerNode vis;
@@ -217,9 +217,15 @@ final class VisualizerChildren extends Object {
             }
             count++;
         }
+        ev.setRemovedIndicies(indx);*/
+        
+        int[] idxs = ev.getArray();
+        for (int i = idxs.length - 1; i >= 0; i--) {
+            VisualizerNode visNode = visNodes.remove(idxs[i]);
+            ev.removed.add(visNode);
+        }     
 
         // notify event about changed indexes
-        ev.setRemovedIndicies(indx);
         recomputeIndexes(null);
 
         VisualizerNode parent = this.parent;
