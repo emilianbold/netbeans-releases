@@ -1896,7 +1896,8 @@ public class Util {
         String normalized = value;
         if (normalized.startsWith("\"")) {
             normalized = normalized.substring(1);
-        } else if (normalized.endsWith("\"")) {
+        }
+        if (normalized.endsWith("\"")) {
             normalized = normalized.substring(0, normalized.length() - 1);
         }
         return "\"" + normalized + "\"";
