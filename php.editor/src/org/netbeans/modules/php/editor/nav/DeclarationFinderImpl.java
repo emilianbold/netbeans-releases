@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -84,28 +84,28 @@ public class DeclarationFinderImpl implements DeclarationFinder {
 
     public OffsetRange getReferenceSpan(Document doc, final int caretOffset) {
         List<TokenSequence<?>> ets = TokenHierarchy.get(doc).embeddedTokenSequences(caretOffset, false);
-        
+
         ets = new LinkedList<TokenSequence<?>>(ets);
-        
+
         Collections.reverse(ets);
-        
+
         for (TokenSequence<?> ts : ets) {
             if (ts.language() == PHPTokenId.language()) {
                 Token<?> t = ts.token();
-                
+
                 if (t.id() == PHPTokenId.PHP_VARIABLE || t.id() == PHPTokenId.PHP_STRING) {
                     return new OffsetRange(ts.offset(), ts.offset() + t.length());
                 }
             }
         }
-        
+
         //XXX: to find out includes, we need to parse - but this means we are parsing on mouse move in AWT!:
         FileObject file = NavUtils.getFile(doc);
-        
+
         if (file != null) {
             SourceModel model = SourceModelFactory.getInstance().getModel(file);
             final OffsetRange[] result = new OffsetRange[1];
-            
+
             try {
                 model.runUserActionTask(new CancellableTask<CompilationInfo>() {
                     public void cancel() {}
@@ -136,12 +136,12 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
-            
+
             if (result[0] != null) {
                 return result[0];
             }
         }
-        
+
         return OffsetRange.NONE;
     }
 
@@ -149,11 +149,11 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         List<ASTNode> path = NavUtils.underCaret(info, offset);
         SemiAttribute a = SemiAttribute.semiAttribute(info, offset);
         AttributedElement el = NavUtils.findElement(info, path, offset, a);
-        
+
         if (el != null) {
             return create(info, el);
         }
-        
+
         if (path.size() == 0) {
             return null;
         }
@@ -161,22 +161,22 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         path = new LinkedList<ASTNode>(path);
 
         Collections.reverse(path);
-        
+
         for (ASTNode n : path) {
             if (n instanceof Include) {
                 FileObject file = NavUtils.resolveInclude(info, (Include) n);
-                
+
                 if (file != null) {
                     return new DeclarationLocation(file, 0);
                 }
-                
+
                 break;
             }
         }
-        
+
         return DeclarationLocation.NONE;
     }
-    
+
     static DeclarationLocation create(CompilationInfo info, final AttributedElement el) {
         List<Union2<ASTNode, IndexedElement>> writes = el.getWrites();
         Union2<ASTNode, IndexedElement> n;
@@ -184,14 +184,14 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         switch (el.getKind()) {
             case FUNC:
             case CLASS:
-                n = writes.get(0);
-                break;
             case VARIABLE:
+                n = writes.get(0);
+                break;                
             default:
                 n = writes.get(writes.size() - 1);
                 break;
         }
-        
+
         if (n.hasFirst()) {
             if (n.first() == null) {
                 //cannot resolve, offer all possibilities:
@@ -209,45 +209,45 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     default:
                         fromIndex = Collections.emptyList();
                 }
-                
+
                 List<AlternativeLocation> locations = new LinkedList<AlternativeLocation>();
-                
+
                 for (IndexedElement e : fromIndex) {
                     if (el.getName().equals(e.getName())) {
                         DeclarationLocation l = new DeclarationLocation(e.getFileObject(), e.getOffset());
                         locations.add(new AlternativeLocationImpl(e, el.getKind(), l));
                     }
                 }
-                
+
                 if (locations.isEmpty()) {
                     //nothing found:
                     return DeclarationLocation.NONE;
                 }
-                
+
                 if (locations.size() == 1) {
                     return locations.get(0).getLocation();
                 }
-                
+
                 DeclarationLocation result = locations.get(0).getLocation();
-                
+
                 for (AlternativeLocation l : locations) {
                     result.addAlternative(l);
                 }
-                
+
                 return result;
             }
-            
+
             return new DeclarationLocation(info.getFileObject(), n.first().getStartOffset());
         } else {
             final IndexedElement indexed = n.second();
             FileObject file = indexed.getFileObject();
-            
+
             assert file != null;
-            
+
             return new DeclarationLocation(file, indexed.getOffset());
         }
     }
-    
+
     private static final class AlternativeLocationImpl implements AlternativeLocation {
 
         private final IndexedElement el;
@@ -259,7 +259,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             this.k = k;
             this.l = l;
         }
-        
+
         public ElementHandle getElement() {
             return el;
         }
@@ -274,7 +274,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                 case CLASS:
                     ek = ElementKind.CLASS;
             }
-            
+
             if (ek != null) {
                 formatter.name(ek, true);
                 formatter.appendText(el.getName());
@@ -282,12 +282,12 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             } else {
                 formatter.appendText(el.getName());
             }
-            
+
             if (l.getFileObject() != null) {
                 formatter.appendText(" in ");
                 formatter.appendText(FileUtil.getFileDisplayName(l.getFileObject()));
             }
-            
+
             return formatter.getText();
         }
 
@@ -297,9 +297,9 @@ public class DeclarationFinderImpl implements DeclarationFinder {
 
         public int compareTo(AlternativeLocation o) {
             AlternativeLocationImpl i = (AlternativeLocationImpl) o;
-            
+
             return this.el.getName().compareTo(i.el.getName());
         }
-        
+
     }
 }
