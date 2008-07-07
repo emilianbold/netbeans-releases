@@ -109,7 +109,9 @@ public final class SharableLibrariesUtils {
      * @return true if last created project was created sharable, false if not.
      */
     public static boolean isLastProjectSharable() {
-        return NbPreferences.root().node("org.netbeans.modules.java.project.share").getBoolean(PROP_LAST_SHARABLE, false); //NOI18N
+        return NbPreferences.forModule(SharableLibrariesUtils.class).getBoolean(PROP_LAST_SHARABLE,
+                // For compatibility with incorrect old location:
+                NbPreferences.root().node("org.netbeans.modules.java.project.share").getBoolean(PROP_LAST_SHARABLE, false)); // NOI18N
     }
     /**
      * Setter for boolean value representing the state of library sharability of the last created project.
@@ -118,11 +120,9 @@ public final class SharableLibrariesUtils {
      * @param sharable
      */
     public static void setLastProjectSharable(boolean sharable) {
-        NbPreferences.root().node("org.netbeans.modules.java.project.share").putBoolean(PROP_LAST_SHARABLE, sharable); //NOI18N
+        NbPreferences.forModule(SharableLibrariesUtils.class).putBoolean(PROP_LAST_SHARABLE, sharable);
     }
 
-    
-    
     /**
      * File chooser implementation for browsing for shared library location.
      * @param current
