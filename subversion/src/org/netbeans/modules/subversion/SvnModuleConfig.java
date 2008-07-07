@@ -64,7 +64,7 @@ public class SvnModuleConfig {
     public static final String KEY_ANNOTATION_FORMAT        = "annotationFormat";                           // NOI18N
     public static final String SAVE_PASSWORD                = "savePassword";                               // NOI18N
     
-    private static final String RECENT_URL = "repository.recentURL";                                        // NOI18N
+    public static final String KEY_RECENT_URL = "repository.recentURL";                                        // NOI18N
     private static final String SHOW_CHECKOUT_COMPLETED = "checkoutCompleted.showCheckoutCompleted";        // NOI18N  
 
     private static final String URL_EXP = "annotator.urlExp";                                               // NOI18N
@@ -166,16 +166,16 @@ public class SvnModuleConfig {
     public void insertRecentUrl(RepositoryConnection rc) {        
         Preferences prefs = getPreferences();
         
-        List<String> urlValues = Utils.getStringList(prefs, RECENT_URL);        
+        List<String> urlValues = Utils.getStringList(prefs, KEY_RECENT_URL);
         for (Iterator<String> it = urlValues.iterator(); it.hasNext();) {
             String rcOldString = it.next();
             RepositoryConnection rcOld =  RepositoryConnection.parse(rcOldString);
             if(rcOld.equals(rc)) {
-                Utils.removeFromArray(prefs, RECENT_URL, rcOldString);
+                Utils.removeFromArray(prefs, KEY_RECENT_URL, rcOldString);
             }
         }
         handleCredentials(rc);
-        Utils.insert(prefs, RECENT_URL, RepositoryConnection.getString(rc), -1);                
+        Utils.insert(prefs, KEY_RECENT_URL, RepositoryConnection.getString(rc), -1);
     }    
 
     public void setRecentUrls(List<RepositoryConnection> recentUrls) {
@@ -189,12 +189,12 @@ public class SvnModuleConfig {
             urls.add(RepositoryConnection.getString(rc));            
         }
         Preferences prefs = getPreferences();
-        Utils.put(prefs, RECENT_URL, urls);            
+        Utils.put(prefs, KEY_RECENT_URL, urls);
     }
     
     public List<RepositoryConnection> getRecentUrls() {
         Preferences prefs = getPreferences();
-        List<String> urls = Utils.getStringList(prefs, RECENT_URL);                
+        List<String> urls = Utils.getStringList(prefs, KEY_RECENT_URL);
         List<RepositoryConnection> ret = new ArrayList<RepositoryConnection>(urls.size());
         for (Iterator<String> it = urls.iterator(); it.hasNext();) {
             RepositoryConnection rc = RepositoryConnection.parse(it.next());

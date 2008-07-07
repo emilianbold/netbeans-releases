@@ -49,6 +49,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -75,7 +77,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * 
  * @author Tomas Stupka
  */
-public class SvnConfigFiles {    
+public class SvnConfigFiles implements PreferenceChangeListener {
 
     /** the only SvnConfigFiles instance */
     private static SvnConfigFiles instance;
@@ -98,6 +100,8 @@ public class SvnConfigFiles {
     private static final String WINDOWS_GLOBAL_CONFIG_DIR = getGlobalAPPDATA() + "\\Subversion";                                // NOI18N
     private static final List<String> DEFAULT_GLOBAL_IGNORES = 
             parseGlobalIgnores("*.o *.lo *.la #*# .*.rej *.rej .*~ *~ .#* .DS_Store");                                          // NOI18N
+
+    private boolean recentUrlsChanged = true; // force rewrite on first run in a session
 
     private interface IniFilePatcher {
         void patch(Ini file);
@@ -127,7 +131,8 @@ public class SvnConfigFiles {
         // copy config file        
         config = copyConfigFileToIDEConfigDir("config", new ConfigIniFilePatcher());    // NOI18N
         // get the system servers file 
-        svnServers = loadSystemIniFile("servers");        
+        svnServers = loadSystemIniFile("servers");
+        SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
     }
     
     /**
@@ -144,10 +149,16 @@ public class SvnConfigFiles {
             instance = null;
         }
         
-        if(instance==null) {
+        if(instance == null) {
             instance = new SvnConfigFiles();                    
         }
         return instance;
+    }
+
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        if(evt.getKey().startsWith(SvnModuleConfig.KEY_RECENT_URL)) {
+            recentUrlsChanged = true;
+        }
     }
 
     /**
@@ -159,7 +170,7 @@ public class SvnConfigFiles {
      */
     public void storeSvnServersSettings(SVNUrl url) {
                         
-        assert url != null : "can\'t do anything for a null host";               // NOI18N
+        assert url != null : "can\'t do anything for a null host";     // NOI18N
                          
         if(!(url.getProtocol().startsWith("http") ||
              url.getProtocol().startsWith("https")) ) 
@@ -167,38 +178,42 @@ public class SvnConfigFiles {
             // we need the settings only for remote http and https repositories
             return;
         }
-        
+
+        boolean changes = false;
         Ini nbServers = new Ini();   
         Ini.Section nbGlobalSection = nbServers.add(GLOBAL_SECTION);
         if(url.getProtocol().startsWith("https")) {
-            setCert(url, nbGlobalSection);
+            changes = setSSLCert(url, nbGlobalSection);
         }
-        setProxy(url, nbGlobalSection);
-        storeIni(nbServers, "servers");                                                       // NOI18N    
+        changes = changes || setProxy(url, nbGlobalSection);
+        if(changes) storeIni(nbServers, "servers");                    // NOI18N
     }        
 
-    private void setCert(SVNUrl url, Ini.Section nbGlobalSection) {
+    private boolean setSSLCert(SVNUrl url, Ini.Section nbGlobalSection) {
+        if(!recentUrlsChanged) return false;
+        recentUrlsChanged = false;
         RepositoryConnection rc = SvnModuleConfig.getDefault().getRepositoryConnection(url.toString());
         if(rc == null) {
-            return;
+            return true;
         }
         String certFile = rc.getCertFile();
         if(certFile == null || certFile.equals("")) {
-            return;
+            return true;
         }
         String certPassword = rc.getCertPassword();
         if(certPassword == null || certPassword.equals("")) {
-            return;
+            return true;
         }
         nbGlobalSection.put("ssl-client-cert-file", certFile);
         nbGlobalSection.put("ssl-client-cert-password", certPassword);
+        return true;
     }
 
-    private void setProxy(SVNUrl url, Ini.Section nbGlobalSection) {
+    private boolean setProxy(SVNUrl url, Ini.Section nbGlobalSection) {
         String host =  SvnUtils.ripUserFromHost(url.getHost());
         ProxySettings ps = new ProxySettings();
         if(proxySettings != null && ps.equals(proxySettings)) {
-            return;
+            return false; // no changes
         } else {
             proxySettings = ps;
         }
@@ -239,6 +254,7 @@ public class SvnConfigFiles {
         // check if there are also some no proxy settings
         // we should get from the original svn servers file
         mergeNonProxyKeys(host, svnGlobalSection, nbGlobalSection);
+        return true;
     }
 
     private void mergeNonProxyKeys(String host, Ini.Section svnGlobalSection, Ini.Section nbGlobalSection) {                             
