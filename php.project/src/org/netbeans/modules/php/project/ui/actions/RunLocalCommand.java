@@ -158,6 +158,10 @@ public class RunLocalCommand extends Command implements Displayable {
 
                 public void reset() throws IOException {
                 }
+
+                public void close() throws IOException {
+                }
+
             };
         }
 

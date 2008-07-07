@@ -71,6 +71,10 @@ public class TestLineProcessor implements LineProcessor {
         }
     }
 
+    public void close() {
+        // noop
+    }
+
     public List<String> getLinesProcessed() {
         return Collections.unmodifiableList(linesProcessed);
     }
