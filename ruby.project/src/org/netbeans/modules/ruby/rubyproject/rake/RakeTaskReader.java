@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ruby.rubyproject.rake;
@@ -47,6 +47,7 @@ import java.io.StringReader;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -66,11 +67,24 @@ final class RakeTaskReader {
     }
 
     Set<RakeTask> getRakeTaskTree() {
+        return getRakeTaskTree(true);
+    }
+
+    Set<RakeTask> getRakeTaskTree(final boolean withDescriptionOnly) {
         try {
             String rawOutput = rawRead();
-            return rawOutput == null
+            Set<RakeTask> tasks = rawOutput == null
                     ? Collections.<RakeTask>emptySet()
                     : parseTasks(new StringReader(rawOutput));
+            if (withDescriptionOnly) {
+                for (Iterator<RakeTask> it = tasks.iterator(); it.hasNext();) {
+                    RakeTask task = it.next();
+                    if (!task.isNameSpace() && task.getDescription() == null) {
+                        it.remove();
+                    }
+                }
+            }
+            return tasks;
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
             return Collections.emptySet();
@@ -120,7 +134,7 @@ final class RakeTaskReader {
     private static Set<RakeTask> parseTasks(Reader is) throws IOException {
         Properties tasksProps = new Properties();
         tasksProps.load(new ReaderInputStream(is));
-        
+
         Set<RakeTask> tasks = new TreeSet<RakeTask>();
         Map<String, RakeTask> map = new HashMap<String, RakeTask>(50);
         Set<String> processedTasks = new HashSet<String>();
@@ -128,11 +142,14 @@ final class RakeTaskReader {
         for (Map.Entry<Object, Object> entry : tasksProps.entrySet()) {
             String task = (String) entry.getKey();
             String description = (String) entry.getValue();
-            
+            if ("".equals(description)) {
+                description = null;
+            }
+
             if (!processedTasks.add(task)) {
                 continue;
             }
-            
+
             // Tokenize into categories (db:fixtures:load -> db | fixtures | load)
             RakeTask parent = null;
             String[] path = task.split(":"); // NOI18N
@@ -175,5 +192,5 @@ final class RakeTaskReader {
 
         return tasks;
     }
-    
+
 }

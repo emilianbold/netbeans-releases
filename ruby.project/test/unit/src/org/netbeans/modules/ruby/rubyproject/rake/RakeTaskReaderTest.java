@@ -41,7 +41,6 @@ package org.netbeans.modules.ruby.rubyproject.rake;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Set;
-import java.util.SortedSet;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectTestBase;
 import org.openide.filesystems.FileObject;
@@ -127,6 +126,27 @@ public class RakeTaskReaderTest extends RubyProjectTestBase {
         assertNotNull(multi);
         assertEquals("semicoloned task", "test:coverage", multi.getTask());
         assertEquals("semicoloned task", "coverage", multi.getDisplayName());
+    }
+
+    public void testTaskWithoutComment() throws Exception {
+        registerLayer();
+        RubyProject project = createTestProject();
+        String rakeContent =
+                "task :no_comment\n" +
+                "\n" +
+                "desc 'task1 task1'\n" +
+                "task :task1";
+        dumpRakefile(rakeContent, project);
+        RakeSupport.refreshTasks(project);
+        RakeTaskReader rakeTaskReader = new RakeTaskReader(project);
+        Set<RakeTask> tasks = rakeTaskReader.getRakeTaskTree(false);
+        assertEquals("two task", 2, tasks.size());
+        RakeTask noComment = RakeSupport.getRakeTask(project, "no_comment");
+        assertNotNull(noComment);
+        assertFalse("is task", noComment.isNameSpace());
+        assertEquals("no_comment task", "no_comment", noComment.getTask());
+        assertEquals("no_comment task display name", "no_comment", noComment.getDisplayName());
+        assertNull("no_comment task description", noComment.getDescription());
     }
 
     private void dumpRakefile(final String rakefileContent, final RubyProject project) throws IOException {
