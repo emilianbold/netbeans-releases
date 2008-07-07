@@ -52,13 +52,16 @@ import javax.swing.Icon;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
+import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
+import org.netbeans.modules.uml.diagrams.Util;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.modules.uml.ui.support.commonresources.CommonResourceManager;
@@ -244,8 +247,20 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener
             (propName.equals(ModelElementChangedKind.NAME_MODIFIED.toString()) ||
             propName.equals(ModelElementChangedKind.ALIAS_MODIFIED.toString()) ) )
         {
-            INamedElement nameElement = (INamedElement) element;
-            className.setLabel(nameElement.getNameWithAlias());
+            if (getScene() instanceof ObjectScene)
+            {
+                ObjectScene scene = (ObjectScene) getScene();
+                Object obj = scene.findObject(getParentWidget());
+                if (obj instanceof IPresentationElement)
+                {
+                    IPresentationElement presentation = (IPresentationElement) obj;
+                    if(element.isSame(presentation.getFirstSubject()) == true)
+                    {   
+                        INamedElement nameElement = (INamedElement) element;
+                        className.setLabel(nameElement.getNameWithAlias());
+                    }
+                }
+            }
         } else if (propName.equals(ModelElementChangedKind.STEREOTYPE.toString()))
         {
             INamedElement nameElement = (INamedElement) element;
