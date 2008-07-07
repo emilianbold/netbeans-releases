@@ -12,6 +12,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -24,28 +25,23 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="gemsTab" alignment="0" pref="787" max="32767" attributes="0"/>
-                  <Group type="102" attributes="0">
+                  <Component id="gemsTab" alignment="0" pref="791" max="32767" attributes="1"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="gemHome" linkSize="3" max="32767" attributes="1"/>
+                          <Component id="rubyPlatformLabel" linkSize="3" alignment="0" max="32767" attributes="1"/>
+                      </Group>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="rubyPlatformLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="gemHomeValue" alignment="0" pref="587" max="32767" attributes="0"/>
-                                  <Component id="platforms" alignment="0" pref="587" max="32767" attributes="0"/>
-                              </Group>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <Component id="gemHome" pref="77" max="32767" attributes="1"/>
-                              <EmptySpace min="-2" pref="613" max="-2" attributes="0"/>
-                          </Group>
+                          <Component id="gemHomeValue" alignment="1" pref="591" max="32767" attributes="2"/>
+                          <Component id="platforms" alignment="1" pref="591" max="32767" attributes="2"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="manageButton" linkSize="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="browseGemHome" linkSize="1" min="-2" pref="80" max="-2" attributes="0"/>
+                          <Component id="manageButton" linkSize="1" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="browseGemHome" linkSize="1" alignment="1" min="-2" pref="80" max="-2" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -65,11 +61,11 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="gemHome" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="gemHomeValue" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="browseGemHome" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="gemHomeValue" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="gemsTab" pref="392" max="32767" attributes="0"/>
+              <Component id="gemsTab" pref="369" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -107,7 +103,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="reloadReposButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="432" max="32767" attributes="0"/>
+                              <EmptySpace pref="436" max="32767" attributes="0"/>
                               <Component id="searchUpdatedLbl" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="searchUpdatedText" min="-2" pref="156" max="-2" attributes="0"/>
@@ -116,13 +112,13 @@
                               <Component id="updateButton" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="updateAllButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="358" max="32767" attributes="0"/>
+                              <EmptySpace pref="362" max="32767" attributes="0"/>
                               <Component id="updatedProgressLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="updatedProgress" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="updatedSP" pref="457" max="32767" attributes="0"/>
+                              <Component id="updatedSP" pref="461" max="32767" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="jScrollPane6" min="-2" pref="283" max="-2" attributes="0"/>
                           </Group>
@@ -142,8 +138,8 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="updatedSP" pref="279" max="32767" attributes="0"/>
-                          <Component id="jScrollPane6" alignment="1" pref="279" max="32767" attributes="0"/>
+                          <Component id="jScrollPane6" pref="256" max="32767" attributes="0"/>
+                          <Component id="updatedSP" alignment="1" pref="256" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
@@ -330,20 +326,20 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="reloadInstalledButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="432" max="32767" attributes="0"/>
+                              <EmptySpace pref="436" max="32767" attributes="0"/>
                               <Component id="searchInstLbl" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="searchInstText" min="-2" pref="156" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="uninstallButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="451" max="32767" attributes="0"/>
+                              <EmptySpace pref="455" max="32767" attributes="0"/>
                               <Component id="installedProgressLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="installedProgress" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="installedSP" pref="457" max="32767" attributes="0"/>
+                              <Component id="installedSP" pref="461" max="32767" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="jScrollPane5" min="-2" pref="283" max="-2" attributes="0"/>
                           </Group>
@@ -363,8 +359,8 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="installedSP" pref="279" max="32767" attributes="0"/>
-                          <Component id="jScrollPane5" alignment="1" pref="279" max="32767" attributes="0"/>
+                          <Component id="installedSP" pref="256" max="32767" attributes="0"/>
+                          <Component id="jScrollPane5" alignment="1" pref="256" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
@@ -533,7 +529,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="reloadNewButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="432" max="32767" attributes="0"/>
+                              <EmptySpace pref="436" max="32767" attributes="0"/>
                               <Component id="searchNewLbl" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="searchNewText" min="-2" pref="156" max="-2" attributes="0"/>
@@ -542,13 +538,13 @@
                               <Component id="installButton" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="installLocalButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="344" max="32767" attributes="0"/>
+                              <EmptySpace pref="348" max="32767" attributes="0"/>
                               <Component id="newProgressLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="newProgress" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="newSP" pref="457" max="32767" attributes="0"/>
+                              <Component id="newSP" pref="461" max="32767" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="jScrollPane4" min="-2" pref="283" max="-2" attributes="0"/>
                           </Group>
@@ -568,8 +564,8 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="newSP" pref="279" max="32767" attributes="0"/>
-                          <Component id="jScrollPane4" alignment="0" pref="279" max="32767" attributes="0"/>
+                          <Component id="newSP" pref="256" max="32767" attributes="0"/>
+                          <Component id="jScrollPane4" alignment="0" pref="256" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
@@ -753,7 +749,7 @@
                           <Component id="proxyButton" min="-2" max="-2" attributes="0"/>
                           <Component id="allVersionsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="459" max="32767" attributes="0"/>
+                      <EmptySpace pref="463" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -766,7 +762,7 @@
                       <Component id="allVersionsCheckbox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="descriptionCheckbox" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="260" max="32767" attributes="0"/>
+                      <EmptySpace pref="237" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

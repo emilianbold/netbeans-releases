@@ -66,7 +66,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.extexecution.ProcessInputStream;
@@ -277,7 +276,11 @@ public final class ExecutionService {
                                 RUNNING_PROCESSES.remove(process);
                             }
 
-                            return process.exitValue();
+                            try {
+                                return process.exitValue();
+                            } catch (IllegalThreadStateException ex) {
+                                LOGGER.log(Level.FINE, "Process not yet exited", ex);
+                            }
                         }
                     } catch (Exception ex) {
                         LOGGER.log(Level.WARNING, null, ex);
@@ -467,15 +470,15 @@ public final class ExecutionService {
             }
         }
 
-        InputOutput io = inputOutputData.getInputOutput();
-        io.getOut().close();
-        io.getErr().close();
-
-        try {
-            io.getIn().close();
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-        }
+//        InputOutput io = inputOutputData.getInputOutput();
+//        io.getOut().close();
+//        io.getErr().close();
+//
+//        try {
+//            io.getIn().close();
+//        } catch (IOException ex) {
+//            LOGGER.log(Level.INFO, null, ex);
+//        }
 
         cleanup(progressHandle, inputOutputData);
 

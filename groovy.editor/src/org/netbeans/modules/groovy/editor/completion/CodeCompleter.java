@@ -517,23 +517,23 @@ public class CodeCompleter implements CodeCompletionHandler {
 
            LOG.log(Level.FINEST, "getSurroundingMethodOrClosure() ----------------------------------------");
            LOG.log(Level.FINEST, "Path : {0}", path);
-           
+
            for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
                ASTNode current = it.next();
                if (current instanceof MethodNode) {
                    MethodNode mn = (MethodNode) current;
                    LOG.log(Level.FINEST, "Found Method: {0}", mn.getName()); // NOI18N
                    return mn;
-               } /*else if (current instanceof FieldNode) {
-               FieldNode fn = (FieldNode) current;
-               if (fn.isClosureSharedVariable()) {
-               LOG.log(Level.FINEST, "Found Closure(Field): {0}", fn.getName()); // NOI18N
-               return fn;
-               }
+               } else if (current instanceof FieldNode) {
+                   FieldNode fn = (FieldNode) current;
+                   if (fn.isClosureSharedVariable()) {
+                       LOG.log(Level.FINEST, "Found Closure(Field): {0}", fn.getName()); // NOI18N
+                       return fn;
+                   }
                } else if (current instanceof ClosureExpression) {
-               LOG.log(Level.FINEST, "Found Closure(Expr.): {0}", ((ClosureExpression)current).getText()); // NOI18N
-               return current;
-               }*/
+                   LOG.log(Level.FINEST, "Found Closure(Expr.): {0}", ((ClosureExpression) current).getText()); // NOI18N
+                   return current;
+               }
            }
            return null;
        }
@@ -1142,9 +1142,43 @@ public class CodeCompleter implements CodeCompletionHandler {
             }
         }
         return sb.toString();
-    }    
+    }
+
+    /**
+     * This method returns the Local Variables of a method or a closure.
+     * @param node
+     * @param result
+     * @param request
+     */
+
+
     
     private void getLocalVars(ASTNode node, List<ASTNode> result, CompletionRequest request) {
+        // if we are dealing with a closure, we retrieve the local vars differently
+
+        if (node instanceof ClosureExpression) {
+            ClosureExpression closure = (ClosureExpression)node;
+
+            if(closure.isParameterSpecified()){
+                LOG.log(Level.FINEST, "We do have Parameters...");
+                Parameter params[] = closure.getParameters();
+
+                for (int i = 0; i < params.length; i++) {
+                    Parameter parameter = params[i];
+                    LOG.log(Level.FINEST, "Parameter: {0}", parameter.getName());
+                    result.add(parameter);
+                }
+
+
+            } else {
+                LOG.log(Level.FINEST, "Closure without parameters, have to put it in list");
+                result.add(new VariableExpression("it"));
+            }
+
+
+            return;
+        }
+
         if (node instanceof Variable) {
             addIfNotInList(result, node);
         }
