@@ -489,7 +489,7 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                     jTextFieldExpressionRead.setText(readExpression);
                     jTextFieldExpressionWrite.setText(writeExpression);
                     
-                    jComboBoxIndexNames.setSelectedItem(connector.readProperty(DataSetConnectorCD.PROP_INDEX_NAME).getPrimitiveValue());
+                    jComboBoxIndexNames.setSelectedItem(MidpDatabindingSupport.getIndexName(connector));
                    
                     setCommandComboBox(connector, jComboBoxCommandUpdate, DataSetConnectorCD.PROP_UPDATE_COMMAND);
                     setCommandComboBox(connector, jComboBoxIndexableNext, DataSetConnectorCD.PROP_NEXT_COMMAND);
@@ -546,9 +546,16 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                             dataSet.addComponent(connector);
                         }
                         if (jComboBoxIndexNames.getSelectedItem() != null && !jComboBoxIndexNames.getSelectedItem().equals(NULL)) {
-                            connector.writeProperty(DataSetConnectorCD.PROP_INDEX_NAME, MidpTypes.createStringValue((String) jComboBoxIndexNames.getSelectedItem()));
+                            if (MidpDatabindingSupport.isIndexableDataSet(document, dataSet.getType())) {
+                                String indexName = (String) jComboBoxIndexNames.getSelectedItem();
+                                DesignComponent index = MidpDatabindingSupport.getIndex(dataSet,indexName);
+                                if (index == null) {
+                                    index = MidpDatabindingSupport.createIndex(dataSet, indexName);
+                                }
+                                connector.writeProperty(DataSetConnectorCD.PROP_INDEX, PropertyValue.createComponentReference(index));
+                            }
                         } else {
-                            connector.writeProperty(DataSetConnectorCD.PROP_INDEX_NAME, PropertyValue.createNull());
+                            connector.writeProperty(DataSetConnectorCD.PROP_INDEX, PropertyValue.createNull());
                         }
                         
                         connector.writeProperty(DataSetConnectorCD.PROP_COMPONENT_ID, MidpTypes.createLongValue(component.getComponentID()));
@@ -558,7 +565,7 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                         saveCommands(document, connector, selectedUpdateCommand, DataSetConnectorCD.PROP_UPDATE_COMMAND);
                         saveCommands(document, connector, selectedNextCommand, DataSetConnectorCD.PROP_NEXT_COMMAND);
                         saveCommands(document, connector, selectedPreviousCommand,DataSetConnectorCD.PROP_PREVIOUS_COMMAND);
-                        
+                        MidpDatabindingSupport.removerUnusedIndexes(document);
                         break;
                     }
                 }
@@ -668,9 +675,10 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             Collection<DesignComponent> connectors = MidpDatabindingSupport.getAllConnectors(component.getDocument()); 
             names = new ArrayList<String>();
             for (DesignComponent connector : connectors) {
-                PropertyValue value= connector.readProperty(DataSetConnectorCD.PROP_INDEX_NAME);
-                if (value != PropertyValue.createNull() && !names.contains(value.getPrimitiveValue())) {
-                    names.add((String) value.getPrimitiveValue());
+                DesignComponent index = connector.readProperty(DataSetConnectorCD.PROP_INDEX).getComponent();
+                String indexName = MidpDatabindingSupport.getIndexName(connector);
+                if (index != null && !names.contains(indexName)) {
+                    names.add(indexName);
                 }
                
             }
@@ -796,11 +804,13 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 String name = "index";//NOI18N + nameDataSet;
                 List<String> names= ((Model) jComboBoxIndexNames.getModel()).getItems();
                 names.remove(CREATE_INDEX);
+                names.remove(NULL);
                 int i = 0;
                 while (names.contains(name)) {
                     name = name + i++;
                 }
                 names.add(name);
+                names.add(NULL);
                 names.add(CREATE_INDEX);
                 Model indexNamesModel = new Model(names);
                 jComboBoxIndexNames.setModel(indexNamesModel);

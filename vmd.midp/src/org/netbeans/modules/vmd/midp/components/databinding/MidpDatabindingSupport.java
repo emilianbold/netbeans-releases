@@ -40,10 +40,14 @@ package org.netbeans.modules.vmd.midp.components.databinding;
 
 import java.util.Collection;
 import java.util.HashSet;
+import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.categories.DatabindingCategoryCD;
+import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 
 /**
  *
@@ -57,11 +61,13 @@ public final class MidpDatabindingSupport {
     public static DesignComponent getConnector(DesignComponent bindedComponent, String bindedPropertyName) {
         DesignComponent category = MidpDocumentSupport.getCategoryComponent(bindedComponent.getDocument(), DatabindingCategoryCD.TYPEID);
         for (DesignComponent dataSet : category.getComponents()) {
-            for (DesignComponent connector : dataSet.getComponents()) {
-                String currentbindedPropertyName = (String) connector.readProperty(DataSetConnectorCD.PROP_BINDED_PROPERTY).getPrimitiveValue();
-                Long id = (Long) connector.readProperty(DataSetConnectorCD.PROP_COMPONENT_ID).getPrimitiveValue();
-                if (currentbindedPropertyName.equals(bindedPropertyName) && id != null && bindedComponent.getComponentID() == id) {
-                    return connector;
+            for (DesignComponent component : dataSet.getComponents()) {
+                if (component.getType() == DataSetConnectorCD.TYPEID) {
+                    String currentbindedPropertyName = (String) component.readProperty(DataSetConnectorCD.PROP_BINDED_PROPERTY).getPrimitiveValue();
+                    Long id = (Long) component.readProperty(DataSetConnectorCD.PROP_COMPONENT_ID).getPrimitiveValue();
+                    if (currentbindedPropertyName.equals(bindedPropertyName) && id != null && bindedComponent.getComponentID() == id) {
+                        return component;
+                    }
                 }
             }
         }
@@ -72,10 +78,12 @@ public final class MidpDatabindingSupport {
         DesignComponent category = MidpDocumentSupport.getCategoryComponent(bindedComponent.getDocument(), DatabindingCategoryCD.TYPEID);
         HashSet<DesignComponent> connectors = new HashSet<DesignComponent>();
         for (DesignComponent dataSet : category.getComponents()) {
-            for (DesignComponent connector : dataSet.getComponents()) {
-                Long id = (Long) connector.readProperty(DataSetConnectorCD.PROP_COMPONENT_ID).getPrimitiveValue();
-                if (id != null && bindedComponent.getComponentID() == id) {
-                    connectors.add(connector);
+            for (DesignComponent component : dataSet.getComponents()) {
+                if (component.getType() == DataSetConnectorCD.TYPEID) {
+                    Long id = (Long) component.readProperty(DataSetConnectorCD.PROP_COMPONENT_ID).getPrimitiveValue();
+                    if (id != null && bindedComponent.getComponentID() == id) {
+                        connectors.add(component);
+                    }
                 }
             }
         }
@@ -86,7 +94,11 @@ public final class MidpDatabindingSupport {
         DesignComponent category = MidpDocumentSupport.getCategoryComponent(document, DatabindingCategoryCD.TYPEID);
         HashSet<DesignComponent> connectors = new HashSet<DesignComponent>();
         for (DesignComponent dataSet : category.getComponents()) {
-            connectors.addAll(dataSet.getComponents());
+            for (DesignComponent component : dataSet.getComponents()) {
+                if (component.getType() == DataSetConnectorCD.TYPEID) {
+                    connectors.add(component);
+                }
+            }
         }
         return connectors;
     }
@@ -107,5 +119,73 @@ public final class MidpDatabindingSupport {
             }
         }
         return null;
+    }
+
+    public static Collection<DesignComponent> getIndexes(DesignComponent indexableDataSet) {
+        Collection<DesignComponent> indexes = new HashSet<DesignComponent>();
+        for (DesignComponent component : indexableDataSet.getComponents()) {
+            if (component.getType() == IndexableDataSetIndexCD.TYPEID) {
+                indexes.add(component);
+            }
+        }
+        return indexes;
+    }
+
+    public static DesignComponent getIndex(DesignComponent indexableDataSet, String instanceName) {
+        for (DesignComponent component : indexableDataSet.getComponents()) {
+            if (component.getType() == IndexableDataSetIndexCD.TYPEID && component.readProperty(ClassCD.PROP_INSTANCE_NAME).equals(instanceName)) {
+                return component;
+            }
+        }
+        return null;
+    }
+
+    public static DesignComponent createIndex(DesignComponent indexableDataSet, String instanceName) {
+        assert indexableDataSet.getType() == IndexableDataSetCD.TYPEID;
+
+        DesignComponent index = indexableDataSet.getDocument().createComponent(IndexableDataSetIndexCD.TYPEID);
+        index.writeProperty(ClassCD.PROP_INSTANCE_NAME, InstanceNameResolver.createFromSuggested(index, instanceName)); //NOI18N
+        indexableDataSet.addComponent(index);
+        return index;
+    }
+
+    public static void removerUnusedIndexes(DesignDocument document) {
+        assert document != null;
+        Collection<DesignComponent> connectors = MidpDatabindingSupport.getAllConnectors(document);
+        Collection<DesignComponent> dataSets = MidpDocumentSupport.getCategoryComponent(document, DatabindingCategoryCD.TYPEID).getComponents();
+        Collection<DesignComponent> indexes = new HashSet<DesignComponent>();
+        for (DesignComponent dataSet : dataSets) {
+            if (dataSet.getType() != IndexableDataSetCD.TYPEID) {
+                return;
+            }
+            indexes.addAll(getIndexes(dataSet));
+        }
+        for (DesignComponent connector : connectors) {
+            DesignComponent index = connector.readProperty(DataSetConnectorCD.PROP_INDEX).getComponent();
+            if (index == null) {
+                return;
+            }
+            indexes.remove(index);
+        }
+        for (DesignComponent indexToRemove : indexes) {
+            document.deleteComponent(indexToRemove);
+
+        }
+
+
+    }
+
+    public static String getIndexName(DesignComponent connector) {
+        DesignComponent index = connector.readProperty(DataSetConnectorCD.PROP_INDEX).getComponent();
+        String name = null;
+        if (index != null) {
+            name = (String) index.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue();
+        }
+        return name;
+    }
+
+    public static boolean isIndexableDataSet(DesignDocument document, TypeID typeID) {
+        DescriptorRegistry registry = document.getDescriptorRegistry();
+        return registry.isInHierarchy(IndexableDataSetCD.TYPEID, typeID);
     }
 }

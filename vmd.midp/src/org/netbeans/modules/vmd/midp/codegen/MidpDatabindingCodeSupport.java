@@ -284,8 +284,7 @@ public final class MidpDatabindingCodeSupport {
         Collection<DesignComponent> connectors = MidpDatabindingSupport.getAllConnectors(component.getDocument());
         HashMap<DesignComponent, HashMap<String, Collection<MidpDatabindingEventSourceCodeGenPresenter>>> dataSetMap = new HashMap<DesignComponent, HashMap<String, Collection<MidpDatabindingEventSourceCodeGenPresenter>>>();
         for (DesignComponent connector : connectors) {
-            PropertyValue value = connector.readProperty(DataSetConnectorCD.PROP_INDEX_NAME);
-            String indexName = (String) value.getPrimitiveValue();
+            String indexName = MidpDatabindingSupport.getIndexName(connector);
             Long uiComponentID = (Long) connector.readProperty(DataSetConnectorCD.PROP_COMPONENT_ID).getPrimitiveValue();
             DesignComponent uiComponent = component.getDocument().getComponentByUID(uiComponentID);
             Collection<? extends MidpDatabindingEventSourceCodeGenPresenter> presenters = null;
@@ -383,6 +382,7 @@ public final class MidpDatabindingCodeSupport {
                     String indexName,
                     DesignComponent dataSet,
                     String propertyName) {
+                assert indexName != null;
                 if (eventSource.getType() != CommandEventSourceCD.TYPEID) {
                     return false;
                 }
@@ -397,7 +397,7 @@ public final class MidpDatabindingCodeSupport {
                     return false;
                 }
 
-                if (!connector.readProperty(DataSetConnectorCD.PROP_INDEX_NAME).getPrimitiveValue().equals(indexName)) {
+                if (!MidpDatabindingSupport.getIndexName(connector).equals(indexName)) {
                     return false;
                 }
 
@@ -452,9 +452,8 @@ public final class MidpDatabindingCodeSupport {
     private static String getExpression(DesignComponent connector, String properytName) {
          
         String expression =((String) connector.readProperty(properytName).getPrimitiveValue());
-        PropertyValue indexValue = connector.readProperty(DataSetConnectorCD.PROP_INDEX_NAME);
-        if (indexValue != PropertyValue.createNull()) {
-            String indexName = (String) indexValue.getPrimitiveValue();
+        String indexName = MidpDatabindingSupport.getIndexName(connector);
+        if (indexName != null) {
             String searchingString = "[" + indexName + "]"; //NOI18N
             if (expression.contains(searchingString)) { //NOI18N
                 expression = expression.replace(searchingString, "[\"+" + indexName + "+\"]"); //NOI18N

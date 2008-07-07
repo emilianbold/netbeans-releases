@@ -58,7 +58,6 @@ public class DataSetCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.databinding.DataSet"); //NOI18N
     
-    public static final String PROP_NAMES = "names"; //NOI18N 
 
     @Override
     public TypeDescriptor getTypeDescriptor() {
@@ -72,9 +71,7 @@ public class DataSetCD extends ComponentDescriptor {
 
     @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
-        return Arrays.asList(
-                new PropertyDescriptor(PROP_NAMES, MidpTypes.TYPEID_JAVA_LANG_STRING.getArrayType(), PropertyValue.createNull(), true, false, MidpVersionable.MIDP_2)
-        );
+      return null;
     }
 
     @Override
