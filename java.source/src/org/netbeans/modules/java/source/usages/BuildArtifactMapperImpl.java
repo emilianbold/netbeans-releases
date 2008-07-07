@@ -58,7 +58,9 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.BinaryForSourceQuery.Result;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
@@ -133,18 +135,22 @@ public class BuildArtifactMapperImpl {
         if (tagFile.exists()) {
             return true;
         }
+
+        delete(targetFolder);
         
         if (!targetFolder.exists() && !targetFolder.mkdirs()) {
             throw new IOException("Cannot create destination folder: " + targetFolder.getAbsolutePath());
         }
-        
-        File index = Index.getClassFolder(sourceRoot, true);
-        
-        if (index == null) {
-            return false;
+
+        for (FileObject sr : SourceForBinaryQuery.findSourceRoots(targetFolder.toURI().toURL()).getRoots()) {
+            File index = Index.getClassFolder(sr.getURL(), true);
+
+            if (index == null) {
+                return false;
+            }
+
+            copyRecursively(index, targetFolder);
         }
-        
-        copyRecursively(index, targetFolder);
         
         new FileOutputStream(tagFile).close();
         
@@ -264,6 +270,24 @@ public class BuildArtifactMapperImpl {
             }
 
             copyFile(source, target);
+        }
+    }
+
+    private static void delete(File file) throws IOException {
+        if (file.isDirectory()) {
+            File[] listed = file.listFiles();
+
+            if (listed == null) {
+                return;
+            }
+
+            for (File f : listed) {
+                delete(f);
+            }
+            
+            file.delete();
+        } else {
+            file.delete();
         }
     }
     
