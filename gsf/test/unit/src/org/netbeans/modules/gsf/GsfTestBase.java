@@ -728,10 +728,12 @@ public abstract class GsfTestBase extends NbTestCase {
 
             IndentPrefs preferences = null; // Test should supply default - new IndentPrefs(2, 2);
             Formatter formatter = getFormatter(preferences);
-            assertNotNull("getFormatter() must be implemented", formatter);
-            
-            //ParserResult result = parse(fo);
-            formatter.reindent(doc, startPos, endPos);
+            if (formatter != null) {
+                assertNotNull("getFormatter() must be implemented", formatter);
+
+                //ParserResult result = parse(fo);
+                formatter.reindent(doc, startPos, endPos);
+            }
             int indent = getLineIndent(doc, insertOffset+1);
 
             //bc.afterBreak(doc, insertOffset, caret);

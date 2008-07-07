@@ -106,7 +106,7 @@ final class Result {
             for( int i=0; i<urlPatterns.length; i++ ) {
                 if( urlPatterns[i].length() == 0 )
                     continue;
-                if( item.getUrl().contains( urlPatterns[i] ) ) {
+                if( item.getUrl().toLowerCase().matches( urlPatterns[i] ) ) {
                     filteredItems.add(item);
                     break;
                 }

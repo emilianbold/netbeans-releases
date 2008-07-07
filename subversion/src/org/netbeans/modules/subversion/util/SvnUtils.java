@@ -948,5 +948,20 @@ public class SvnUtils {
         }
         return svnrevision;
     }
-         
+
+    // XXX JAVAHL
+    public static ISVNLogMessage[] getLogMessages(ISVNClientAdapter client, SVNUrl rootUrl, String[] paths, SVNRevision fromRevision, SVNRevision toRevision, boolean stopOnCopy, boolean fetchChangePath) throws SVNClientException {
+        Set<Long> alreadyHere = new HashSet<Long>();
+        List<ISVNLogMessage> ret = new ArrayList<ISVNLogMessage>();
+        for (String path : paths) {
+            ISVNLogMessage[] logs = client.getLogMessages(rootUrl.appendPath(path), null, fromRevision, toRevision, stopOnCopy, fetchChangePath, 0);
+            for (ISVNLogMessage log : logs) {
+                if(!alreadyHere.contains(log.getRevision().getNumber())) {
+                    ret.add(log);
+                    alreadyHere.add(log.getRevision().getNumber());
+                }
+            }
+        }
+        return ret.toArray(new ISVNLogMessage[ret.size()]);
+    }
 }

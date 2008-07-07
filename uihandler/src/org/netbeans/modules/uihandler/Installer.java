@@ -139,15 +139,18 @@ public class Installer extends ModuleInstall implements Runnable {
     static final String USER_CONFIGURATION = "UI_USER_CONFIGURATION";   // NOI18N
     private static UIHandler ui = new UIHandler(false);
     private static UIHandler handler = new UIHandler(true);
+    private static MetricsHandler metrics = new MetricsHandler();
     static final Logger LOG = Logger.getLogger(Installer.class.getName());
     public static final RequestProcessor RP = new RequestProcessor("UI Gestures"); // NOI18N
     public static final RequestProcessor RP_UI = new RequestProcessor("UI Gestures - Create Dialog"); // NOI18N
     public static RequestProcessor RP_OPT = null; 
     private static final Preferences prefs = NbPreferences.forModule(Installer.class);
     private static OutputStream logStream;
+    private static OutputStream logStreamMetrics;
     private static int logsSize;
     private static URL hintURL;
     private static Object[] selectedExcParams;
+    private static boolean logMetricsEnabled = false;
     
     private static Pattern ENCODING = Pattern.compile(
         "<meta.*http-equiv=['\"]Content-Type['\"]" +
@@ -183,6 +186,19 @@ public class Installer extends ModuleInstall implements Runnable {
         Logger all = Logger.getLogger("");
         all.addHandler(handler);
         logsSize = prefs.getInt("count", 0);
+        Object value = System.getProperty("nb.metrics.enabled");
+        if (value != null) {
+            if ("true".equals(value)) {
+                logMetricsEnabled = true;
+            }
+        }
+        if (logMetricsEnabled) {
+            //Handler for metrics
+            log = Logger.getLogger("org.netbeans.metrics"); // NOI18N
+            log.setUseParentHandlers(false);
+            log.setLevel(Level.FINEST);
+            log.addHandler(metrics);
+        }
         
         EarlyHandler.disable();
         
@@ -211,6 +227,7 @@ public class Installer extends ModuleInstall implements Runnable {
     @Override
     public final void close() {
         UIHandler.flushImmediatelly();
+        MetricsHandler.flushImmediatelly();
     }
     
     public final void doClose() {
@@ -218,8 +235,13 @@ public class Installer extends ModuleInstall implements Runnable {
         log.removeHandler(ui);
         Logger all = Logger.getLogger(""); // NOI18N
         all.removeHandler(handler);
+        if (logMetricsEnabled) {
+            log = Logger.getLogger("org.netbeans.metrics"); // NOI18N
+            log.removeHandler(metrics);
+        }
         
         closeLogStream();
+        closeLogStreamMetrics();
     }
     
     static void writeOut(LogRecord r) {
@@ -247,6 +269,14 @@ public class Installer extends ModuleInstall implements Runnable {
                     prefs.putInt("count", logsSize);
                 }
             }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    static void writeOutMetrics (LogRecord r) {
+        try {
+            LogRecords.write(logStreamMetrics(), r);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -344,6 +374,19 @@ public class Installer extends ModuleInstall implements Runnable {
         File logFile = new File(new File(new File(userDir, "var"), "log"), "uigestures" + suffix);
         return logFile;
     }
+
+    private static File logFileMetrics (int revision) {
+        String ud = System.getProperty("netbeans.user"); // NOI18N
+        if (ud == null || "memory".equals(ud)) { // NOI18N
+            return null;
+        }
+
+        String suffix = revision == 0 ? "" : "." + revision;
+
+        File userDir = new File(ud); // NOI18N
+        File logFile = new File(new File(new File(userDir, "var"), "log"), "metrics" + suffix);
+        return logFile;
+    }
     
     private static OutputStream logStream() throws FileNotFoundException {
         synchronized (Installer.class) {
@@ -367,6 +410,29 @@ public class Installer extends ModuleInstall implements Runnable {
         
         return os;
     }
+
+    private static OutputStream logStreamMetrics () throws FileNotFoundException {
+        synchronized (Installer.class) {
+            if (logStreamMetrics != null) {
+                return logStreamMetrics;
+            }
+        }
+
+        OutputStream os;
+        File logFile = logFileMetrics(0);
+        if (logFile != null) {
+            logFile.getParentFile().mkdirs();
+            os = new BufferedOutputStream(new FileOutputStream(logFile, true));
+        } else {
+            os = new NullOutputStream();
+        }
+
+        synchronized (Installer.class) {
+            logStreamMetrics = os;
+        }
+
+        return os;
+    }
     
     private static void closeLogStream() {
         OutputStream os;
@@ -378,6 +444,23 @@ public class Installer extends ModuleInstall implements Runnable {
             return;
         }
         
+        try {
+            os.close();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private static void closeLogStreamMetrics() {
+        OutputStream os;
+        synchronized (Installer.class) {
+            os = logStreamMetrics;
+            logStreamMetrics = null;
+        }
+        if (os == null) {
+            return;
+        }
+
         try {
             os.close();
         } catch (IOException ex) {
@@ -1000,41 +1083,41 @@ public class Installer extends ModuleInstall implements Runnable {
             }
             
             if (submit) { // NOI18N
-                if (isSubmiting.getAndSet(true)){
+                if (isSubmiting.getAndSet(true)) {
                     LOG.info("ALREADY SUBMITTING"); // NOI18N
                     return;
                 }
-                final List<LogRecord> recs = getLogs();
-                saveUserName();
-                LogRecord userData = getUserData(true);
-                LogRecord thrownLog = getThrownLog();
-                if (thrownLog != null){
-                    recs.add(thrownLog);//exception selected by user
-                }
-                recs.add(TimeToFailure.logFailure());
-                recs.add(userData);
-                if ((report)&&!(reportPanel.asAGuest())){
-                    try{
-                        if (!checkUserName()){
+                try {
+                    final List<LogRecord> recs = getLogs();
+                    saveUserName();
+                    LogRecord userData = getUserData(true);
+                    LogRecord thrownLog = getThrownLog();
+                    if (thrownLog != null) {
+                        recs.add(thrownLog);//exception selected by user
+                    }
+                    recs.add(TimeToFailure.logFailure());
+                    recs.add(userData);
+                    if ((report) && !(reportPanel.asAGuest())) {
+                        if (!checkUserName()) {
                             reportPanel.showWrongPassword();
-                            isSubmiting.set(false);
                             return;
                         }
-                    }catch(InterruptedException exc){
-                        LOG.log(Level.INFO, "PASSWORD CHECKING FAILED", exc);// NOI18N
-                    }finally{
-                        isSubmiting.set(false);
                     }
+                    LOG.fine("posting upload");// NOI18N
+                    RP.post(new Runnable() {
+
+                        public void run() {
+                            uploadAndPost(recs, universalResourceLocator[0]);
+                        }
+                    });
+                    okToExit = false;
+                    // this should close the descriptor
+                    doCloseDialog();
+                } catch (InterruptedException exc) {
+                    LOG.log(Level.INFO, "submitting data failed", exc);// NOI18N
+                } finally {
+                    isSubmiting.set(false);
                 }
-                RP.post(new Runnable() {
-                    public void run() {
-                        uploadAndPost(recs, universalResourceLocator[0]);
-                    }
-                });
-                okToExit = false;
-                // this should close the descriptor
-                doCloseDialog();
-                isSubmiting.set(false);
                 return;
             }
             
@@ -1159,10 +1242,6 @@ public class Installer extends ModuleInstall implements Runnable {
             saveUserName();
             params.add(settings.getUserName());
             addMoreLogs(params, openPasswd);
-            List<String> buildInfo = BuildInfo.logBuildInfo();
-                if (buildInfo != null) {
-                    params.addAll(buildInfo);
-                }
             userData = new LogRecord(Level.CONFIG, USER_CONFIGURATION);
             userData.setResourceBundle(NbBundle.getBundle(Installer.class));
             userData.setResourceBundleName(Installer.class.getPackage().getName()+".Bundle");
@@ -1213,7 +1292,7 @@ public class Installer extends ModuleInstall implements Runnable {
         return message;
     }
     
-    private static final class SubmitInteractive extends Submit 
+    static final class SubmitInteractive extends Submit 
     implements HyperlinkListener {
         private boolean connectDialog;
         private Dialog d;
@@ -1360,6 +1439,10 @@ public class Installer extends ModuleInstall implements Runnable {
                     LOG.log(Level.WARNING, "PASSWORD ENCRYPTION ERROR", exc);// NOI18N
                 } catch (IOException exc) {
                     LOG.log(Level.WARNING, "PASSWORD ENCRYPTION ERROR", exc);// NOI18N
+                }
+                List<String> buildInfo = BuildInfo.logBuildInfo();
+                if (buildInfo != null) {
+                    params.addAll(buildInfo);
                 }
             }
         }

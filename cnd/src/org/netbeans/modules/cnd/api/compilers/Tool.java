@@ -92,7 +92,7 @@ public class Tool {
         this.kind = kind;
         this.name = name;
         this.displayName = displayName;
-        this.path = name.length() > 0 ? path + File.separator + name : path;
+        this.path = path;
         compilerSet = null;
         includeFilePrefix = null;
     }

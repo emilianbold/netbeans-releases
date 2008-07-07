@@ -47,9 +47,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import junit.framework.TestSuite;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.jellytools.actions.CopyAction;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -62,9 +59,6 @@ import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.project.ui.actions.TestSupport;
-import org.netbeans.spi.project.ProjectConfiguration;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
-import org.netbeans.spi.project.ProjectFactory;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -233,7 +227,7 @@ public class DocumentsDialogOperatorTest extends JellyTestCase {
         String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_SafeDel"); // NOI18N
         new NbDialogOperator(safeDeleteTitle).ok();
     }
-    
+    /*
     private static class P implements Project, ProjectConfigurationProvider {
         Lookup l = Lookups.singleton(this);
         FileObject fo;
@@ -288,5 +282,5 @@ public class DocumentsDialogOperatorTest extends JellyTestCase {
         }
         
     }
-
+    */
 }

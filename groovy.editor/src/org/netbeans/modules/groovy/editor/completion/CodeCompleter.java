@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -130,7 +131,7 @@ public class CodeCompleter implements CodeCompletionHandler {
     Set<GroovyKeyword> keywords;
 
     public CodeCompleter() {
-//        LOG.setLevel(Level.FINEST);
+        LOG.setLevel(Level.OFF);
 
         JavaPlatformManager platformMan = JavaPlatformManager.getDefault();
         JavaPlatform platform = platformMan.getDefaultPlatform();
@@ -440,14 +441,12 @@ public class CodeCompleter implements CodeCompletionHandler {
         }
         
         
-        AstPath path = getPathFromRequest(request);
-
-        if (path == null) {
+        if (request.path == null) {
             LOG.log(Level.FINEST, "path == null"); // NOI18N
             return null;
         }
 
-        LOG.log(Level.FINEST, "CaretPath : {0}", path);
+        LOG.log(Level.FINEST, "CaretPath : {0}", request.path);
         
         /* here we loop from the tail of the path (innermost element)
         up to the root to figure out where we are. Some of the trails are:
@@ -478,7 +477,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         
          */
         
-        for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
+        for (Iterator<ASTNode> it = request.path.iterator(); it.hasNext();) {
             ASTNode current = it.next();
             if (current instanceof ClosureExpression) {
                 return CaretLocation.INSIDE_CLOSURE;
@@ -517,23 +516,23 @@ public class CodeCompleter implements CodeCompletionHandler {
 
            LOG.log(Level.FINEST, "getSurroundingMethodOrClosure() ----------------------------------------");
            LOG.log(Level.FINEST, "Path : {0}", path);
-           
+
            for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
                ASTNode current = it.next();
                if (current instanceof MethodNode) {
                    MethodNode mn = (MethodNode) current;
                    LOG.log(Level.FINEST, "Found Method: {0}", mn.getName()); // NOI18N
                    return mn;
-               } /*else if (current instanceof FieldNode) {
-               FieldNode fn = (FieldNode) current;
-               if (fn.isClosureSharedVariable()) {
-               LOG.log(Level.FINEST, "Found Closure(Field): {0}", fn.getName()); // NOI18N
-               return fn;
-               }
+               } else if (current instanceof FieldNode) {
+                   FieldNode fn = (FieldNode) current;
+                   if (fn.isClosureSharedVariable()) {
+                       LOG.log(Level.FINEST, "Found Closure(Field): {0}", fn.getName()); // NOI18N
+                       return fn;
+                   }
                } else if (current instanceof ClosureExpression) {
-               LOG.log(Level.FINEST, "Found Closure(Expr.): {0}", ((ClosureExpression)current).getText()); // NOI18N
-               return current;
-               }*/
+                   LOG.log(Level.FINEST, "Found Closure(Expr.): {0}", ((ClosureExpression) current).getText()); // NOI18N
+                   return current;
+               }
            }
            return null;
        }
@@ -544,14 +543,12 @@ public class CodeCompleter implements CodeCompletionHandler {
      * @return the next surrouning ClassNode
      */
        private ClassNode getSurroundingClassdNode (CompletionRequest request) {
-           AstPath path = getPathFromRequest(request);
-
-           if (path == null) {
+           if (request.path == null) {
                LOG.log(Level.FINEST, "path == null"); // NOI18N
                return null;
            }
            
-           for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
+           for (Iterator<ASTNode> it = request.path.iterator(); it.hasNext();) {
             ASTNode current = it.next();
                 if(current instanceof ClassNode){
                     ClassNode classNode = (ClassNode)current;
@@ -571,7 +568,7 @@ public class CodeCompleter implements CodeCompletionHandler {
      * @param request
      * @return a freshly created AstPath object for the offset given in the request
      */
-    private AstPath getPathFromRequest(CompletionRequest request) {
+    private AstPath getPathFromRequest(final CompletionRequest request) {
         // figure out which class we are dealing with:
         ASTNode root = AstUtilities.getRoot(request.info);
 
@@ -1142,9 +1139,43 @@ public class CodeCompleter implements CodeCompletionHandler {
             }
         }
         return sb.toString();
-    }    
+    }
+
+    /**
+     * This method returns the Local Variables of a method or a closure.
+     * @param node
+     * @param result
+     * @param request
+     */
+
+
     
     private void getLocalVars(ASTNode node, List<ASTNode> result, CompletionRequest request) {
+        // if we are dealing with a closure, we retrieve the local vars differently
+
+        if (node instanceof ClosureExpression) {
+            ClosureExpression closure = (ClosureExpression)node;
+
+            if(closure.isParameterSpecified()){
+                LOG.log(Level.FINEST, "We do have Parameters...");
+                Parameter params[] = closure.getParameters();
+
+                for (int i = 0; i < params.length; i++) {
+                    Parameter parameter = params[i];
+                    LOG.log(Level.FINEST, "Parameter: {0}", parameter.getName());
+                    result.add(parameter);
+                }
+
+
+            } else {
+                LOG.log(Level.FINEST, "Closure without parameters, have to put it in list");
+                result.add(new VariableExpression("it"));
+            }
+
+
+            return;
+        }
+
         if (node instanceof Variable) {
             addIfNotInList(result, node);
         }
@@ -1343,9 +1374,10 @@ public class CodeCompleter implements CodeCompletionHandler {
                 singlePackage = singlePackage.substring(packageRequest.basePackage.length() + 1);
             }
 
-            if (singlePackage.length() > 0) {
+            if(singlePackage.startsWith(packageRequest.prefix) && singlePackage.length() > 0){
                 proposals.add(new PackageItem(singlePackage, anchor, request));
             }
+
         }
 
         return false;
@@ -1353,6 +1385,13 @@ public class CodeCompleter implements CodeCompletionHandler {
 
     /**
      * Complete the Groovy and Java types available at this position.
+     *
+     * This could be:
+     *
+     * 1.) Types defined in the Groovy File where the completion is invoked.
+     * 2.) Types located in the same package (source or binary).
+     * 3.) The Default imports for Groovy, which are a super-set of Java.
+     *
      * These are the Groovy default imports:
      *
      * java.io.*
@@ -1368,10 +1407,10 @@ public class CodeCompleter implements CodeCompletionHandler {
      * @param request
      * @return
      */
-   private boolean completeTypes(final List<CompletionProposal> proposals, final CompletionRequest request) {
+    private boolean completeTypes(final List<CompletionProposal> proposals, final CompletionRequest request) {
         LOG.log(Level.FINEST, "-> completeTypes"); // NOI18N
         final PackageCompletionRequest packageRequest = getPackageRequest(request);
-     
+
         LOG.log(Level.FINEST, "completeTypes fullstring = >{0}<", packageRequest.fullString);
 
         // todo: we don't handle single dots in the source. In that case we should
@@ -1387,54 +1426,158 @@ public class CodeCompleter implements CodeCompletionHandler {
         assert fileObject != null;
         ClasspathInfo pathInfo = ClasspathInfo.create(fileObject);
         assert pathInfo != null;
-       
+
         LOG.log(Level.FINEST, "Prefix = >{0}<", packageRequest.basePackage);
 
         JavaSource javaSource = JavaSource.create(pathInfo);
 
-        if (javaSource != null) {
-            LOG.log(Level.FINEST, "JavaSource retrieved!");
+        if (javaSource == null) {
+            LOG.log(Level.FINEST, "Problem retrieving JavaSource, exiting.");
+            return false;
+        }
 
-            Task<CompilationController> typeSearcher = new Task<CompilationController>() {
+        // create a list of default JDK packages.
 
-                public void run(CompilationController info) throws Exception {
-                    Elements elements = info.getElements();
+        List<String> defaultImports = new ArrayList<String>();
 
-                    if (elements != null) {
-                        LOG.log(Level.FINEST, "typeSearcher.run(), elements retrieved");
-                        PackageElement packageElement = elements.getPackageElement(packageRequest.basePackage);
+        defaultImports.add("java.io");
+        defaultImports.add("java.lang");
+        defaultImports.add("java.net");
+        defaultImports.add("java.util");
 
-                        if (packageElement != null) {
-                            List<? extends javax.lang.model.element.Element> typelist = packageElement.getEnclosedElements();
+        // adding types from default import, optionally filtered by
+        // prefix
 
-                            for (Element element : typelist) {
-                                LOG.log(Level.FINEST, "Found enclosed:  {0}", element);
-                                if(packageRequest.prefix.equals("")){
-                                    String typeName = element.toString().substring(packageRequest.fullString.length());
-                                    proposals.add(new TypeItem(typeName, anchor, request, element.getKind()));
-                                } else{
-                                    String typeName = NbUtilities.stripPackage(element.toString());
-                                    if (typeName.startsWith(packageRequest.prefix)){
-                                        proposals.add(new TypeItem(typeName, anchor, request, element.getKind()));
-                                    }
-                                }
-                            }
-                        }
-                    }
+        for (String singlePackage : defaultImports) {
+            List<? extends javax.lang.model.element.Element> typelist;
+
+            typelist = getElementListForPackage(javaSource, singlePackage);
+
+            if (typelist == null) {
+                LOG.log(Level.FINEST, "Typelist is null for package : {0}", singlePackage);
+                continue;
+            }
+
+            LOG.log(Level.FINEST, "Number of types found:  {0}", typelist.size());
+
+            for (Element element : typelist) {
+                String typeName = NbUtilities.stripPackage(element.toString());
+                if (typeName.startsWith(request.prefix)) {
+                    proposals.add(new TypeItem(typeName, anchor, request, element.getKind()));
                 }
-            };
-
-            try {
-                javaSource.runUserActionTask(typeSearcher, true);
-            } catch (IOException ex) {
-                LOG.log(Level.FINEST, "Problem in runUserActionTask :  {0}", ex.getMessage());
-                return false;
             }
         }
-       
+
+        // Adding two single classes per hand
+
+        List<String> mathPack = new ArrayList<String>();
+
+        mathPack.add("java.math.BigDecimal");
+        mathPack.add("java.math.BigInteger");
+
+        for (String type : mathPack) {
+            String typeName = NbUtilities.stripPackage(type);
+
+            if (typeName.startsWith(request.prefix)) {
+                proposals.add(new TypeItem(typeName, anchor, request, javax.lang.model.element.ElementKind.CLASS));
+            }
+            
+        }
+
+        // Retrieving Groovy types differently
+        // todo: have to find a way to get the Groovy types in there packages.
+
+//        List<String> groovyImports = new ArrayList<String>();
+//
+//        groovyImports.add("groovy.lang");
+//        groovyImports.add("groovy.util");
+//
+//        GroovySystem.getMetaClassRegistry();
+
         return true;
-   } 
-    
+    }
+
+   /**
+    *
+    * @param javaSource
+    * @param pkg
+    * @return
+    */
+
+   List<? extends javax.lang.model.element.Element> getElementListForPackage(JavaSource javaSource, final String pkg){
+       LOG.log(Level.FINEST, "getElementListForPackage(), Package :  {0}", pkg);
+       
+       List<? extends javax.lang.model.element.Element> typelist = null;
+
+       CountDownLatch cnt = new CountDownLatch(1);
+
+       TypeSearcherHelper typeSearcher = new TypeSearcherHelper(pkg, cnt);
+
+       try {
+           javaSource.runUserActionTask(typeSearcher, true);
+       } catch (IOException ex) {
+           LOG.log(Level.FINEST, "Problem in runUserActionTask :  {0}", ex.getMessage());
+           return null;
+       }
+
+        try {
+            cnt.await();
+        } catch (InterruptedException ex) {
+            LOG.log(Level.FINEST, "InterruptedException while waiting on latch :  {0}", ex.getMessage());
+            return null;
+        }
+
+       typelist = typeSearcher.getTypelist();
+
+       LOG.log(Level.FINEST, "Returning Typlist");
+       return typelist;
+
+   }
+
+   /**
+    *
+    */
+    private class TypeSearcherHelper implements Task<CompilationController> {
+
+        List<? extends javax.lang.model.element.Element> typelist;
+        String pkg;
+        CountDownLatch cnt;
+
+        public TypeSearcherHelper(String pkg, CountDownLatch cnt) {
+            this.typelist = typelist;
+            this.pkg = pkg;
+            this.cnt = cnt;
+        }
+
+        public List<? extends Element> getTypelist() {
+            return typelist;
+        }
+
+        
+        public void run(CompilationController info) throws Exception {
+            Elements elements = info.getElements();
+
+            if (elements != null) {
+                LOG.log(Level.FINEST, "TypeSearcherHelper.run(), elements retrieved");
+                PackageElement packageElement = elements.getPackageElement(pkg);
+
+                if (packageElement == null) {
+                    LOG.log(Level.FINEST, "packageElement is null");
+                } else {
+                    typelist = packageElement.getEnclosedElements();
+                }
+
+            }
+
+            cnt.countDown();
+
+        }
+    }
+
+
+
+
+
     boolean isPackageAlreadyProposed(Set<String> pkgSet, String prefix) {
         for (String singlePackage : pkgSet) {
             if (prefix.startsWith(singlePackage)) {
@@ -1475,17 +1618,15 @@ public class CodeCompleter implements CodeCompletionHandler {
 
     private ClassNode getDeclaringClass(CompletionRequest request) {
 
-        AstPath path = getPathFromRequest(request);
-
-        if (path == null) {
+        if (request.path == null) {
             LOG.log(Level.FINEST, "path == null"); // NOI18N
             return null;
         }
 
-        ASTNode closest = path.leaf();
+        ASTNode closest = request.path.leaf();
 
         LOG.log(Level.FINEST, "getClosestNode() ----------------------------------------");
-        LOG.log(Level.FINEST, "Path : {0}", path);
+        LOG.log(Level.FINEST, "Path : {0}", request.path);
         LOG.log(Level.FINEST, "node : ");
         printASTNodeInformation(closest);
 
@@ -1514,7 +1655,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         // Loop the path till we find something usefull.
         
-        for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
+        for (Iterator<ASTNode> it = request.path.iterator(); it.hasNext();) {
             ASTNode current = it.next();
             if (current instanceof VariableExpression) {
                 LOG.log(Level.FINEST, "* VariableExpression"); // NOI18N
@@ -1689,6 +1830,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             request.info = info;
             request.prefix = prefix;
             request.scriptMode = false;
+            request.path = getPathFromRequest(request);
             
             // Are we invoked right behind a dot? This is information is used later on in
             // a couple of completions.
@@ -2026,6 +2168,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         private boolean behindDot;
         private boolean scriptMode;
         private CompletionContext ctx;
+        private AstPath path;
     }
 
     private abstract class GroovyCompletionItem implements CompletionProposal {
@@ -2386,7 +2529,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         @Override
         public ElementKind getKind() {
-            return ElementKind.KEYWORD;
+            return ElementKind.CLASS;
         }
 
         @Override
@@ -2407,7 +2550,8 @@ public class CodeCompleter implements CodeCompletionHandler {
         @Override
         public ElementHandle getElement() {
             // For completion documentation
-            return ElementHandleSupport.createHandle(request.info, new KeywordElement(name));
+            // return ElementHandleSupport.createHandle(request.info, new ClassElement(name));
+            return null;
         }
     }
 

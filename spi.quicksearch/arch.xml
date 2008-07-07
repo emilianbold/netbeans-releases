@@ -68,7 +68,19 @@ Microsystems, Inc. All Rights Reserved.
         perform search in its data model and feed <api group="java" name="SearchResponse" category="official" type="export" url="@TOP@/org/netbeans/spi/quicksearch/SearchResponse.html" />
         response object by results apropriate for given request.
     </p>
- </answer>
+ <api type="export" group="property" name="quicksearch.web.site" category="devel">
+     Resource name from org.netbeans.modules.quicksearch.web.Bundle where it is 
+     possible to specify website to restrict the web search to. When set to e.g.
+     NetBeans.org then the web search provider will search for given text in web pages
+     from NetBeans.org site only.
+</api>
+ <api type="export" group="property" name="quicksearch.web.url_patterns" category="devel">
+     Resource name from org.netbeans.modules.quicksearch.web.Bundle where it is 
+     possible to specify a comma separated list of regular expressions that the search results URLs 
+     must contain. When set to e.g. ".*docs/myapp.*,.*tutorials/myapp.*" then all the search
+     results will have either "docs/myapp" or "tutorials/myapp" anywhere in the URL.
+</api>
+</answer>
 
 
 
@@ -269,6 +281,65 @@ Microsystems, Inc. All Rights Reserved.
              &lt;/folder&gt;
             </pre>
    </usecase>
+   
+   <usecase id="hideProvider" name="How To Hide Recent Searches Results and Others" >
+        "Recent Searches" provider is contained directly in <code>spi.quicksearch</code>
+        module, so its functionality is automatically always available by default.
+        However, if your module wants to disable "Recent Searches" or any other
+        category, follow the steps below:
+        
+        <h5>Define module dependency</h5>
+            Your module have to depend on module where provider you want to disable
+            is contained. In case of "Recent Searches" provider, it's <code>spi,quicksearch</code>,
+            on which you probably already depend.
+
+        <h5>Disable provider using "_hidden"</h5>
+            For example, to disable "Recent Searches" provider, write into your layer:
+            
+            <pre>
+              &lt;folder name="QuickSearch"&gt;
+                  &lt;folder name="Recent_hidden"&gt;
+                  &lt;/folder&gt;
+              &lt;/folder&gt;
+           </pre>
+           
+           "Recent" is a name of category for "Recent Searches" provider and by appending
+           "_hidden" suffix you are telling system to "hide" it. This technique
+           can be used also to disable invidual search providers.
+    </usecase>
+    
+   <usecase id="usageInPlatform" name="How To Use Quick Search in Platform Application" >
+        Quick Search UI is disabled by default in application built on top of
+        NetBeans platform. To enable Quick Search feature in your application,
+        complete following steps:
+        
+        <h5>1. Write XML layer registration</h5>
+            Add the following lines to XML layer of some of your modules in your
+            application suite:
+        
+        <pre>
+        &lt;folder name="Toolbars"&gt;
+            &lt;folder name="QuickSearch"&gt;
+            &lt;attr name="SystemFileSystem.localizingBundle" stringvalue="com.myapp.mymodule.MyBundle"/>
+                &lt;file name="org-netbeans-modules-quicksearch-QuickSearchAction.shadow"&gt;
+                    &lt;attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-quicksearch-QuickSearchAction.instance"/&gt;
+                &lt;/file&gt;
+            &lt;/folder&gt;
+        &lt;/folder&gt;
+        </pre>
+        
+        <h5>2. Localize Toolbar Name</h5>
+             Replace <code>com.myapp.mymodule.MyBundle</code> in the xml registration
+             above with path to your properties file, in which you'll define
+             localized name of Quick Search toolbar:
+             <pre>
+                Toolbars/QuickSearch=Quick Search
+             </pre>
+        
+        <p>By default, providers for searching in actions and recent searches
+        will be enabled. Web search provider is disabled by default, see use case
+        below for info how to turn it on.</p>
+   </usecase>
 
    <usecase id="searchWebProvider" name="How To Add a Default Web Search Provider" >
        There is a default implementation of web search provider which uses Google
@@ -298,33 +369,6 @@ Microsystems, Inc. All Rights Reserved.
             quicksearch.web.url_patterns=mywebsite.com/docs,mywebsite.com/files/tutorials
         </pre>
    </usecase>
-
-   <usecase id="hideProvider" name="How To Hide Recent Searches Results and Others" >
-        "Recent Searches" provider is contained directly in <code>spi.quicksearch</code>
-        module, so its functionality is automatically always available by default.
-        However, if your module wants to disable "Recent Searches" or any other
-        category, follow the steps below:
-        
-        <h5>Define module dependency</h5>
-            Your module have to depend on module where provider you want to disable
-            is contained. In case of "Recent Searches" provider, it's <code>spi,quicksearch</code>,
-            on which you probably already depend.
-
-        <h5>Disable provider using "_hidden"</h5>
-            For example, to disable "Recent Searches" provider, write into your layer:
-            
-            <pre>
-              &lt;folder name="QuickSearch"&gt;
-                  &lt;folder name="Recent_hidden"&gt;
-                  &lt;/folder&gt;
-              &lt;/folder&gt;
-           </pre>
-           
-           "Recent" is a name of category for "Recent Searches" provider and by appending
-           "_hidden" suffix you are telling system to "hide" it. This technique
-           can be used also to disable invidual search providers.
-</usecase>
-   
    
   </p>
  </answer>

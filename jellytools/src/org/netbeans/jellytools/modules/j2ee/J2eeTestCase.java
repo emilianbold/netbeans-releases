@@ -94,6 +94,7 @@ public class J2eeTestCase extends JellyTestCase {
         if (path == null) {
             return false;
         }
+        LOG.info("Validating path: " + path);
         File f = new File(path);
         if (!f.exists()) {
             return false;
@@ -231,7 +232,7 @@ public class J2eeTestCase extends JellyTestCase {
         }
         switch (server){
             case GLASSFISH:
-                return J2eeServerNode.invoke("GlassFish V2");
+                return J2eeServerNode.invoke("GlassFish");
             case JBOSS: 
                 return J2eeServerNode.invoke("JBoss");
             case TOMCAT:

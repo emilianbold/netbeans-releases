@@ -66,6 +66,12 @@ public final class WebClientToolsProjectUtils {
     private static final boolean CLIENT_DEBUG_DEFAULT = false;
     private static final boolean SERVER_DEBUG_DEFAULT = true;
     
+    public static enum Browser {
+        FIREFOX,
+        INTERNET_EXPLORER;
+    }
+
+    private static final Browser BROWSER_DEFAULT = Browser.FIREFOX;
     
     public static HtmlBrowser.Factory getFirefoxBrowser() {
         return findBrowser("org.netbeans.modules.extbrowser.FirefoxBrowser"); // NOI18N
@@ -82,6 +88,14 @@ public final class WebClientToolsProjectUtils {
     public static boolean getServerDebugProperty(Project project) {
         return getProjectProperty(project, SERVER_DEBUG_PROP, SERVER_DEBUG_DEFAULT);
     }
+
+    public static boolean isFirefox(Project project) {
+        return getProjectProperty(project, Browser.FIREFOX.name(), (BROWSER_DEFAULT == Browser.FIREFOX));
+    }
+
+    public static boolean isInternetExplorer(Project project) {
+        return getProjectProperty(project, Browser.INTERNET_EXPLORER.name(), (BROWSER_DEFAULT == Browser.INTERNET_EXPLORER));
+    }
     
     private static boolean getProjectProperty(Project project, String propKey, boolean def) {
         Preferences prefs = ProjectUtils.getPreferences(project, WebClientToolsProjectUtils.class, true);
@@ -90,7 +104,7 @@ public final class WebClientToolsProjectUtils {
         return prefs.getBoolean(propKey, def);
     }
 
-    public static void setProjectProperties(final Project project, final boolean serverDebug, final boolean clientDebug) {
+    public static void setProjectProperties(final Project project, final boolean serverDebug, final boolean clientDebug, final Browser browser) {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
 
@@ -100,6 +114,8 @@ public final class WebClientToolsProjectUtils {
 
                     boolean currentServerValue = prefs.getBoolean(SERVER_DEBUG_PROP, SERVER_DEBUG_DEFAULT);
                     boolean currentClientValue = prefs.getBoolean(CLIENT_DEBUG_PROP, CLIENT_DEBUG_DEFAULT);
+                    boolean isFirefox = (browser == Browser.FIREFOX);
+                    boolean isInternetExplorer = (browser == Browser.INTERNET_EXPLORER);
                     boolean changed = false;
                     
                     if (currentServerValue != serverDebug) {
@@ -108,6 +124,16 @@ public final class WebClientToolsProjectUtils {
                     }
                     if (currentClientValue != clientDebug) {
                         prefs.putBoolean(CLIENT_DEBUG_PROP, clientDebug);
+                        changed = true;
+                    }
+
+                    if (isFirefox != isFirefox(project)) {
+                        prefs.putBoolean(Browser.FIREFOX.name(), isFirefox);
+                        changed = true;
+                    }
+
+                    if (isInternetExplorer != isInternetExplorer(project)) {
+                        prefs.putBoolean(Browser.INTERNET_EXPLORER.name(), isInternetExplorer);
                         changed = true;
                     }
                     

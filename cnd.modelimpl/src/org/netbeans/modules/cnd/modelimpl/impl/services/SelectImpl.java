@@ -159,7 +159,7 @@ public class SelectImpl extends CsmSelect {
                             implKind.kinds[i] == CsmDeclaration.Kind.VARIABLE_DEFINITION) {
                             from = Utils.getCsmDeclarationKindkey(implKind.kinds[i]) +
                                    OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR +
-                                   "::" +
+                                   "::" + // NOI18N
                                    implName.strPrefix;
                         } else {
                             from = Utils.getCsmDeclarationKindkey(implKind.kinds[i]) +
@@ -170,12 +170,8 @@ public class SelectImpl extends CsmSelect {
                         from = Utils.getCsmDeclarationKindkey(implKind.kinds[i]) +
                                OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR +
                                namespace.getQualifiedName() +
-                               "::" +
+                               "::" + // NOI18N
                                implName.strPrefix;
-                    }
-                    if (implKind.kinds[i] == CsmDeclaration.Kind.FUNCTION || 
-                        implKind.kinds[i] == CsmDeclaration.Kind.FUNCTION_DEFINITION) {
-                        from +="(";
                     }
                     res.addAll(namespace.findUidsByPrefix(from));
                 }

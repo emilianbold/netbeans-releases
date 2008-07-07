@@ -60,9 +60,15 @@ public class RubyUtils {
     }
     
     public static boolean isRhtmlDocument(Document doc) {
-        String mimeType = (String)doc.getProperty("mimeType");
+        String mimeType = (String)doc.getProperty("mimeType"); // NOI18N
 
         return RubyInstallation.RHTML_MIME_TYPE.equals(mimeType);
+    }
+
+    public static boolean isYamlDocument(Document doc) {
+        String mimeType = (String)doc.getProperty("mimeType"); // NOI18N
+
+        return "text/x-yaml".equals(mimeType); // NOI18N
     }
     
     public static boolean isRubyOrRhtmlFile(FileObject f) {
