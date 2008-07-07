@@ -48,7 +48,6 @@ import java.util.prefs.Preferences;
 import org.netbeans.modules.subversion.options.AnnotationExpression;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.openide.util.NbPreferences;
-import org.netbeans.modules.versioning.util.TableSorter;
 import org.netbeans.modules.versioning.util.Utils;
 
 /**
@@ -62,8 +61,6 @@ public class SvnModuleConfig {
     public static final String PROP_COMMIT_EXCLUSIONS       = "commitExclusions";                           // NOI18N
     public static final String PROP_DEFAULT_VALUES          = "defaultValues";                              // NOI18N
     public static final String KEY_EXECUTABLE_BINARY        = "svnExecBinary";                              // NOI18N
-    public static final String KEY_CERT_FILE_PATH           = "certFilePath";                               // NOI18N
-    public static final String KEY_CLIENT_KEY_PASSWORD      = "clientKeyPassword";                          // NOI18N
     public static final String KEY_ANNOTATION_FORMAT        = "annotationFormat";                           // NOI18N
     public static final String SAVE_PASSWORD                = "savePassword";                               // NOI18N
     
