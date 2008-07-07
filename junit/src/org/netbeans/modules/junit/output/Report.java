@@ -46,8 +46,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.filesystems.FileObject;
+import static java.util.logging.Level.FINER;
 
 /**
  * Data structure (model) of results of JUnit task results.
@@ -57,6 +59,14 @@ import org.openide.filesystems.FileObject;
  * @author  Marian Petras
  */
 final class Report {
+
+    private final Logger LOG = Logger.getLogger(getClass().getName());
+
+    static enum InfoSource {
+        VERBOSE_MSG,
+        TEST_REPORT,
+        XML_FILE
+    }
 
     File antScript;
     File resultsDir;
@@ -69,17 +79,22 @@ final class Report {
     int totalTests;
     int failures;
     int errors;
+    int interruptedTests;
     int elapsedTimeMillis;
     /**
      * number of recognized (by the parser) passed test reports
      */
     int detectedPassedTests;
     private Collection<Testcase> tests;
-    private boolean closed = false;
+    private boolean hasTestsFromVerboseMsgs = false;
+    private boolean suiteFinished = false;
     
     /**
      */
     Report(String suiteClassName) {
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("<init>(" + suiteClassName + ')');                //NOI18N
+        }
         this.suiteClassName = suiteClassName;
         this.antScript = antScript;
         this.tests = new ArrayList<Testcase>(10);
@@ -91,12 +106,120 @@ final class Report {
         
         /* Called from the AntLogger thread */
         
-        //PENDING - should be synchronized
-        tests.add(test);
+        reportTest(test, InfoSource.TEST_REPORT);
+    }
+
+    void reportTest(Testcase test, final InfoSource source) {
         
-        if (test.trouble == null) {
-            detectedPassedTests++;
+        /* Called from the AntLogger thread */
+        
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("reportTest("                                     //NOI18N
+                      + (test.trouble == null ? "pass   "               //NOI18N
+                                              : test.trouble.isError() ? "error  "  //NOI18N
+                                                                       : "failure") //NOI18N
+                      + ", name: " + test.name                          //NOI18N
+                      + ", class: " + test.className                    //NOI18N
+                      + ')');
         }
+
+        boolean addToList = false;
+        boolean updateAllStats = false;
+        switch (source) {
+            case VERBOSE_MSG:
+                addToList = true;
+                updateAllStats = true;
+                hasTestsFromVerboseMsgs = true;
+                break;
+            case TEST_REPORT:
+                addToList = !hasTestsFromVerboseMsgs
+                            || (findTest(test.name, false) == null);
+                break;
+            case XML_FILE:
+                addToList = true;
+                break;
+            default:
+                assert false;
+        }
+
+        if (addToList) {
+            //PENDING - should be synchronized
+            tests.add(test);
+        }
+        if (test.trouble == null) {
+            if (updateAllStats) {
+                totalTests++;
+            }
+            if (test.timeMillis == Testcase.NOT_FINISHED_YET) {
+                interruptedTests++;
+            } else {
+                detectedPassedTests++;
+            }
+        } else if (updateAllStats) {
+            totalTests++;
+            if (test.trouble.isError()) {
+                errors++;
+            } else {
+                failures++;
+            }
+        }
+    }
+
+    /**
+     * Finds a test having the given name in this {@code Report}.
+     * If test of the given does not exist, a new {@code Testcase} is created
+     * and is named after the given {@code name} parameter.
+     *
+     * @param  name  requested name of the test
+     * @return  an existing test of the given name or a newly created
+     *          {@code Testcase} if test of the given name did not exist
+     */
+    Testcase findTest(String name) {
+        return findTest(name, true);
+    }
+
+    /**
+     * Finds a test having the given name in this {@code Report}.
+     * If parameter {@code create} is {@code true} and a test of the given
+     * name did not exist, a new {@code Testcase} is created and is named
+     * after the given {@code name} parameter.
+     *
+     * @param  name  requested name of the test
+     * @param  create  whether a test should be created if it does not exist yet
+     * @return  an existing test of the given name, or {@code null} if it does
+     *          not exist and parameter {@code create} is {@code false},
+     *          or a newly created {@code Testcase} if test of the given
+     *          name did not exist and parameter {@code create} was {@code true}
+     */
+    private Testcase findTest(String name, boolean create) {
+        if ((tests == null) || tests.isEmpty()) {
+            return create ? new Testcase(name) : null;
+        }
+
+        for (Testcase test : tests) {
+            if (name.equals(test.name)) {
+                return test;
+            }
+        }
+        return create ? new Testcase(name) : null;
+    }
+
+    /**
+     */
+    void markSuiteFinished() {
+        suiteFinished = true;
+    }
+
+    /**
+     */
+    boolean isSuiteFinished() {
+        return suiteFinished;
+    }
+
+    /**
+     */
+    boolean isSuiteInterrupted() {
+        return !suiteFinished;
     }
     
     /**
@@ -118,6 +241,7 @@ final class Report {
         this.elapsedTimeMillis = report.elapsedTimeMillis;
         this.detectedPassedTests = report.detectedPassedTests;
         this.tests = report.tests;
+        this.suiteFinished |= report.suiteFinished;
     }
     
     /**
@@ -154,10 +278,15 @@ final class Report {
     /**
      */
     static final class Testcase {
+        static final int TIME_UNKNOWN = -1;
+        static final int NOT_FINISHED_YET = -2;
         String className;
         String name;
         int timeMillis;
         Trouble trouble;
+
+        Testcase() {}
+        Testcase(String name) { this.name = name; }
     }
     
     /**
