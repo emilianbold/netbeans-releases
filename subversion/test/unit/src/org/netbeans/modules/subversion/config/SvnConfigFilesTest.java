@@ -183,7 +183,7 @@ public class SvnConfigFilesTest extends NbTestCase {
                 
         SvnConfigFiles scf = SvnConfigFiles.getInstance();
         try {
-            scf.setProxy(new SVNUrl("http://peterp.czech.sun.com/svn"));
+            scf.storeSvnServersSettings(new SVNUrl("http://peterp.czech.sun.com/svn"));
         } catch (MalformedURLException me) {
         }
 
