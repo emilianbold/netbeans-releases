@@ -140,11 +140,15 @@ public final class Workspace {
     static final String DEFAULT_JRE_CONTAINER =
             "org.eclipse.jdt.launching.JRE_CONTAINER";
     
+    static final String USER_JSF_LIBRARIES =
+            ".metadata/.plugins/org.eclipse.jst.jsf.core/JSFLibraryRegistryV2.xml";
+    
     private File corePrefFile;
     private File resourcesPrefFile;
     private File launchingPrefsFile;
     private File resourceProjectsDir;
     private File workspaceDir;
+    private File userJSFLibraries;
     
     private Set<Variable> variables = new HashSet<Variable>();
     private Set<Variable> resourcesVariables = new HashSet<Variable>();
@@ -177,6 +181,11 @@ public final class Workspace {
         resourcesPrefFile = new File(workspaceDir, RESOURCES_PREFERENCE);
         launchingPrefsFile = new File(workspaceDir, LAUNCHING_PREFERENCES);
         resourceProjectsDir = new File(workspaceDir, RESOURCE_PROJECTS_DIR);
+        userJSFLibraries = new File(workspaceDir, USER_JSF_LIBRARIES);
+    }
+
+    File getUserJSFLibraries() {
+        return userJSFLibraries;
     }
     
     public File getDirectory() {
@@ -234,6 +243,10 @@ public final class Workspace {
             userLibraries = new HashMap<String, List<String>>();
         }
         userLibraries.put(libName, jars);
+    }
+
+    Map<String, List<String>> getUserLibraries() {
+        return userLibraries;
     }
     
     List<URL> getJarsForUserLibrary(String libRawPath) {

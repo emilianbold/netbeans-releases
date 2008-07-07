@@ -89,9 +89,13 @@ public class ClassPathContainerResolver {
             return true;
         }
         
+        if (container.startsWith(JSF_CONTAINER)) {
+            entry.setContainerMapping("libs."+getNetBeansLibraryName(container)+".classpath");
+            return true;
+        }
+        
         if (container.startsWith(WEB_CONTAINER) || 
             container.startsWith(J2EE_MODULE_CONTAINER) ||
-            container.startsWith(JSF_CONTAINER) ||
             container.startsWith(J2EE_SERVER_CONTAINER)) {
             // TODO: resolve these containers as empty for now.
             //       most of these are not needed anyway as they are 
@@ -108,7 +112,13 @@ public class ClassPathContainerResolver {
     }
 
     private static String getNetBeansLibraryName(String container) {
-        return PropertyUtils.getUsablePropertyName(container.substring(USER_LIBRARY_CONTAINER.length()));
+        String prefix = container.startsWith(USER_LIBRARY_CONTAINER) ? USER_LIBRARY_CONTAINER : JSF_CONTAINER;
+        return PropertyUtils.getUsablePropertyName(container.substring(prefix.length()));
+    }
+
+    private static String getEclipseLibraryName(String container) {
+        String prefix = container.startsWith(USER_LIBRARY_CONTAINER) ? USER_LIBRARY_CONTAINER : JSF_CONTAINER;
+        return container.substring(prefix.length());
     }
 
     /**
@@ -123,7 +133,8 @@ public class ClassPathContainerResolver {
         String container = entry.getRawPath();
        
         // create eclipse user libraries in NetBeans:
-        if (container.startsWith(USER_LIBRARY_CONTAINER)) {
+        if (container.startsWith(USER_LIBRARY_CONTAINER) ||
+                container.startsWith(JSF_CONTAINER)) {
             String library = getNetBeansLibraryName(container);
             LibraryManager lm = LibraryManager.getDefault();
             if (lm.getLibrary(library) != null) {
@@ -134,7 +145,7 @@ public class ClassPathContainerResolver {
                 importProblems.add("User library '"+library+"' cannot be created because project is being imported without Eclipse workspace.");
                 return;
             }
-            content.put("classpath", workspace.getJarsForUserLibrary(container.substring(USER_LIBRARY_CONTAINER.length())));
+            content.put("classpath", workspace.getJarsForUserLibrary(getEclipseLibraryName(container)));
             lm.createLibrary("j2se", library, content);
             assert entry.getContainerMapping() != null : entry;
         }
