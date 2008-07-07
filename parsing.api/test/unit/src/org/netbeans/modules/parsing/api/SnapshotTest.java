@@ -43,7 +43,24 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
 
+import java.util.Collection;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.parsing.impl.TaskProcessor;
+import org.netbeans.modules.parsing.impl.Utilities;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.ParserFactory;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.TaskScheduler;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -140,6 +157,79 @@ public class SnapshotTest extends NbTestCase {
         assertEquals (-1, petaSnapshot.getEmbeddedOffset (20));
         assertEquals (15, petaSnapshot.getEmbeddedOffset (30));
         assertEquals (-1, petaSnapshot.getEmbeddedOffset (35));
+    }
+
+    public void testSnapshotCreationDeadlock () throws Exception {  //Originally JavaSourceTest.testRTB_005
+        MockMimeLookup.setInstances(MimePath.get("text/foo"), new ParserFactory(){
+            public Parser createParser (Collection<Snapshot> snapshots) {
+                return new Parser () {
+                    public void parse (Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
+
+                    }
+
+                    public Result getResult (Task task, SchedulerEvent event) throws ParseException {
+                        return new Result () {
+                            protected void invalidate (){}
+                        };
+                    }
+
+                    public void cancel () {
+
+                    }
+
+                    public void addChangeListener (ChangeListener changeListener) {
+
+                    }
+
+                    public void removeChangeListener (ChangeListener changeListener) {
+
+                    }
+                };
+            }
+        });
+        FileObject workDir = FileUtil.toFileObject (getWorkDir ());
+        FileObject testFile = FileUtil.createData (workDir, "bla.foo");
+        FileUtil.setMIMEType ("foo", "text/foo");
+        final Object lock = new Object ();
+        Logger.getLogger(Source.class.getName()).setLevel(Level.FINEST);
+        Logger.getLogger(Source.class.getName()).addHandler(new Handler() {
+            public void publish(LogRecord record) {
+                synchronized (lock) {
+                    lock.getClass();
+                }
+            }
+            public void flush() {}
+            public void close() throws SecurityException {}
+        });
+
+        final Source src = Source.create(testFile);
+        final ParserResultTask<Parser.Result> pr = new ParserResultTask<Parser.Result>() {
+            public void run (Parser.Result r, Snapshot s) {
+
+            }
+
+            public Class<? extends TaskScheduler> getSchedulerClass () {
+                return null;
+            }
+
+            public void cancel () {}
+
+            public int getPriority () {
+                return 1;
+            }
+
+        };
+        Utilities.addParserResultTask(pr, src);
+        synchronized (lock) {
+            Utilities.revalidate(src);
+            Thread.sleep(2000);
+             TaskProcessor.runUserTask(new GenericUserTask() {
+                    public void run () throws ParseException {
+
+                    }
+                });
+        }
+        Utilities.removeParserResultTask(pr, src);
     }
 }
 

@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -195,6 +196,7 @@ public final class Source {
      * @return              snapshot of current content of this source
      */
     public Snapshot createSnapshot () {
+        Logger.getLogger(Source.class.getName()).finest("createSource");    //NOI18N
         Document document = getDocument ();
         if (document != null) {
             try {
