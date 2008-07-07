@@ -91,6 +91,7 @@ abstract class EntrySupport {
     public abstract boolean isInitialized();
 
     abstract void notifySetEntries();
+
     abstract void setEntries(Collection<? extends Entry> entries);
     
     /** Access to copy of current entries.
@@ -261,7 +262,7 @@ abstract class EntrySupport {
         //
         // Entries
         //
-        
+
         private boolean mustNotifySetEnties = false;
 
         void notifySetEntries() {
@@ -281,7 +282,6 @@ abstract class EntrySupport {
                 LOG_GET_ARRAY.fine("       holder: " + holder); // NOI18N
 
             }
-            if (holder == null) {
 
             Node[] current = holder == null ? null : holder.nodes();
             if (mustNotifySetEnties) {
@@ -1222,11 +1222,6 @@ abstract class EntrySupport {
                 }
                 fireSubNodesChangeIdx(true, idxs);
             }
-        }
-
-        @Override
-        void notifySetEntries() {
-            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         /** Updates the order of entries.
