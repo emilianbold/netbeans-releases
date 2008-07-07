@@ -48,6 +48,8 @@ import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.versioning.util.Utils;
 import java.io.*;
 import java.util.logging.Level;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.openide.util.*;
@@ -56,6 +58,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -176,7 +179,22 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
             } else {               
                 try {                        
                     client = Subversion.getInstance().getClient(repoUrl); 
-                    InputStream in = client.getContent(url.appendPath("@" + revision), SvnUtils.toSvnRevision(revision));
+                    InputStream in = null;
+                    try {
+                        if(SvnClientFactory.getInstance().connectionType() == SvnClientFactory.ConnectionType.cli) {
+                            // XXX why was the revision given twice ??? !!! CLI WORKAROUND?
+                            // doesn't work with javahl but we won't change for cli as there might be some reason
+                            in = client.getContent(url.appendPath("@" + revision), SvnUtils.toSvnRevision(revision));
+                        } else {
+                            in = client.getContent(url, SvnUtils.toSvnRevision(revision));
+                        }
+                    } catch (SVNClientException e) {
+                        if(SvnClientExceptionHandler.isFileNotFoundInRevision(e.getMessage())) {
+                            in = new ByteArrayInputStream(new byte[] {});
+                        } else {
+                            throw e;
+                        }
+                    }
                     // keep original extension so MIME can be guessed by the extension
                     File rf = File.createTempFile("nb-svn", baseFile.getName());  // NOI18N
                     rf = FileUtil.normalizeFile(rf);

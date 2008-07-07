@@ -15,6 +15,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.options.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.8</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -93,6 +102,7 @@
                 <friend>org.netbeans.modules.j2ee.weblogic9</friend>
                 <friend>org.netbeans.modules.scala.console</friend>
                 <friend>org.netbeans.modules.php.project</friend>
+                <friend>net.java.dev.nbpython.core</friend>
                 <package>org.netbeans.modules.extexecution.api</package>
                 <package>org.netbeans.modules.extexecution.api.print</package>
                 <package>org.netbeans.modules.extexecution.api.input</package>

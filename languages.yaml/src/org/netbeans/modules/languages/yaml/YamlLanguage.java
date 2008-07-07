@@ -40,6 +40,8 @@
 package org.netbeans.modules.languages.yaml;
 
 import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.netbeans.modules.gsf.api.StructureScanner;
@@ -85,5 +87,15 @@ public class YamlLanguage extends DefaultLanguageConfig {
     @Override
     public SemanticAnalyzer getSemanticAnalyzer() {
         return new YamlSemanticAnalyzer();
+    }
+
+    @Override
+    public KeystrokeHandler getKeystrokeHandler() {
+        return new YamlKeystrokeHandler();
+    }
+
+    @Override
+    public CodeCompletionHandler getCompletionHandler() {
+        return new YamlCompletion();
     }
 }

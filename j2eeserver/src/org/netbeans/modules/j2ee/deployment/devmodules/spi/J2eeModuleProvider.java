@@ -670,6 +670,15 @@ public abstract class J2eeModuleProvider {
     public abstract String getServerInstanceID();
     
     /**
+     * 
+     * @return
+     * @since 1.48
+     */
+    public DeployOnSaveSupport getDeployOnSaveSupport() {
+        return null;
+    }
+    
+    /**
      * Return InstanceProperties of the server instance
      **/
     public InstanceProperties getInstanceProperties() {
@@ -859,6 +868,17 @@ public abstract class J2eeModuleProvider {
         return (ConfigSupportImpl) getConfigSupport();
     }
 
+    /**
+     * @since 1.48
+     */
+    public static interface DeployOnSaveSupport {
+        
+        public void addArtifactListener(ArtifactListener listner);
+        
+        public void removeArtifactListener(ArtifactListener listener);
+        
+    }
+    
     private static class WarningInstanceProperties extends InstanceProperties {
 
         private final InstanceProperties delegate;

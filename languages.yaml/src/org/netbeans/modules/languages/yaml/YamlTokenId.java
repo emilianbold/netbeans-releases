@@ -49,6 +49,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -61,7 +62,15 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  */
 public enum YamlTokenId implements TokenId {
     TEXT("identifier"),
-    COMMENT("comment");
+    COMMENT("comment"),
+    /** Contents inside <%# %> */
+    RUBYCOMMENT("comment"),
+    /** Contents inside <%= %> */
+    RUBY_EXPR("ruby"),
+    /** Contents inside <% %> */
+    RUBY("ruby"),
+    /** <% or %> */
+    DELIMITER("ruby-delimiter");
 
     private final String primaryCategory;
 
@@ -71,6 +80,10 @@ public enum YamlTokenId implements TokenId {
 
     public String primaryCategory() {
         return primaryCategory;
+    }
+
+    public static boolean isRuby(TokenId id) {
+        return id == RUBY || id == RUBY_EXPR || id == RUBYCOMMENT;
     }
 
     private static final Language<YamlTokenId> language =
@@ -95,9 +108,15 @@ public enum YamlTokenId implements TokenId {
                 }
 
                 @Override
-                protected LanguageEmbedding<?> embedding(Token<YamlTokenId> token,
-                    LanguagePath languagePath, InputAttributes inputAttributes) {
-                    return null; // No embedding
+                protected LanguageEmbedding<? extends TokenId> embedding(Token<YamlTokenId> token,
+                                          LanguagePath languagePath, InputAttributes inputAttributes) {
+                    switch(token.id()) {
+                        case RUBY_EXPR:
+                        case RUBY:
+                            return LanguageEmbedding.create(RubyTokenId.language(), 0, 0, false);
+                        default:
+                            return null;
+                    }
                 }
             }.language();
 
