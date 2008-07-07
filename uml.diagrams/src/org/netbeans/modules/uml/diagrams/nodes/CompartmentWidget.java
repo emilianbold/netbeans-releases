@@ -43,6 +43,7 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ResizeControlPointResolver;
@@ -57,6 +58,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
+import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeReader;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
@@ -66,7 +68,7 @@ import org.netbeans.modules.uml.drawingarea.widgets.ContainerWidget;
  *
  * @author Sheryl Su
  */
-public abstract class CompartmentWidget extends Widget
+public abstract class CompartmentWidget extends Widget implements PropertyChangeListener, DiagramNodeWriter, DiagramNodeReader
 {
 
     private UMLNameWidget nameWidget;
