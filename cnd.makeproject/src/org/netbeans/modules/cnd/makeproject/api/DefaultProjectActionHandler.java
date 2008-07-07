@@ -151,7 +151,7 @@ public class DefaultProjectActionHandler implements ActionListener {
         private StopAction sa = null;
         private RerunAction ra = null;
         private ProgressHandle progressHandle = null;
-        private Object lock = new Object();
+        private final Object lock = new Object();
         
         private String getTabName(ProjectActionEvent[] paes) {
             String projectName = ProjectUtils.getInformation(paes[0].getProject()).getName();

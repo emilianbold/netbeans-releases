@@ -68,8 +68,7 @@ public class ExecutionServiceTest extends NbTestCase {
         super.tearDown();
     }
 
-
-    public void testSimpleRun() throws InvocationTargetException, InterruptedException {
+    public void testSimpleRun() throws InterruptedException {
         TestProcess process = new TestProcess(0);
         TestCallable callable = new TestCallable();
         callable.setProcess(process);
@@ -78,28 +77,44 @@ public class ExecutionServiceTest extends NbTestCase {
         ExecutionService service = ExecutionService.newService(
                 callable, builder.create(), "Test");
 
-        TestExecution execution = new TestExecution(service);
-        SwingUtilities.invokeLater(execution);
-        Future<Integer> task = execution.getTask();
+        Future<Integer> task = service.run();
+        assertNotNull(task);
+
+        process.waitStarted();
+
+        process.destroy();
+        process.waitFor();
+        assertTrue(process.isFinished());
+        assertEquals(0, process.exitValue());
+    }
+
+    public void testReRun() throws InvocationTargetException, InterruptedException {
+        TestProcess process = new TestProcess(0);
+        TestCallable callable = new TestCallable();
+        callable.setProcess(process);
+
+        ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
+        ExecutionService service = ExecutionService.newService(
+                callable, builder.create(), "Test");
+
+        // first run
+        Future<Integer> task = service.run();
         assertNotNull(task);
         assertFalse(process.isFinished());
 
+        process.waitStarted();
         task.cancel(true);
         assertTrue(task.isCancelled());
 
-        // maybe it didn't get to execution
-        if (process.isStarted()) {
-            process.waitFor();
-            assertTrue(process.isFinished());
-            assertEquals(0, process.exitValue());
-        }
+        process.waitFor();
+        assertTrue(process.isFinished());
+        assertEquals(0, process.exitValue());
 
+        // second run
         process = new TestProcess(1);
         callable.setProcess(process);
 
-        execution = new TestExecution(service);
-        SwingUtilities.invokeLater(execution);
-        task = execution.getTask();
+        task = service.run();
         assertNotNull(task);
         assertFalse(process.isFinished());
 
@@ -107,6 +122,7 @@ public class ExecutionServiceTest extends NbTestCase {
         process.waitStarted();
         task.cancel(true);
         assertTrue(task.isCancelled());
+
         process.waitFor();
         assertTrue(process.isFinished());
         assertEquals(1, process.exitValue());
@@ -136,9 +152,7 @@ public class ExecutionServiceTest extends NbTestCase {
         ExecutionService service = ExecutionService.newService(
                 callable, builder.create(), "Test");
 
-        TestExecution execution = new TestExecution(service);
-        SwingUtilities.invokeLater(execution);
-        Future<Integer> task = execution.getTask();
+        Future<Integer> task = service.run();
         assertNotNull(task);
 
         process.waitStarted();
@@ -158,9 +172,7 @@ public class ExecutionServiceTest extends NbTestCase {
         ExecutionService service = ExecutionService.newService(
                 callable, builder.create(), "Test");
 
-        TestExecution execution = new TestExecution(service);
-        SwingUtilities.invokeLater(execution);
-        Future<Integer> task = execution.getTask();
+        Future<Integer> task = service.run();
         assertNotNull(task);
 
         assertNull(getInputOutput("Test", false, null));
@@ -173,9 +185,7 @@ public class ExecutionServiceTest extends NbTestCase {
         process = new TestProcess(0);
         callable.setProcess(process);
 
-        execution = new TestExecution(service);
-        SwingUtilities.invokeLater(execution);
-        task = execution.getTask();
+        task = service.run();
         assertNotNull(task);
 
         assertNull(getInputOutput("Test", false, null));
@@ -198,9 +208,7 @@ public class ExecutionServiceTest extends NbTestCase {
         ExecutionService service = ExecutionService.newService(
                 callable, builder.create(), "Test");
 
-        TestExecution execution1 = new TestExecution(service);
-        SwingUtilities.invokeLater(execution1);
-        Future<Integer> task1 = execution1.getTask();
+        Future<Integer> task1 = service.run();
         assertNotNull(task1);
 
         assertNull(getInputOutput("Test", false, null));
@@ -210,9 +218,7 @@ public class ExecutionServiceTest extends NbTestCase {
 
         callable.setProcess(process2);
 
-        TestExecution execution2 = new TestExecution(service);
-        SwingUtilities.invokeLater(execution2);
-        Future<Integer> task2 = execution2.getTask();
+        Future<Integer> task2 = service.run();
         assertNotNull(task2);
 
         assertNull(getInputOutput("Test", false, null));
@@ -230,26 +236,9 @@ public class ExecutionServiceTest extends NbTestCase {
         assertNotNull(getInputOutput("Test #2", false, null));
     }
 
-//    public void testInvocationThread() {
-//        try {
-//            TestProcess process = new TestProcess(0);
-//            TestCallable callable = new TestCallable();
-//            callable.setProcess(process);
-//
-//            ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
-//            ExecutionService service = ExecutionService.newService(callable, builder.create(), "Test");
-//
-//            Future<Integer> task = service.run();
-//
-//            fail("Allows invocation outside of EDT");
-//        } catch (IllegalStateException ex) {
-//            // expected
-//        }
-//    }
-
     private static InputOutputManager.InputOutputData getInputOutput(String name,
             boolean actions, String optionsPath) {
-        
+
         synchronized (InputOutputManager.class) {
             InputOutputManager.InputOutputData data = InputOutputManager.getInputOutput(name, actions, optionsPath);
             // put it back
@@ -257,29 +246,6 @@ public class ExecutionServiceTest extends NbTestCase {
                 InputOutputManager.addInputOutput(data);
             }
             return data;
-        }
-    }
-
-    private static class TestExecution implements Runnable {
-
-        private final ExecutionService service;
-
-        private Future<Integer> task;
-
-        public TestExecution(ExecutionService service) {
-            this.service = service;
-        }
-
-        public synchronized void run() {
-            task = service.run();
-            notifyAll();
-        }
-
-        public synchronized Future<Integer> getTask() throws InterruptedException {
-            while (task == null) {
-                wait();
-            }
-            return task;
         }
     }
 

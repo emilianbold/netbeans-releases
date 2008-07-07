@@ -19,6 +19,8 @@
 package org.netbeans.microedition.svg;
 
 import org.netbeans.microedition.svg.input.InputHandler;
+import org.netbeans.microedition.svg.input.TextInputHandler;
+import org.netbeans.microedition.svg.meta.MetaData;
 import org.w3c.dom.svg.SVGLocatableElement;
 import org.w3c.dom.svg.SVGRect;
 
@@ -56,6 +58,8 @@ public class SVGTextField extends SVGComponent {
     private static final String CARETELEM           = "caret";            // NOI18N
     protected static final String TRAIT_FONT_SIZE   = "font-size";        // NOI18N
     
+    private static final String EDITABLE           = "editable";         // NOI18N  
+    
     public SVGTextField( SVGForm form, SVGLocatableElement element ) {
         super(form, element );
         myTextElement  = (SVGLocatableElement) getElementByMeta(getElement(), 
@@ -73,24 +77,7 @@ public class SVGTextField extends SVGComponent {
             elemWidth = 0;
         }
 
-        myHiddenTextElement = (SVGLocatableElement) form.getDocument().
-                createElementNS( SVG_NS, TEXT);
-        myHiddenTextElement.setFloatTrait( TRAIT_X, 
-                myTextElement.getFloatTrait(TRAIT_X));
-        myHiddenTextElement.setFloatTrait( TRAIT_Y, 
-                myTextElement.getFloatTrait(TRAIT_Y));
-        myHiddenTextElement.setFloatTrait( TRAIT_FONT_SIZE, 
-                myTextElement.getFloatTrait(TRAIT_FONT_SIZE));
-        myHiddenTextElement.setTrait( TRAIT_FONT_FAMILY, 
-                myTextElement.getTrait( TRAIT_FONT_FAMILY));
-        myHiddenTextElement.setTrait( TRAIT_VISIBILITY, TR_VALUE_HIDDEN);
-        
-        getForm().invokeAndWaitSafely( new  Runnable () {
-            public void run() {
-                getElement().appendChild(myHiddenTextElement);
-            }
-        }
-        );
+        addHiddenElement(form);
         
         if (myCaretElement != null) {
             SVGRect bBox = myCaretElement.getBBox();
@@ -98,11 +85,13 @@ public class SVGTextField extends SVGComponent {
                 caretWidth = bBox.getWidth() / 2;
             }
         }
+        
         setCaretPosition(0);
         showCaret( false);
         setText( getTextTrait());
+        readMeta();
     }
-    
+
     public SVGTextField( SVGForm form, String elemId ) {
         this( form , (SVGLocatableElement) 
                 form.getDocument().getElementById(elemId));
@@ -183,7 +172,24 @@ public class SVGTextField extends SVGComponent {
     }    
     
     public InputHandler getInputHandler() {
+        if ( myTextInputHandler != null ){
+            return myTextInputHandler;
+        }
         return getForm().getNumPadInputHandler();
+    }
+    
+    public boolean isEditable(){
+        return !isReadOnly;
+    }
+    
+    public void setEditable( boolean editable ){
+        isReadOnly = !editable;
+        if ( isReadOnly ){
+            myTextInputHandler = new TextInputHandler( getForm().getDisplay() );
+        }
+        else {
+            myTextInputHandler = null;
+        }
     }
     
     private void showCaret(final boolean showCaret) {
@@ -192,6 +198,40 @@ public class SVGTextField extends SVGComponent {
                             showCaret ? TR_VALUE_VISIBLE : TR_VALUE_HIDDEN);
         }
     }   
+    
+    private void addHiddenElement( SVGForm form ) {
+        myHiddenTextElement = (SVGLocatableElement) form.getDocument().
+                createElementNS( SVG_NS, TEXT);
+        myHiddenTextElement.setFloatTrait( TRAIT_X, 
+                myTextElement.getFloatTrait(TRAIT_X));
+        myHiddenTextElement.setFloatTrait( TRAIT_Y, 
+                myTextElement.getFloatTrait(TRAIT_Y));
+        myHiddenTextElement.setFloatTrait( TRAIT_FONT_SIZE, 
+                myTextElement.getFloatTrait(TRAIT_FONT_SIZE));
+        myHiddenTextElement.setTrait( TRAIT_FONT_FAMILY, 
+                myTextElement.getTrait( TRAIT_FONT_FAMILY));
+        myHiddenTextElement.setTrait( TRAIT_VISIBILITY, TR_VALUE_HIDDEN);
+        
+        getForm().invokeAndWaitSafely( new  Runnable () {
+            public void run() {
+                getElement().appendChild(myHiddenTextElement);
+            }
+        }
+        );
+    }
+    
+
+    private void readMeta() {
+        MetaData meta = new MetaData();
+        meta.loadFromElement( getElement() );
+        String editable = (String)meta.get( EDITABLE );
+        
+        isReadOnly = !Boolean.TRUE.toString().equals( editable );
+        
+        if ( isReadOnly ){
+            myTextInputHandler = new TextInputHandler( getForm().getDisplay() );
+        }
+    }
 
     /*
      * TODO : this is very non-efficient way to compute text width.
@@ -243,8 +283,8 @@ public class SVGTextField extends SVGComponent {
     
     private final SVGLocatableElement myTextElement;
     private final SVGLocatableElement myCaretElement;
-    private final SVGLocatableElement myHiddenTextElement;
     private final int                 elemWidth;
+    private SVGLocatableElement myHiddenTextElement;
     
     private       String              myTextValue;
     private       int                 myStartOffset = 0;
@@ -252,5 +292,9 @@ public class SVGTextField extends SVGComponent {
     private       int                 myCaretPos = -1;
     private       float               caretWidth = 0;
     private       String              myTitle;
+    
+    private boolean isReadOnly;
+    
+    private InputHandler              myTextInputHandler;
 
 }

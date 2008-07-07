@@ -1,6 +1,5 @@
 Code completion result for source line:
-localLong.M|
+localLong.MAX|
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
 FIELD      MAX_VALUE                                  long
-FIELD      MIN_VALUE                                  long

@@ -5,12 +5,12 @@
  <editor_palette_item version="1.0">
      <body>
          <![CDATA[ <g id="label" transform="translate(130,200)">
-	<text display="none">type=label</text>
-	<text x="5" y="5" stroke="black" font-size="15"  font-family="SunSansSemiBold">
-           <metadata> <text>type=text</text> </metadata>
-		Label
-	</text>
-    </g>]]> 
+   <text display="none">type=label</text>
+   <text x="5" y="5" stroke="black" font-size="15"  font-family="SunSansSemiBold">
+       <text display="none">type=text</text>
+       Label
+   </text>
+</g>]]> 
      </body>
      <icon16 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/form/label_16.png"/>
      <icon32 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/form/label_32.png"/>

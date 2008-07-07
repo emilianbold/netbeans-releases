@@ -109,7 +109,7 @@ public class WidgetOperatorTest extends JellyTestCase {
         "testGetBounds",
         //comment out for now - until clear where the dump is generated.
         //"testPrintDump",
-        "testCreateOperator",
+        //"testCreateOperator",
         "testPerformPopupAction",
         "testPerformPopupActionNoBlock",
         "testClickMouse",

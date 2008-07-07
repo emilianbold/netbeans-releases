@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,12 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -36,32 +31,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.profiler.j2ee;
+package org.netbeans.modules.profiler.projectsupport;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.DataFilesProviderImplementation;
-import org.netbeans.spi.project.LookupProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.DataFilesProviderImplementation;
+import org.netbeans.spi.project.LookupProvider;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Jiri Sedlacek
+ * @author Jaroslav Bachorik
  */
-public class LookupProviderImpl implements LookupProvider {
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-
-    public DataFilesProviderImplementation getDataFilesProviderImplementation(final Project project) {
+public abstract class AbstractProjectLookupProvider implements LookupProvider {
+    private DataFilesProviderImplementation getDataFilesProviderImplementation(final Project project) {
         return new DataFilesProviderImplementation() {
                 public List<FileObject> getMetadataFiles() {
-                    List<FileObject> metadataFilesList = new LinkedList();
+                    List<FileObject> metadataFilesList = new LinkedList<FileObject>();
                     FileObject buildBackupFile = (project == null) ? null
                                                                    : project.getProjectDirectory()
                                                                             .getFileObject("build-before-profiler.xml"); // NOI18N
@@ -78,8 +75,14 @@ public class LookupProviderImpl implements LookupProvider {
                 }
             };
     }
-
+    
+    protected abstract List getAdditionalLookups(Project project);
+    
     public Lookup createAdditionalLookup(Lookup baseContext) {
-        return Lookups.fixed(new Object[] { getDataFilesProviderImplementation(baseContext.lookup(Project.class)) });
+        List lookUps = new ArrayList();
+        Project project = baseContext.lookup(Project.class);
+        lookUps.add(getDataFilesProviderImplementation(project));
+        lookUps.addAll(getAdditionalLookups(project));
+        return Lookups.fixed(lookUps.toArray());
     }
 }
