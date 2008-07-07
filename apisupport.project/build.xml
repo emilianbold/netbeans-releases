@@ -42,4 +42,13 @@ made subject to such option by the copyright holder.
 -->
 <project basedir="." default="netbeans" name="apisupport.project">
     <import file="../nbbuild/templates/projectized.xml"/>
+    <property file="nbproject/project.properties"/>
+    <target name="junit-create-html" description="Create HTML report of (existing) test results.">
+       <junitreport todir="${test.results.dir}">
+           <fileset dir="${test.results.dir}">
+               <include name="TEST-*.xml"/>
+           </fileset>
+           <report format="frames" todir="${test.results.dir}/html"/>
+       </junitreport>
+   </target>
 </project>
