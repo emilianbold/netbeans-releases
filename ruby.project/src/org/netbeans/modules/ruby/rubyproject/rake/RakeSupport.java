@@ -217,16 +217,25 @@ public final class RakeSupport {
      * Returns namespace-task tree for the given project.
      */
     public static Set<RakeTask> getRakeTaskTree(final Project project) {
+        return getRakeTaskTree(project, true);
+    }
+
+
+    public static Set<RakeTask> getRakeTaskTree(final Project project, final boolean withDescriptionOnly) {
         RakeTaskReader rtreader = new RakeTaskReader(project);
-        return rtreader.getRakeTaskTree();
+        return rtreader.getRakeTaskTree(withDescriptionOnly);
+    }
+
+    static Set<RakeTask> getRakeTasks(final Project project) {
+        return getRakeTasks(project, true);
     }
 
     /**
      * Returns flat, namespace-ignoring, list of Rake tasks for the given
      * project.
      */
-    static Set<RakeTask> getRakeTasks(final Project project) {
-        Set<RakeTask> taskTree = RakeSupport.getRakeTaskTree(project);
+    static Set<RakeTask> getRakeTasks(final Project project, final boolean withDescriptionOnly) {
+        Set<RakeTask> taskTree = RakeSupport.getRakeTaskTree(project, withDescriptionOnly);
         Set<RakeTask> tasks = new TreeSet<RakeTask>();
         addTasks(tasks, taskTree);
         return tasks;
@@ -250,7 +259,7 @@ public final class RakeSupport {
      * @return <tt>null</tt> if not found; {@link RakeTask} instance othewise
      */
     public static RakeTask getRakeTask(final Project project, final String task) {
-        Set<RakeTask> tasks = getRakeTasks(project);
+        Set<RakeTask> tasks = getRakeTasks(project, false);
         for (RakeTask rakeTask : tasks) {
             if (rakeTask.getTask().equals(task)) {
                 return rakeTask;
