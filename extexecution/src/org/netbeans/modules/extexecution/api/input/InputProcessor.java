@@ -70,6 +70,6 @@ public interface InputProcessor extends Closeable {
 
     /**
      * Closes the processor releasing the resources held by it.
-     */    
-    void close() throws IOException;    
+     */
+    void close() throws IOException;
 }

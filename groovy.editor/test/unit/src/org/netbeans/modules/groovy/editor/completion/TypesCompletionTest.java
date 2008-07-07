@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,55 +34,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.extexecution.api.input;
+package org.netbeans.modules.groovy.editor.completion;
+
+import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
- * This class is <i>NotThreadSafe</i>.
- * @author Petr Hejl
+ * @author schmidtm
  */
-public class TestInputProcessor implements InputProcessor {
+public class TypesCompletionTest extends GroovyTestBase {
 
-    private final boolean cleanBytesOnReset;
+    String TEST_BASE = "testfiles/completion/";
+    String TYPES_BASE = TEST_BASE + "types/";
 
-    private StringBuilder charsProcessed = new StringBuilder();
-
-    private int resetCount = 0;
-
-    private boolean closed;
-
-    public TestInputProcessor(boolean cleanBytesOnReset) {
-        this.cleanBytesOnReset = cleanBytesOnReset;
+    public TypesCompletionTest(String testName) {
+        super(testName);
+        Logger.getLogger(CodeCompleter.class.getName()).setLevel(Level.FINEST);
     }
 
-    public void processInput(char[] chars) {
-        charsProcessed.append(chars);
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        CodeCompleter.setTesting(true);
     }
 
-    public void reset() {
-        resetCount++;
-        if (cleanBytesOnReset) {
-            charsProcessed.setLength(0);
-        }
+    // uncomment this to have logging from GroovyLexer
+    protected Level logLevel() {
+        // enabling logging
+        return Level.INFO;
+        // we are only interested in a single logger, so we set its level in setUp(),
+        // as returning Level.FINEST here would log from all loggers
     }
 
-    public void close() {
-        closed = true;
+    // Type completion
+
+    public void testTypeCompletion1() throws Exception {
+        checkCompletion(TYPES_BASE + "" + "TypeCompletion1.groovy", "class Bar { ^}", false);
     }
 
-    public char[] getCharsProcessed() {
-        return charsProcessed.toString().toCharArray();
-    }
-
-    public int getResetCount() {
-        return resetCount;
-    }
-
-    public boolean isClosed() {
-        return closed;
-    }
+//    public void testTypeCompletion2() throws Exception {
+//        checkCompletion(TYPES_BASE + "" + "TypeCompletion2.groovy", "class Pre { Cl^ }", false);
+//    }
 
 }

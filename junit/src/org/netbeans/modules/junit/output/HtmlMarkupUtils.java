@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,58 +31,47 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.extexecution.api.input;
+package org.netbeans.modules.junit.output;
+
+import org.openide.util.NbBundle;
 
 /**
+ * Constants and utility methods for building HTML-marked labels.
  *
- * This class is <i>NotThreadSafe</i>.
- * @author Petr Hejl
+ * @author  Marian Petras
  */
-public class TestInputProcessor implements InputProcessor {
+final class HtmlMarkupUtils {
 
-    private final boolean cleanBytesOnReset;
+    private HtmlMarkupUtils() {}
 
-    private StringBuilder charsProcessed = new StringBuilder();
+    static final String COLOR_OK = "00CC00";        //green             //NOI18N
+    static final String COLOR_WARNING = "CE7B00";   //dark orange       //NOI18N
+    static final String COLOR_FAILURE = "FF0000";   //red               //NOI18N
 
-    private int resetCount = 0;
+    static final String FONT_COLOR_PREFIX = "<font color='#";           //NOI18N
+    static final String FONT_COLOR_SUFFIX = "'>";                       //NOI18N
+    static final String FONT_COLOR_END = "</font>";                     //NOI18N
 
-    private boolean closed;
-
-    public TestInputProcessor(boolean cleanBytesOnReset) {
-        this.cleanBytesOnReset = cleanBytesOnReset;
+    static void appendColourText(StringBuilder buf,
+                                 String colour,
+                                 String bundleKey) { 
+        buf.append(FONT_COLOR_PREFIX).append(colour).append(FONT_COLOR_SUFFIX);
+        buf.append(NbBundle.getMessage(HtmlMarkupUtils.class, bundleKey));
+        buf.append(FONT_COLOR_END);
     }
 
-    public void processInput(char[] chars) {
-        charsProcessed.append(chars);
+    static void appendColourText(StringBuilder buf,
+                                 String colour,
+                                 String bundleKey,
+                                 Object bundleParam) { 
+        buf.append(FONT_COLOR_PREFIX).append(colour).append(FONT_COLOR_SUFFIX);
+        buf.append(NbBundle.getMessage(HtmlMarkupUtils.class, bundleKey, bundleParam));
+        buf.append(FONT_COLOR_END);
     }
-
-    public void reset() {
-        resetCount++;
-        if (cleanBytesOnReset) {
-            charsProcessed.setLength(0);
-        }
-    }
-
-    public void close() {
-        closed = true;
-    }
-
-    public char[] getCharsProcessed() {
-        return charsProcessed.toString().toCharArray();
-    }
-
-    public int getResetCount() {
-        return resetCount;
-    }
-
-    public boolean isClosed() {
-        return closed;
-    }
-
 }

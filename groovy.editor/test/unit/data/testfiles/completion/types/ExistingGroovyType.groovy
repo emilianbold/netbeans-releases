@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,55 +34,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.extexecution.api.input;
+package org.netbeans.modules.groovy.editor.completion;
 
 /**
  *
- * This class is <i>NotThreadSafe</i>.
- * @author Petr Hejl
+ * @author schmidtm
  */
-public class TestInputProcessor implements InputProcessor {
-
-    private final boolean cleanBytesOnReset;
-
-    private StringBuilder charsProcessed = new StringBuilder();
-
-    private int resetCount = 0;
-
-    private boolean closed;
-
-    public TestInputProcessor(boolean cleanBytesOnReset) {
-        this.cleanBytesOnReset = cleanBytesOnReset;
-    }
-
-    public void processInput(char[] chars) {
-        charsProcessed.append(chars);
-    }
-
-    public void reset() {
-        resetCount++;
-        if (cleanBytesOnReset) {
-            charsProcessed.setLength(0);
-        }
-    }
-
-    public void close() {
-        closed = true;
-    }
-
-    public char[] getCharsProcessed() {
-        return charsProcessed.toString().toCharArray();
-    }
-
-    public int getResetCount() {
-        return resetCount;
-    }
-
-    public boolean isClosed() {
-        return closed;
-    }
-
+class ExistingGroovyType {
+	
 }
+
