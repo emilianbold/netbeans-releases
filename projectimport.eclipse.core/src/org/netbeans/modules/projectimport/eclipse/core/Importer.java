@@ -153,33 +153,42 @@ final class Importer {
         // add problems which appeared during project opening/parsing
         projectImportProblems.addAll(eclProject.getImportProblems());
 
-        /// import in two separate write locks to allow for events being
-        // distributed after global properties were updated in stage0
-        Boolean res = ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
-            public Boolean run() {
-                try {
-                    importProjectStage0(eclProject, projectImportProblems);
-                } catch (IOException ex) {
-                    logger.log(Level.SEVERE, "import of Eclipse proejct "+eclProject.getDirectory().getPath()+" failed", ex); // NOI18N
-                    projectImportProblems.add("Import failed due to "+ex.getMessage()+". More details can be found in IDE's log file.");
-                    return Boolean.FALSE;
+        try {
+            /// import in two separate write locks to allow for events being
+            // distributed after global properties were updated in stage0
+            Boolean res = ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
+                public Boolean run() {
+                    try {
+                        importProjectStage0(eclProject, projectImportProblems);
+                    } catch (Throwable ex) {
+                        logger.log(Level.SEVERE, "import of Eclipse project "+eclProject.getDirectory().getPath()+" failed", ex); // NOI18N
+                        projectImportProblems.add("Import failed due to '"+ex.getMessage()+"'. More details can be found in IDE's log file.");
+                        return Boolean.FALSE;
+                    }
+                    return Boolean.TRUE;
+                }});
+            if (!res.booleanValue()) {
+                return null;
+            }
+
+            return ProjectManager.mutex().writeAccess(new Mutex.Action<Project>() {
+                public Project run() {
+                    try {
+                        return importProjectStage1(eclProject, importProblems, projectImportProblems);
+                    } catch (Throwable ex) {
+                        logger.log(Level.SEVERE, "import of Eclipse project "+eclProject.getDirectory().getPath()+" failed", ex); // NOI18N
+                        projectImportProblems.add("Import failed due to '"+ex.getMessage()+"'. More details can be found in IDE's log file.");
+                        return null;
+                    }
+                }});
+        } finally {
+            if (projectImportProblems.size() > 0) {
+                importProblems.add("Project "+eclProject.getName()+" import problems:");
+                for (String s : projectImportProblems) {
+                    importProblems.add(" "+s);
                 }
-                return Boolean.TRUE;
-            }});
-        if (!res.booleanValue()) {
-            return null;
+            }
         }
-            
-        return ProjectManager.mutex().writeAccess(new Mutex.Action<Project>() {
-            public Project run() {
-                try {
-                    return importProjectStage1(eclProject, importProblems, projectImportProblems);
-                } catch (IOException ex) {
-                    logger.log(Level.SEVERE, "import of Eclipse proejct "+eclProject.getDirectory().getPath()+" failed", ex); // NOI18N
-                    projectImportProblems.add("Import failed due to "+ex.getMessage()+". More details can be found in IDE's log file.");
-                    return null;
-                }
-            }});
     }
     
     private void importProjectStage0(EclipseProject eclProject, List<String> projectImportProblems) throws IOException {
@@ -229,12 +238,6 @@ final class Importer {
                         eclProject.getWorkspace() != null ? eclProject.getWorkspace().getDirectory().getAbsolutePath() : null, 0, key);
                 EclipseProjectReference.write(p, ref);
                 ProjectManager.getDefault().saveProject(p);
-            }
-        }
-        if (projectImportProblems.size() > 0) {
-            importProblems.add("Project "+eclProject.getName()+" import problems:");
-            for (String s : projectImportProblems) {
-                importProblems.add(" "+s);
             }
         }
         return p;
