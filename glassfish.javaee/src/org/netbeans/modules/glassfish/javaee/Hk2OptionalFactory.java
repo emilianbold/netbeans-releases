@@ -110,17 +110,16 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
     
     @Override
     public JDBCDriverDeployer getJDBCDriverDeployer(DeploymentManager dm) {
-//        // if assertions are on... blame the caller
-//        assert dm instanceof Hk2DeploymentManager : "dm isn't an hk2dm";  // NOI18N
-//        // this code might actually be in production. log the bogus-ness and degrade gracefully
-//        JDBCDriverDeployer retVal = null;
-//        try {
-//            retVal = new JDBCDriverDeployerImpl((Hk2DeploymentManager) dm, this);
-//        } catch (ClassCastException cce) {
-//            Logger.getLogger("glassfish-javaee").log(Level.FINER, "caller passed invalid param", cce); // NOI18N
-//        }
-//        return retVal;
-        return null;
+        // if assertions are on... blame the caller
+        assert dm instanceof Hk2DeploymentManager : "dm isn't an hk2dm";  // NOI18N
+        // this code might actually be in production. log the bogus-ness and degrade gracefully
+        JDBCDriverDeployer retVal = null;
+        try {
+            retVal = new JDBCDriverDeployerImpl((Hk2DeploymentManager) dm, this);
+        } catch (ClassCastException cce) {
+            Logger.getLogger("glassfish-javaee").log(Level.FINER, "caller passed invalid param", cce); // NOI18N
+        }
+        return retVal;
     }
     
     @Override
