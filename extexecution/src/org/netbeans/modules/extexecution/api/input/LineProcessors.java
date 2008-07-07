@@ -164,6 +164,11 @@ public final class LineProcessors {
             }
         }
 
+        public void close() {
+            for (LineProcessor processor : processors) {
+                processor.close();
+            }
+        }
     }
 
     private static class PrintingLineProcessor implements LineProcessor {
@@ -173,6 +178,8 @@ public final class LineProcessors {
         private final LineConvertor convertor;
 
         private final boolean resetEnabled;
+
+        private boolean closed;
 
         public PrintingLineProcessor(OutputWriter out, LineConvertor convertor, boolean resetEnabled) {
             assert out != null;
@@ -184,6 +191,10 @@ public final class LineProcessors {
 
         public void processLine(String line) {
             assert line != null;
+
+            if (closed) {
+                throw new IllegalStateException("Already closed processor");
+            }
 
             LOGGER.log(Level.FINEST, line);
 
@@ -207,6 +218,10 @@ public final class LineProcessors {
         }
 
         public void reset() {
+            if (closed) {
+                throw new IllegalStateException("Already closed processor");
+            }
+
             if (!resetEnabled) {
                 return;
             }
@@ -218,6 +233,12 @@ public final class LineProcessors {
             }
         }
 
+        public void close() {
+            closed = true;
+
+            out.flush();
+            out.close();
+        }
     }
 
     private static class WaitingLineProcessor implements LineProcessor {
@@ -227,6 +248,8 @@ public final class LineProcessors {
         private final CountDownLatch latch;
 
         private boolean processed;
+
+        private boolean closed;
 
         public WaitingLineProcessor(Pattern pattern, CountDownLatch latch) {
             assert pattern != null;
@@ -239,6 +262,10 @@ public final class LineProcessors {
         public void processLine(String line) {
             assert line != null;
 
+            if (closed) {
+                throw new IllegalStateException("Already closed processor");
+            }
+
             synchronized (this) {
                 if (!processed && pattern.matcher(line).matches()) {
                     latch.countDown();
@@ -247,8 +274,14 @@ public final class LineProcessors {
             }
         }
 
-        public void reset() {
-            // noop
+        public synchronized void reset() {
+            if (closed) {
+                throw new IllegalStateException("Already closed processor");
+            }
+        }
+
+        public synchronized void close() {
+            closed = true;
         }
     }
 }

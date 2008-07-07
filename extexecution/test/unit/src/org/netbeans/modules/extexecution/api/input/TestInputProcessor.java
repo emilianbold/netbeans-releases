@@ -70,6 +70,10 @@ public class TestInputProcessor implements InputProcessor {
         }
     }
 
+    public void close() {
+        // noop
+    }
+    
     public char[] getCharsProcessed() {
         return charsProcessed.toString().toCharArray();
     }
