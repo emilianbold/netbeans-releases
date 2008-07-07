@@ -56,17 +56,18 @@ public class J2eeTestCase extends JellyTestCase {
     private static final String GLASSFISH_PATH = "com.sun.aas.installRoot";
     private static final String TOMCAT_PATH = "org.netbeans.modules.tomcat.autoregister.catalinaHome";
     private static final String JBOSS_PATH = "org.netbeans.modules.j2ee.jboss4.installRoot";
+    private static final String GLASSFISH_HOME = "glassfish.home";
+    private static final String TOMCAT_HOME = "tomcat.home";
+    private static final String JBOSS_HOME = "jboss.home";
     private static final Logger LOG = Logger.getLogger(J2eeTestCase.class.getName());
+    private static boolean serversLogged = false;
 
     public J2eeTestCase(String name) {
         super(name);
     }
 
     private static void registerGlassfish() {
-        String glassfishPath = System.getProperty("glassfish.home");
-        if (glassfishPath == null){
-            glassfishPath = System.getProperty("j2ee.appserver.path");
-        }
+        String glassfishPath = getServerHome(GLASSFISH);
         if (isValidPath(glassfishPath) && isValidPath(glassfishPath + "/domains/domain1")) {
             LOG.info("Setting server path " + glassfishPath);
             System.setProperty(GLASSFISH_PATH, glassfishPath);
@@ -74,7 +75,7 @@ public class J2eeTestCase extends JellyTestCase {
     }
 
     private static void registerTomcat() {
-        String tomcatPath = System.getProperty("tomcat.home");
+        String tomcatPath = getServerHome(TOMCAT);
         if (isValidPath(tomcatPath)) {
             LOG.info("Setting server path " + tomcatPath);
             System.setProperty(TOMCAT_PATH, tomcatPath);
@@ -83,11 +84,27 @@ public class J2eeTestCase extends JellyTestCase {
     }
 
     private static void registerJBoss() {
-        String jbossPath = System.getProperty("jboss.home");
+        String jbossPath = getServerHome(JBOSS);
         if (isValidPath(jbossPath)) {
             LOG.info("Setting server path " + jbossPath);
             System.setProperty(JBOSS_PATH, jbossPath);
         }
+    }
+
+    private static String getServerHome(Server server){
+        switch (server){
+            case JBOSS:
+                return System.getProperty(JBOSS_HOME);
+            case GLASSFISH:
+                String glassfishPath = System.getProperty(GLASSFISH_HOME);
+                if (glassfishPath == null){
+                    glassfishPath = System.getProperty("j2ee.appserver.path");
+                }
+                return glassfishPath;
+            case TOMCAT:
+                return System.getProperty(TOMCAT_HOME);
+        }
+        return null;
     }
 
     private static boolean isValidPath(String path) {
@@ -178,12 +195,26 @@ public class J2eeTestCase extends JellyTestCase {
                 }
             }
             LOG.info("no server to add tests");
+            if (!serversLogged){
+                serversLogged = true;
+                logServer(JBOSS_HOME, getServerHome(JBOSS));
+                logServer(TOMCAT_HOME, getServerHome(TOMCAT));
+                logServer(GLASSFISH_HOME, getServerHome(GLASSFISH));
+            }
             try{
                 return conf.addTest("testEmpty");
             }catch (IllegalStateException exc){
                 //empty configuration
                 return conf.addTest(J2eeTestCase.class, "testEmpty");
             }
+        }
+    }
+    
+    private static void logServer(String propName, String value){
+        if (value == null){
+            LOG.info(propName + " is not set");
+        }else{
+            LOG.info(propName + " is " + value);
         }
     }
     /**
