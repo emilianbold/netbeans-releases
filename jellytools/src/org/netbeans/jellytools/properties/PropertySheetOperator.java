@@ -44,7 +44,6 @@ import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Window;
 import javax.swing.JComponent;
-import org.netbeans.core.NbSheet;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.TopComponentOperator;
@@ -386,7 +385,10 @@ public class PropertySheetOperator extends TopComponentOperator {
         }
         
         public boolean checkComponent(Component comp) {
-            if(comp instanceof PropertySheet || comp instanceof NbSheet) {
+            if (comp == null) {
+                return false;
+            }
+            if(comp instanceof PropertySheet || comp.getClass().getSimpleName().equals("NbSheet")) {
                 if(sheetName == null) {
                     return true;
                 } else {

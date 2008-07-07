@@ -41,10 +41,7 @@
 
 package org.netbeans.jellytools.modules.j2ee.nodes;
 
-import com.sun.source.tree.Tree;
 import java.lang.reflect.Method;
-import java.util.logging.Logger;
-import javax.naming.spi.DirStateFactory.Result;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.actions.Action;
@@ -57,11 +54,8 @@ import org.netbeans.jellytools.modules.j2ee.actions.RestartAction;
 import org.netbeans.jellytools.modules.j2ee.actions.StartAction;
 import org.netbeans.jellytools.modules.j2ee.actions.StopAction;
 import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
-import org.netbeans.jemmy.operators.JTreeOperator;
-import org.openide.nodes.Node.Cookie;
 import org.openide.util.Exceptions;
 
 /** Node representing a J2EE Server node under Servers node. Default timeout

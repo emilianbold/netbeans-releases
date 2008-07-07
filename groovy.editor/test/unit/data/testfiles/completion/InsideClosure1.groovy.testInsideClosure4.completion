@@ -1,0 +1,50 @@
+Code completion result for source line:
+[3,4,5].each {x,y,z -> println |}
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+VARIABLE   x                                          Object
+VARIABLE   y                                          Object
+VARIABLE   z                                          Object
+KEYWORD    assert                                     null
+KEYWORD    boolean                                    null
+KEYWORD    break                                      null
+KEYWORD    byte                                       null
+KEYWORD    case                                       null
+KEYWORD    catch                                      null
+KEYWORD    char                                       null
+KEYWORD    continue                                   null
+KEYWORD    def                                        null
+KEYWORD    default                                    null
+KEYWORD    do                                         null
+KEYWORD    double                                     null
+KEYWORD    else                                       null
+KEYWORD    extends                                    null
+KEYWORD    final                                      null
+KEYWORD    finally                                    null
+KEYWORD    float                                      null
+KEYWORD    for                                        null
+KEYWORD    if                                         null
+KEYWORD    in                                         null
+KEYWORD    instanceof                                 null
+KEYWORD    int                                        null
+KEYWORD    long                                       null
+KEYWORD    native                                     null
+KEYWORD    new                                        null
+KEYWORD    private                                    null
+KEYWORD    property                                   null
+KEYWORD    protected                                  null
+KEYWORD    public                                     null
+KEYWORD    return                                     null
+KEYWORD    short                                      null
+KEYWORD    static                                     null
+KEYWORD    strictfp                                   null
+KEYWORD    super                                      null
+KEYWORD    switch                                     null
+KEYWORD    synchronized                               null
+KEYWORD    this                                       null
+KEYWORD    throw                                      null
+KEYWORD    transient                                  null
+KEYWORD    try                                        null
+KEYWORD    void                                       null
+KEYWORD    volatile                                   null
+KEYWORD    while                                      null

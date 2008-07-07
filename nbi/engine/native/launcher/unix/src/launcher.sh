@@ -1266,7 +1266,13 @@ verifyJavaHome() {
 
 checkFreeSpace() {
 	size="$1"
-	path=`dirname "$2"`	
+	path="$2"
+
+	if [ ! -d "$path" ] && [ ! $isSymlink "$path" ] ; then
+		# if checking path is not an existing directory - check its parent dir
+		path=`dirname "$path"`
+	fi
+
 	diskSpaceCheck=0
 
 	if [ 0 -eq $PERFORM_FREE_SPACE_CHECK ] ; then

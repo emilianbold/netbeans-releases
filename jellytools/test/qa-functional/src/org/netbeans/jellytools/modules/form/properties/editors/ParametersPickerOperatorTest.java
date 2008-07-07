@@ -41,6 +41,8 @@
 package org.netbeans.jellytools.modules.form.properties.editors;
 
 import java.io.IOException;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
@@ -87,7 +89,7 @@ public class ParametersPickerOperatorTest extends FormPropertiesEditorsTestCase 
         suite.addTest(new ParametersPickerOperatorTest("testClose"));
         return suite;
          */
-        return (NbTestSuite) createModuleTest(NbTestSuite.class,
+        return (NbTestSuite) createModuleTest(ParametersPickerOperatorTest.class,
         "testLblGetParameterFrom",
         "testRbComponent",
         "testCboComponent",

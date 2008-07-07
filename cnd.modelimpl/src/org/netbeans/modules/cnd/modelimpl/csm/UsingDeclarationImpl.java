@@ -62,16 +62,20 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
  * Implements CsmUsingDeclaration
  * @author Vladimir Kvasihn
  */
-public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDeclaration> implements CsmUsingDeclaration, RawNamable {
+public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDeclaration> 
+        implements CsmUsingDeclaration, RawNamable, Disposable {
 
     private final CharSequence name;
     private final int startOffset;
     private final CharSequence[] rawName;
     // TODO: don't store declaration here since the instance might change
     private CsmUID<CsmDeclaration> referencedDeclarationUID = null;
+    private boolean lastResolveFalure;
+    private final CsmUID<CsmScope> scopeUID;
     
-    public UsingDeclarationImpl(AST ast, CsmFile file) {
+    public UsingDeclarationImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file);
+        this.scopeUID = UIDCsmConverter.scopeToUID(scope);
         name = NameCache.getManager().getString(ast.getText());
         // TODO: here we override startOffset which is not good because startPosition is now wrong
         startOffset = ((CsmAST)ast.getFirstChild()).getOffset();
@@ -87,7 +91,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         // TODO: process non-class elements
 //        if (!Boolean.getBoolean("cnd.modelimpl.resolver"))
         CsmDeclaration referencedDeclaration = _getReferencedDeclaration();
-        if (referencedDeclaration == null) {
+        if (referencedDeclaration == null && ! lastResolveFalure) {
             _setReferencedDeclaration(null);
             if (rawName != null) {
                 ProjectBase prjBase = (ProjectBase)getProject();
@@ -105,7 +109,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
                 if (namespace != null) {
                     CharSequence lastName = rawName[rawName.length - 1];
                     CsmDeclaration bestChoice = null;
-                    CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(lastName.toString(), true, false, false);
+                    CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(lastName.toString(), true, true, false);
                     Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(namespace, filter);
                     while (it.hasNext()) {
                         CsmDeclaration elem = it.next();
@@ -122,6 +126,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
                 }
             }
             _setReferencedDeclaration(referencedDeclaration);
+            lastResolveFalure = referencedDeclaration == null;
         }
         return referencedDeclaration;
     }
@@ -159,8 +164,16 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
     }
     
     public CsmScope getScope() {
-        //TODO: implement!
-        return null;
+        return  UIDCsmConverter.UIDtoScope(this.scopeUID);
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        CsmScope scope = getScope();
+        if( scope instanceof MutableDeclarationsContainer ) {
+            ((MutableDeclarationsContainer) scope).removeDeclaration(this);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -176,8 +189,10 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         
         // save cached declaration
         UIDObjectFactory.getDefaultFactory().writeUID(this.referencedDeclarationUID, output);
+        UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
     }
     
+    @SuppressWarnings("unchecked")
     public UsingDeclarationImpl(DataInput input) throws IOException {
         super(input);
         this.name = NameCache.getManager().getString(input.readUTF());
@@ -187,5 +202,6 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         
         // read cached declaration
         this.referencedDeclarationUID = UIDObjectFactory.getDefaultFactory().readUID(input);        
+        this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }      
 }

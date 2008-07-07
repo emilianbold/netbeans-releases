@@ -363,6 +363,7 @@ tokens {
 	protected static final int tsCLASS     = 0x2000;
 	protected static final int tsWCHAR_T   = 0x4000;
 	protected static final int tsBOOL      = 0x8000;
+	protected static final int tsCOMPLEX   = 0x16000;
 
 	public static class TypeQualifier extends Enum { public TypeQualifier(String id) { super(id); } }
 
@@ -734,13 +735,13 @@ template_explicit_specialization
 // it's a caller's responsibility to check isCPlusPlus
 //
 protected
-external_declaration_template { K_and_R = false; boolean ctrName=false;}
+external_declaration_template { String s; K_and_R = false; boolean ctrName=false;}
 	:      
 		(LITERAL_template LESSTHAN GREATERTHAN) => template_explicit_specialization
 	|
 		(LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union)) =>
 		LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union) 
-		ID LESSTHAN template_argument_list GREATERTHAN SEMICOLON
+		s=scope_override ID LESSTHAN template_argument_list GREATERTHAN SEMICOLON
 		{#external_declaration_template = #(#[CSM_TEMPLATE_EXPLICIT_INSTANTIATION, "CSM_TEMPLATE_EXPLICIT_INSTANTIATION"], #external_declaration_template);}
 	|
 		(LITERAL_template (~LESSTHAN)) =>
@@ -759,18 +760,6 @@ external_declaration_template { K_and_R = false; boolean ctrName=false;}
 			declaration
 			{ #external_declaration_template = #(#[CSM_TEMPLATE_CLASS_DECLARATION, "CSM_TEMPLATE_CLASS_DECLARATION"], #external_declaration_template); }
 		|
-			// templated forward class decl, init/decl of static member in template
-			(declaration_specifiers
-				(init_declarator_list)? SEMICOLON! /*{end_of_stmt();}*/)=>
-			//{beginTemplateDeclaration();}
-			{ if (statementTrace>=1) 
-				printf("external_declaration_template_10[%d]: Class template declaration\n",
-					LT(1).getLine());
-			}
-			declaration_specifiers
-				(init_declarator_list)? SEMICOLON! //{end_of_stmt();}
-			{/*endTemplateDeclaration();*/ #external_declaration_template = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #external_declaration_template);}
-		|  
 		// Templated FUNCTIONS and CONSTRUCTORS matched here.
                        // Templated CONSTRUCTOR declaration
                         (	(template_head)?   // :)
@@ -840,6 +829,23 @@ external_declaration_template { K_and_R = false; boolean ctrName=false;}
 			}
 			dtor_head[true] dtor_body
 			{ #external_declaration_template = #(#[CSM_DTOR_TEMPLATE_DEFINITION, "CSM_DTOR_TEMPLATE_DEFINITION"], #external_declaration_template); }
+		|  
+			// templated forward class decl, init/decl of static member in template
+                        // Changed alternative order as a fix for IZ#138099:
+                        // unresolved identifier for functions' template parameter.
+                        // If this alternative is before function declaration
+                        // then code like "template<T> int foo(T);" incorrectly
+                        // becomes a CSM_TEMPL_FWD_CL_OR_STAT_MEM.
+			(declaration_specifiers
+				(init_declarator_list)? SEMICOLON! /*{end_of_stmt();}*/)=>
+			//{beginTemplateDeclaration();}
+			{ if (statementTrace>=1) 
+				printf("external_declaration_template_10[%d]: Class template declaration\n",
+					LT(1).getLine());
+			}
+			declaration_specifiers
+				(init_declarator_list)? SEMICOLON! //{end_of_stmt();}
+			{/*endTemplateDeclaration();*/ #external_declaration_template = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #external_declaration_template);}
 		)
     		{endTemplateDefinition();}
 	;
@@ -1239,7 +1245,7 @@ member_declaration
                 ctor_decl_spec
                 {ctrName = qualifiedItemIsOneOf(qiCtor);}
                 ctor_declarator[true]
-		ctor_body 
+                ctor_body
 		{ 
                     if (ctrName) {
                         #member_declaration = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #member_declaration); 
@@ -1581,6 +1587,7 @@ simple_type_specifier returns [/*TypeSpecifier*/int ts = tsInvalid]
 			|	LITERAL_float		{ts |= tsFLOAT;}
 			|	LITERAL_double	{ts |= tsDOUBLE;}
 			|	LITERAL_void		{ts |= tsVOID;}
+                        |       literal_complex         {ts |= tsCOMPLEX;}
 			)+
 			{ #simple_type_specifier = #([CSM_TYPE_BUILTIN, "CSM_TYPE_BUILTIN"], #simple_type_specifier); }
 		|
@@ -1628,7 +1635,13 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
 				LCURLY
 				// This stores class name in dictionary
 				{beginClassDefinition(ts, id);}
-				(member_declaration)*
+				(options{generateAmbigWarnings = false;greedy=false;}:
+                                    member_declaration
+                                    |
+                                    // IZ 138291 : Completion does not work for unfinished constructor
+                                    // On unfinished construction we skip some symbols for class parsing process recovery
+                                    .! { reportError(new NoViableAltException(LT(0), getFilename())); }
+                                )*
 				{endClassDefinition();}
 				(EOF!|RCURLY)
 				{enclosingClass = saveClass;}
@@ -1809,9 +1822,15 @@ declarator
                 // VV: 23/05/06 added support for __restrict after pointers
                 //i.e. void foo (char **__restrict a)
 		(ptr_operator)=> ptr_operator // AMPERSAND or STAR
-		restrict_declarator
-	|	
-		direct_declarator
+		// IZ 109079 : Parser reports "unexpexted token" on parenthesized pointer to array
+                (
+                    (LPAREN declarator RPAREN (SEMICOLON | RPAREN)) =>
+                     LPAREN declarator RPAREN
+                |
+                    restrict_declarator
+                )
+	|    
+		direct_declarator	
 	;
 
 restrict_declarator
@@ -2050,6 +2069,8 @@ ctor_declarator[boolean definition]
 	LPAREN! (parameter_list)? RPAREN!
 	//{declaratorEndParameterList(definition);}
 	(exception_specification)?
+        // IZ 136239 : C++ grammar does not allow attributes after constructor
+        (function_attribute_specification)?
 	;
 
 // This matches a generic qualified identifier ::T::B::foo
@@ -2406,14 +2427,12 @@ protected template_template_parameter
  *	as type setting is ineffective whilst guessing
  */
 assigned_type_name
-	{/*TypeSpecifier*/int ts;}
+	{/*TypeSpecifier*/int ts;
+         TypeQualifier tq;}
 	:
-	(LITERAL_typename)?
-	(options{generateAmbigWarnings = false;}:
-		qualified_type abstract_declarator	
-	|
-		ts = simple_type_specifier abstract_declarator
-	)
+            (tq=cv_qualifier)? (LITERAL_typename)?
+            ts = simple_type_specifier (postfix_cv_qualifier)?
+            abstract_declarator
 	;
 
 // This rule refers to an instance of a template class or function
@@ -2977,9 +2996,16 @@ cast_expression
 		 cast_expression_type_specifier cast_expression
                  {#cast_expression = #(#[CSM_CAST_EXPRESSION, "CSM_CAST_EXPRESSION"], #cast_expression);}
 	|
+                (cast_array_type_specifier) =>
+		{if (statementTrace>=1)
+			printf("cast_expression_2[%d]: Cast to array type expression\n", LT(1).getLine());
+		}
+		 cast_array_type_specifier cast_expression
+                 {#cast_expression = #(#[CSM_CAST_EXPRESSION, "CSM_CAST_EXPRESSION"], #cast_expression);}
+	|
                 (cast_fun_type_specifier) => 
 		{if (statementTrace>=1) 
-			printf("cast_expression_2[%d]: Cast to function type expression\n", LT(1).getLine());
+			printf("cast_expression_3[%d]: Cast to function type expression\n", LT(1).getLine());
 		}
 		 cast_fun_type_specifier cast_expression
                  {#cast_expression = #(#[CSM_FUN_TYPE_CAST_EXPRESSION, "CSM_FUN_TYPE_CAST_EXPRESSION"], #cast_expression);}
@@ -3002,7 +3028,21 @@ cast_expression_type_specifier
                 (tq = cv_qualifier)? 
                 (LITERAL_struct|LITERAL_union|LITERAL_class|LITERAL_enum)? 
                 ts = simple_type_specifier 
+                (postfix_cv_qualifier)? // to support (char const*)
                 (ptr_operator)*
+            RPAREN
+        ;
+
+protected
+cast_array_type_specifier
+        :
+            // cast like (int(*)[4][4]) 
+            LPAREN
+                declaration_specifiers
+                LPAREN
+                ptr_operator
+                RPAREN
+                (LSQUARE (constant_expression)? RSQUARE)+
             RPAREN
         ;
 
@@ -3097,6 +3137,9 @@ unary_expression
                         // TILDE was handled above
                         {LA(1)!=TILDE}? unary_operator cast_expression
                 |
+                        // IZ 138482 : No support for ({}) extensions
+                        (LPAREN LCURLY) => LPAREN statement RPAREN
+                |
                         //{!(LA(1)==TILDE && LA(2)==ID) || 
 			//	    qualifiedItemIsOneOf(qiVar | qiFun | qiDtor | qiCtor)}?
                         postfix_expression
@@ -3146,7 +3189,7 @@ postfix_expression
 	|
 		(LITERAL_dynamic_cast|LITERAL_static_cast|LITERAL_reinterpret_cast|LITERAL_const_cast)
 		    // Note const_cast in elsewhere
-		LESSTHAN declaration_specifiers (ptr_operator)* GREATERTHAN
+		LESSTHAN declaration_specifiers ptr_operators_in_cast_operator (LPAREN RPAREN)? GREATERTHAN
 		LPAREN expression RPAREN
 	) 
         // add possibility to have a().b().c()->d() etc.
@@ -3154,6 +3197,14 @@ postfix_expression
         // not at the end of postfix_expression
         (post_postfix_expression)*
 	;
+
+protected
+ptr_operators_in_cast_operator
+        : 
+                ((ptr_operator)* (GREATERTHAN|RPAREN)) => (ptr_operator)*               
+        |
+                ((STAR)* LPAREN) => (STAR)* LPAREN ptr_operators_in_cast_operator RPAREN                
+;
 
 protected
 fun_call_param_list : fun_call_param (COMMA fun_call_param)*;
@@ -3212,11 +3263,20 @@ built_in_type
         ;
 
 post_postfix_expression
+        {/*TypeSpecifier*/int ts;}
 		:
-                (options {warnWhenFollowAmbig = false;}:
-                    LSQUARE expression RSQUARE
+                        (options {warnWhenFollowAmbig = false;}:
+                        LSQUARE expression RSQUARE
+                    |   // IZ 138962 : Passer fails on template method calls
+                        (DOT (LITERAL_typename)? ts = simple_type_specifier LPAREN)=>
+                        DOT (LITERAL_typename)? ts = simple_type_specifier
+                        LPAREN 
+                        (
+                            fun_call_param_list
+                        )? 
+                        RPAREN
                     |	LPAREN (expression_list)? RPAREN 
-                    |	DOT id_expression
+                    |	DOT id_expression 
                     // IZ 137531 : IDE highlights db.template cursor<T> line as error
                     |	DOT LITERAL_template id_expression
                     |	POINTERTO id_expression
@@ -3506,3 +3566,6 @@ literal_typeof : LITERAL_typeof | LITERAL___typeof | LITERAL___typeof__ ;
 
 protected
 literal_restrict : LITERAL_restrict | LITERAL___restrict;
+
+protected
+literal_complex : LITERAL__Complex | LITERAL___complex__;

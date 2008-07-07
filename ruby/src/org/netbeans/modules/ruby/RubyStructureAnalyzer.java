@@ -688,7 +688,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             } else if (isTestFile) {
                 if (name.equals("test") || name.equals("describe") || // NOI18N
                         name.equals("specify") || name.equals("context") || // NOI18N
-                        name.equals("should")) { // NOI18N
+                        name.equals("should") || name.equals("it")) { // NOI18N
                     String desc = name;
                     FCallNode fc = (FCallNode)node;
                     if (fc.getIterNode() != null) {
@@ -709,7 +709,13 @@ public class RubyStructureAnalyzer implements StructureScanner {
                                     ByteList descBl = ((StrNode)n).getValue();
 
                                     if ((descBl != null) && (descBl.length() > 0)) {
-                                        desc = name+": "+ RubyUtils.truncate(descBl.toString(), MAX_RUBY_LABEL_LENGTH);
+                                        // No truncation? See 138259
+                                        //desc = RubyUtils.truncate(descBl.toString(), MAX_RUBY_LABEL_LENGTH);
+                                        desc = descBl.toString();
+                                        // Prepend the function type (unless it's test - see 138260
+                                        if (!name.equals("test")) { // NOI18N
+                                            desc = name+": " + desc; // NOI18N
+                                        }
                                     }
                                     break;
                                 }

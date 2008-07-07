@@ -40,13 +40,17 @@
  */
 package org.netbeans.microedition.svg;
 
+import org.w3c.dom.svg.SVGLocatableElement;
+
+
 
 /**
  * Suggested SVG snippet :
  * <pre>
  *  &lt;g id="label" transform="translate(130,200)">
- *   &lt;metadata> &lt;text>type=label&lt;/text> &lt;/metadata>
+ *   &lt;text display="none">type=label&lt;/text>
  *   &lt;text x="5" y="5" stroke="black" font-size="15"  font-family="SunSansSemiBold">
+ *       &lt;text display="none">type=text&lt;/text>
  *       Label
  *   &lt;/text>
  *   &lt;/g>
@@ -55,8 +59,48 @@ package org.netbeans.microedition.svg;
  *
  */
 public class SVGLabel extends SVGComponent {
-
+    
     public SVGLabel( SVGForm form, String elemId ) {
         super(form, elemId);
+        myText = (SVGLocatableElement) getElementByMeta( getElement(), 
+                TYPE , SVGTextField.TEXT );
     }
+    
+    public SVGLabel( SVGForm form, SVGLocatableElement element ) {
+        super(form, element);
+    }
+    
+    public void setLabelFor( SVGComponent component ){
+        setProperty( LABEL_FOR , component );
+    }
+    
+    public SVGComponent getLabelFor(){
+        return (SVGComponent)getProperty( LABEL_FOR );
+    }
+    
+    public void setText( String text ){
+        if ( myText == null  ){
+            throw new IllegalArgumentException("No nested text element found"); // NOI18N
+        }
+        setTraitSafely( myText , TRAIT_TEXT,  text );
+    }
+    
+    public String getText(){
+        if ( myText == null  ){
+            return null;
+        }
+        return myText.getTrait( TRAIT_TEXT );
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.microedition.svg.SVGComponent#focusGained()
+     */
+    public void focusGained() {
+        SVGComponent component = getLabelFor();
+        if ( component !=  null ){
+            component.requestFocus();
+        }
+    }
+    
+    private SVGLocatableElement myText;
 }

@@ -38,15 +38,18 @@
  */
 package org.netbeans.modules.vmd.midp.components.databinding;
 
+import java.util.Arrays;
 import org.netbeans.modules.vmd.midp.components.*;
-import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
+import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 
 /**
  *
@@ -54,15 +57,8 @@ import org.netbeans.modules.vmd.api.model.VersionDescriptor;
  */
 public class PIMDataSetCD extends ComponentDescriptor {
 
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/dataset_16.gif"; // NOI18N
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.databinding.pim.PIMDataSet"); //NOI18N
     
-    public static final String PROP_NAMES = "names"; 
-
-    static {
-        MidpTypes.registerIconResource(TYPEID, ICON_PATH);
-    }
-
     @Override
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(DataSetAbstractCD.TYPEID, TYPEID, true, true);
@@ -77,15 +73,15 @@ public class PIMDataSetCD extends ComponentDescriptor {
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return null;
     }
-
-    @Override
-    protected void gatherPresenters(ArrayList<Presenter> presenters) {
-        //DocumentSupport.removePresentersOfClass(presenters, CodeClassLevelPresenter.class);
-        super.gatherPresenters(presenters);
+    
+     private static Presenter createSetterPresenter() {
+        return new CodeSetterPresenter().addParameters(MidpParameter.create()).addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP));
     }
 
     @Override
     protected List<? extends Presenter> createPresenters() {
-        return null;
+        return Arrays.asList(
+            createSetterPresenter()
+        );
     }
 }

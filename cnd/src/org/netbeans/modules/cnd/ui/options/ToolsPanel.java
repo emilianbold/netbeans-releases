@@ -193,10 +193,10 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             cbCppRequired.setEnabled(false);
             cbFortranRequired.setEnabled(false);
         }
-            csm = (CompilerSetManager)CompilerSetManager.getDefault().deepCopy(); // FIXUP: need a real deep copy...
-            if (csm.getCompilerSets().size() == 1 && csm.getCompilerSets().get(0).getName() == CompilerSet.None) {
-                csm.remove(csm.getCompilerSets().get(0));
-            }
+        csm = (CompilerSetManager)CompilerSetManager.getDefault().deepCopy(); // FIXUP: need a real deep copy...
+        if (csm.getCompilerSets().size() == 1 && csm.getCompilerSets().get(0).getName() == CompilerSet.None) {
+            csm.remove(csm.getCompilerSets().get(0));
+        }
         gdbEnabled = !IpeUtils.isDbxguiEnabled();
         boolean fortran = CppSettings.getDefault().isFortranEnabled();
         lbFortranCommand.setVisible(fortran);
@@ -520,7 +520,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 model.setCompilerSetName(csm.getDefaultCompilerSet().getName());
                 model.setSelectedCompilerSetName(cs.getName());
             }
-            csm.saveToDisk();
             CompilerSetManager.setDefault(csm);
             currentCompilerSet = cs;
         }
@@ -1538,7 +1537,7 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     if (ret != NotifyDescriptor.OK_OPTION) {
         return;
     }
-    CompilerSetManager newCsm = new CompilerSetManager();
+    CompilerSetManager newCsm = CompilerSetManager.create();
     if (newCsm.getCompilerSets().size() == 1 && newCsm.getCompilerSets().get(0).getName() == CompilerSet.None) {
         newCsm.remove(newCsm.getCompilerSets().get(0));
     }

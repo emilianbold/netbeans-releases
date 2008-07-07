@@ -44,7 +44,6 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.php.dbgp.SessionId;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 

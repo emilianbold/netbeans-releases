@@ -42,17 +42,11 @@
 package org.netbeans.modules.cnd.makeproject.api.platforms;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.openide.util.Utilities;
 
-public abstract class Platform {
-    // Platform id's
-    public static final int PLATFORM_SOLARIS_SPARC = 0;
-    public static final int PLATFORM_SOLARIS_INTEL = 1;
-    public static final int PLATFORM_LINUX = 2;
-    public static final int PLATFORM_WINDOWS = 3;
-    public static final int PLATFORM_MACOSX = 4;
-    public static final int PLATFORM_GENERIC = 5;
+public abstract class Platform implements PlatformTypes {
     
     private static int defaultPlatform = -1;
     

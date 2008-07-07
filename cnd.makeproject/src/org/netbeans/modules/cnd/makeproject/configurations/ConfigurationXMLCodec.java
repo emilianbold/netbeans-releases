@@ -309,10 +309,10 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             }
             ((MakeConfiguration) currentConf).getCompilerSet().setNameAndFlavor(currentText, descriptorVersion);
         } else if (element.equals(DEVELOPMENT_SERVER_ELEMENT)) {
-	    if (descriptorVersion <= 46) {
+	    if (descriptorVersion < 46) {
 		currentText = "localhost"; // NOI18N
             }
-            ((MakeConfiguration) currentConf).getCompilerSet().setNameAndFlavor(currentText, descriptorVersion);
+            ((MakeConfiguration) currentConf).getDevelopmentHost().setValue(currentText);
         } else if (element.equals(C_REQUIRED_ELEMENT)) {
             if (descriptorVersion <= 41) {
                 return; // ignore

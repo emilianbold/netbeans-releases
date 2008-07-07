@@ -89,6 +89,11 @@ public class HibernateMovePlugin implements RefactoringPlugin {
                 // TODO: return a Problem
                 return null;
             }
+            
+            // See issue 138950
+            if(refactoring.getRefactoringSource().lookupAll(FileObject.class).isEmpty()) {
+                return null;
+            }
 
             String targetPackageName = HibernateRefactoringUtil.getPackageName(targetURL);
             if (targetPackageName == null) {
@@ -120,6 +125,10 @@ public class HibernateMovePlugin implements RefactoringPlugin {
 
             // Find the mapping files in this project
             HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
+            if(env == null) {
+                // The project does not support Hibernate framework
+                return null;
+            }
             List<FileObject> mappingFileObjs = env.getAllHibernateMappingFileObjects();
             if (mappingFileObjs == null || mappingFileObjs.size() == 0) {
                 // OK, no mapping files at all. 

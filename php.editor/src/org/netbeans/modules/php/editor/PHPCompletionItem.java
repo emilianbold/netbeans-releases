@@ -38,9 +38,7 @@
  */
 package org.netbeans.modules.php.editor;
 
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.swing.ImageIcon;
@@ -151,6 +149,10 @@ abstract class PHPCompletionItem implements CompletionProposal {
             return formatter.getText();
         } else if (element instanceof IndexedElement) {
             IndexedElement ie = (IndexedElement) element;
+            if (ie.getFile().isPlatform()){
+                return NbBundle.getMessage(PHPCompletionItem.class, "PHPPlatform");
+            }
+            
             String filename = ie.getFilenameUrl();
             if (filename != null) {
                 int index = filename.lastIndexOf('/');
@@ -357,9 +359,11 @@ abstract class PHPCompletionItem implements CompletionProposal {
     }
     
     static class FunctionItem extends PHPCompletionItem {
-
-        FunctionItem(IndexedFunction function, CompletionRequest request) {
+        private int defArgCount = 0;
+       
+        FunctionItem(IndexedFunction function, CompletionRequest request, int defArgCount) {
             super(function, request);
+            this.defArgCount = defArgCount;
         }
         
         public IndexedFunction getFunction(){
@@ -377,8 +381,9 @@ abstract class PHPCompletionItem implements CompletionProposal {
             template.append("("); //NOI18N
             
             List<String> params = getInsertParams();
+            int count = params.size() - defArgCount;
             
-            for (int i = 0; i < params.size(); i++) {
+            for (int i = 0; i < count; i++) {
                 String param = params.get(i);
                 template.append("${php-cc-"); //NOI18N
                 template.append(Integer.toString(i));
@@ -386,7 +391,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
                 template.append(param);
                 template.append("\"}"); //NOI18N
                 
-                if (i < params.size() - 1){
+                if (i < count - 1){
                     template.append(", "); //NOI18N
                 }
             }
@@ -415,7 +420,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
        
             formatter.appendHtml("("); // NOI18N
             formatter.parameters(true);
-            formatter.appendText(getParamsStr());
+            appendParamsStr(formatter);
             formatter.parameters(false);
             formatter.appendHtml(")"); // NOI18N
             
@@ -426,25 +431,34 @@ abstract class PHPCompletionItem implements CompletionProposal {
         public List<String> getInsertParams() {
             return getFunction().getParameters();
         }
+
+        @Override
+        public String getSortText() {
+            int order = getFunction().getDefaultParameterCount() - defArgCount;
+            return getName() + order;
+        }
         
-        private String getParamsStr(){
-            StringBuilder builder = new StringBuilder();
-            Collection<String> parameters = getFunction().getParameters();
+        private void appendParamsStr(HtmlFormatter formatter){
+            String parameters[] = getFunction().getParameters().toArray(new String[0]);
             
-            if ((parameters != null) && (parameters.size() > 0)) {
-                Iterator<String> it = parameters.iterator();
-
-                while (it.hasNext()) { // && tIt.hasNext()) {
-                    String param = it.next();
-                    builder.append(param);
-
-                    if (it.hasNext()) {
-                        builder.append(", "); // NOI18N
-                    }
+            int count = parameters.length - defArgCount;
+            int requiredParamCount = parameters.length - getFunction().getDefaultParameterCount();
+            
+            for (int i = 0; i < count; i++) {
+                String param = parameters[i];
+                
+                if (i < requiredParamCount) {
+                    formatter.emphasis(true);
+                    formatter.appendText(param);
+                    formatter.emphasis(false);
+                } else {
+                    formatter.appendText(param);
+                }
+                
+                if (i < count - 1){
+                    formatter.appendText(", "); // NOI18N
                 }
             }
-            
-            return builder.toString();
         }
     }
 

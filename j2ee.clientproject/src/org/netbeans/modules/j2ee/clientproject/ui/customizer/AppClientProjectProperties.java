@@ -48,10 +48,11 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -88,6 +89,7 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
+import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -271,7 +273,9 @@ public class AppClientProjectProperties {
     private final StoreGroup privateGroup; 
     private final StoreGroup projectGroup;
     
-    private final Properties additionalProperties;    
+    private Map<String,String> additionalProperties;
+    
+    private String includes, excludes;
 
     public static final String JAVA_SOURCE_BASED = "java.source.based";
     
@@ -292,7 +296,7 @@ public class AppClientProjectProperties {
         privateGroup = new StoreGroup();
         projectGroup = new StoreGroup();
         
-        additionalProperties = new Properties();
+        additionalProperties = new HashMap<String,String>();
         
         init(); // Load known properties        
     }
@@ -307,6 +311,14 @@ public class AppClientProjectProperties {
         // CustomizerSources
         SOURCE_ROOTS_MODEL = AppClientSourceRootsUi.createModel( project.getSourceRoots() );
         TEST_ROOTS_MODEL = AppClientSourceRootsUi.createModel( project.getTestSourceRoots() );        
+        includes = evaluator.getProperty(ProjectProperties.INCLUDES);
+        if (includes == null) {
+            includes = "**"; // NOI18N
+        }
+        excludes = evaluator.getProperty(ProjectProperties.EXCLUDES);
+        if (excludes == null) {
+            excludes = ""; // NOI18N
+        }
         META_INF_MODEL = projectGroup.createStringDocument( evaluator, META_INF );
                 
         // CustomizerLibraries
@@ -524,10 +536,10 @@ public class AppClientProjectProperties {
                     project, projectProperties, privateProperties, true);
         }
 
-        storeAdditionalProperties(projectProperties);
-        List<ClassPathSupport.Item> cpItems = ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel());
-        ProjectProperties.storeLibrariesLocations(project.getAntProjectHelper(), cpItems.iterator(), 
-                project.getAntProjectHelper().isSharableProject() ? projectProperties : privateProperties);
+        projectProperties.putAll(additionalProperties);
+
+        projectProperties.put(ProjectProperties.INCLUDES, includes);
+        projectProperties.put(ProjectProperties.EXCLUDES, excludes);
         
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
@@ -544,13 +556,6 @@ public class AppClientProjectProperties {
         
     }
   
-    private void storeAdditionalProperties(EditableProperties projectProperties) {
-        for (Iterator i = additionalProperties.keySet().iterator(); i.hasNext();) {
-            String key = i.next().toString();
-            projectProperties.put(key, additionalProperties.getProperty(key));
-        }
-    }
-    
     private static String getDocumentText( Document document ) {
         try {
             return document.getText( 0, document.getLength() );
@@ -633,7 +638,7 @@ public class AppClientProjectProperties {
     
     /* This is used by CustomizerWSServiceHost */
     public void putAdditionalProperty(String propertyName, String propertyValue) {
-        additionalProperties.setProperty(propertyName, propertyValue);
+        additionalProperties.put(propertyName, propertyValue);
     }
     
     private static boolean showModifiedMessage (String title) {
@@ -871,6 +876,23 @@ public class AppClientProjectProperties {
     public static String getProperty(final String property, final AntProjectHelper helper, final String path) {
         EditableProperties props = helper.getProperties(path);
         return props.getProperty(property);
+    }
+    
+    void loadIncludesExcludes(IncludeExcludeVisualizer v) {
+        Set<File> roots = new HashSet<File>();
+        for (DefaultTableModel model : new DefaultTableModel[] {SOURCE_ROOTS_MODEL, TEST_ROOTS_MODEL}) {
+            for (Object row : model.getDataVector()) {
+                roots.add((File) ((Vector) row).elementAt(0));
+            }
+        }
+        v.setRoots(roots.toArray(new File[roots.size()]));
+        v.setIncludePattern(includes);
+        v.setExcludePattern(excludes);
+    }
+
+    void storeIncludesExcludes(IncludeExcludeVisualizer v) {
+        includes = v.getIncludePattern();
+        excludes = v.getExcludePattern();
     }
     
     

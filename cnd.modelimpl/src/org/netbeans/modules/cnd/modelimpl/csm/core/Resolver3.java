@@ -45,8 +45,10 @@ import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassForwardDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
@@ -58,6 +60,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  * @author Vladimir Kvasihn
  */
 public class Resolver3 implements Resolver {
+    private static final boolean TRACE_RECURSION = false;
     private static final int INFINITE_RECURSION = 200;
     private static final int LIMITED_RECURSION = 5;
     
@@ -76,6 +79,7 @@ public class Resolver3 implements Resolver {
     private CharSequence[] names;
     private int currNamIdx;
     private int interestedKind;
+    private boolean resolveInBaseClass;
     
     private CharSequence currName() {
         return (names != null && currNamIdx < names.length) ? names[currNamIdx] : CharSequenceKey.empty();
@@ -101,7 +105,8 @@ public class Resolver3 implements Resolver {
     
     private void findContext() {
         contextFound = true;
-        findContext(file.getDeclarations());
+        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createOffsetFilter(0, offset);
+        findContext(CsmSelect.getDefault().getDeclarations(file, filter), filter);
     }
     
     private Set<CsmFile> visitedFiles = new HashSet<CsmFile>();
@@ -155,14 +160,14 @@ public class Resolver3 implements Resolver {
         return result;
     }
     
-    private void findContext(Iterable declarations) {
-        for (Iterator it = declarations.iterator(); it.hasNext();) {
+    private void findContext(Iterator it, CsmFilter filter) {
+        while(it.hasNext()) {
             CsmDeclaration decl = (CsmDeclaration) it.next();
             if( decl.getKind() == CsmDeclaration.Kind.NAMESPACE_DEFINITION ) {
                 CsmNamespaceDefinition nd = (CsmNamespaceDefinition) decl;
                 if( nd.getStartOffset() < this.offset && this.offset < nd.getEndOffset()  ) {
                     containingNamespace = nd.getNamespace();
-                    findContext(nd.getDeclarations());
+                    findContext(CsmSelect.getDefault().getDeclarations(nd, filter), filter);
                 }
             } else if(   decl.getKind() == CsmDeclaration.Kind.CLASS
                     || decl.getKind() == CsmDeclaration.Kind.STRUCT
@@ -203,24 +208,69 @@ public class Resolver3 implements Resolver {
         int count = 0;
         while(parent != null) {
             if (parent.origOffset == origOffset && parent.file.equals(file)) {
+                if (TRACE_RECURSION) traceRecursion();
                 return true;
             }
             parent = (Resolver3) parent.parentResolver;
             count++;
             if (count > maxRecursion) {
+                if (TRACE_RECURSION) traceRecursion();
                 return true;
             }
         }
         return false;
     }      
-    
+
+    private void traceRecursion(){
+        System.out.println("Detected recursion in resolver:"); // NOI18N
+        System.out.println("\t"+this); // NOI18Nv
+        Resolver3 parent = (Resolver3)parentResolver;
+        while(parent != null) {
+            System.out.println("\t"+parent); // NOI18N
+            parent = (Resolver3) parent.parentResolver;
+        }
+        new Exception().printStackTrace();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder();
+        buf.append(file.getAbsolutePath()+":"+origOffset); // NOI18N
+        buf.append(":Looking for "); // NOI18N
+        if (needClassifiers()) {
+            buf.append("C"); // NOI18N
+        }
+        if (needNamespaces()) {
+            buf.append("N"); // NOI18N
+        }    
+        buf.append(":"+currName()); // NOI18N
+        for(int i = 0; i < names.length; i++){
+            if (i == 0) {
+                buf.append("?"); // NOI18N
+            } else {
+                buf.append("::"); // NOI18N
+            }
+            buf.append(names[i]); // NOI18N
+        }
+
+        if (containingClass != null) {
+            buf.append(":Class="+containingClass.getName()); // NOI18N
+        }
+        if (containingNamespace != null) {
+            buf.append(":NS="+containingNamespace.getName()); // NOI18N
+        }
+        return buf.toString();
+    }
+
     protected void gatherMaps(CsmFile file) {
         if( file == null || visitedFiles.contains(file) ) {
             return;
         }
         visitedFiles.add(file);
         
-        for (Iterator<CsmInclude> iter = file.getIncludes().iterator(); iter.hasNext();) {
+        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createOffsetFilter(0, offset);
+        Iterator<CsmInclude> iter = CsmSelect.getDefault().getIncludes(file, filter);
+        while (iter.hasNext()){
             CsmInclude inc = iter.next();
             CsmFile incFile = inc.getIncludeFile();
             if( incFile != null ) {
@@ -230,11 +280,15 @@ public class Resolver3 implements Resolver {
                 offset = oldOffset;
             }
         }
-        gatherMaps(file.getDeclarations());
+        gatherMaps(CsmSelect.getDefault().getDeclarations(file, filter));
     }
     
     protected void gatherMaps(Iterable declarations) {
-        for( Iterator it = declarations.iterator(); it.hasNext(); ) {
+        gatherMaps(declarations.iterator());
+    }
+    
+    protected void gatherMaps(Iterator it) {
+        while(it.hasNext()) {
             Object o = it.next();
             assert o instanceof CsmOffsetable;
             try {
@@ -278,7 +332,11 @@ public class Resolver3 implements Resolver {
     }
     
     private void doProcessTypedefsInUpperNamespaces(CsmNamespaceDefinition nsd) {
-        for (Iterator iter = nsd.getDeclarations().iterator(); iter.hasNext();) {
+        CsmFilter filter =  CsmSelect.getDefault().getFilterBuilder().createKindFilter(
+                            new CsmDeclaration.Kind[]{
+                                  CsmDeclaration.Kind.NAMESPACE_DEFINITION,
+                                  CsmDeclaration.Kind.TYPEDEF});
+        for (Iterator iter = CsmSelect.getDefault().getDeclarations(nsd, filter); iter.hasNext();) {
             CsmDeclaration decl = (CsmDeclaration) iter.next();
             if( decl.getKind() == CsmDeclaration.Kind.NAMESPACE_DEFINITION ) {
                 processTypedefsInUpperNamespaces((CsmNamespaceDefinition) decl);
@@ -413,7 +471,9 @@ public class Resolver3 implements Resolver {
                 CsmClass cls = getContainingClass();
                 result = resolveInClass(cls, nameTokens[0]);
                 if( result == null ) {
-                    result = resolveInBaseClasses(cls, nameTokens[0]);
+                    if (parentResolver == null || !((Resolver3)parentResolver).resolveInBaseClass) {
+                        result = resolveInBaseClasses(cls, nameTokens[0]);
+                    }
                 }
             }
             if( result == null ) {
@@ -552,7 +612,10 @@ public class Resolver3 implements Resolver {
     }
     
     private CsmObject resolveInBaseClasses(CsmClass cls, CharSequence name) {
-        return _resolveInBaseClasses(cls, name, new HashSet<CsmClass>());
+        resolveInBaseClass = true;
+        CsmObject res = _resolveInBaseClasses(cls, name, new HashSet<CsmClass>());
+        resolveInBaseClass = false;
+        return res;
     }
     
     private CsmObject _resolveInBaseClasses(CsmClass cls, CharSequence name, Set<CsmClass> antiLoop) {
@@ -580,11 +643,67 @@ public class Resolver3 implements Resolver {
             if (isRecursionOnResolving(INFINITE_RECURSION)) {
                 return null;
             }
-            return ((InheritanceImpl)inh).getCsmClass(this);
+            CsmClassifier out = ((InheritanceImpl)inh).getClassifier(this);
+            out = getOriginalClassifier(out);
+            if (CsmKindUtilities.isClass(out)) {
+                return (CsmClass) out;
+            }
         }
-        return inh.getCsmClass();
+        return getCsmClass(inh);
     }
-    
+
+    private CsmClass getCsmClass(CsmInheritance inh) {
+        CsmClassifier classifier;
+        if (inh instanceof Resolver.SafeClassifierProvider) {
+            classifier = ((Resolver.SafeClassifierProvider)inh).getClassifier(this);
+        } else {
+            classifier = inh.getClassifier();
+        }
+        classifier = getOriginalClassifier(classifier);
+        if (CsmKindUtilities.isClass(classifier)) {
+            return (CsmClass)classifier;
+        }
+        return null;
+    }
+
+    private CsmClassifier getOriginalClassifier(CsmClassifier orig) {
+        if (CsmKindUtilities.isClassForwardDeclaration(orig)){
+            CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) orig;
+            CsmClass definition;
+            if (fd instanceof ClassForwardDeclarationImpl) {
+                definition = ((ClassForwardDeclarationImpl)fd).getCsmClass(this);
+            } else {
+                definition = fd.getCsmClass();
+            }
+            if (definition != null){
+                return definition;
+            }
+        }
+        CsmClassifier out = orig;
+        Set<CsmClassifier> set = new HashSet<CsmClassifier>(100);
+        set.add(orig);
+        while (CsmKindUtilities.isTypedef(out)) {
+            CsmType t = ((CsmTypedef)out).getType();
+            if (t instanceof Resolver.SafeClassifierProvider) {
+                orig = ((Resolver.SafeClassifierProvider)t).getClassifier(this);
+            } else {
+                orig = t.getClassifier();
+            }
+            if (orig == null) {
+                break;
+            }
+            if (set.contains(orig)) {
+                // try to recover from this error
+                CsmClassifier cls = CsmBaseUtilities.findOtherClassifier(out);
+                out = cls == null ? out : cls;
+                break;
+            }
+            set.add(orig);
+            out = orig;
+        }
+        return out;
+    }     
+
     private CsmObject resolveInClass(CsmClass cls, CharSequence name) {
         if( cls != null && cls.isValid()) {
             String fqn = cls.getQualifiedName() + "::" + name; // NOI18N

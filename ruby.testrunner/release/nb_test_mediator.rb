@@ -63,18 +63,22 @@ class NbTestMediator
         case opt
         # single file
         when "-f"
-          add_to_suites arg
+          add_to_suites [arg]
         # directory
         when "-d"
-          Rake::FileList["#{arg}/test/**/*.rb"].each { |file| add_to_suites(file) }
+          add_to_suites Rake::FileList["#{arg}/**/test*.rb", "#{arg}/**/*test.rb"]
         # single test method
         when "-m"
           if "-m" != ""
             @suites.each do |s| 
+              tests_to_delete = []
               s.tests.each do |t|
                 unless t.method_name == arg 
-                  s.delete(t)
+                  tests_to_delete << t
                 end
+              end
+              tests_to_delete.each do |t|
+                s.delete(t)
               end
             end
           end
@@ -83,38 +87,79 @@ class NbTestMediator
     end
   end
 
-  def add_to_suites file_name
-    file_name = file_name[0..file_name.length - 4]
-    require "#{file_name}"
-    last_slash = file_name.rindex("/")
-    test_class = file_name[last_slash + 1..file_name.length]
+  def require_file file
     begin
-      instance = Object.const_get(camelize(test_class))
-    rescue NameError
-      return
+      file_name = file[0..file.length - 4]
+      require "#{file_name}"
+    rescue => err
+      puts "%TEST_LOGGER% level=WARNING msg=Failed to load #{file}, error=#{err}"
+      raise err
     end
-    if (instance.respond_to?(:suite))
-      @suites << instance.suite
-    else
-      @suites << instance
+  end
+
+  def add_to_suites files
+    t1 = Time.now
+    # collect classes that extend TestCase/Suite before loading the files we are going to test
+    # TODO: possibly not needed
+    original_testcase_subclasses = Array.new(Test::Unit::TestCase::SUBCLASSES)
+    original_testsuite_subclasses = Array.new(Test::Unit::TestSuite::SUBCLASSES)
+
+    t2 = Time.now
+    files.each do |file|
+      require_file file
+    end
+    puts "%TEST_LOGGER% level=FINE msg=Loading #{files.size} files took #{Time.now - t2}"
+    
+    # we are interested only in test cases / suites we just loaded
+    testcase_subclasses = Test::Unit::TestCase::SUBCLASSES - original_testcase_subclasses
+    testsuite_subclasses = Test::Unit::TestSuite::SUBCLASSES - original_testsuite_subclasses
+    
+    # collect ancestors
+    testcase_ancestors = []
+    testcase_subclasses.each do |testcase|
+      testcase_ancestors += testcase.ancestors.reject do |ancestor|  
+        ancestor == testcase
+      end
     end
     
-  end
-  
-  def get_filename class_name
-    class_name.to_s.gsub(/::/, '/').
-      gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').
-      gsub(/([a-z\d])([A-Z])/,'\1_\2').
-      tr("-", "_").
-      downcase
-  end
-  
-  def camelize(lower_case_and_underscored_word, first_letter_in_uppercase = true)
-    if first_letter_in_uppercase
-      lower_case_and_underscored_word.to_s.gsub(/\/(.?)/) { "::" + $1.upcase }.gsub(/(^|_)(.)/) { $2.upcase }
-    else
-      lower_case_and_underscored_word.first + camelize(lower_case_and_underscored_word)[1..-1]
+    testsuite_ancestors = []
+    testsuite_subclasses.each do |testsuite|
+      testsuite_ancestors += testsuite.ancestors.reject do |ancestor|  
+        ancestor == testsuite
+      end
     end
+    
+    # reject test cases / suites that have subclasses (its test
+    # are run when the subclass is run)
+    testcase_subclasses.reject! do |testcase|
+      testcase_ancestors.include?(testcase)
+    end
+    testsuite_subclasses.reject! do |testsuite|
+      testsuite_ancestors.include?(testsuite)
+    end
+    
+    # collects suites 
+    testcase_subclasses.each do |testcase|
+      @suites << testcase.suite
+    end
+    testsuite_subclasses.each do |testsuite|
+      @suites << testsuite
+    end
+    
+    # reject suites that contain no tests or only the default test. prevents
+    # running of base test classes that are not used
+    @suites.reject! do |suite|
+      if suite.empty?
+        true
+      elsif suite.tests.length == 1
+        "default_test(#{suite})" == (suite.tests[0].name)
+      else         
+        false
+      end
+    end
+    
+   puts "%TEST_LOGGER% level=FINE msg=Collected #{@suites.size} suites in #{Time.now - t1}"
+
   end
 
   def run_mediator
@@ -123,6 +168,7 @@ class NbTestMediator
     @suites.each do |suite| 
       @mediator = Test::Unit::UI::TestRunnerMediator.new(suite)
       attach_listeners
+      start_suite_timer
       begin
         puts "%SUITE_STARTING% #{suite}"
         result = @mediator.run_suite
@@ -130,12 +176,21 @@ class NbTestMediator
         puts "%SUITE_FAILURES% #{result.failure_count}"
         puts "%SUITE_ERRORS% #{result.error_count}"
       rescue => err
-        puts err
+        puts "%SUITE_ERROR_OUTPUT% error=#{err}"
+      ensure
+        puts "%SUITE_FINISHED% time=#{elapsed_suite_time}"
       end
     end
     
   end
   
+  def start_suite_timer
+    @suite_start_time = Time.now
+  end
+  
+  def elapsed_suite_time
+    Time.now - @suite_start_time
+  end
   def attach_listeners
     @mediator.add_listener(Test::Unit::UI::TestRunnerMediator::STARTED, &method(:suite_started))
     @mediator.add_listener(Test::Unit::UI::TestRunnerMediator::FINISHED, &method(:suite_finished))
@@ -163,7 +218,8 @@ class NbTestMediator
   end
 
   def suite_finished(result)
-    puts "%SUITE_FINISHED% #{result}"
+    # handled in the main loop that runs suites
+    # puts "%SUITE_FINISHED% time=#{result}"
   end
   
   def test_started(result)
@@ -184,4 +240,26 @@ class NbTestMediator
   end
 end
 
+module Test
+  module Unit
+    class TestCase
+      SUBCLASSES = []
+      def self.inherited(subclass)
+        SUBCLASSES << subclass
+      end
+    end
+  end
+end
+
+module Test
+  module Unit
+    class TestSuite
+      SUBCLASSES = []
+      def self.inherited(subclass)
+        SUBCLASSES << subclass
+      end
+    end
+  end
+end
+  
 NbTestMediator.new.run_mediator

@@ -73,31 +73,66 @@ public class JoinRandomTest extends NbTestCase {
     }
 
     @Override
-    public PrintStream getLog() {
-        return System.out;
-//        return super.getLog();
-    }
-
-    @Override
     protected Level logLevel() {
         return Level.INFO;
 //        return super.logLevel();;
     }
 
     public void testRandom() throws Exception {
-        test(1212495582649L);
+        test(1214497020179L);
+//        test(1212495582649L);
+//        test(0L);
     }
     
     private void test(long seed) throws Exception {
         TestRandomModify randomModify = new TestRandomModify(seed);
         randomModify.setLanguage(TestJoinSectionsTopTokenId.language());
 
-//        randomModify.setDebugOperation(true);
-//        randomModify.setDebugDocumentText(true);
-//        randomModify.setDebugHierarchy(true);
+        randomModify.setDebugOperation(true);
+        randomModify.setDebugDocumentText(true);
+        randomModify.setDebugHierarchy(true);
 
         // Certain explicit cases that caused errors to be found follow:
         
+        Logger.getLogger(org.netbeans.lib.lexer.inc.TokenListUpdater.class.getName()).setLevel(Level.FINE); // Extra logging
+        randomModify.insertText(0, "a<xy>");
+        //             0000000000111111111122222222223333333333
+        //             0123456789012345678901234567890123456789
+        //     text = "uot<((WkdUL)(CO>"
+        randomModify.removeText(4, 1);
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, "uot<((WkdUL)(CO>");
+        //             0000000000111111111122222222223333333333
+        //             0123456789012345678901234567890123456789
+        //     text = "uot<((WkdUL)(CO>"
+        randomModify.removeText(10, 6);
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, "y<>");
+        randomModify.insertText(0, "x<a>");
+        //             0123456789
+        //     text = "x<a>y<>"
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, "<>Z{N}A<{>P<v}}>");
+        //             0000000000111111111122222222223333333333
+        //             0123456789012345678901234567890123456789
+        //     text = "<>Z{{{}zN}A<{>P<v}}>"
+        randomModify.removeText(2, 1);
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, ")({x}G<q{}W>(Z");
+        //             0000000000111111111122222222223333333333
+        //             0123456789012345678901234567890123456789
+        //     text = ")({x}G<q{}W>(Z"
+        randomModify.insertText(0, "ABC");
+        randomModify.clearDocument();
+
         randomModify.insertText(0, "{x}<a>y");
         //             0000000000111111111122222222223333333333
         //             0123456789012345678901234567890123456789
@@ -118,7 +153,6 @@ public class JoinRandomTest extends NbTestCase {
             "t{}>i<a><>OloX}}>Um<{x}a>bx{}}>K<}><>><}<{<a>R>>>{g>z{xhYs{}}ikbFV{ND<w{}}>a" +
             "i><{{x}Esx>}}Q>}{}>Fv>>{x}<<>}r}n<e<a><wmF>Y<>>BUQ}}jbG>lacFn<l}>}"
         );
-//        Logger.getLogger(org.netbeans.lib.lexer.inc.TokenListUpdater.class.getName()).setLevel(Level.FINE); // Extra logging
         randomModify.insertText(612, ">");
         randomModify.clearDocument();
 
@@ -222,7 +256,6 @@ public class JoinRandomTest extends NbTestCase {
         randomModify.clearDocument();
 
 
-        // Attempt insert after cleared document
         randomModify.insertText(0, "<b>c");
         //             000000000011111111112222222222
         //             012345678901234567890123456789
@@ -231,24 +264,128 @@ public class JoinRandomTest extends NbTestCase {
         //             000000000011111111112222222222
         //             012345678901234567890123456789
         //     text = "b>c";
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, ")}M)s{i)<}><p)}>");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = ")}M)s{i)<}><p)}>"
+        randomModify.insertText(10, "(RdB");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = ")}M)s{i)<}(RdB><p)}>"
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, "a{x<b>y}z");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "a{x<b>y}z"
+        randomModify.insertText(6, "u");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "a{x<b>uy}z"
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, "}M)s{i)<}(RB><W>dVpv)p)}>");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "}M)s{i)<}(RB><W>dVpv)p)}>"
+        randomModify.insertText(16, "L");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "}M)s{i)<}(RB><W>LdVpv)p)}>"
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, "{<>x<p>x");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "{<>x<p>x"
+        randomModify.insertText(4, ")");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "{<>x(<p>x"
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, "<a>x<>y<c>");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "<a>x<>y<c>"
+        randomModify.insertText(4, "b");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "<a>x<b>y<c>"
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, "a<>b<y>c");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "<a>x<>y<c>"
+        randomModify.removeText(1, 1);
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "<a>x<b>y<c>"
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, "a<>");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "a<>"
+        randomModify.insertText(2, "x");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "a<x>"
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, "}w(><<()<>SV<(<}}{IaW><v<");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "}w(><<()<>SV<(<}}{IaW><v<"
+        randomModify.insertText(9, "t");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "}w(><<()<>SV<(<}}{IaW><v<"
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, "a<x><y>v()");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "a<x><y>v()"
+        randomModify.insertText(7, "u");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "a<x><y>uv()"
+        randomModify.clearDocument();
 
 
         // Begin really randomized testing
         FixedTextDescriptor[] fixedTexts = new FixedTextDescriptor[] {
             FixedTextDescriptor.create("<a>", 0.2),
             FixedTextDescriptor.create("{x}", 0.2),
+            FixedTextDescriptor.create("<>", 0.2),
+            FixedTextDescriptor.create("()", 0.2),
+            FixedTextDescriptor.create("<{>", 0.2),
+            FixedTextDescriptor.create("<}>", 0.2),
         };
         
         RandomCharDescriptor[] regularChars = new RandomCharDescriptor[] {
             RandomCharDescriptor.letter(0.3),
-            RandomCharDescriptor.chars(new char[] { '<', '>', '{', '}'}, 0.3),
+            RandomCharDescriptor.chars(new char[] { '<', '>', '{', '}', '(', ')' }, 0.3),
         };
 
         RandomTextProvider textProvider = new RandomTextProvider(regularChars, fixedTexts);
         
         randomModify.test(
             new RandomModifyDescriptor[] {
-                new RandomModifyDescriptor(20000, textProvider,
+                new RandomModifyDescriptor(1000, textProvider,
                         0.2, 0.2, 0.1,
                         0.2, 0.2,
                         0.0, 0.0), // snapshots create/destroy

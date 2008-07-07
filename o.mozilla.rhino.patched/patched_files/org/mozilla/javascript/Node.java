@@ -149,6 +149,10 @@ public class Node
         public Node getLabelledNode() {
             return labelledNode;
         }
+
+        public void setLabelledNode(Node labelledNode) {
+            this.labelledNode = labelledNode;
+        }
         
         private Node labelledNode;
     }

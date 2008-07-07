@@ -74,7 +74,7 @@ public abstract class BaseCompletionHandler implements XSLTCompletionHandler {
         
     public List<XSLTCompletionResultItem> getResultItemList(
         XSLTEditorComponentHolder editorComponentHolder) {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     protected void initHandler(XSLTEditorComponentHolder editorComponentHolder) {
@@ -91,19 +91,16 @@ public abstract class BaseCompletionHandler implements XSLTCompletionHandler {
         caretOffset = srcEditorPane.getCaretPosition();
         
         xslModel = null;
-        xslModel = XSLTCompletionUtil.getXslModel(document);
+        xslModel = XSLTCompletionUtil.getXslModel();
         if (xslModel == null) return;
             
         surroundTag = null;
         surroundTag = findSurroundTag(srcEditorPane);
         if (surroundTag == null) return;
 
-        attributeName = null;
-        if (XSLTCompletionUtil.attributeValueExpected(document, caretOffset)) {
-            attributeName = XSLTCompletionUtil.extractAttributeName(
-                document, caretOffset, surroundTag);
-            if (attributeName == null) return;
-        }
+        attributeName = XSLTCompletionUtil.getAttributeNameBeforeCaret(
+            document, caretOffset, surroundTag);
+        if (attributeName == null) return;
             
         CompletionModel completionModel = 
             new XSLTCompletionModelProvider().getCompletionModel();

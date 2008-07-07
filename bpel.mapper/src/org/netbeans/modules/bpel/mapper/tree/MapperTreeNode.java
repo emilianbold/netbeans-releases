@@ -19,10 +19,12 @@
 
 package org.netbeans.modules.bpel.mapper.tree;
 
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.Icon;
 import javax.swing.tree.TreePath;
-import org.netbeans.modules.bpel.mapper.tree.spi.DataObjectHolder;
+import org.netbeans.modules.bpel.mapper.model.PathConverter;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
 
 /**
  * The unified tree node for the MapperSwingTreeModel. This node 
@@ -31,7 +33,7 @@ import org.netbeans.modules.bpel.mapper.tree.spi.DataObjectHolder;
  * 
  * @author nk160297
  */
-public final class MapperTreeNode<DataObject> implements DataObjectHolder<DataObject> {
+public final class MapperTreeNode<DataObject> implements TreeItem {
     
     private DataObject mDataObject;
     private String mDisplayName; 
@@ -123,14 +125,19 @@ public final class MapperTreeNode<DataObject> implements DataObjectHolder<DataOb
         mIsLeaf = newIsLeaf;
     }
     
+//    @Override
+//    public String toString() {
+//        Object dataObject = getDataObject();
+//        if (dataObject != null) {
+//            return "TreeNode[" + dataObject.toString() + "]";
+//        } else {
+//            return super.toString();
+//        }
+//    }
+    
     @Override
     public String toString() {
-        Object dataObject = getDataObject();
-        if (dataObject != null) {
-            return "TreeNode[" + dataObject.toString() + "]";
-        } else {
-            return super.toString();
-        }
+        return PathConverter.toString(MapperTreeNode.this);
     }
     
     public TreePath getTreePath() {
@@ -144,5 +151,29 @@ public final class MapperTreeNode<DataObject> implements DataObjectHolder<DataOb
             result = parentPath.pathByAddingChild(this);
         }
         return result;
+    }
+
+    public Iterator<Object> iterator() {
+        return new Iterator() {
+
+            private MapperTreeNode mNextNode = MapperTreeNode.this;
+
+            public boolean hasNext() {
+                return mNextNode != null;
+            }
+
+            public Object next() {
+                assert mNextNode != null;
+                Object result = mNextNode.getDataObject();
+                mNextNode = mNextNode.getParent();
+                return result;
+            }
+
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+
+        };
+        
     }
 }

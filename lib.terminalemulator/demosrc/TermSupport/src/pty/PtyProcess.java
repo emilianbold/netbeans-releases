@@ -297,6 +297,12 @@ public class PtyProcess {
      * We usually get setsid on linux and setpgrp on solaris.
      */
     private static String setpgrpCmd() {
+        if (false)
+            return null;
+
+        if (OS.get() == OS.MACOS) {
+            return null;
+        }
 	if (setpgrpCmd == null) {
 	    File file;
 	    file = new File("/usr/bin/setpgrp");
@@ -337,7 +343,10 @@ public class PtyProcess {
 	    // controlling terminal and _then_ issue a setpgrp/setsid, which
 	    // releases the controlling terminal!
 	    // so we wrap the wrapper in the setpgrp/setsid utility.
-	    wrapperCmd.add(setpgrpCmd());
+            String pgrp = setpgrpCmd();
+            if (pgrp != null) {
+                wrapperCmd.add(setpgrpCmd());
+            }
             wrapperCmd.add(wrapper);
             wrapperCmd.add(pty.slaveName());
             wrapperCmd.addAll(cmd);

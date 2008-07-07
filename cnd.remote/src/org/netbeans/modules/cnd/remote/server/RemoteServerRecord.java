@@ -41,38 +41,31 @@ package org.netbeans.modules.cnd.remote.server;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 
 /**
  * The definition of a remote server and login. 
  * 
  * @author gordonp
  */
-public class RemoteServerRecord implements ServerRecord, PropertyChangeListener  {
+public class RemoteServerRecord implements ServerRecord, PropertyChangeListener, PlatformTypes  {
     
     private String user;
     private String server;
     private String name;
     private boolean editable;
     private boolean active;
-    
-    protected RemoteServerRecord(String user, String server, boolean active) {
-        this.user = user;
-        this.server = server;
-        name = user + '@' + server;
-        editable = true;
-        if (active) {
-            RemoteServerList list = RemoteServerList.getInstance();
-            if (list != null) {
-                setActive(true);
-            }
-        }
-    }
+    private int platform;
+    private boolean inited = false;
     
     protected RemoteServerRecord(String name, boolean active) {
         this.name = name;
         this.active = active;
-        editable = false;
+        editable = !name.equals("localhost"); // NOI18N
+        //platform = getPlatform();
+        //inited = true;
     }
     
     public boolean isEditable() {
@@ -104,6 +97,39 @@ public class RemoteServerRecord implements ServerRecord, PropertyChangeListener 
 
     public String getUserName() {
         return user;
+    }
+    
+    public int getPlatform() {
+        if (!inited) {
+            if (name.equals("localhost")) { // NOI18N
+                String os = System.getProperty("os.name");
+                if (os.equals("SunOS")) { // NOI18N
+                    platform = System.getProperty("os.arch").equals("x86") ? PLATFORM_SOLARIS_INTEL : PLATFORM_SOLARIS_SPARC; // NOI18N
+                } else if (os.startsWith("Windows ")) { // NOI18N
+                    platform =  PLATFORM_WINDOWS;
+                } else if (os.toLowerCase().contains("linux")) { // NOI18N
+                    platform =  PLATFORM_LINUX;
+                } else if (os.toLowerCase().contains("mac")) { // NOI18N
+                    platform =  PLATFORM_MACOSX;
+                } else {
+                    platform =  PLATFORM_GENERIC;
+                }
+            } else {
+                String cmd = "PATH=/bin:/usr/bin:$PATH uname -s -m"; // NOI18N
+                RemoteCommandSupport support = new RemoteCommandSupport(name, cmd);
+                String val = support.toString().toLowerCase();
+                if (val.startsWith("linux")) { // NOI18N
+                    platform =  PLATFORM_LINUX;
+                } else if (val.startsWith("sunos")) { // NOI18N
+                    String os = val.substring(val.indexOf(' '));
+                    return os.startsWith("sun") ? PLATFORM_SOLARIS_SPARC : PLATFORM_SOLARIS_INTEL; // NOI18N
+                } else if (val.startsWith("cygwin") || val.startsWith("mingw32")) { // NOI18N
+                    platform =  PLATFORM_WINDOWS;
+                }
+            }
+            inited = true;
+        }
+        return platform;
     }
 
     public void propertyChange(PropertyChangeEvent evt) {

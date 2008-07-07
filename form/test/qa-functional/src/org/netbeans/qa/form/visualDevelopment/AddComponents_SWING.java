@@ -40,24 +40,17 @@
  */
 package org.netbeans.qa.form.visualDevelopment;
 
-import java.awt.Point;
-
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
-
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.modules.form.*;
-import org.netbeans.jellytools.modules.form.properties.editors.*;
 import org.netbeans.jellytools.nodes.*;
-import org.netbeans.jellytools.properties.*;
 import org.netbeans.jellytools.actions.*;
 
-import org.netbeans.jemmy.operators.*;
 import java.util.*;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.qa.form.*;
 import java.io.*;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *<P>
@@ -79,61 +72,58 @@ import java.io.*;
  * <BR><U>is impossible add component or components in SWING category is another as in NB r3.2 (37)</U>
  * <BR><U>component was't add correctly or generated source code is wrong</U>
  *
- * @author  Marian.Mirilovic@czech.sun.com
+ * @author  Jana.Maleckova@czech.sun.com
  * @version
  */
-public class AddComponents_SWING extends JellyTestCase {
+public class AddComponents_SWING extends ExtJellyTestCase {
+
     public String FILE_NAME = "clear_JFrame";
     public String PACKAGE_NAME = "data";
     public String DATA_PROJECT_NAME = "SampleProject";
     public String FRAME_ROOT = "[JFrame]";
-    
+    FormDesignerOperator formDesigner;
     public MainWindowOperator mainWindow;
     public ProjectsTabOperator pto;
     public Node formnode;
-    
+
     public AddComponents_SWING(String testName) {
         super(testName);
     }
-    
+
     /** Run test.
      */
-    
-    public void testOpenDataProject(){
-        mainWindow = MainWindowOperator.getDefault();
-        openDataProject();
+    public void setUp() throws IOException {
+        openProject(_testProjectName);
     }
-    
+
     /** Run test.
      */
-    
-    public void testCloseDataProject(){
+    public void testCloseDataProject() {
 //        closeDataProject();
         EditorWindowOperator ewo = new EditorWindowOperator();
         ewo.closeDiscard();
     }
-    
+
     /** Run test.
      */
-    
     public void testAddAndCompile() {
         String categoryName = "Swing Controls";
-        
+
         pto = new ProjectsTabOperator();
         ProjectRootNode prn = pto.getProjectRootNode(DATA_PROJECT_NAME);
         prn.select();
         formnode = new Node(prn, "Source Packages|" + PACKAGE_NAME + "|" + FILE_NAME);
         formnode.select();
         log("Form node selected.");
-        
+
         EditAction editAction = new EditAction();
         editAction.perform(formnode);
         log("Source Editor window opened.");
-        
+
         OpenAction openAction = new OpenAction();
         openAction.perform(formnode);
         log("Form Editor window opened.");
-        
+
         // store all component names from the category in the Vector
         Vector componentNames = new Vector();
         ComponentPaletteOperator palette = new ComponentPaletteOperator();
@@ -143,103 +133,106 @@ public class AddComponents_SWING extends JellyTestCase {
         palette.collapseSwingWindows();
         palette.collapseAWT();
         palette.expandSwingControls();
-        //JListOperator list = palette.lstComponents(); //selectPage(categoryName);
-       // System.out.println("LLL " + list.getModel());
-        //String [] componentList = {"JLabel", "JButton", "JToggleButton", "JCheckBox", "JRadioButton", "ButtonGroup", "JComboBox", "JList", "JTextField", "JTextArea", "JPanel", "JTabbedPane", "JScrollBar", "JScrollPane", "JMenuBar", "JPopupMenu", "JSlider", "JProgressBar", "JSplitPane", "JFormattedTextField", "JPasswordField", "JSpinner", "JSeparator", "JTextPane", "JEditorPane", "JTree", "JTable", "JToolBar", "JInternalFrame", "JLayeredPane", "JDesktopPane", "JOptionPane", "JColorChooser", "JFileChooser", "JFrame", "JDialog"};
-        String [] componentList = {"Label", "Button", "Toggle Button", "Check Box", "Radio Button", "Button Group", "Combo Box", "List", "Text Field", "Text Area", "Scroll Bar", "Slider", "Progress Bar", "Formatted Field", "Password Field", "Spinner", "Separator", "Text Pane", "Editor Pane", "Tree", "Table"};
-        for (int i=0; i<componentList.length; i++) {
-            componentNames.addElement(componentList[i]);
-        }
-        
+        //Read all simple swing componet
+        String[] componentList = {"Label", "Button", "Toggle Button", "Check Box", "Radio Button", "Combo Box", "Text Field", "Scroll Bar", "Slider", "Progress Bar", "Password Field", "Spinner", "Separator"};
+        //
+
         ComponentInspectorOperator cio = new ComponentInspectorOperator();
         Node inspectorRootNode = new Node(cio.treeComponents(), FRAME_ROOT);
         inspectorRootNode.select();
         inspectorRootNode.expand();
-        
-        // add all beans from Palette Category to form
+
+        // Add all beans from Swing Palette Category to form
         Action popupAddFromPaletteAction;
-        for(int i = 0; i < componentNames.size(); i++){
-            popupAddFromPaletteAction = new Action(null, "Add From Palette|Swing Controls|" + componentNames.elementAt(i).toString());
+        for (int i = 0; i < componentList.length; i++) {
+            popupAddFromPaletteAction = new Action(null, "Add From Palette|Swing Controls|" + componentList[i]);
             popupAddFromPaletteAction.perform(inspectorRootNode);
+            String componentName = componentList[i].toString().replace(" ", "");
+            System.out.println("What is searched: " + "private javax.swing.J" + componentName + " j" + componentName + "1");
+
+            //Check if code was generated properly for component
+            assertTrue("Check if " + componentName + " is correctly declared", checkEditor("private javax.swing.J" + componentName + " j" + componentName + "1"));
+            assertTrue("Check if " + componentName + " is added to layout", checkEditor("getContentPane().add(j" + componentName + "1)"));
         }
-        
+
+        //Add the rest of swing components which inserted together with another component into layout
+        String[] componentList2 = {"Button Group", "List", "Tree", "Table", "Text Area", "Text Pane", "Editor Pane", "Formatted Field"};
+
+        for (int i = 0; i < componentList2.length; i++) {
+            popupAddFromPaletteAction = new Action(null, "Add From Palette|Swing Controls|" + componentList2[i]);
+            popupAddFromPaletteAction.perform(inspectorRootNode);
+            String componentName = componentList2[i].toString().replace(" ", "");
+            switch (i) {
+                case 0:
+                    System.out.println("private javax.swing." + componentName + " j" + componentName + "1");
+                    assertTrue("Check if " + componentName + " is correctly declared", checkEditor("private javax.swing." + componentName + " buttonGroup1"));
+                    break;
+                case 7:
+                    assertTrue("Check if " + componentName + " is correctly declared", checkEditor("private javax.swing.JFormattedTextField" + " jFormattedTextField1"));
+                    assertTrue("Check if " + componentName + " is added to layout", checkEditor("getContentPane().add(jFormattedTextField1)"));
+                    System.out.println("private javax.swing.J" + componentName + " j" + componentName + "1");
+                    break;
+                default:
+                    System.out.println("private javax.swing.J" + componentName + " j" + componentName + "1");
+                    assertTrue("Check if " + componentName + " is correctly declared", checkEditor("private javax.swing.J" + componentName + " j" + componentName + "1"));
+                    assertTrue("Check if " + componentName + " is added to jScrollPane", checkEditor("jScrollPane" + i + ".setViewportView(j" + componentName + "1)"));
+                    assertTrue("Check if jScrollPane" + i + "is added to layout", checkEditor("getContentPane().add(jScrollPane" + i));
+                    break;
+
+            }
+        }
+
+
         log("All components from Swing Controls Palette : " + categoryName + " - were added to " + FILE_NAME);
-        
+
         log("Try to save the form.");
-        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);        
+        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
         editAction.perform(formnode);
         Action saveAction;
         saveAction = new Action("File|Save", null);
         saveAction.perform();
-        
+
     }
-    
-    /** Run test.
-     */
-    public void testFormFile() {
-        compareFileByExt("form");
-    }
-    
-    /** Run test.
-     */
-    public void testJavaFile() {
-        compareFileByExt("java");
-    }
-    
-    private void compareFileByExt(String fileExt) {
-        String refSourceFilePath = getDataDir().getAbsolutePath() + File.separatorChar
-                + DATA_PROJECT_NAME +  File.separatorChar + "src" + File.separatorChar
-                + PACKAGE_NAME + File.separatorChar + FILE_NAME + "." + fileExt;
-        log("refSourceFilePath:" + refSourceFilePath);
-        
-        try {
-            getRef().print( VisualDevelopmentUtil.readFromFile(refSourceFilePath) );
-        } catch (Exception e) {
-            fail("Fail during creating ref file: " + e.getMessage());
+
+    boolean checkEditor(String regexp) {
+
+        sleep(300);
+//        String editortext = editor.getText();
+
+        formDesigner = new FormDesignerOperator(FILE_NAME);
+        String editortext = formDesigner.editor().getText();
+        formDesigner.design();
+
+        java.util.StringTokenizer tokenizer = new java.util.StringTokenizer(regexp, ",");
+        int pos = -1;
+        boolean result = true;
+        while (tokenizer.hasMoreTokens()) {
+            String token = tokenizer.nextToken();
+            pos = editortext.indexOf(token, pos);
+            if (pos == -1) {
+                result = false;
+                break;
+            }
+            pos += token.length();
         }
-        
-        String javaVersionPrefix = VisualDevelopmentUtil.JAVA_VERSION.substring(0,3);
-        String passFileName = this.getName() + "_" + javaVersionPrefix + ".pass";
-        log("passFileName: " + passFileName);
-        
-        compareReferenceFiles(this.getName()+".ref", passFileName, this.getName()+".diff");
+        System.out.println("Result: " + result);
+        return result;
     }
-    
-    public void openDataProject(){
-        //if running internally then ide must be ran with the switch -J-Dxtest.data=${SampleProject location}
-        ProjectSupport.openProject(getDataDir().getAbsolutePath() + "\\" + DATA_PROJECT_NAME);
-//        NbDialogOperator scanningDialogOper = new NbDialogOperator("Scanning");
-//        log(scanningDialogOper.getTitle() + " opened.");
-//        scanningDialogOper.waitClosed();
-//        log(scanningDialogOper.getTitle() + " closed.");
-        pto = new ProjectsTabOperator();
-    }
-    
-    public void closeDataProject(){
+
+    public void closeDataProject() {
         ProjectSupport.closeProject(DATA_PROJECT_NAME);
         log("SampleProject closed.");
     }
-    
+
     void sleep(int ms) {
-        try {Thread.sleep(ms);} catch (Exception e) {}
+        try {
+            Thread.sleep(ms);
+        } catch (Exception e) {
+        }
     }
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new AddComponents_SWING("testOpenDataProject"));
-        suite.addTest(new AddComponents_SWING("testAddAndCompile"));
-        suite.addTest(new AddComponents_SWING("testFormFile"));
-        suite.addTest(new AddComponents_SWING("testJavaFile"));
-        //suite.addTest(new AddComponents_SWING("testCloseDataProject"));
-        
-        return suite;
+
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(AddComponents_SWING.class).addTest("testAddAndCompile").clusters(".*").enableModules(".*").gui(true));
+
     }
-    
-    /** Test could be executed internaly in Forte
-     * @param args arguments from command line
-     */
-    public static void main(String[] args) {
-        System.setProperty("nbjunit.workdir","c:/z");
-        junit.textui.TestRunner.run(suite());
-    }
-    
 }

@@ -42,11 +42,9 @@ import org.netbeans.modules.bpel.mapper.tree.models.PartnerLinkTreeExtModel;
 import org.netbeans.modules.bpel.mapper.tree.models.SimpleTreeInfoProvider;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.search.ResultNodeFinder;
-import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperModelFactory;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
+import org.netbeans.modules.soa.ui.tree.impl.TreeFinderProcessor;
+import org.netbeans.modules.bpel.mapper.model.MapperModelFactory;
+import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.CompletionCondition;
@@ -74,6 +72,8 @@ import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.soa.mappercore.utils.GraphLayout;
+import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
+import org.netbeans.modules.soa.ui.tree.TreeItemFinder;
 import org.netbeans.modules.xml.xpath.ext.XPathException;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
@@ -502,10 +502,10 @@ public class BpelMapperModelFactory implements MapperModelFactory {
     public static void collectPredicates(
             XPathExpression expr, MapperSwingTreeModel treeModel) {
         //
-        MapperTreeModel sourceTreeModel = treeModel.getSourceModel();
+        SoaTreeModel sourceTreeModel = treeModel.getSourceModel();
         //
         // Look for the VariableTreeModel tree extension
-        VariableTreeModel varTreeModel = MapperTreeModel.Utils.findExtensionModel(
+        VariableTreeModel varTreeModel = SoaTreeModel.MyUtils.findExtensionModel(
                 sourceTreeModel, VariableTreeModel.class);
         //    
         if (varTreeModel != null) {

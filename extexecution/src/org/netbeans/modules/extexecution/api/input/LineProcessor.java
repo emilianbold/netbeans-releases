@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.extexecution.api.input;
 
+import java.io.Closeable;
+
 /**
  * Processes the lines fetched by {@link InputReader} usually with help
  * of the {@link InputProcessors#bridge(LineProcessor)}.
@@ -52,7 +54,7 @@ package org.netbeans.modules.extexecution.api.input;
  * @see InputProcessors#bridge(LineProcessor)
  * @see InputReader
  */
-public interface LineProcessor {
+public interface LineProcessor extends Closeable {
 
     /**
      * Processes the line.
@@ -65,5 +67,10 @@ public interface LineProcessor {
      * Notifies the processor that it should reset its state.
      */
     void reset();
+
+    /**
+     * Closes the processor releasing the resources held by it.
+     */
+    void close();
 
 }

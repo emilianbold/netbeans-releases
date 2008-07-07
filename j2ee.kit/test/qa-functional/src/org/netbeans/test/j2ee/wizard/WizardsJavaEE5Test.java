@@ -42,17 +42,26 @@
 package org.netbeans.test.j2ee.wizard;
 
 import junit.framework.Test;
-import junit.framework.TestSuite;
 import junit.textui.TestRunner;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
+import org.netbeans.junit.NbModuleSuite;
+
 
 /**
  *
  * @author jungi
  */
-public class WizardsJavaEE5Test extends NbTestCase {
-    
+public class WizardsJavaEE5Test extends J2eeTestCase {
+    private static String[] newfilewizardstests1 = {
+   "testLocalSessionBean","testRemoteSessionBean","testLocalRemoteSessionBean","testLocalStatefulSessionBean",
+   "testRemoteStatefulSessionBean","testLocalRemoteStatefulSessionBean","testServiceLocatorInEjb",
+   "testCachingServiceLocatorInEjb","testQueueMdbBean","testTopicMdbBean","testPersistenceUnitInEjb",
+   "testEntityClassInEjb","testBuildDefaultNewEJBMod"};
+    private static String[] newfilewizardstests2 = {"testServiceLocatorInWeb","testCachingServiceLocatorInWeb",
+    "testPersistenceUnitInWeb","testEntityClassInWeb","testBuildDefaultNewWebMod"};
+    private static String[] newprojectswizardtests = {
+    "testDefaultAppClientWizard","testDefaultNewJ2eeAppWizard","closeProjects"};
+
     /** Creates a new instance of WizardsJavaEE5Test */
     public WizardsJavaEE5Test(String testName) {
         super(testName);
@@ -63,33 +72,13 @@ public class WizardsJavaEE5Test extends NbTestCase {
     }
     
     public static Test suite() {
-        TestSuite suite = new NbTestSuite();
-        
-        suite.addTest(new NewProjectWizardsTest("testDefaultNewEJBModWizard", "5"));
-        suite.addTest(new NewFileWizardsTest("testLocalSessionBean", "5"));
-        suite.addTest(new NewFileWizardsTest("testRemoteSessionBean", "5"));
-        suite.addTest(new NewFileWizardsTest("testLocalRemoteSessionBean", "5"));
-        suite.addTest(new NewFileWizardsTest("testLocalStatefulSessionBean", "5"));
-        suite.addTest(new NewFileWizardsTest("testRemoteStatefulSessionBean", "5"));
-        suite.addTest(new NewFileWizardsTest("testLocalRemoteStatefulSessionBean", "5"));
-        suite.addTest(new NewFileWizardsTest("testServiceLocatorInEjb", "5"));
-        suite.addTest(new NewFileWizardsTest("testCachingServiceLocatorInEjb", "5"));
-        suite.addTest(new NewFileWizardsTest("testQueueMdbBean", "5"));
-        suite.addTest(new NewFileWizardsTest("testTopicMdbBean", "5"));
-        suite.addTest(new NewFileWizardsTest("testPersistenceUnitInEjb", "5"));
-        suite.addTest(new NewFileWizardsTest("testEntityClassInEjb", "5"));
-        suite.addTest(new NewFileWizardsTest("testBuildDefaultNewEJBMod", "5"));
-
-        suite.addTest(new NewProjectWizardsTest("testDefaultNewWebModWizard", "5"));
-        suite.addTest(new NewFileWizardsTest("testServiceLocatorInWeb", "5"));
-        suite.addTest(new NewFileWizardsTest("testCachingServiceLocatorInWeb", "5"));
-        suite.addTest(new NewFileWizardsTest("testPersistenceUnitInWeb", "5"));
-        suite.addTest(new NewFileWizardsTest("testEntityClassInWeb", "5"));
-        suite.addTest(new NewFileWizardsTest("testBuildDefaultNewWebMod", "5"));
-        
-        suite.addTest(new NewProjectWizardsTest("testDefaultAppClientWizard", "5"));
-        suite.addTest(new NewProjectWizardsTest("testDefaultNewJ2eeAppWizard", "5"));
-        suite.addTest(new NewProjectWizardsTest("closeProjects", "5"));
-        return suite;
+        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
+        conf = addServerTests(Server.ANY,conf,NewProjectWizardsTest.class,"testDefaultNewEJBModWizard");
+        conf = addServerTests(Server.ANY,conf,NewFileWizardsTest.class,newfilewizardstests1);
+        conf = addServerTests(Server.ANY,conf,NewProjectWizardsTest.class,"testDefaultNewWebModWizard");
+        conf = addServerTests(Server.ANY,conf,NewFileWizardsTest.class,newfilewizardstests2);
+        conf = addServerTests(Server.ANY,conf,NewProjectWizardsTest.class,newprojectswizardtests);
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
     }    
 }

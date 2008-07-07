@@ -62,7 +62,7 @@ public class J2eeTestCase extends JellyTestCase {
         super(name);
     }
 
-    private static Configuration addGlassfishTests(Configuration conf, Class<? extends TestCase> clazz, String... testNames) {
+    private static void registerGlassfish() {
         String glassfishPath = System.getProperty("glassfish.home");
         if (glassfishPath == null){
             glassfishPath = System.getProperty("j2ee.appserver.path");
@@ -70,32 +70,23 @@ public class J2eeTestCase extends JellyTestCase {
         if (isValidPath(glassfishPath) && isValidPath(glassfishPath + "/domains/domain1")) {
             LOG.info("Setting server path " + glassfishPath);
             System.setProperty(GLASSFISH_PATH, glassfishPath);
-            return addTest(conf, clazz, testNames);
-        }else{
-            return conf.addTest("testEmpty");
         }
     }
 
-    private static Configuration addTomcatTests(Configuration conf, Class<? extends TestCase> clazz, String... testNames) {
+    private static void registerTomcat() {
         String tomcatPath = System.getProperty("tomcat.home");
         if (isValidPath(tomcatPath)) {
             LOG.info("Setting server path " + tomcatPath);
             System.setProperty(TOMCAT_PATH, tomcatPath);
             System.setProperty("org.netbeans.modules.tomcat.autoregister.token", "1");
-            return addTest(conf, clazz, testNames);
-        }else{
-            return conf.addTest("testEmpty");
         }
     }
 
-    private static Configuration addJBossTests(Configuration conf, Class<? extends TestCase> clazz, String... testNames) {
+    private static void registerJBoss() {
         String jbossPath = System.getProperty("jboss.home");
         if (isValidPath(jbossPath)) {
             LOG.info("Setting server path " + jbossPath);
             System.setProperty(JBOSS_PATH, jbossPath);
-            return addTest(conf, clazz, testNames);
-        }else{
-            return conf.addTest("testEmpty");
         }
     }
 
@@ -103,6 +94,7 @@ public class J2eeTestCase extends JellyTestCase {
         if (path == null) {
             return false;
         }
+        LOG.info("Validating path: " + path);
         File f = new File(path);
         if (!f.exists()) {
             return false;
@@ -167,27 +159,31 @@ public class J2eeTestCase extends JellyTestCase {
             LOG.info("adding server tests");
             return addTest(conf, clazz, testNames);
         } else {
-            Configuration result = conf;
             if (server.equals(TOMCAT) || server.equals(ANY)){
-                result = addTomcatTests(conf, clazz, testNames);
+                registerTomcat();
                 if (isRegistered(TOMCAT)) {
-                    return result;
+                    return addTest(conf, clazz, testNames);
                 }
             }
             if (server.equals(GLASSFISH) || server.equals(ANY)){
-                result = addGlassfishTests(conf, clazz, testNames);
+                registerGlassfish();
                 if (isRegistered(GLASSFISH)) {
-                    return result;
+                    return addTest(conf, clazz, testNames);
                 }
             }
             if (server.equals(JBOSS) || server.equals(ANY)){
-                result = addJBossTests(conf, clazz, testNames);
+                registerJBoss();
                 if (isRegistered(JBOSS)) {
-                    return result;
+                    return addTest(conf, clazz, testNames);
                 }
             }
             LOG.info("no server to add tests");
-            return conf.addTest("testEmpty");
+            try{
+                return conf.addTest("testEmpty");
+            }catch (IllegalStateException exc){
+                //empty configuration
+                return conf.addTest(J2eeTestCase.class, "testEmpty");
+            }
         }
     }
     /**
@@ -236,7 +232,7 @@ public class J2eeTestCase extends JellyTestCase {
         }
         switch (server){
             case GLASSFISH:
-                return J2eeServerNode.invoke("GlassFish V2");
+                return J2eeServerNode.invoke("GlassFish");
             case JBOSS: 
                 return J2eeServerNode.invoke("JBoss");
             case TOMCAT:

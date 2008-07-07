@@ -53,7 +53,9 @@ import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
@@ -127,6 +129,7 @@ public class PHPIndexer implements Indexer {
     static final String FIELD_METHOD = "method"; //NOI18N
     static final String FIELD_INCLUDE = "include"; //NOI18N
     static final String FIELD_IDENTIFIER = "identifier"; //NOI18N
+    static final String FIELD_VAR = "var"; //NOI18N
 
     public boolean isIndexable(ParserFile file) {
         // Cannot call file.getFileObject().getMIMEType() here for several reasons:
@@ -173,7 +176,7 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "0.4.3"; // NOI18N
+        return "0.4.5"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -239,6 +242,12 @@ public class PHPIndexer implements Indexer {
                     indexFunction((FunctionDeclaration)statement, document);
                 } else if (statement instanceof ExpressionStatement){
                     ExpressionStatement expressionStatement = (ExpressionStatement) statement;
+                    
+                    if (expressionStatement.getExpression() instanceof Assignment) {
+                        Assignment assignment = (Assignment) expressionStatement.getExpression();
+                        indexVarsInAssignment(assignment, document);
+                    }
+                    
                     if (expressionStatement.getExpression() instanceof Include) {
                         Include include = (Include) expressionStatement.getExpression();
                         
@@ -330,6 +339,29 @@ public class PHPIndexer implements Indexer {
 
             }
         }
+        
+        private void indexVarsInAssignment(Assignment assignment, IndexDocument document) {
+            if (assignment.getLeftHandSide() instanceof Variable) {
+                Variable var = (Variable) assignment.getLeftHandSide();
+                String varType = CodeUtils.extractVariableTypeFromAssignment(assignment);
+                String varName = CodeUtils.extractVariableName(var);
+                StringBuilder signature = new StringBuilder();
+                signature.append(varName.toLowerCase() + ";" + varName + ";");
+                
+                if (varType != null){
+                    signature.append(varType);
+                }
+                
+                signature.append(";"); //NOI18N
+                signature.append(var.getStartOffset() + ";");
+                document.addPair(FIELD_VAR, signature.toString(), true);
+            }
+            
+            if (assignment.getRightHandSide() instanceof Assignment) {
+                Assignment embeddedAssignment = (Assignment) assignment.getRightHandSide();
+                indexVarsInAssignment(embeddedAssignment, document);
+            }
+        }
 
         private void indexConstant(Statement statement, IndexDocument document) {
             ExpressionStatement exprStmt = (ExpressionStatement) statement;
@@ -387,36 +419,19 @@ public class PHPIndexer implements Indexer {
         private String getBaseSignatureForFunctionDeclaration(FunctionDeclaration functionDeclaration){
             StringBuilder signature = new StringBuilder();
             signature.append(functionDeclaration.getFunctionName().getName() + ";");
+            int defaultParamCount = 0;
 
             for (Iterator<FormalParameter> it = functionDeclaration.getFormalParameters().iterator(); it.hasNext();) {
 
                 FormalParameter param = it.next();
-                Expression paramNameExpr = param.getParameterName();
-                String paramName = null;
-
-                if (paramNameExpr instanceof Variable) {
-                    Variable var = (Variable) paramNameExpr;
-                    Identifier id = (Identifier) var.getName();
-                    paramName = id.getName();
-                    
-                    if (var.isDollared()){
-                        signature.append("$"); //NOI18N
-                    }
-                } else if (paramNameExpr instanceof Reference) {
-                    signature.append("&");
-                    Reference reference = (Reference) paramNameExpr;
-                    
-                    if (reference.getExpression() instanceof Variable) {
-                        Variable var = (Variable) reference.getExpression();
-                        Identifier id = (Identifier) var.getName();
-                        paramName = id.getName();
-
-                        if (var.isDollared()) {
-                            signature.append("$"); //NOI18N
-                        }
-                    }
+                
+                if (param.getDefaultValue() == null){
+                    defaultParamCount = 0;
+                } else {
+                    defaultParamCount ++;
                 }
-
+                
+                String paramName = CodeUtils.getParamDisplayName(param);
                 signature.append(paramName);
 
                 if (it.hasNext()) {
@@ -426,6 +441,7 @@ public class PHPIndexer implements Indexer {
             
             signature.append(";");
             signature.append(functionDeclaration.getStartOffset() + ";"); //NOI18N
+            signature.append(defaultParamCount + ";");
             return signature.toString();
         }
     }

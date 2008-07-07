@@ -58,7 +58,9 @@ import org.w3c.dom.svg.SVGLocatableElement;
  * Suggested svg snippet :
  * <pre>
  * &lt;g id="country_combobox" transform="translate(20,180)">
- *   &lt;metadata> &lt;text>type=combobox&lt;/text> &lt;/metadata>
+ *   &lt;!-- Metadata information. Please don't edit. -->
+ *   &lt;text display="none">type=combobox&lt;/text>
+ *
  *       &lt;rect x="0" y="-5" rx="5" ry="5" width="90" height="30" fill="none" stroke="rgb(255,165,0)" 
  *              stroke-width="2" visibility="hidden">
  *           &lt;set attributeName="visibility" attributeType="XML" begin="country_combobox.focusin" 
@@ -67,32 +69,36 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *               fill="freeze" to="hidden"/>
  *       &lt;/rect>
  *       &lt;rect  x="5.0" y="0.0" width="80" height="20" fill="none" stroke="black" stroke-width="2"/>
- *   &lt;rect  x="66.0" y="1.0" width="18" height="18" fill="rgb(220,220,220)" 
- *                   stroke="black" stroke-width="1.5">
- *       &lt;metadata> &lt;text>type=button&lt;/text> &lt;/metadata>
- *       &lt;animate  attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" 
- *                           fill="freeze" to="rgb(170,170,170)">
- *           &lt;metadata> &lt;text>type=pressed&lt;/text> &lt;/metadata>
- *       &lt;/animate>
- *       &lt;animate  attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" 
- *                           fill="freeze" to="rgb(220,220,220)">
- *           &lt;metadata> &lt;text>type=released&lt;/text> &lt;/metadata>
- *       &lt;/animate>
+ *   &lt;g>
+ *       &lt;!-- Metadata information. Please don't edit. -->
+ *       &lt;text display="none">type=button&lt;/text>
+ *
+ *       &lt;rect  x="66.0" y="1.0" width="18" height="18" fill="rgb(220,220,220)" 
+ *               stroke="black" stroke-width="1.5">
+ *           &lt;animate  attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" 
+ *               fill="freeze" to="rgb(170,170,170)"/>
+ *           &lt;animate  attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" 
+ *               fill="freeze" to="rgb(220,220,220)"/>
  *   &lt;/rect>
+ *   &lt;/g>
  *   &lt;polygon transform="translate(73,8)"  points="0,0 4,0 2,4" fill="blue" 
  *                 stroke="black" stroke-width="2"/>
  *   &lt;g>
- *       &lt;metadata> &lt;text>type=editor&lt;/text> &lt;/metadata>
- *       &lt;!-- this editor is SVGTextField component -->*z
+ *       &lt;!-- this editor is SVGTextField component -->
  *
- *       &lt;!-- metadata definition-->
+ *       &lt;!-- Metadata information. Please don't edit. -->
+ *       &lt;text display="none">type=editor&lt;/text>
  *       &lt;text display="none">readOnly="false" enabled="true"&lt;/text>
+ *
  *       &lt;text  x="10" y="15" stroke="black" font-size="15" font-family="SunSansSemiBold">Item 1
- *           &lt;metadata> &lt;text>type=text&lt;/text> &lt;/metadata>
+ *           &lt;!-- Metadata information. Please don't edit. -->
+ *           &lt;text display="none">type=text&lt;/text>
  *       &lt;/text>
- *       &lt;rect  visibility="visible" x="17" y="3" width="2" height="15" fill="black" stroke="black">
- *           &lt;metadata> &lt;text>type=caret&lt;/text> &lt;/metadata>
- *       &lt;/rect>
+ *       &lt;g>
+ *           &lt;!-- Metadata information. Please don't edit. -->
+ *           &lt;text display="none">type=caret&lt;/text>
+ *           &lt;rect  visibility="visible" x="17" y="3" width="2" height="15" fill="black" stroke="black"/>
+ *       &lt;/g>
  *       &lt;!-- The rectangle below is difference between rectangle that bound 
  *
  *               combobox and combobox button ( the latter 
@@ -110,51 +116,51 @@ import org.w3c.dom.svg.SVGLocatableElement;
  * 
  * <pre>
  * &lt;g visibility="hidden" transform="translate(20,200)">
- *       &lt;metadata> 
- *           &lt;text>ref=country_combobox&lt;/text>
- *           &lt;text>type=list&lt;/text>
- *           &lt;/metadata>
+ *       &lt;!-- Metadata information. Please don't edit. -->
+ *       &lt;text display="none">ref=country_combobox&lt;/text>
+ *       &lt;text display="none">type=list&lt;/text>
+ *
  *       &lt;!-- This is not standalone component ! It reelates to combobox component. This is list that is shown
  *       for user when he press to button. It should be outside of ComboBox component figure ( and should
  *       be at the very end of XML file between other such figures ) because in this case it will be 
  *       on top of any other figure. Otherwise it will be hidden by following sibling component. -->
  *       &lt;text id="_53" visibility="hidden" x="10" y="13" stroke="black" font-size="15" font-family="SunSansSemiBold">
- *           &lt;metadata> &lt;text>type=hidden_text&lt;/text> &lt;/metadata>
+ *           &lt;!-- Metadata information. Please don't edit. -->
+ *           &lt;text display="none">type=hidden_text&lt;/text>
  *           HIDDEN TEXT
  *       &lt;/text>
- *       &lt;rect  x="5.0" y="0.0" width="80" height="60" fill="white" stroke="black" stroke-width="2" visibility="inherit">
- *           &lt;metadata> &lt;text>type=bound&lt;/text> &lt;/metadata>
- *       &lt;/rect>
- *       &lt;rect  x="5" y="0" stroke="black" stroke-width="1" fill="rgb(200,200,255)" visibility="inherit" width="80" height="0">
- *           &lt;metadata> &lt;text>type=selection&lt;/text> &lt;/metadata>
- *       &lt;/rect>
- *       &lt;g  visibility="inherit">
- *           &lt;metadata> &lt;text>type=content&lt;/text> &lt;/metadata>
+ *       &lt;g>
+ *           &lt;!-- Metadata information. Please don't edit. -->
+ *           &lt;text display="none">type=bound&lt;/text>
+ *           &lt;rect  x="5.0" y="0.0" width="80" height="60" fill="white" stroke="black" stroke-width="2" visibility="inherit"/>
  *       &lt;/g>
- *   &lt;/g>
+ *       &lt;g>
+ *           &lt;!-- Metadata information. Please don't edit. -->
+ *           &lt;text display="none">type=selection&lt;/text>
+ *           &lt;rect  x="5" y="0" stroke="black" stroke-width="1" fill="rgb(200,200,255)" visibility="inherit" width="80" height="0"/>
+ *       &lt;/g>
+ *       &lt;g  visibility="inherit">
+ *           &lt;!-- Metadata information. Please don't edit. -->
+ *           &lt;text display="none">type=content&lt;/text>
+ *           &lt;/g>
+ *   &lt;/g
  * </pre>  
  * 
  * @author ads
  *
  */
-public class SVGComboBox extends SVGComponent implements DataListener
+public class SVGComboBox extends SVGComponent implements 
+    DataListener, SVGActionListener
 {
     
     private static final String EDITOR          = "editor";         // NOI18N
     private static final String BUTTON          = "button";         // NOI18N
     private static final String LIST            = "list";           // NOI18N
     
-    private static final String PRESSED         = "pressed";        // NOI18N
-    private static final String RELEASED        = "released";       // NOI18N
-
     public SVGComboBox( SVGForm form, String elemId ) {
         super(form, elemId);
         
-        myButton =  getElementByMeta( wrapperElement, TYPE , BUTTON);
-        myPressedAnimation = (SVGAnimationElement) getElementByMeta(myButton, 
-                TYPE , PRESSED );
-        myReleasedAnimation = (SVGAnimationElement) getElementByMeta(myButton, 
-                TYPE , RELEASED );
+        initButton();
         
         Element root = form.getDocument().getDocumentElement();
         SVGElement listElement = getElementByMeta( (SVGElement)root , 
@@ -165,18 +171,17 @@ public class SVGComboBox extends SVGComponent implements DataListener
         setEditor( new DefaultComboBoxEditor( form , 
                 (SVGLocatableElement)getElementByMeta( getElement(),
                         TYPE, EDITOR)));
-        myRenderer = new SVGDefaultListCellRenderer();
     }
     
     public void focusGained() {
         super.focusGained();
-        getEditor().getEditorCompoenent().focusGained();
+        getEditor().getEditorComponent().focusGained();
     }
     
     public void focusLost() {
         super.focusLost();
         hideList();
-        getEditor().getEditorCompoenent().focusLost();
+        getEditor().getEditorComponent().focusLost();
     }
     
     public InputHandler getInputHandler() {
@@ -201,15 +206,19 @@ public class SVGComboBox extends SVGComponent implements DataListener
     }
     
     public void setEditor(  ComboBoxEditor editor ){
+        if ( myEditor != null) {
+            myEditor.removeActionListener( this );
+        }
         myEditor = editor;
+        myEditor.addActionListener( this );
     }
     
     public SVGListCellRenderer getRenderer(){
-        return myRenderer;
+        return getList().getRenderer();
     }
     
     public void setRenderer( SVGListCellRenderer renderer ){
-        myRenderer = renderer;
+        getList().setRenderer(renderer);
     }
     
     public Object getSelectedItem(){
@@ -217,31 +226,7 @@ public class SVGComboBox extends SVGComponent implements DataListener
     }
     
     public void setSelectedItem( Object value ){
-        mySelectedValue = value;
-        int size = getModel().getSize();
-        boolean found = false;
-        for ( int i=0; i<size ; i++ ){
-            Object obj = getModel().getElementAt( i );
-            if ( value == null ){
-                if ( obj == null ){
-                    getModel().setSelectedIndex( i );
-                    myIndex = i;
-                    found = true;
-                }
-            }
-            else {
-                if ( value.equals(obj)){
-                    getModel().setSelectedIndex( i );
-                    myIndex = i;
-                    found = true;
-                }
-            }
-        }
-        if ( !found ){
-            myIndex = -1;
-            myList.getSelectionModel().clearSelection();
-            getModel().setSelectedIndex( -1 );
-        }
+        setSelected(value);
         setItem();
         fireActionPerformed();
     }
@@ -268,12 +253,55 @@ public class SVGComboBox extends SVGComponent implements DataListener
         }
     }
    
+    /* (non-Javadoc)
+     * @see org.netbeans.microedition.svg.SVGActionListener#actionPerformed(org.netbeans.microedition.svg.SVGComponent)
+     */
+    public void actionPerformed( SVGComponent comp ) {
+        setSelected( getEditor().getItem());
+        fireActionPerformed();
+    }
+    
+
+    private void initButton() {
+        myButton =  getNestedElementByMeta( wrapperElement, TYPE , BUTTON);
+        myPressedAnimation = (SVGAnimationElement) myButton.getFirstElementChild();
+        myReleasedAnimation = (SVGAnimationElement) 
+            myPressedAnimation.getNextElementSibling();
+    }
+    
+    private void setSelected( Object value ){
+        mySelectedValue = value;
+        int size = getModel().getSize();
+        boolean found = false;
+        for ( int i=0; i<size ; i++ ){
+            Object obj = getModel().getElementAt( i );
+            if ( value == null ){
+                if ( obj == null ){
+                    getModel().setSelectedIndex( i );
+                    myIndex = i;
+                    found = true;
+                }
+            }
+            else {
+                if ( value.equals(obj)){
+                    getModel().setSelectedIndex( i );
+                    myIndex = i;
+                    found = true;
+                }
+            }
+        }
+        if ( !found ){
+            myIndex = -1;
+            myList.getSelectionModel().clearSelection();
+            getModel().setSelectedIndex( -1 );
+        }
+    }
     
     private void showList(){
         isListShown = true;
         myList.focusGained();
         
-        myList.getElement().setTrait( TRAIT_VISIBILITY, TR_VALUE_VISIBLE );
+        myList.setTraitSafely( getElement(), TRAIT_VISIBILITY, TR_VALUE_VISIBLE );
         myIndex = getModel().getSelectedIndex();
     }
     
@@ -281,7 +309,7 @@ public class SVGComboBox extends SVGComponent implements DataListener
         if ( isListShown ) {
             isListShown = false;
             myList.focusLost();
-            myList.getElement().setTrait( TRAIT_VISIBILITY , TR_VALUE_HIDDEN);
+            myList.setTraitSafely( getElement(), TRAIT_VISIBILITY , TR_VALUE_HIDDEN);
         }
     }
     
@@ -292,13 +320,17 @@ public class SVGComboBox extends SVGComponent implements DataListener
         getEditor().setItem( selected );
     }
     
+    private SVGList getList(){
+        return myList;
+    }
+    
     public interface ComboBoxModel extends ListModel{
         int getSelectedIndex();
         void setSelectedIndex( int index );
     }
     
     public interface ComboBoxEditor  {
-        SVGComponent getEditorCompoenent();
+        SVGComponent getEditorComponent();
         Object getItem();
         void setItem( Object value );
         void addActionListener(SVGActionListener listener);
@@ -336,7 +368,8 @@ public class SVGComboBox extends SVGComponent implements DataListener
             if ( comp instanceof SVGComboBox ){
                 if ( keyCode == LEFT ){
                     if ( isListShown ) {
-                        ret = myList.getInputHandler().handleKeyPress( comp, keyCode);
+                        ret = myList.getInputHandler().handleKeyPress( comp, 
+                                keyCode);
                     }
                     else {
                         ret= true;
@@ -344,23 +377,31 @@ public class SVGComboBox extends SVGComponent implements DataListener
                 }
                 else if ( keyCode == RIGHT ){
                     if ( !isListShown ){
-                        myPressedAnimation.beginElementAt(0);
+                        getForm().invokeLaterSafely( new Runnable() {
+                            public void run() {
+                                myPressedAnimation.beginElementAt(0);
+                            }
+                        });
                         ret = true;
                     }
                     else {
-                        ret = myList.getInputHandler().handleKeyPress( myList, keyCode);
+                        ret = myList.getInputHandler().handleKeyPress( myList, 
+                                keyCode);
                     }
                 }
                 else if( keyCode == FIRE ){
                     if ( isListShown ){
-                        ret = myList.getInputHandler().handleKeyPress( myList, keyCode);
+                        ret = myList.getInputHandler().handleKeyPress( myList, 
+                                keyCode);
                     }
                     else {
-                        ret = true;
+                        SVGComponent component = getEditor().getEditorComponent();
+                        return component.getInputHandler().handleKeyPress( 
+                                component, keyCode);
                     }
                 }
                 else {
-                    SVGComponent component = getEditor().getEditorCompoenent();
+                    SVGComponent component = getEditor().getEditorComponent();
                     return component.getInputHandler().
                             handleKeyPress( component , keyCode);
                 }
@@ -374,34 +415,47 @@ public class SVGComboBox extends SVGComponent implements DataListener
                 if ( keyCode == LEFT ){
                     if (isListShown) {
                         myIndex = Math.max(0, myIndex - 1);
-                        myList.getInputHandler().handleKeyRelease( myList, keyCode);
+                        myList.getInputHandler().handleKeyRelease( myList, 
+                                keyCode);
                     }
                     ret = true;
                 }
                 else if ( keyCode == RIGHT ){
                     if (isListShown) {
                         myIndex = Math.min(getModel().getSize() - 1, myIndex + 1);
-                        myList.getInputHandler().handleKeyRelease( myList, keyCode);
+                        myList.getInputHandler().handleKeyRelease( myList, 
+                                keyCode);
                     }
                     else {
-                        myReleasedAnimation.beginElementAt( 0 );
+                        getForm().invokeLaterSafely( new Runnable(){
+                            public void run() {
+                                myReleasedAnimation.beginElementAt( 0 );
+                            }
+                        });
                         showList();
                     }
                     ret = true;
                 }
                 else if( keyCode == FIRE ){
-                    hideList();
-                    synchronized ( myUILock ) {
-                        isUIAction = true;
-                        getModel().setSelectedIndex( myIndex );
+                    if (isListShown) {
+                        hideList();
+                        synchronized (myUILock) {
+                            isUIAction = true;
+                            getModel().setSelectedIndex(myIndex);
+                        }
+                        myList.getSelectionModel().addSelectionInterval(
+                                myIndex, myIndex);
+                        setItem();
+                        fireActionPerformed();
                     }
-                    myList.getSelectionModel().addSelectionInterval(
-                            myIndex, myIndex);
-                    setItem();
-                    fireActionPerformed();
+                    else {
+                        SVGComponent component = getEditor().getEditorComponent();
+                        return component.getInputHandler().handleKeyRelease( 
+                                component, keyCode);
+                    }
                 }
                 else {
-                    SVGComponent component = getEditor().getEditorCompoenent();
+                    SVGComponent component = getEditor().getEditorComponent();
                     return component.getInputHandler().handleKeyRelease( 
                             component, keyCode);
                 }
@@ -428,11 +482,11 @@ public class SVGComboBox extends SVGComponent implements DataListener
                 }
             });*/
         }
-
+        
         /* (non-Javadoc)
          * @see org.netbeans.microedition.svg.SVGComboBox.ComboBoxEditor#getEditorCompoenent()
          */
-        public SVGComponent getEditorCompoenent() {
+        public SVGComponent getEditorComponent() {
             return this;
         }
 
@@ -454,16 +508,16 @@ public class SVGComboBox extends SVGComponent implements DataListener
                 setText( "null" );                           // NOI18N
             }
         }
+        
     }
     
     private ComboBoxModel myModel;
     private ComboBoxEditor myEditor;
-    private SVGListCellRenderer myRenderer;
     
     private InputHandler myInputHandler;
-    private final SVGElement myButton;
-    private final SVGAnimationElement myPressedAnimation;
-    private final SVGAnimationElement myReleasedAnimation;
+    private SVGElement myButton;
+    private SVGAnimationElement myPressedAnimation;
+    private SVGAnimationElement myReleasedAnimation;
     
     private final SVGList myList;
     

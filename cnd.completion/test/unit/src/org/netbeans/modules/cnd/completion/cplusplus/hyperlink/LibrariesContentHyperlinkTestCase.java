@@ -47,11 +47,11 @@ import java.util.List;
 
 /**
  * Test case for hyperlink to library content
- * 
+ *
  * @author Nick Krasilnikov
  */
 public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
-    
+
     public LibrariesContentHyperlinkTestCase(String testName) {
         super(testName, true);
     }
@@ -62,13 +62,13 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         // test-folder
         //  --src\
         //        main.cc
-        //  --sys_include1\ 
+        //  --sys_include1\
         //        include1.h
         //  --sys_include2\
         //        include2.h
         //
         // so, adjust used folders
-        
+
         File srcDir = new File(projectDir, "src");
         File incl1 = new File(projectDir, "sys_include");
         File incl2 = new File(projectDir, "sys_include2");
@@ -79,23 +79,48 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         super.setSysIncludes(sysIncludes);
         return srcDir;
     }
-    
+
     private void checkDir(File srcDir) {
         assertTrue("Not existing directory" + srcDir, srcDir.exists());
         assertTrue("Not directory" + srcDir, srcDir.isDirectory());
     }
-    
-    public void testLibraryClass() throws Exception {
 
-        super.performTest("src/main.cc", 7, 6, "sys_include2/include2.h", 9, 1);
+    public void testLibraryClass() throws Exception {
+        performTest("src/main.cc", 7, 6, "sys_include2/include2.h", 9, 1);
     }
 
     public void testLibraryClassConstructor() throws Exception {
         // IZ 137971 : library class name after "new" is not resolved
-        super.performTest("src/main.cc", 7, 20, "sys_include2/include2.h", 9, 1);
+        performTest("src/main.cc", 7, 20, "sys_include2/include2.h", 9, 1);
     }
 
     public void testLibraryClassConstructor2() throws Exception {
-        super.performTest("src/main.cc", 9, 20, "sys_include/include1.h", 12, 5);
+        performTest("src/main.cc", 9, 20, "sys_include/include1.h", 12, 5);
     }
+
+    public void testNsAliases() throws Exception {
+        // IZ 131914: Code completion should work for namespace aliases
+        performTest("src/main.cc", 18, 16, "sys_include/include1.h", 32, 5);
+        performTest("src/main.cc", 19, 16, "src/include.h", 4, 5);
+    }
+
+    public void testNamespaceOverride() throws Exception {
+        // Main project has namespace std overriding std from library.
+        // This should not break hyperlinks for original std members.
+        performTest("src/main.cc", 20, 13, "sys_include/include1.h", 37, 1);
+    }
+
+    public void testGlobalNamespaceInLibrary() throws Exception {
+        // Library has declaration of size_t and namespace std with
+        // "using ::size_t". For hyperlink to work in this declaration
+        // the global namespace must be resolved in library project,
+        // not in the main project.
+        performTest("sys_include/include1.h", 40, 15, "sys_include/include1.h", 37, 1);
+    }
+
+    public void testEndl() throws Exception {
+        performTest("src/main2.cc", 7, 8, "sys_include/iostream", 20, 5);
+        performTest("src/main2.cc", 7, 26, "sys_include/iostream", 14, 5);
+    }
+
 }

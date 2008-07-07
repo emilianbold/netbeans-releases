@@ -181,6 +181,24 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("template_parameter.cc", 8, 11, "template_parameter.cc", 1, 10);
     }
 
+    public void testTemplateParameterBeforeFunction() throws Exception {
+        // IZ#138099 : unresolved identifier for functions' template parameter
+        performTest("template_parameter2.cc", 1, 18, "template_parameter2.cc", 1, 11);
+        performTest("template_parameter2.cc", 4, 22, "template_parameter2.cc", 4, 15);
+        performTest("template_parameter2.cc", 4, 66, "template_parameter2.cc", 4, 15);
+        performTest("template_parameter2.cc", 5, 15, "template_parameter2.cc", 5, 14);
+        performTest("template_parameter2.cc", 5, 41, "template_parameter2.cc", 5, 14);
+        performTest("template_parameter2.cc", 8, 20, "template_parameter2.cc", 8, 10);
+        performTest("template_parameter2.cc", 8, 46, "template_parameter2.cc", 8, 10);
+        performTest("template_parameter2.cc", 9, 20, "template_parameter2.cc", 9, 10);
+        performTest("template_parameter2.cc", 9, 46, "template_parameter2.cc", 9, 10);
+        performTest("template_parameter2.cc", 11, 11, "template_parameter2.cc", 11, 10);
+        performTest("template_parameter2.cc", 11, 55, "template_parameter2.cc", 11, 10);
+        performTest("template_parameter2.cc", 13, 17, "template_parameter2.cc", 13, 10);
+        performTest("template_parameter2.cc", 13, 29, "template_parameter2.cc", 13, 22);
+        performTest("template_parameter2.cc", 13, 33, "template_parameter2.cc", 13, 22);
+    }
+
     public void testIZ131625() throws Exception {
         performTest("IZ131625.cc",  4, 11, "IZ131625.cc", 10, 1);
         performTest("IZ131625.cc",  7, 23, "IZ131625.cc", 10, 1);
@@ -198,9 +216,24 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ136146.cc", 21, 12, "IZ136146.cc", 15, 5);
     }
 
-//    public void testIZ132903() throws Exception {
-//            performTest("IZ132903.cc", 16, 10, "IZ132903.cc",  9, 5);
-//    }
+    public void testIZ132903() throws Exception {
+        performTest("IZ132903.cc", 16, 10, "IZ132903.cc",  9, 5);
+    }
+
+    public void testIZ136167() throws Exception {
+        performTest("IZ136167.cc", 21, 13, "IZ136167.cc",  3, 5);
+    }
+
+    public void testIZ138833() throws Exception {
+        performTest("IZ138833.cc", 4, 17, "IZ138833.cc",  3, 5);
+    }
+
+    public void testIZ138905() throws Exception {
+        // IZ#138905 : IDE highlights 'a1' as invalid identifier (struct {...} a1;)
+        performTest("IZ138905.cc", 4, 4, "IZ138905.cc", 4, 3);
+        performTest("IZ138905.cc", 9, 4, "IZ138905.cc", 9, 3);
+        performTest("IZ138905.cc", 12, 18, "IZ138905.cc", 12, 17);
+    }
 
     public static class Failed extends HyperlinkBaseTestCase {
 

@@ -58,6 +58,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
@@ -66,6 +67,8 @@ import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
@@ -148,7 +151,7 @@ public class DefaultProjectActionHandler implements ActionListener {
         private StopAction sa = null;
         private RerunAction ra = null;
         private ProgressHandle progressHandle = null;
-        private Object lock = new Object();
+        private final Object lock = new Object();
         
         private String getTabName(ProjectActionEvent[] paes) {
             String projectName = ProjectUtils.getInformation(paes[0].getProject()).getName();
@@ -308,19 +311,25 @@ public class DefaultProjectActionHandler implements ActionListener {
                 String args = pae.getProfile().getArgsFlat();
                 String[] env = pae.getProfile().getEnvironment().getenv();
                 boolean showInput = pae.getID() == ProjectActionEvent.RUN;
-                String user_and_host = ((MakeConfiguration) pae.getConfiguration()).getDevelopmentHost().getName();
+                String key = ((MakeConfiguration) pae.getConfiguration()).getDevelopmentHost().getDisplayName();
                 
-                if (user_and_host != null && !user_and_host.equals("localhost")) { // NOI18N
+                if (key != null && !key.equals("localhost")) { // NOI18N
                     // Make sure the project root is visible remotely
                     String basedir = pae.getProfile().getBaseDir();
-                    if (!NativePathMap.isRemote(user_and_host, basedir)) {
+                    if (!NativePathMap.isRemote(key, basedir)) {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                                 NbBundle.getMessage(DefaultProjectActionHandler.class, "Err_CannotRunLocalProjectRemotely")));
                         progressHandle.finish();
                         return;
                     }
-                    CompilerSetManager rcsm = CompilerSetManager.getDefault(user_and_host);
+                    CompilerSetManager rcsm = CompilerSetManager.getDefault(key);
                 }
+                
+                MakeConfiguration conf = (MakeConfiguration) pae.getConfiguration();
+                //TODO: move to util class
+                boolean isWindows = conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS;
+                String separator = isWindows ? "\\" : "/";
+                String pathSeparator = isWindows ? ";" : ":";
                 
                 if (pae.getID() == ProjectActionEvent.RUN) {
                     int conType = pae.getProfile().getConsoleType().getValue();
@@ -371,62 +380,66 @@ public class DefaultProjectActionHandler implements ActionListener {
                     }
                     // Append compilerset base to run path. (IZ 120836)
                     ArrayList<String> env1 = new ArrayList<String>();
-                    String csname = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getOption();
-                    CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(csname);
+                    //String csname = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getOption();
+                    CompilerSet cs = conf.getCompilerSet().getCompilerSet();
                     if (cs != null) {
                         String csdirs = cs.getDirectory();
-                        if (((MakeConfiguration)pae.getConfiguration()).getCompilerSet().getFlavor().equals(CompilerFlavor.MinGW.toString())) {
+                        if (conf.getCompilerSet().getFlavor().equals(CompilerFlavor.MinGW.toString())) {
                             // Also add msys to path. Thet's where sh, mkdir, ... are.
                             String msysBase = CppUtils.getMSysBase();
                             if (msysBase != null && msysBase.length() > 0) {
-                                csdirs = csdirs + File.pathSeparator + msysBase + File.separator + "bin"; // NOI18N
+                                csdirs = csdirs + pathSeparator + msysBase + separator + "bin"; // NOI18N
                             }
                         }
                         boolean gotpath = false;
-                        String pathname = Path.getPathName() + '=';
+                        String pathname = Path.getPathName(conf.getPlatform().getValue()) + '=';
                         int i;
                         for (i = 0; i < env.length; i++) {
                             if (env[i].startsWith(pathname)) {
-                                env1.add(env[i] + File.pathSeparator + csdirs); // NOI18N
+                                env1.add(env[i] + pathSeparator + csdirs); // NOI18N
                                 gotpath = true;
                             } else {
                                 env1.add(env[i]);
                             }
                         }
                         if (!gotpath) {
-                            env1.add(pathname + Path.getPathAsString() + File.pathSeparator + csdirs);
+                            env1.add(pathname + Path.getPathAsString() + pathSeparator + csdirs);
                         }
                         env = env1.toArray(new String[env1.size()]);
                     }
                 } else { // Build or Clean
                     String[] env1 = new String[env.length + 1];
-                    String csname = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getOption();
-                    String csdirs = CompilerSetManager.getDefault().getCompilerSet(csname).getDirectory();
-                    if (((MakeConfiguration)pae.getConfiguration()).getCompilerSet().getFlavor().equals(CompilerFlavor.MinGW.toString())) {
+                    String csdirs = conf.getCompilerSet().getCompilerSet().getDirectory();
+                    if (conf.getCompilerSet().getFlavor().equals(CompilerFlavor.MinGW.toString())) {
                         // Also add msys to path. Thet's where sh, mkdir, ... are.
                         String msysBase = CppUtils.getMSysBase();
                         if (msysBase != null && msysBase.length() > 0) {
-                            csdirs = csdirs + File.pathSeparator + msysBase + File.separator + "bin"; // NOI18N
+                            csdirs = csdirs + pathSeparator + msysBase + separator + "bin"; // NOI18N
                         }
                     }
                     boolean gotpath = false;
-                    String pathname = Path.getPathName() + '=';
+                    String pathname = Path.getPathName(conf.getPlatform().getValue()) + '=';
                     int i;
                     for (i = 0; i < env.length; i++) {
                         if (env[i].startsWith(pathname)) {
-                            env1[i] = pathname + csdirs + File.pathSeparator + env[i].substring(5); // NOI18N
+                            env1[i] = pathname + csdirs + pathSeparator + env[i].substring(5); // NOI18N
                             gotpath = true;
                         } else {
                             env1[i] = env[i];
                         }
                     }
                     if (!gotpath) {
-                        env1[i] = pathname + csdirs + File.pathSeparator + Path.getPathAsString();
+                        //TODO: this if temp fixup, Path should become nonstatic
+                        // with an instance per host 
+                        String defaultPath = conf.getDevelopmentHost().isLocalhost() 
+                                ? Path.getPathAsString()
+                                : "/usr/bin";
+                        env1[i] = pathname + csdirs + pathSeparator + defaultPath;
                     }
                     env = env1;
                 }
                 projectExecutor =  new NativeExecutor(
-                        user_and_host,
+                        key,
                         pae.getProfile().getRunDirectory(),
                         exe, args, env,
                         pae.getTabName(),

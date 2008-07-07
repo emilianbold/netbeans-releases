@@ -59,6 +59,7 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -157,7 +158,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
                 ISVNLogMessage[] messageArray= null;
                 try {                        
                     SvnClient client = Subversion.getInstance().getClient(repositoryUrl, this);                         
-                    messageArray = client.getLogMessages(repositoryUrl, paths, SVNRevision.HEAD, revisionFrom, false, true);                   
+                    messageArray = SvnUtils.getLogMessages(client, repositoryUrl, paths, SVNRevision.HEAD, revisionFrom, false, true);                   
                 } catch (SVNClientException ex) {
                     AbstractNode errorNode = new AbstractNode(Children.LEAF);
                     errorNode.setDisplayName(org.openide.util.NbBundle.getMessage(SvnSearch.class, "LBL_Error")); // NOI18N

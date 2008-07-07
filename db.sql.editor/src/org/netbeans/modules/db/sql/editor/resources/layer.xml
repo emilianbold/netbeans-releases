@@ -77,7 +77,7 @@ made subject to such option by the copyright holder.
                 </file>
 
                 <folder name="CompletionProviders">
-                    <!--file name="org-netbeans-modules-db-sql-editor-completion-SQLCompletionProvider.instance"/-->
+                    <file name="org-netbeans-modules-db-sql-editor-completion-SQLCompletionProvider.instance"/>
                 </folder>
 
                 <folder name="Preferences">

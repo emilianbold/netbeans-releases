@@ -45,7 +45,7 @@ import java.io.File;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.api.project.Project;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelation;
 import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
@@ -79,12 +79,11 @@ public class CMPRelationshipsTest extends DDTestCase {
     }
     
     public static Test suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CMPRelationshipsTest("testOpenProject"));
-        suite.addTest(new CMPRelationshipsTest("testAddRelationship"));
-        suite.addTest(new CMPRelationshipsTest("testModifyRelationship"));
-        suite.addTest(new CMPRelationshipsTest("testRemoveRelationship"));
-        return suite;
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(CMPRelationshipsTest.class);
+        conf = addServerTests(conf,"testOpenProject","testAddRelationship",
+        "testModifyRelationship","testRemoveRelationship");
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
     }
     
     /** Use for execution inside IDE */

@@ -147,7 +147,7 @@ public class ConsistencyVerifier {
             for (Object prob : probs) {
                 String description;
                 if (formatted) {
-                    description = NbProblemDisplayer.messageForProblem(m, prob);
+                    description = NbProblemDisplayer.messageForProblem(m, prob, false);
                 } else {
                     description = prob.toString();
                 }

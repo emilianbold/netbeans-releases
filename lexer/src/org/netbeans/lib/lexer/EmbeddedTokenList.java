@@ -48,10 +48,12 @@ import org.netbeans.lib.editor.util.FlyOffsetGapList;
 import org.netbeans.lib.lexer.inc.MutableTokenList;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.lib.lexer.inc.TokenHierarchyEventInfo;
 import org.netbeans.lib.lexer.inc.TokenListChange;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.lib.lexer.token.AbstractToken;
 import org.netbeans.lib.lexer.token.JoinToken;
+import org.netbeans.lib.lexer.token.PartToken;
 import org.netbeans.lib.lexer.token.TextToken;
 
 
@@ -242,6 +244,16 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
         return tokenCount;
     }
 
+    public boolean joinBackward() {
+        if (tokenCountCurrent() > 0) {
+            AbstractToken<T> token = tokenOrEmbeddingUnsync(0).token();
+            return (token.getClass() == PartToken.class) &&
+                    ((PartToken<T>)token).partTokenIndex() > 0;
+        } else { // tokenCount == 0
+            return (joinInfo.joinTokenLastPartShift() > 0);
+        }
+    }
+
     public TokenOrEmbedding<T> tokenOrEmbedding(int index) {
         synchronized (rootTokenList()) {
             return (index < size()) ? get(index) : null;
@@ -377,7 +389,7 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
         return true;
     }
 
-    public void replaceTokens(TokenListChange<T> change, int diffLength) {
+    public void replaceTokens(TokenListChange<T> change, TokenHierarchyEventInfo eventInfo, boolean modInside) {
         int index = change.index();
         // Remove obsolete tokens (original offsets are retained)
         int removedTokenCount = change.removedTokenCount();
@@ -388,20 +400,27 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
             TokenOrEmbedding<T>[] removedTokensOrEmbeddings = new TokenOrEmbedding[removedTokenCount];
             copyElements(index, index + removedTokenCount, removedTokensOrEmbeddings, 0);
             firstRemovedToken = removedTokensOrEmbeddings[0].token();
+            int removedOffsetShift = 0;
+            if (!embeddingContainer.isRemoved() && embeddingContainer.branchTokenStartOffset() >= eventInfo.modOffset()) {
+                removedOffsetShift -= eventInfo.diffLength();
+            }
             for (int i = 0; i < removedTokenCount; i++) {
                 TokenOrEmbedding<T> tokenOrEmbedding = removedTokensOrEmbeddings[i];
                 // It's necessary to update-status of all removed tokens' contained embeddings
                 // since otherwise (if they would not be up-to-date) they could not be updated later
                 // as they lose their parent token list which the update-status relies on.
-                EmbeddingContainer<T> ec = tokenOrEmbedding.embedding();
-                if (ec != null) {
-                    ec.updateStatusUnsyncAndMarkRemoved();
-                    assert (ec.cachedModCount() != rootModCount) : "ModCount already updated"; // NOI18N
-                }
                 AbstractToken<T> token = tokenOrEmbedding.token();
                 if (!token.isFlyweight()) {
                     updateElementOffsetRemove(token);
+                    if (removedOffsetShift != 0) {
+                        token.setRawOffset(token.rawOffset() + removedOffsetShift);
+                    }
                     token.setTokenList(null);
+                    EmbeddingContainer<T> ec = tokenOrEmbedding.embedding();
+                    if (ec != null) {
+                        assert (ec.cachedModCount() != rootModCount) : "ModCount already updated"; // NOI18N
+                        ec.markRemoved(token.rawOffset());
+                    }
                 }
             }
             remove(index, removedTokenCount); // Retain original offsets
@@ -411,7 +430,7 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
             change.setRemovedTokensEmpty();
         }
 
-        if (diffLength != 0) { // JoinTokenList may pass 0 to not do any offset updates
+        if (modInside) { // JoinTokenList may pass false if physical mod not contained in this ETL
             // Move and fix the gap according to the performed modification.
             // Instead of modOffset the gap is located at first relexed token's start
             // because then the already precomputed index corresponding to the given offset
@@ -421,7 +440,7 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
                 // Minimum of the index of the first removed index and original computed index
                 moveOffsetGap(change.offset() - startOffset, change.index());
             }
-            updateOffsetGapLength(-diffLength);
+            updateOffsetGapLength(-eventInfo.diffLength());
         }
 
         // Add created tokens.
@@ -487,6 +506,16 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
         return (tll != null)
                 ? tll.toString()
                 : "<No TokenListList for " + languagePath.mimePath() + ">";
+    }
+
+    @Override
+    public int hashCode() {
+        return System.identityHashCode(this); // Was overriden by AbstractList
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return (this == o); // Was overriden by AbstractList
     }
 
     @Override

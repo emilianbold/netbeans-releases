@@ -35,9 +35,8 @@ public class GLFTemplateWizardPanel2 implements WizardDescriptor.Panel {
     
     public HelpCtx getHelp () {
         // Show no Help button for this panel:
-        return HelpCtx.DEFAULT_HELP;
         // If you have context help:
-        // return new HelpCtx(SampleWizardPanel1.class);
+         return new HelpCtx(GLFTemplateWizardPanel2.class);
     }
     
     private boolean valid = true;
@@ -81,7 +80,11 @@ public class GLFTemplateWizardPanel2 implements WizardDescriptor.Panel {
     // settings object will be the WizardDescriptor, so you can use
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
-    public void readSettings (Object settings) {}
+    public void readSettings (Object settings) {
+        // ensures error message is set correctly when user presses Back and Next buttons
+        if (component != null)
+            component.update();
+    }
     public void storeSettings (Object settings) {}
     
     String getMimeType () {

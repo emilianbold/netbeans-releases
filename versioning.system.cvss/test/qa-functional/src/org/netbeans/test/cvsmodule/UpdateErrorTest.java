@@ -166,10 +166,10 @@ public class UpdateErrorTest extends JellyTestCase {
         String allCVSRoots;
         org.openide.nodes.Node nodeIDE;
         PROTOCOL_FOLDER = "protocol" + File.separator + "update_access_denied";
-        
+        Thread.sleep(3000);
         vo = VersioningOperator.invoke();
         oo = OutputOperator.invoke();
-        oto = oo.getOutputTab(sessionCVSroot);
+        oto = new OutputTabOperator(sessionCVSroot);
         
         Node node = new Node(new SourcePackagesNode("ForImport"), "forimport|Main.java");
         node.performPopupAction("Open");
@@ -178,7 +178,7 @@ public class UpdateErrorTest extends JellyTestCase {
         eo.insert(" a", 3, 4);
         eo.save();      
         //
-        oto = oo.getOutputTab(sessionCVSroot);
+        oto = new OutputTabOperator(sessionCVSroot);
         oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "show_changes_package.in");
         cvss = new PseudoCvsServer(in);
@@ -188,8 +188,8 @@ public class UpdateErrorTest extends JellyTestCase {
         node = new Node(new SourcePackagesNode("ForImport"), "forimport");
         node.performPopupAction("CVS|Show Changes");
         Thread.sleep(1000);
-        oto.waitText("Refreshing");
-        oto.waitText("finished");
+//        oto.waitText("Refreshing");
+//        oto.waitText("finished");
         cvss.stop();
         
         assertEquals("File should be listed in Versioning view", "Main.java", vo.tabFiles().getValueAt(0, 0).toString());
@@ -210,8 +210,9 @@ public class UpdateErrorTest extends JellyTestCase {
         node.performPopupAction("CVS|Update");
         Thread.sleep(1000);
         cvss.stop();
-        oto.waitText("Updating");
-        oto.waitText("finished");
+//        oto = new OutputTabOperator(sessionCVSroot);
+//        oto.waitText("Updating");
+//        oto.waitText("finished");
         
         NbDialogOperator dialog = new NbDialogOperator("Command");
         JButtonOperator btn = new JButtonOperator(dialog, "Ok");

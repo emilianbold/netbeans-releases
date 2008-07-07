@@ -80,11 +80,23 @@ public class UsingResolverImpl extends CsmUsingResolver implements CsmProgressLi
         CsmDeclaration.Kind[] kinds = { CsmDeclaration.Kind.USING_DECLARATION };
         CsmSelect select = CsmSelect.getDefault();
         List<CsmUsingDeclaration> res = new ArrayList<CsmUsingDeclaration>();
-        for (CsmNamespaceDefinition def : namespace.getDefinitions()) {
-            Iterator<CsmOffsetableDeclaration> udecls = select.getDeclarations(
-                    def, select.getFilterBuilder().createKindFilter(kinds));
-            while (udecls.hasNext()) {
-                res.add((CsmUsingDeclaration) udecls.next());
+        Iterator<CsmOffsetableDeclaration> udecls = select.getDeclarations(
+                    namespace, select.getFilterBuilder().createKindFilter(kinds));
+        while (udecls.hasNext()) {
+            res.add((CsmUsingDeclaration) udecls.next());
+        }
+        // Let's also look for similarly named namespace in libraries,
+        // like it's done in CsmProjectContentResolver.getNamespaceMembers()
+        if (!namespace.getProject().isArtificial() && !namespace.isGlobal()) {
+            for(CsmProject lib : namespace.getProject().getLibraries()){
+                CsmNamespace ns = lib.findNamespace(namespace.getQualifiedName());
+                if (ns != null) {
+                    Iterator<CsmOffsetableDeclaration> it = select.getDeclarations(
+                            ns, select.getFilterBuilder().createKindFilter(kinds));
+                    while (it.hasNext()) {
+                        res.add((CsmUsingDeclaration) it.next());
+                    }
+                }
             }
         }
         return extractDeclarations(res);
@@ -114,7 +126,10 @@ public class UsingResolverImpl extends CsmUsingResolver implements CsmProgressLi
                 if (search == null || !search.valid(file, offset, onlyInProject)) {
                     FileElementsCollector collector = new FileElementsCollector(file, offset, onlyInProject);
                     search = new SearchInfo(file, offset, onlyInProject, collector);
-                    lastSearch = new SoftReference(search);
+                    lastSearch = new SoftReference<SearchInfo>(search);
+                } else {
+                    search.offset = offset;
+                    search.collector.incrementOffset(offset);
                 }
                 assert search != null;
                 assert search.collector != null;
@@ -125,7 +140,7 @@ public class UsingResolverImpl extends CsmUsingResolver implements CsmProgressLi
     
     private static final class SearchInfo {
         public final CsmFile file;
-        public final int offset;
+        public int offset;
         public final FileElementsCollector collector;
         public final CsmProject onlyInProject;
         public SearchInfo(CsmFile file, int offset, CsmProject onlyInProject, FileElementsCollector collector) {
@@ -136,7 +151,7 @@ public class UsingResolverImpl extends CsmUsingResolver implements CsmProgressLi
         }
         
         private boolean valid(CsmFile file, int offset, CsmProject onlyInProject) {
-            return this.file.equals(file) && this.offset == offset && this.onlyInProject == onlyInProject;
+            return this.file.equals(file) && this.offset <= offset && this.onlyInProject == onlyInProject;
         }
     }
     

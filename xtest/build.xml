@@ -90,7 +90,7 @@ made subject to such option by the copyright holder.
         <mkdir dir="${build.classes.dir}"/>
         <javac srcdir="src" destdir="${build.classes.dir}"
             deprecation="${build.compiler.deprecation}"
-            debug="${build.compiler.debug}" source="1.4">
+            debug="${build.compiler.debug}" source="1.5">
             <classpath path="${basecp}"/>
             <classpath path="${java.class.path}"/> 
         </javac>

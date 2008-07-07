@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -52,78 +52,78 @@ import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
  * @author Jan Lahoda
  */
 public class DeclarationFinderImplTest extends TestBase {
-    
+
     public DeclarationFinderImplTest(String testName) {
         super(testName);
-    }            
+    }
 
     public void testSimpleFindDeclaration1() throws Exception {
         performTestSimpleFindDeclaration("<?php\n^$name = \"test\";\n echo \"$na|me\";\n?>");
     }
-    
+
     public void testSimpleFindDeclaration2() throws Exception {
-        performTestSimpleFindDeclaration("<?php\n$name = \"test\";\n^$name = \"test\";\n echo \"$na|me\";\n?>");
+        performTestSimpleFindDeclaration("<?php\n^$name = \"test\";\n$name = \"test\";\n echo \"$na|me\";\n?>");
     }
-    
+
     public void testSimpleFindDeclaration3() throws Exception {
-        performTestSimpleFindDeclaration("<?php\n$name = \"test\";\n^$name = \"test\";\n echo \"$na|me\";\n$name = \"test\";\n?>");
+        performTestSimpleFindDeclaration("<?php\n^$name = \"test\";\n$name = \"test\";\n echo \"$na|me\";\n$name = \"test\";\n?>");
     }
-    
+
     public void testSimpleFindDeclaration4() throws Exception {
         performTestSimpleFindDeclaration("<?php\n" +
                                          "$name = \"test\";\n" +
                                          "function foo(^$name) {\n" +
                                          "    echo \"$na|me\";\n" +
-                                         "}\n" + 
+                                         "}\n" +
                                          "?>");
     }
-    
+
     public void testSimpleFindDeclaration5() throws Exception {
         performTestSimpleFindDeclaration("<?php\n" +
                                          "^$name = \"test\";\n" +
                                          "function foo($name) {\n" +
-                                         "}\n" + 
+                                         "}\n" +
                                          "echo \"$na|me\";\n" +
                                          "?>");
     }
-    
+
     public void testSimpleFindDeclaration6() throws Exception {
         performTestSimpleFindDeclaration("<?php\n" +
                                          "$name = \"test\";\n" +
                                          "^function foo($name) {\n" +
-                                         "}\n" + 
+                                         "}\n" +
                                          "fo|o($name);\n" +
                                          "?>");
     }
-    
+
     public void testSimpleFindDeclaration7() throws Exception {
         performTestSimpleFindDeclaration("<?php\n" +
                                          "^class name {\n" +
-                                         "}\n" + 
+                                         "}\n" +
                                          "$r = new na|me();\n" +
                                          "?>");
     }
-    
+
     public void testSimpleFindDeclaration8() throws Exception {
         performTestSimpleFindDeclaration("<?php\n" +
                                          "class name {\n" +
                                          "    ^function test() {" +
                                          "    }" +
-                                         "}\n" + 
+                                         "}\n" +
                                          "$r = new name();\n" +
                                          "$r->te|st();" +
                                          "?>");
     }
-    
+
     public void testSimpleFindDeclaration9() throws Exception {
         performTestSimpleFindDeclaration("<?php\n" +
                                          "^$name = \"test\";\n" +
                                          "function foo($name) {\n" +
-                                         "}\n" + 
+                                         "}\n" +
                                          "foo($na|me);\n" +
                                          "?>");
     }
-    
+
     public void testFindDeclarationInOtherFile1() throws Exception {
         performTestSimpleFindDeclaration(1,
                                          "<?php\n" +
@@ -134,7 +134,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "^function foo() {}\n" +
                                          "?>");
     }
-    
+
     public void testFindDeclarationInOtherFile2() throws Exception {
         performTestSimpleFindDeclaration(2,
                                          "<?php\n" +
@@ -148,7 +148,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "^function foo() {}\n" +
                                          "?>");
     }
-    
+
     public void testFindDeclarationInOtherFile3() throws Exception {
         performTestSimpleFindDeclaration(2,
                                          "<?php\n" +
@@ -165,7 +165,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "class foo {}\n" +
                                          "?>");
     }
-    
+
     public void testFunctionsInGlobalScope1() throws Exception {
         performTestSimpleFindDeclaration(0,
                                          "<?php\n" +
@@ -175,7 +175,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "}\n" +
                                          "?>");
     }
-    
+
     public void testClassInGlobalScope1() throws Exception {
         performTestSimpleFindDeclaration(0,
                                          "<?php\n" +
@@ -185,7 +185,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "$r = new b|ar();\n" +
                                          "?>");
     }
-    
+
     public void testArrayVariable() throws Exception {
         performTestSimpleFindDeclaration(0,
                                          "<?php\n" +
@@ -193,7 +193,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "$f|oo['test'] = array();\n" +
                                          "?>");
     }
-    
+
     public void testResolveUseBeforeDeclaration() throws Exception {
         performTestSimpleFindDeclaration(0,
                                          "<?php\n" +
@@ -204,7 +204,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "function foo() {}\n" +
                                          "?>");
     }
-    
+
     public void testShowAllDeclarationsWhenUnknownForFunctions() throws Exception {
         performTestSimpleFindDeclaration(0,
                                          "<?php\n" +
@@ -217,7 +217,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "^function foo() {}\n" +
                                          "?>");
     }
-    
+
     public void testShowAllDeclarationsWhenUnknownForClasses() throws Exception {
         performTestSimpleFindDeclaration(0,
                                          "<?php\n" +
@@ -230,7 +230,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "^class foo {}\n" +
                                          "?>");
     }
-    
+
     public void testDefines1() throws Exception {
         performTestSimpleFindDeclaration(0,
                                          "<?php\n" +
@@ -238,7 +238,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "echo \"a\".te|st.\"b\";\n" +
                                          "?>");
     }
-    
+
     public void testDefines2() throws Exception {
         performTestSimpleFindDeclaration(0,
                                          "<?php\n" +
@@ -249,7 +249,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "^define('test', 'test');\n" +
                                          "?>");
     }
-    
+
     public void testGoToInherited() throws Exception {
         performTestSimpleFindDeclaration(0,
                                          "<?php\n" +
@@ -262,7 +262,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "$r->te|st();" +
                                          "?>");
     }
-    
+
     public void testGoToInclude() throws Exception {
         performTestSimpleFindDeclaration(2,
                                          "<?php\n" +
@@ -272,7 +272,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "function foo() {}\n" +
                                          "?>");
     }
-    
+
     public void testGoToInstanceVar() throws Exception {
         performTestSimpleFindDeclaration("<?php\n" +
                                          "class test {\n" +
@@ -283,7 +283,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "}\n" +
                                          "?>");
     }
-    
+
     public void testGoToForward() throws Exception {
         performTestSimpleFindDeclaration("<?php\n" +
                                          "class test {\n" +
@@ -294,7 +294,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "}\n" +
                                          "?>");
     }
-    
+
     public void testMethodInOtherFile() throws Exception {
         performTestSimpleFindDeclaration(-1,
                                          "<?php\n" +
@@ -312,7 +312,7 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "}\n" +
                                          "?>");
     }
-    
+
     public void testMethodInOtherFileWithInheritance() throws Exception {
         performTestSimpleFindDeclaration(-1,
                                          "<?php\n" +
@@ -331,50 +331,50 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "}\n" +
                                          "?>");
     }
-    
+
     private void performTestSimpleFindDeclaration(int declarationFile, String... code) throws Exception {
         assertTrue(code.length > 0);
-        
+
         Set<Golden> golden = new HashSet<Golden>();
-        
+
         for (int cntr = 0; cntr < code.length; cntr++) {
             int i = code[cntr].replaceAll("\\|", "").indexOf('^');
-            
+
             if (i != (-1)) {
                 golden.add(new Golden(cntr, i));
-                
+
                 code[cntr] = code[cntr].replaceAll("\\^", "");
             }
         }
-        
+
         int caretOffset = code[0].indexOf('|');
-        
+
         code[0] = code[0].replaceAll("\\|", "");
-        
+
         assertTrue(caretOffset != (-1));
         assertFalse(golden.isEmpty());
-        
+
         performTestSimpleFindDeclaration(code, caretOffset, golden);
     }
-    
+
     private void performTestSimpleFindDeclaration(String code) throws Exception {
         int caretOffset = code.replaceAll("\\^", "").indexOf('|');
         int declOffset = code.replaceAll("\\|", "").indexOf('^');
-        
+
         assertTrue(caretOffset != (-1));
         assertTrue(declOffset != (-1));
-        
+
         performTestSimpleFindDeclaration(code.replaceAll("\\^", "").replaceAll("\\|", ""), caretOffset, declOffset);
     }
-    
+
     private void performTestSimpleFindDeclaration(String code, final int caretOffset, final int declarationOffset) throws Exception {
         performTestSimpleFindDeclaration(new String[] {code}, caretOffset, 0, declarationOffset);
     }
-    
+
     private void performTestSimpleFindDeclaration(String[] code, final int caretOffset, final int declarationFile, final int declarationOffset) throws Exception {
         performTestSimpleFindDeclaration(code, caretOffset, Collections.singleton(new Golden(declarationFile, declarationOffset)));
     }
-    
+
     private void performTestSimpleFindDeclaration(String[] code, final int caretOffset, final Set<Golden> golden) throws Exception {
         performTest(code, new CancellableTask<CompilationInfo>() {
             public void cancel() {}
@@ -383,13 +383,13 @@ public class DeclarationFinderImplTest extends TestBase {
 
                 assertNotNull(found.getFileObject());
                 Set<Golden> result = new HashSet<Golden>();
-                
+
                 result.add(new Golden(found.getFileObject().getNameExt(), found.getOffset()));
-                
+
                 for (AlternativeLocation l : found.getAlternativeLocations()) {
                     result.add(new Golden(l.getLocation().getFileObject().getNameExt(), l.getLocation().getOffset()));
                 }
-                
+
                 assertEquals(golden, result);
             }
         });
@@ -402,7 +402,7 @@ public class DeclarationFinderImplTest extends TestBase {
         public Golden(int declarationFile, int declarationOffset) {
             this(computeFileName(declarationFile - 1), declarationOffset);
         }
-        
+
         public Golden(String declarationFile, int declarationOffset) {
             this.declarationFile = declarationFile;
             this.declarationOffset = declarationOffset;
@@ -440,5 +440,5 @@ public class DeclarationFinderImplTest extends TestBase {
         }
 
     }
-    
+
 }

@@ -138,6 +138,10 @@ public class ApplicationXmlWizardPanel1 implements WizardDescriptor.Panel {
             project = (EarProject)Templates.getProject(wizardDescriptor);
             component.setProject(project);
         }
+
+        wizardDescriptor.putProperty ("NewFileWizard_Title", // NOI18N
+            NbBundle.getMessage(ApplicationXmlWizardPanel1.class, "TITLE_StdDdFile"));
+        
     }
 
     public void storeSettings(Object settings) {}

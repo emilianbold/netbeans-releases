@@ -105,6 +105,7 @@ public class CCSyntax extends Syntax {
         lang = IS_CPLUSPLUS;
     }
 
+    @Override
     protected TokenID parseToken() {
         char actChar;
 
@@ -1772,38 +1773,67 @@ public class CCSyntax extends Syntax {
 	    default:
 	      return null;
 	    }
-            case '_':
-                if (len <= 4) {
+        case '_':
+            if (len <= 4) {
+                return null;
+            }
+            switch (buffer[offset++]) {
+            case 'B': // keyword "_Bool" (C only)
+                return (lang == IS_C && len == 5
+                        && buffer[offset++] == 'o'
+                        && buffer[offset++] == 'o'
+                        && buffer[offset++] == 'l')
+                    ? CCTokenContext._BOOL : null;
+            case 'C': // keyword "_Complex" (C only)
+                return (lang == IS_C && len == 8
+                        && buffer[offset++] == 'o'
+                        && buffer[offset++] == 'm'
+                        && buffer[offset++] == 'p'
+                        && buffer[offset++] == 'l'
+                        && buffer[offset++] == 'e'
+                        && buffer[offset++] == 'x')
+                    ? CCTokenContext._COMPLEX : null;
+            case 'I': // keyword "_Imaginary" (C only)
+                return (lang == IS_C && len == 10
+                        && buffer[offset++] == 'm'
+                        && buffer[offset++] == 'a'
+                        && buffer[offset++] == 'g'
+                        && buffer[offset++] == 'i'
+                        && buffer[offset++] == 'n'
+                        && buffer[offset++] == 'a'
+                        && buffer[offset++] == 'r'
+                        && buffer[offset++] == 'y')
+                    ? CCTokenContext._IMAGINARY : null;
+            case '_': // keywords starting with __
+                if (len < 10) {
                     return null;
                 }
                 switch (buffer[offset++]) {
-                case 'B': // keyword "_Bool" (C only)
-                    return (lang == IS_C && len == 5
-                            && buffer[offset++] == 'o'
-                            && buffer[offset++] == 'o'
-                            && buffer[offset++] == 'l')
-                        ? CCTokenContext._BOOL : null;
-                case 'C': // keyword "_Complex" (C only)
-                    return (lang == IS_C && len == 8
-                            && buffer[offset++] == 'o'
-                            && buffer[offset++] == 'm'
-                            && buffer[offset++] == 'p'
-                            && buffer[offset++] == 'l'
-                            && buffer[offset++] == 'e'
-                            && buffer[offset++] == 'x')
-                        ? CCTokenContext._COMPLEX : null;
-                case 'I': // keyword "_Imaginary" (C only)
-                    return (lang == IS_C && len == 10
-                            && buffer[offset++] == 'm'
-                            && buffer[offset++] == 'a'
-                            && buffer[offset++] == 'g'
-                            && buffer[offset++] == 'i'
-                            && buffer[offset++] == 'n'
-                            && buffer[offset++] == 'a'
-                            && buffer[offset++] == 'r'
-                            && buffer[offset++] == 'y')
-                        ? CCTokenContext._IMAGINARY : null;
+                    case 'a': // __attribute__ 
+                        return ((len == 13)
+                                && buffer[offset++] == 't'
+                                && buffer[offset++] == 't'
+                                && buffer[offset++] == 'r'
+                                && buffer[offset++] == 'i'
+                                && buffer[offset++] == 'b'
+                                && buffer[offset++] == 'u'
+                                && buffer[offset++] == 't'
+                                && buffer[offset++] == 'e'
+                                && buffer[offset++] == '_'
+                                && buffer[offset++] == '_')
+                            ? CCTokenContext.__ATTRIBUTE__ : null;
+                    case 'u': // __unused__
+                        return ((len == 10)
+                                && buffer[offset++] == 'n'
+                                && buffer[offset++] == 'u'
+                                && buffer[offset++] == 's'
+                                && buffer[offset++] == 'e'
+                                && buffer[offset++] == 'd'
+                                && buffer[offset++] == '_'
+                                && buffer[offset++] == '_')
+                            ? CCTokenContext.__UNUSED__ : null;
                 }
+            }
 	default:
 	  return null;
 	}

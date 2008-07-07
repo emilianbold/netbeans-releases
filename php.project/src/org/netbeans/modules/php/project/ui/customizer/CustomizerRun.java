@@ -67,9 +67,9 @@ public class CustomizerRun extends javax.swing.JPanel {
     public CustomizerRun(PhpProjectProperties properties, final Category category) {
         manager = new ConfigManager(properties);
         insidePanels = new RunAsPanel.InsidePanel[] {
-            new RunAsLocalWeb(manager, category),
-            new RunAsRemoteWeb(manager, category),
-            new RunAsScript(manager, category),
+            new RunAsLocalWeb(properties.getProject(), manager, category),
+            new RunAsRemoteWeb(properties.getProject(), manager, category),
+            new RunAsScript(properties.getProject(), manager, category),
         };
         initComponents();
         comboModel = new ConfigComboBoxModel();

@@ -55,6 +55,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
 
 /**
  * Able to import given Eclipse projects in separate thread with providing
@@ -75,8 +76,9 @@ final class Importer {
     
     private int nOfProcessed;
     private String progressInfo;
-    private boolean done;
     private List<String> warnings = new ArrayList<String>();
+    
+    private Task task = null;
     
     /**
      * 
@@ -96,12 +98,11 @@ final class Importer {
      * information about current progress.
      */
     void startImporting() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        task = RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 ProjectManager.mutex().writeAccess(new Runnable() {
                     public void run() {
                         try {
-                            int pos = 0;
                             for (Iterator it = eclProjects.iterator(); it.hasNext(); ) {
                                 EclipseProject eclPrj = (EclipseProject) it.next();
                                 Project p = importProject(eclPrj, warnings);
@@ -111,8 +112,6 @@ final class Importer {
                             }
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
-                        } finally {
-                            done = true;
                         }
                     }
                 });
@@ -138,7 +137,7 @@ final class Importer {
      * Returns whether importer has finished.
      */
     boolean isDone() {
-        return done;
+        return task != null && task.isFinished();
     }
     
     List<String> getWarnings() {
@@ -188,7 +187,7 @@ final class Importer {
         Project p;
         if (alreadyImported != null) {
             p = alreadyImported;
-            projectImportProblems.add("Existing NetBeans project was found and will be used intead.");
+            projectImportProblems.add("Existing NetBeans project was found and will be used instead.");
         } else {
             if (!eclProject.isImportSupported()) {
                 importProblems.add("Unkown project type - it cannot be imported.");

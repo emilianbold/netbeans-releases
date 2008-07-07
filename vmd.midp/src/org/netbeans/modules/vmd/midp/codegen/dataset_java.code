@@ -41,25 +41,25 @@
     __stop_guardedblock__
       // declaration field
     __start_guardedblock__ 
-        public Class getType(String type) throws DataBindingException {
+        public Class getType(String type) throws IllegalStateException {
         __stop_guardedblock__
 
-            throw new DataBindingException("Not implemented yet.");
+            throw new IllegalStateException("Not implemented yet.");
         __start_guardedblock__
         }
         __stop_guardedblock__
         
         __start_guardedblock__
-        public Object getValue(String name) throws DataBindingException {
+        public Object getValue(String name) throws IllegalStateException {
         __stop_guardedblock__
 
-            throw new DataBindingException("Not implemented yet.");
+            throw new IllegalStateException("Not implemented yet.");
         __start_guardedblock__
         }
         __stop_guardedblock__
 
         __start_guardedblock__
-        public void setValue(String name, Object value) throws DataBindingException {
+        public void setValue(String name, Object value) throws IllegalStateException {
         __stop_guardedblock__
             //TODO Implement this methode
             DataBinder.fireDataSetChanged(this , name);
@@ -68,7 +68,7 @@
         __stop_guardedblock__
 
         __start_guardedblock__
-        public void setAsString(String name, String stringValue) throws DataBindingException {
+        public void setAsString(String name, String stringValue) throws IllegalStateException {
         __stop_guardedblock__
              //TODO Implement this methode
             DataBinder.fireDataSetChanged(this , name);
@@ -77,10 +77,10 @@
         __stop_guardedblock__
 
         __start_guardedblock__
-        public boolean isReadOnly(String readOnly) throws DataBindingException {
+        public boolean isReadOnly(String readOnly) throws IllegalStateException {
         __stop_guardedblock__
 
-            throw new DataBindingException("Not implemented yet.");
+            throw new IllegalStateException("Not implemented yet.");
         __start_guardedblock__
         }
         __stop_guardedblock__

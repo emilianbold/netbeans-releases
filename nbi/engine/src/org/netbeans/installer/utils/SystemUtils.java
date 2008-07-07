@@ -39,18 +39,10 @@ package org.netbeans.installer.utils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.ApplicationDescriptor;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
@@ -67,6 +59,7 @@ import org.netbeans.installer.utils.system.NativeUtilsFactory;
 import org.netbeans.installer.utils.system.launchers.Launcher;
 import org.netbeans.installer.utils.system.launchers.LauncherFactory;
 import org.netbeans.installer.utils.system.launchers.LauncherProperties;
+import org.netbeans.installer.utils.system.resolver.StringResolverUtil;
 import org.netbeans.installer.utils.system.shortcut.LocationType;
 
 /**
@@ -87,178 +80,7 @@ public final class SystemUtils {
     }
     
     public static String resolveString(String string, ClassLoader loader) {
-        String parsed = string;
-        
-        if (parsed == null) {
-            return null;
-        }
-        // N for Name
-        if (parsed.contains("$N{install}")) {
-            try {
-                parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{install\\}", StringUtils.escapeRegExp(getDefaultApplicationsLocation().getAbsolutePath()));
-            } catch (NativeException e) {
-                ErrorManager.notifyError(ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_GET_DEFAULT_APPS_LOCATION_KEY), e);
-            }
-        }
-        if (parsed.contains("$N{home}")) {
-            parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{home\\}", StringUtils.escapeRegExp(getUserHomeDirectory().getAbsolutePath()));
-        }
-        if (parsed.contains("$N{temp}")) {
-            parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{temp\\}", StringUtils.escapeRegExp(getTempDirectory().getAbsolutePath()));
-        }
-        if (parsed.contains("$N{current}")) {
-            parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{current\\}", StringUtils.escapeRegExp(getCurrentDirectory().getAbsolutePath()));
-        }
-        
-        Matcher matcher;
-        
-        // P for Properties
-        matcher = Pattern.compile("(?<!\\\\)\\$P\\{(.*?), (.*?)(?:, (.*?))?\\}").matcher(parsed);
-        while (matcher.find()) {
-            String basename        = matcher.group(1);
-            String key             = matcher.group(2);
-            String argumentsString = matcher.group(3);
-            
-            if (argumentsString == null) {
-                parsed = parsed.replace(matcher.group(), ResourceUtils.getString(basename, key, loader));
-            } else {
-                Object[] arguments = (Object[]) argumentsString.split(", ?");
-                
-                parsed = parsed.replace(matcher.group(), ResourceUtils.getString(basename, key, loader, arguments));
-            }
-        }
-        
-        // F for Field
-        matcher = Pattern.compile("(?<!\\\\)\\$F\\{((?:[a-zA-Z_][a-zA-Z_0-9]*\\.)+[a-zA-Z_][a-zA-Z_0-9]*)\\.([a-zA-Z_][a-zA-Z_0-9]*)\\}").matcher(parsed);
-        while (matcher.find()) {
-            String classname = matcher.group(1);
-            String fieldname = matcher.group(2);
-            
-            try {
-                Object object = loader.loadClass(classname).getField(fieldname).get(null);
-                if (object != null) {
-                    String value = object.toString();
-                    
-                    parsed = parsed.replace(matcher.group(), value);
-                }
-            } catch (IllegalArgumentException e) {
-                ErrorManager.notifyDebug(
-                        ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            } catch (SecurityException e) {
-                ErrorManager.notifyDebug(
-                        ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            } catch (ClassNotFoundException e) {
-                ErrorManager.notifyDebug(
-                        ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            } catch (IllegalAccessException e) {
-                ErrorManager.notifyDebug(
-                        ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            } catch (NoSuchFieldException e) {
-                ErrorManager.notifyDebug(
-                        ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            }
-        }
-        
-        // M for Method
-        matcher = Pattern.compile("(?<!\\\\)\\$M\\{((?:[a-zA-Z_][a-zA-Z_0-9]*\\.)+[a-zA-Z_][a-zA-Z_0-9]*)\\.([a-zA-Z_][a-zA-Z_0-9]*)\\(\\)\\}").matcher(parsed);
-        while (matcher.find()) {
-            String classname = matcher.group(1);
-            String methodname = matcher.group(2);
-            
-            try {
-                Method method = loader.loadClass(classname).getMethod(methodname);
-                if (method != null) {
-                    Object object = method.invoke(null);
-                    
-                    if (object != null) {
-                        String value = object.toString();
-                        
-                        parsed = parsed.replace(matcher.group(), value);
-                    }
-                }
-            } catch (IllegalArgumentException e) {
-                ErrorManager.notifyDebug(ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            } catch (SecurityException e) {
-                ErrorManager.notifyDebug(ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            } catch (ClassNotFoundException e) {
-                ErrorManager.notifyDebug(ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            } catch (IllegalAccessException e) {
-                ErrorManager.notifyDebug(ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            } catch (NoSuchMethodException e) {
-                ErrorManager.notifyDebug(ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            } catch (InvocationTargetException e) {
-                ErrorManager.notifyDebug(ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            }
-        }
-        
-        // R for Resource
-        matcher = Pattern.compile("(?<!\\\\)\\$R\\{(.*?)(;(.*)?)?}").matcher(parsed);
-        while (matcher.find()) {
-            String path = matcher.group(1);
-            String charset = matcher.group(3);
-            if(charset!=null) {
-                charset = charset.trim();
-                if(charset.equals(StringUtils.EMPTY_STRING)) {
-                    charset = null;
-                }
-            } 
-            InputStream inputStream = null;
-            try {
-                inputStream  = ResourceUtils.getResource(path, loader);
-                parsed = parsed.replace(matcher.group(), StringUtils.readStream(inputStream, charset));
-            } catch (IOException e) {
-                ErrorManager.notifyDebug(ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            } finally {
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
-                        ErrorManager.notifyDebug("Cannot close input stream after reading resource: " + matcher.group(), e);
-                    }
-                }
-            }
-        }
-        
-        // S for System Property
-        matcher = Pattern.compile("(?<!\\\\)\\$S\\{(.*?)\\}").matcher(parsed);
-        while (matcher.find()) {
-            String name = matcher.group(1);
-            String value = System.getProperty(name);
-            
-            parsed = parsed.replace(matcher.group(), value);
-        }
-        
-        // E for Environment Variable
-        matcher = Pattern.compile("(?<!\\\\)\\$E\\{(.*?)\\}").matcher(parsed);
-        while (matcher.find()) {
-            try {
-                String name = matcher.group(1);
-                String value = getEnvironmentVariable(name);
-                
-                parsed = parsed.replace(matcher.group(), value);
-            } catch (NativeException e) {
-                ErrorManager.notifyDebug(ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            }
-        }
-        
-        parsed.replace("\\$", "$");
-        parsed.replace("\\\\", "\\");
-        
-        return parsed;
+        return StringResolverUtil.resolve(string, loader);
     }
     
     public static File resolvePath(String string) {
@@ -318,7 +140,8 @@ public final class SystemUtils {
     
     public static boolean isCurrentJava64Bit() {
         final String osArch = System.getProperty("os.arch");
-        return osArch.equals("amd64") ||
+        return "64".equals(System.getProperty("sun.arch.data.model")) ||
+                osArch.equals("amd64") ||
                 osArch.equals("sparcv9") ||
                 osArch.equals("x86_64") ||
                 osArch.equals("ppc64");
@@ -456,63 +279,11 @@ public final class SystemUtils {
     }
     
     public static boolean isPortAvailable(int port, int... forbiddenPorts) {
-        // check whether the port is in the restricted list, if it is, there is no
-        // sense to check whether it is physically available
-        for (int forbidden: forbiddenPorts) {
-            if (port == forbidden) {
-                return false;
-            }
-        }
-        
-        // if the port is not in the allowed range - return false
-        if ((port < 0) && (port > 65535)) {
-            return false;
-        }
-        
-        // if the port is not in the restricted list, we'll try to open a server
-        // socket on it, if we fail, then someone is already listening on this port
-        // and it is occupied
-        ServerSocket socket = null;
-        try {
-            socket = new ServerSocket(port);
-            return true;
-        } catch (IOException e) {
-            return false;
-        } finally {
-            if (socket != null) {
-                try {
-                    socket.close();
-                } catch (IOException e) {
-                    ErrorManager.notifyError(
-                            "Could not close server socket on port " + port,
-                            e);
-                }
-            }
-        }
+        return NetworkUtils.isPortAvailable(port, forbiddenPorts);       
     }
     
     public static int getAvailablePort(int basePort, int... forbiddenPorts) {
-        // increment the port value until we find an available port or stumble into
-        // the upper bound
-        int port = basePort;
-        while ((port < 65535) && !isPortAvailable(port, forbiddenPorts)) {
-            port++;
-        }
-        
-        if (port == 65535) {
-            port = 0;
-            while ((port < basePort) && !isPortAvailable(port, forbiddenPorts)) {
-                port++;
-            }
-            
-            if (port == basePort) {
-                return -1;
-            } else {
-                return port;
-            }
-        } else {
-            return port;
-        }
+        return NetworkUtils.getAvailablePort(basePort, forbiddenPorts);        
     }
     
     public static boolean isDeletingAllowed(File file) {
@@ -718,16 +489,7 @@ public final class SystemUtils {
     }
     
     public static String getHostName() {
-        try {
-            String hostName = InetAddress.getLocalHost().getHostName();
-            if (hostName != null) {
-                return hostName;
-            }
-        } catch (UnknownHostException e) {
-            LogManager.log(ErrorLevel.MESSAGE, e);
-        }
-        
-        return "localhost"; //NOI18N
+        return NetworkUtils.getHostName();        
     }
     
     public static List<File> getFileSystemRoots() throws IOException {
@@ -831,9 +593,5 @@ public final class SystemUtils {
     public static final String USER_HOME = 
             System.getProperty("user.home");//NOI18N
     public static final String NO_SPACE_CHECK_PROPERTY = 
-            "no.space.check";//NOI18N
-    public static final String ERROR_CANNOT_PARSE_PATTERN_KEY =
-            "SU.error.cannot.parse.pattern";//NOI18N
-    public static final String ERROR_CANNOT_GET_DEFAULT_APPS_LOCATION_KEY =
-            "SU.error.cannot.get.default.apps.location";//NOI18N
+            "no.space.check";//NOI18N      
 }

@@ -1,2 +1,2 @@
-test: something should happen to ...:TEST:[]:ESCAPED{test: something should happen to ...}:
-test: something else should happe...:TEST:[]:ESCAPED{test: something else should happe...}:
+something should happen to me okay?:TEST:[]:ESCAPED{something should happen to me okay?}:
+something else should happen to me okay?:TEST:[]:ESCAPED{something else should happen to me okay?}:

@@ -43,7 +43,7 @@ package org.netbeans.test.j2ee.multiview;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
-import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.ddloaders.multiview.BeanDetailNode;
@@ -68,7 +68,7 @@ import org.openide.nodes.Node;
  *
  * @author jhorvath
  */
-public abstract class DDTestCase extends JellyTestCase {
+public abstract class DDTestCase extends J2eeTestCase {
     
     protected static Project project;
     protected static EjbJarMultiViewDataObject ddObj;

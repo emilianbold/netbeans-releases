@@ -52,6 +52,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileXMLCodec;
@@ -61,6 +62,7 @@ import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -70,7 +72,7 @@ import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-public class RunProfile implements ConfigurationAuxObject {
+public class RunProfile implements ConfigurationAuxObject, PlatformTypes {
     private static final boolean NO_EXEPTION = Boolean.getBoolean("org.netbeans.modules.cnd.makeproject.api.runprofiles");
 
     public static final String PROFILE_ID = "runprofile"; // NOI18N
@@ -122,14 +124,17 @@ public class RunProfile implements ConfigurationAuxObject {
     private IntConfiguration terminalType;
     private HashMap termPaths;
     private HashMap termOptions;
+    private final int platform;
     
-    public RunProfile(String baseDir) {
+    public RunProfile(String baseDir, int platform) {
+        this.platform = platform;
         this.baseDir = baseDir;
         this.pcs = null;
         initialize();
     }
     
     public RunProfile(String baseDir, PropertyChangeSupport pcs) {
+        platform = Platform.getDefaultPlatform(); //TODO: it's not always right
         this.baseDir = baseDir;
         this.pcs = pcs;
         initialize();
@@ -164,6 +169,10 @@ public class RunProfile implements ConfigurationAuxObject {
         }
     }
     
+    private boolean isWindows() {
+        return platform == PLATFORM_WINDOWS;
+    }
+    
     private String[] setTerminalTypeNames() {
         List list = new ArrayList();
         String def = getString("TerminalType_Default"); // NOI18N
@@ -171,7 +180,7 @@ public class RunProfile implements ConfigurationAuxObject {
         String termPath;
         
         list.add(def);
-        if (Utilities.isWindows()) {
+        if (isWindows()) {
             String term = getString("TerminalType_CommandWindow"); // NOI18N
             list.add(term);
             termPaths.put(term, "start"); // NOI18N
@@ -410,15 +419,13 @@ public class RunProfile implements ConfigurationAuxObject {
     public void setRunDir(String runDir) {
         if (runDir == null)
             runDir = ""; // NOI18N
-        if (this.runDir == runDir)
-            return;
         if (this.runDir != null && this.runDir.equals(runDir)) {
             return;
         }
-        String oldRunDir = this.runDir;
         this.runDir = runDir;
-        if (pcs != null)
+        if (pcs != null) {
             pcs.firePropertyChange(PROP_RUNDIR_CHANGED, null, this);
+        }
         needSave = true;
     }
     
@@ -624,7 +631,7 @@ public class RunProfile implements ConfigurationAuxObject {
      */
     @Override
     public Object clone() {
-        RunProfile p = new RunProfile(getBaseDir());
+        RunProfile p = new RunProfile(getBaseDir(), this.platform);
         //p.setParent(getParent());
         p.setCloneOf(this);
         p.setDefault(isDefault());

@@ -48,7 +48,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -67,6 +66,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntBuildExtender;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathSupportCallbackImpl;
@@ -79,7 +79,6 @@ import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectWebServi
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathExtender;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.common.project.classpath.LibrariesLocationUpdater;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
@@ -175,7 +174,6 @@ public final class AppClientProject implements Project, AntProjectListener, File
     private final ClassPathExtender classPathExtender;
     private final ClassPathModifier cpMod;
     private final ClassPathProviderImpl cpProvider;
-    private LibrariesLocationUpdater librariesLocationUpdater;
     private ClassPathUiSupport.Callback classPathUiSupportCallback;
     
     // use AntBuildExtender to enable Ant Extensibility
@@ -202,9 +200,6 @@ public final class AppClientProject implements Project, AntProjectListener, File
             new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), 
             getClassPathUiSupportCallback(), new String[]{ProjectProperties.JAVAC_CLASSPATH});
         classPathExtender = new ClassPathExtender(cpMod, ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
-        librariesLocationUpdater = new LibrariesLocationUpdater(this, updateHelper, eval, cpMod.getClassPathSupport(),
-                ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES, 
-                null, null);
         lookup = createLookup(aux, cpProvider);
         helper.addAntProjectListener(this);
     }
@@ -784,17 +779,25 @@ public final class AppClientProject implements Project, AntProjectListener, File
             // set jaxws.endorsed.dir property (for endorsed mechanism to be used with wsimport, wsgen)
             WSUtils.setJaxWsEndorsedDirProperty(ep);
 
+            // #134642 - use Ant task from copylibs library
+            if (helper.isSharableProject() && refHelper.getProjectLibraryManager().getLibrary("CopyLibs") == null) { // NOI18N
+                try {
+                    refHelper.copyLibrary(LibraryManager.getDefault().getLibrary("CopyLibs")); // NOI18N
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
             //update lib references in project properties
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            ArrayList<ClassPathSupport.Item> l = new ArrayList<ClassPathSupport.Item>();
-            l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(ProjectProperties.JAVAC_CLASSPATH), ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES));
-            ProjectProperties.storeLibrariesLocations(helper, l.iterator(), helper.isSharableProject() ? props : ep);
+            ProjectProperties.removeObsoleteLibraryLocations(ep);
+            ProjectProperties.removeObsoleteLibraryLocations(props);
             
-            // #129316
-            if (helper.isSharableProject()) {
-                ProjectProperties.removeObsoleteLibraryLocations(ep);
+            if (!props.containsKey(ProjectProperties.INCLUDES)) {
+                props.setProperty(ProjectProperties.INCLUDES, "**"); // NOI18N
             }
-            ProjectProperties.refreshLibraryTotals(props, cpMod.getClassPathSupport(), ProjectProperties.JAVAC_CLASSPATH,  ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
+            if (!props.containsKey(ProjectProperties.EXCLUDES)) {
+                props.setProperty(ProjectProperties.EXCLUDES, ""); // NOI18N
+            }
             updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
             
             updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
@@ -845,11 +848,6 @@ public final class AppClientProject implements Project, AntProjectListener, File
             J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
             if (platform != null) {
                 unregisterJ2eePlatformListener(platform);
-            }
-
-            // unregister the property change listener on the prop evaluator
-            if (librariesLocationUpdater != null) {
-                librariesLocationUpdater.destroy();
             }
 
             // Probably unnecessary, but just in case:

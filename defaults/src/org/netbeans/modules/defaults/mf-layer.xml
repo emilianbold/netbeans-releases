@@ -959,7 +959,9 @@ made subject to such option by the copyright holder.
             <file name="O-Enter.shadow">
                 <attr name="originalFile" stringvalue="Actions/Source/org-netbeans-modules-editor-hints-FixAction.instance"/>
             </file>
-            
+            <file name="DOS-O.shadow"> <!--Temporary until nicer shortcut s found-->
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-jumpto-symbol-GoToSymbol.instance"/>
+            </file>
         </folder>
         
         
@@ -1360,6 +1362,32 @@ made subject to such option by the copyright holder.
                     <folder name="BlueTheme">
                         <folder name="Defaults">
                             <file name="org-netbeans-modules-editor-java-token-colorings.xml" url="BlueTheme-Java-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+            
+            <folder name="x-css">
+                <folder name="FontsColors">
+                    <folder name="CityLights">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-java-token-colorings.xml" url="CityLights-CSS-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="NetBeans55">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-java-token-colorings.xml" url="NetBeans55-CSS-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>                    
+                    <folder name="BlueTheme">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-java-token-colorings.xml" url="BlueTheme-CSS-fontsColors.xml">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
                             </file>
                         </folder>

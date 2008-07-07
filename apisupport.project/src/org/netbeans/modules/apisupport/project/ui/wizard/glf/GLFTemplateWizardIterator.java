@@ -2,9 +2,6 @@ package org.netbeans.modules.apisupport.project.ui.wizard.glf;
 
 import java.awt.Component;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -61,34 +58,7 @@ public final class GLFTemplateWizardIterator implements WizardDescriptor.Instant
     }
 
     public Set instantiate () throws IOException {
-        String mimeType = ((GLFTemplateWizardPanel2) panels[0]).getMimeType();
-        String extensions = ((GLFTemplateWizardPanel2) panels[0]).getExtensions();
-
-        int i = mimeType.indexOf ('/');
-        String mimeType1 = mimeType.substring (0, i);
-        String mimeType2 = mimeType.substring (i + 1);
-
-        CreatedModifiedFiles cmf = new CreatedModifiedFiles(getProject());
-
-        cmf.add(cmf.createLayerEntry(
-            "Editors/" + mimeType1 + "/" + mimeType2 + "/" + "language.nbs", // NOI18N
-            CreatedModifiedFiles.getTemplate("NBSTemplate.nbs"), Collections.<String,String>emptyMap(), null, null));
-
-        cmf.add(cmf.createLayerEntry(
-            "Navigator/Panels/" + mimeType1 + "/" + mimeType2 + "/" + "org-netbeans-modules-languages-features-LanguagesNavigator.instance", // NOI18N
-            null, null, null, null));
-
-        Map<String,String> toks = new HashMap<String,String>();
-        toks.put("mime", mimeType);
-        StringBuilder b = new StringBuilder();
-        for (String ext : extensions.split(" ")) {
-            b.append("        <ext name=\"").append(ext).append("\"/>\n");
-        }
-        toks.put("extensions", b.toString());
-        cmf.add(cmf.createLayerEntry(
-            "Services/MIMEResolver/" + mimeType1 + "-" + mimeType2 + "-mime-resolver.xml", // NOI18N
-            CreatedModifiedFiles.getTemplate("nbsresolver.xml"), toks, null, null));
-
+        CreatedModifiedFiles cmf = ((GLFTemplateWizardPanel2) panels[0]).getComponent().getCreatedModifiedFiles();
         cmf.run();
         return BasicWizardIterator.getCreatedFiles(cmf, Templates.getProject(wizard));
     }

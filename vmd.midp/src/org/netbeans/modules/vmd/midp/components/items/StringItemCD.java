@@ -60,7 +60,7 @@ import org.netbeans.modules.vmd.midp.screen.display.StringItemDisplayPresenter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.midp.codegen.MIDPDatabindingCodeSupport;
+import org.netbeans.modules.vmd.midp.codegen.MidpDatabindingCodeSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -94,10 +94,10 @@ public class StringItemCD extends ComponentDescriptor {
     @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
-        presenters.addAll(MIDPDatabindingCodeSupport.createDatabindingPresenters(PROP_TEXT
+        presenters.addAll(MidpDatabindingCodeSupport.createDatabindingPresenters(PROP_TEXT
                                                                                  ,"getText()"
-                                                                                 ,MIDPDatabindingCodeSupport.ProviderType.StringItem
-                                                                                 ,MIDPDatabindingCodeSupport.FeatureType.StringItem_FEATURE_TEXT));
+                                                                                 ,TYPEID
+                                                                                 ,MidpDatabindingCodeSupport.FeatureType.StringItem_FEATURE_TEXT));
         super.gatherPresenters (presenters);
     }
 

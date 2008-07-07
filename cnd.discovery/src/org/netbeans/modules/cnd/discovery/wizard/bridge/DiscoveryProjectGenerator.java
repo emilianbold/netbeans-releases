@@ -254,7 +254,7 @@ public class DiscoveryProjectGenerator {
         }
         if (usedExtension.size()>0 && addNewExtensionDialog(usedExtension)){
             // add unknown extensin to HDataLoader
-            HDataLoader.getInstance().addExtensions(usedExtension);
+            projectBridge.addExtensions(usedExtension);
         }
     }
     

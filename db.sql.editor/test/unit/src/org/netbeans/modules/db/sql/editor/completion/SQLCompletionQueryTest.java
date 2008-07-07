@@ -78,19 +78,36 @@ public class SQLCompletionQueryTest extends NbTestCase {
     public static Test suite() throws Exception {
         TestSuite suite = new TestSuite();
         // Find a way to add the tests automatically (java.util.zip?).
+
         suite.addTest(new SQLCompletionQueryTest("selectAll"));
         suite.addTest(new SQLCompletionQueryTest("selectNoSchemas"));
         suite.addTest(new SQLCompletionQueryTest("selectSimple"));
         suite.addTest(new SQLCompletionQueryTest("selectSchema"));
+        suite.addTest(new SQLCompletionQueryTest("selectSchemaTable"));
         suite.addTest(new SQLCompletionQueryTest("selectTableInDefaultSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectTableInNonDefaultSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectColumn"));
+
         suite.addTest(new SQLCompletionQueryTest("selectEmptyFromClause"));
         suite.addTest(new SQLCompletionQueryTest("selectAllFrom"));
         suite.addTest(new SQLCompletionQueryTest("selectSimpleFrom"));
         suite.addTest(new SQLCompletionQueryTest("selectFromQualTableInDefaultSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectFromUnqualTableInDefaultSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectFromSchema"));
+        suite.addTest(new SQLCompletionQueryTest("selectFromSchemaTableNotInFromClause"));
+
+        suite.addTest(new SQLCompletionQueryTest("selectQuotedSchema"));
+        suite.addTest(new SQLCompletionQueryTest("selectQuotedColumn"));
+        suite.addTest(new SQLCompletionQueryTest("selectQuote"));
+
+        suite.addTest(new SQLCompletionQueryTest("fromAll"));
+        suite.addTest(new SQLCompletionQueryTest("fromSimple"));
+        suite.addTest(new SQLCompletionQueryTest("fromSchema"));
+
+        suite.addTest(new SQLCompletionQueryTest("whereAll"));
+        suite.addTest(new SQLCompletionQueryTest("whereSimple"));
+        suite.addTest(new SQLCompletionQueryTest("whereSchema"));
+        suite.addTest(new SQLCompletionQueryTest("whereSchemaTable"));
 
         // Does not work yet.
         // suite.addTest(new SQLCompletionQueryTest("selectFromTableInNonDefaultSchema", true));
@@ -152,7 +169,7 @@ public class SQLCompletionQueryTest extends NbTestCase {
             throw new IllegalArgumentException();
         }
         SQLCompletionQuery query = new SQLCompletionQuery(model);
-        query.doQuery(sql, caretOffset);
+        query.doQuery(SQLCompletionEnv.create(sql, caretOffset));
         for (SQLCompletionItem item : query.items) {
             output.append(item.toString());
             output.append('\n');

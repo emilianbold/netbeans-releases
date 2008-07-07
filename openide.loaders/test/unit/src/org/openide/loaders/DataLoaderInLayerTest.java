@@ -58,6 +58,7 @@ import junit.framework.Test;
 import org.openide.actions.EditAction;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 /** Check what can be done when registering loaders in layer.
  * @author Jaroslav Tulach
@@ -69,8 +70,12 @@ public class DataLoaderInLayerTest extends NbTestCase {
     }
     
     public static Test suite() {
-        return new NbTestSuite(DataLoaderInLayerTest.class);
-        //return new DataLoaderInLayerTest("testSimpleLoader");
+        Test t = null;
+        t = new NbTestSuite(DataLoaderInLayerTest.class);
+        if (t == null) {
+            t = new DataLoaderInLayerTest("testFactoryInstanceRegistrationWorksAsWell");
+        }
+        return t;
     }
     
     protected FileSystem createFS(String... resources) throws IOException {
@@ -102,6 +107,13 @@ public class DataLoaderInLayerTest extends NbTestCase {
                 fo.delete();
             }
         }
+        for (;;) {
+            Object f = Lookups.forPath("Loaders/" + mime + "/Factories").lookup(clazz);
+            FolderLookup.ProxyLkp.DISPATCH.waitFinished();
+            if (add == (f != null)) {
+                break;
+            }
+        }
     }
     private static <F extends DataObject.Factory> void addRemove(String mime, F factory, boolean add) throws IOException {
         String res = "Loaders/" + mime + "/Factories/" + factory.getClass().getSimpleName().replace('.', '-') + ".instance";
@@ -114,6 +126,13 @@ public class DataLoaderInLayerTest extends NbTestCase {
             FileObject fo = root.getFileObject(res);
             if (fo != null) {
                 fo.delete();
+            }
+        }
+        for (;;) {
+            Object f = Lookups.forPath("Loaders/" + mime + "/Factories").lookup(factory.getClass());
+            FolderLookup.ProxyLkp.DISPATCH.waitFinished();
+            if (add == (f != null)) {
+                break;
             }
         }
     }
@@ -235,7 +254,6 @@ public class DataLoaderInLayerTest extends NbTestCase {
         }
     }
 
-    @RandomlyFails // NB-Core-Build #767
     public void testSimpleLoader() throws Exception {
         DataLoader l = DataLoader.getLoader(SimpleUniFileLoader.class);
         addRemoveLoader(l, true);
@@ -334,7 +352,6 @@ public class DataLoaderInLayerTest extends NbTestCase {
         }
     }
 
-    @RandomlyFails
     public void testManifestRegistrationsTakePreceedence() throws Exception {
         DataLoader l1 = DataLoader.getLoader(SimpleUniFileLoader.class);
         DataLoader l2 = DataLoader.getLoader(AntUniFileLoader.class);

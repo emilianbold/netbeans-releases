@@ -51,6 +51,8 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -84,17 +86,15 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private final CsmUID<CsmScope> scopeUID;
     
     private final CharSequence[] rawName;
-    
-    private List<CsmTemplateParameter> templateParams = Collections.emptyList();
-    
-    private CharSequence templateSuffix;
+
+    private TemplateDescriptor templateDescriptor = null;
+
     protected CharSequence classTemplateSuffix;
     
     private static final byte FLAGS_VOID_PARMLIST = 1 << 0;
     private static final byte FLAGS_STATIC = 1 << 1;
     private static final byte FLAGS_CONST = 1 << 2;
     private static final byte FLAGS_OPERATOR = 1 << 3;
-    private static final byte FLAGS_TEMPLATE = 1 << 4;
     private byte flags;
     
     public FunctionImpl(AST ast, CsmFile file, CsmScope scope) throws AstRendererException {
@@ -149,8 +149,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 	
         boolean _const = initConst(ast);
         setFlags(FLAGS_CONST, _const);
-        returnType = initReturnType(ast, scope);
         initTemplate(ast);
+        returnType = initReturnType(ast);
 
         // set parameters, do it in constructor to have final fields
         List<CsmParameter> params = initParameters(ast);
@@ -268,13 +268,18 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                             templateNode = templateSiblingNode;
                         } else {
                             // we have no template-method at all
-                            _template = false;
+                                                        
+                            //_template = false; // Commented - Reasons:
+                            // In some cases we have different parameter names 
+                            // in declaration of template and definition of non-template method,                            
+                            // so we always add this parameters as template parameters of method.
                         }
                     }
                 }
             }
             
             if (_template) {
+                CharSequence templateSuffix;
                 // 3. We are sure now what we have template-method, 
                 // let's check is it specialization template or not
                 if (specialization) { 
@@ -291,12 +296,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                     TemplateUtils.addSpecializationSuffix(templateNode.getFirstChild(), sb);
                     templateSuffix = '<' + sb.toString() + '>';
                 }
+                this.templateDescriptor = new TemplateDescriptor(
+                        TemplateUtils.getTemplateParameters(node.getFirstChild(),
+                        getContainingFile(), this), templateSuffix);
             }
-        }
-        setFlags(FLAGS_TEMPLATE, _template);
-        if (_template) {
-            //AST ast, CsmFile file, CsmScope scope, String name
-            this.templateParams = TemplateUtils.getTemplateParameters(node.getFirstChild(), getContainingFile(), this);
         }
     }
     
@@ -309,11 +312,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
     
     public CharSequence getDisplayName() {
-        return isTemplate() ? CharSequenceKey.create(getName().toString() + templateSuffix) : getName();
+        return (templateDescriptor != null) ? CharSequenceKey.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
     }
     
     public List<CsmTemplateParameter> getTemplateParameters() {
-        return templateParams;
+        return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
     }    
     
     public boolean isVoidParameterList(){
@@ -415,7 +418,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     @Override
     public CharSequence getUniqueNameWithoutPrefix() {
-        return getQualifiedName().toString() + (isTemplate() ? templateSuffix : "") + getSignature().toString().substring(getName().length());
+        return getQualifiedName().toString() + (isTemplate() ? templateDescriptor.getTemplateSuffix() : "") + getSignature().toString().substring(getName().length());
     }
     
     public Kind getKind() {
@@ -436,7 +439,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
      */
     public CsmFunctionDefinition getDefinition() {
         if( isCStyleStatic() ) {
-            for( CsmDeclaration decl : getContainingFile().getDeclarations() ) {
+            CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(
+                               getName().toString(), true, true, false);
+            Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(getContainingFile(), filter);
+            while(it.hasNext()){
+                CsmDeclaration decl = it.next();
                 if( CsmKindUtilities.isFunctionDefinition(decl) ) {
                     if( getName().equals(decl.getName()) ) {
                         CsmFunctionDefinition fun = (CsmFunctionDefinition) decl;
@@ -494,11 +501,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     /**
      * Returns true if this class is template, otherwise false.
-     * If isTemplate() returns true, this class is an instance of CsmTemplate
      * @return flag indicated if function is template
      */
     public boolean isTemplate() {
-        return hasFlags(FLAGS_TEMPLATE);
+        return templateDescriptor != null;
     }
     
     /**
@@ -525,7 +531,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 //        return false;
 //    }
     
-    private CsmType initReturnType(AST node, CsmScope scope) {
+    private CsmType initReturnType(AST node) {
         CsmType ret = null;
         AST token = getTypeToken(node);
         if( token != null ) {
@@ -534,7 +540,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         if( ret == null ) {
             ret = TypeFactory.createBuiltinType("int", (AST) null, 0,  null/*getAst().getFirstChild()*/, getContainingFile()); // NOI18N
         }
-        return TemplateUtils.checkTemplateType(ret, scope);
+        return TemplateUtils.checkTemplateType(ret, FunctionImpl.this);
     }
     
     public CsmType getReturnType() {
@@ -687,9 +693,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return scope;
     }
     
-    private Collection _getParameters() {
+    private Collection<CsmParameter> _getParameters() {
         if (this.parameters == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.<CsmParameter>emptyList();
         } else {
             Collection<CsmParameter> out = UIDCsmConverter.UIDsToDeclarations(parameters);
             return out;
@@ -722,12 +728,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         PersistentUtils.writeUTF(this.signature, output);
         output.writeByte(flags);
         output.writeUTF(this.getScopeSuffix().toString());
-        if (isTemplate()) {
-            output.writeUTF(this.templateSuffix.toString());
-        }
-        PersistentUtils.writeTemplateParameters(templateParams, output);
+        PersistentUtils.writeTemplateDescriptor(templateDescriptor, output);
     }
 
+    @SuppressWarnings("unchecked")
     public FunctionImpl(DataInput input) throws IOException {
         super(input);
         this.name = QualifiedNameCache.getManager().getString(input.readUTF());
@@ -748,9 +752,6 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         this.flags = input.readByte();
         this.classTemplateSuffix = NameCache.getManager().getString(input.readUTF());
-        if (isTemplate()) {
-            this.templateSuffix = NameCache.getManager().getString(input.readUTF());
-        }
-        this.templateParams = PersistentUtils.readTemplateParameters(input);
+        this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
     }
 }

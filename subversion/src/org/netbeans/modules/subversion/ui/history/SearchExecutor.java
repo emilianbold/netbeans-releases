@@ -203,7 +203,7 @@ class SearchExecutor implements Runnable {
         if (progressSupport.isCanceled()) {
             searchCanceled = true;
             return;
-        }        
+        }
         if (searchingUrl()) {
             try {
                 ISVNLogMessage [] messages = client.getLogMessages(rootUrl, null, fromRevision, toRevision, false, true, 0);
@@ -218,9 +218,13 @@ class SearchExecutor implements Runnable {
             int idx = 0;
             try {       
                 for (File file : files) {
-                    paths[idx++] = SvnUtils.getRelativePath(file);
+                    String p = SvnUtils.getRelativePath(file);
+                    if(p != null && p.startsWith("/")) {
+                        p = p.substring(1, p.length());
+                    }
+                    paths[idx++] = p;
                 }                
-                ISVNLogMessage [] messages = client.getLogMessages(rootUrl, paths, fromRevision, toRevision, false, true);
+                ISVNLogMessage [] messages = SvnUtils.getLogMessages(client, rootUrl, paths, fromRevision, toRevision, false, true);
                 appendResults(rootUrl, messages);
             } catch (SVNClientException e) {                
                 try {    

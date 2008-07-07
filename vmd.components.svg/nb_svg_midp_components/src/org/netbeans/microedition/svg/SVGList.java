@@ -49,30 +49,35 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.svg.SVGElement;
 import org.w3c.dom.svg.SVGLocatableElement;
-import org.w3c.dom.svg.SVGRect;
 
 
 /**
  * Suggested svg snippet:
  * <pre>
  *  &lt;g id="list" transform="translate(20,220)" >
- *   &lt;rect  x="5" y="0" stroke="black" stroke-width="1" fill="rgb(200,200,255)" visibility="inherit" width="80" height="0">
- *       &lt;metadata> &lt;text>type=selection&lt;/text> &lt;/metadata>
- *   &lt;/rect>
- *   &lt;text id="_51" visibility="hidden" x="10" y="13" stroke="black" font-size="15" font-family="SunSansSemiBold">
- *       &lt;metadata> &lt;text>type=hidden_text&lt;/text> &lt;/metadata>
- *       HIDDEN TEXT
+ *       &lt;g>
+ *       &lt;!-- Metadata information. Please don't edit. -->
+ *       &lt;text display="none">type=selection&lt;/text>
+ *       
+ *       &lt;rect  x="5" y="0" stroke="black" stroke-width="1" fill="rgb(200,200,255)" visibility="inherit" width="80" height="0"/>
+ *       &lt;/g>
+ *   &lt;text  visibility="hidden" x="10" y="13" stroke="black" font-size="15" font-family="SunSansSemiBold">
+ *       &lt;text display="none">type=hidden_text&lt;/text>
  *   &lt;/text>
- *   &lt;g>
- *       &lt;metadata> &lt;text>type=content&lt;/text> &lt;/metadata>
+ *   &lt;g> 
+ *       &lt;!-- Metadata information. Please don't edit. -->
+ *       &lt;text display="none">type=content&lt;/text> 
  *   &lt;/g>
  *       &lt;rect x="0" y="-5" rx="5" ry="5" width="90" height="70" fill="none" stroke="rgb(255,165,0)" stroke-width="2" visibility="hidden">
  *           &lt;set attributeName="visibility" attributeType="XML" begin="list.focusin" fill="freeze" to="visible"/>
  *           &lt;set attributeName="visibility" attributeType="XML" begin="list.focusout" fill="freeze" to="hidden"/>
  *       &lt;/rect>
- *       &lt;rect  x="5.0" y="0.0" width="80" height="60" fill="none" stroke="black" stroke-width="2">
- *       &lt;metadata> &lt;text>type=bound&lt;/text> &lt;/metadata>
- *   &lt;/rect>
+ *   &lt;g>
+ *           &lt;!-- Metadata information. Please don't edit. -->
+ *       &lt;text display="none">type=bound&lt;/text>
+ *
+ *       &lt;rect  x="5.0" y="0.0" width="80" height="60" fill="none" stroke="black" stroke-width="2"/>
+ *   &lt;/g>
  *   &lt;/g>
  * </pre>
  * @author ads
@@ -80,27 +85,29 @@ import org.w3c.dom.svg.SVGRect;
  */
 public class SVGList extends SVGComponent implements DataListener {
     
-    static final String CONTENT= "content";     // NOI18N
+    static final String         CONTENT= "content";     // NOI18N
 
 
     public SVGList( SVGForm form, SVGLocatableElement element) {
         super(form, element);
         
-        SVGLocatableElement hiddenText = (SVGLocatableElement)getElementByMeta( 
-                getElement(), TYPE , SVGDefaultListCellRenderer.HIDDEN_TEXT );
-        SVGRect rect = hiddenText.getBBox();
-        float height = rect.getHeight();
+        SVGLocatableElement hiddenText = (SVGLocatableElement)getElementByMeta(
+                getElement(), TYPE, SVGDefaultListCellRenderer.HIDDEN_TEXT) ;
+        float height = hiddenText.getFloatTrait( SVGTextField.TRAIT_FONT_SIZE );
+        SVGLocatableElement bounds = (SVGLocatableElement)getElementByMeta(
+                getElement(), TYPE, SVGDefaultListCellRenderer.BOUNDS) ;
         
-        rect = ((SVGLocatableElement)SVGComponent.getElementByMeta( getElement(), 
-                TYPE, SVGDefaultListCellRenderer.BOUNDS)).getBBox();
         
-        myCount = (int)(rect.getHeight()/height);
+        //setTraitSafely( hiddenText, TRAIT_VISIBILITY, TR_VALUE_HIDDEN);
         
-        myRenderer = new SVGDefaultListCellRenderer();
+        myCount = (int)(bounds.getBBox().getHeight()/height);
+        
+        myRenderer = new SVGDefaultListCellRenderer( height );
         mySelectionModel = new DefaultSelectionModel();
         myHandler = new ListHandler();
     }
     
+
     public SVGList( SVGForm form, String elemId ){
         this( form , (SVGLocatableElement)
                 form.getDocument().getElementById( elemId ));
@@ -174,27 +181,40 @@ public class SVGList extends SVGComponent implements DataListener {
         ListModel model = getModel();
         int size = model.getSize();
         SVGListCellRenderer renderer = getRenderer();
-        for( int i = myTopIndex ; i<Math.min( myTopIndex + myCount,size) ; i++ ){
+        for ( int i=myTopIndex ; i< Math.min( myTopIndex + myCount,size) ; i++ ){
             renderer.getCellRendererComponent( this , model.getElementAt(i), 
                     i-myTopIndex, getSelectionModel().isSelectedIndex(i));
         }
+        
     }
-    
-    
+
     private void removeContent() {
-        SVGLocatableElement content = (SVGLocatableElement)
-        SVGComponent.getElementByMeta(getElement(), TYPE, SVGList.CONTENT );    
-        Node node = content.getFirstElementChild();
-        while ( node != null ){
-            Element next = null;
-            if ( node instanceof SVGElement ){
-                next = ((SVGElement)node).getNextElementSibling();
+        getForm().invokeLaterSafely(new Runnable() {
+
+            public void run() {
+                final SVGLocatableElement content = (SVGLocatableElement) getElementByMeta(
+                        getElement(), TYPE, SVGList.CONTENT);
+                Node node = content.getFirstElementChild();
+                while (node != null) {
+                    Element next = null;
+                    if (node instanceof SVGElement) {
+                        next = ((SVGElement) node).getNextElementSibling();
+                    }
+                    if (!MetaData.METADATA.equals(node.getLocalName())) {
+                        content.removeChild(node);
+                    }
+                    else if (node instanceof SVGElement) {
+                        String display = ((SVGElement) node)
+                                .getTrait(MetaData.DISPLAY);
+                        if (!MetaData.NONE.equals(display)) {
+                            final Node forRemove = node;
+                            content.removeChild(forRemove);
+                        }
+                    }
+                    node = next;
+                }
             }
-            if ( !MetaData.METADATA.equals(node.getLocalName())){
-                content.removeChild( node );
-            }
-            node = next;
-        }
+        });
     }
 
     public interface ListModel {
@@ -336,7 +356,8 @@ public class SVGList extends SVGComponent implements DataListener {
                     ret = true;
                 }
                 else if ( keyCode == RIGHT ){
-                    myCurrentIndex = Math.min( myCurrentIndex +1 , getModel().getSize() -1  );
+                    myCurrentIndex = Math.min( myCurrentIndex +1 , 
+                            getModel().getSize() -1  );
                     synchronized (myUILock) {
                         isUIAction = true;
                         getSelectionModel().clearSelection();
@@ -363,7 +384,7 @@ public class SVGList extends SVGComponent implements DataListener {
     private int myTopIndex ;
     private int myCurrentIndex;
     
-    private int myCount;
+    private int myCount=-1;
     
     private boolean isUIAction;
     private Object myUILock = new Object();
