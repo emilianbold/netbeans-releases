@@ -139,6 +139,39 @@ public class GroovyCodeCompletionTest extends GroovyTestBase {
         checkCompletion(TEST_BASE + "KeywordAboveClass1.groovy", "ab^", false);
     }
 
+    // Closure items named and unnamed
+
+    public void testInsideClosure1() throws Exception {
+        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "(1..3).any {println ^}", false);
+    }
+
+    public void testInsideClosure2() throws Exception {
+        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "[3,4,5].each {println ^}", false);
+    }
+
+    public void testInsideClosure3() throws Exception {
+        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "(1..3).any {a,b -> println ^}", false);
+    }
+
+    public void testInsideClosure4() throws Exception {
+        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "[3,4,5].each {x,y,z -> println ^}", false);
+    }
+
+    public void testInsideClosure5() throws Exception {
+        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "def t1 = {println ^}", false);
+    }
+
+    public void testInsideClosure6() throws Exception {
+        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "def t2 = {x,y -> println ^}", false);
+    }
+
+    public void testInsideClosure7() throws Exception {
+        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "\"TestString\".eachLine {String line -> println ^}", false);
+    }
+
+
+
+
     // Package completion could not be tested at the moment, since this statement returns nothing for "java.n|":
 //    pkgSet = pathInfo.getClassIndex().getPackageNames(packageRequest.fullString, true, EnumSet.allOf(ClassIndex.SearchScope.class));
 
