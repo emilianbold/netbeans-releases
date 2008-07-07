@@ -1034,20 +1034,26 @@ abstract class EntrySupport {
             if (!checkInit()) {
                 return null;
             }
-            try {
-                Children.PR.enterReadAccess();
-                if (index >= entries.size()) {
-                    return null;
-                }
-                Entry entry = entries.get(index);
-                EntryInfo info = entryToInfo.get(entry);
-                Node node = info.getNode();
-                if (node == NONEXISTING_NODE) {
+            while (true) {
+                Node node;
+                try {
+                    Children.PR.enterReadAccess();
+                    if (index >= entries.size()) {
+                        return null;
+                    }
+                    Entry entry = entries.get(index);
+                    EntryInfo info = entryToInfo.get(entry);
+                    node = info.getNode();
+                    if (node != NONEXISTING_NODE) {
+                        return node;
+                    }
                     removeEmptyEntry(entry);
+                } finally {
+                    Children.PR.exitReadAccess();
                 }
-                return node;
-            } finally {
-                Children.PR.exitReadAccess();
+                if (Children.MUTEX.isReadAccess()) {
+                    return node;
+                }
             }
         }
 
@@ -1059,30 +1065,37 @@ abstract class EntrySupport {
             if (optimalResult) {
                 children.findChild(null);
             }
-            try {
-                Children.PR.enterReadAccess();
-
+            while (true) {
                 HashSet<Entry> invalidEntries = null;
-                Node[] nodes = new Node[entries.size()];
-                for (int i = 0; i < nodes.length; i++) {
-                    Entry entry = entries.get(i);
-                    EntryInfo info = entryToInfo.get(entry);
-                    Node node = info.getNode();
-                    if (node == NONEXISTING_NODE) {
-                        if (invalidEntries == null) {
-                            invalidEntries = new HashSet<Entry>();
+                Node[] nodes = null;
+                try {
+                    Children.PR.enterReadAccess();
+
+                    nodes = new Node[entries.size()];
+                    for (int i = 0; i < nodes.length; i++) {
+                        Entry entry = entries.get(i);
+                        EntryInfo info = entryToInfo.get(entry);
+                        Node node = info.getNode();
+                        if (node == NONEXISTING_NODE) {
+                            if (invalidEntries == null) {
+                                invalidEntries = new HashSet<Entry>();
+                            }
+                            invalidEntries.add(entry);
                         }
-                        invalidEntries.add(entry);
+                        nodes[i] = node;
                     }
-                    nodes[i] = node;
-                }
-                nodesCreated = true;
-                if (invalidEntries != null) {
+                    nodesCreated = true;
+                    if (invalidEntries == null) {
+                        return nodes;
+                    }
                     removeEmptyEntries(invalidEntries);
+                } finally {
+                    Children.PR.exitReadAccess();
                 }
-                return nodes;
-            } finally {
-                Children.PR.exitReadAccess();
+                
+                if (Children.MUTEX.isReadAccess()) {
+                    return nodes;
+                }
             }
         }
 
