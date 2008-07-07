@@ -86,7 +86,7 @@ public final class InputProcessors {
      * Any action taken on this processor is distributed to all processors
      * passed as arguments in the same order as they were passed to this method.
      * <p>
-     * Proxy is thread safe if all passed processors are thread safe.
+     * Returned processor is <i> not thread safe</i>.
      *
      * @param processors processor to which the actions will be ditributed
      * @return the processor acting as a proxy
@@ -162,7 +162,7 @@ public final class InputProcessors {
      * <p>
      * Reset action on the returned processor is noop.
      * <p>
-     * If the delegate is thread safe this processor is thread safe as well.
+     * Returned processor is <i> not thread safe</i>.
      *
      * @param delegate processor that will receive characters without control
      *             sequences
@@ -226,7 +226,7 @@ public final class InputProcessors {
 
         private final List<InputProcessor> processors = new ArrayList<InputProcessor>();
 
-        private volatile boolean closed;
+        private boolean closed;
 
         public ProxyInputProcessor(InputProcessor... processors) {
             for (InputProcessor processor : processors) {
@@ -414,8 +414,6 @@ public final class InputProcessors {
             if (closed) {
                 throw new IllegalStateException("Already closed processor");
             }
-
-            // noop
         }
 
         public void close() throws IOException {
