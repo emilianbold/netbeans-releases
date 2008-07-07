@@ -39,7 +39,6 @@
 package org.netbeans.modules.xml.text.indent;
 
 import junit.framework.*;
-import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.BaseDocument;
 
 /**
