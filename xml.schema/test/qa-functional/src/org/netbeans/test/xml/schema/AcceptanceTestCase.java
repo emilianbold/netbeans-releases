@@ -137,6 +137,7 @@ public class AcceptanceTestCase extends JellyTestCase {
       try
       {
         String sBase = System.getProperty( "nbjunit.workdir" ) + File.separator + ".." + File.separator + "data" + File.separator;
+        System.out.println( "Unzipping projects.zip into \"" + sBase + "\"..." );
         // Extract zip data
         ZipFile zf = new ZipFile( sBase + "projects.zip" );
         Enumeration<? extends ZipEntry> ent = zf.entries( );
@@ -170,7 +171,7 @@ public class AcceptanceTestCase extends JellyTestCase {
       }
       catch( IOException ex )
       {
-        System.out.println( "+++ Projects failed +++" );
+        System.out.println( "ERROR: Unzipping projects.zip failed: " + ex.getMessage( ) );
       }
     }
     
