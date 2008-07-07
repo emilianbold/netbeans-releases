@@ -38,10 +38,10 @@
 			</PropertyDefinition>
 			<PropertyDefinition xmi.id="DCE.2B1DA90F-F564-AD11-EFD4-EF352600B4D0" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute" name="Attribute" toolTip="PSK_TT_ATTRIBUTE" required="false" enabled="true" multiplicity="1" create="createAttribute3" insert="addAttribute" delete="delete" values="FormatString">
 				<aDefinition name="Visibility" toolTip="PSK_TT_VISIBILITY" required="true" visible="true" enabled="true" multiplicity="1" controlType="list" get="getVisibility" set="setVisibility" values="+|#|-|~" default="false"/>
-				<aDefinition name="Stereotypes" toolTip="PSK_TT_STEREOTYPE" required="false" visible="notEmpty" enabled="true" multiplicity="*" controlType="" get="getAppliedStereotypes" leadSeparator=" &lt;&lt; " trailSeparator=" &gt;&gt;" delete="RemoveStereotypes" delimitor=", " default="false">
+				<!--aDefinition name="Stereotypes" toolTip="PSK_TT_STEREOTYPE" required="false" visible="notEmpty" enabled="true" multiplicity="*" controlType="" get="getAppliedStereotypes" leadSeparator=" &lt;&lt; " trailSeparator=" &gt;&gt;" delete="RemoveStereotypes" delimitor=", " default="false">
 					<DispatchInvoke name="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" get="getNameWithAlias"/>
 					<aDefinition pdref2="Stereotype"/>
-				</aDefinition>
+				</aDefinition-->
 				<aDefinition name="IsDerived" toolTip="PSK_TT_DERIVED" required="false" visible="notEmpty" enabled="false" multiplicity="1" controlType="list" get="isDerived" set="isDerived" values="|/" leadSeparator=" " default="false"/>
 				<aDefinition name="NameWithAlias" toolTip="PSK_TT_NAME" required="false" visible="true" enabled="true" multiplicity="1" controlType="edit" get="getNameWithAlias" set="setNameWithAlias" leadSeparator=" " default="true"/>
 				<aDefinition name="Type" toolTip="PSK_TT_TYPE" required="true" visible="notEmpty" enabled="true" multiplicity="1" controlType="combo" get="getType" set="setType2" values="#DataTypeList" leadSeparator=" : " default="false">
@@ -57,10 +57,10 @@
 			</PropertyDefinition>
 			<PropertyDefinition xmi.id="DCE.315D1F5C-3EF9-5908-0D3D-3429712ABB2D" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation" name="Operation" toolTip="PSK_TT_OPERATION" required="false" enabled="true" multiplicity="1" create="createOperation3" insert="addOperation" delete="delete" values="FormatString">
 				<aDefinition name="Visibility" toolTip="PSK_TT_VISIBILITY" required="false" visible="true" enabled="true" multiplicity="1" controlType="list" get="getVisibility" set="setVisibility" values="+|#|-|~" default="false" dummyDefaultValue="+"/>
-				<aDefinition name="Stereotypes" toolTip="PSK_TT_STEREOTYPE" required="false" visible="notEmpty" enabled="true" multiplicity="*" controlType="" get="getAppliedStereotypes" leadSeparator=" &lt;&lt; " trailSeparator=" &gt;&gt;" delete="RemoveStereotypes" delimitor=", " default="false">
+				<!--aDefinition name="Stereotypes" toolTip="PSK_TT_STEREOTYPE" required="false" visible="notEmpty" enabled="true" multiplicity="*" controlType="" get="getAppliedStereotypes" leadSeparator=" &lt;&lt; " trailSeparator=" &gt;&gt;" delete="RemoveStereotypes" delimitor=", " default="false">
 					<DispatchInvoke name="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" get="getNameWithAlias"/>
 					<aDefinition pdref2="Stereotype"/>
-				</aDefinition>
+				</aDefinition-->
 				<aDefinition name="NameWithAlias" toolTip="PSK_TT_NAME" required="false" visible="true" enabled="true" multiplicity="1" controlType="edit" get="getNameWithAlias" set="setNameWithAlias" leadSeparator=" " default="true"/>
 				<aDefinition name="Parameters" toolTip="PSK_TT_PARAMETER" required="false" visible="true" enabled="true" multiplicity="*" get="getFormalParameters" set="setFormalParameters" leadSeparator="( " delimitor=", " trailSeparator=" )" delete="removeParameter" default="false">
 					<aDefinition pdref2="DCE.E58A4F06-958C-19F3-B9C2-987D950C73AA"/>
