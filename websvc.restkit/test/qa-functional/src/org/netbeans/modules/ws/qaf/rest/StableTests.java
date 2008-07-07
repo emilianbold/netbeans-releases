@@ -41,7 +41,6 @@ package org.netbeans.modules.ws.qaf.rest;
 import junit.framework.Test;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbModuleSuite.Configuration;
 
 /**
  *
@@ -54,46 +53,51 @@ public class StableTests extends J2eeTestCase {
     }
 
     public static Test suite() {
-        Configuration conf = NbModuleSuite.emptyConfiguration()
-                .addTest(CRUDTest.class,
-                    "testRfE",
-                    "testPropAccess",
-                    "testDeploy",
-                    "testCreateRestClient",
-                    "testUndeploy")
-                .addTest(PatternsTest.class,
-                    "testSingletonDef",
-                    "testContainerIDef",
-                    "testCcContainerIDef",
-                    "testSingleton1",
-                    "testCcContainerI1",
-                    "testSingleton2",
-                    "testContainerI1",
-                    "testContainerI2",
-                    "testSingleton3",
-                    "testContainerI3",
-                    "testCcContainerI2",
-                    "testCcContainerI3",
-                    "testNodes",
-                    "testDeploy",
-                    "testUndeploy")
-                .addTest(RestSamplesTest.class,
-                    "testHelloWorldSample",
-                    "testCustomerDBSample",
-                    "testCustomerDBClientSample")
-                .addTest(CStubsTest.class,
-                    "testWizard",
-                    "testCreateSimpleStubs",
-                    "testFromWADL",
-                    "testCloseProject")
-                .addTest(RestNodeTest.class,
-                    "testNodesAfterOpen",
-                    "testOpenOnResource",
-                    "testOpenOnMethod",
-                    "testOpenOnLocator",
-                    "testAddMethod",
-                    "testRemoveMethod",
-                    "testCloseProject");
-        return NbModuleSuite.create(addServerTests(conf).enableModules(".*").clusters(".*"));
+        return NbModuleSuite.create(
+                addServerTests(Server.ANY,
+                addServerTests(Server.ANY,
+                addServerTests(Server.ANY,
+                addServerTests(Server.ANY,
+                addServerTests(Server.ANY, NbModuleSuite.emptyConfiguration(),
+                CRUDTest.class,
+                "testRfE",
+                "testPropAccess",
+                "testDeploy",
+                "testCreateRestClient",
+                "testUndeploy"),
+                PatternsTest.class,
+                "testSingletonDef",
+                "testContainerIDef",
+                "testCcContainerIDef",
+                "testSingleton1",
+                "testCcContainerI1",
+                "testSingleton2",
+                "testContainerI1",
+                "testContainerI2",
+                "testSingleton3",
+                "testContainerI3",
+                "testCcContainerI2",
+                "testCcContainerI3",
+                "testNodes",
+                "testDeploy",
+                "testUndeploy"),
+                RestSamplesTest.class,
+                "testHelloWorldSample",
+                "testCustomerDBSample",
+                "testCustomerDBClientSample"),
+                CStubsTest.class,
+                "testWizard",
+                "testCreateSimpleStubs",
+                "testFromWADL",
+                "testCloseProject"),
+                RestNodeTest.class,
+                "testNodesAfterOpen",
+                "testOpenOnResource",
+                "testOpenOnMethod",
+                "testOpenOnLocator",
+                "testAddMethod",
+                "testRemoveMethod",
+                "testCloseProject")
+                .enableModules(".*").clusters(".*"));
     }
 }
