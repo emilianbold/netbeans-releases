@@ -92,7 +92,6 @@ import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
 import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.java.source.usages.ResultConvertor;
-import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
@@ -113,6 +112,7 @@ import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.classpath.CacheClassPath;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
+import org.netbeans.modules.java.source.parsing.JavacParserTestUtil;
 import org.netbeans.modules.java.source.usages.IndexFactory;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.java.source.usages.PersistentClassIndex;
@@ -186,8 +186,15 @@ public class JavaSourceTest extends NbTestCase {
 //        TestSuite suite = new NbTestSuite(JavaSourceTest.class);        
         TestSuite suite = new NbTestSuite ();
         suite.addTest(new JavaSourceTest("testPhaseCompletionTask"));
-        suite.addTest(new JavaSourceTest("testCompileControlJob"));       
-        suite.addTest(new JavaSourceTest("testModificationJob"));        
+        suite.addTest(new JavaSourceTest("testCompileControlJob"));
+        suite.addTest(new JavaSourceTest("testModificationJob"));
+        suite.addTest(new JavaSourceTest("testInterference"));
+        suite.addTest(new JavaSourceTest("testDocumentChanges"));
+        suite.addTest(new JavaSourceTest("testParsingDelay"));
+        suite.addTest(new JavaSourceTest("testJavaSourceIsReclaimable"));
+        suite.addTest(new JavaSourceTest("testChangeInvalidates"));
+        suite.addTest(new JavaSourceTest("testInvalidatesCorrectly"));
+//        suite.addTest(new JavaSourceTest("testRTB_005"));
         return suite;
     }
     
@@ -269,8 +276,9 @@ public class JavaSourceTest extends NbTestCase {
         FileObject testFile2 = createTestFile ("Test2");
         ClassPath bootPath = createBootPath ();
         ClassPath compilePath = createCompilePath ();
-        JavaSource js1 = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, null), testFile1);
-        JavaSource js2 = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, null), testFile2);
+        ClassPath srcPath = createSourcePath();
+        JavaSource js1 = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, srcPath), testFile1);
+        JavaSource js2 = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, srcPath), testFile2);
         DataObject dobj = DataObject.find(testFile1);
         EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);                        
         final StyledDocument doc = ec.openDocument();
@@ -326,7 +334,8 @@ public class JavaSourceTest extends NbTestCase {
         FileObject testFile1 = createTestFile ("Test1");
         ClassPath bootPath = createBootPath ();
         ClassPath compilePath = createCompilePath ();
-        JavaSource js1 = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, null), testFile1);
+        ClassPath srcPath = createSourcePath();
+        JavaSource js1 = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, srcPath), testFile1);
 
         final CountDownLatch start = new CountDownLatch (1);
         final CountDownLatch stop =  new CountDownLatch (1);
@@ -384,25 +393,14 @@ public class JavaSourceTest extends NbTestCase {
         assertEquals("Called more time than expected",1,counter.get());
         JavaSourceAccessor.getINSTANCE().removePhaseCompletionTask(js1,task);
     }
-    
-    
-//    public void testDataFlow () throws MalformedURLException, IOException, InterruptedException {
-//        FileObject testFile = createTestFile ("Test");
-//        ClassPath bootPath = createBootPath ();
-//        ClassPath compilePath = createCompilePath ();
-//        JavaSource js = new JavaSource (testFile, bootPath, compilePath);
-//        CountDownLatch latch = new CountDownLatch (1);
-//        CancellableTask<CompilationInfo> task = new DiagnosticTask(new CountDownLatch[] {latch}, null, Phase.DATA_FLOW_CHECKED);
-//        js.addPhaseCompletionTask(task,Phase.DATA_FLOW_CHECKED, 10);        
-//        latch.await(15000,TimeUnit.MILLISECONDS);
-//        js.removePhaseCompletionTask(task);
-//    }
+        
         
     public void testParsingDelay() throws MalformedURLException, InterruptedException, IOException, BadLocationException {
         FileObject test = createTestFile ("Test1");
         ClassPath bootPath = createBootPath ();
-        ClassPath compilePath = createCompilePath ();        
-        JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, null), test);
+        ClassPath compilePath = createCompilePath ();
+        ClassPath sourcePath = createSourcePath();
+        JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, sourcePath), test);
         DataObject dobj = DataObject.find(test);
         EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);                        
         final StyledDocument doc = ec.openDocument();
@@ -445,8 +443,9 @@ public class JavaSourceTest extends NbTestCase {
     public void testJavaSourceIsReclaimable() throws MalformedURLException, InterruptedException, IOException, BadLocationException {
         FileObject test = createTestFile ("Test1");
         ClassPath bootPath = createBootPath ();
-        ClassPath compilePath = createCompilePath ();        
-        JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, null), test);
+        ClassPath compilePath = createCompilePath ();
+        ClassPath srcPath = createSourcePath();
+        JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, srcPath), test);
         DataObject dobj = DataObject.find(test);
         EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);                        
         final StyledDocument[] doc = new StyledDocument[] {ec.openDocument()};
@@ -511,7 +510,8 @@ public class JavaSourceTest extends NbTestCase {
         FileObject test = createTestFile ("Test1");
         ClassPath bootPath = createBootPath ();
         ClassPath compilePath = createCompilePath ();
-        JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, null), test);
+        ClassPath srcPath = createSourcePath();
+        JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, srcPath), test);
         int originalReparseDelay = TestUtil.getReparseDelay();
         
         try {
@@ -575,7 +575,8 @@ public class JavaSourceTest extends NbTestCase {
         FileObject test = createTestFile ("Test1");
         ClassPath bootPath = createBootPath ();
         ClassPath compilePath = createCompilePath ();
-        JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, null), test);
+        ClassPath srcPath = createSourcePath();
+        JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, srcPath), test);
         DataObject dobj = DataObject.find(test);
         EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
         final StyledDocument[] doc = new StyledDocument[] {ec.openDocument()};
@@ -642,38 +643,39 @@ public class JavaSourceTest extends NbTestCase {
     /**
      * Tests deadlock
      */
-//    public void testRTB_005 () throws Exception {
-//        try {
-//            Object lock = new String ("Lock");
-//            JavaSource.jfoProvider = new TestProvider (lock);
-//            FileObject test = createTestFile ("Test1");
-//            ClassPath bootPath = createBootPath ();
-//            ClassPath compilePath = createCompilePath ();
-//            JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, null), test);
-//            js.addPhaseCompletionTask( new CancellableTask<CompilationInfo>() {
-//                public void run (CompilationInfo info) {
-//
-//                }
-//
-//                public void cancel () {
-//
-//                }
-//            },Phase.PARSED,Priority.NORMAL);
-//
-//            synchronized (lock) {
-//                js.revalidate();
-//                Thread.sleep(2000);
-//                js.runUserActionTask(new Task<CompilationController> () {
-//                    public void run (CompilationController c) {
-//
-//                    }
-//                },true);
-//            }
-//
-//        } finally {
-//            JavaSource.jfoProvider = new JavaSource.DefaultJavaFileObjectProvider ();
-//        }
-//    }
+    public void testRTB_005 () throws Exception {
+        try {
+            Object lock = new String ("Lock");
+            JavacParserTestUtil.setJavacFileObjectProvider(new TestProvider (lock));
+            FileObject test = createTestFile ("Test1");
+            ClassPath bootPath = createBootPath ();
+            ClassPath compilePath = createCompilePath ();
+            ClassPath srcPath = createSourcePath();
+            JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, srcPath), test);
+            JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask( js, new CancellableTask<CompilationInfo>() {
+                public void run (CompilationInfo info) {
+
+                }
+
+                public void cancel () {
+
+                }
+            },Phase.PARSED,Priority.NORMAL);
+
+            synchronized (lock) {
+                JavaSourceAccessor.getINSTANCE().revalidate(js);
+                Thread.sleep(2000);
+                js.runUserActionTask(new Task<CompilationController> () {
+                    public void run (CompilationController c) {
+
+                    }
+                },true);
+            }
+
+        } finally {
+            JavacParserTestUtil.setJavacFileObjectProvider(JavacParserTestUtil.defaultJavaFileObjectProvider());
+        }
+    }
 
 
     public void testCancelCall () throws Exception {
