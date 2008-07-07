@@ -77,7 +77,7 @@ import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresent
 import org.netbeans.modules.vmd.midp.screen.display.ItemDisplayPresenter;
 
 import java.util.*;
-import org.netbeans.modules.vmd.midp.codegen.MidpPDatabindingCodeSupport;
+import org.netbeans.modules.vmd.midp.codegen.MidpDatabindingCodeSupport;
 import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSupport;
 import org.openide.util.NbBundle;
 
@@ -201,10 +201,10 @@ public class ItemCD extends ComponentDescriptor {
         MidpActionsSupport.addUnusedCommandsAddActionForItem(presenters);
         MidpActionsSupport.addMoveActionPresenter(presenters, FormCD.PROP_ITEMS);
         
-        presenters.addAll(MidpPDatabindingCodeSupport.createDatabindingPresenters(PROP_LABEL, 
+        presenters.addAll(MidpDatabindingCodeSupport.createDatabindingPresenters(PROP_LABEL, 
                                                                                  "getLabel()",
-                                                                                 MidpPDatabindingCodeSupport.ProviderType.Item,
-                                                                                 MidpPDatabindingCodeSupport.FeatureType.Item_FEATURE_LABEL));
+                                                                                 TYPEID,
+                                                                                 MidpDatabindingCodeSupport.FeatureType.Item_FEATURE_LABEL));
         
         super.gatherPresenters (presenters);
     }

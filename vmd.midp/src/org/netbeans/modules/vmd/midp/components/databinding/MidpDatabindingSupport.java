@@ -59,8 +59,8 @@ public final class MidpDatabindingSupport {
         for (DesignComponent dataSet : category.getComponents()) {
             for (DesignComponent connector : dataSet.getComponents()) {
                 String currentbindedPropertyName = (String) connector.readProperty(DataSetConnectorCD.PROP_BINDED_PROPERTY).getPrimitiveValue();
-                long id = (Long) connector.readProperty(DataSetConnectorCD.PROP_COMPONENT_ID).getPrimitiveValue();
-                if (currentbindedPropertyName.equals(bindedPropertyName) && bindedComponent.getComponentID() == id) {
+                Long id = (Long) connector.readProperty(DataSetConnectorCD.PROP_COMPONENT_ID).getPrimitiveValue();
+                if (currentbindedPropertyName.equals(bindedPropertyName) && id != null && bindedComponent.getComponentID() == id) {
                     return connector;
                 }
             }
@@ -73,8 +73,8 @@ public final class MidpDatabindingSupport {
         HashSet<DesignComponent> connectors = new HashSet<DesignComponent>();
         for (DesignComponent dataSet : category.getComponents()) {
             for (DesignComponent connector : dataSet.getComponents()) {
-                long id = (Long) connector.readProperty(DataSetConnectorCD.PROP_COMPONENT_ID).getPrimitiveValue();
-                if (bindedComponent.getComponentID() == id) {
+                Long id = (Long) connector.readProperty(DataSetConnectorCD.PROP_COMPONENT_ID).getPrimitiveValue();
+                if (id != null && bindedComponent.getComponentID() == id) {
                     connectors.add(connector);
                 }
             }

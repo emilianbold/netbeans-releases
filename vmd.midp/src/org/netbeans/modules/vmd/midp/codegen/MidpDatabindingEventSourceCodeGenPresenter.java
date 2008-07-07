@@ -37,59 +37,27 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.gsf.spi;
+package org.netbeans.modules.vmd.midp.codegen;
 
-import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.gsf.api.CodeCompletionResult;
-import org.netbeans.modules.gsf.api.CompletionProposal;
+import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.Presenter;
 
 /**
- * Default implementation of the CodeCompletionResult class. All the 
- * attributes of a CodeCompletionResult is configurable by the client
- * of this class.
  *
- * @author Tor Norbye
+ * @author karolharezlak
  */
-public class DefaultCompletionResult extends CodeCompletionResult {
-    protected boolean truncated;
-    protected List<CompletionProposal> list;
-    protected boolean filterable = true;
-    protected Set<String> embeddedTypes;
+public abstract class MidpDatabindingEventSourceCodeGenPresenter extends Presenter {
     
-    public DefaultCompletionResult(List<CompletionProposal> list, boolean truncated) {
-        this.list = list;
-        this.truncated = truncated;
-    }
-
-    @Override
-    public List<CompletionProposal> getItems() {
-        return list;
-    }
-
-    @Override
-    public boolean isTruncated() {
-        return truncated;
-    }
-
-    public void setTruncated(boolean truncated) {
-        this.truncated = truncated;
-    }
+    public abstract void generateCodeRegistry(MultiGuardedSection section);
     
-    public boolean isFilterable() {
-        return filterable;
-    }
-
-    public void setFilterable(boolean filterable) {
-        this.filterable = filterable;
-    }
-
-    public void setEmbeddedTypes(Set<String> embeddedTypes) {
-        this.embeddedTypes = embeddedTypes;
-    }
-
-    @Override
-    public Set<String> embeddedTypes() {
-        return embeddedTypes;
-    }
+    public abstract boolean isValidRegistry(DesignComponent component);
+    
+    public abstract void generateCodeIndexableCommands(MultiGuardedSection section);
+    
+    public abstract boolean isValidIndexableCommands(DesignComponent component,
+                                                     String indexName,
+                                                     DesignComponent dataset,
+                                                     String propertyName);
+    
 }

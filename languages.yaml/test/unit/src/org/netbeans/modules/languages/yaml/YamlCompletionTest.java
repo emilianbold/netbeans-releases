@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,29 +31,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.vmd.midp.codegen;
+package org.netbeans.modules.languages.yaml;
 
-import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.Presenter;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
 
 /**
  *
- * @author karolharezlak
+ * @author Tor Norbye
  */
-public abstract class MidpEventSourceCodeGenPresenter extends Presenter {
+public class YamlCompletionTest extends YamlTestBase {
+
+    public YamlCompletionTest(String testName) {
+        super(testName);
+    }
+
+    public void testPrefix1() throws Exception {
+        checkPrefix("testfiles/test3.yaml");
+    }
+
+    public void testAutoQuery1() throws Exception {
+        assertAutoQuery(QueryType.NONE, "foo^", "o");
+    }
+
+    public void testCompletion1() throws Exception {
+        checkCompletion("testfiles/test3.yaml", "Height:^ 5'11'' (180 cm)", false);
+    }
     
-    public abstract void generateCodeRegistry(MultiGuardedSection section);
-    
-    public abstract void generateCodeNext(MultiGuardedSection section);
-    
-    public abstract void generateCodePrevious(MultiGuardedSection section);
-    
-    public abstract boolean isValid(DesignComponent component, String indexName);
+    public void testCompletion2() throws Exception {
+        checkCompletion("testfiles/test3.yaml", "Heig^ht: 5'11'' (180 cm)", false);
+    }
 }
