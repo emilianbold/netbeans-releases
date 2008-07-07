@@ -119,6 +119,10 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
            return false;
         }        
         if ( type == NewJavaFileWizardIterator.TYPE_PACKAGE) {
+            if (gui.getTargetName() == null) {
+                setInfoMessage("INFO_JavaTargetChooser_ProvidePackageName");
+                return false;
+            }
             if ( !isValidPackageName( gui.getTargetName() ) ) {
                 setErrorMessage( "ERR_JavaTargetChooser_InvalidPackage" );
                 return false;
@@ -141,7 +145,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         }
         else {
             if (gui.getTargetName() == null) {
-                setInfoMessage("INFO_JavaTargetChooser_ProvideName");
+                setInfoMessage("INFO_JavaTargetChooser_ProvideClassName");
                 return false;
             } 
             else if ( !isValidTypeIdentifier( gui.getTargetName() ) ) {
