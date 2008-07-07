@@ -122,6 +122,12 @@ public class LineProcessorsTest extends NbTestCase {
 
         assertEquals(1, processor1.getResetCount());
         assertEquals(1, processor2.getResetCount());
+
+        proxy.close();
+        assertClosedConditions(proxy);
+
+        assertTrue(processor1.isClosed());
+        assertTrue(processor2.isClosed());
     }
 
     public void testPrinting() {
@@ -144,6 +150,9 @@ public class LineProcessorsTest extends NbTestCase {
         lineProcessor = LineProcessors.printing(writer, false);
         lineProcessor.reset();
         assertEquals(0, writer.getResetsProcessed());
+
+        lineProcessor.close();
+        assertClosedConditions(lineProcessor);
     }
 
     public void testWaiting() throws InterruptedException, BrokenBarrierException {
@@ -169,6 +178,9 @@ public class LineProcessorsTest extends NbTestCase {
         } catch (TimeoutException ex) {
             fail("Deadlock occurs");
         }
+
+        lineProcessor.close();
+        assertClosedConditions(lineProcessor);
     }
 
     public void testWaitingThreadSafety() throws InterruptedException, BrokenBarrierException {
@@ -211,6 +223,22 @@ public class LineProcessorsTest extends NbTestCase {
         assertEquals(expected.size(), value.size());
         for (int i = 0; i < expected.size(); i++) {
             assertEquals(expected.get(i), value.get(i));
+        }
+    }
+
+    private static void assertClosedConditions(LineProcessor lineProcessor) {
+        try {
+            lineProcessor.processLine("something");
+            fail("Does not throw IllegalStateException after close");
+        } catch (IllegalStateException ex) {
+            // expected
+        }
+
+        try {
+            lineProcessor.reset();
+            fail("Does not throw IllegalStateException after close");
+        } catch (IllegalStateException ex) {
+            // expected
         }
     }
 
