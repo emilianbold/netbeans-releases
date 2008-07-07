@@ -133,7 +133,7 @@ public final class MidpDatabindingSupport {
 
     public static DesignComponent getIndex(DesignComponent indexableDataSet, String instanceName) {
         for (DesignComponent component : indexableDataSet.getComponents()) {
-            if (component.getType() == IndexableDataSetIndexCD.TYPEID && component.readProperty(ClassCD.PROP_INSTANCE_NAME).equals(instanceName)) {
+            if (component.getType() == IndexableDataSetIndexCD.TYPEID && component.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue().equals(instanceName)) {
                 return component;
             }
         }
@@ -141,8 +141,6 @@ public final class MidpDatabindingSupport {
     }
 
     public static DesignComponent createIndex(DesignComponent indexableDataSet, String instanceName) {
-        assert indexableDataSet.getType() == IndexableDataSetCD.TYPEID;
-
         DesignComponent index = indexableDataSet.getDocument().createComponent(IndexableDataSetIndexCD.TYPEID);
         index.writeProperty(ClassCD.PROP_INSTANCE_NAME, InstanceNameResolver.createFromSuggested(index, instanceName)); //NOI18N
         indexableDataSet.addComponent(index);
@@ -155,10 +153,9 @@ public final class MidpDatabindingSupport {
         Collection<DesignComponent> dataSets = MidpDocumentSupport.getCategoryComponent(document, DatabindingCategoryCD.TYPEID).getComponents();
         Collection<DesignComponent> indexes = new HashSet<DesignComponent>();
         for (DesignComponent dataSet : dataSets) {
-            if (dataSet.getType() != IndexableDataSetCD.TYPEID) {
-                return;
+            if (isIndexableDataSet(document, dataSet.getType())) {
+                indexes.addAll(getIndexes(dataSet));
             }
-            indexes.addAll(getIndexes(dataSet));
         }
         for (DesignComponent connector : connectors) {
             DesignComponent index = connector.readProperty(DataSetConnectorCD.PROP_INDEX).getComponent();
@@ -186,6 +183,6 @@ public final class MidpDatabindingSupport {
 
     public static boolean isIndexableDataSet(DesignDocument document, TypeID typeID) {
         DescriptorRegistry registry = document.getDescriptorRegistry();
-        return registry.isInHierarchy(IndexableDataSetCD.TYPEID, typeID);
+        return registry.isInHierarchy(IndexableDataAbstractSetCD.TYPEID, typeID);
     }
 }

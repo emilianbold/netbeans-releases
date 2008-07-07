@@ -537,9 +537,6 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 for (DesignComponent dataSet : dataSets) {
                     if (dataSet.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue().equals(selectedDataSet)) {
                         DesignComponent connector = MidpDatabindingSupport.getConnector(component, propertyEditor.getPropertyNames().get(0));
-                        if (!dataSet.getComponents().contains(connector)) {
-                            connector = null;
-                        }
                         if (connector == null) {
                             connector = document.createComponent(DataSetConnectorCD.TYPEID);
                             connector.writeProperty(DataSetConnectorCD.PROP_BINDED_PROPERTY, MidpTypes.createStringValue(propertyEditor.getPropertyNames().get(0)));
