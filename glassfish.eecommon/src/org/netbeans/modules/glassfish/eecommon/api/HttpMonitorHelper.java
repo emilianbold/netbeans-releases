@@ -51,6 +51,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Filter;
 import org.netbeans.modules.j2ee.dd.api.web.FilterMapping;
@@ -69,9 +71,6 @@ import org.xml.sax.SAXException;
 
 import org.netbeans.modules.schema2beans.Common;
 import org.netbeans.modules.schema2beans.BaseBean;
-import javax.enterprise.deploy.spi.DeploymentManager;
-
-//import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 
 /** Monitor enabling/disabling utilities for Application Server 8.x.
  *
@@ -93,27 +92,6 @@ public class HttpMonitorHelper {
     private static final String MONITOR_FILTER_CLASS = "org.netbeans.modules.web.monitor.server.MonitorFilter"; //NOI18N
     private static final String MONITOR_FILTER_PATTERN = "/*"; //NOI18N
     private static final String MONITOR_INTERNALPORT_PARAM_NAME = "netbeans.monitor.ide"; //NOI18N
-    
-
-    
-//    public static boolean getMonitorFlag(DeploymentManager tm) {
-//        DeploymentManagerProperties ip = new DeploymentManagerProperties(tm);
-//        String prop = ip.getHttpMonitorOn();
-//        return (prop == null) ? true : Boolean.valueOf(prop).booleanValue();
-//    }
-//    
-//    public static void setMonitorFlag(DeploymentManager tm, boolean enable) {
-//        DeploymentManagerProperties ip = new DeploymentManagerProperties(tm);
-//        ip.setHttpMonitorOn( Boolean.toString(enable));
-//    }
-    
-
-
-    
-//    public static boolean synchronizeMonitorWithFlag(SunDeploymentManagerInterface tm) throws IOException, SAXException {
-//        boolean monitorFlag = getMonitorFlag((DeploymentManager)tm);
-//        return synchronizeMonitor(tm,monitorFlag);
-//    }
     
     public static boolean synchronizeMonitor(String domainLoc, String domainName, boolean monitorFlag) throws IOException, SAXException {
         boolean monitorModuleAvailable = isMonitorEnabled();
@@ -173,10 +151,6 @@ public class HttpMonitorHelper {
     private static void addMonitorJars(String domainLoc, String domainName) throws IOException {
         String loc = domainLoc+"/"+domainName;
         File instDir = new File(loc);
-        if (instDir==null) {
-            return;
-        }
-        
         copyFromIDEInstToDir("modules/ext/org-netbeans-modules-web-httpmonitor.jar"  , instDir, "lib/org-netbeans-modules-web-httpmonitor.jar");  // NOI18N
         
     }
@@ -216,6 +190,7 @@ public class HttpMonitorHelper {
                     try {
                         filterMapping.setDispatcher(dispatcher);
                     } catch (org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException ex) {
+                        Logger.getLogger("glassfish-eecommon").log(Level.FINER,"ignorable and ignoring",ex);
                         ((BaseBean)filterMapping).createProperty("dispatcher", // NOI18N
                             "Dispatcher", // NOI18N
                             Common.TYPE_0_N | Common.TYPE_STRING | Common.TYPE_KEY, 
@@ -274,12 +249,29 @@ public class HttpMonitorHelper {
     }
     
     private static void copy(File file1, File file2) throws IOException {
-        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file1));
-        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file2));
-        int b;
-        while((b=bis.read())!=-1)bos.write(b);
-        bis.close();
-        bos.close();
+        BufferedInputStream bis = null;
+        BufferedOutputStream bos = null;
+        try {
+             bis = new BufferedInputStream(new FileInputStream(file1));
+             bos = new BufferedOutputStream(new FileOutputStream(file2));
+            int b;
+            while((b=bis.read())!=-1)bos.write(b);
+        } finally {
+            if (null != bis) {
+                try { 
+                    bis.close(); 
+                } catch (IOException ioe) {
+                    Logger.getLogger("glassfish-eecommon").log(Level.FINEST,"bis", ioe);
+                }
+            }
+            if (null != bos) {
+                try { 
+                    bos.close(); 
+                } catch (IOException ioe) {
+                    Logger.getLogger("glassfish-eecommon").log(Level.FINEST,"bos", ioe);
+                }
+            }
+        }
     }
     
     private static File findFileUnderBase(File base, String fileRelPath) {
