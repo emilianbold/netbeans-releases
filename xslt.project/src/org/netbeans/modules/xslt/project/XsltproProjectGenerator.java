@@ -27,6 +27,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import static org.netbeans.modules.xslt.project.XsltproConstants.*;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -142,10 +143,7 @@ public class XsltproProjectGenerator {
 
 
     private static void refreshFileSystem (final File dir) throws FileStateInvalidException {
-        File rootF = dir;
-        while (rootF.getParentFile() != null /*UNC*/&& rootF.getParentFile().exists()) {
-            rootF = rootF.getParentFile();
-        }
+        File rootF = SoaUtil.getRoot(dir);
         FileObject dirFO = FileUtil.toFileObject(rootF);
         assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
         dirFO.getFileSystem().refresh(false);
@@ -155,15 +153,8 @@ public class XsltproProjectGenerator {
     public static AntProjectHelper importProject (File dir, String name, FileObject wmFO, FileObject javaRoot, FileObject configFilesBase, String j2eeLevel, String buildfile) throws IOException {
         dir.mkdirs();
         // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
-        File rootF = dir;
-        while (rootF.getParentFile() != null /*UNC*/&& rootF.getParentFile().exists()) {
-            rootF = rootF.getParentFile();
-        }
-        // XXX add code to set meta inf directory  (meta-inf and java src)
-        FileObject fo = FileUtil.toFileObject (rootF);
-        assert fo != null : "At least disk roots must be mounted! " + rootF;
-        fo.getFileSystem().refresh(false);
-        fo = FileUtil.toFileObject (dir);
+        refreshFileSystem(dir);
+        FileObject fo = FileUtil.toFileObject(SoaUtil.getRoot(dir));
 
         // # 113228
         if (fo == null) {

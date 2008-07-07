@@ -42,9 +42,11 @@
 package org.netbeans.modules.cnd.makeproject.api;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.ui.utils.NativePathMap;
 
 public class MakeArtifact {
     public static final int TYPE_UNKNOWN = 0;
@@ -87,6 +89,7 @@ public class MakeArtifact {
     }
 
     public MakeArtifact(MakeConfigurationDescriptor pd, MakeConfiguration makeConfiguration) {
+                //PathMap pm = NativePathMap.get(makeConfiguration.getDevelopmentHost().getName());
 		projectLocation = makeConfiguration.getBaseDir();
 		configurationName = makeConfiguration.getName();
 		active = makeConfiguration.isDefault();
