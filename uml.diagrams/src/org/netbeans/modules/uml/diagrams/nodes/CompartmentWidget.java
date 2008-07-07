@@ -62,6 +62,7 @@ import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeReader;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.widgets.ContainerWidget;
 
 /**
@@ -274,19 +275,42 @@ public abstract class CompartmentWidget extends Widget implements PropertyChange
 
     public void propertyChange(PropertyChangeEvent evt)
     {
-        if (evt.getPropertyName().equals(ModelElementChangedKind.ELEMENTMODIFIED.toString()))
+        if (evt.getPropertyName().equals(ModelElementChangedKind.NAME_MODIFIED.toString()))
         {
             nameWidget.propertyChange(evt);
-        } else if (evt.getPropertyName().equals(ModelElementChangedKind.NAME_MODIFIED.toString()))
-        {
-            nameWidget.propertyChange(evt);
+            updateSize();
         } else if (evt.getPropertyName().equals(ModelElementChangedKind.DELETE.toString()) ||
                 evt.getPropertyName().equals(ModelElementChangedKind.PRE_DELETE.toString()))
         {
             compositeWidget.removeCompartment(this);
+            updateSize();
         }
     }
+    
+    private void updateSize()
+    {
+        setPreferredBounds(null);
+        setPreferredSize(null);
+        setMinimumSize(null);
 
+        UMLNodeWidget parent = getParentNodeWidget(this);
+        if (parent != null)
+        {
+            ((UMLNodeWidget)parent).updateSizeWithOptions();
+        }
+        revalidate();
+    }
+
+    private UMLNodeWidget getParentNodeWidget(Widget widget)
+    {
+        Widget parent = widget.getParentWidget();
+        if (parent instanceof UMLNodeWidget)
+        {
+            return (UMLNodeWidget)parent;
+        }
+        return getParentNodeWidget(parent);
+    }
+    
     public void notifyAdded()
     {
         compositeWidget.notifyCompartmentWidgetAdded();
@@ -355,6 +379,11 @@ public abstract class CompartmentWidget extends Widget implements PropertyChange
 
         public void resizingFinished(Widget widget)
         {
+            UMLNodeWidget parent = getParentNodeWidget(CompartmentWidget.this);
+            if (parent != null)
+            {
+                ((UMLNodeWidget) parent).updateSizeWithOptions();
+            }
             widget.revalidate();
         }
     };
