@@ -187,6 +187,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
             if (rc == null) {
                 return;
             }
+            storeHistory();
             String invalidMsg = null;
             try {
                 invalid(null);                
@@ -244,7 +245,6 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
                     valid(org.openide.util.NbBundle.getMessage(RepositoryStep.class, "CTL_Repository_Canceled")); // NOI18N
                 } else if(invalidMsg == null) {
                   valid();
-                  storeHistory();
                 } else {
                   valid(invalidMsg);
                 }                

@@ -415,7 +415,6 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
 
     public RepositoryConnection getSelectedRC() {
         RepositoryConnection rc = getSelectedRCIntern();
-        storeRecentUrls();
         return rc;
     }
 
