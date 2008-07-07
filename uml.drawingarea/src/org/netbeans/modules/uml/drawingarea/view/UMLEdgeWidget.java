@@ -121,7 +121,6 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
         if (manager != null)
         {
             HashMap<String, Widget> labMap = manager.getLabelMap();
-            System.out.println(" labMap = " + labMap);
             edgeWriter.beginContained();
             for (String child : labMap.keySet())
             {
