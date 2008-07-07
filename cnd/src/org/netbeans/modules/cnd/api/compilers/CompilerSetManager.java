@@ -392,6 +392,11 @@ public class CompilerSetManager implements PlatformTypes {
                         }
                         add(cs);
                     }
+                    // TODO: this should be upgraded to error reporting
+                    // about absence of tool chain on remote host
+                    // also compilersetmanager without compiler sets
+                    // should be handled gracefully
+                    assert sets.size() > 0;
                     state = STATE_COMPLETE;
                 }
             });
