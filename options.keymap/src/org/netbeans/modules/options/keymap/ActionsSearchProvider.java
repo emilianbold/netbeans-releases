@@ -59,9 +59,11 @@ import org.netbeans.core.options.keymap.spi.KeymapManager;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -272,7 +274,25 @@ public class ActionsSearchProvider implements SearchProvider {
         }
         
         public void run() {
-            command.actionPerformed(event);
+            // be careful, some actions throws assertions etc, because they
+            // are not written to be invoked directly
+            try {
+                command.actionPerformed(event);
+            } catch (Throwable thr) {
+                if (thr instanceof ThreadDeath) {
+                    throw (ThreadDeath)thr;
+                }
+                Object name = command.getValue(Action.NAME);
+                String displayName = "";
+                if (name instanceof String) {
+                    displayName = (String)name;
+                }
+                
+                Logger.getLogger(getClass().getName()).log(Level.FINE, 
+                        displayName + " action can not be invoked.", thr);
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
+                        getClass(), "MSG_ActionFailure", displayName));
+            }
         }
     }
 
