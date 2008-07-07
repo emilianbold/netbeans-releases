@@ -640,7 +640,10 @@ public class EnumerationWidget extends SwitchableWidget
             }
             else if(propName.equals(ModelElementChangedKind.TEMPLATE_PARAMETER.toString()))
             {
-                initializeContents((IClassifier)event.getSource());
+//                Widget result = initializeContents((IClassifier)event.getSource());
+//                
+//                result.removeFromParent();
+//                setCurrentView(result);
             }
             else if(propName.equals(ModelElementChangedKind.REDEFINED_OWNER_NAME_CHANGED.toString()))
             {
@@ -648,7 +651,7 @@ public class EnumerationWidget extends SwitchableWidget
             }
         }
     }
-
+    
     protected void updateRedefinesCompartment(IClassifier redefinedOwner)
     {
         String xmiid = redefinedOwner.getXMIID();
