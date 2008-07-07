@@ -278,7 +278,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         final CompilerSet2Configuration csconf = this;
         final String key = evt.getNewValue().toString();
         
-        if (key.equals("localhost")) { // NOI18N
+        if (key.equals(CompilerSetManager.LOCALHOST)) {
             setValue(getCompilerSetManager().getCompilerSet(0).getName());
         } else {
             RequestProcessor.getDefault().post(new Runnable() {

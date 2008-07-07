@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.Vector;
 import java.util.List;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
@@ -310,7 +311,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             ((MakeConfiguration) currentConf).getCompilerSet().setNameAndFlavor(currentText, descriptorVersion);
         } else if (element.equals(DEVELOPMENT_SERVER_ELEMENT)) {
 	    if (descriptorVersion < 46) {
-		currentText = "localhost"; // NOI18N
+		currentText = CompilerSetManager.LOCALHOST;
             }
             ((MakeConfiguration) currentConf).getDevelopmentHost().setValue(currentText);
         } else if (element.equals(C_REQUIRED_ELEMENT)) {
