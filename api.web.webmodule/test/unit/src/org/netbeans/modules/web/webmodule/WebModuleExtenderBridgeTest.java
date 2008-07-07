@@ -132,7 +132,7 @@ public class WebModuleExtenderBridgeTest extends NbTestCase {
 
         public boolean isValid() {
             boolean valid = "foo".equals(wizard.getProperty("prop")) && !forcedInvalid;
-            wizard.putProperty("WizardPanel_errorMessage", valid ? " " : "Not valid");
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, valid ? " " : "Not valid");
             return valid;
         }
 

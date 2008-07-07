@@ -105,7 +105,7 @@ public class RetrieveXMLResourceWizardPanel1 implements WizardDescriptor.Panel, 
                 retrieveXMLResourceVisualPanel1.validateFiles(sourceFile);
             } catch (WizardValidationException e) {
                 String message = e.getLocalizedMessage();
-                wizd.putProperty("WizardPanel_errorMessage", message);  
+                wizd.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);  
              //   fireChangeEvent();
                 return false;
             }
@@ -113,7 +113,7 @@ public class RetrieveXMLResourceWizardPanel1 implements WizardDescriptor.Panel, 
             if(retrieveXMLResourceVisualPanel1.getSaveLocation() == null){
                 return false;
             }
-            wizd.putProperty("WizardPanel_errorMessage", ""); 
+            wizd.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); 
           //  fireChangeEvent();
             return true;
         }
@@ -141,11 +141,11 @@ public class RetrieveXMLResourceWizardPanel1 implements WizardDescriptor.Panel, 
     
     private void setErrorMessage( String key ) {
         if ( key == null ) {
-            wizd.putProperty("WizardPanel_errorMessage", ""); // NOI18N
+            wizd.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
         } else {
             String message = NbBundle.getMessage(
                     RetrieveXMLResourceWizardPanel1.class, key); // NOI18N
-            wizd.putProperty("WizardPanel_errorMessage", message);                    
+            wizd.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);                    
         }
     }
         

@@ -141,6 +141,7 @@ import org.netbeans.modules.websvc.saas.codegen.ui.CodeSetupPanel;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.util.LibrariesHelper;
+import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObjectNotFoundException;
 
 /**
@@ -353,8 +354,8 @@ public class Util {
         }
         return null;
     }
-    static final String WIZARD_PANEL_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
-    static final String WIZARD_PANEL_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; //NOI18N;
+    static final String WIZARD_PANEL_CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA; // NOI18N
+    static final String WIZARD_PANEL_CONTENT_SELECTED_INDEX = WizardDescriptor.PROP_CONTENT_SELECTED_INDEX; //NOI18N;
 
     public static String lowerFirstChar(String name) {
         if (name.length() == 0) {

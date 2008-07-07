@@ -184,14 +184,14 @@ public class DepotPanelVisual extends JPanel implements DocumentListener {
 
     boolean valid(WizardDescriptor wizardDescriptor) {
         if (projectNameTextField.getText().length() == 0) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     getMessage("DepotPanelVisual.project.name.invalid"));
             return false; // Display name not specified
         }
         File f = FileUtil.normalizeFile(new File(projectLocationTextField.getText()).getAbsoluteFile());
         if (!f.isDirectory()) {
             String message = getMessage("DepotPanelVisual.project.folder.invalid");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
             return false;
         }
         final File destFolder = FileUtil.normalizeFile(new File(createdFolderTextField.getText()).getAbsoluteFile());
@@ -201,25 +201,25 @@ public class DepotPanelVisual extends JPanel implements DocumentListener {
             projLoc = projLoc.getParentFile();
         }
         if (projLoc == null || !projLoc.canWrite()) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     getMessage("DepotPanelVisual.project.folder.cannot.create"));
             return false;
         }
 
         if (FileUtil.toFileObject(projLoc) == null) {
             String message = getMessage("DepotPanelVisual.project.folder.invalid");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
             return false;
         }
 
         File[] kids = destFolder.listFiles();
         if (destFolder.exists() && kids != null && kids.length > 0) {
             // Folder exists and is not empty
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     getMessage("DepotPanelVisual.project.folder.exists"));
             return false;
         }
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); // NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
         return true;
     }
 

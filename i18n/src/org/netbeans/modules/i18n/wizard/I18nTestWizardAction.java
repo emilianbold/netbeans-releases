@@ -136,16 +136,16 @@ public class I18nTestWizardAction extends NodeAction {
     /** Initializes wizard descriptor. */
     private void initWizard(WizardDescriptor wizardDesc) {
         // Init properties.
-        wizardDesc.putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);    // NOI18N
-        wizardDesc.putProperty("WizardPanel_contentDisplayed", Boolean.TRUE);   // NOI18N
-        wizardDesc.putProperty("WizardPanel_contentNumbered", Boolean.TRUE);    // NOI18N
+        wizardDesc.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);    // NOI18N
+        wizardDesc.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);   // NOI18N
+        wizardDesc.putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);    // NOI18N
 
         ArrayList contents = new ArrayList(3);
         contents.add(Util.getString("TXT_SelectTestSources"));
         contents.add(Util.getString("TXT_SelectTestResources"));
         contents.add(Util.getString("TXT_FoundMissingResources"));
         
-        wizardDesc.putProperty("WizardPanel_contentData", (String[])contents.toArray(new String[contents.size()])); // NOI18N
+        wizardDesc.putProperty(WizardDescriptor.PROP_CONTENT_DATA, (String[])contents.toArray(new String[contents.size()])); // NOI18N
         
         wizardDesc.setTitle(Util.getString("LBL_TestWizardTitle"));
         wizardDesc.setTitleFormat(new MessageFormat("{0} ({1})"));              // NOI18N

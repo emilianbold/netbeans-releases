@@ -90,9 +90,9 @@ public class SamplesWebWizardPanel implements WizardDescriptor.Panel {
         boolean result = ! projectNameFile.exists() && projectLocationFile.exists();
         if ( ! result ) {
             String errorMessage = NbBundle.getMessage( SamplesWebWizardPanel.class, "MSG_not_valid_project_name", projectName );
-            this.wizard.putProperty ("WizardPanel_errorMessage", errorMessage); // NOI18N
+            this.wizard.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage); // NOI18N
         } else {
-            this.wizard.putProperty ("WizardPanel_errorMessage", null); // NOI18N
+            this.wizard.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, null); // NOI18N
         }
         // If it is always OK to press Next or Finish, then:
         return result;
