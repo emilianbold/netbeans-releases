@@ -85,18 +85,23 @@ import org.tigris.subversion.svnclientadapter.Annotations;
 import org.tigris.subversion.svnclientadapter.Annotations.Annotation;
 import org.tigris.subversion.svnclientadapter.ISVNAnnotations;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
+import org.tigris.subversion.svnclientadapter.ISVNConflictResolver;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
+import org.tigris.subversion.svnclientadapter.ISVNMergeInfo;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
+import org.tigris.subversion.svnclientadapter.ISVNProgressListener;
 import org.tigris.subversion.svnclientadapter.ISVNPromptUserPassword;
 import org.tigris.subversion.svnclientadapter.ISVNProperty;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNDiffSummary;
 import org.tigris.subversion.svnclientadapter.SVNKeywords;
 import org.tigris.subversion.svnclientadapter.SVNNotificationHandler;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
+import org.tigris.subversion.svnclientadapter.SVNRevisionRange;
 import org.tigris.subversion.svnclientadapter.SVNScheduleKind;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 import org.tigris.subversion.svnclientadapter.SVNStatusUnversioned;
@@ -922,4 +927,140 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     // unsupported start
 
     class NotificationHandler extends SVNNotificationHandler {   }
+
+    public boolean isThreadsafe() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void addConflictResolutionCallback(ISVNConflictResolver arg0) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void setProgressListener(ISVNProgressListener arg0) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void checkout(SVNUrl arg0, File arg1, SVNRevision arg2, int arg3, boolean arg4, boolean arg5) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public ISVNDirEntry[] getList(SVNUrl arg0, SVNRevision arg1, SVNRevision arg2, boolean arg3) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public ISVNDirEntry[] getList(File arg0, SVNRevision arg1, SVNRevision arg2, boolean arg3) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void copy(File[] arg0, SVNUrl arg1, String arg2, boolean arg3, boolean arg4) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void copy(SVNUrl arg0, File arg1, SVNRevision arg2, boolean arg3, boolean arg4) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void copy(SVNUrl arg0, SVNUrl arg1, String arg2, SVNRevision arg3, boolean arg4) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void copy(SVNUrl[] arg0, SVNUrl arg1, String arg2, SVNRevision arg3, boolean arg4, boolean arg5) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public long update(File arg0, SVNRevision arg1, int arg2, boolean arg3, boolean arg4, boolean arg5) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public long[] update(File[] arg0, SVNRevision arg1, int arg2, boolean arg3, boolean arg4, boolean arg5) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public ISVNLogMessage[] getLogMessages(File arg0, SVNRevision arg1, SVNRevision arg2, SVNRevision arg3, boolean arg4, boolean arg5, long arg6, boolean arg7) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public ISVNLogMessage[] getLogMessages(SVNUrl arg0, SVNRevision arg1, SVNRevision arg2, SVNRevision arg3, boolean arg4, boolean arg5, long arg6, boolean arg7) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public InputStream getContent(SVNUrl arg0, SVNRevision arg1, SVNRevision arg2) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void diff(SVNUrl arg0, SVNRevision arg1, SVNRevision arg2, SVNRevision arg3, File arg4, int arg5, boolean arg6, boolean arg7, boolean arg8) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void diff(SVNUrl arg0, SVNRevision arg1, SVNRevision arg2, SVNRevision arg3, File arg4, boolean arg5) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public ISVNAnnotations annotate(SVNUrl arg0, SVNRevision arg1, SVNRevision arg2, boolean arg3, boolean arg4) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public ISVNAnnotations annotate(File arg0, SVNRevision arg1, SVNRevision arg2, boolean arg3, boolean arg4) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void resolve(File arg0, int arg1) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void switchToUrl(File arg0, SVNUrl arg1, SVNRevision arg2, int arg3, boolean arg4, boolean arg5, boolean arg6) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void switchToUrl(File arg0, SVNUrl arg1, SVNRevision arg2, SVNRevision arg3, int arg4, boolean arg5, boolean arg6, boolean arg7) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void merge(SVNUrl arg0, SVNRevision arg1, SVNUrl arg2, SVNRevision arg3, File arg4, boolean arg5, int arg6, boolean arg7, boolean arg8, boolean arg9) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void mergeReintegrate(SVNUrl arg0, SVNRevision arg1, File arg2, boolean arg3, boolean arg4) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void merge(SVNUrl arg0, SVNRevision arg1, SVNRevisionRange[] arg2, File arg3, boolean arg4, int arg5, boolean arg6, boolean arg7, boolean arg8) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public ISVNMergeInfo getMergeInfo(File arg0, SVNRevision arg1) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public ISVNMergeInfo getMergeInfo(SVNUrl arg0, SVNRevision arg1) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public ISVNLogMessage[] getMergeinfoLog(int arg0, File arg1, SVNRevision arg2, SVNUrl arg3, SVNRevision arg4, boolean arg5) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public ISVNLogMessage[] getMergeinfoLog(int arg0, SVNUrl arg1, SVNRevision arg2, SVNUrl arg3, SVNRevision arg4, boolean arg5) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public SVNDiffSummary[] diffSummarize(SVNUrl arg0, SVNRevision arg1, SVNUrl arg2, SVNRevision arg3, int arg4, boolean arg5) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public SVNDiffSummary[] diffSummarize(SVNUrl arg0, SVNRevision arg1, SVNRevision arg2, SVNRevision arg3, int arg4, boolean arg5) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public String[] suggestMergeSources(File arg0) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public String[] suggestMergeSources(SVNUrl arg0, SVNRevision arg1) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void dispose() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

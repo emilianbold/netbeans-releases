@@ -81,6 +81,9 @@ public interface JSDebugger {
     void addJSDebuggerConsoleEventListener(JSDebuggerConsoleEventListener debuggerConsoleEventListener);
     void removeJSDebuggerConsoleEventListener(JSDebuggerConsoleEventListener debuggerConsoleEventListener);
 
+    void addJSHttpMessageEventListener(JSHttpMessageEventListener httpMessageEventListener);
+    void removeJSHttpMessageEventListener(JSHttpMessageEventListener httpMessageEventListener);
+
     // Windows
     JSWindow[] getWindows();
 

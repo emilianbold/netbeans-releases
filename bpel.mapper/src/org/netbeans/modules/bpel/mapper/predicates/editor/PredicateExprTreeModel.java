@@ -25,10 +25,14 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.mapper.tree.actions.AddPredicateConditionAction;
+import org.netbeans.modules.bpel.mapper.tree.models.MapperConnectabilityProvider;
 import org.netbeans.modules.bpel.mapper.tree.models.SimpleTreeInfoProvider;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemInfoProvider;
+import org.netbeans.modules.bpel.mapper.model.MapperTreeContext;
+import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
+import org.netbeans.modules.soa.ui.tree.TreeItemActionsProvider;
+import org.netbeans.modules.soa.ui.tree.TreeItemInfoProvider;
+import org.netbeans.modules.soa.ui.tree.TreeStructureProvider;
 import org.openide.util.NbBundle;
 
 /**
@@ -37,30 +41,42 @@ import org.openide.util.NbBundle;
  *
  * @author nk160297
  */
-public class PredicateExprTreeModel implements MapperTreeModel<Object> {
+public class PredicateExprTreeModel implements SoaTreeModel, 
+        TreeStructureProvider, TreeItemActionsProvider, 
+        MapperConnectabilityProvider {
 
     private int mSize = 1;
     public static final String PREDICATE_EXPRESSION = 
             NbBundle.getMessage(PredicateExprTreeModel.class,
             "PREDICATE_EXPRESSION"); // NOI18N
     
-    private static MyTreeInfoProvider mTreeInfoProvider = new MyTreeInfoProvider();
-    
     public PredicateExprTreeModel(int initialSize) {
         mSize = initialSize;
     }
     
+    public TreeStructureProvider getTreeStructureProvider() {
+        return this;
+    }
+
+    public TreeItemInfoProvider getTreeItemInfoProvider() {
+        return SimpleTreeInfoProvider.getInstance();
+    }
+    
+    public TreeItemActionsProvider getTreeItemActionsProvider() {
+        return this;
+    }
+
+    public Object getRoot() {
+        return TREE_ROOT;
+    }
+
     public Object addPredicateExpr() {
         mSize++;
         return PREDICATE_EXPRESSION;
     }
     
-    public Object getRoot() {
-        return MapperTreeModel.TREE_ROOT;
-    }
-
-    public List getChildren(Iterable<Object> dataObjectPathItr) {
-        Object parent = dataObjectPathItr.iterator().next();
+    public List getChildren(TreeItem treeItem) {
+        Object parent = treeItem.getDataObject();
         if (parent == TREE_ROOT) {
             ArrayList children = new ArrayList(mSize);
             // Fill the array list with the same element mSize times
@@ -73,36 +89,33 @@ public class PredicateExprTreeModel implements MapperTreeModel<Object> {
         return null;
     }
 
-    public Boolean isLeaf(Object node) {
-        if (node == PREDICATE_EXPRESSION) {
+    public Boolean isLeaf(TreeItem treeItem) {
+        Object dataObj = treeItem.getDataObject();
+        if (dataObj == PREDICATE_EXPRESSION) {
             return true;
         } else {
             return false;
         }
     }
 
-    public Boolean isConnectable(Object node) {
-        return isLeaf(node);
+    public List<Action> getMenuActions(TreeItem treeItem, Object context, 
+            TreePath treePath) {
+        //
+        if (context instanceof MapperTreeContext) {
+            MapperTreeContext mapperContext = (MapperTreeContext)context;
+            Action action = new AddPredicateConditionAction(
+                    mapperContext.getMapperTcContext(), treePath);
+            return Collections.singletonList(action);
+        }
+        return null;
+    }
+
+    public Boolean isConnectable(TreeItem treeItem) {
+        return isLeaf(treeItem);
     }
 
     public List getExtensionModelList() {
         return null;
-    }
-
-    public TreeItemInfoProvider getTreeItemInfoProvider() {
-        return mTreeInfoProvider;
-    }
-    
-    private static class MyTreeInfoProvider extends SimpleTreeInfoProvider {
-        
-        @Override
-        public List<Action> getMenuActions(MapperTcContext mapperTcContext, 
-                boolean inLeftTree, TreePath treePath, 
-                Iterable<Object> dataObjectPathItrb) {
-            Action action = new AddPredicateConditionAction(mapperTcContext, treePath);
-            return Collections.singletonList(action);
-        }
-
     }
 
 }

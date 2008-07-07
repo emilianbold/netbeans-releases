@@ -140,7 +140,7 @@ public class ProjectFactorySupport {
                 continue;
             }
             if (!newKey.contains(t)) {
-                if (!removeOldItemFromClassPath(project, helper, t.substring(0, t.indexOf("=")), t.substring(t.indexOf("=")+1), importProblems, sourceRoot)) {
+                if (!removeOldItemFromClassPath(project, helper, t.substring(0, t.indexOf("=")), t.substring(t.indexOf("=")+1), importProblems, sourceRoot, model.getEclipseProjectFolder())) {
                     // removing of item failed: keep it in new key so that it can be retried
                     resultingKey += t+";";
                 }
@@ -373,7 +373,7 @@ public class ProjectFactorySupport {
      * Remove single classpath item (in encoded key form) from NB project classpath.
      */
     private static boolean removeOldItemFromClassPath(Project project, AntProjectHelper helper, 
-            String encodedKind, String encodedValue, List<String> importProblems, FileObject sourceRoot) throws IOException {
+            String encodedKind, String encodedValue, List<String> importProblems, FileObject sourceRoot, File eclipseProject) throws IOException {
         if ("prj".equals(encodedKind)) { // NOI18N
             SubprojectProvider subProjs = project.getLookup().lookup(SubprojectProvider.class);
             if (subProjs != null) {
@@ -403,8 +403,12 @@ public class ProjectFactorySupport {
                 throw new IllegalStateException("project "+project.getProjectDirectory()+" does not have SubprojectProvider in its lookup"); // NOI18N
             }
         } else if ("file".equals(encodedKind)) { // NOI18N
-            updateSourceAndJavadoc(helper, new File(encodedValue), null, null, true);
-            boolean b = ProjectClassPathModifier.removeRoots(new URL[]{FileUtil.urlForArchiveOrDir(new File(encodedValue))}, sourceRoot, ClassPath.COMPILE);
+            File f = new File(encodedValue);
+            if (!f.isAbsolute()) {
+                f = new File(eclipseProject, encodedValue);
+            }
+            updateSourceAndJavadoc(helper, f, null, null, true);
+            boolean b = ProjectClassPathModifier.removeRoots(new URL[]{FileUtil.urlForArchiveOrDir(f)}, sourceRoot, ClassPath.COMPILE);
             if (!b) {
                 importProblems.add("reference to JAR/Folder '"+encodedValue+"' was not succesfully removed");
                 return false;

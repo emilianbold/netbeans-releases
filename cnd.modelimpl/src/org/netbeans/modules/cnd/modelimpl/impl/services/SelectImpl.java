@@ -173,10 +173,6 @@ public class SelectImpl extends CsmSelect {
                                "::" +
                                implName.strPrefix;
                     }
-                    if (implKind.kinds[i] == CsmDeclaration.Kind.FUNCTION || 
-                        implKind.kinds[i] == CsmDeclaration.Kind.FUNCTION_DEFINITION) {
-                        from +="(";
-                    }
                     res.addAll(namespace.findUidsByPrefix(from));
                 }
                 if (implName.allowEmptyName) {

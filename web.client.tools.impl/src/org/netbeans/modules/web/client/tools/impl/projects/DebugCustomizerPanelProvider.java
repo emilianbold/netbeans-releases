@@ -92,4 +92,12 @@ public class DebugCustomizerPanelProvider implements ProjectCustomizer.Composite
         
         return new DebugCustomizerPanelProvider(debugServer, debugClient);
     }
+    
+    public static final DebugCustomizerPanelProvider createPhpProjectDebug() {
+        ResourceBundle bundle = NbBundle.getBundle(DebugCustomizerPanelProvider.class);
+        String debugServer = bundle.getString("LBL_PHP_CustomizeDebug_ServerDebug_JCheckBox");
+        String debugClient = bundle.getString("LBL_PHP_CustomizeDebug_ClientDebug_JCheckBox");
+        
+        return new DebugCustomizerPanelProvider(debugServer, debugClient);
+    }        
 }

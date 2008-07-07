@@ -33,3 +33,9 @@ namespace sys_ns {
 
     };
 }
+
+typedef unsigned int size_t;
+
+namespace std {
+    using ::size_t;
+}

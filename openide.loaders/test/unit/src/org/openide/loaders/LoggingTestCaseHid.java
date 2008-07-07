@@ -40,42 +40,22 @@
  */
 
 package org.openide.loaders;
-import java.beans.PropertyChangeEvent;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.io.StringWriter;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
-import javax.swing.event.ChangeEvent;
-import junit.framework.AssertionFailedError;
 import junit.framework.TestResult;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
-import org.openide.ErrorManager;
-import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.test.MockLookup;
 
 
 /** Basic skeleton for logging test case.
  *
  * @author  Jaroslav Tulach
+ * @deprecated Please use {@link MockLookup} instead.
  */
 public abstract class LoggingTestCaseHid extends NbTestCase {
     static {
@@ -86,6 +66,7 @@ public abstract class LoggingTestCaseHid extends NbTestCase {
         super (name);
     }
     
+    @Override
     public void run(TestResult result) {
         Lookup l = Lookup.getDefault();
         assertEquals("We can run only with our Lookup", Lkp.class, l.getClass());
@@ -97,7 +78,6 @@ public abstract class LoggingTestCaseHid extends NbTestCase {
     
     /** Allows subclasses to register content for the lookup. Can be used in 
      * setUp and test methods, after that the content is cleared.
-     * @deprecated Please use {@link org.netbeans.junit.MockServices} instead.
      */
     protected final void registerIntoLookup(Object instance) {
         Lookup l = Lookup.getDefault();
@@ -105,7 +85,8 @@ public abstract class LoggingTestCaseHid extends NbTestCase {
         Lkp lkp = (Lkp)l;
         lkp.ic.add(instance);
     }
-    
+
+    /** @deprecated Just call {@link Log#controlFlow} directly. */
     protected void registerSwitches(String switches, int timeOut) {
         Log.controlFlow(Logger.getLogger(""), null, switches, timeOut);
     }

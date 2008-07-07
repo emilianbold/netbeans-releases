@@ -59,10 +59,7 @@ import org.openide.util.NbBundle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
-import org.netbeans.modules.vmd.midp.codegen.MIDPDatabindingCodeSupport;
-import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
-import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSupport;
+import org.netbeans.modules.vmd.midp.codegen.MidpDatabindingCodeSupport;
 
 /**
  *
@@ -119,7 +116,10 @@ public class TextFieldCD extends ComponentDescriptor {
     @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, ScreenDisplayPresenter.class);
-        presenters.addAll(MIDPDatabindingCodeSupport.createDatabindingPresenters(PROP_TEXT, "getString()", MIDPDatabindingCodeSupport.ProviderType.TextField, MIDPDatabindingCodeSupport.FeatureType.TextField_FeatureText));
+        presenters.addAll(MidpDatabindingCodeSupport.createDatabindingPresenters(PROP_TEXT,
+                                                                                 "getString()",
+                                                                                 TYPEID,
+                                                                                 MidpDatabindingCodeSupport.FeatureType.TextField_FeatureText));
         
         super.gatherPresenters(presenters);
     }

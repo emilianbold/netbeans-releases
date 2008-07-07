@@ -294,6 +294,8 @@ introduced by support for multiple source roots. -jglick
                     </and>
                 </condition>
                 <property name="javadoc.encoding.used" value="${{source.encoding}}"/>
+                <property name="includes" value="**"/>
+                <property name="excludes" value=""/>
                 <condition property="javac.compilerargs.jaxws" value="-Djava.endorsed.dirs='${{jaxws.endorsed.dir}}'" else="">
                     <and>
                         <isset property="jaxws.endorsed.dir"/>
@@ -374,6 +376,14 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                         <xsl:attribute name="default">${javac.classpath}:${j2ee.platform.classpath}</xsl:attribute>
                     </attribute>
                     <attribute>
+                        <xsl:attribute name="name">includes</xsl:attribute>
+                        <xsl:attribute name="default">${includes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">excludes</xsl:attribute>
+                        <xsl:attribute name="default">${excludes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
                         <xsl:attribute name="name">debug</xsl:attribute>
                         <xsl:attribute name="default">${javac.debug}</xsl:attribute>
                     </attribute>
@@ -392,6 +402,8 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                                 <xsl:attribute name="source">${javac.source}</xsl:attribute>
                                 <xsl:attribute name="target">${javac.target}</xsl:attribute>
                             </xsl:if>
+                            <xsl:attribute name="includes">@{includes}</xsl:attribute>
+                            <xsl:attribute name="excludes">@{excludes}</xsl:attribute>
                             <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:explicit-platform">
                                 <xsl:attribute name="fork">yes</xsl:attribute>
                                 <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
@@ -414,7 +426,15 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/2</xsl:attribute>
                     <attribute>
                         <xsl:attribute name="name">includes</xsl:attribute>
-                        <xsl:attribute name="default">**/*Test.java</xsl:attribute>
+                        <xsl:attribute name="default">${includes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">excludes</xsl:attribute>
+                        <xsl:attribute name="default">${excludes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testincludes</xsl:attribute>
+                        <xsl:attribute name="default">**</xsl:attribute>
                     </attribute>
                     <sequential>
                         <junit>
@@ -430,6 +450,8 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                                 <xsl:call-template name="createFilesets">
                                     <xsl:with-param name="roots" select="/p:project/p:configuration/webproject3:data/webproject3:test-roots"/>
                                     <xsl:with-param name="includes">@{includes}</xsl:with-param>
+                                    <xsl:with-param name="includes2">@{testincludes}</xsl:with-param>
+                                    <xsl:with-param name="excludes">@{excludes}</xsl:with-param>
                                 </xsl:call-template>
                             </batchtest>
                             <classpath>
@@ -807,7 +829,7 @@ exists or setup the property manually. For example like this:
             
             <target name="-copy-webdir">
                 <copy todir="${{build.web.dir}}">
-                    <fileset excludes="${{build.web.excludes}}" dir="${{web.docbase.dir}}">
+                    <fileset excludes="${{build.web.excludes}},${{excludes}}" includes="${{includes}}" dir="${{web.docbase.dir}}">
                         <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-services/webproject3:web-service">
                             <xsl:attribute name="excludes">WEB-INF/classes/** WEB-INF/web.xml WEB/sun-web.xml</xsl:attribute>
                         </xsl:if>
@@ -902,11 +924,7 @@ exists or setup the property manually. For example like this:
             <target name="-do-compile-single">
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile<xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
-                <webproject2:javac>
-                    <customize>
-                        <patternset includes="${{javac.includes}}"/>
-                    </customize>
-                </webproject2:javac>
+                <webproject2:javac includes="${{javac.includes}}" excludes=""/>
                 
                 <copy todir="${{build.classes.dir}}">
                     <xsl:call-template name="createFilesets">
@@ -1357,6 +1375,7 @@ exists or setup the property manually. For example like this:
                     <classpath>
                         <path path="${{javac.classpath}}:${{j2ee.platform.classpath}}"/>
                     </classpath>
+                    <!-- Does not work with includes/excludes:
                     <sourcepath>
                         <xsl:call-template name="createPathElements">
                             <xsl:with-param name="locations" select="/p:project/p:configuration/webproject3:data/webproject3:source-roots"/>
@@ -1364,11 +1383,11 @@ exists or setup the property manually. For example like this:
                     </sourcepath>
                     <xsl:call-template name="createPackagesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/webproject3:data/webproject3:source-roots"/>
-                        <xsl:with-param name="includes">*/**</xsl:with-param>
                     </xsl:call-template>
+                    -->
                     <xsl:call-template name="createFilesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/webproject3:data/webproject3:source-roots"/>
-                        <xsl:with-param name="includes">*.java</xsl:with-param>
+                        <xsl:with-param name="includes2">**/*.java</xsl:with-param>
                     </xsl:call-template>
                 </javadoc>
             </target>
@@ -1417,7 +1436,7 @@ exists or setup the property manually. For example like this:
                 <copy todir="${{build.test.classes.dir}}">
                     <xsl:call-template name="createFilesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/webproject3:data/webproject3:test-roots"/>
-                        <xsl:with-param name="excludes">**/*.java</xsl:with-param>
+                        <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
                     </xsl:call-template>
                 </copy>
             </target>
@@ -1449,14 +1468,13 @@ exists or setup the property manually. For example like this:
                     <xsl:attribute name="destdir">${build.test.classes.dir}</xsl:attribute>
                     <xsl:attribute name="debug">true</xsl:attribute>
                     <xsl:attribute name="classpath">${javac.test.classpath}:${j2ee.platform.classpath}</xsl:attribute>
-                    <customize>
-                        <patternset includes="${{javac.includes}}"/>
-                    </customize>
+                    <xsl:attribute name="includes">${javac.includes}</xsl:attribute>
+                    <xsl:attribute name="excludes"/>
                 </xsl:element>
                 <copy todir="${{build.test.classes.dir}}">
                     <xsl:call-template name="createFilesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/webproject3:data/webproject3:test-roots"/>
-                        <xsl:with-param name="excludes">**/*.java</xsl:with-param>
+                        <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
                     </xsl:call-template>
                 </copy>
             </target>
@@ -1484,7 +1502,7 @@ exists or setup the property manually. For example like this:
             <target name="-do-test-run">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test,-pre-test-run</xsl:attribute>
-                <webproject2:junit/>
+                <webproject2:junit testincludes="**/*Test.java"/>
             </target>
             
             <target name="-post-test-run">
@@ -1529,7 +1547,7 @@ exists or setup the property manually. For example like this:
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single</xsl:attribute>
                 <fail unless="test.includes">Must select some files in the IDE or set test.includes</fail>
-                <webproject2:junit includes="${{test.includes}}"/>
+                <webproject2:junit includes="${{test.includes}}" excludes=""/>
             </target>
             
             <target name="-post-test-run-single">
@@ -1852,16 +1870,23 @@ exists or setup the property manually. For example like this:
     
     <xsl:template name="createFilesets">
         <xsl:param name="roots"/>
-        <xsl:param name="includes"/>
+        <xsl:param name="includes" select="'${includes}'"/>
+        <xsl:param name="includes2"/>
         <xsl:param name="excludes"/>
         <xsl:for-each select="$roots/webproject3:root">
             <xsl:element name="fileset">
                 <xsl:attribute name="dir"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
-                <xsl:if test="$includes">
-                    <xsl:attribute name="includes"><xsl:value-of select="$includes"/></xsl:attribute>
-                </xsl:if>
-                <xsl:if test="$excludes">
-                    <xsl:attribute name="excludes"><xsl:value-of select="$excludes"/></xsl:attribute>
+                <xsl:attribute name="includes"><xsl:value-of select="$includes"/></xsl:attribute>
+                <xsl:choose>
+                    <xsl:when test="$excludes">
+                        <xsl:attribute name="excludes"><xsl:value-of select="$excludes"/>,${excludes}</xsl:attribute>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:attribute name="excludes">${excludes}</xsl:attribute>
+                    </xsl:otherwise>
+                </xsl:choose>
+                <xsl:if test="$includes2">
+                    <filename name="{$includes2}"/>
                 </xsl:if>
             </xsl:element>
         </xsl:for-each>
@@ -1869,17 +1894,20 @@ exists or setup the property manually. For example like this:
     
     <xsl:template name="createPackagesets">
         <xsl:param name="roots"/>
-        <xsl:param name="includes"/>
+        <xsl:param name="includes" select="'${includes}'"/>
         <xsl:param name="excludes"/>
         <xsl:for-each select="$roots/webproject3:root">
             <xsl:element name="packageset">
                 <xsl:attribute name="dir"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
-                <xsl:if test="$includes">
-                    <xsl:attribute name="includes"><xsl:value-of select="$includes"/></xsl:attribute>
-                </xsl:if>
-                <xsl:if test="$excludes">
-                    <xsl:attribute name="excludes"><xsl:value-of select="$excludes"/></xsl:attribute>
-                </xsl:if>
+                <xsl:attribute name="includes"><xsl:value-of select="$includes"/></xsl:attribute>
+                <xsl:choose>
+                    <xsl:when test="$excludes">
+                        <xsl:attribute name="excludes"><xsl:value-of select="$excludes"/>,${excludes}</xsl:attribute>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:attribute name="excludes">${excludes}</xsl:attribute>
+                    </xsl:otherwise>
+                </xsl:choose>
             </xsl:element>
         </xsl:for-each>
     </xsl:template>        

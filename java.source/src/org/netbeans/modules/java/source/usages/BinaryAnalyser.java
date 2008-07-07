@@ -123,7 +123,7 @@ public class BinaryAnalyser implements LowMemoryListener {
     private static boolean FULL_INDEX = Boolean.getBoolean("org.netbeans.modules.java.source.usages.BinaryAnalyser.fullIndex");     //NOI18N
     
     private final Index index;
-    private final Map<Pair<String,String>,List<String>> refs = new HashMap<Pair<String,String>,List<String>>();
+    private final Map<Pair<String,String>,Object[]> refs = new HashMap<Pair<String,String>,Object[]>();
     private final Set<Pair<String,String>> toDelete = new HashSet<Pair<String,String>> ();
     private final AtomicBoolean lowMemory;
     private Continuation cont;
@@ -599,13 +599,17 @@ public class BinaryAnalyser implements LowMemoryListener {
     
     private List<String> getClassReferences (final Pair<String,String> name) {
         assert name != null;
-        List<String> cr = this.refs.get (name);
+        Object[] cr = this.refs.get (name);
         if (cr == null) {
-            cr = new ArrayList<String> ();
+            cr = new Object[] {
+                new ArrayList<String> (),
+                null,
+                null
+            };
             this.refs.put (name, cr);
         }
-        return cr;
-    }            
+        return (ArrayList<String>) cr[0];
+    }
     
                 
     // Static private methods ---------------------------------------------------------          

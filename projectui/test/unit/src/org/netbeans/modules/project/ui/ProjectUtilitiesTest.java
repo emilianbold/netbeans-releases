@@ -76,11 +76,9 @@ import org.w3c.dom.NodeList;
  */
 public class ProjectUtilitiesTest extends NbTestCase {
 
-    /* XXX for some reason this makes tests fail, not sure why:
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }
-    /**/
     
     private static final String NAVIGATOR_MODE = "navigator";
     
@@ -100,7 +98,7 @@ public class ProjectUtilitiesTest extends NbTestCase {
 
     protected void setUp () throws Exception {
         super.setUp ();
-        MockServices.setServices(TestSupport.TestProjectFactory.class, ProjectUtilitiesDummyWindowManager.class);
+        MockServices.setServices(TestSupport.TestProjectFactory.class);
                                 
         clearWorkDir ();
         

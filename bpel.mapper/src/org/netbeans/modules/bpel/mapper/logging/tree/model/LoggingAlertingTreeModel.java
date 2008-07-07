@@ -23,33 +23,50 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.bpel.mapper.logging.tree.LoggingTreeItem;
 import org.netbeans.modules.bpel.mapper.logging.tree.TraceItem;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeExtensionModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemInfoProvider;
+import org.netbeans.modules.bpel.mapper.tree.models.MapperConnectabilityProvider;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
+import org.netbeans.modules.soa.ui.tree.SoaTreeExtensionModel;
+import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
+import org.netbeans.modules.soa.ui.tree.TreeItemActionsProvider;
+import org.netbeans.modules.soa.ui.tree.TreeItemInfoProvider;
+import org.netbeans.modules.soa.ui.tree.TreeStructureProvider;
 
 /**
  *
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public class LoggingAlertingTreeModel implements MapperTreeModel<Object> {
+public class LoggingAlertingTreeModel implements SoaTreeModel, 
+        TreeStructureProvider, MapperConnectabilityProvider {
 
     private ExtensibleElements myContext;
     public LoggingAlertingTreeModel(ExtensibleElements context) {
         myContext = context;
     }
     
-    public Object getRoot() {
-        return MapperTreeModel.TREE_ROOT;
+    public TreeStructureProvider getTreeStructureProvider() {
+        return this;
     }
 
-    public List<MapperTreeExtensionModel> getExtensionModelList() {
+    public TreeItemInfoProvider getTreeItemInfoProvider() {
+        return LoggingAlertingTreeInfoProvider.getInstance();
+    }
+
+    public TreeItemActionsProvider getTreeItemActionsProvider() {
+        return LoggingAlertingTreeInfoProvider.getInstance();
+    }
+
+    public Object getRoot() {
+        return TREE_ROOT;
+    }
+
+    public List<SoaTreeExtensionModel> getExtensionModelList() {
         return null;
     }
 
-    public List getChildren(Iterable<Object> dataObjectPathItr) {
-        Object parent = dataObjectPathItr.iterator().next();
+    public List getChildren(TreeItem treeItem) {
+        Object parent = treeItem.getDataObject();
         if (parent == TREE_ROOT) {
             return Collections.singletonList( myContext);
         }
@@ -63,16 +80,14 @@ public class LoggingAlertingTreeModel implements MapperTreeModel<Object> {
         return null;
     }
 
-    public Boolean isLeaf(Object node) {
-        return node instanceof LoggingTreeItem 
-                && ((LoggingTreeItem)node).isLeaf();
+    public Boolean isLeaf(TreeItem treeItem) {
+        Object dataObj = treeItem.getDataObject();
+        return dataObj instanceof LoggingTreeItem 
+                && ((LoggingTreeItem)dataObj).isLeaf();
     }
 
-    public Boolean isConnectable(Object node) {
-        return isLeaf(node);
+    public Boolean isConnectable(TreeItem treeItem) {
+        return isLeaf(treeItem);
     }
 
-    public TreeItemInfoProvider getTreeItemInfoProvider() {
-        return LoggingAlertingTreeInfoProvider.getInstance();
-    }
 }

@@ -17,7 +17,33 @@
 <a href="#seealso">See Also</a> 
 </small></p>
 
-    <p>To be done.
+       <p>A <a href="about_code_generators.html">code generator</a> 
+    is an item added to the popup that appears in an editor when
+    Alt-Insert is pressed. By default, for example, when you
+    press Alt-Insert in a Java class, a constructor can be generated.
+
+    <p><b>To create a new code generator:</b>
+    <ol>
+        <li>Right-click a module project and choose New &gt; Other. In the
+        New File wizard, choose Code Generator under the NetBeans Module
+        Development category.
+        <li>In the Code Generator page, set the following:
+        <ul>
+            <li><b>Class Name.</b> Specifies the 
+            name of the new code generator.
+            <li><b>MimeType.</b> Specifies a unique 
+            Multipurpose Internet Mail Extension (MIME) 
+            type that enables the code generator
+            to be registered in the <tt>layer.xml</tt> file.
+            <li><b>Generate Code Generator 
+            Context Provider.</b> Specifies that a
+            class should be created, and registered in
+            the <tt>layer.xml</tt> file, for adding
+            new items to the code generator's lookup.
+        </ul>
+        <li>Click Finish.
+    </ol>
+
 
 <dl>
     <dt><a name="seealso">See Also</a></dt>

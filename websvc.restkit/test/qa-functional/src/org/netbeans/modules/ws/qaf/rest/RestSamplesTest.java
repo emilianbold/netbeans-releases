@@ -124,20 +124,4 @@ public class RestSamplesTest extends RestTestBase {
                 "testCustomerDBClientSample"
                 ).enableModules(".*").clusters(".*"));
     }
-    
-//    public static TestSuite suite() {
-//        TestSuite suite = new NbTestSuite();
-//        suite.addTest(new RestSamplesTest("testHelloWorldSample")); //NOI18N
-//        suite.addTest(new RestSamplesTest("testCustomerDBSample")); //NOI18N
-//        suite.addTest(new RestSamplesTest("testCustomerDBClientSample")); //NOI18N
-//        return suite;
-//    }
-//
-//    /**
-//     * Method allowing test execution directly from the IDE.
-//     */
-//    public static void main(java.lang.String[] args) {
-//        // run whole suite
-//        TestRunner.run(suite());
-//    }
 }

@@ -143,7 +143,7 @@ public class CompletionTest extends J2eeTestCase {
 
     @Override
     public void setUp() throws IOException {
-        if (!projectsOpened){
+        if (!projectsOpened && isRegistered(Server.ANY)){
             for (File file : getProjectsDir().listFiles()) {
                 openProjects(file.getAbsolutePath());
                 RecurrentSuiteFactory.resolveServer(file.getName());
@@ -174,15 +174,14 @@ public class CompletionTest extends J2eeTestCase {
                 }
             };
             addTest(RecurrentSuiteFactory.createSuite(CompletionTest.class,
-                getProjectsDir(), filter));
+                new CompletionTest().getProjectsDir(), filter));
         }
     }
     
-    private static File getProjectsDir(){
+    public File getProjectsDir(){
         File datadir = new CompletionTest().getDataDir();
         return new File(datadir, "CompletionTestProjects");
     }
-    
     
     @Override
     public void runTest() throws Exception {
@@ -660,17 +659,5 @@ public class CompletionTest extends J2eeTestCase {
             generateGoldenFiles(this);
         }
 
-    }
-
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        /*        File datadir = new CompletionTest(null, null).getDataDir();
-        File projectsDir = new File(datadir, "CompletionTestProjects");
-        suite.addTest(new CompletionTest("testXMLWellFormed", ));
-        suite.addTest(new CompletionTest("testXMLDTDFormed"));
-        suite.addTest(new CompletionTest("testXMLXSDFormed"));
-        suite.addTest(new CompletionTest("testGenerateDTD"));
-        suite.addTest(new CompletionTest("testXSLT"));
-         */ junit.textui.TestRunner.run(suite());
     }
 }

@@ -40,7 +40,7 @@
 
 (function() {
     const ignoreThese = /about:|javascript:|resource:|chrome:|jar:/;
-    const DEBUG = false;
+    const DEBUG = true;
     
     //Should we move this to constants.js?
     const STATE_IS_WINDOW = NetBeans.Constants.WebProgressListenerIF.STATE_IS_WINDOW;
@@ -102,14 +102,14 @@
         collectHttpHeaders: false
     };
     var socket;
-    
+    var requestsId = {};
     var requests = [];
     var topWindow;
     this.initMonitor = function  (context, browser, _socket) {
         topWindow = context.window;
         if( !netFeatures.disableNetMonitor ){
             monitorContext(context, browser);
-            if( !_socket ) 
+            if( !_socket )
                 NetBeans.Logger.log("net.initMonitor - Socket is null");
             socket = _socket;
         }
@@ -124,7 +124,7 @@
             
     }
     
-    var NetObserver = 
+    var NetObserver =
     {
         QueryInterface: function(iid)
         {
@@ -157,37 +157,80 @@
         onModifyRequest: function (aNsISupport) {
             var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
 
+            /*
+             *Joelle: You need to store this in the requestID probably as an nsIRequest rather than httpChannel
+             *http://people.mozilla.com/~axel/doxygen/html/interfacensIRequest.html
+             **/
+
             if ( isRelevantWindow(request) ){
                 requests.push(request);
+                var id = uuid();
                 var activity = getHttpRequestHeaders(request);
+                activity.uuid = uuid();
+                requestsId[requests.indexOf(request)] = activity.uuid;
                 activity.time = nowTime();
                 activity.category = getRequestCategory(request);
                 sendNetActivity(activity);
             }
         },
-        
+       
         onExamineResponse: function( aNsISupport ){
             
             var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
-            //if( isRelevantWindow(request) ){
+            //The bug is here.. Figure it out.
+            //  if( isRelevantWindow(request) ){
+            var index = requests.indexOf(request);
+            
+            if(  index != -1 ){
+                requests.pop(request);
                 var activity = getHttpResponseHeaders(request);
+
                 if ( activity ) {
-                  activity.time = nowTime();
-                  sendExamineNetResponse(activity);
+                    activity.time = nowTime();
+                    activity.uuid = requestsId[index];
+                    requestsId[index]=null;
+                    sendExamineNetResponse(activity);
                 }
-            //}
+            }
         }
         
         
     }
     
+    /*
+     * isRelevantWindow - is the window a subclass of the window we are debugging?
+     * @param {nsIHttpChannel} aRequest
+     * @type {nsIDOMWindow} win
+     * @return {bool}
+     */
     function isRelevantWindow(aRequest) {
-        var webProgress = getRequestWebProgress(aRequest)
-        var win = webProgress ? safeGetWindow(webProgress) : null;
-        if (!win){
+        
+        var webProgress = getRequestWebProgress(aRequest);
+        var win = null;
+        if( webProgress){
+            win = safeGetWindow(webProgress)
+        } else {
+            //NetBeans.Logger.log("net.isRelevantWindow - Your webprogress value is no good.");
             return false;
         }
-        return (topWindow == win || topWindow == win.parent);
+        
+        //var win = webProgress ? safeGetWindow(webProgress) : null;
+        if( !win || !( win instanceof NetBeans.Constants.DOMWindowIF)){
+            if( DEBUG )
+                NetBeans.Logger.log("ERROR: net.isRelevantWindow - null or not a DOMWINDOW");
+            return false;
+        }
+        
+
+        if ( topWindow == win){
+            return true;
+        } else if ( !win.parent ) {
+            return false;
+        } else {
+            return isRelevantWindow(win.parent);  //Hmm, sh
+        }
+        
+    //return ( topWindow == win || win.top == topWindow )
     }
 
     function NetProgressListener(context)
@@ -207,18 +250,18 @@
 
             throw NetBeans.Constants.NS_NOINTERFACE;
         },
-        //void onProgressChange ( nsIWebProgress webProgress , nsIRequest request , PRInt32 curSelfProgress , PRInt32 maxSelfProgress , PRInt32 curTotalProgress , PRInt32 maxTotalProgress )   
-        onProgressChange : function(progress, request, current, max, total, maxTotal)
+        //void onProgressChange ( nsIWebProgress webProgress , nsIRequest request , PRInt32 curSelfProgress , PRInt32 maxSelfProgress , PRInt32 curTotalProgress , PRInt32 maxTotalProgress )
+        onProgressChange : function(progress, request, current, max, total, maxTotal )
         {
             if ( requests.indexOf(request) != -1){
-                sendProgressUpdate(progress, request, current, max, total, maxTotal);
+                sendProgressUpdate(progress, request, current, max, total, maxTotal, notTime());
             }
         },
-        //void onLocationChange ( nsIWebProgress webProgress , nsIRequest request , nsIURI location )  
+        //void onLocationChange ( nsIWebProgress webProgress , nsIRequest request , nsIURI location )
         onLocationChange: function() {
         //NetBeans.Logger.log("On Location Change");
         },
-        //void onSecurityChange ( nsIWebProgress webProgress , nsIRequest request , PRUint32 state )   
+        //void onSecurityChange ( nsIWebProgress webProgress , nsIRequest request , PRUint32 state )
         onSecurityChange : function() {
         //NetBeans.Logger.log("On Security Change");
         },
@@ -226,7 +269,7 @@
         onStatusChange : function() {
         //NetBeans.Logger.log("On Status Change");
         },
-        //void onStateChange ( nsIWebProgress webProgress , nsIRequest request , PRUint32 stateFlags , nsresult status )   
+        //void onStateChange ( nsIWebProgress webProgress , nsIRequest request , PRUint32 stateFlags , nsresult status )
         onStateChange : function() {
         //NetBeans.Logger.log("On State Change");
         }
@@ -292,9 +335,9 @@
      */
     function getHttpResponseHeaders(aRequest)
     {
-        if ( DEBUG ) {
-            NetBeans.Logger.log("GetHttpResponseHeaders: ");
-        }
+        //        if ( DEBUG ) {
+        //            NetBeans.Logger.log("GetHttpResponseHeaders: ");
+        //        }
         var activity = new NetActivity();
         try
         {
@@ -314,7 +357,7 @@
                 visitHeader: function(name, value)
                 {
                     responseHeaders.push({
-                        name: name, 
+                        name: name,
                         value: value
                     });
                 }
@@ -338,9 +381,10 @@
      */
     function getHttpRequestHeaders( aRequest )
     {
-        if( DEBUG ){
-            NetBeans.Logger.log("GetHttpRequestHeaders: ");
-        }
+
+        //        if( DEBUG ){
+        //            NetBeans.Logger.log("GetHttpRequestHeaders: ");
+        //        }
         var activity = new NetActivity();
         try
         {
@@ -359,7 +403,7 @@
                 visitHeader: function(name, value)
                 {
                     requestHeaders.push({
-                        name: name, 
+                        name: name,
                         value: value
                     });
                 }
@@ -413,62 +457,90 @@
      * @param {NetActivity} aActivity
      */
     function sendNetActivity ( aActivity ){
-        if (DEBUG){
-            for( var key in aActivity ){
-                if ( key == "requestHeaders"){
-                    var headers = aActivity[key];
-                    NetBeans.Logger.log("   > Request Headers");
-                    for( var header in headers ){
-                        NetBeans.Logger.log("       " + headers[header].name + " : " + headers[header].value);
-                    }
-                } else {
-                    NetBeans.Logger.log("   >" + key + " : " + aActivity[key]);
-                }
-            }
+
+        var netActivity = <http/>;
+        netActivity.type="request";
+        netActivity.id=aActivity.uuid;
+        netActivity.method=aActivity.method;
+        netActivity.timestamp=aActivity.time;
+        netActivity.urlParams=aActivity.urlParams;
+        netActivity.mimeType=aActivity.mimeType;
+        var headers = aActivity.requestHeaders;
+        for( var header in headers ){
+            var tmp = headers[header];
+            netActivity.header[tmp.name] =  tmp.value;
         }
+        if (DEBUG){
+            NetBeans.Logger.log(netActivity.toXMLString());
+        }
+
+        socket.send(netActivity);
     }
     /*
      * On Observe when topic is "http-on-examine-request"
      * @param {NetActivity} aActivity;
      */
     function sendExamineNetResponse ( aActivity ){
-        if (DEBUG){
-            for( var key in aActivity ){
-                if ( key == "responseHeaders"){
-                    var headers = aActivity[key];
-                    NetBeans.Logger.log("   < Response Headers");
-                    for( var header in headers ){
-                        NetBeans.Logger.log("       " + headers[header].name + " : " + headers[header].value);
-                    }
-                } else {
-                    NetBeans.Logger.log("   <" + key + " : " + aActivity[key]);
-                }
-            }
+
+        var netActivity = <http/>;
+        netActivity.type = "response";
+        netActivity.id = aActivity.uuid;
+        netActivity.method = aActivity.method;
+        netActivity.timestamp=aActivity.time;
+        netActivity.status = aActivity.status;
+        netActivity.urlParams = aActivity.urlParams;
+
+        var headers = aActivity.responseHeaders;
+        for( var header in headers ){
+            var tmp = headers[header];
+            netActivity.header[tmp.name] =  tmp.value;
         }
+        if(DEBUG){
+            NetBeans.Logger.log(netActivity.toXMLString());
+        }
+        socket.send(netActivity);
     }
     
-    function sendProgressUpdate(progress, request, current, max, total, maxTotal) {
+    function sendProgressUpdate(progress, aRequest, current, max, total, maxTotal, time) {
+
+        var request = aRequest.QueryInterface(NetBeans.Constants.HttpChannelIF);
+        var index = requests.indexOf(request);
+        var uuid = requestsId[index];
+
+
+        var netActivity = <http />;
+        netActivity.timestamp = time;
+        netActivity.type ="progress";
+        netActivity.id = uuid;
+        netActivity.current = current;
+        netActivity.max = max;
+        netActivity.total = total;
+        netActivity.maxTotal = maxTotal;
         if( DEBUG ){
-            NetBeans.Logger.log("On ProgressChange: " + Object.prototype.toString.apply(progress.wrappedJSObject) + " Request: " + Object.prototype.toString.apply(request) + " current: " + current +" max: " + max + " total: " + total + " maxTotal: " + maxTotal);
+            NetBeans.Logger.log(netActivity.toXMLString());
         }
+        socket.send(netActivity);
     }
     
     
     /*
      * getRequestWebProgress
-     * @param request
+     * @param {nsIHttpChannel} aRequest
      * @return {nsIWebProgress}
      */
-    function getRequestWebProgress(request)
+    function getRequestWebProgress(aRequest)
     {
         try
         {
-            if (request.notificationCallbacks)
+            var i = 0;
+            var myInterface = null;
+            if (aRequest.notificationCallbacks)
             {
                 var bypass = false;
-                if (request.notificationCallbacks instanceof XMLHttpRequest)
+                if (getRequestCategory(aRequest) == "xhr")
                 {
-                    request.notificationCallbacks.channel.visitRequestHeaders(
+                    aRequest.notificationCallbacks.channel.visitRequestHeaders(
+
                     {
                         visitHeader: function(header, value)
                         {
@@ -477,44 +549,75 @@
                         }
                     });
                 }
-                if (!bypass)
-                    return GetInterface( request.notificationCallbacks, NetBeans.Constants.WebProgressIF);
-            } else if (request.loadGroup && request.loadGroup.groupObserver) {
-                return QueryInterface(request.loadGroup.groupObserver, NetBeans.Constants.WebProgressIF);
-            } 
-            return null;
+                if (!bypass){
+                    //var myInterface = aRequest.notificationCallbacks.getInterface(NetBeans.Constants.WebProgressIF);
+                    myInterface = GetInterface( aRequest.notificationCallbacks, NetBeans.Constants.WebProgressIF);
+                    return myInterface;
+                }
+            }
+        } catch (exc) {
+            NetBeans.Logger.log("1XXXX. net.getRequestWebProgress - Exception occurred: " + exc);
         }
-        catch (exc) {}
+            
+        try {
+            // NetBeans.Logger.log(i++ + "     b. net.getRequestWebProgress request has loadGroup and loadGroup.GroupObserver");
+            if (aRequest.loadGroup && aRequest.loadGroup.groupObserver) {
+                myInterface = aRequest.loadGroup.groupObserver.QueryInterface(NetBeans.Constants.WebProgressIF);
+                return myInterface;
+            }
+//            if( DEBUG )
+//                NetBeans.Logger.log("net.getRequestWebProgress does not have loadGropu or groupObserver properties.")
+        }
+        catch (exc) {
+            NetBeans.Logger.log(i++ + "2XXXX. net.getRequestWebProgress - Exception occurred: " + exc);
+        }
+        
+    //        if( !myInterface ){
+    //            NetBeans.Logger.log(i++ + ". net.getRequestWebProgress - myInterface is null");
+    //        } else if ( !( myInterface instanceof NetBeans.Constants.WebProgressIF) ) {
+    //            NetBeans.Logger.log(i++ + ". net.getRequestWebProgress - myInterface is not an instance of nsIWebProgress")
+    //        }
+    //        return myInterface;
     }
     
     /*
-     * @param {nsIWebProgress} webProgress
+     * @param {nsIWebProgress} aWebProgress
+     * @return {nsIDOMWindow}
      */
-    function safeGetWindow(webProgress)
+    function safeGetWindow(aWebProgress)
     {
+        var win = null;
+        //NetBeans.Logger.log("net.safeGetWindow");
         try
         {
-            return webProgress.DOMWindow;
+            if ( !aWebProgress || !aWebProgress.DOMWindow){
+                if (DEBUG)
+                    NetBeans.Logger.log("net.safeGetWindow - netProgress is null or is not a DOM Window");
+                return;
+            } else {
+                win = aWebProgress.DOMWindow;
+                if( !win ){
+                    NetBeans.Logger.log("net.safeGetWindow - window is null");
+                }
+            }
         }
         catch (exc)
         {
-            return null;
+            NetBeans.Logger.log("net.safeGetWindow - Exception: " + exc);
         }
+        return win;
     }
-    function getRequestCategory(request)
+    function getRequestCategory(aRequest)
     {
         try
         {
-            if (request.notificationCallbacks && request.notificationCallbacks instanceof XMLHttpRequest){
+            if (aRequest.notificationCallbacks && aRequest.notificationCallbacks instanceof XMLHttpRequest){
                 return "xhr";
             }
             return null;
         }
         catch (exc) {}
     }
-    
-    
-    
 
     
     function safeGetName(request)
@@ -537,6 +640,9 @@
     
     function GetInterface(obj, aInterface)
     {
+        if(!obj || !aInterface ){
+            NetBeans.Logger.log("net.GetInterface - you are passing null params");
+        }
         try
         {
             return obj.getInterface(aInterface);
@@ -545,15 +651,20 @@
         {
             if (e.name == NetBeans.Constants.NS_NOINTERFACE)
             {
-                if (DEBUG)
-                    NetBeans.Logger.Log("net.GetInterface - obj has no interface: ", aInterface, obj);
+                //if (DEBUG)
+                NetBeans.Logger.Log("net.GetInterface - obj has no interface: ", aInterface, obj);
             }
         }
 
         return null;
     }
 
-
+    function S4() {
+        return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+    }
+    function uuid() {
+        return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+    }
 
     
 }).apply(NetBeans.NetMonitor);

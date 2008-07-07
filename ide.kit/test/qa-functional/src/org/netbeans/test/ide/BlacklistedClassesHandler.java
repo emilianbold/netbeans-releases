@@ -167,4 +167,43 @@ public interface BlacklistedClassesHandler {
      */
     void unregister();
 
+    /**
+     * @return true if whitelist storage is being used
+     */
+    public boolean hasWhitelistStorage();
+
+    /**
+     * Outputs difference between collected list of classes and the last
+     * one from the whitelist storage
+     * @param out PrintStream
+     */
+    public void reportDifference(PrintStream out);
+
+    /**
+     * Outputs difference between collected list of classes and the last
+     * one from the whitelist storage
+     * @param out PrintWriter
+     */
+    public void reportDifference(PrintWriter out);
+
+    /**
+     * Returns difference between collected list of classes and the last
+     * one from the whitelist storage
+     * @return difference report
+     */
+    public String reportDifference();
+
+    /**
+     * Returns only list of violators but prints all the exceptions to out
+     * @param out PrintStream
+     * @return list of violators
+     */
+    public String reportViolations(PrintStream out);
+
+    /**
+     * Returns only list of violators but prints all the exceptions to out
+     * @param out PrintWriter
+     * @return list of violators
+     */
+    public String reportViolations(PrintWriter out);
 }

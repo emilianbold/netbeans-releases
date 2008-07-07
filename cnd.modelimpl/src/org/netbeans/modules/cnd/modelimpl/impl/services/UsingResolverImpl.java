@@ -85,13 +85,20 @@ public class UsingResolverImpl extends CsmUsingResolver implements CsmProgressLi
         while (udecls.hasNext()) {
             res.add((CsmUsingDeclaration) udecls.next());
         }
-//        for (CsmNamespaceDefinition def : namespace.getDefinitions()) {
-//            Iterator<CsmOffsetableDeclaration> udecls = select.getDeclarations(
-//                    def, select.getFilterBuilder().createKindFilter(kinds));
-//            while (udecls.hasNext()) {
-//                res.add((CsmUsingDeclaration) udecls.next());
-//            }
-//        }
+        // Let's also look for similarly named namespace in libraries,
+        // like it's done in CsmProjectContentResolver.getNamespaceMembers()
+        if (!namespace.getProject().isArtificial() && !namespace.isGlobal()) {
+            for(CsmProject lib : namespace.getProject().getLibraries()){
+                CsmNamespace ns = lib.findNamespace(namespace.getQualifiedName());
+                if (ns != null) {
+                    Iterator<CsmOffsetableDeclaration> it = select.getDeclarations(
+                            ns, select.getFilterBuilder().createKindFilter(kinds));
+                    while (it.hasNext()) {
+                        res.add((CsmUsingDeclaration) it.next());
+                    }
+                }
+            }
+        }
         return extractDeclarations(res);
     }
     

@@ -98,6 +98,7 @@ import org.netbeans.modules.web.project.WebProjectType;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
+import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -260,7 +261,7 @@ public class WebProjectProperties {
     private StoreGroup privateGroup; 
     private StoreGroup projectGroup;
     
-    private Properties additionalProperties;
+    private Map<String,String> additionalProperties;
 
     private static boolean needsUpdate = false;
     
@@ -268,7 +269,9 @@ public class WebProjectProperties {
     private static String cp;
 
     public static final String JAVA_SOURCE_BASED= "java.source.based";
-    
+
+    private String includes, excludes;
+
     
     public WebProjectProperties(WebProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
         this.project = project;
@@ -291,7 +294,7 @@ public class WebProjectProperties {
         privateGroup = new StoreGroup();
         projectGroup = new StoreGroup();
         
-        additionalProperties = new Properties();
+        additionalProperties = new HashMap<String,String>();
 
         init(); // Load known properties        
     }
@@ -310,6 +313,14 @@ public class WebProjectProperties {
         // CustomizerSources
         SOURCE_ROOTS_MODEL = WebSourceRootsUi.createModel( project.getSourceRoots() );
         TEST_ROOTS_MODEL = WebSourceRootsUi.createModel( project.getTestSourceRoots() );
+        includes = evaluator.getProperty(ProjectProperties.INCLUDES);
+        if (includes == null) {
+            includes = "**"; // NOI18N
+        }
+        excludes = evaluator.getProperty(ProjectProperties.EXCLUDES);
+        if (excludes == null) {
+            excludes = ""; // NOI18N
+        }
         WEB_DOCBASE_DIR_MODEL = projectGroup.createStringDocument( evaluator, WEB_DOCBASE_DIR );
         WEBINF_DIR_MODEL = projectGroup.createStringDocument( evaluator, WEBINF_DIR );
 
@@ -594,7 +605,10 @@ public class WebProjectProperties {
             //ignore
         }
 
-        storeAdditionalProperties(projectProperties);
+        projectProperties.putAll(additionalProperties);
+
+        projectProperties.put(ProjectProperties.INCLUDES, includes);
+        projectProperties.put(ProjectProperties.EXCLUDES, excludes);
         
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
@@ -623,13 +637,6 @@ public class WebProjectProperties {
 	    return false;
         }
 	return true;
-    }
-    
-    private void storeAdditionalProperties(EditableProperties projectProperties) {
-        for (Iterator i = additionalProperties.keySet().iterator(); i.hasNext();) {
-            String key = i.next().toString();
-            projectProperties.put(key, additionalProperties.getProperty(key));
-        }
     }
     
     /** XXX to be deleted when introduced in AntPropertyHeleper API
@@ -750,7 +757,7 @@ public class WebProjectProperties {
     
     /* This is used by CustomizerWSServiceHost */
     void putAdditionalProperty(String propertyName, String propertyValue) {
-        additionalProperties.setProperty(propertyName, propertyValue);
+        additionalProperties.put(propertyName, propertyValue);
     }
     
     private static void setNewServerInstanceValue(String newServInstID, Project project,
@@ -936,4 +943,28 @@ public class WebProjectProperties {
     public void setNewFrameworksNames(List<String> names) {
         addedFrameworkNames = names;
     }
+    
+    void loadIncludesExcludes(IncludeExcludeVisualizer v) {
+        Set<File> roots = new HashSet<File>();
+        for (DefaultTableModel model : new DefaultTableModel[] {SOURCE_ROOTS_MODEL, TEST_ROOTS_MODEL}) {
+            for (Object row : model.getDataVector()) {
+                roots.add((File) ((Vector) row).elementAt(0));
+            }
+        }
+        try {
+            String webDocRoot = WEB_DOCBASE_DIR_MODEL.getText(0, WEB_DOCBASE_DIR_MODEL.getLength());
+            roots.add(project.getAntProjectHelper().resolveFile(webDocRoot));
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        v.setRoots(roots.toArray(new File[roots.size()]));
+        v.setIncludePattern(includes);
+        v.setExcludePattern(excludes);
+    }
+
+    void storeIncludesExcludes(IncludeExcludeVisualizer v) {
+        includes = v.getIncludePattern();
+        excludes = v.getExcludePattern();
+    }
+    
 }

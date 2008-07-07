@@ -59,6 +59,14 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
         </folder>
+        <folder name="org-netbeans-modules-php-project">
+            <folder name="Customizer">
+                <file name="Debug.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.client.tools.impl.projects.DebugCustomizerPanelProvider.createPhpProjectDebug"/>
+                    <attr name="position" intvalue="400"/>
+                </file>
+            </folder>
+        </folder>
     </folder>
     <folder name="Actions">
 	<folder name="Window">

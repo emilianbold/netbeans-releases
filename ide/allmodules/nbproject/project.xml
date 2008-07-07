@@ -300,6 +300,11 @@ made subject to such option by the copyright holder.
                 <project>../../javascript.editing</project>
                 <project>../../javascript.hints</project>
                 <project>../../javascript.kit</project>
+                <project>../../javascript.libraries.dojo</project>
+                <project>../../javascript.libraries.jquery</project>
+                <project>../../javascript.libraries.kit</project>
+                <project>../../javascript.libraries.prototype</project>
+                <project>../../javascript.libraries.scriptaculous</project>
                 <project>../../javascript.refactoring</project>
                 <project>../../javawebstart</project>
                 <project>../../jellytools</project>

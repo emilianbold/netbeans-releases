@@ -131,6 +131,14 @@ public class ProjectBridge {
         }
         return item;
     }
+
+    /**
+     * Store used extensions in the project
+     * @param usedExtension list of new extensions
+     */
+    public void addExtensions(Set<String> usedExtension) {
+        makeConfigurationDescriptor.addAdditionalExtensions(usedExtension);
+    }
     
     private Item findByCanonicalName(String path){
         if (canonicalItems == null) {

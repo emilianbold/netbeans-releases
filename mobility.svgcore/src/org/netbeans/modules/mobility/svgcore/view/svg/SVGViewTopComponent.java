@@ -126,6 +126,7 @@ import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.mobility.svgcore.composer.ScreenManager;
 import org.netbeans.modules.mobility.svgcore.export.ScreenSizeHelper;
+import org.netbeans.modules.mobility.svgcore.items.form.SVGComponentDrop;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.netbeans.modules.mobility.svgcore.navigator.SVGNavigatorContent;
 import org.netbeans.modules.mobility.svgcore.palette.SVGPaletteItemDataObject;
@@ -135,8 +136,12 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.MouseUtils;
 import org.openide.loaders.XMLDataObject;
 import org.openide.nodes.FilterNode;
+import org.openide.text.ActiveEditorDrop;
+import org.openide.text.CloneableEditor;
 import org.openide.util.lookup.ProxyLookup;
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.svg.SVGLocatableElement;
 import org.xml.sax.SAXException;
@@ -1005,15 +1010,21 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         if ( dObj instanceof XMLDataObject) {
             Document doc = ((XMLDataObject) dObj).getDocument();
 
+            SVGComponentDrop dropSupport = getAEDClass(doc);
+            if (dropSupport != null){
+                dropSupport.handleTransfer(m_svgDataObject);
+                return true;
+            } 
+            
             NodeList bodyTags = doc.getElementsByTagName("body"); //NOI18N
             if ( bodyTags.getLength() > 0) {
                 String body = bodyTags.item(0).getTextContent();
                 SceneManager.log(Level.INFO, "Dropping text: \"" + body + "\""); //NOI18N
                 String id = m_svgDataObject.getModel().mergeImage(body, false);
                 getSceneManager().setSelection(id, true);
-            } else {
-                SceneManager.log(Level.SEVERE, "Nothing to drop, empty body!"); //NOI18N
+                return true;
             }
+            SceneManager.log(Level.SEVERE, "Nothing to drop, empty body and class!"); //NOI18N
             return true;
         } else if ( dObj instanceof SVGPaletteItemDataObject) {
             dropFile( ((SVGPaletteItemDataObject) dObj).getReferencedFile());
@@ -1025,6 +1036,39 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         return false;
     }
     
+    private SVGComponentDrop getAEDClass(Document doc){
+            String className = getClassName(doc);
+            if (className != null){
+                try {
+                    Class nameClass = this.getClass().getClassLoader().loadClass(className);
+                    if (SVGComponentDrop.class.isAssignableFrom(nameClass)) {
+                        SVGComponentDrop impl = (SVGComponentDrop) nameClass.newInstance();
+                        return impl;
+                    } else {
+                        SceneManager.log(Level.SEVERE, "className doesn't implement SVGComponentDrop!"); //NOI18N
+                    }
+                } catch (Exception ex) {
+                    SceneManager.log(Level.SEVERE, "can't create "+className+" instance", ex); //NOI18N
+                }
+            }
+            return null;
+    }
+    
+    private String getClassName(Document doc){
+        String name = null;
+            NodeList classTags = doc.getElementsByTagName("class"); //NOI18N
+            if ( classTags.getLength() > 0) {
+                Node classNode = classTags.item(0);
+                if (classNode.hasAttributes()){
+                    NamedNodeMap attrs = classNode.getAttributes();
+                    Node nameNode = attrs.getNamedItem("name");
+                    if (nameNode != null){
+                        name = nameNode.getNodeValue();
+                    }
+                }
+            }
+        return name;
+    }
     private void dropFile(File file) throws FileNotFoundException, IOException, DocumentModelException, BadLocationException {
         if ( file != null && file.exists() && file.isFile()) {
             SceneManager.log(Level.INFO, "Dropping file " + file.getPath()); //NOI18N

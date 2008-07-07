@@ -163,11 +163,11 @@ public class ExecutionServiceTest extends NbTestCase {
         Future<Integer> task = execution.getTask();
         assertNotNull(task);
 
-        assertNull(getInputOutput("Test", false));
+        assertNull(getInputOutput("Test", false, null));
         process.destroy();
         assertEquals(0, task.get().intValue());
 
-        assertNotNull(getInputOutput("Test", false));
+        assertNotNull(getInputOutput("Test", false, null));
 
         // rerun once again
         process = new TestProcess(0);
@@ -178,11 +178,11 @@ public class ExecutionServiceTest extends NbTestCase {
         task = execution.getTask();
         assertNotNull(task);
 
-        assertNull(getInputOutput("Test", false));
+        assertNull(getInputOutput("Test", false, null));
         process.destroy();
         task.get();
 
-        assertNotNull(getInputOutput("Test", false));
+        assertNotNull(getInputOutput("Test", false, null));
     }
 
     public void testIOHandlingMulti() throws InterruptedException, InvocationTargetException,
@@ -203,8 +203,8 @@ public class ExecutionServiceTest extends NbTestCase {
         Future<Integer> task1 = execution1.getTask();
         assertNotNull(task1);
 
-        assertNull(getInputOutput("Test", false));
-        assertNull(getInputOutput("Test #2", false));
+        assertNull(getInputOutput("Test", false, null));
+        assertNull(getInputOutput("Test #2", false, null));
 
         process1.waitStarted();
 
@@ -215,8 +215,8 @@ public class ExecutionServiceTest extends NbTestCase {
         Future<Integer> task2 = execution2.getTask();
         assertNotNull(task2);
 
-        assertNull(getInputOutput("Test", false));
-        assertNull(getInputOutput("Test #2", false));
+        assertNull(getInputOutput("Test", false, null));
+        assertNull(getInputOutput("Test #2", false, null));
 
         process2.waitStarted();
 
@@ -226,8 +226,8 @@ public class ExecutionServiceTest extends NbTestCase {
         assertEquals(0, task1.get().intValue());
         assertEquals(0, task2.get().intValue());
 
-        assertNotNull(getInputOutput("Test", false));
-        assertNotNull(getInputOutput("Test #2", false));
+        assertNotNull(getInputOutput("Test", false, null));
+        assertNotNull(getInputOutput("Test #2", false, null));
     }
 
 //    public void testInvocationThread() {
@@ -247,9 +247,11 @@ public class ExecutionServiceTest extends NbTestCase {
 //        }
 //    }
 
-    private static InputOutputManager.InputOutputData getInputOutput(String name, boolean actions) {
+    private static InputOutputManager.InputOutputData getInputOutput(String name,
+            boolean actions, String optionsPath) {
+        
         synchronized (InputOutputManager.class) {
-            InputOutputManager.InputOutputData data = InputOutputManager.getInputOutput(name, actions);
+            InputOutputManager.InputOutputData data = InputOutputManager.getInputOutput(name, actions, optionsPath);
             // put it back
             if (data != null) {
                 InputOutputManager.addInputOutput(data);

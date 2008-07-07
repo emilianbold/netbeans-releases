@@ -53,6 +53,7 @@ import org.netbeans.lib.lexer.inc.TokenListChange;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.lib.lexer.token.AbstractToken;
 import org.netbeans.lib.lexer.token.JoinToken;
+import org.netbeans.lib.lexer.token.PartToken;
 import org.netbeans.lib.lexer.token.TextToken;
 
 
@@ -241,6 +242,16 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
         if (tokenCount > 0 && joinInfo.joinTokenLastPartShift() > 0)
             tokenCount--;
         return tokenCount;
+    }
+
+    public boolean joinBackward() {
+        if (tokenCountCurrent() > 0) {
+            AbstractToken<T> token = tokenOrEmbeddingUnsync(0).token();
+            return (token.getClass() == PartToken.class) &&
+                    ((PartToken<T>)token).partTokenIndex() > 0;
+        } else { // tokenCount == 0
+            return (joinInfo.joinTokenLastPartShift() > 0);
+        }
     }
 
     public TokenOrEmbedding<T> tokenOrEmbedding(int index) {

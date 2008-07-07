@@ -174,7 +174,7 @@ public class PHPIndex {
         if (inheritanceLine != null){
             for (IndexedClass clazz : inheritanceLine){
                 int mask = inheritanceLine.get(0) == clazz ? attrMask : (attrMask & (~Modifier.PRIVATE));
-                methods.addAll(getMethods(context, clazz.getName(), "", kind, mask)); //NOI18N
+                methods.addAll(getMethods(context, clazz.getName(), name, kind, mask)); //NOI18N
             }
         }
         
@@ -189,7 +189,7 @@ public class PHPIndex {
         if (inheritanceLine != null){
             for (IndexedClass clazz : inheritanceLine){
                 int mask = inheritanceLine.get(0) == clazz ? attrMask : (attrMask & (~Modifier.PRIVATE));
-                properties.addAll(getProperties(context, clazz.getName(), "", NameKind.PREFIX, mask)); //NOI18N
+                properties.addAll(getProperties(context, clazz.getName(), name, NameKind.PREFIX, mask)); //NOI18N
             }
         }
         
@@ -252,7 +252,7 @@ public class PHPIndex {
         for (String signature : signaturesMap.keySet()) {
             //items are not indexed, no case insensitive search key user
             Signature sig = Signature.get(signature);
-            int flags = sig.integer(3);
+            int flags = sig.integer(4);
             
             if ((flags & (Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE)) == 0){
                 flags |= Modifier.PUBLIC; // default modifier
@@ -266,7 +266,7 @@ public class PHPIndex {
                 IndexedFunction func = new IndexedFunction(funcName, className,
                         this, signaturesMap.get(signature), args, offset, flags, ElementKind.METHOD);
                 
-                int defParamCount = sig.integer(4);
+                int defParamCount = sig.integer(3);
                 func.setDefaultParameterCount(defParamCount);
 
                 methods.add(func);
@@ -324,13 +324,6 @@ public class PHPIndex {
             if (!className.equals(foundClassName)) {
                 continue;
             }
-            
-            if(kind == NameKind.PREFIX) {
-                //case sensitive
-                if(!foundClassName.startsWith(className)) {
-                    continue;
-                }
-            }
 
             for (String signature : rawSignatures) {
                 String elemName = getSignatureItem(signature, 0);
@@ -339,8 +332,8 @@ public class PHPIndex {
                 // according to 'kind'
                 if((kind == NameKind.CASE_INSENSITIVE_PREFIX 
                         && elemName.toLowerCase().startsWith(name.toLowerCase()))
-                        || (kind == NameKind.PREFIX 
-                        && elemName.startsWith(name))) {
+                        || (kind == NameKind.PREFIX && elemName.startsWith(name))
+                        || (kind == NameKind.EXACT_NAME && elemName.equals(name))) {
                         signatures.put(signature, persistentURL);
                 }
                 

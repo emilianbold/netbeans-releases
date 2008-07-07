@@ -65,6 +65,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -737,9 +738,17 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
                 }
             } else {
                 JButton b = null;
-                if (descriptor.getDefaultValue ().equals (NotifyDescriptor.OK_OPTION) && stdOKButton.isEnabled ()) {;
+                Collection<Component> currentActive = new HashSet<Component> ();
+                if (currentPrimaryButtons != null) {
+                    currentActive.addAll (Arrays.asList (currentPrimaryButtons));
+                }
+                if (currentSecondaryButtons != null) {
+                    currentActive.addAll (Arrays.asList (currentSecondaryButtons));
+                }
+                Arrays.asList (currentPrimaryButtons);
+                if (descriptor.getDefaultValue ().equals (NotifyDescriptor.OK_OPTION) && currentActive.contains (stdOKButton)) {
                     b = stdOKButton;
-                } else if (descriptor.getDefaultValue ().equals (NotifyDescriptor.YES_OPTION) && stdYesButton.isEnabled ()) {
+                } else if (descriptor.getDefaultValue ().equals (NotifyDescriptor.YES_OPTION) && currentActive.contains (stdYesButton)) {
                     b = stdYesButton;
                 } else if (descriptor.getDefaultValue ().equals (NotifyDescriptor.NO_OPTION)) {
                     b = stdNoButton;

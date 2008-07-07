@@ -58,11 +58,18 @@ import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
+import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
+import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
+import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionException;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
@@ -107,13 +114,75 @@ public abstract class Command {
     }
 
     protected final void showURLForDebugProjectFile() throws MalformedURLException {
-        HtmlBrowser.URLDisplayer.getDefault().showURL(urlForDebugProjectFile());
+        showURLForDebugContext(null);
     }
 
     protected final void showURLForDebugContext(Lookup context) throws MalformedURLException {
-        HtmlBrowser.URLDisplayer.getDefault().showURL(urlForDebugContext(context));
+        boolean debugServer = WebClientToolsProjectUtils.getServerDebugProperty(project);
+        boolean debugClient = WebClientToolsProjectUtils.getClientDebugProperty(project);
+        
+        if (!WebClientToolsSessionStarterService.isAvailable()) {
+            debugServer = true;
+            debugClient = false;
+        }
+        
+        assert debugServer || debugClient;
+        
+        URL debugUrl;
+        if (context != null) {
+            debugUrl = (debugServer) ? urlForDebugContext(context) : urlForContext(context);
+        } else {
+            debugUrl = (debugServer) ? urlForDebugProjectFile() : urlForProjectFile();
+        }
+        
+        if (debugClient) {
+            try {
+                launchJavaScriptDebugger(debugUrl);
+            } catch (URISyntaxException ex) {
+                Exceptions.printStackTrace(ex);
+            }            
+        } else {
+            HtmlBrowser.URLDisplayer.getDefault().showURL(debugUrl);
+        }
     }
 
+    protected final void launchJavaScriptDebugger(URL url) throws MalformedURLException, URISyntaxException {
+            LocationMappersFactory mapperFactory = Lookup.getDefault().lookup(LocationMappersFactory.class);
+            Lookup debuggerLookup = null;
+            if (mapperFactory != null) {
+                URI appContext = getBaseURL().toURI();
+                FileObject[] srcRoots = Utils.getSourceObjects(getProject());
+                
+                JSToNbJSLocationMapper forwardMapper = 
+                        mapperFactory.getJSToNbJSLocationMapper(srcRoots, appContext, null);
+                NbJSToJSLocationMapper reverseMapper = 
+                        mapperFactory.getNbJSToJSLocationMapper(srcRoots, appContext, null);
+                debuggerLookup = Lookups.fixed(forwardMapper, reverseMapper, project);
+            } else {
+                debuggerLookup = Lookups.fixed(project);
+            }
+
+            URI clientUrl = url.toURI();
+                        
+            HtmlBrowser.Factory browser = null;
+            if (WebClientToolsProjectUtils.isInternetExplorer(project)) {
+                browser = WebClientToolsProjectUtils.getInternetExplorerBrowser();
+            } else {
+                browser = WebClientToolsProjectUtils.getFirefoxBrowser();
+            }
+            
+            if (browser == null) {
+                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+            } else {
+                try {
+                    WebClientToolsSessionStarterService.startSession(clientUrl, browser, debuggerLookup);
+                } catch (WebClientToolsSessionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        
+    }
+    
     protected final String getProperty(String propertyName) {
         return getPropertyEvaluator().getProperty(propertyName);
     }
@@ -255,11 +324,15 @@ public abstract class Command {
     }
 
     protected final String getOutputTabTitle(File scriptFile) {
-        assert this instanceof Displayable;
-        return MessageFormat.format("{0} - {1}", ((Displayable) this).getDisplayName(), scriptFile.getName());
+        return getOutputTabTitle(((Displayable) this).getDisplayName(), scriptFile);
     }
 
-    protected final BufferedWriter writer(OutputStream os, Charset encoding) {
+    protected String getOutputTabTitle(String command, File scriptFile) {
+        assert this instanceof Displayable;
+        return MessageFormat.format("{0} - {1}", command, scriptFile.getName());
+    }
+
+    protected static final BufferedWriter writer(OutputStream os, Charset encoding) {
         return new BufferedWriter(new OutputStreamWriter(os, encoding));
     }
 

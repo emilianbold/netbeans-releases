@@ -76,21 +76,82 @@ public class GroovyCodeCompletionTest extends GroovyTestBase {
     }
 
     public void testMethodCompletion2() throws Exception {
-        checkCompletion(TEST_BASE + "MethodCompletionTestCase.groovy", "s.^", false);
+        checkCompletion(TEST_BASE + "MethodCompletionTestCase.groovy", "new String().find^", false);
     }
 
-//    public void testPrefix1() throws Exception {
-//        checkPrefix("testfiles/cc-prefix1.js");
-//    }
-//
-//    public void testAutoQueryStrings() throws Exception {
-//        assertAutoQuery(QueryType.COMPLETION, "foo^ 'foo'", ".");
-//        assertAutoQuery(QueryType.NONE, "'^foo'", ".");
-//        assertAutoQuery(QueryType.NONE, "/f^oo/", ".");
-//        assertAutoQuery(QueryType.NONE, "\"^\"", ".");
-//        assertAutoQuery(QueryType.NONE, "\" foo^ \"", ".");
-//    }
-//
+    public void testScriptLong1() throws Exception {
+        checkCompletion(TEST_BASE + "ScriptLong1.groovy", "l.M^", false);
+    }
 
+    public void testScriptLong2() throws Exception {
+        checkCompletion(TEST_BASE + "ScriptLong2.groovy", "l.comp^", false);
+    }
+
+    public void testScriptString1() throws Exception {
+        checkCompletion(TEST_BASE + "ScriptString1.groovy", "s.val^", false);
+    }
+
+    public void testScriptString2() throws Exception {
+        checkCompletion(TEST_BASE + "ScriptString2.groovy", "s.spli^", false);
+    }
+
+    public void testScriptStringConst1() throws Exception {
+        checkCompletion(TEST_BASE + "ScriptStringConst1.groovy", "\" ddd \".toS^", false);
+    }
+
+    public void testClassMethodFieldString1() throws Exception {
+        checkCompletion(TEST_BASE + "ClassMethodFieldString1.groovy", "stringField.toL^", false);
+    }
+
+    public void testClassMethodFieldString2() throws Exception {
+        checkCompletion(TEST_BASE + "ClassMethodFieldString2.groovy", "stringField.spli^", false);
+    }
+    
+    public void testClassMethodFieldLong1() throws Exception {
+        checkCompletion(TEST_BASE + "ClassMethodFieldLong1.groovy", "longField.M^", false);
+    }
+
+    public void testClassMethodFieldLong2() throws Exception {
+        checkCompletion(TEST_BASE + "ClassMethodFieldLong2.groovy", "longField.comp^", false);
+    }
+
+    public void testClassMethodLocalLong1() throws Exception {
+        checkCompletion(TEST_BASE + "ClassMethodLocalLong1.groovy", "localLong.M^", false);
+    }
+
+    public void testClassMethodLocalLong2() throws Exception {
+        checkCompletion(TEST_BASE + "ClassMethodLocalLong2.groovy", "localLong.comp^", false);
+    }
+
+    public void testClassMethodLocalString1() throws Exception {
+        checkCompletion(TEST_BASE + "ClassMethodLocalString1.groovy", "localString.toL^", false);
+    }
+
+    public void testClassMethodLocalString2() throws Exception {
+        checkCompletion(TEST_BASE + "ClassMethodLocalString2.groovy", "localString.get^", false);
+    }
+
+    public void testKeywordImport1() throws Exception {
+        checkCompletion(TEST_BASE + "KeywordImport1.groovy", "import java.lang.Ab^", false);
+    }
+
+    public void testKeywordAboveClass1() throws Exception {
+        checkCompletion(TEST_BASE + "KeywordAboveClass1.groovy", "ab^", false);
+    }
+
+    // Package completion could not be tested at the moment, since this statement returns nothing for "java.n|":
+//    pkgSet = pathInfo.getClassIndex().getPackageNames(packageRequest.fullString, true, EnumSet.allOf(ClassIndex.SearchScope.class));
+
+//    public void testKeywordImport2() throws Exception {
+//        checkCompletion(TEST_BASE + "KeywordImport2.groovy", "import java.n^", false);
+//        assertTrue(false);
+//    }
+
+
+//    Testing all completion possibilities for java.lang.String is broken
+
+//    public void testClassMethodLocalStringConst1() throws Exception {
+//        checkCompletion(TEST_BASE + "ClassMethodLocalStringConst1.groovy", "\" ddd \".^", false);
+//    }
 
 }

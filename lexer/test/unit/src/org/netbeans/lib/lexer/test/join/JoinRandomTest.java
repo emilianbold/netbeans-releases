@@ -256,7 +256,6 @@ public class JoinRandomTest extends NbTestCase {
         randomModify.clearDocument();
 
 
-        // Attempt insert after cleared document
         randomModify.insertText(0, "<b>c");
         //             000000000011111111112222222222
         //             012345678901234567890123456789
@@ -265,6 +264,105 @@ public class JoinRandomTest extends NbTestCase {
         //             000000000011111111112222222222
         //             012345678901234567890123456789
         //     text = "b>c";
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, ")}M)s{i)<}><p)}>");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = ")}M)s{i)<}><p)}>"
+        randomModify.insertText(10, "(RdB");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = ")}M)s{i)<}(RdB><p)}>"
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, "a{x<b>y}z");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "a{x<b>y}z"
+        randomModify.insertText(6, "u");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "a{x<b>uy}z"
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, "}M)s{i)<}(RB><W>dVpv)p)}>");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "}M)s{i)<}(RB><W>dVpv)p)}>"
+        randomModify.insertText(16, "L");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "}M)s{i)<}(RB><W>LdVpv)p)}>"
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, "{<>x<p>x");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "{<>x<p>x"
+        randomModify.insertText(4, ")");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "{<>x(<p>x"
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, "<a>x<>y<c>");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "<a>x<>y<c>"
+        randomModify.insertText(4, "b");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "<a>x<b>y<c>"
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, "a<>b<y>c");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "<a>x<>y<c>"
+        randomModify.removeText(1, 1);
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "<a>x<b>y<c>"
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, "a<>");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "a<>"
+        randomModify.insertText(2, "x");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "a<x>"
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, "}w(><<()<>SV<(<}}{IaW><v<");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "}w(><<()<>SV<(<}}{IaW><v<"
+        randomModify.insertText(9, "t");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "}w(><<()<>SV<(<}}{IaW><v<"
+        randomModify.clearDocument();
+
+
+        randomModify.insertText(0, "a<x><y>v()");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "a<x><y>v()"
+        randomModify.insertText(7, "u");
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        //     text = "a<x><y>uv()"
         randomModify.clearDocument();
 
 

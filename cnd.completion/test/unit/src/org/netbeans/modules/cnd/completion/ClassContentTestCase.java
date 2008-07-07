@@ -81,4 +81,14 @@ public class ClassContentTestCase extends CompletionBaseTestCase {
     public void testCompletionAfterNew() throws Exception {
         super.performTest("file.cc", 6, 5, "d = new ");
     }
+
+    public void testCompletionOnUnfinishedConstructor1() throws Exception {
+        // IZ 138291 : Completion does not work for unfinished constructor
+        super.performTest("file.h", 18, 5, "E(const )", -1);
+    }
+
+    public void testCompletionOnUnfinishedConstructor2() throws Exception {
+        // IZ 138291 : Completion does not work for unfinished constructor
+        super.performTest("file.h", 18, 5, "E(const E)", -1);
+    }
 }

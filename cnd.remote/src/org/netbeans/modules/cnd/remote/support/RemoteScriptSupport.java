@@ -76,7 +76,8 @@ public class RemoteScriptSupport extends RemoteConnectionSupport {
     private void setChannelCommand(String script) {
         try {
             channel = createChannel();
-            ((ChannelExec) channel).setCommand(script);
+            // The PATH stuff makes in much less likely to get a non-standard chmod...
+            ((ChannelExec) channel).setCommand("(PATH=/bin:/usr/bin:$PATH chmod 755 " + script + ") && " + script); // NOI18N
         } catch (JSchException ex) {
             log.warning(ex.getMessage());
         }

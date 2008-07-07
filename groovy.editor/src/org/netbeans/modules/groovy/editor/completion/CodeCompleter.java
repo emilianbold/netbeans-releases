@@ -1343,9 +1343,10 @@ public class CodeCompleter implements CodeCompletionHandler {
                 singlePackage = singlePackage.substring(packageRequest.basePackage.length() + 1);
             }
 
-            if (singlePackage.length() > 0) {
+            if(singlePackage.startsWith(packageRequest.prefix) && singlePackage.length() > 0){
                 proposals.add(new PackageItem(singlePackage, anchor, request));
             }
+
         }
 
         return false;
@@ -1655,7 +1656,8 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
 
-        LOG.log(Level.FINEST, "complete(...), prefix: {0}", prefix); // NOI18N
+        LOG.log(Level.FINEST, "complete(...), prefix      : {0}", prefix); // NOI18N
+        LOG.log(Level.FINEST, "complete(...), CaretOffset : {0}", context.getCaretOffset()); // NOI18N
 
 
         // Avoid all those annoying null checks

@@ -92,6 +92,11 @@ public class TestUnitRecognizerTest extends TestCase {
         assertEquals("ProductTest", matcher.group(3));
         assertEquals("<false> is not true.", matcher.group(4));
         assertEquals("./test/unit/product_test.rb:69:in `test_positive_price'", matcher.group(5));
+        
+        String outputScientificNotation = "%TEST_FAILED% time=9.8e-07 testname=test_positive_price(ProductTest) message=<false> is not true. location=./test/unit/product_test.rb:69:in `test_positive_price'";
+        matcher = handler.match(outputScientificNotation);
+        assertTrue(matcher.matches());
+        assertEquals("9.8e-07", matcher.group(1));
     }
     
     public void testTestError() {
@@ -130,6 +135,16 @@ public class TestUnitRecognizerTest extends TestCase {
         assertEquals("StandardError: No fixture with name 'ruby_book' found for table 'products'", stackTrace[0]);
         assertEquals("/usr/lib/ruby/gems/1.8/gems/activerecord-2.0.2/lib/active_record/fixtures.rb:888:in `map'", stackTrace[2]);
         assertEquals("/usr/lib/ruby/gems/1.8/gems/actionpack-2.0.2/lib/action_controller/integration.rb:547:in `run'", stackTrace[8]);
+
+        String outputScientificNotation = "%TEST_ERROR% time=1.2e-34 testname=test_two_people_buying(DslUserStoriesTest) " +
+                "message=StandardError: No fixture with name 'ruby_book' found for table 'products' " +
+                "location=/usr/lib/ruby/gems/1.8/gems/activerecord-2.0.2/lib/active_record/fixtures.rb:894:in `products'%BR%" +
+                "/usr/lib/ruby/gems/1.8/gems/activerecord-2.0.2/lib/active_record/fixtures.rb:888:in `map'%BR%";
+
+        matcher = handler.match(outputScientificNotation);
+        assertTrue(matcher.matches());
+        assertEquals("1.2e-34", matcher.group(1));
+
     }
     
     public void testSuiteFinished() {
@@ -175,6 +190,16 @@ public class TestUnitRecognizerTest extends TestCase {
         assertTrue(matcher.matches());
         assertEquals(1, matcher.groupCount());
         assertEquals("undefined method `size' for UserHelperTest:Class", matcher.group(1));
+    }
+
+    public void testTestLogger() throws InterruptedException {
+        TestRecognizerHandler handler = new TestUnitHandlerFactory.TestLoggerHandler();
+        String output = "%TEST_LOGGER% level=FINE msg=Loading 3 files took 12.345";
+        Matcher matcher = handler.match(output);
+        assertTrue(matcher.matches());
+        assertEquals(2, matcher.groupCount());
+        assertEquals("FINE", matcher.group(1));
+        assertEquals("Loading 3 files took 12.345", matcher.group(2));
     }
 
 }

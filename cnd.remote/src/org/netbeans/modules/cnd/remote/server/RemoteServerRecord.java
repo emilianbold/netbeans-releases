@@ -41,8 +41,8 @@ package org.netbeans.modules.cnd.remote.server;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 
 /**
@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
  * 
  * @author gordonp
  */
-public class RemoteServerRecord implements ServerRecord, PropertyChangeListener  {
+public class RemoteServerRecord implements ServerRecord, PropertyChangeListener, PlatformTypes  {
     
     private String user;
     private String server;
@@ -58,25 +58,14 @@ public class RemoteServerRecord implements ServerRecord, PropertyChangeListener 
     private boolean editable;
     private boolean active;
     private int platform;
-    
-    protected RemoteServerRecord(String user, String server, boolean active) {
-        this.user = user;
-        this.server = server;
-        name = user + '@' + server;
-        editable = true;
-        platform = -1;
-        if (active) {
-            RemoteServerList list = RemoteServerList.getInstance();
-            if (list != null) {
-                setActive(true);
-            }
-        }
-    }
+    private boolean inited = false;
     
     protected RemoteServerRecord(String name, boolean active) {
         this.name = name;
         this.active = active;
-        editable = false;
+        editable = !name.equals("localhost"); // NOI18N
+        //platform = getPlatform();
+        //inited = true;
     }
     
     public boolean isEditable() {
@@ -111,20 +100,34 @@ public class RemoteServerRecord implements ServerRecord, PropertyChangeListener 
     }
     
     public int getPlatform() {
-        platform = -1; // DEBUG
-        if (platform < 0 ) {
-            int x = 0;
-            String cmd = x == 0 ? "uname -s -m" : "PATH=/bin:/usr/bin:$PATH uname -s -m";
-            RemoteCommandSupport support = new RemoteCommandSupport(name, cmd);
-            String val = support.toString().toLowerCase();
-            if (val.startsWith("linux")) {
-                platform = Platform.PLATFORM_LINUX;
-            } else if (val.startsWith("sunos")) {
-                String os = val.substring(val.indexOf(' '));
-                platform = os.startsWith("sun") ? Platform.PLATFORM_SOLARIS_SPARC : Platform.PLATFORM_SOLARIS_INTEL;
-            } else if (val.startsWith("cygwin") || val.startsWith("mingw32")) {
-                platform = Platform.PLATFORM_WINDOWS;
+        if (!inited) {
+            if (name.equals("localhost")) { // NOI18N
+                String os = System.getProperty("os.name");
+                if (os.equals("SunOS")) { // NOI18N
+                    platform = System.getProperty("os.arch").equals("x86") ? PLATFORM_SOLARIS_INTEL : PLATFORM_SOLARIS_SPARC; // NOI18N
+                } else if (os.startsWith("Windows ")) { // NOI18N
+                    platform =  PLATFORM_WINDOWS;
+                } else if (os.toLowerCase().contains("linux")) { // NOI18N
+                    platform =  PLATFORM_LINUX;
+                } else if (os.toLowerCase().contains("mac")) { // NOI18N
+                    platform =  PLATFORM_MACOSX;
+                } else {
+                    platform =  PLATFORM_GENERIC;
+                }
+            } else {
+                String cmd = "PATH=/bin:/usr/bin:$PATH uname -s -m"; // NOI18N
+                RemoteCommandSupport support = new RemoteCommandSupport(name, cmd);
+                String val = support.toString().toLowerCase();
+                if (val.startsWith("linux")) { // NOI18N
+                    platform =  PLATFORM_LINUX;
+                } else if (val.startsWith("sunos")) { // NOI18N
+                    String os = val.substring(val.indexOf(' '));
+                    return os.startsWith("sun") ? PLATFORM_SOLARIS_SPARC : PLATFORM_SOLARIS_INTEL; // NOI18N
+                } else if (val.startsWith("cygwin") || val.startsWith("mingw32")) { // NOI18N
+                    platform =  PLATFORM_WINDOWS;
+                }
             }
+            inited = true;
         }
         return platform;
     }

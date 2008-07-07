@@ -62,7 +62,7 @@ public class RemoteServerNode extends AbstractNode implements PropertyChangeList
 
     public RemoteServerNode(RemoteServerRecord record) {
         this(Children.LEAF, record);
-        setName(record.getUserName() + '@' + record.getServerName());
+        setName(record.getName());
         setIconBaseWithExtension(SINGLE_SERVER_ICON);
     }
     
@@ -74,17 +74,13 @@ public class RemoteServerNode extends AbstractNode implements PropertyChangeList
     
     @Override
     public Action[] getActions(boolean context) {
-        if (Boolean.getBoolean("cnd.remote.enable")) { // DEBUG
-            Action[] actions = {
-                new DisplayPathMapperAction(record),
-                new SetDefaultAction(record),
-                null,
-                new DeleteServerAction(record),
-            };
-            return actions;
-        } else {
-            return super.getActions(context);
-        }
+        Action[] actions = {
+            new DisplayPathMapperAction(record),
+            new SetDefaultAction(record),
+            null,
+            new DeleteServerAction(record),
+        };
+        return actions;
     }
     
     @Override

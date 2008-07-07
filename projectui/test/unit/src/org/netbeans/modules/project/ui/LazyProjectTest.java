@@ -55,16 +55,6 @@ public class LazyProjectTest extends TestCase {
         super(testName);
     }            
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
     public void testGetProjectDirectoryAlwaysNotNull() throws Exception {
         CharSequence log = Log.enable("org.netbeans.modules.project.ui", Level.WARNING);
         LazyProject instance = new LazyProject(new URL("http://www.netbeans.org"), "name", null);

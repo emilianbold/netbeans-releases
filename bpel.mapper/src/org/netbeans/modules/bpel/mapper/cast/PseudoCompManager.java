@@ -28,10 +28,9 @@ import java.util.ListIterator;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperUtils;
-import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
+import org.netbeans.modules.bpel.mapper.model.PathConverter;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
 import org.netbeans.modules.bpel.model.api.BPELElementsBuilder;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -42,6 +41,8 @@ import org.netbeans.modules.bpel.model.ext.editor.api.Editor;
 import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComp;
 import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComps;
 import org.netbeans.modules.bpel.model.ext.editor.api.Source;
+import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
 import org.openide.ErrorManager;
 
@@ -67,7 +68,7 @@ public class PseudoCompManager {
         } else {
             treeModel = mModel.getRightTreeModel();
         }
-        MapperTreeModel sourceModel = treeModel.getSourceModel();
+        SoaTreeModel sourceModel = treeModel.getSourceModel();
         //
         // Calculate predicate location index
         // int predIndex = treeModel.getChildIndex(mTreePath.getParentPath(), mPred);
@@ -76,8 +77,8 @@ public class PseudoCompManager {
         return castManager;
     }
     
-    public static PseudoCompManager getPseudoCompManager(MapperTreeModel treeModel) {
-        VariableTreeModel varTreeModel = MapperTreeModel.Utils.
+    public static PseudoCompManager getPseudoCompManager(SoaTreeModel treeModel) {
+        VariableTreeModel varTreeModel = SoaTreeModel.MyUtils.
                 findExtensionModel(treeModel, VariableTreeModel.class);
         if (varTreeModel != null) {
             PseudoCompManager pseudoCompManager = varTreeModel.getPseudoCompManager();
@@ -105,13 +106,12 @@ public class PseudoCompManager {
     
     //-------------------------------------------------------
     
-    public List<XPathPseudoComp> getPseudoComp(
-            Iterable<Object> paretnPathItrb) {
+    public List<XPathPseudoComp> getPseudoComp(TreeItem parentTreeItem) {
         //
         ArrayList<XPathPseudoComp> result = new ArrayList<XPathPseudoComp>();
         //
         for (CachedPseudoComp cPseudoComp : mCachedPseudoCompList) {
-            if (cPseudoComp.hasSameLocation(paretnPathItrb, false)) {
+            if (cPseudoComp.hasSameLocation(parentTreeItem, false)) {
                 result.add(cPseudoComp.getPseudoComp());
             }
         }
@@ -119,12 +119,12 @@ public class PseudoCompManager {
         return result;
     }
     
-    public XPathPseudoComp getPseudoComp(Iterable<Object> pathItrb, 
+    public XPathPseudoComp getPseudoComp(TreeItem treeItem, 
             boolean skipPathFirst, String soughtName, String soughtNamespace, 
             boolean isAttribute) {
         //
         for (CachedPseudoComp cPseudoComp : mCachedPseudoCompList) {
-            if (cPseudoComp.hasSameLocation(pathItrb, true)) {
+            if (cPseudoComp.hasSameLocation(treeItem, true)) {
                 XPathPseudoComp pseudo = cPseudoComp.getPseudoComp();
                 if (pseudo.isAttribute() == isAttribute && 
                         pseudo.getName().equals(soughtName) && 
@@ -167,11 +167,11 @@ public class PseudoCompManager {
         return true;
     }
 
-    public boolean addPseudoComp(Iterable<Object> anyLocationItrb, 
+    public boolean addPseudoComp(TreeItem anyTreeItem, 
             SyntheticPseudoComp pseudo) throws Exception {
         //
         List<Object> parentCompPath = 
-                PathConverter.constructObjectLocationtList(anyLocationItrb, true, true);
+                PathConverter.constructObjectLocationtList(anyTreeItem, true, true);
         //
         if (parentCompPath != null) {
             if (addPseudoCompImpl(parentCompPath, pseudo)) {
@@ -310,10 +310,10 @@ public class PseudoCompManager {
         }
     }
     
-    public void deletePseudoComp(Iterable<Object> locationItrb, 
+    public void deletePseudoComp(TreeItem treeItem, 
             final XPathPseudoComp pseudoToUnreg) {
         //
-        final VariableDeclaration var = BpelMapperUtils.getBaseVariable(locationItrb);
+        final VariableDeclaration var = BpelMapperUtils.getBaseVariable(treeItem);
         if (var != null) {
             //
             // TODO: check if the deleted cast is used somewhere and ask 

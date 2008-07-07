@@ -30,11 +30,9 @@ import org.netbeans.modules.bpel.mapper.tree.models.ConditionValueTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.DateValueTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.ForEachConditionsTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.search.ResultNodeFinder;
-import org.netbeans.modules.bpel.mapper.tree.search.SimpleFinder;
-import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
+import org.netbeans.modules.soa.ui.tree.impl.SimpleFinder;
+import org.netbeans.modules.soa.ui.tree.impl.TreeFinderProcessor;
+import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
@@ -63,6 +61,8 @@ import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.soa.mappercore.model.SourcePin;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
+import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
+import org.netbeans.modules.soa.ui.tree.TreeItemFinder;
 
 /**
  *
@@ -324,7 +324,7 @@ public class GraphExpandProcessor {
                 return false;
             }
             protected boolean drillDeeper(Object treeItem) {
-                if (treeItem == MapperTreeModel.TREE_ROOT) {
+                if (treeItem == SoaTreeModel.TREE_ROOT) {
                     return true;
                 }
                 return false;

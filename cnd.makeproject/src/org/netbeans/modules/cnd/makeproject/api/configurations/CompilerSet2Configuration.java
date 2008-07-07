@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
-import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -67,9 +66,9 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     // Constructors
     public CompilerSet2Configuration(DevelopmentHostConfiguration developmentHostConfiguration) {
         this.developmentHostConfiguration = developmentHostConfiguration;
-        String csName = CppSettings.getDefault().getCompilerSetName();
         csm = CompilerSetManager.getDefault(developmentHostConfiguration.getName());
-        if (csName == null || csName.length() == 0) {
+        String csName = csm.getCurrentCompilerSet().getName();
+        if (csName.length() == 0) {
             if (csm.getCompilerSetNames().size() > 0)
                 csName = csm.getCompilerSet(0).getName();
             else {
@@ -110,6 +109,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     public void setValue(String name) {
         if (!getOption().equals(name)) {
             setValue(name, null);
+            csm.setCurrentCompilerSet(name);
         }
     }
     
@@ -137,10 +137,13 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
      * Keep backward compatibility with CompilerSetConfiguration (for now)
      */
     public int getValue() {
+        // TODO: only usage of getValue is next: 
+        // CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue());
+        
         String s = getCompilerSetName().getValue();
 	if (s != null) {
             int i = 0;
-            for (String csname : CompilerSetManager.getDefault().getCompilerSetNames()) {
+            for (String csname : CompilerSetManager.getDefault(developmentHostConfiguration.getName()).getCompilerSetNames()) {
                 if (s.equals(csname)) {
                     return i;
                 }
@@ -148,6 +151,18 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
             }
         }
         return 0; // Default
+    }
+    
+    /*
+     * TODO: i'm not sure why this method wasn't here before so maybe it's wrong. (Sergey)
+     * Should this return csm.getCurrentCompilerSet()? (GRP)
+     */
+    public CompilerSet getCompilerSet() {
+        return csm.getCompilerSet(getCompilerSetName().getValue());
+    }
+
+    public int getPlatform() {
+        return csm.getPlatform();
     }
     
     public String getName() {
@@ -243,7 +258,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     
     public String getFlavor() {
         if (flavor == null) {
-            CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(getOption());
+            CompilerSet cs = getCompilerSet();
             if (cs != null)
                 this.flavor = cs.getCompilerFlavor().toString();
             
@@ -259,16 +274,13 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         this.csm = csm;
     }
 
-    private int old = -1;
     public void propertyChange(final PropertyChangeEvent evt) {
         final CompilerSet2Configuration csconf = this;
         final String key = evt.getNewValue().toString();
         
         if (key.equals("localhost")) { // NOI18N
-            System.err.println("CS2C.propertyChange: Switching back to \"localhost\"");
             setValue(csm.getCompilerSet(0).getName());
         } else {
-            old = getValue();
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     ServerList server = (ServerList) Lookup.getDefault().lookup(ServerList.class);

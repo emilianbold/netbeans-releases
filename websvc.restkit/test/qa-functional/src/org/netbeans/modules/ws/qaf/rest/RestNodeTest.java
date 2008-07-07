@@ -204,25 +204,4 @@ public class RestNodeTest extends RestTestBase {
                 "testCloseProject"
                 ).enableModules(".*").clusters(".*"));
     }
-    
-//    public static TestSuite suite() {
-//        TestSuite suite = new NbTestSuite();
-//        suite.addTest(new RestNodeTest("testNodesAfterOpen")); //NOI18N
-//        suite.addTest(new RestNodeTest("testOpenOnResource")); //NOI18N
-//        suite.addTest(new RestNodeTest("testOpenOnMethod")); //NOI18N
-//        suite.addTest(new RestNodeTest("testOpenOnLocator")); //NOI18N
-//        suite.addTest(new RestNodeTest("testAddMethod")); //NOI18N
-//        suite.addTest(new RestNodeTest("testRemoveMethod")); //NOI18N
-//        suite.addTest(new RestNodeTest("testCloseProject")); //NOI18N
-//        return suite;
-//    }
-//
-//    /**
-//     * Method allowing test execution directly from the IDE.
-//     */
-//    public static void main(java.lang.String[] args) {
-//        // run whole suite
-//        TestRunner.run(suite());
-//    }
-
 }

@@ -54,6 +54,7 @@ import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebugger;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerConsoleEventListener;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerEventListener;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerState;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessageEventListener;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSProperty;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSSource;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSWindow;
@@ -224,6 +225,12 @@ public class NonDebugger implements JSDebugger {
     }
     
     public void removePropertyChangeListener(PropertyChangeListener l) {        
+    }
+
+    public void addJSHttpMessageEventListener(JSHttpMessageEventListener httpMessageEventListener) {
+    }
+
+    public void removeJSHttpMessageEventListener(JSHttpMessageEventListener httpMessageEventListener) {
     }
 
 }

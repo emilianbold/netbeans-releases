@@ -24,12 +24,13 @@ import java.util.List;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.mapper.cast.AbstractPseudoComp;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
-import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
+import org.netbeans.modules.bpel.mapper.model.PathConverter;
 import org.netbeans.modules.bpel.mapper.cast.PseudoCompManager;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
+import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.openide.util.NbBundle;
 
@@ -37,7 +38,7 @@ import org.openide.util.NbBundle;
  *
  * @author nk160297
  */
-public class DeletePseudoCompAction extends MapperAction<Iterable<Object>> {
+public class DeletePseudoCompAction extends MapperAction<TreeItem> {
     
     private static final long serialVersionUID = 1L;
     private boolean mInLeftTree;
@@ -45,8 +46,8 @@ public class DeletePseudoCompAction extends MapperAction<Iterable<Object>> {
     
     public DeletePseudoCompAction(MapperTcContext mapperTcContext, 
             boolean inLeftTree, TreePath treePath, 
-            Iterable<Object> doItrb) {
-        super(mapperTcContext, doItrb);
+            TreeItem treeItem) {
+        super(mapperTcContext, treeItem);
         mTreePath = treePath;
         mInLeftTree = inLeftTree;
         postInit();
@@ -54,10 +55,10 @@ public class DeletePseudoCompAction extends MapperAction<Iterable<Object>> {
     
     @Override
     public String getDisplayName() {
-        Iterable<Object> itrb = getActionSubject();
-        Object nextObj = itrb.iterator().next();
-        assert nextObj instanceof AbstractPseudoComp;
-        AbstractPseudoComp pseudoComp = (AbstractPseudoComp)nextObj;
+        TreeItem treeItem = getActionSubject();
+        Object dataObj = treeItem.getDataObject();
+        assert dataObj instanceof AbstractPseudoComp;
+        AbstractPseudoComp pseudoComp = (AbstractPseudoComp)dataObj;
         //
         if (pseudoComp.isAttribute()) {
             return NbBundle.getMessage(MapperAction.class, "DELETE_PSEUDO_ATTRIBUTE"); // NOI18N
@@ -67,14 +68,14 @@ public class DeletePseudoCompAction extends MapperAction<Iterable<Object>> {
     }
     
     public void actionPerformed(ActionEvent e) {
-        Iterable<Object> itrb = getActionSubject();
-        Object nextObj = itrb.iterator().next();
-        assert nextObj instanceof AbstractPseudoComp;
-        AbstractPseudoComp pseudoComp = (AbstractPseudoComp)nextObj;
+        TreeItem treeItem = getActionSubject();
+        Object dataObj = treeItem.getDataObject();
+        assert dataObj instanceof AbstractPseudoComp;
+        AbstractPseudoComp pseudoComp = (AbstractPseudoComp)dataObj;
         //
         XPathSchemaContext sContext = pseudoComp.getSchemaContext();
         if (sContext == null) {
-            sContext = PathConverter.constructContext(itrb, true);
+            sContext = PathConverter.constructContext(treeItem, true);
         }
         //
         MapperModel mm = mMapperTcContext.getMapper().getModel();
@@ -87,7 +88,7 @@ public class DeletePseudoCompAction extends MapperAction<Iterable<Object>> {
         } else {
             treeModel = mModel.getRightTreeModel();
         }
-        MapperTreeModel sourceModel = treeModel.getSourceModel();
+        SoaTreeModel sourceModel = treeModel.getSourceModel();
         //
         // Calculate predicate location index
         // int predIndex = treeModel.getChildIndex(mTreePath.getParentPath(), mPred);
@@ -95,7 +96,7 @@ public class DeletePseudoCompAction extends MapperAction<Iterable<Object>> {
         PseudoCompManager pseudoCompManager = 
                 PseudoCompManager.getPseudoCompManager(sourceModel);
         if (pseudoCompManager != null) {
-            pseudoCompManager.deletePseudoComp(itrb, pseudoComp);
+            pseudoCompManager.deletePseudoComp(treeItem, pseudoComp);
         }
         //
         // Update BPEL model

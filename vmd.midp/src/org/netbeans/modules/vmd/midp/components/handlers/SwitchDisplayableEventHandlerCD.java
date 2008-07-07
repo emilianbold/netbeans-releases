@@ -57,10 +57,7 @@ import org.netbeans.modules.vmd.midp.general.AbstractEventHandlerCreatorPresente
 import org.netbeans.modules.vmd.midp.codegen.SwitchDisplayableParameterPresenter;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
-import org.netbeans.modules.vmd.midp.codegen.MidpEventSourceCodeGenPresenter;
 
 /**
  * @author David Kaspar

@@ -104,7 +104,7 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
     public JDBCDriverDeployer getJDBCDriverDeployer(DeploymentManager dm) {
         return null;
     }
-    
+
     private static class J2eeInstantiatingIterator implements InstantiatingIterator {
         
         private final InstantiatingIterator delegate;
@@ -151,14 +151,26 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
 
         public Set instantiate() throws IOException {
             Set set = delegate.instantiate();
-            if (!set.isEmpty()) {
-                Object inst = set.iterator().next();
-                if (inst instanceof ServerInstance) {
-                    Lookup lookup = ServerUtilities.getLookupFor((ServerInstance) inst);
+            if(!set.isEmpty()) {
+                Object obj = set.iterator().next();
+                if(obj instanceof ServerInstance) {
+                    ServerInstance instance = (ServerInstance) obj;
+                    Lookup lookup = ServerUtilities.getLookupFor(instance);
                     if (lookup != null) {
                         JavaEEServerModule module = lookup.lookup(JavaEEServerModule.class);
-                        return Collections.singleton(module.getInstanceProperties());
+                        if(module != null) {
+                            return Collections.singleton(module.getInstanceProperties());
+                        } else {
+                            Logger.getLogger("glassfish-javaee").log(Level.WARNING,
+                                    "No JavaEE facade found for " + instance.getDisplayName());
+                        }
+                    } else {
+                        Logger.getLogger("glassfish-javaee").log(Level.WARNING,
+                                "No lookup found for " + instance.getDisplayName());
                     }
+                } else {
+                    Logger.getLogger("glassfish-javaee").log(Level.WARNING,
+                            "AddServerWizard iterator must return a set of ServerInstance objects.");
                 }
             }
             return Collections.EMPTY_SET;

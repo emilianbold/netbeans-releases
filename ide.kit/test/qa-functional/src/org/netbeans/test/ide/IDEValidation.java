@@ -1407,7 +1407,6 @@ public class IDEValidation extends JellyTestCase {
             bcHandler.saveWhiteList(getLog("whitelist.txt"));
         }
         try {
-            /*
             if (bcHandler.hasWhitelistStorage()) {
                 bcHandler.saveWhiteList();
                 bcHandler.saveWhiteList(getLog("whitelist.txt"));
@@ -1417,7 +1416,6 @@ public class IDEValidation extends JellyTestCase {
             } else {
                 assertTrue(bcHandler.reportViolations(getLog("violations.xml")), bcHandler.noViolations());
             }
-             */
         } finally {
             bcHandler.unregister();
         }        

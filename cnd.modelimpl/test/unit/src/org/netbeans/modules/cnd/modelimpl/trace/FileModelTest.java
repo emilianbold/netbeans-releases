@@ -336,6 +336,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("IZ138551.cc"); // NOI18N
     }
 
+    public void testArrayCast() throws Exception {
+        // IZ 138899 : parser fails on conversion "(int(*)[4][4])"
+        performTest("array_cast.cc");
+    }
+
     public void testStringizeMacro() throws Exception {
         // IZ 137465 : wrong macro expansion for #x
         performPreprocessorTest("stringize_macro.cc"); // NOI18N
@@ -346,6 +351,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("templateParams.h"); // NOI18N
     }
 
+    public void testTemplateMethodCall() throws Exception {
+        // IZ 138962 : Passer fails on template method calls
+        performTest("template_method_call.cc"); // NOI18N
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
@@ -369,6 +379,11 @@ public class FileModelTest extends TraceModelTestBase {
 	public void testTemplateInnerClassDtorDefinition() throws Exception {
 	    performTest("template_inner_class_dtor_definition.cc"); // NOI18N
 	}
+        
+        public void testTypedefPointerToStaticMember() throws Exception {
+            // IZ 138325 : IDE highlights 'typedef R (T::*F);' line as wrong
+            performTest("typedef_pointer_to_static_member.cc"); // NOI18N
+        }
         
         @Override
 	protected void postSetUp() {

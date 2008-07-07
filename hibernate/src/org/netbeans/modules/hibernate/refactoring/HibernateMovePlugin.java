@@ -89,6 +89,11 @@ public class HibernateMovePlugin implements RefactoringPlugin {
                 // TODO: return a Problem
                 return null;
             }
+            
+            // See issue 138950
+            if(refactoring.getRefactoringSource().lookupAll(FileObject.class).isEmpty()) {
+                return null;
+            }
 
             String targetPackageName = HibernateRefactoringUtil.getPackageName(targetURL);
             if (targetPackageName == null) {

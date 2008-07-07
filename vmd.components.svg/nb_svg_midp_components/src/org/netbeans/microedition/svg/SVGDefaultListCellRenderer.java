@@ -46,18 +46,29 @@ import org.w3c.dom.svg.SVGLocatableElement;
 /**
  * Suggested svg list tag :
  * <pre>
- * &lt;g ...&gt;
- *      &lt;rect id="MAIN_ID_selection" x="x_arg" y="y_arg" stroke="black" stroke-width="1" 
- *          fill="rgb(200,200,255)" visibility="inherit"
- *          width="list_width" height="0"/&gt;
- *      &lt;text visibility="hidden" font-size="font_size_value"  
- *          font-family="font_family_value" x="x_arg" y="y_arg"&gt;
- *          HIDDEN TEXT 
- *      &lt;/text>
- *      &lt;g id="MAIN_ID_content"/>
- *      &lt;rect id="MAIN_ID_bound" x="5.0" y="0.0" width="80" height="60" 
- *          fill="none" stroke="black" stroke-width="2"/>
- * &lt;/g&gt;
+ * &lt;g visibility="hidden" transform="translate(20,200)">
+ *       &lt;!-- Metadata information. Please don't edit. -->
+ *       &lt;text display="none">type=list&lt;/text>
+ *
+ *       &lt;!-- Metadata information. Please don't edit. -->
+ *       &lt;text display="none">type=hidden_text&lt;/text>
+ *           HIDDEN TEXT
+ *       &lt;/text>
+ *       &lt;g>
+ *           &lt;!-- Metadata information. Please don't edit. -->
+ *           &lt;text display="none">type=bound&lt;/text>
+ *           &lt;rect  x="5.0" y="0.0" width="80" height="60" fill="white" stroke="black" stroke-width="2" visibility="inherit"/>
+ *       &lt;/g>
+ *       &lt;g>
+ *           &lt;!-- Metadata information. Please don't edit. -->
+ *           &lt;text display="none">type=selection&lt;/text>
+ *           &lt;rect  x="5" y="0" stroke="black" stroke-width="1" fill="rgb(200,200,255)" visibility="inherit" width="80" height="0"/>
+ *       &lt;/g>
+ *       &lt;g  visibility="inherit">
+ *           &lt;!-- Metadata information. Please don't edit. -->
+ *           &lt;text display="none">type=content&lt;/text>
+ *           &lt;/g>
+ *   &lt;/g
  * </pre>
  * Absence of inner "text" node will lead to IllegalArgumentException. 
  * Rectangle ( first "rect" tag ) represents selection figure on the screen.
@@ -68,6 +79,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
  */
 public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
     
+    private static final String HEIGHT      = "height";             // NOI18N
     static final String HIDDEN_TEXT         = "hidden_text";        // NOI18N
     static final String BOUNDS              = "bound";              // NOi18N
     private static final String SELECTION   = "selection";          // NOI18N
@@ -87,12 +99,11 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
             int index, boolean isSelected )
     {
         SVGLocatableElement xmlElement = list.getElement();
-        SVGLocatableElement content = (SVGLocatableElement)
-            SVGComponent.getElementByMeta(xmlElement, 
+        final SVGLocatableElement content = (SVGLocatableElement)
+            list.getElementByMeta(xmlElement, 
                     SVGList.TYPE,  SVGList.CONTENT );
         
-        SVGLocatableElement lastText;
-        SVGLocatableElement hiddenText = (SVGLocatableElement) SVGComponent
+        SVGLocatableElement hiddenText = (SVGLocatableElement) list
                 .getElementByMeta(xmlElement, SVGList.TYPE, HIDDEN_TEXT);
         if (hiddenText == null) {
             throw new IllegalArgumentException("List argument "
@@ -101,16 +112,15 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
         }
         myX = hiddenText.getFloatTrait(SVGComponent.TRAIT_X);
         myY = hiddenText.getFloatTrait(SVGComponent.TRAIT_Y);
-        lastText = hiddenText;
             
-        SVGLocatableElement textElement = (SVGLocatableElement) list.getForm().
+        final SVGLocatableElement textElement = (SVGLocatableElement) list.getForm().
             getDocument().createElementNS( SVGComponent.SVG_NS, SVGTextField.TEXT);
         textElement.setFloatTrait( SVGComponent.TRAIT_X, myX );
         textElement.setFloatTrait( SVGComponent.TRAIT_Y, myY + index*myHeight ) ;
         textElement.setFloatTrait( SVGTextField.TRAIT_FONT_SIZE, 
-                lastText.getFloatTrait(SVGTextField.TRAIT_FONT_SIZE));
+                hiddenText.getFloatTrait(SVGTextField.TRAIT_FONT_SIZE));
         textElement.setTrait( SVGTextField.TRAIT_FONT_FAMILY, 
-                lastText.getTrait(SVGTextField.TRAIT_FONT_FAMILY));
+                hiddenText.getTrait(SVGTextField.TRAIT_FONT_FAMILY));
         textElement.setTrait( SVGComponent.TRAIT_VISIBILITY, 
                 SVGComponent.TR_VALUE_INHERIT);
         if ( value == null ){
@@ -119,7 +129,12 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
         else {
             textElement.setTrait(SVGComponent.TRAIT_TEXT,  value.toString());
         }
-        content.appendChild(textElement);
+        
+        list.getForm().invokeAndWaitSafely(new Runnable() {
+            public void run() {
+                content.appendChild(textElement);
+            }
+        });
         
         if ( isSelected ) {
             showSelection( list , index );
@@ -132,11 +147,11 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
         // TODO : modify a whole code for enabling multiple selection.
         SVGLocatableElement xmlElement = list.getElement();
         SVGLocatableElement selection = 
-            (SVGLocatableElement)SVGComponent.getElementByMeta(xmlElement,
+            (SVGLocatableElement)list.getNestedElementByMeta(xmlElement,
                 SVGList.TYPE,  SELECTION );
-        selection.setFloatTrait(SVGComponent.TRAIT_Y, myY + (index-1)*myHeight 
-                +ASCENT_SELECTION);
-        selection.setFloatTrait( "height", myHeight +DESCENT_SELECTION);
+        list.setTraitSafely( selection , SVGComponent.TRAIT_Y, 
+                myY + (index-1)*myHeight +ASCENT_SELECTION);
+        list.setTraitSafely( selection , HEIGHT, myHeight +DESCENT_SELECTION);
     }
 
     private float myX;

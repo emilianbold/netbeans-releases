@@ -43,7 +43,7 @@ made subject to such option by the copyright holder.
 -->
 <mconfig name="ant">
 
-    <testbag testattribs="stable" executor="unit-executor" name="websvc/serverapi">
+    <testbag testattribs="stable" executor="unit-executor" name="websvc/wsstackapi">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag testattribs="commit" executor="unit-executor" name="websvc/serverapi">
+    <testbag testattribs="commit" executor="unit-executor" name="websvc/wsstackapi">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>

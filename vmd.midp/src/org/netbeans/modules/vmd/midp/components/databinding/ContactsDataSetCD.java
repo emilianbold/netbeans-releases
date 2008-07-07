@@ -39,7 +39,7 @@
 package org.netbeans.modules.vmd.midp.components.databinding;
 
 import org.netbeans.modules.vmd.midp.components.*;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
@@ -49,7 +49,7 @@ import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
-import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 
 /**
  *
@@ -57,9 +57,7 @@ import org.netbeans.modules.vmd.midp.components.general.ClassCD;
  */
 public class ContactsDataSetCD extends ComponentDescriptor {
 
-    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.databinding.pim.ContactDataSet"); //NOI18N
-    
-    public static final String PROP_NAMES = "names"; 
+    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.databinding.pim.ContactsDataSet"); //NOI18N
 
     @Override
     public TypeDescriptor getTypeDescriptor() {
@@ -75,20 +73,17 @@ public class ContactsDataSetCD extends ComponentDescriptor {
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return null;
     }
-
-    @Override
-    protected void gatherPresenters(ArrayList<Presenter> presenters) {
-        //DocumentSupport.removePresentersOfClass(presenters, CodeClassLevelPresenter.class);
-        super.gatherPresenters(presenters);
-    }
     
     private static Presenter createSetterPresenter() {
-                return new CodeSetterPresenter().addParameters(MidpParameter.create(ClassCD.PROP_INSTANCE_NAME));
+        return new CodeSetterPresenter().addParameters(MidpParameter.create()).addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP));
+
     }
 
     @Override
     protected List<? extends Presenter> createPresenters() {
-        return null;
+        return Arrays.asList(
+            createSetterPresenter()
+        );
     }
     
     //Runtime parameters

@@ -56,8 +56,8 @@
             <artifact id="GoogleLib" type="library" url="location_of_libarry_jar"/>
             <artifact id="GoogleUtil" type="template" requires="GoogleLib"
                 url="Templates/WebServices/GoogleUtil.java"/>
-            <artifact id="GoogleMapResource" type="template" requires="GoogleUtil,GoogleLib"
-                url="Templates/WebServices/GoogleMapResource.java"/>
+            <artifact id="GoogleMapService" type="template" requires="GoogleUtil,GoogleLib"
+                url="Templates/WebServices/GoogleMapService.java"/>
         </artifacts>
     </code-gen>
     <!-- http-basic, api-key, custom -->

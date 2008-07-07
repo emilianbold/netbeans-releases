@@ -54,6 +54,7 @@ import org.netbeans.modules.gsf.api.CompletionProposal;
 public class DefaultCompletionResult extends CodeCompletionResult {
     protected boolean truncated;
     protected List<CompletionProposal> list;
+    protected boolean filterable = true;
     protected Set<String> embeddedTypes;
     
     public DefaultCompletionResult(List<CompletionProposal> list, boolean truncated) {
@@ -75,6 +76,14 @@ public class DefaultCompletionResult extends CodeCompletionResult {
         this.truncated = truncated;
     }
     
+    public boolean isFilterable() {
+        return filterable;
+    }
+
+    public void setFilterable(boolean filterable) {
+        this.filterable = filterable;
+    }
+
     public void setEmbeddedTypes(Set<String> embeddedTypes) {
         this.embeddedTypes = embeddedTypes;
     }

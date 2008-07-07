@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmField;
@@ -67,7 +68,6 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
-import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
@@ -567,6 +567,7 @@ public class CompletionResolverImpl implements CompletionResolver {
     private Collection<CsmTemplateParameter> getTemplateParameters(CsmContext context, String strPrefix, boolean match) {
         Collection<CsmTemplateParameter> templateParameters = null;
         CsmFunction fun = CsmContextUtilities.getFunction(context);
+        Collection<CsmTemplate> analyzeTemplates = new ArrayList<CsmTemplate>();
         if (fun == null && context.getLastObject() != null) {
             // Fix for IZ#138099: unresolved identifier for functions' template parameter.
             // We might be just before function name, where its template parameters
@@ -579,37 +580,39 @@ public class CompletionResolverImpl implements CompletionResolver {
                 obj = CsmDeclarationResolver.findInnerFileObject(file, offset, context);
                 if (CsmKindUtilities.isFunction(obj)) {
                     fun = (CsmFunction)obj;
-                }
-            }
-        }
-        CsmClass clazz = fun == null ? null : CsmBaseUtilities.getFunctionClass(fun);
-        clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false);
-        if (CsmKindUtilities.isTemplate(clazz)) {
-            Collection<CsmClass> analyzeClasses = new ArrayList<CsmClass>();
-            analyzeClasses.add(clazz);
-            CsmScope scope = clazz.getScope();
-            while (CsmKindUtilities.isClass(scope)) {
-                analyzeClasses.add((CsmClass)scope);
-                scope = ((CsmClass)scope).getScope();
-            }
-            if (templateParameters == null) {
-                templateParameters = new ArrayList<CsmTemplateParameter>();
-            }
-            for (CsmClass csmClass : analyzeClasses) {
-                for (CsmTemplateParameter elem : ((CsmTemplate) csmClass).getTemplateParameters()) {
-                    if (CsmSortUtilities.matchName(elem.getName(), strPrefix, match, caseSensitive)) {
-                        templateParameters.add(elem);
+                } else if (CsmKindUtilities.isClassForwardDeclaration(obj)) {
+                    if (CsmKindUtilities.isTemplate(obj)) {
+                        analyzeTemplates.add((CsmTemplate)obj);
                     }
                 }
             }
         }
         if (CsmKindUtilities.isTemplate(fun)) {
-            if (templateParameters == null) {
-                templateParameters = new ArrayList<CsmTemplateParameter>();
+            analyzeTemplates.add((CsmTemplate)fun);
+        }
+        CsmClass clazz = fun == null ? null : CsmBaseUtilities.getFunctionClass(fun);
+        clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false);        
+        if (CsmKindUtilities.isTemplate(clazz)) {
+            // We add template parameters to function parameters on function init,
+            // so we dont need to add them to completion list again.
+            if (!CsmKindUtilities.isTemplate(fun) || clazz.equals(CsmContextUtilities.getClass(context, false))) {
+                analyzeTemplates.add((CsmTemplate)clazz);
             }
-            for (CsmTemplateParameter elem : ((CsmTemplate) fun).getTemplateParameters()) {
-                if (CsmSortUtilities.matchName(elem.getName(), strPrefix, match, caseSensitive)) {
-                    templateParameters.add(elem);
+            CsmScope scope = clazz.getScope();
+            while (CsmKindUtilities.isClass(scope)) {
+                if (CsmKindUtilities.isTemplate(scope)) {
+                    analyzeTemplates.add((CsmTemplate)scope);
+                }
+                scope = ((CsmClass)scope).getScope();
+            }
+        }
+        if (!analyzeTemplates.isEmpty()) {
+            templateParameters = new ArrayList<CsmTemplateParameter>();
+            for (CsmTemplate csmTemplate : analyzeTemplates) {
+                for (CsmTemplateParameter elem : csmTemplate.getTemplateParameters()) {
+                    if (CsmSortUtilities.matchName(elem.getName(), strPrefix, match, caseSensitive)) {
+                        templateParameters.add(elem);
+                    }
                 }
             }
         }

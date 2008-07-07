@@ -351,7 +351,8 @@ public class MakeActionProvider implements ActionProvider {
                             path = FilePathAdaptor.naturalize(path);
                             path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
                             path = FilePathAdaptor.naturalize(path);
-                            CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue());
+                            String hkey = conf.getDevelopmentHost().getName();
+                            CompilerSet compilerSet = CompilerSetManager.getDefault(hkey).getCompilerSet(conf.getCompilerSet().getValue());
                             if (compilerSet != null && compilerSet.getCompilerFlavor() == CompilerFlavor.MinGW) {
                                 // IZ 120352
                                 path = FilePathAdaptor.normalize(path);
@@ -479,7 +480,7 @@ public class MakeActionProvider implements ActionProvider {
                         args = buildCommand.substring(index+1);
                         buildCommand = buildCommand.substring(0, index);
                     }
-                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory());
+                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getPlatform().getValue());
                     profile.setArgs(args);
                     ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                             project,
@@ -508,7 +509,7 @@ public class MakeActionProvider implements ActionProvider {
                         args = buildCommand.substring(index+1);
                         buildCommand = buildCommand.substring(0, index);
                     }
-                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory());
+                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getPlatform().getValue());
                     profile.setArgs(args);
                     ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                             project,
@@ -536,7 +537,7 @@ public class MakeActionProvider implements ActionProvider {
                         if (itemConfiguration == null)
                             return;
                         if (itemConfiguration.getExcluded().getValue())
-                            return;;
+                            return;
                             if (itemConfiguration.getTool() == Tool.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified())
                                 return;
                             MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
@@ -562,7 +563,7 @@ public class MakeActionProvider implements ActionProvider {
                                 args = commandLine.substring(index+1);
                                 commandLine = commandLine.substring(0, index);
                             }
-                            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory());
+                            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getPlatform().getValue());
                             profile.setArgs(args);
                             ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                                     project,
@@ -582,7 +583,7 @@ public class MakeActionProvider implements ActionProvider {
                                 commandLine = commandLine.substring(0, index);
                             }
                             // Add the build commandLine
-                            profile = new RunProfile(makeArtifact.getWorkingDirectory());
+                            profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getPlatform().getValue());
                             profile.setArgs(args);
                             projectActionEvent = new ProjectActionEvent(
                                     project,
@@ -755,15 +756,22 @@ public class MakeActionProvider implements ActionProvider {
     
     private String getMakeCommand(MakeConfigurationDescriptor pd, MakeConfiguration conf) {
         String cmd = null;
-        CompilerSet2Configuration csconf = conf.getCompilerSet();
-        String csname = csconf.getOption();
-        CompilerSet cs = CompilerSetManager.useFakeRemoteCompilerSet ?
-                CompilerSetManager.fakeRemoteCS :
-                CompilerSetManager.getDefault().getCompilerSet(csname);
+        // old way...
+//        CompilerSet2Configuration csconf = conf.getCompilerSet();
+//        String csname = csconf.getOption();
+//        CompilerSet cs = CompilerSetManager.useFakeRemoteCompilerSet ?
+//                CompilerSetManager.fakeRemoteCS :
+//                CompilerSetManager.getDefault(conf.getDevelopmentHost().getName()).getCompilerSet(csname);
+        // Sergey's way...
+//        CompilerSet cs =
+//                conf.getDevelopmentHost().isLocalhost()
+//                ? conf.getCompilerSet().getCompilerSet()
+//                : CompilerSetManager.fakeRemoteCS;
+        String csname = conf.getCompilerSet().getOption();
+        CompilerSet cs = CompilerSetManager.getDefault(conf.getDevelopmentHost().getName()).getCompilerSet(csname);
         if (cs != null) {
             cmd = cs.getTool(Tool.MakeTool).getPath();
-        }
-        else {
+        } else {
             assert false;
             cmd = "make"; // NOI18N
         }
@@ -773,6 +781,7 @@ public class MakeActionProvider implements ActionProvider {
     
     public boolean validateBuildSystem(MakeConfigurationDescriptor pd, MakeConfiguration conf, boolean validated) {
         CompilerSet2Configuration csconf = conf.getCompilerSet();
+        String hkey = conf.getDevelopmentHost().getName();
         ArrayList<String> errs = new ArrayList<String>();
         CompilerSet cs;
         BuildToolsAction bt = null;
@@ -786,21 +795,27 @@ public class MakeActionProvider implements ActionProvider {
         if (validated) {
             return lastValidation;
         }
+
+        // TODO: invent remote validation (another script?)
+        if (!conf.getDevelopmentHost().isLocalhost()) {
+            return true;
+        }
+        
         if (csconf.getFlavor() != null && csconf.getFlavor().equals(CompilerFlavor.Unknown.toString())) {
             // Confiiguration was created with unknown tool set. Use the now default one.
-            csname = CppSettings.getDefault().getCompilerSetName();
-            cs = CompilerSetManager.getDefault().getCompilerSet(csname);
+            csname = csconf.getOption();
+            cs = CompilerSetManager.getDefault(hkey).getCompilerSet(csname);
             if (cs == null) {
-                cs = CompilerSetManager.getDefault().getCompilerSet(csconf.getOption());
+                cs = CompilerSetManager.getDefault(hkey).getCompilerSet(csconf.getOption());
             }
-            if (cs == null && CompilerSetManager.getDefault().getCompilerSets().size() > 0) {
-                cs = CompilerSetManager.getDefault().getCompilerSet(0);
+            if (cs == null && CompilerSetManager.getDefault(hkey).getCompilerSets().size() > 0) {
+                cs = CompilerSetManager.getDefault(hkey).getCompilerSet(0);
             }
             runBTA = true;
         }
         else if (csconf.isValid()) {
             csname = csconf.getOption();
-            cs = CompilerSetManager.getDefault().getCompilerSet(csname);
+            cs = CompilerSetManager.getDefault(hkey).getCompilerSet(csname);
         } else {
             csname = csconf.getOldName();
             CompilerFlavor flavor = null;
@@ -811,7 +826,7 @@ public class MakeActionProvider implements ActionProvider {
                 flavor = CompilerFlavor.GNU;
             }
             cs = CompilerSet.getCustomCompilerSet("", flavor, csconf.getOldName());
-            CompilerSetManager.getDefault().add(cs);
+            CompilerSetManager.getDefault(hkey).add(cs);
             csconf.setValid();
         }
         

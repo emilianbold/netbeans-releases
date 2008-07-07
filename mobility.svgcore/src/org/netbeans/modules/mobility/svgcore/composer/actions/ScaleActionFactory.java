@@ -82,7 +82,8 @@ public final class ScaleActionFactory extends AbstractComposerActionFactory {
                 
                 //calculate area to repaint
                 Rectangle bBox = m_scaled.getScreenBBox();
-                m_scaled.scale(calculateScale(me.getX(), me.getY()));
+                //m_scaled.scale(calculateScale(me.getX(), me.getY()));
+                m_scaled.scale(calculateScaleX(me.getX()), calculateScaleY(me.getY()));
                 bBox.add(m_scaled.getScreenBBox());
                 
                 m_factory.getSceneManager().getScreenManager().repaint(bBox, SVGObjectOutline.SELECTOR_OVERLAP);
@@ -97,6 +98,28 @@ public final class ScaleActionFactory extends AbstractComposerActionFactory {
             return isOutsideEvent ? null : SCALE_MOUSE_CURSOR;
         }        
         
+        protected float calculateScaleX( int x ) {
+            float[] pt = m_scaled.getOutline().getScalePivotPoint();
+            return calculateScale(pt[0], m_x, x);
+        }
+
+        protected float calculateScaleY( int y ) {
+            float[] pt = m_scaled.getOutline().getScalePivotPoint();
+            return calculateScale(pt[1], m_y, y);
+        }
+
+        private float calculateScale(float pivot, float from, float to){
+            float d1,d2;
+                    
+            d1 = pivot - from;
+            float dist1 = d1*d1;
+            d1 = pivot - to;
+            float dist2 = d1*d1;
+            
+            return dist2 / dist1;
+        }
+        
+        /*
         protected float calculateScale( int x, int y) {
             float[] pt = m_scaled.getOutline().getScalePivotPoint();
             float d1,d2;
@@ -110,6 +133,7 @@ public final class ScaleActionFactory extends AbstractComposerActionFactory {
             
             return dist2 / dist1;
         }
+         */
     }
     
     public ScaleActionFactory(SceneManager sceneMgr) {

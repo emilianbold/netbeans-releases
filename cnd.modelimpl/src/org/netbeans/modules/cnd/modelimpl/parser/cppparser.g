@@ -1245,7 +1245,7 @@ member_declaration
                 ctor_decl_spec
                 {ctrName = qualifiedItemIsOneOf(qiCtor);}
                 ctor_declarator[true]
-		ctor_body 
+                ctor_body
 		{ 
                     if (ctrName) {
                         #member_declaration = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #member_declaration); 
@@ -1635,7 +1635,13 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
 				LCURLY
 				// This stores class name in dictionary
 				{beginClassDefinition(ts, id);}
-				(member_declaration)*
+				(options{generateAmbigWarnings = false;greedy=false;}:
+                                    member_declaration
+                                    |
+                                    // IZ 138291 : Completion does not work for unfinished constructor
+                                    // On unfinished construction we skip some symbols for class parsing process recovery
+                                    .! { reportError(new NoViableAltException(LT(0), getFilename())); }
+                                )*
 				{endClassDefinition();}
 				(EOF!|RCURLY)
 				{enclosingClass = saveClass;}
@@ -1823,7 +1829,7 @@ declarator
                 |
                     restrict_declarator
                 )
-	|	
+	|    
 		direct_declarator	
 	;
 
@@ -2990,9 +2996,16 @@ cast_expression
 		 cast_expression_type_specifier cast_expression
                  {#cast_expression = #(#[CSM_CAST_EXPRESSION, "CSM_CAST_EXPRESSION"], #cast_expression);}
 	|
+                (cast_array_type_specifier) =>
+		{if (statementTrace>=1)
+			printf("cast_expression_2[%d]: Cast to array type expression\n", LT(1).getLine());
+		}
+		 cast_array_type_specifier cast_expression
+                 {#cast_expression = #(#[CSM_CAST_EXPRESSION, "CSM_CAST_EXPRESSION"], #cast_expression);}
+	|
                 (cast_fun_type_specifier) => 
 		{if (statementTrace>=1) 
-			printf("cast_expression_2[%d]: Cast to function type expression\n", LT(1).getLine());
+			printf("cast_expression_3[%d]: Cast to function type expression\n", LT(1).getLine());
 		}
 		 cast_fun_type_specifier cast_expression
                  {#cast_expression = #(#[CSM_FUN_TYPE_CAST_EXPRESSION, "CSM_FUN_TYPE_CAST_EXPRESSION"], #cast_expression);}
@@ -3017,6 +3030,19 @@ cast_expression_type_specifier
                 ts = simple_type_specifier 
                 (postfix_cv_qualifier)? // to support (char const*)
                 (ptr_operator)*
+            RPAREN
+        ;
+
+protected
+cast_array_type_specifier
+        :
+            // cast like (int(*)[4][4]) 
+            LPAREN
+                declaration_specifiers
+                LPAREN
+                ptr_operator
+                RPAREN
+                (LSQUARE (constant_expression)? RSQUARE)+
             RPAREN
         ;
 
@@ -3237,11 +3263,20 @@ built_in_type
         ;
 
 post_postfix_expression
+        {/*TypeSpecifier*/int ts;}
 		:
-                (options {warnWhenFollowAmbig = false;}:
-                    LSQUARE expression RSQUARE
+                        (options {warnWhenFollowAmbig = false;}:
+                        LSQUARE expression RSQUARE
+                    |   // IZ 138962 : Passer fails on template method calls
+                        (DOT (LITERAL_typename)? ts = simple_type_specifier LPAREN)=>
+                        DOT (LITERAL_typename)? ts = simple_type_specifier
+                        LPAREN 
+                        (
+                            fun_call_param_list
+                        )? 
+                        RPAREN
                     |	LPAREN (expression_list)? RPAREN 
-                    |	DOT id_expression
+                    |	DOT id_expression 
                     // IZ 137531 : IDE highlights db.template cursor<T> line as error
                     |	DOT LITERAL_template id_expression
                     |	POINTERTO id_expression

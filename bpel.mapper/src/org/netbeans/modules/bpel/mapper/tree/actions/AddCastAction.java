@@ -27,12 +27,13 @@ import org.netbeans.modules.bpel.mapper.cast.CastManager;
 import org.netbeans.modules.bpel.mapper.cast.SubtypeChooser;
 import org.netbeans.modules.bpel.mapper.cast.SyntheticTypeCast;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
+import org.netbeans.modules.soa.ui.tree.impl.TreeFinderProcessor;
+import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
 import org.netbeans.modules.soa.mappercore.LeftTree;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.openide.util.NbBundle;
 
@@ -41,7 +42,7 @@ import org.openide.util.NbBundle;
  *
  * @author nk160297
  */
-public class AddCastAction extends MapperAction<Iterable<Object>> {
+public class AddCastAction extends MapperAction<TreeItem> {
     
     private static final long serialVersionUID = 1L;
     
@@ -52,8 +53,8 @@ public class AddCastAction extends MapperAction<Iterable<Object>> {
     
     public AddCastAction(GlobalType gType, MapperTcContext mapperTcContext,
             boolean inLeftTree, TreePath treePath, 
-            Iterable<Object> dataObjectPathItrb) {
-        super(mapperTcContext, dataObjectPathItrb);
+            TreeItem treeItem) {
+        super(mapperTcContext, treeItem);
         mTreePath = treePath;
         mInLeftTree = inLeftTree;
         mGType = gType;
@@ -79,7 +80,7 @@ public class AddCastAction extends MapperAction<Iterable<Object>> {
             treeModel = mapperModel.getRightTreeModel();
         }
         //
-        MapperTreeModel sourceModel = treeModel.getSourceModel();
+        SoaTreeModel sourceModel = treeModel.getSourceModel();
         CastManager castManager = CastManager.getCastManager(sourceModel);
         if (castManager == null) {
             return ;
@@ -96,9 +97,9 @@ public class AddCastAction extends MapperAction<Iterable<Object>> {
         GlobalType subtype = chooser.getSelectedValue();
         //
         // The  iterator points to the casted component
-        Iterable<Object> itrb = getActionSubject();
-        SyntheticTypeCast newTypeCast = new SyntheticTypeCast(itrb, subtype);
-        boolean castAdded = castManager.addTypeCast(itrb, newTypeCast);
+        TreeItem treeItem = getActionSubject();
+        SyntheticTypeCast newTypeCast = new SyntheticTypeCast(treeItem, subtype);
+        boolean castAdded = castManager.addTypeCast(treeItem, newTypeCast);
         //
         TreePath parentPath = mTreePath.getParentPath();
         if (castAdded) {

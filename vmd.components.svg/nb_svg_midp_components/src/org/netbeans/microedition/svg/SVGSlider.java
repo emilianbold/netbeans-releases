@@ -50,17 +50,20 @@ import org.w3c.dom.svg.SVGRect;
  * Suggested svg snippet:
  * <pre>
  * &lt;g id="size_slider" transform="translate(20,110)">
- *       &lt;metadata> &lt;text>type=slider&lt;/text> &lt;/metadata>
+ *       &lt;!-- Metadata information. Please don't edit. -->
+ *       &lt;text display="none">type=slider&lt;/text>
+ *
  *       &lt;rect x="0" y="-10" rx="5" ry="5" width="200" height="30" fill="none" stroke="rgb(255,165,0)" stroke-width="2" visibility="hidden">
  *           &lt;set attributeName="visibility" attributeType="XML" begin="size_slider.focusin" fill="freeze" to="visible"/>
  *           &lt;set attributeName="visibility" attributeType="XML" begin="size_slider.focusout" fill="freeze" to="hidden"/>
  *       &lt;/rect>
- *       &lt;rect  x="10.0" y="1.0" width="180" height="4" fill="rgb(240,240,255)" stroke="black" stroke-width="1" >
- *       &lt;metadata> &lt;text>type=rule&lt;/text> &lt;/metadata>
- *   &lt;/rect>
- *       &lt;g transform="translate(0,0)" >
- *       &lt;metadata> &lt;text>type=knob&lt;/text> &lt;/metadata>
- *           &lt;polygon transform="matrix(0.24708326,6.6591885E-5,-6.6591885E-5,0.24708326,-0.35019112,-7.751526)"  points="20,10 80,10 80,40 50,70 20,40" 
+ *   &lt;g>
+ *       &lt;text display="none">type=rule&lt;/text>
+ *       &lt;rect  x="10.0" y="1.0" width="180" height="4" fill="rgb(240,240,255)" stroke="black" stroke-width="1"/>
+ *   &lt;/g>
+ *       &lt;g transform="translate(0,-5)">
+ *       &lt;text display="none">type=knob&lt;/text>
+ *           &lt;polygon transform="scale(0.2,0.2)"  points="20,10 80,10 80,40 50,70 20,40" 
  *              fill="rgb(220,220,255)" stroke="black" stroke-width="1"/>
  *       &lt;/g>
  *   &lt;/g>
@@ -69,11 +72,13 @@ import org.w3c.dom.svg.SVGRect;
  *
  */
 public class SVGSlider extends SVGComponent {
+
+    private static final String TRANSFORM   = "transform";      // NOI18N
+
+    private static final int DEFAULT_MAX    = 10;
     
-    private static final int DEFAULT_MAX = 10;
-    
-    private static final String KNOB    = "knob";           // NOI18N
-    private static final String RULE    = "rule";           // NOI18N
+    private static final String KNOB        = "knob";           // NOI18N
+    private static final String RULE        = "rule";           // NOI18N
     
     public SVGSlider( SVGForm form, String elemId ) {
         super(form, elemId);
@@ -89,6 +94,8 @@ public class SVGSlider extends SVGComponent {
     
     public SVGSlider( int min, int max, SVGForm form, String elemId ) {
         this( form, elemId );
+        myMin = min;
+        myMax = max;
     }
     
     public int getValue(){
@@ -99,17 +106,42 @@ public class SVGSlider extends SVGComponent {
         return myInputHandler;
     }
     
-    public void setValue( int value ){
+    public void setValue( final int value ){
         if ( myValue > myMax || myValue < myMin ){
             throw new IllegalArgumentException( value +" is out of range"); // NOI18N
         }
         
-        SVGRect rect = myRuleElement.getBBox();
-        float width = rect.getWidth();
-        SVGMatrix matrix = myKnobElement.getMatrixTrait( "transform" );
-        matrix.mTranslate( (value -myValue )*width/(myMax - myMin), 0);
+        getForm().invokeLaterSafely(new Runnable() {
+
+            public void run() {
+                SVGRect rect = myRuleElement.getBBox();
+                float width = rect.getWidth();
+                SVGMatrix matrix = myKnobElement.getMatrixTrait(TRANSFORM);
+                matrix.mTranslate((value - myValue) * width / (myMax - myMin),
+                        0);
+
+                myKnobElement.setMatrixTrait(TRANSFORM, matrix);
+            }
+        });
+        
         myValue = value;
-        myKnobElement.setMatrixTrait("transform", matrix);
+        fireActionPerformed();
+    }
+    
+    public void setMin( int min ){
+        myMin = min;
+    }
+    
+    public void setMax( int max ){
+        myMax = max;
+    }
+    
+    public int getMin(){
+        return myMin;
+    }
+    
+    public int getMax(){
+        return myMax;
     }
     
     private class SliderInputHandler extends InputHandler {

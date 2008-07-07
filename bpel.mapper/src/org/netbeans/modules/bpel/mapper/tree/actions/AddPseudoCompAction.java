@@ -30,14 +30,15 @@ import org.netbeans.modules.bpel.mapper.cast.ExtRegistrationException;
 import org.netbeans.modules.bpel.mapper.cast.PseudoCompManager;
 import org.netbeans.modules.bpel.mapper.cast.SyntheticPseudoComp;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
+import org.netbeans.modules.soa.ui.tree.impl.TreeFinderProcessor;
+import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
 import org.netbeans.modules.soa.mappercore.LeftTree;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.soa.ui.UserNotification;
+import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
 import org.netbeans.modules.xml.schema.model.AnyAttribute;
 import org.netbeans.modules.xml.schema.model.AnyElement;
 import org.netbeans.modules.xml.xpath.ext.schema.InvalidNamespaceException;
@@ -49,7 +50,7 @@ import org.openide.util.NbBundle;
  *
  * @author nk160297
  */
-public class AddPseudoCompAction extends MapperAction<Iterable<Object>> {
+public class AddPseudoCompAction extends MapperAction<TreeItem> {
     
     private static final long serialVersionUID = 1L;
     
@@ -63,8 +64,8 @@ public class AddPseudoCompAction extends MapperAction<Iterable<Object>> {
     public AddPseudoCompAction(AnyElement anyElement, 
             MapperTcContext mapperTcContext,
             boolean inLeftTree, TreePath treePath, 
-            Iterable<Object> dataObjectPathItrb) {
-        super(mapperTcContext, dataObjectPathItrb);
+            TreeItem treeItem) {
+        super(mapperTcContext, treeItem);
         mTreePath = treePath;
         mInLeftTree = inLeftTree;
         mAnyElement = anyElement;
@@ -75,8 +76,8 @@ public class AddPseudoCompAction extends MapperAction<Iterable<Object>> {
     public AddPseudoCompAction(AnyAttribute anyAttr, 
             MapperTcContext mapperTcContext,
             boolean inLeftTree, TreePath treePath, 
-            Iterable<Object> dataObjectPathItrb) {
-        super(mapperTcContext, dataObjectPathItrb);
+            TreeItem treeItem) {
+        super(mapperTcContext, treeItem);
         mTreePath = treePath;
         mInLeftTree = inLeftTree;
         mAnyAttr = anyAttr;
@@ -92,7 +93,7 @@ public class AddPseudoCompAction extends MapperAction<Iterable<Object>> {
     public void actionPerformed(ActionEvent e) {
         //
         // The  iterator points to an xsd:any or xsd:anyAttribute component
-        final Iterable<Object> itrb = getActionSubject();
+        final TreeItem treeItem = getActionSubject();
         //
         // Add the new type PseudoComp to the PseudoCompManager
         MapperModel mm = mMapperTcContext.getMapper().getModel();
@@ -106,7 +107,7 @@ public class AddPseudoCompAction extends MapperAction<Iterable<Object>> {
             treeModel = mapperModel.getRightTreeModel();
         }
         //
-        MapperTreeModel sourceModel = treeModel.getSourceModel();
+        SoaTreeModel sourceModel = treeModel.getSourceModel();
         final PseudoCompManager pseudoCompManager = 
                 PseudoCompManager.getPseudoCompManager(sourceModel);
         if (pseudoCompManager == null) {
@@ -119,10 +120,10 @@ public class AddPseudoCompAction extends MapperAction<Iterable<Object>> {
         //
         PseudoCompEditor editor = null;
         if (mIsAttribute) {
-            editor = new PseudoCompEditor(itrb, mAnyAttr, 
+            editor = new PseudoCompEditor(treeItem, mAnyAttr, 
                     bdContext.getBpelModel(), mapperModel, mInLeftTree);
         } else {
-            editor = new PseudoCompEditor(itrb, mAnyElement, 
+            editor = new PseudoCompEditor(treeItem, mAnyElement, 
                     bdContext.getBpelModel(), mapperModel, mInLeftTree);
         }
         //
@@ -135,8 +136,8 @@ public class AddPseudoCompAction extends MapperAction<Iterable<Object>> {
                 try {
                     DetachedPseudoComp newDPC = finalEditor.getSelectedValue();
                     //
-                    SyntheticPseudoComp newPseudoComp = new SyntheticPseudoComp(itrb, newDPC);
-                    boolean pseudoAdded = pseudoCompManager.addPseudoComp(itrb, newPseudoComp);
+                    SyntheticPseudoComp newPseudoComp = new SyntheticPseudoComp(treeItem, newDPC);
+                    boolean pseudoAdded = pseudoCompManager.addPseudoComp(treeItem, newPseudoComp);
                     //
                     TreePath parentPath = mTreePath.getParentPath();
                     if (pseudoAdded) {

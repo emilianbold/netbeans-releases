@@ -85,9 +85,11 @@ public final class RakeRunner {
         this.project = project;
     }
 
-    public static void runTask(final Project project, final RakeTask task, final boolean debug) {
+    static void runTask(final Project project, final RakeTask task,
+            final String taskParams, final boolean debug) {
         RakeRunner runner = new RakeRunner(project);
         runner.showWarnings(true);
+        runner.setParameters(taskParams);
         runner.setDebug(debug);
         runner.run(task);
     }
@@ -222,6 +224,7 @@ public final class RakeRunner {
         String classPath = null;
         String extraArgs = null;
         String jrubyProps = null;
+        String options = null;
 
         if (project != null) {
             PropertyEvaluator evaluator = project.getLookup().lookup(PropertyEvaluator.class);
@@ -230,6 +233,7 @@ public final class RakeRunner {
                 classPath = evaluator.getProperty(SharedRubyProjectProperties.JAVAC_CLASSPATH);
                 extraArgs = evaluator.getProperty(SharedRubyProjectProperties.RAKE_ARGS);
                 jrubyProps = evaluator.getProperty(RubyProjectProperties.JRUBY_PROPS);
+                options = evaluator.getProperty(RubyProjectProperties.RUBY_OPTIONS);
             }
         }
 
@@ -250,6 +254,9 @@ public final class RakeRunner {
         ExecutionDescriptor desc = new ExecutionDescriptor(platform, displayName, pwd, rake);
         if (!additionalArgs.isEmpty()) {
             desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
+        }
+        if (options != null) {
+            desc.initialArgs(options);
         }
         desc.allowInput();
         desc.classPath(classPath); // Applies only to JRuby
