@@ -91,6 +91,10 @@ public class InputProcessorsTest extends NbTestCase {
 
         bridge.reset();
         assertEquals(1, processor.getResetCount());
+
+        bridge.close();
+        assertClosedConditions(bridge);
+        assertTrue(processor.isClosed());
     }
 
     public void testProxy() throws IOException {
@@ -121,6 +125,12 @@ public class InputProcessorsTest extends NbTestCase {
 
         assertEquals(1, processor1.getResetCount());
         assertEquals(1, processor2.getResetCount());
+
+        proxy.close();
+        assertClosedConditions(proxy);
+
+        assertTrue(processor1.isClosed());
+        assertTrue(processor2.isClosed());
     }
 
     public void testPrinting() throws IOException {
@@ -141,12 +151,31 @@ public class InputProcessorsTest extends NbTestCase {
         assertEquals(1, writer.getResetsProcessed());
 
         processor.processInput("\n".toCharArray());
+
+        processor.close();
+        assertClosedConditions(processor);
     }
 
     private static <T> void assertEquals(List<T> expected, List<T> value) {
         assertEquals(expected.size(), value.size());
         for (int i = 0; i < expected.size(); i++) {
             assertEquals(expected.get(i), value.get(i));
+        }
+    }
+
+    private static void assertClosedConditions(InputProcessor inputProcessor) throws IOException {
+        try {
+            inputProcessor.processInput(new char[] {'0'});
+            fail("Does not throw IllegalStateException after close");
+        } catch (IllegalStateException ex) {
+            // expected
+        }
+
+        try {
+            inputProcessor.reset();
+            fail("Does not throw IllegalStateException after close");
+        } catch (IllegalStateException ex) {
+            // expected
         }
     }
 }

@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.languages.yaml;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.prefs.Preferences;
@@ -58,6 +59,7 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.StructureItem;
 import org.openide.util.Exceptions;
 
 /**
@@ -232,7 +234,37 @@ public class YamlKeystrokeHandler implements KeystrokeHandler {
     }
 
     public List<OffsetRange> findLogicalRanges(CompilationInfo info, int caretOffset) {
-        return Collections.emptyList();
+        YamlParserResult result = (YamlParserResult) info.getEmbeddedResult(YamlTokenId.YAML_MIME_TYPE, 0);
+        if (result == null) {
+            return Collections.emptyList();
+        }
+
+        List<? extends StructureItem> items = result.getItems();
+        if (items.size() == 0) {
+            return Collections.emptyList();
+        }
+
+        List<OffsetRange> ranges = new ArrayList<OffsetRange>();
+        for (StructureItem item : items) {
+            addRanges(ranges, caretOffset, item);
+        }
+
+        Collections.reverse(ranges);
+        ranges.add(new OffsetRange(0, info.getDocument().getLength()));
+
+        return ranges;
+    }
+
+    private void addRanges(List<OffsetRange> ranges, int caretOffset, StructureItem item) {
+        int start = (int) item.getPosition();
+        int end = (int) item.getEndPosition();
+        if (caretOffset >= start && caretOffset <= end) {
+            ranges.add(new OffsetRange(start, end));
+
+            for (StructureItem child : item.getNestedItems()) {
+                addRanges(ranges, caretOffset, child);
+            }
+        }
     }
 
     public int getNextWordOffset(Document doc, int caretOffset, boolean reverse) {

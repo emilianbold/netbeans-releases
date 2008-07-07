@@ -125,6 +125,7 @@ import org.netbeans.jemmy.operators.JEditorPaneOperator;
         }
     }
     
+    @Override
     public PrintStream getRef() {
         String refFilename = getRefFileName();
         try {
@@ -149,13 +150,23 @@ import org.netbeans.jemmy.operators.JEditorPaneOperator;
             fail();
         }
     }
+
+    protected void compareToGoldenFile(Document testDoc, String RefFileName, String GoldenFileName, String DiffFileName) {
+        try {
+            ref(testDoc.getText(0, testDoc.getLength()));
+            compareReferenceFiles(RefFileName + ".ref", GoldenFileName  + ".pass", DiffFileName + ".diff");
+        } catch (BadLocationException e) {
+            e.printStackTrace(getLog());
+            fail();
+        }
+    }
     
     
     protected void waitForMilis(int maxMiliSeconds){
         int time = (int) maxMiliSeconds / 100;
         while (time > 0) {
             try {
-                Thread.currentThread().sleep(100);
+                Thread.sleep(100);
             } catch (InterruptedException ex) {
                 time=0;
             }

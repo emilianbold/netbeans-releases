@@ -137,6 +137,7 @@ public class WebProjectProperties {
 
     public static final String LAUNCH_URL_RELATIVE = "client.urlPart"; //NOI18N
     public static final String DISPLAY_BROWSER = "display.browser"; //NOI18N
+    public static final String DEPLOY_ON_SAVE = "deploy.on.save"; //NOI18N
     public static final String CONTEXT_PATH = "context.path"; //NOI18N
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; //NOI18N
     public static final String J2EE_SERVER_TYPE = "j2ee.server.type"; //NOI18N
@@ -190,6 +191,8 @@ public class WebProjectProperties {
     public static final String DEPLOY_ANT_PROPS_FILE = "deploy.ant.properties.file"; //NOI18N
     
     public static final String ANT_DEPLOY_BUILD_SCRIPT = "nbproject/ant-deploy.xml"; // NOI18N
+    
+    private static Logger LOGGER = Logger.getLogger(WebProjectProperties.class.getName());
     
     public ClassPathSupport cs;
 
@@ -246,7 +249,8 @@ public class WebProjectProperties {
     Document J2EE_PLATFORM_MODEL;
     Document CONTEXT_PATH_MODEL;
     Document LAUNCH_URL_RELATIVE_MODEL;
-    ButtonModel DISPLAY_BROWSER_MODEL; 
+    ButtonModel DISPLAY_BROWSER_MODEL;
+    ButtonModel DEPLOY_ON_SAVE_MODEL; 
     ComboBoxModel J2EE_SERVER_INSTANCE_MODEL; 
     
     // for ui logging added frameworks
@@ -376,6 +380,7 @@ public class WebProjectProperties {
         J2EE_PLATFORM_MODEL = projectGroup.createStringDocument(evaluator, J2EE_PLATFORM);
         LAUNCH_URL_RELATIVE_MODEL = projectGroup.createStringDocument(evaluator, LAUNCH_URL_RELATIVE);
         DISPLAY_BROWSER_MODEL = projectGroup.createToggleButtonModel(evaluator, DISPLAY_BROWSER);
+        DEPLOY_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, DEPLOY_ON_SAVE);
         J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel(privateProperties.getProperty( J2EE_SERVER_INSTANCE ), projectProperties.getProperty(J2EE_PLATFORM));
         try {
             CONTEXT_PATH_MODEL = new PlainDocument();
@@ -613,6 +618,15 @@ public class WebProjectProperties {
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );
+        
+        // compile on save listeners
+        if (DEPLOY_ON_SAVE_MODEL.isEnabled() && DEPLOY_ON_SAVE_MODEL.isSelected()) {
+            LOGGER.log(Level.FINE, "Starting listening on cos for {0}", project.getWebModule());
+            Deployment.getDefault().enableCompileOnSaveSupport(project.getWebModule());
+        } else {
+            LOGGER.log(Level.FINE, "Stopping listening on cos for {0}", project.getWebModule());
+            Deployment.getDefault().disableCompileOnSaveSupport(project.getWebModule());
+        }
         
         String value = (String)additionalProperties.get(SOURCE_ENCODING);
         if (value != null) {

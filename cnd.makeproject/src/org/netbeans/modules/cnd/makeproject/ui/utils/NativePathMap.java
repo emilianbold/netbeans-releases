@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.makeproject.ui.utils;
 
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.PathMapProvider;
 import org.openide.util.Lookup;
 
@@ -51,15 +52,35 @@ public class NativePathMap {
     
     private static PathMapProvider provider = null;
     
-    public static boolean isRemote(String name, String path) {
-        
+    public static synchronized PathMap get(String key) {
+        if ("localhost".equals(key)) {
+            return local;
+        }
         if (provider == null) {
             provider = (PathMapProvider) Lookup.getDefault().lookup(PathMapProvider.class);
         }
-        if (provider != null) {
-            return provider.getMapper(name).isRemote(path);
-        } else {
+        return provider.getMapper(key);
+    }
+    
+    public static boolean isRemote(String name, String path) {
+        return get(name).isRemote(path);
+    }
+    
+    private static PathMap local = new LocalPathMap();
+    
+    private static class LocalPathMap implements PathMap {
+
+        public boolean isRemote(String path) {
             return false;
         }
+
+        public String getLocalPath(String rpath) {
+            return rpath;
+        }
+
+        public String getRemotePath(String lpath) {
+            return lpath;
+        }
+        
     }
 }

@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
+import org.jruby.util.ByteList;
 import org.jvyamlb.Positionable;
 import org.jvyamlb.nodes.Node;
 import org.jvyamlb.nodes.PositionedScalarNode;
@@ -67,45 +68,83 @@ import org.openide.xml.XMLUtil;
  */
 public class YamlScanner implements StructureScanner {
 
-    private List<Node> getChildren(Node node) {
-        Object value = node.getValue();
-        if (value instanceof Map) {
-            Map map = (Map) value;
-            Set<Map.Entry> entrySet = map.entrySet();
-
-            List<Node> children = new ArrayList<Node>();
-
-
-            for (Map.Entry entry : entrySet) {
-                children.add((Node) entry.getKey());
-                children.add((Node) entry.getValue());
-            }
-
-            return children;
-        } else if (value instanceof List) {
-            List list = (List) value;
-            return list;
-        } else {
-            return Collections.emptyList();
-        }
-    }
-
     public List<? extends StructureItem> scan(CompilationInfo info, HtmlFormatter formatter) {
         YamlParserResult result = (YamlParserResult) info.getEmbeddedResult(YamlTokenId.YAML_MIME_TYPE, 0);
         if (result != null) {
-            Node node = result.getObject();
-            if (node != null) {
-                // Skip root node
-                return new YamlStructureItem(node, null, 0).getNestedItems();
-            }
+            return result.getItems();
+        }
+
+        return Collections.emptyList();
+    }
+
+    List<? extends StructureItem> scanStructure(YamlParserResult result) {
+        Node node = result.getObject();
+        if (node != null) {
+            // Skip root node
+            return new YamlStructureItem(node, null, 0).getNestedItems();
         }
 
         return Collections.emptyList();
     }
 
     public Map<String, List<OffsetRange>> folds(CompilationInfo info) {
-        return Collections.emptyMap();
+// Unfortunately, the positions in the nodes aren't completely right, which makes
+// the folds wrong. Disabled for now.
+//        YamlParserResult result = (YamlParserResult) info.getEmbeddedResult(YamlTokenId.YAML_MIME_TYPE, 0);
+//        if (result == null) {
+            return Collections.emptyMap();
+//        }
+//
+//        List<? extends StructureItem> items = result.getItems();
+//        if (items.size() == 0) {
+//            return Collections.emptyMap();
+//        }
+//
+//        Map<String,List<OffsetRange>> folds = new HashMap<String,List<OffsetRange>>();
+//        List<OffsetRange> codeblocks = new ArrayList<OffsetRange>();
+//        folds.put("codeblocks", codeblocks); // NOI18N
+//        BaseDocument doc = (BaseDocument)info.getDocument();
+//
+//        for (StructureItem item : items) {
+//            try {
+//                addBlocks(doc, codeblocks, item);
+//            } catch (BadLocationException ble) {
+//                Exceptions.printStackTrace(ble);
+//                break;
+//            }
+//        }
+//
+//        return folds;
     }
+
+//    private void addBlocks(BaseDocument doc, List<OffsetRange> codeblocks, StructureItem item) throws BadLocationException {
+//        int begin = (int) item.getPosition();
+//        int end = (int) item.getEndPosition();
+//        int firstRowEnd = Utilities.getRowEnd(doc, begin);
+//        if (begin < end && firstRowEnd != Utilities.getRowEnd(doc, end)) {
+//            int lastRowEnd = Utilities.getRowLastNonWhite(doc, end);
+//            if (lastRowEnd == -1) {
+//                end = Utilities.getRowStart(doc, end)-1;
+//                if (end == firstRowEnd) {
+//                    return;
+//                }
+//                lastRowEnd = end;
+//            } else {
+//                lastRowEnd++; // Point AFTER the last whitespace char
+//            }
+//            codeblocks.add(new OffsetRange(firstRowEnd, lastRowEnd));
+//        } else {
+//            return;
+//        }
+//
+//        for (StructureItem child : item.getNestedItems()) {
+//            int childBegin = (int) child.getPosition();
+//            int childEnd = (int) child.getEndPosition();
+//            if (childBegin >= begin && childEnd <= end) {
+//                addBlocks(doc, codeblocks, child);
+//            }
+//        }
+//    }
 
     private class YamlStructureItem implements StructureItem, Comparable<YamlStructureItem> {
 
@@ -216,10 +255,20 @@ public class YamlScanner implements StructureScanner {
                             PositionedScalarNode scalar = (PositionedScalarNode) key;
                             String childName = scalar.getValue().toString();
                             Node child = (Node) entry.getValue();
+                            int e = ((Positionable) child).getRange().end.offset;
+                            // If you have an "empty" key, e.g.
+                            //   foo:
+                            //   bar: Hello World
+                            // here foo is "empty" but I get a child of "" positioned at the beginning
+                            // of "bar", which is wrong. In this case, don't include the child in the
+                            // position bounds.
+                            if (child.getValue() instanceof ByteList && ((ByteList)child.getValue()).length() == 0) {
+                                e = ((Positionable) scalar).getRange().end.offset;
+                            }
                             children.add(new YamlStructureItem(child, childName, depth+1,
                                     // Range: beginning of -key- to ending of -value-
                                     ((Positionable) scalar).getRange().start.offset,
-                                    ((Positionable) child).getRange().end.offset));
+                                    e));
                         }
                     }
                     // Keep the list ordered, same order as in the document!!

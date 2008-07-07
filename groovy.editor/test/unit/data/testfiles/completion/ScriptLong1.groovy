@@ -1,2 +1,2 @@
 Long l = new Long()
-l.M
+l.MA
