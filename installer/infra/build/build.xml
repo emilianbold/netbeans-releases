@@ -2361,11 +2361,15 @@ jarsigner.storepass=${jarsigner.storepass}
 	-->
     </target>
 
-    <target name="get-bundled-jvms" if="do.build.jdk">
+    <target name="get-bundled-jvms" depends="init-bundled-jvms,get-bundled-jre5,get-bundled-jre6" if="do.build.jdk"/>
+
+    <target name="init-bundled-jvms" if="do.build.jdk">
         <set property="jvm.cache.dir" 
              value="${nbi.cache.dir}/jvm"/>
 	<mkdir dir="${jvm.cache.dir}"/>
-        
+    </target>
+
+    <target name="get-bundled-jre5" if="do.build.jdk5">
 	<get src="${binary.cache.host}/bundledjvm/jre-1_5_0_15-solaris-i586.sh"
 	     dest="${jvm.cache.dir}/jre-1_5_0_15-solaris-i586.sh"
 	     usetimestamp="true"/>
@@ -2377,6 +2381,21 @@ jarsigner.storepass=${jarsigner.storepass}
 	     usetimestamp="true"/>
 	<get src="${binary.cache.host}/bundledjvm/jre-1_5_0_15-windows-i586.exe"
 	     dest="${jvm.cache.dir}/jre-1_5_0_15-windows-i586.exe"
+	     usetimestamp="true"/>
+    </target>
+
+    <target name="get-bundled-jre6" if="do.build.jdk6">        
+	<get src="${binary.cache.host}/bundledjvm/jre-6u7-solaris-i586.sh"
+	     dest="${jvm.cache.dir}/jre-6u7-solaris-i586.sh"
+	     usetimestamp="true"/>
+	<get src="${binary.cache.host}/bundledjvm/jre-6u7-solaris-sparc.sh"
+	     dest="${jvm.cache.dir}/jre-6u7-solaris-sparc.sh"
+	     usetimestamp="true"/>
+	<get src="${binary.cache.host}/bundledjvm/jre-6u7-linux-i586.bin"
+	     dest="${jvm.cache.dir}/jre-6u7-linux-i586.bin"
+	     usetimestamp="true"/>
+	<get src="${binary.cache.host}/bundledjvm/jre-6u7-windows-i586.exe"
+	     dest="${jvm.cache.dir}/jre-6u7-windows-i586.exe"
 	     usetimestamp="true"/>
     </target>
 
@@ -2454,7 +2473,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <component uid="jdk" version="1.6.0.7.6"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
             <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk6.resource}"/>
-	    <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/jre-1_5_0_15-windows-i586.exe"/>
+	    <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/jre-6u7-windows-i586.exe"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
@@ -2464,7 +2483,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <component uid="jdk" version="1.6.0.7.6"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
             <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk6.resource}"/>
-	    <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/jre-1_5_0_15-linux-i586.bin"/>
+	    <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/jre-6u7-linux-i586.bin"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
@@ -2474,7 +2493,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <component uid="jdk" version="1.6.0.7.6"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
             <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk6.resource}"/>
-	    <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/jre-1_5_0_15-solaris-i586.sh"/>
+	    <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/jre-6u7-solaris-i586.sh"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
@@ -2484,7 +2503,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <component uid="jdk" version="1.6.0.7.6"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
             <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk6.resource}"/>
-	    <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/jre-1_5_0_15-solaris-sparc.sh"/>
+	    <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/jre-6u7-solaris-sparc.sh"/>
         </create-bundle>
     </target>
 
