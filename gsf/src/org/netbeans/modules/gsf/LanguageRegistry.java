@@ -651,6 +651,35 @@ public class LanguageRegistry implements Iterable<Language> {
             }
         }
 
+        // YAML cleanup: Was a Schliemann editor in 6.0/6.1/6.5dev so may have to delete its persistent system files
+        if (l.getMimeType().equals("text/x-yaml")) { // NOI18N
+            FileObject f = root.getFileObject("Popup/generate-fold-popup"); // NOI18N
+            if (f != null) {
+                try {
+                    f.delete();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+                f = root.getFileObject("ToolTips/org-netbeans-modules-languages-features-ToolTipAnnotation.instance"); // NOI18N
+                if (f != null) {
+                    try {
+                        f.delete();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                f = root.getFileObject("Popup/org-netbeans-modules-languages-features-GoToDeclarationAction.instance"); // NOI18N
+                if (f != null) {
+                    try {
+                        f.delete();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
+
         boolean checkUserdirUpgrade = false;
         // Delete old names present up to and including beta2
         FileObject oldSidebar = root.getFileObject("SideBar/org-netbeans-modules-editor-retouche-GsfCodeFoldingSideBarFactory.instance");

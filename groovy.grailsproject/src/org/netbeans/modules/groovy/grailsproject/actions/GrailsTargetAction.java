@@ -71,6 +71,7 @@ public class GrailsTargetAction extends AbstractAction {
         ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
         builder.showProgress(true).frontWindow(true).controllable(true).inputVisible(true);
         builder.postExecution(new RefreshProjectRunnable(prj));
+        builder.optionsPath("org-netbeans-modules-groovy-support-options-GroovyOptionsCategory"); // NOI18N
 
         ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
         service.run();

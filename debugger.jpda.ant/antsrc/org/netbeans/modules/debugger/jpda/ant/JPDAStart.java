@@ -59,7 +59,11 @@ import com.sun.jdi.connect.ListeningConnector;
 import com.sun.jdi.connect.Transport;
 import com.sun.jdi.connect.Connector;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
+import java.util.LinkedList;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -69,6 +73,7 @@ import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.Path;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.jpda.DebuggerStartException;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 
@@ -87,8 +92,14 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.source.BuildArtifactMapper;
+import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.StatusDisplayer;
 
 
 /**
@@ -119,6 +130,7 @@ public class JPDAStart extends Task implements Runnable {
     private Object []               lock = null; 
     /** The class debugger should stop in, or null. */
     private String                  stopClassName = null;
+    private String                  listeningCP = null;
 
     
     // properties ..............................................................
@@ -153,6 +165,10 @@ public class JPDAStart extends Task implements Runnable {
     
     private String getStopClassName () {
         return stopClassName;
+    }
+
+    public void setListeningcp(String listeningCP) {
+        this.listeningCP = listeningCP;
     }
     
     public void addClasspath (Path path) {
@@ -293,16 +309,14 @@ public class JPDAStart extends Task implements Runnable {
                     logger.fine("    >> jdkSourcePath : " + jdkSourcePath); // NOI18N
                 }
                 
+                Breakpoint first = null;
+                
                 if (stopClassName != null && stopClassName.length() > 0) {
                     logger.fine(
                             "create method breakpoint, class name = " + // NOI18N
                             stopClassName
                         );
-                    MethodBreakpoint b = createBreakpoint (stopClassName);
-                    DebuggerManager.getDebuggerManager ().addDebuggerListener (
-                        DebuggerManager.PROP_DEBUGGER_ENGINES,
-                        new Listener (b)
-                    );
+                    first = createBreakpoint (stopClassName);
                 }                
                 
                 debug ("Debugger started"); // NOI18N
@@ -333,6 +347,37 @@ public class JPDAStart extends Task implements Runnable {
                         }
                     }
                 });
+                
+                Map<URL, ArtifactsUpdated> listeners = new HashMap<URL, ArtifactsUpdated>();
+                List<Breakpoint> artificalBreakpoints = new LinkedList<Breakpoint>();
+                if (listeningCP != null) {
+                    for (String cp : listeningCP.split(":")) {
+                        getProject().log("cp=" + cp, Project.MSG_DEBUG);
+                        File f = new File(cp);
+                        FileObject fo = FileUtil.toFileObject(f);
+                        
+                        if (fo != null) {
+                            for (FileObject src : SourceForBinaryQuery.findSourceRoots(fo.getURL()).getRoots()) {
+                                getProject().log("url=" + src.getURL().toString(), Project.MSG_DEBUG);
+                                URL url = src.getURL();
+                                ArtifactsUpdatedImpl l = new ArtifactsUpdatedImpl();
+                                
+                                BuildArtifactMapper.addArtifactsUpdatedListener(url, l);
+                                listeners.put(url, l);
+                            }
+                        }
+                    }
+
+                    ExceptionBreakpoint b = ExceptionBreakpoint.create("java.lang.RuntimeException", ExceptionBreakpoint.TYPE_EXCEPTION_CATCHED_UNCATCHED);
+                    b.setHidden (true);
+                    DebuggerManager.getDebuggerManager ().addBreakpoint (b);
+                    artificalBreakpoints.add(b);
+                }
+                
+                DebuggerManager.getDebuggerManager().addDebuggerListener(
+                        DebuggerManager.PROP_DEBUGGER_ENGINES,
+                        new Listener(first, artificalBreakpoints, listeners));
+                
                 getProject().addBuildListener(new BuildListener() {
                     
                     public void messageLogged(BuildEvent event) {}
@@ -533,30 +578,50 @@ public class JPDAStart extends Task implements Runnable {
     
     private static class Listener extends DebuggerManagerAdapter {
         
-        private MethodBreakpoint    breakpoint;
         private Set                 debuggers = new HashSet ();
+
+        private Breakpoint first;
+        private final List<Breakpoint> artificalBreakpoints;
+        private final Map<URL, ArtifactsUpdated> listeners;
         
-        
-        Listener (MethodBreakpoint breakpoint) {
-            this.breakpoint = breakpoint;
+        private Listener(Breakpoint first, List<Breakpoint> artificalBreakpoints, Map<URL, ArtifactsUpdated> listeners) {
+            this.artificalBreakpoints = artificalBreakpoints;
+            this.listeners = listeners;
         }
         
         public void propertyChange (PropertyChangeEvent e) {
             if (e.getPropertyName () == JPDADebugger.PROP_STATE) {
                 int state = ((Integer) e.getNewValue ()).intValue ();
-                if ( (state == JPDADebugger.STATE_DISCONNECTED) ||
-                     (state == JPDADebugger.STATE_STOPPED)
-                ) {
+                if (state == JPDADebugger.STATE_DISCONNECTED) {
                     RequestProcessor.getDefault ().post (new Runnable () {
                         public void run () {
-                            if (breakpoint != null) {
-                                DebuggerManager.getDebuggerManager ().
-                                    removeBreakpoint (breakpoint);
-                                breakpoint = null;
+                            if (artificalBreakpoints != null) {
+                                for (Breakpoint b : artificalBreakpoints) {
+                                    DebuggerManager.getDebuggerManager().removeBreakpoint(b);
+                                }
+                            }
+                            if (first != null) {
+                                DebuggerManager.getDebuggerManager().removeBreakpoint(first);
+                            }
+                            if (listeners != null) {
+                                for (Entry<URL, ArtifactsUpdated> e : listeners.entrySet()) {
+                                    BuildArtifactMapper.removeArtifactsUpdatedListener(e.getKey(), e.getValue());
+                                }
                             }
                         }
                     });
                     dispose ();
+                }
+                
+                if (state == JPDADebugger.STATE_STOPPED) {
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            if (first != null) {
+                                DebuggerManager.getDebuggerManager().removeBreakpoint(first);
+                                first = null;
+                            }
+                        }
+                    });
                 }
             }
             return;
@@ -596,5 +661,85 @@ public class JPDAStart extends Task implements Runnable {
             );
             debuggers.remove (debugger);
         }
+    }
+    private static class ArtifactsUpdatedImpl implements ArtifactsUpdated {
+        public ArtifactsUpdatedImpl() {
+        }
+
+        public void artifactsUpdated(Iterable<File> artifacts) {
+            DebuggerEngine debuggerEngine = DebuggerManager.getDebuggerManager ().
+                getCurrentEngine ();
+            if (debuggerEngine == null) {
+                throw new BuildException ("No debugging sessions was found.");
+            }
+            JPDADebugger debugger = debuggerEngine.lookupFirst(null, JPDADebugger.class);
+            if (debugger == null) {
+                throw new BuildException("Current debugger is not JPDA one.");
+            }
+            if (!debugger.canFixClasses()) {
+                throw new BuildException("The debugger does not support Fix action.");
+            }
+            if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
+                throw new BuildException("The debugger is not running");
+            }
+
+            Map map = new HashMap();
+
+            for (File f : artifacts) {
+                FileObject fo = FileUtil.toFileObject(f);
+                if (fo != null) {
+                    try {
+                        String className = fileToClassName(fo);
+                        InputStream is = fo.getInputStream();
+                        long fileSize = fo.getSize();
+                        byte[] bytecode = new byte[(int) fileSize];
+                        is.read(bytecode);
+                        // remove ".class" from and use dots for for separator
+                        map.put(
+                                className,
+                                bytecode);
+                        System.out.println(" " + className);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+            
+            if (map.size() == 0) {
+                System.out.println(" No class to reload");
+                return;
+            }
+            String error = null;
+            try {
+                debugger.fixClasses(map);
+            } catch (UnsupportedOperationException uoex) {
+                error = "The virtual machine does not support this operation: " + uoex.getLocalizedMessage();
+            } catch (NoClassDefFoundError ncdfex) {
+                error = "The bytes don't correspond to the class type (the names don't match): " + ncdfex.getLocalizedMessage();
+            } catch (VerifyError ver) {
+                error = "A \"verifier\" detects that a class, though well formed, contains an internal inconsistency or security problem: " + ver.getLocalizedMessage();
+            } catch (UnsupportedClassVersionError ucver) {
+                error = "The major and minor version numbers in bytes are not supported by the VM. " + ucver.getLocalizedMessage();
+            } catch (ClassFormatError cfer) {
+                error = "The bytes do not represent a valid class. " + cfer.getLocalizedMessage();
+            } catch (ClassCircularityError ccer) {
+                error = "A circularity has been detected while initializing a class: " + ccer.getLocalizedMessage();
+            }
+            
+            if (error != null) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message(error, NotifyDescriptor.Message.ERROR_MESSAGE);
+                
+                DialogDisplayer.getDefault().notifyLater(nd);
+                StatusDisplayer.getDefault().setStatusText(error);
+            } else {
+                StatusDisplayer.getDefault().setStatusText("Code updated");
+            }
+        }
+    }
+
+    private static String fileToClassName (FileObject fo) {
+        ClassPath cp = ClassPath.getClassPath (fo, ClassPath.EXECUTE);
+//        FileObject root = cp.findOwnerRoot (fo);
+        return cp.getResourceName (fo, '.', false);
     }
 }

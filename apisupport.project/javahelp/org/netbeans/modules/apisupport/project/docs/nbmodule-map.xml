@@ -114,8 +114,12 @@
     <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.LibraryStartWizardPanel" url="csh/LibraryStartWizardPanel.html"/>
     <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_library" url="csh/BasicInfoWizardPanel_library.html"/>
     <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.LibraryConfWizardPanel" url="csh/LibraryConfWizardPanel.html"/>
+    <!-- Code generator template -->
     <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.codegenerator.CodeGeneratorPanel" url="csh/CodeGeneratorPanel.html"/>
+    <!-- Quick search provider template -->
     <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.quicksearch.QuickSearchPanel" url="csh/QuickSearchPanel.html"/>
+    <!-- Language support template -->
+    <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.glf.GLFTemplateWizardPanel2" url="csh/GLFTemplateWizardPanel.html"/>
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel" url="csh/AddModulePanel.html"/>
 
      <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.AddFriendPanel" url="csh/AddNewFriendModule.html"/>

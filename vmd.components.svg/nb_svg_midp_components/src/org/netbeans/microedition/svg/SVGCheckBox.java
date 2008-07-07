@@ -48,21 +48,19 @@ import org.w3c.dom.svg.SVGLocatableElement;
 public class SVGCheckBox extends SVGAbstractButton {
     private static final String MARK = "mark";              // NOI18N
     
-    private final SVGLocatableElement markElement;
-    private       boolean             isSelected;
-    
     public SVGCheckBox( SVGForm form, String elemId) {
         super(form, elemId);
-        markElement = (SVGLocatableElement) getElementByMeta( getElement(), 
+        myMarkElement = (SVGLocatableElement) getElementByMeta( getElement(), 
                 TYPE, MARK );
-        markElement.setTrait(TRAIT_VISIBILITY, "hidden");
-        this.isSelected = false;
+        setTraitSafely( myMarkElement , TRAIT_VISIBILITY, TR_VALUE_HIDDEN );
+        isSelected = false;
     }
     
-    public void setSelected( boolean isSelected) {
-        if ( this.isSelected != isSelected) {
-            markElement.setTrait(TRAIT_VISIBILITY, isSelected ? "visible" : "hidden");
-            this.isSelected = isSelected;
+    public void setSelected( boolean selected) {
+        if ( isSelected != selected) {
+            setTraitSafely( myMarkElement , TRAIT_VISIBILITY, selected ? 
+                    TR_VALUE_VISIBLE : TR_VALUE_HIDDEN);
+            isSelected = selected;
             fireActionPerformed();
         }
     }
@@ -75,4 +73,7 @@ public class SVGCheckBox extends SVGAbstractButton {
         form.activate(this);
         setSelected( !isSelected);
     }
+    
+    private final SVGLocatableElement myMarkElement;
+    private       boolean             isSelected;
 }

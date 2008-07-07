@@ -54,6 +54,7 @@ import org.openide.filesystems.FileUtil;
 import java.util.*;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.*;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
@@ -621,10 +622,10 @@ public class FileStatusCache {
         Map<File, FileInformation> folderFiles = new HashMap<File, FileInformation>(files.length);
 
         ISVNStatus [] entries = null;
-        try {            
-            if (SvnUtils.isManaged(dir)) {
-                SvnClient client = Subversion.getInstance().getClient(true); 
-                entries = client.getStatus(dir, false, false); 
+        try {
+            if (SvnUtils.isManaged(dir)) {                
+                SvnClient client = Subversion.getInstance().getClient(true);
+                entries = client.getStatus(dir, false, true); 
             }
         } catch (SVNClientException e) {
             // no or damaged entries
@@ -712,8 +713,12 @@ public class FileStatusCache {
             } else if (repositoryStatus.getRepositoryTextStatus() == SVNStatusKind.ADDED
             /*|| repositoryStatus.getRepositoryPropStatus() == SVNStatusKind.ADDED*/) {
                 // solved in createMissingfileInformation
-            } else if (repositoryStatus.getRepositoryTextStatus() == null
-            && repositoryStatus.getRepositoryPropStatus() == null) {
+            } else if ( (repositoryStatus.getRepositoryTextStatus() == null &&
+                         repositoryStatus.getRepositoryPropStatus() == null)
+                        ||
+                        (repositoryStatus.getRepositoryTextStatus() == SVNStatusKind.NONE &&
+                         repositoryStatus.getRepositoryPropStatus() == SVNStatusKind.NONE))
+            {
                 // no remote change at all
             } else {
                 // so far above were observed....

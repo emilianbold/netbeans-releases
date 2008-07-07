@@ -64,6 +64,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 
     
@@ -234,6 +235,10 @@ public class ActionsSearchProvider implements SearchProvider {
         if (evSource == null) {
             evSource = TopComponent.getRegistry().getActivated();
         }
+        if (evSource == null) {
+            evSource = WindowManager.getDefault().getMainWindow();
+        }
+
         
         return new ActionEvent(evSource, evId, null);
     }

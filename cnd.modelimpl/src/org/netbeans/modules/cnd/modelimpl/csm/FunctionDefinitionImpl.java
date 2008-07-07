@@ -177,7 +177,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     public CsmFunctionDefinition getDefinition() {
         return this;
     }
-  
+
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
     

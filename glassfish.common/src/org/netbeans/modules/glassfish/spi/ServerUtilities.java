@@ -82,11 +82,19 @@ public final class ServerUtilities {
     public static ServerInstance getServerInstance(String uri) {
         return GlassfishInstanceProvider.getDefault().getInstance(uri);
     }
-    
+
+    /**
+     * Returns the lookup object for a server instance when the caller only has
+     * the public handle available via common server API.
+     *
+     * @param ServerInstance object for this server instance.
+     *
+     * @return Lookup object maintained by backing instance implementation
+     */
     public static Lookup getLookupFor(ServerInstance instance) {
         return GlassfishInstanceProvider.getDefault().getLookupFor(instance);
     }
-    
+
     /**
      * Returns the facade implementation for the specified server, if that server
      * supports the facade class passed in.

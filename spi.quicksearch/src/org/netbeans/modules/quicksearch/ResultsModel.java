@@ -45,6 +45,7 @@ import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.KeyStroke;
 import javax.swing.Timer;
+import org.netbeans.spi.quicksearch.SearchRequest;
 
 /**
  * Model of search results. Works as ListModel for JList which is displaying
@@ -129,6 +130,8 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
     }
     
     public static final class ItemResult {
+        
+        private static final String HTML = "<html>";
     
         private CategoryResult category;
         private Runnable action;
@@ -136,14 +139,18 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
         private List<? extends KeyStroke> shortcut;
         private String displayHint;
 
-        public ItemResult (CategoryResult category, Runnable action, String displayName) {
-            this(category, action, displayName, null, null);
+        public ItemResult (CategoryResult category, SearchRequest sRequest, 
+                Runnable action, String displayName) {
+            this(category, sRequest, action, displayName, null, null);
         }
 
-        public ItemResult (CategoryResult category, Runnable action, String displayName, List<? extends KeyStroke> shortcut, String displayHint) {
+        public ItemResult (CategoryResult category, SearchRequest sRequest, 
+                Runnable action, String displayName, List<? extends KeyStroke> shortcut, 
+                String displayHint) {
             this.category = category;
             this.action = action;
-            this.displayName = displayName;
+            this.displayName = sRequest != null ? 
+                highlightSubstring(displayName, sRequest) : displayName;
             this.shortcut = shortcut;
             this.displayHint = displayHint;
         }
@@ -166,6 +173,32 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
 
         public CategoryResult getCategory() {
             return category;
+        }
+        
+        private String highlightSubstring (String text, SearchRequest sRequest) {
+            if (text.startsWith(HTML)) {
+                // provider handles highliting itself, okay
+                return text;
+            }
+            // try to find substring 
+            String searchedText = sRequest.getText();
+            int index = text.toLowerCase().indexOf(searchedText.toLowerCase());
+            if (index == -1) {
+                return text;
+            }
+            // found, bold it
+            int endIndex = index + searchedText.length();
+            StringBuilder sb = new StringBuilder(HTML);
+            if (index > 0) {
+                sb.append(text.substring(0, index));
+            }
+            sb.append("<b>");
+            sb.append(text.substring(index, endIndex));
+            sb.append("</b>");
+            if (endIndex < text.length()) {
+                sb.append(text.substring(endIndex, text.length()));
+            }
+            return sb.toString();
         }
     
     }

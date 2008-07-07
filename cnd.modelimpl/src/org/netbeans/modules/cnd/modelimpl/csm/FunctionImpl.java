@@ -268,7 +268,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                             templateNode = templateSiblingNode;
                         } else {
                             // we have no template-method at all
-                            _template = false;
+                                                        
+                            //_template = false; // Commented - Reasons:
+                            // In some cases we have different parameter names 
+                            // in declaration of template and definition of non-template method,                            
+                            // so we always add this parameters as template parameters of method.
                         }
                     }
                 }

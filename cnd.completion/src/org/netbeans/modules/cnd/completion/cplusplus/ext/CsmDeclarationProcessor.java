@@ -219,7 +219,7 @@ ExtSyntaxSupport.VariableMapTokenProcessor {
 
     /** Add the token to a given expression */
     private void addTokenTo(CsmCompletionExpression exp) {
-        exp.addToken(curTokenID, curTokenPosition, getTokenText(curTokenPosition, curTokenLength));
+//        exp.addToken(curTokenID, curTokenPosition, getTokenText(curTokenPosition, curTokenLength));
     }
     
     private int getValidExpID(CsmCompletionExpression exp) {
@@ -244,8 +244,8 @@ ExtSyntaxSupport.VariableMapTokenProcessor {
         }
 
         CsmCompletionExpression exp = new CsmCompletionExpression(expType);
-        exp.addToken(id, typeVarTokenOffset,
-            getTokenText(typeVarTokenOffset, typeVarTokenLength));
+//        exp.addToken(id, typeVarTokenOffset,
+//            getTokenText(typeVarTokenOffset, typeVarTokenLength));
         pushExp(exp); // push initial exp on the stack
     }
     

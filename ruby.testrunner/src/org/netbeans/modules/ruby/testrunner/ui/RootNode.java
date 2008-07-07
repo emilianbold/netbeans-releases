@@ -236,28 +236,6 @@ final class RootNode extends AbstractNode {
             
             msg = constructMessage(passedTestsInfo, pendingTestsInfo, failedTestsInfo, errorTestsInfo);
             
-//            if ((failedTestsInfo == null) || (errorTestsInfo == null)) {
-//                msg = NbBundle.getMessage(bundleRefClass,
-//                        "MSG_TestsOneIssueType", //NOI18N
-//                        passedTestsInfo,
-//                        failedTestsInfo != null
-//                        ? failedTestsInfo
-//                        : errorTestsInfo);
-//            } else {
-////            if ((failedTestsInfo == null) || (errorTestsInfo == null)) {
-////                msg = NbBundle.getMessage(bundleRefClass,
-////                        "MSG_TestsOneIssueType", //NOI18N
-////                        passedTestsInfo,
-////                        failedTestsInfo != null
-////                        ? failedTestsInfo
-////                        : errorTestsInfo);
-////            } else {
-//                msg = NbBundle.getMessage(bundleRefClass,
-//                        "MSG_TestsFailErrIssues", //NOI18N
-//                        passedTestsInfo,
-//                        failedTestsInfo,
-//                        errorTestsInfo);
-//            }
         }
 
         if (totalTests != 0) {

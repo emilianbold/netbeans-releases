@@ -54,6 +54,7 @@ import javax.swing.text.Position;
 
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.SyntaxSupport;
@@ -70,7 +71,6 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmSyntaxSupport;
 import org.netbeans.modules.cnd.completion.csm.CompletionUtilities;
-import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.MethodParamsTipPaintComponent;
 import org.netbeans.spi.editor.completion.*;
@@ -520,7 +520,7 @@ public class CsmCompletionProvider implements CompletionProvider {
                             int idxLast = exp.getTokenCount() - 1;
                             if (idxLast >= 0) {
                                 if (exp.getExpID() == CsmCompletionExpression.METHOD &&
-                                        exp.getTokenID(idxLast) == CCTokenContext.RPAREN) {
+                                        exp.getTokenID(idxLast) == CppTokenId.RPAREN) {
                                     // check if query offset is after closing ")"
                                     if (exp.getTokenOffset(idxLast) + exp.getTokenLength(idxLast) <= caretOffset) {
                                         resultSet.finish();

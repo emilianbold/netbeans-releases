@@ -71,6 +71,11 @@ public abstract class CodeCompletionResult {
         }
 
         @Override
+        public boolean isFilterable() {
+            return false;
+        }
+
+        @Override
         public Set<String> embeddedTypes() {
             return Collections.emptySet();
         }
@@ -136,6 +141,18 @@ public abstract class CodeCompletionResult {
      * result.
      */
     public abstract boolean isTruncated();
+
+    /**
+     * Return true iff the code completion result can be "filtered" (narrowed down)
+     * by the infrastructure without repeating the search. In other words,
+     * if the prefix was "f", and your search returned {"foo", "fuu"}, then
+     * if your result is filterable (by default true), and the user types "u"
+     * then the infrastructure will not repeat the search it will just filter
+     * your original result down from {"foo", "fuu"} to just {"fuu"}.
+     *
+     * @return true iff the result can be filtered (by default, true).
+     */
+    public abstract boolean isFilterable();
     
     /**
      * <p>Return extra mimetypes that might be embedded here and should be checked

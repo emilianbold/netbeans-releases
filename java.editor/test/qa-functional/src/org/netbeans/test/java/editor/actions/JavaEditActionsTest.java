@@ -38,289 +38,401 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.test.java.editor.actions;
 
 import java.awt.event.KeyEvent;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import junit.textui.TestRunner;
-import org.netbeans.jemmy.EventTool;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Basic Edit Actions Test class.
  * The base edit actions can be found at:
  * http://editor.netbeans.org/doc/UserView/apdx_a_eshortcuts.html
- *
- * Test covers following actions:
- *
- *
+ * 
  * @author Martin Roskanin, Jiri Prox
  */
 public class JavaEditActionsTest extends JavaEditorActionsTestCase {
+
+    private static EditorOperator editor;
+    private static JEditorPaneOperator txtOper;
 
     /** Creates a new instance of Main */
     public JavaEditActionsTest(String testMethodName) {
         super(testMethodName);
     }
 
-    public void testEditActions() {
+    private void initTests() {
+        initTests("");
+    }
+
+    private void initTests(String TestName) {
         resetCounter();
         openDefaultProject();
-        openDefaultSampleFile();
+        if (!TestName.equals("")) {
+            String cPackage = "Source Packages|org.netbeans.test.java.editor.actions.JavaEditActionsTest|";
+            Node node = new Node(ProjectsTabOperator.invoke().getProjectRootNode(getDefaultProjectName()), cPackage + TestName);
+            new Action(null, "Open").performPopup(node);
+            editor = new EditorOperator(TestName);
+        } else {
+            openDefaultSampleFile();
+            editor = getDefaultSampleEditorOperator();
+        }
+        editor.requestFocus();
+        txtOper = editor.txtEditorPane();
+    }
+
+    private void cleanUpTests() {
+        closeFileWithDiscard();
+    }
+
+    private void workAround(String goldenFile, int caretLine, int caretColumn) {
         try {
-
-            EditorOperator editor = getDefaultSampleEditorOperator();
-            editor.requestFocus();
-            JEditorPaneOperator txtOper = editor.txtEditorPane();
-
-            // 00 ---------------------- test insert action -----------------
-            // 1. move to adequate place
-            editor.setCaretPosition(5, 17);
-            // 2. set insert Mode ON
-            txtOper.pushKey(KeyEvent.VK_INSERT);
-            // 3. type d
-            txtOper.typeKey('d');
-            // 4. set insert Mode OFF
-            txtOper.pushKey(KeyEvent.VK_INSERT);
-            // 5. type x
-            txtOper.typeKey('x');
-            // previous word ins|ert, with caret at | should be modified to
-            // insdxrt
-            // Compare document content to golden file
-            compareToGoldenFile(txtOper.getDocument());
-            //------------------------------------------------------------
-            // 01 -------- test delete word action. Caret in the middle of the word ---
-            // remove-word action has been removed. Changing test to delete selected word
-            editor.setCaretPosition(17, 20);
-            txtOper.pushKey(KeyEvent.VK_J, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_DELETE);
-            compareToGoldenFile(txtOper.getDocument());
-
-            // 02 -------- test delete previous word action. Caret after the word ------
-            //  delete word - Caret after the word was removed
-            txtOper.pushKey(KeyEvent.VK_BACK_SPACE, KeyEvent.CTRL_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-
-            // 03 --------- test remove the current line --------------------
-            txtOper.pushKey(KeyEvent.VK_E, KeyEvent.CTRL_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-
-            // 04 -- test Select the word the insertion point is on or
-            // -- deselect any selected text (Alt + j)
-            // -- after that test CUT action ---------------
-            editor.setCaretPosition(9, 24);
-            txtOper.pushKey(KeyEvent.VK_J, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-            cutCopyViaStrokes(txtOper, KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-
-            // 05 -- test PASTE ------
-            editor.setCaretPosition(11, 17);
-            txtOper.pushKey(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-
-            // 06 -- test UNDO/REDO ----
-            int oldDocLenhth = txtOper.getDocument().getLength();
-            txtOper.pushKey(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK);
-            waitMaxMilisForValue(WAIT_MAX_MILIS_FOR_UNDO_REDO, getFileLengthChangeResolver(txtOper, oldDocLenhth), Boolean.FALSE);
-            oldDocLenhth = txtOper.getDocument().getLength();
-            txtOper.pushKey(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK);
-            waitMaxMilisForValue(WAIT_MAX_MILIS_FOR_UNDO_REDO, getFileLengthChangeResolver(txtOper, oldDocLenhth), Boolean.FALSE);
-            oldDocLenhth = txtOper.getDocument().getLength();
-            txtOper.pushKey(KeyEvent.VK_Y, KeyEvent.CTRL_DOWN_MASK);
-            waitMaxMilisForValue(WAIT_MAX_MILIS_FOR_UNDO_REDO, getFileLengthChangeResolver(txtOper, oldDocLenhth), Boolean.FALSE);
-            compareToGoldenFile(txtOper.getDocument());
-
-            // 07 -- test CTRL+backspace -- delete previous word
-            txtOper.pushKey(KeyEvent.VK_BACK_SPACE, KeyEvent.CTRL_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_BACK_SPACE, KeyEvent.CTRL_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_BACK_SPACE, KeyEvent.CTRL_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-
-            // 08 -- test CTRL+u -- delete the indentation level
-            txtOper.pushKey(KeyEvent.VK_TAB, KeyEvent.SHIFT_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-
-            // 09 -- test CTRL+u -- delete the line break
-            txtOper.pushKey(KeyEvent.VK_BACK_SPACE);
-            txtOper.pushKey(KeyEvent.VK_BACK_SPACE);
-            txtOper.typeKey(' ');
-            compareToGoldenFile(txtOper.getDocument());
-
-            // 10 -- test delete action
-            txtOper.pushKey(KeyEvent.VK_BACK_SPACE);
-            compareToGoldenFile(txtOper.getDocument());
-
-            // 11 -- test delete selected block and selecting to end of the line
-            txtOper.pushKey(KeyEvent.VK_END, KeyEvent.SHIFT_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_DELETE);
-            compareToGoldenFile(txtOper.getDocument());
-
-            // 12 -- test COPY action ---
-            editor.setCaretPosition(9, 15);
-            txtOper.pushKey(KeyEvent.VK_J, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.ALT_DOWN_MASK);
-            cutCopyViaStrokes(txtOper, KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK);
-            editor.setCaretPosition(10, 17);
-            txtOper.pushKey(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-
-            // -- test Select All ---
-            txtOper.pushKey(KeyEvent.VK_A, KeyEvent.CTRL_DOWN_MASK);
-            if (txtOper.getSelectionStart() != 0 || txtOper.getSelectionEnd() != txtOper.getDocument().getLength()) {
-                fail("Select all action fails. [start/end of selection] [docLength]: [" + txtOper.getSelectionStart() + "/" + txtOper.getSelectionEnd() + "] [" + txtOper.getDocument().getLength() + "]");
+            StringBuffer fileData = new StringBuffer(1000);
+            BufferedReader reader = new BufferedReader(new FileReader(getGoldenFile(goldenFile)));
+            char[] buf = new char[1024];
+            int numRead = 0;
+            while ((numRead = reader.read(buf)) != -1) {
+                fileData.append(buf, 0, numRead);
             }
+            reader.close();
+            txtOper.removeAll();
+            txtOper.setText(fileData.toString());
+            txtOper.pushKey(KeyEvent.VK_BACK_SPACE); // replace the last NL
+            editor.setCaretPosition(caretLine, caretColumn);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("[ERROR] !!! Exception thrown while workaround was executed. This may cause subsequent tests to fail.");
+        } finally {
+            fail("[INFO] " + getName() + ": workaround was used here, text was replaced with content of " + goldenFile + " and cursor was set to position [" + caretLine + "," + caretColumn + "].");
+        }
+    }
 
-            // 13 -- test Shift+delete (CUT) and shift+insert (PASTE)---
-            editor.setCaretPosition(5, 17);
-            txtOper.pushKey(KeyEvent.VK_J, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-            cutCopyViaStrokes(txtOper, KeyEvent.VK_DELETE, KeyEvent.SHIFT_DOWN_MASK);
-            editor.setCaretPosition(13, 8);
-            txtOper.pushKey(KeyEvent.VK_INSERT, KeyEvent.SHIFT_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
+    public void testEditActionsTestCase_0() {
+        initTests("testEditActions");
+        // 00 ---------------------- test insert action -----------------
+        // 1. move to adequate place
+        editor.setCaretPosition(5, 17);
+        // 2. set insert Mode ON
+        txtOper.pushKey(KeyEvent.VK_INSERT);
+        // 3. type d
+        txtOper.typeKey('d');
+        // 4. set insert Mode OFF
+        txtOper.pushKey(KeyEvent.VK_INSERT);
+        // 5. type x
+        txtOper.typeKey('x');
+        // -> previous word "ins|ert", with caret at | should be modified to "insdx|rt"
+        // 6. compare document content to golden file to check if the change took place
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_000", "testEditActions00", "testEditActions00");
+    }
 
-            // 14 -- test ctrl+insert (COPY)---
-            editor.setCaretPosition(10, 20);
-            txtOper.pushKey(KeyEvent.VK_J, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-            cutCopyViaStrokes(txtOper, KeyEvent.VK_INSERT, KeyEvent.CTRL_DOWN_MASK);
-            editor.setCaretPosition(13, 15);
-            txtOper.pushKey(KeyEvent.VK_INSERT, KeyEvent.SHIFT_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
+    public void testEditActionsTestCase_1() {
+        // 01 -------- test delete word action. Caret in the middle of the word ---
+        // remove-word action has been removed. Changing test to delete selected word
+        editor.setCaretPosition(17, 20);
+        txtOper.pushKey(KeyEvent.VK_J, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_DELETE);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_100", "testEditActions01", "testEditActions01");
+    }
 
-            // 15 -- test CTRL+K ----
-            editor.setCaretPosition(6, 21);
-            txtOper.pushKey(KeyEvent.VK_K, KeyEvent.CTRL_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
+    public void testEditActionsTestCase_2() {
+        // 02 -------- test delete previous word action. Caret after the word ------
+        //  delete word - Caret after the word was removed
+        txtOper.pushKey(KeyEvent.VK_BACK_SPACE, KeyEvent.CTRL_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_200", "testEditActions02", "testEditActions02");
+    }
 
-            // 16 -- test CTRL+SHITF+K ----
-            editor.setCaretPosition(10, 20);
-            //type space to change String to Str ing
-            txtOper.typeKey(' ');
-            editor.setCaretPosition(10, 23);
-            txtOper.pushKey(KeyEvent.VK_K, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
+    public void testEditActionsTestCase_3() {
+        // 03 --------- test remove the current line --------------------
+        txtOper.pushKey(KeyEvent.VK_E, KeyEvent.CTRL_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_300", "testEditActions03", "testEditActions03");
+    }
 
-            /// 17 -- test expanding abbreviation
-            editor.setCaretPosition(19, 12);
-            txtOper.typeKey('s');
-            txtOper.typeKey('t');
-            txtOper.pressKey(KeyEvent.VK_TAB);
-            compareToGoldenFile(txtOper.getDocument());
+    public void testEditActionsTestCase_4() {
+        // 04 -- test Select the word the insertion point is on or
+        // -- deselect any selected text (Alt + j)
+        // -- after that test CUT action ---------------
+        editor.setCaretPosition(9, 24);
+        txtOper.pushKey(KeyEvent.VK_J, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+        cutCopyViaStrokes(txtOper, KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_400", "testEditActions04", "testEditActions04");
+    }
 
-            // 18 -- test Insert space without expanding abbreviation (SPACE)
-            editor.setCaretPosition(20, 9);
-            txtOper.typeKey('s');
-            txtOper.typeKey('t');
-            txtOper.typeKey(' ');
-            compareToGoldenFile(txtOper.getDocument());
+    public void testEditActionsTestCase_5() {
+        // 05 -- test PASTE ------
+        editor.setCaretPosition(11, 17);
+        txtOper.pushKey(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_500", "testEditActions05", "testEditActions05");
+    }
 
-            /* __________________ Capitlization ___________________ */
+    public void testEditActionsTestCase_6() throws InterruptedException {
+        // 06 -- test UNDO/REDO ----
+        //* (2008-07-07) - TEMPORARY WORKAROUND NEEDED HERE: test fails with the line bellow, if you uncomment this line, all tests will fail...
+        workAround("testEditActions06.pass", 9, 21);
+        //*/
+        int oldDocLength = txtOper.getDocument().getLength();
+        txtOper.pushKey(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK);
+        waitMaxMilisForValue(WAIT_MAX_MILIS_FOR_UNDO_REDO, getFileLengthChangeResolver(txtOper, oldDocLength), Boolean.FALSE);
+        oldDocLength = txtOper.getDocument().getLength();
+        txtOper.pushKey(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK);
+        waitMaxMilisForValue(WAIT_MAX_MILIS_FOR_UNDO_REDO, getFileLengthChangeResolver(txtOper, oldDocLength), Boolean.FALSE);
+        oldDocLength = txtOper.getDocument().getLength();
+        txtOper.pushKey(KeyEvent.VK_Y, KeyEvent.CTRL_DOWN_MASK);
+        waitMaxMilisForValue(WAIT_MAX_MILIS_FOR_UNDO_REDO, getFileLengthChangeResolver(txtOper, oldDocLength), Boolean.FALSE);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_600", "testEditActions06", "testEditActions06");
+    }
 
+    public void testEditActionsTestCase_7() {
+        // 07 -- test CTRL+backspace -- delete previous word
+        txtOper.pushKey(KeyEvent.VK_BACK_SPACE, KeyEvent.CTRL_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_BACK_SPACE, KeyEvent.CTRL_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_BACK_SPACE, KeyEvent.CTRL_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_700", "testEditActions07", "testEditActions07");
+    }
 
-            // 19 -- w/o selection upper case ------
-            editor.setCaretPosition(13, 18);
-            txtOper.pushKey(KeyEvent.VK_U, KeyEvent.CTRL_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_U);
-            compareToGoldenFile(txtOper.getDocument());
+    public void testEditActionsTestCase_8() {
+        // 08 -- test CTRL+u -- delete the indentation level
+        txtOper.pushKey(KeyEvent.VK_TAB, KeyEvent.SHIFT_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_800", "testEditActions08", "testEditActions08");
+    }
 
-            // 20 -- selection upper case ------
-            txtOper.pushKey(KeyEvent.VK_J, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_U, KeyEvent.CTRL_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_U);
-            compareToGoldenFile(txtOper.getDocument());
+    public void testEditActionsTestCase_9() {
+        // 09 -- test CTRL+u -- delete the line break
+        txtOper.pushKey(KeyEvent.VK_BACK_SPACE);
+        txtOper.pushKey(KeyEvent.VK_BACK_SPACE);
+        txtOper.typeKey(' ');
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_900", "testEditActions09", "testEditActions09");
+    }
 
-            // 21 -- w/o selection lower case ------
-            editor.setCaretPosition(13, 18);
-            txtOper.pushKey(KeyEvent.VK_U, KeyEvent.CTRL_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_L);
-            compareToGoldenFile(txtOper.getDocument());
+    public void testEditActionsTestCase_10() {
+        // 10 -- test delete action
+        txtOper.pushKey(KeyEvent.VK_BACK_SPACE);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_1000", "testEditActions10", "testEditActions10");
+    }
 
-            // 22 -- selection lower case ------
-            txtOper.pushKey(KeyEvent.VK_J, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_U, KeyEvent.CTRL_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_L);
-            compareToGoldenFile(txtOper.getDocument());
+    public void testEditActionsTestCase_11() {
+        // 11 -- test delete selected block and selecting to end of the line
+        txtOper.pushKey(KeyEvent.VK_END, KeyEvent.SHIFT_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_DELETE);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_1100", "testEditActions11", "testEditActions11");
+    }
 
-            // 23 -- w/o selection reverse case ------
-            editor.setCaretPosition(13, 18);
-            txtOper.pushKey(KeyEvent.VK_U, KeyEvent.CTRL_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_S);
-            compareToGoldenFile(txtOper.getDocument());
+    public void testEditActionsTestCase_12() {
+        // 12 -- test COPY action ---
+        editor.setCaretPosition(9, 15);
+        txtOper.pushKey(KeyEvent.VK_J, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.ALT_DOWN_MASK);
+        cutCopyViaStrokes(txtOper, KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK);
+        editor.setCaretPosition(10, 17);
+        txtOper.pushKey(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_1200", "testEditActions12", "testEditActions12");
+    }
 
-            // 24 -- selection reverse case ------
-            txtOper.pushKey(KeyEvent.VK_J, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_U, KeyEvent.CTRL_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_S);
-            compareToGoldenFile(txtOper.getDocument());
+    public void testEditActionsTestCase_12a() {
+        // 12a -- test Select All ---
+        txtOper.pushKey(KeyEvent.VK_A, KeyEvent.CTRL_DOWN_MASK);
+        if (txtOper.getSelectionStart() != 0 || txtOper.getSelectionEnd() != txtOper.getDocument().getLength()) {
+            fail("Select all action fails. [start/end of selection] [docLength]: [" + txtOper.getSelectionStart() + "/" + txtOper.getSelectionEnd() + "] [" + txtOper.getDocument().getLength() + "]");
+        }
+    }
 
+    public void testEditActionsTestCase_13() {
+        // 13 -- test Shift+delete (CUT) and shift+insert (PASTE)---
+        editor.setCaretPosition(5, 17);
+        txtOper.pushKey(KeyEvent.VK_J, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+        cutCopyViaStrokes(txtOper, KeyEvent.VK_DELETE, KeyEvent.SHIFT_DOWN_MASK);
+        editor.setCaretPosition(13, 8);
+        txtOper.pushKey(KeyEvent.VK_INSERT, KeyEvent.SHIFT_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_1300", "testEditActions13", "testEditActions13");
+    }
 
-            /* __________________ Several Indentation Actions ___________________ */
+    public void testEditActionsTestCase_14() {
+        // 14 -- test ctrl+insert (COPY)---
+        editor.setCaretPosition(10, 20);
+        txtOper.pushKey(KeyEvent.VK_J, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+        cutCopyViaStrokes(txtOper, KeyEvent.VK_INSERT, KeyEvent.CTRL_DOWN_MASK);
+        editor.setCaretPosition(13, 15);
+        txtOper.pushKey(KeyEvent.VK_INSERT, KeyEvent.SHIFT_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_1400", "testEditActions14", "testEditActions14");
+    }
 
+    public void testEditActionsTestCase_15() {
+        // 15 -- test CTRL+K ----
+        editor.setCaretPosition(6, 21);
+        txtOper.pushKey(KeyEvent.VK_K, KeyEvent.CTRL_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_1500", "testEditActions15", "testEditActions15");
+    }
 
-            // 25 -- Shift left  ------
-            editor.setCaretPosition(10, 9);
-            txtOper.pushKey(KeyEvent.VK_TAB, KeyEvent.SHIFT_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
+    public void testEditActionsTestCase_16() {
+        // 16 -- test CTRL+SHITF+K ----
+        editor.setCaretPosition(10, 20);
+        //type space to change String to Str ing
+        txtOper.typeKey(' ');
+        editor.setCaretPosition(10, 23);
+        txtOper.pushKey(KeyEvent.VK_K, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_1600", "testEditActions16", "testEditActions16");
+    }
 
-            // 26 -- insert tab  ------
-            txtOper.pushKey(KeyEvent.VK_TAB);
-            compareToGoldenFile(txtOper.getDocument());
+    public void testEditActionsTestCase_17() {
+        /// 17 -- test expanding abbreviation
+        editor.setCaretPosition(19, 12);
+        txtOper.typeKey('s');
+        txtOper.typeKey('t');
+        txtOper.pressKey(KeyEvent.VK_TAB);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_1700", "testEditActions17", "testEditActions17");
+    }
 
-            // 27 -- Shift selection left  ------
-            editor.setCaretPosition(9, 1);
-            //select method
-            txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
-            // shift left
-            txtOper.pushKey(KeyEvent.VK_TAB, KeyEvent.SHIFT_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
+    public void testEditActionsTestCase_18() {
+        // 18 -- test Insert space without expanding abbreviation (SPACE)
+        editor.setCaretPosition(20, 9);
+        txtOper.typeKey('s');
+        txtOper.typeKey('t');
+        txtOper.typeKey(' ');
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_1800", "testEditActions18", "testEditActions18");
+    }
 
-            // 28 -- Shift  selection right  ------
-            txtOper.pushKey(KeyEvent.VK_TAB);
-            compareToGoldenFile(txtOper.getDocument());
+    public void testEditActionsTestCase_19() {
+        /* __________________ Capitlization ___________________ */
+        // 19 -- w/o selection upper case ------
+        editor.setCaretPosition(13, 18);
+        txtOper.pushKey(KeyEvent.VK_U, KeyEvent.CTRL_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_U);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_1900", "testEditActions19", "testEditActions19");
+    }
 
-            // 29 -- Shift selection left (Alt+Shift+left) ------
-            editor.setCaretPosition(9, 1);
-            //select method
-            txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
-            // shift left
-            txtOper.pushKey(KeyEvent.VK_LEFT, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
+    public void testEditActionsTestCase_20() {
+        // 20 -- selection upper case ------
+        txtOper.pushKey(KeyEvent.VK_J, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_U, KeyEvent.CTRL_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_U);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_2000", "testEditActions20", "testEditActions20");
+    }
 
-            // 30 -- Shift  selection right (Alt+Shift+Right) ------
-            txtOper.pushKey(KeyEvent.VK_RIGHT, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
+    public void testEditActionsTestCase_21() {
+        // 21 -- w/o selection lower case ------
+        editor.setCaretPosition(13, 18);
+        txtOper.pushKey(KeyEvent.VK_U, KeyEvent.CTRL_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_L);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_2100", "testEditActions21", "testEditActions21");
+    }
 
-            //31 -- reformat the selection + testing BACK_SPACE----
-            //delete syntax error - otherwise reformat will not work
-            editor.setCaretPosition(20, 1);
-            txtOper.pushKey(KeyEvent.VK_E, KeyEvent.CTRL_DOWN_MASK);
-            //make a mess
-            editor.setCaretPosition(6, 5);
-            txtOper.typeKey(' ');
-            editor.setCaretPosition(9, 5);
-            txtOper.pushKey(KeyEvent.VK_BACK_SPACE);
-            editor.setCaretPosition(9, 1);
-            //select method
-            txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_F, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.ALT_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
+    public void testEditActionsTestCase_22() {
+        // 22 -- selection lower case ------
+        txtOper.pushKey(KeyEvent.VK_J, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_U, KeyEvent.CTRL_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_L);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_2200", "testEditActions22", "testEditActions22");
+    }
 
+    public void testEditActionsTestCase_23() {
+        // 23 -- w/o selection reverse case ------
+        editor.setCaretPosition(13, 18);
+        txtOper.pushKey(KeyEvent.VK_U, KeyEvent.CTRL_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_S);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_2300", "testEditActions23", "testEditActions23");
+    }
+
+    public void testEditActionsTestCase_24() {
+        // 24 -- selection reverse case ------
+        txtOper.pushKey(KeyEvent.VK_J, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_U, KeyEvent.CTRL_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_S);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_2400", "testEditActions24", "testEditActions24");
+    }
+
+    public void testEditActionsTestCase_25() {
+        /* __________________ Several Indentation Actions ___________________ */
+        // 25 -- Shift left  ------
+        editor.setCaretPosition(10, 9);
+        txtOper.pushKey(KeyEvent.VK_TAB, KeyEvent.SHIFT_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_2500", "testEditActions25", "testEditActions25");
+    }
+
+    public void testEditActionsTestCase_26() {
+        // 26 -- insert tab  ------
+        txtOper.pushKey(KeyEvent.VK_TAB);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_2600", "testEditActions26", "testEditActions26");
+    }
+
+    public void testEditActionsTestCase_27() {
+        // 27 -- Shift selection left  ------
+        editor.setCaretPosition(9, 1);
+        //select method
+        txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
+        // shift left
+        txtOper.pushKey(KeyEvent.VK_TAB, KeyEvent.SHIFT_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_2700", "testEditActions27", "testEditActions27");
+    }
+
+    public void testEditActionsTestCase_28() {
+        // 28 -- Shift  selection right  ------
+        txtOper.pushKey(KeyEvent.VK_TAB);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_2800", "testEditActions28", "testEditActions28");
+    }
+
+    public void testEditActionsTestCase_29() {
+        // 29 -- Shift selection left (Alt+Shift+left) ------
+        editor.setCaretPosition(9, 1);
+        //select method
+        txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
+        // shift left
+        txtOper.pushKey(KeyEvent.VK_LEFT, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_2900", "testEditActions29", "testEditActions29");
+    }
+
+    public void testEditActionsTestCase_30() {
+        // 30 -- Shift  selection right (Alt+Shift+Right) ------
+        txtOper.pushKey(KeyEvent.VK_RIGHT, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_3000", "testEditActions30", "testEditActions30");
+    }
+
+    public void testEditActionsTestCase_31() {
+        // 31 -- reformat the selection + testing BACK_SPACE----
+        //delete syntax error - otherwise reformat will not work
+        editor.setCaretPosition(20, 1);
+        txtOper.pushKey(KeyEvent.VK_E, KeyEvent.CTRL_DOWN_MASK);
+        //make a mess
+        editor.setCaretPosition(6, 5);
+        txtOper.typeKey(' ');
+        editor.setCaretPosition(9, 5);
+        txtOper.pushKey(KeyEvent.VK_BACK_SPACE);
+        editor.setCaretPosition(9, 1);
+        //select method
+        txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_F, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.ALT_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_3100", "testEditActions31", "testEditActions31");
+    }
+
+    public void testEditActionsTestCase_32() {
+        try {
             //32 -- reformat the entire file ----
             // deselect
             txtOper.setSelectionStart(1);
             txtOper.setSelectionEnd(1);
             // invoke formatter
             txtOper.pushKey(KeyEvent.VK_F, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.ALT_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
+            compareToGoldenFile(txtOper.getDocument(), "testEditActionsTestCase_3200", "testEditActions32", "testEditActions32");
 
-            /* __________________ Extension Actions ___________________ */
+        //<editor-fold defaultstate="collapsed" desc="Extension Actions">
+
+        /* __________________ Extension Actions ___________________ */
 //
 //            //33 -- Prefix the identifier with get ------
 //            editor.setCaretPosition(19,32);
@@ -436,186 +548,235 @@ public class JavaEditActionsTest extends JavaEditorActionsTestCase {
 //            txtOper.pushKey(KeyEvent.VK_LEFT, 0);
 //            txtOper.pushKey(KeyEvent.VK_DELETE, KeyEvent.CTRL_DOWN_MASK);
 //            compareToGoldenFile(txtOper.getDocument());
+
+        //</editor-fold>
+
         } finally {
-            closeFileWithDiscard();
+            cleanUpTests();
         }
     }
 
-    public void testLineTools() {
-        resetCounter();
-        openDefaultProject();
-        openDefaultSampleFile();
-        try {
+    public void testLineToolsTestCase_0() {
+        initTests("testLineTools");
+        editor.setCaretPosition(7, 25);
+        // 00
+        txtOper.pushKey(KeyEvent.VK_LEFT, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testLineToolsTestCase_000", "testLineTools00", "testLineTools00");
+    }
 
-            EditorOperator editor = getDefaultSampleEditorOperator();
-            editor.requestFocus();
-            JEditorPaneOperator txtOper = editor.txtEditorPane();
-            editor.setCaretPosition(7,25);
-            // 00
-            txtOper.pushKey(KeyEvent.VK_LEFT,KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-            //01
-            txtOper.pushKey(KeyEvent.VK_RIGHT,KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-            //02
-            txtOper.pushKey(KeyEvent.VK_UP,KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-            //03
-            txtOper.pushKey(KeyEvent.VK_DOWN,KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-                        
-            //04 - the same with block
-            editor.setCaretPosition(7,25);
-            txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
-            
-            txtOper.pushKey(KeyEvent.VK_LEFT,KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-            //05
-            txtOper.pushKey(KeyEvent.VK_RIGHT,KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-            //06
-            txtOper.pushKey(KeyEvent.VK_UP,KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-            //07
-            txtOper.pushKey(KeyEvent.VK_DOWN,KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());            
-            
-            //copy lines
-            editor.setCaretPosition(7,25);
-            
-            //08
-            txtOper.pushKey(KeyEvent.VK_UP,KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-            
-            //09
-            txtOper.pushKey(KeyEvent.VK_Z,KeyEvent.CTRL_DOWN_MASK );
-            editor.setCaretPosition(7,25);
-            txtOper.pushKey(KeyEvent.VK_DOWN,KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-            
-            //10
-            txtOper.pushKey(KeyEvent.VK_Z,KeyEvent.CTRL_DOWN_MASK );
-            editor.setCaretPosition(7,25);
-            txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_UP,KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-            
+    public void testLineToolsTestCase_1() {
+        //01
+        txtOper.pushKey(KeyEvent.VK_RIGHT, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testLineToolsTestCase_100", "testLineTools01", "testLineTools01");
+    }
+
+    public void testLineToolsTestCase_2() {
+        //02
+        txtOper.pushKey(KeyEvent.VK_UP, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testLineToolsTestCase_200", "testLineTools02", "testLineTools02");
+    }
+
+    public void testLineToolsTestCase_3() {
+        //03
+        txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testLineToolsTestCase_300", "testLineTools03", "testLineTools03");
+    }
+
+    public void testLineToolsTestCase_4() {
+        //04 - the same with block
+        editor.setCaretPosition(7, 25);
+        txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_LEFT, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testLineToolsTestCase_400", "testLineTools04", "testLineTools04");
+    }
+
+    public void testLineToolsTestCase_5() {
+        //05
+        txtOper.pushKey(KeyEvent.VK_RIGHT, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testLineToolsTestCase_500", "testLineTools05", "testLineTools05");
+    }
+
+    public void testLineToolsTestCase_6() {
+        //06
+        txtOper.pushKey(KeyEvent.VK_UP, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testLineToolsTestCase_600", "testLineTools06", "testLineTools06");
+    }
+
+    public void testLineToolsTestCase_7() {
+        //07
+        txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testLineToolsTestCase_700", "testLineTools07", "testLineTools07");
+    }
+
+    public void testLineToolsTestCase_8() {
+        //08
+        editor.setCaretPosition(7, 25);
+        txtOper.pushKey(KeyEvent.VK_UP, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testLineToolsTestCase_800", "testLineTools08", "testLineTools08");
+    }
+
+    public void testLineToolsTestCase_9() {
+        //09
+        txtOper.pushKey(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK);
+        editor.setCaretPosition(7, 25);
+        txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testLineToolsTestCase_900", "testLineTools09", "testLineTools09");
+    }
+
+    public void testLineToolsTestCase_10() {
+        //10
+        txtOper.pushKey(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK);
+        editor.setCaretPosition(7, 25);
+        txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_UP, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testLineToolsTestCase_1000", "testLineTools10", "testLineTools10");
+    }
+
+    public void testLineToolsTestCase_11() {
+        try {
             //11
-            txtOper.pushKey(KeyEvent.VK_Z,KeyEvent.CTRL_DOWN_MASK );
-            editor.setCaretPosition(7,25);
+            txtOper.pushKey(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK);
+            editor.setCaretPosition(7, 25);
             txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_DOWN,KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-            
-            
+            txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+            compareToGoldenFile(txtOper.getDocument(), "testLineToolsTestCase_1100", "testLineTools11", "testLineTools11");
         } finally {
             closeFileWithDiscard();
         }
     }
-    
+
     public void testSyntaxSelection() {
-        resetCounter();
-        openDefaultProject();
-        openDefaultSampleFile();    
-        int[] begins = {602,591,587,570,548,489,471,459,422,401,367,328,176};
-        int[] ends =   {608,609,611,612,630,630,644,644,655,655,661,663,663};
+        int[] begins = {602, 591, 587, 570, 548, 489, 471, 459, 422, 401, 367, 328, 176};
+        int[] ends = {608, 609, 611, 612, 630, 630, 644, 644, 655, 655, 661, 663, 663};
         try {
-            EditorOperator editor = getDefaultSampleEditorOperator();
-            editor.requestFocus();
-            JEditorPaneOperator txtOper = editor.txtEditorPane();
-            editor.setCaretPosition(27,56);
+            initTests();
+            editor.setCaretPosition(27, 56);
             int x = 0;
-            while(x<begins.length) {
-                txtOper.pushKey(KeyEvent.VK_PERIOD, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK );
+            while (x < begins.length) {
+                txtOper.pushKey(KeyEvent.VK_PERIOD, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
                 int start = txtOper.getSelectionStart();
-                int end = txtOper.getSelectionEnd();                
+                int end = txtOper.getSelectionEnd();
                 //System.out.println(start+" "+end);
-                if(start!=begins[x] || end != ends[x]) fail("Wrong selection expected <"+begins[x]+","+ends[x]+"> but got <"+start+","+end+">");
+                if (start != begins[x] || end != ends[x]) {
+                    fail("Wrong selection expected <" + begins[x] + "," + ends[x] + "> but got <" + start + "," + end + ">");
+                }
                 x++;
             }
             x--;
-            while(x>0) {
+            while (x > 0) {
                 x--;
-                txtOper.pushKey(KeyEvent.VK_COMMA, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK );
+                txtOper.pushKey(KeyEvent.VK_COMMA, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
                 int start = txtOper.getSelectionStart();
-                int end = txtOper.getSelectionEnd();                
+                int end = txtOper.getSelectionEnd();
                 //System.out.println(start+" "+end);
-                if(start!=begins[x] || end != ends[x]) fail("Wrong selection expected <"+begins[x]+","+ends[x]+"> but got <"+start+","+end+">");
-            }            
+                if (start != begins[x] || end != ends[x]) {
+                    fail("Wrong selection expected <" + begins[x] + "," + ends[x] + "> but got <" + start + "," + end + ">");
+                }
+            }
         } finally {
-            closeFileWithDiscard();
+            cleanUpTests();
         }
     }
-    
-    public void testCommentUncomment() {
-        resetCounter();
-        openDefaultProject();
-        openDefaultSampleFile();        
+
+    public void testCommentUncommentTestCase_0() {
+        initTests("testCommentUncomment");
+        //00
+        editor.setCaretPosition(6, 1);
+        txtOper.pushKey(KeyEvent.VK_SLASH, KeyEvent.CTRL_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testCommentUncommentTestCase_000", "testCommentUncomment00", "testCommentUncomment00");
+    }
+
+    public void testCommentUncommentTestCase_1() {
+        //01
+        txtOper.pushKey(KeyEvent.VK_SLASH, KeyEvent.CTRL_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testCommentUncommentTestCase_100", "testCommentUncomment01", "testCommentUncomment01");
+    }
+
+    public void testCommentUncommentTestCase_2() {
+        //02
+        editor.setCaretPosition(10, 1);
+        txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_SLASH, KeyEvent.CTRL_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testCommentUncommentTestCase_200", "testCommentUncomment02", "testCommentUncomment02");
+    }
+
+    public void testCommentUncommentTestCase_3() {
+        //03
+        txtOper.pushKey(KeyEvent.VK_SLASH, KeyEvent.CTRL_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testCommentUncommentTestCase_300", "testCommentUncomment03", "testCommentUncomment03");
+    }
+
+    public void testCommentUncommentTestCase_4() {
+        //04
+        editor.setCaretPosition(15, 1);
+        txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
+        txtOper.pushKey(KeyEvent.VK_SLASH, KeyEvent.CTRL_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testCommentUncommentTestCase_400", "testCommentUncomment04", "testCommentUncomment04");
+    }
+
+    public void testCommentUncommentTestCase_5() {
+        //05
+        txtOper.pushKey(KeyEvent.VK_SLASH, KeyEvent.CTRL_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testCommentUncommentTestCase_500", "testCommentUncomment05", "testCommentUncomment05");
+    }
+
+    public void testCommentUncommentTestCase_6() {
+        //06
+        editor.setCaretPosition(20, 1);
+        txtOper.pushKey(KeyEvent.VK_SLASH, KeyEvent.CTRL_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testCommentUncommentTestCase_600", "testCommentUncomment06", "testCommentUncomment06");
+    }
+
+    public void testCommentUncommentTestCase_7() {
+        //07
+        txtOper.pushKey(KeyEvent.VK_SLASH, KeyEvent.CTRL_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testCommentUncommentTestCase_700", "testCommentUncomment07", "testCommentUncomment07");
+    }
+
+    public void testCommentUncommentTestCase_8() {
+        //08
+        editor.setCaretPosition(21, 1);
+        txtOper.pushKey(KeyEvent.VK_SLASH, KeyEvent.CTRL_DOWN_MASK);
+        compareToGoldenFile(txtOper.getDocument(), "testCommentUncommentTestCase_800", "testCommentUncomment08", "testCommentUncomment08");
+    }
+
+    public void testCommentUncommentTestCase_9() {
+        //09
         try {
-            EditorOperator editor = getDefaultSampleEditorOperator();
-            editor.requestFocus();            
-            JEditorPaneOperator txtOper = editor.txtEditorPane();
-            //00
-            editor.setCaretPosition(6,1);            
-            txtOper.pushKey(KeyEvent.VK_SLASH, KeyEvent.CTRL_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-            
-            //01            
-            txtOper.pushKey(KeyEvent.VK_SLASH, KeyEvent.CTRL_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-            
-            //02
-            editor.setCaretPosition(10,1);        
-            txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_SLASH, KeyEvent.CTRL_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-            
-            //03
-            txtOper.pushKey(KeyEvent.VK_SLASH, KeyEvent.CTRL_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-            
-            //04
-            editor.setCaretPosition(15,1);        
-            txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK);
-            txtOper.pushKey(KeyEvent.VK_SLASH, KeyEvent.CTRL_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-            
-            //05
-            txtOper.pushKey(KeyEvent.VK_SLASH, KeyEvent.CTRL_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-            
-            //06
-            editor.setCaretPosition(20,1);                    
-            txtOper.pushKey(KeyEvent.VK_SLASH, KeyEvent.CTRL_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-            
-            //07
-            txtOper.pushKey(KeyEvent.VK_SLASH, KeyEvent.CTRL_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-            
-            //08
-            editor.setCaretPosition(21,1);                    
-            txtOper.pushKey(KeyEvent.VK_SLASH, KeyEvent.CTRL_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-            
-            //09
-            editor.setCaretPosition(21,1);                    
+            editor.setCaretPosition(21, 1);
             txtOper.pushKey(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK);
-            compareToGoldenFile(txtOper.getDocument());
-            
+            compareToGoldenFile(txtOper.getDocument(), "testCommentUncommentTestCase_900", "testCommentUncomment09", "testCommentUncomment09");
         } finally {
-            closeFileWithDiscard();
+            cleanUpTests();
         }
-    }    
+    }
 
     public static void main(String[] args) {
         TestRunner.run(JavaEditActionsTest.class);
     }
-    
+
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(JavaEditActionsTest.class).enableModules(".*").clusters(".*"));
-     }
+        NbModuleSuite.Configuration config = NbModuleSuite.createConfiguration(JavaEditActionsTest.class);
+        // Add testEditActions tests
+        for (int i = 0; i < 33; i++) {
+            config = config.addTest("testEditActionsTestCase_" + i);
+            if (i == 12) {
+                config = config.addTest("testEditActionsTestCase_12a");
+            }
+        }
+        // Add testSyntaxSelection
+        config = config.addTest("testSyntaxSelection");
+        // Add testLineTools tests
+        for (int i = 0; i < 12; i++) {
+            config = config.addTest("testLineToolsTestCase_" + i);
+        }
+        // Add testCommentUncomment tests
+        for (int i = 0; i < 10; i++) {
+            config = config.addTest("testCommentUncommentTestCase_" + i);
+        }
+        config = config.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(config);
+    }
 }

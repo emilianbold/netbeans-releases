@@ -105,7 +105,7 @@ public class CommandEvaluator {
             }
             
             CategoryResult catResult = new CategoryResult(cat);
-            SearchResponse sResponse = Accessor.DEFAULT.createResponse(catResult);
+            SearchResponse sResponse = Accessor.DEFAULT.createResponse(catResult, sRequest);
             for (SearchProvider provider : cat.getProviders()) {
                 if (commandString != null) {
                     String commandPrefix = cat.getCommandPrefix();
