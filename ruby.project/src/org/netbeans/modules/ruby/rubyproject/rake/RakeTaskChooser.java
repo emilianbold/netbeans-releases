@@ -154,7 +154,7 @@ public final class RakeTaskChooser extends JPanel {
 
         TaskDescriptor(RakeTask task, String params, boolean debug) {
             this.task = task;
-            this.params = params;
+            this.params = params.length() == 0 ? null : params;
             this.debug = debug;
         }
 
@@ -368,7 +368,7 @@ public final class RakeTaskChooser extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void rakeTaskFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_rakeTaskFieldKeyPressed
-        Object actionKey = matchingTaskList.getInputMap().get(KeyStroke.getKeyStrokeForEvent(evt));//GEN-HEADEREND:event_rakeTaskFieldKeyPressed
+        Object actionKey = matchingTaskList.getInputMap().get(KeyStroke.getKeyStrokeForEvent(evt));
 
         // see JavaFastOpen.boundScrollingKey()
         boolean isListScrollAction =
@@ -405,12 +405,12 @@ public final class RakeTaskChooser extends JPanel {
             action.actionPerformed(new ActionEvent(matchingTaskList, 0, (String) actionKey));
             evt.consume();
         }
-    }                                        
+    }//GEN-LAST:event_rakeTaskFieldKeyPressed
 
-    private void showAllCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-LAST:event_rakeTaskFieldKeyPressed
-        refreshTaskList();//GEN-FIRST:event_showAllCheckboxActionPerformed
-    }//GEN-HEADEREND:event_showAllCheckboxActionPerformed
-//GEN-LAST:event_showAllCheckboxActionPerformed
+    private void showAllCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showAllCheckboxActionPerformed
+        refreshTaskList();
+    }//GEN-LAST:event_showAllCheckboxActionPerformed
+
     private static class RakeTaskRenderer extends JLabel implements ListCellRenderer {
 
         public RakeTaskRenderer() {
