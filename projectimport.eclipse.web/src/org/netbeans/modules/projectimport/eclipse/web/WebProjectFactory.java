@@ -87,8 +87,18 @@ public class WebProjectFactory implements ProjectTypeUpdater {
     public WebProjectFactory() {
     }
     
-    public boolean canHandle(Set<String> natures) {
-        return natures.contains(WEB_NATURE);
+    public boolean canHandle(ProjectDescriptor descriptor) {
+        // eclipse ganymede and europa are using facets:
+        if (descriptor.getFacets() != null) {
+            return descriptor.getFacets().hasInstalledFacet("jst.web");
+        }
+        if (descriptor.getNatures().contains(WEB_NATURE)) {
+            // this is perhaps case of older Eclipse versions??
+            // TODO: perhaps not needed
+            return true;
+        }
+        // accept MyEclipse web projects
+        return descriptor.getNatures().contains(MYECLIPSE_WEB_NATURE);
     }
 
     public Project createProject(final ProjectImportModel model, final List<String> importProblems) throws IOException {

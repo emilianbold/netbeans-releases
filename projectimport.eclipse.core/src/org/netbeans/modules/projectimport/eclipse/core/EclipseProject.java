@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.modules.projectimport.eclipse.core.spi.DotClassPathEntry;
+import org.netbeans.modules.projectimport.eclipse.core.spi.Facets;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -95,6 +96,8 @@ public final class EclipseProject implements Comparable {
     
     private List<String> importProblems = new ArrayList<String>();
     
+    private Facets projectFacets;
+    
     /**
      * Returns <code>EclipseProject</code> instance representing Eclipse project
      * found in the given <code>projectDir</code>. If a project is not found in
@@ -118,7 +121,15 @@ public final class EclipseProject implements Comparable {
         this.cpFile = f.exists() ? f : null;
         this.prjFile = new File(projectDir, PROJECT_FILE);
     }
-    
+
+    void setFacets(Facets projectFacets) {
+        this.projectFacets = projectFacets;
+    }
+
+    public Facets getFacets() {
+        return projectFacets;
+    }
+            
     void setNatures(Set<String> natures) {
         this.natures = natures;
     }
@@ -205,7 +216,7 @@ public final class EclipseProject implements Comparable {
         if (importSupported == null) {
             importSupported = Boolean.FALSE;
             for (ProjectTypeFactory factory : projectTypeFactories.allInstances()) {
-                if (factory.canHandle(getNatures())) {
+                if (factory.canHandle(new ProjectTypeFactory.ProjectDescriptor(getDirectory(), natures, projectFacets))) {
                     this.projectFactory = factory;
                     importSupported = Boolean.TRUE;
                     break;

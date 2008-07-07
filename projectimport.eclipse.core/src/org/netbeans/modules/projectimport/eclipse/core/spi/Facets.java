@@ -39,79 +39,59 @@
 
 package org.netbeans.modules.projectimport.eclipse.core.spi;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
-import java.util.Set;
-import javax.swing.Icon;
-import org.netbeans.api.project.Project;
 
 /**
- * NetBeans project type factory.
+ * Representation of org.eclipse.wst.common.project.facet.core.xml file.
  */
-public interface ProjectTypeFactory {
+public final class Facets {
 
-    
-    /**
-     * Returns true if this factory understands given eclipse natures and can
-     * create corresponding NetBeans project for it.
-     */
-    boolean canHandle(ProjectDescriptor descriptor);
-    
-    /**
-     * Create NetBeans project for given eclipse data. Add any problems to 
-     * importProblems list.
-     * 
-     * <p>Always called under project write mutex.
-     */
-    Project createProject(ProjectImportModel model, List<String> importProblems) throws IOException;
-    
-    /**
-     * Returns project type icon.
-     */
-    Icon getProjectTypeIcon();
+    List<Facet> installed;
 
-    /**
-     * Returns project type name.
-     */
-    String getProjectTypeName();
+    public Facets(List<Facet> installed) {
+        this.installed = installed;
+    }
+
+    public List<Facet> getInstalled() {
+        return installed;
+    }
     
-    /**
-     *  TODO: temporary workaround for factory to setup stuff prior to project
-     * import. Should be replaced with ability to enhance import wizard. 
-     * TBD for M2.
-     * @return false to abort import process
-     */
-    boolean prepare();
+    public boolean hasInstalledFacet(String name) {
+        for (Facet f : installed) {
+            if (name.equals(f.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-    /**
-     * Eclipse project descriptor.
-     */
-    public static final class ProjectDescriptor {
-        
-        private Set<String> natures;
-        private Facets facets;
-        // for now intentionally not exposed in API:
-        private File eclipseProject;
+    @Override
+    public String toString() {
+        return "Facets[installed="+installed+"]"; // NOI18N
+    }
+    
+    public static final class Facet {
+        private String name;
+        private String version;
 
-        public ProjectDescriptor(File eclipseProject, Set<String> natures, Facets facets) {
-            this.natures = natures;
-            this.facets = facets;
-            this.eclipseProject = eclipseProject;
+        public Facet(String name, String version) {
+            this.name = name;
+            this.version = version;
         }
 
-        public Facets getFacets() {
-            return facets;
+        public String getName() {
+            return name;
         }
 
-        public Set<String> getNatures() {
-            return natures;
+        public String getVersion() {
+            return version;
         }
 
         @Override
         public String toString() {
-            return "ProjectDescriptor[project="+eclipseProject+", natures="+natures+", facets="+facets+"]"; // NOI18N
+            return name+"-"+version; // NOI18N
         }
         
     }
+    
 }

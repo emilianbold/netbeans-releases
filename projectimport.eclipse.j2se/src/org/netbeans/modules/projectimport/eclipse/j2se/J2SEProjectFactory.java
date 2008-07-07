@@ -72,8 +72,8 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
     public J2SEProjectFactory() {
     }
     
-    public boolean canHandle(Set<String> natures) {
-        return natures.contains(JAVA_NATURE);
+    public boolean canHandle(ProjectDescriptor descriptor) {
+        return descriptor.getNatures().contains(JAVA_NATURE);
     }
 
     public Project createProject(final ProjectImportModel model, final List<String> importProblems) throws IOException {
