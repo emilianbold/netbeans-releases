@@ -337,6 +337,10 @@ public final class RemoteConnections {
             return;
         }
 
+        if (!validatePathSeparator()) {
+            return;
+        }
+
         if (!validateTimeout()) {
             return;
         }
@@ -376,6 +380,14 @@ public final class RemoteConnections {
         }
         if (panel.getUserName().trim().length() == 0) {
             setError("MSG_NoUserName");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean validatePathSeparator() {
+        if (panel.getHostName().trim().length() == 0) {
+            setError("MSG_NoPathSeparator");
             return false;
         }
         return true;

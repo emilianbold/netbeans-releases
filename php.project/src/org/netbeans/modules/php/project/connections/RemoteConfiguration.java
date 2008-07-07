@@ -54,6 +54,7 @@ public final class RemoteConfiguration {
     private final String host;
     private final int port;
     private final String userName;
+    private final String password;
     private final boolean anonymousLogin;
     private final String initialDirectory;
     private final String pathSeparator;
@@ -65,13 +66,25 @@ public final class RemoteConfiguration {
      * @param displayName the display name of the configuration.
      */
     public RemoteConfiguration(String displayName) {
-        this(displayName, "", null, null, 0, null, false, null, null, 0); // NOI18N
+        this(displayName, "", ConnectionType.FTP, "", 1, "", "", false, "", "/", 0); // NOI18N
     }
 
     public RemoteConfiguration(String displayName, String name, ConnectionType connectionType, String host, int port, String userName,
-            boolean anonymousLogin, String initialDirectory, String pathSeparator, int timeout) {
+            String password, boolean anonymousLogin, String initialDirectory, String pathSeparator, int timeout) {
         assert displayName != null;
         assert name != null;
+        assert connectionType != null;
+        assert host != null;
+        assert port > 0;
+        assert userName != null;
+        assert password != null;
+        assert initialDirectory != null;
+        assert pathSeparator != null;
+        assert timeout >= 0;
+
+        if (initialDirectory.trim().length() == 0) {
+            initialDirectory = pathSeparator;
+        }
 
         this.displayName = displayName;
         this.name = name;
@@ -79,6 +92,7 @@ public final class RemoteConfiguration {
         this.host = host;
         this.port = port;
         this.userName = userName;
+        this.password = password;
         this.anonymousLogin = anonymousLogin;
         this.initialDirectory = initialDirectory;
         this.pathSeparator = pathSeparator;
@@ -94,6 +108,7 @@ public final class RemoteConfiguration {
         host = cfg.getValue(RemoteConnections.HOST);
         port = Integer.parseInt(cfg.getValue(RemoteConnections.PORT));
         userName = cfg.getValue(RemoteConnections.USER);
+        password = cfg.getValue(RemoteConnections.PASSWORD);
         anonymousLogin = Boolean.valueOf(cfg.getValue(RemoteConnections.ANONYMOUS_LOGIN));
         initialDirectory = cfg.getValue(RemoteConnections.INITIAL_DIRECTORY);
         pathSeparator = cfg.getValue(RemoteConnections.PATH_SEPARATOR);
@@ -136,8 +151,26 @@ public final class RemoteConfiguration {
         return timeout;
     }
 
+    /**
+     * Get the user name or "anonymous" if the configuration uses anonymous login.
+     * @return the user name or "anonymous".
+     */
     public String getUserName() {
+        if (anonymousLogin) {
+            return "anonymous"; // NOI18N
+        }
         return userName;
+    }
+
+    /**
+     * Get the password or "nobody@nowhere.net" if the configuration uses anonymous login.
+     * @return the password or "nobody@nowhere.net".
+     */
+    public String getPassword() {
+        if (anonymousLogin) {
+            return "nobody@nowhere.net"; // NOI18N
+        }
+        return password;
     }
 
     @Override
@@ -155,7 +188,8 @@ public final class RemoteConfiguration {
         sb.append(", port: "); // NOI18N
         sb.append(port);
         sb.append(", userName: "); // NOI18N
-        sb.append(userName);
+        sb.append(getUserName());
+        sb.append(", password: *****"); // NOI18N
         sb.append(", anonymousLogin: "); // NOI18N
         sb.append(anonymousLogin);
         sb.append(", initialDirectory: "); // NOI18N
