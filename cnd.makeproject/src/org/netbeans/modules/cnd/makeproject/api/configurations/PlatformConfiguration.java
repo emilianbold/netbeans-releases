@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
@@ -70,7 +71,7 @@ public class PlatformConfiguration extends IntConfiguration implements PropertyC
         final PlatformConfiguration pconf = this;
         final String key = evt.getNewValue().toString();
         
-        if (key.equals("localhost")) { // NOI18N
+        if (key.equals(CompilerSetManager.LOCALHOST)) {
             if (old != -1) {
                 setValue(old);
             }

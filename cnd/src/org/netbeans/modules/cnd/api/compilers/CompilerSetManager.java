@@ -79,6 +79,8 @@ public class CompilerSetManager implements PlatformTypes {
     public static final Object STATE_PENDING = "state_pending"; // NOI18N
     public static final Object STATE_COMPLETE = "state_complete"; // NOI18N
     
+    public static final String LOCALHOST = "localhost"; // NOI18N
+    
     private static final String gcc_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*gcc(([-.]\\d){2,4})?(\\.exe)?"; // NOI18N
     private static final String gpp_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*g\\+\\+(([-.]\\d){2,4})?(\\.exe)?$"; // NOI18N
     private static final String cc_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*cc(([-.]\\d){2,4})?(\\.exe)?$"; // NOI18N
@@ -182,14 +184,14 @@ public class CompilerSetManager implements PlatformTypes {
     }
     
     public static CompilerSetManager getDefault() {
-	return getDefault("localhost"); // NOI18N
+	return getDefault(LOCALHOST);
     }
     
     /** Create a CompilerSetManager which may be registered at a later time via CompilerSetManager.setDefault() */
     public static CompilerSetManager create() {
         CompilerSetManager csm;
         synchronized (MASTER_LOCK) {
-            csm = new CompilerSetManager("localhost"); // NOI18N
+            csm = new CompilerSetManager(LOCALHOST);
         }
         return csm;
     }
@@ -216,13 +218,13 @@ public class CompilerSetManager implements PlatformTypes {
         this.sets = sets;
         this.current = current;
         state = STATE_COMPLETE;
-        if (hkey.equals("localhost")) { // NOI18N
+        if (hkey.equals(LOCALHOST)) {
             platform = computeLocalPlatform();
         }
     }
     
     private void init() {
-        if (hkey.equals("localhost")) { // NOI18N
+        if (hkey.equals(LOCALHOST)) {
             platform = computeLocalPlatform();
             initCompilerFilters();
             initCompilerSets(Path.getPath());
@@ -243,7 +245,7 @@ public class CompilerSetManager implements PlatformTypes {
 
     public int getPlatform() {
         if (platform < 0) {
-            if (hkey.equals("localhost")) { // NOI18N
+            if (hkey.equals(LOCALHOST)) {
                 platform = computeLocalPlatform();
             } else {
                 while (isPending()) {
@@ -924,7 +926,7 @@ public class CompilerSetManager implements PlatformTypes {
         
     public static CompilerSetManager restoreFromDisk(String hkey) {
         double version = getPreferences().getDouble(CSM + VERSION, 1.0);
-        if (version == 1.0 && hkey.equals("localhost")) { // NOI18N
+        if (version == 1.0 && hkey.equals(LOCALHOST)) {
             return restoreFromDisk10();
         }
         
@@ -935,7 +937,7 @@ public class CompilerSetManager implements PlatformTypes {
         int current = getPreferences().getInt(CSM + hkey + CURRENT_SET_NAME, 0);
         int pform = getPreferences().getInt(CSM + hkey + SET_PLATFORM, -1);
         if (pform < 0) {
-            if (hkey.equals("localhost")) { // NOI18N
+            if (hkey.equals(LOCALHOST)) {
                 pform = computeLocalPlatform();
             }
         }
@@ -1032,7 +1034,7 @@ public class CompilerSetManager implements PlatformTypes {
             completeCompilerSet(cs);
             css.add(cs);
         }
-        CompilerSetManager csm = new CompilerSetManager("localhost", css, 0);
+        CompilerSetManager csm = new CompilerSetManager(LOCALHOST, css, 0);
         csm.platform = computeLocalPlatform();
         return csm;
     }

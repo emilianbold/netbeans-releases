@@ -43,6 +43,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import javax.swing.Action;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.remote.actions.DeleteServerAction;
 import org.netbeans.modules.cnd.remote.actions.DisplayPathMapperAction;
 import org.netbeans.modules.cnd.remote.actions.SetDefaultAction;
@@ -90,7 +91,7 @@ public class RemoteServerNode extends AbstractNode implements PropertyChangeList
     
     @Override
     public boolean canDestroy() {
-        return !record.getName().equals("localhost"); // NOI18N
+        return !record.getName().equals(CompilerSetManager.LOCALHOST);
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
