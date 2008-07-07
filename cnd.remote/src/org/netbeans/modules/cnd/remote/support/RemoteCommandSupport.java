@@ -76,7 +76,7 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
             String line;
             while ((line = in.readLine()) != null || !channel.isClosed()) {
                 if (line != null) {
-                    out.write(line);
+                    out.write(line + '\n');
                     out.flush();
                 }
 
