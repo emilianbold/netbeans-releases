@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.remote.server;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
@@ -63,7 +64,7 @@ public class RemoteServerRecord implements ServerRecord, PropertyChangeListener,
     protected RemoteServerRecord(String name, boolean active) {
         this.name = name;
         this.active = active;
-        editable = !name.equals("localhost"); // NOI18N
+        editable = !name.equals(CompilerSetManager.LOCALHOST);
         //platform = getPlatform();
         //inited = true;
     }
@@ -73,7 +74,7 @@ public class RemoteServerRecord implements ServerRecord, PropertyChangeListener,
     }
 
     public boolean isRemote() {
-        return !name.equals("localhost"); // NOI18N
+        return !name.equals(CompilerSetManager.LOCALHOST);
     }
 
     public boolean isActive() {
@@ -101,7 +102,7 @@ public class RemoteServerRecord implements ServerRecord, PropertyChangeListener,
     
     public int getPlatform() {
         if (!inited) {
-            if (name.equals("localhost")) { // NOI18N
+            if (name.equals(CompilerSetManager.LOCALHOST)) {
                 String os = System.getProperty("os.name");
                 if (os.equals("SunOS")) { // NOI18N
                     platform = System.getProperty("os.arch").equals("x86") ? PLATFORM_SOLARIS_INTEL : PLATFORM_SOLARIS_SPARC; // NOI18N
