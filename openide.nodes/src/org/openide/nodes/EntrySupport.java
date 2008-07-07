@@ -1227,13 +1227,20 @@ abstract class EntrySupport {
 
             // change the order of entries, notifies
             // it and again brings children to up-to-date state, recomputes indexes
-            Collection<EntryInfo> toAdd = updateOrder(newEntries);
+            Collection<Entry> toAdd = updateOrder(newEntries);
             if (!toAdd.isEmpty()) {
                 entries = new ArrayList<Entry>(newEntries);
                 int[] idxs = new int[toAdd.size()];
-                int i = 0;
-                for (EntryInfo info : toAdd) {
-                    idxs[i++] = info.getIndex();
+                int addIdx = 0;
+                for (int i = 0; i < entries.size(); i++) {
+                    Entry entry = entries.get(i);
+                    EntryInfo info = entryToInfo.get(entry);
+                    if (info == null) {
+                        info = new EntryInfo(entry);
+                        entryToInfo.put(entry, info);
+                        idxs[addIdx++] = i;
+                    }
+                    info.setIndex(i);
                 }
                 fireSubNodesChangeIdx(true, idxs);
             }
@@ -1244,8 +1251,8 @@ abstract class EntrySupport {
          * @param entries new set of entries
          * @return list of infos that should be added
          */
-        private List<EntryInfo> updateOrder(Collection<? extends Entry> newEntries) {
-            List<EntryInfo> toAdd = new LinkedList<EntryInfo>();
+        private List<Entry> updateOrder(Collection<? extends Entry> newEntries) {
+            List<Entry> toAdd = new LinkedList<Entry>();
             int[] perm = new int[entries.size()];
             int currentPos = 0;
             int permSize = 0;
@@ -1255,11 +1262,8 @@ abstract class EntrySupport {
                 EntryInfo info = entryToInfo.get(entry);
 
                 if (info == null) {
-                    // this info has to be added
-                    info = new EntryInfo(entry);
-                    info.setIndex(currentPos);
-                    entryToInfo.put(entry, info);
-                    toAdd.add(info);
+                    // this entry has to be added
+                    toAdd.add(entry);
                 } else {
                     if (reorderedEntries == null) {
                         reorderedEntries = new LinkedList<Entry>();
@@ -1272,8 +1276,8 @@ abstract class EntrySupport {
                         perm[oldPos] = 1 + currentPos;
                         permSize++;
                     }
+                    currentPos++;
                 }
-                currentPos++;
             }
 
             if (permSize > 0) {
