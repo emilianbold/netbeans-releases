@@ -6,6 +6,6 @@ class testClass1 {
         Long localLong
         String localString
 
-        localLong.M
+        localLong.MAX
     }
 }

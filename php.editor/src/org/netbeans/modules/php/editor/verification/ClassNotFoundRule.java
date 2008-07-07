@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
 public class ClassNotFoundRule extends PHPRule {
 
     public HintSeverity getDefaultSeverity() {
-        return HintSeverity.ERROR;
+        return HintSeverity.WARNING;
     }
 
     public String getId() {

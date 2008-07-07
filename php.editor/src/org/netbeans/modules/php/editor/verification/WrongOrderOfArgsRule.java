@@ -68,7 +68,7 @@ public class WrongOrderOfArgsRule extends PHPRule {
     }
 
     public HintSeverity getDefaultSeverity() {
-        return HintSeverity.ERROR;
+        return HintSeverity.WARNING;
     }
 
     @Override

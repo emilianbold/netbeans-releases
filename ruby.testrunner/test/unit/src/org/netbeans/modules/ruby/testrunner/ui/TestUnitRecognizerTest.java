@@ -56,6 +56,13 @@ public class TestUnitRecognizerTest extends TestCase {
         assertEquals(2, matcher.groupCount());
         assertEquals("test_foo", matcher.group(1));
         assertEquals("TestFooBar", matcher.group(2));
+
+        output = "%TEST_STARTED% test_foo(Foo::Bar::TestFooBar)";
+        matcher = handler.match(output);
+        assertTrue(matcher.matches());
+        assertEquals(2, matcher.groupCount());
+        assertEquals("test_foo", matcher.group(1));
+        assertEquals("Foo::Bar::TestFooBar", matcher.group(2));
     }
 
     public void testTestFinished() {
@@ -67,6 +74,14 @@ public class TestUnitRecognizerTest extends TestCase {
         assertEquals("0.008765", matcher.group(1));
         assertEquals("test_foo", matcher.group(2));
         assertEquals("TestFooBar", matcher.group(3));
+
+        output = "%TEST_FINISHED% time=0.008765 test_foo(FooModule::TestFooBar)";
+        matcher = handler.match(output);
+        assertTrue(matcher.matches());
+        assertEquals(3, matcher.groupCount());
+        assertEquals("0.008765", matcher.group(1));
+        assertEquals("test_foo", matcher.group(2));
+        assertEquals("FooModule::TestFooBar", matcher.group(3));
     }
 
     public void testTestFinished2() {
@@ -181,6 +196,12 @@ public class TestUnitRecognizerTest extends TestCase {
         assertTrue(matcher.matches());
         assertEquals(1, matcher.groupCount());
         assertEquals("TestMe", matcher.group(1));
+
+        output = "%SUITE_STARTING% MyModule::TestMe";
+        matcher = handler.match(output);
+        assertTrue(matcher.matches());
+        assertEquals(1, matcher.groupCount());
+        assertEquals("MyModule::TestMe", matcher.group(1));
     }
 
     public void testSuiteErrorOutput() throws InterruptedException {

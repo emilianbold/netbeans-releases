@@ -313,7 +313,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                 boolean showInput = pae.getID() == ProjectActionEvent.RUN;
                 String key = ((MakeConfiguration) pae.getConfiguration()).getDevelopmentHost().getDisplayName();
                 
-                if (key != null && !key.equals("localhost")) { // NOI18N
+                if (key != null && !key.equals(CompilerSetManager.LOCALHOST)) {
                     // Make sure the project root is visible remotely
                     String basedir = pae.getProfile().getBaseDir();
                     if (!NativePathMap.isRemote(key, basedir)) {
@@ -333,7 +333,8 @@ public class DefaultProjectActionHandler implements ActionListener {
                 
                 if (pae.getID() == ProjectActionEvent.RUN) {
                     int conType = pae.getProfile().getConsoleType().getValue();
-                    if (pae.getProfile().getTerminalType() == null || pae.getProfile().getTerminalPath() == null) {
+                    if (pae.getProfile().getTerminalType() == null || pae.getProfile().getTerminalPath() == null ||
+                            !conf.getDevelopmentHost().isLocalhost()) { //TODO: only output window for remote
                         String errmsg;
                         if (Utilities.isMac())
                             errmsg = getString("Err_NoTermFoundMacOSX");

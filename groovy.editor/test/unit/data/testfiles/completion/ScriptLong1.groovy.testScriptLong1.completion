@@ -1,6 +1,5 @@
 Code completion result for source line:
-l.M|
+l.MA|
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
 FIELD      MAX_VALUE                                  long
-FIELD      MIN_VALUE                                  long
