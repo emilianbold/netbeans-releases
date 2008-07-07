@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
