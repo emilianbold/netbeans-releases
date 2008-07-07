@@ -36,7 +36,7 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.uml.diagrams.nodes.state;
+package org.netbeans.modules.uml.diagrams.nodes;
 
 import java.awt.Cursor;
 import java.awt.Graphics2D;
@@ -93,6 +93,7 @@ public class CompartmentSeparatorWidget extends SeparatorWidget
         gr.setStroke(originalStroke);
     }
     
+    @Override
     protected Rectangle calculateClientArea () 
     {
         if (orientation == Orientation.HORIZONTAL)
