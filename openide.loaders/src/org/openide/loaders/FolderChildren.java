@@ -211,6 +211,30 @@ implements PropertyChangeListener, ChangeListener {
         return super.findChild(name);
     }
 
+    @Override
+    public int getNodesCount(boolean optimalResult) {
+        int count;
+        if (optimalResult) {
+            if (checkChildrenMutex()) {
+                err.fine("getNodesCount(true)"); // NOI18N
+                FolderList.find(folder.getPrimaryFile(), true).waitProcessingFinished();
+                err.fine("getNodesCount(true): waitProcessingFinished"); // NOI18N
+                RequestProcessor.Task task = refreshChildren();
+                count = getNodesCount();
+                err.fine("getNodes(true): getNodesCount: " + count); // NOI18N
+                task.schedule(0);
+                task.waitFinished();
+                err.fine("getNodesCount(true): waitFinished"); // NOI18N
+            } else {
+                Logger.getLogger(FolderChildren.class.getName()).log(Level.WARNING, null,
+                        new java.lang.IllegalStateException("getNodes(true) called while holding the Children.MUTEX"));
+            }
+        }
+        count = getNodesCount();
+        err.fine("getNodes(boolean): post clear task"); // NOI18N
+        postClearTask();         // we can clean the references to data objects now they are no longer needed
+        return count;
+    }
 
 
     /**

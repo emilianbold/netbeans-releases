@@ -1034,16 +1034,26 @@ abstract class EntrySupport {
             if (!checkInit()) {
                 return null;
             }
-            try {
-                Children.PR.enterReadAccess();
-                if (index >= entries.size()) {
-                    return null;
+            while (true) {
+                Node node;
+                try {
+                    Children.PR.enterReadAccess();
+                    if (index >= entries.size()) {
+                        return null;
+                    }
+                    Entry entry = entries.get(index);
+                    EntryInfo info = entryToInfo.get(entry);
+                    node = info.getNode();
+                    if (node != NONEXISTING_NODE) {
+                        return node;
+                    }
+                    removeEmptyEntry(entry);
+                } finally {
+                    Children.PR.exitReadAccess();
                 }
-                Entry e = entries.get(index);
-                EntryInfo info = entryToInfo.get(e);
-                return info.getNode();
-            } finally {
-                Children.PR.exitReadAccess();
+                if (Children.MUTEX.isReadAccess()) {
+                    return node;
+                }
             }
         }
 
@@ -1055,36 +1065,37 @@ abstract class EntrySupport {
             if (optimalResult) {
                 children.findChild(null);
             }
-            try {
-                Children.PR.enterReadAccess();
+            while (true) {
+                HashSet<Entry> invalidEntries = null;
+                Node[] nodes = null;
+                try {
+                    Children.PR.enterReadAccess();
 
-                Node[] nodes = new Node[entries.size()];
-                for (int i = 0; i < nodes.length; i++) {
-                    Entry e = entries.get(i);
-                    EntryInfo info = entryToInfo.get(e);
-                    Node node = info.getNode();
-                    nodes[i] = node;
+                    nodes = new Node[entries.size()];
+                    for (int i = 0; i < nodes.length; i++) {
+                        Entry entry = entries.get(i);
+                        EntryInfo info = entryToInfo.get(entry);
+                        Node node = info.getNode();
+                        if (node == NONEXISTING_NODE) {
+                            if (invalidEntries == null) {
+                                invalidEntries = new HashSet<Entry>();
+                            }
+                            invalidEntries.add(entry);
+                        }
+                        nodes[i] = node;
+                    }
+                    nodesCreated = true;
+                    if (invalidEntries == null) {
+                        return nodes;
+                    }
+                    removeEmptyEntries(invalidEntries);
+                } finally {
+                    Children.PR.exitReadAccess();
                 }
-                nodesCreated = true;
-                return nodes;
-
-//                Node[] nodes = new Node[entries.size()];
-//                int valid = 0;
-//                for (int i = 0; i < nodes.length; i++) {
-//                    Entry e = entries.get(i);
-//                    EntryInfo info = entryToInfo.get(e);
-//                    Node node = info.getNode();
-//                    if (node != NONEXISTING_NODE) {
-//                        nodes[valid] = node;
-//                        valid++;
-//                    }
-//                }
-//                Node[] validNodes = new Node[valid];
-//                System.arraycopy(nodes, 0, validNodes, 0, valid);
-//                nodesCreated = true;
-//                return validNodes;
-            } finally {
-                Children.PR.exitReadAccess();
+                
+                if (Children.MUTEX.isReadAccess()) {
+                    return nodes;
+                }
             }
         }
 
@@ -1126,6 +1137,10 @@ abstract class EntrySupport {
             
             Node oldNode = info.currentNode();
             Node newNode = info.refreshNode();
+            
+            if (newNode == NONEXISTING_NODE) {
+                removeEmptyEntry(entry);
+            }
 
             if (newNode.equals(oldNode)) {
                 // same node =>
@@ -1389,6 +1404,47 @@ abstract class EntrySupport {
             public NonexistingNode() {
                 super(Children.LEAF);
                 setName("Nonexisting node"); // NOI18N
+            }
+        }
+        
+        private void removeEmptyEntry(Entry entry) {
+            Children.MUTEX.postWriteRequest(new RemoveEmptyEntries(entry));
+        }
+
+        private void removeEmptyEntries(HashSet<Entry> entries) {
+            Children.MUTEX.postWriteRequest(new RemoveEmptyEntries(entries));
+        }
+        
+        private final class RemoveEmptyEntries implements Runnable {
+            private HashSet<Entry> emptyEntries;
+
+            public RemoveEmptyEntries(Entry entry) {
+                emptyEntries = new HashSet<Entry>(1);
+                emptyEntries.add(entry);
+            }
+
+            public RemoveEmptyEntries(HashSet<Entry> entries) {
+                this.emptyEntries = entries;
+            }
+
+            public void run() {
+                ArrayList<Entry> updatedEntries = new ArrayList<Entry>(entries.size() - emptyEntries.size());
+                int index = 0;
+                int removedIdx = 0;
+                int[] idxs = new int[emptyEntries.size()];
+                for (Entry entry : entries) {
+                    if (emptyEntries.contains(entry)) {
+                        emptyEntries.remove(entry);
+                        EntryInfo info = entryToInfo.remove(entry);
+                        idxs[removedIdx++] = info.getIndex();
+                    } else {
+                        updatedEntries.add(entry);
+                        EntryInfo info = entryToInfo.get(entry);
+                        info.setIndex(index++);
+                    }
+                }
+                entries = updatedEntries;
+                fireSubNodesChangeIdx(false, idxs);                
             }
         }
     }
