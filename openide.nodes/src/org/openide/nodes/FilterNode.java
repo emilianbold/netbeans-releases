@@ -1666,7 +1666,7 @@ public class FilterNode extends Node {
 
                 @Override
                 public int hashCode() {
-                    return System.identityHashCode(origEntry);
+                    return origEntry.hashCode();
                 }
 
                 @Override
@@ -1676,7 +1676,7 @@ public class FilterNode extends Node {
 
                 @Override
                 public String toString() {
-                    return "FilterNodeEntry[" + origEntry + "]@" + Integer.toString(System.identityHashCode(this), 16);
+                    return "FilterNodeEntry[" + origEntry + "]@" + Integer.toString(hashCode(), 16);
                 }
             }
         }
