@@ -52,6 +52,7 @@ import org.netbeans.modules.vmd.midpnb.components.resources.CancellableTaskCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.TableModelCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.SVGFormCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGPlayerCD;
 import org.netbeans.modules.vmd.midpnb.palette.MidpNbPaletteProvider;
@@ -87,6 +88,18 @@ public abstract class CustomComponentProducer extends ComponentProducer {
         public SVGPlayerProducer() {
             super(SVGPlayerCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG,
                     NbBundle.getMessage(CustomComponentProducer.class, "DISP_SVG_Player"), NbBundle.getMessage(CustomComponentProducer.class, "TTIP_SVG_Player"), SVGPlayerCD.ICON_PATH, SVGPlayerCD.ICON_LARGE_PATH)); // NOI18N
+        }
+    }
+
+    public static final class SVGFormProducer extends CustomComponentProducer {
+
+        public SVGFormProducer() {
+            super(SVGFormCD.TYPEID, 
+                    new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, 
+                        NbBundle.getMessage(SVGFormProducer.class, "DISP_SVG_Form"), 
+                        NbBundle.getMessage(SVGFormProducer.class, "TTIP_SVG_Form"), 
+                        SVGFormCD.ICON_PATH, 
+                        SVGFormCD.ICON_LARGE_PATH)); // NOI18N
         }
     }
 
