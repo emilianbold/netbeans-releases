@@ -69,7 +69,12 @@ public class FindJSPServletImpl implements FindJSPServlet {
         SunDeploymentManager sunDM = (SunDeploymentManager)tm;
         String modName = sunDM.getManagement().getWebModuleName(moduleContextPath);
         //modName may be null, but this does not impact to following logic: in this case, the file will not exist as well.
-        return FindJSPServletHelper.getServletTempDirectory(domainDir,domain,modName);
+        File workDir = new File(domainDir, "/"+domain+"/generated/jsp/j2ee-modules/" +modName);// NOI18N
+        if (!workDir.exists()) { //check for ear file gen area:
+            workDir = new File(domainDir, "/"+domain+"/generated/jsp/j2ee-apps/" +modName);// NOI18N
+            
+        }
+        return workDir;
     }
     
     public String getServletResourcePath(String moduleContextPath, String jspResourcePath) {
