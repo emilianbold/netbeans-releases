@@ -90,6 +90,7 @@ implements PropertyChangeListener, ChangeListener {
     * @param filter filter of objects
     */
     public FolderChildren(DataFolder f, DataFilter filter) {
+        super(true);
         this.folder = f;
         this.filter = filter;
         this.refreshRunnable = new ChildrenRefreshRunnable();

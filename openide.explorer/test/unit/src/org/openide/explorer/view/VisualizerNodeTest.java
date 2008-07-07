@@ -47,6 +47,7 @@ import javax.swing.tree.TreeNode;
 import org.netbeans.junit.NbTestCase;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 
 /** VisualizerNode tests, mostly based on reported bugs.
@@ -100,5 +101,41 @@ public class VisualizerNodeTest extends NbTestCase {
         Icon icon2 = v2.getIcon(false, false);
         
         assertSame("Icon instances should be same", icon1, icon2);
+    }
+    
+    public void testLazyVisGet() throws Exception {
+        LazyChildren lch = new LazyChildren();
+        AbstractNode a = new AbstractNode(lch);
+        
+        TreeNode ta = Visualizer.findVisualizer(a);
+        
+        assertEquals("Child check", "c", ta.getChildAt(2).toString());
+        assertEquals("Counter should be 1", 1, lch.cnt);
+    }
+    
+    public void testLazyFilterGet() throws Exception {
+        LazyChildren lch = new LazyChildren();
+        AbstractNode a = new AbstractNode(lch);
+        FilterNode fnode = new FilterNode(a);
+        
+        TreeNode ta = Visualizer.findVisualizer(fnode);
+        
+        assertEquals("Child check", "c", ta.getChildAt(2).toString());
+        assertEquals("Counter should be 1", 1, lch.cnt);
+    }
+    
+    static class LazyChildren extends Children.Keys<String> {
+        public LazyChildren() {
+            super(true);
+            setKeys(new String[] {"a", "b", "c"});
+        }
+        int cnt;
+        @Override
+        protected Node[] createNodes(String key) {
+            AbstractNode node = new AbstractNode(LEAF);
+            node.setName(key);
+            cnt++;
+            return new Node[] {node};
+        }
     }
 }
