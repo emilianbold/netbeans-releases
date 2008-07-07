@@ -194,6 +194,9 @@ public final class InputReaderTask implements Runnable, Cancellable {
 
             // perform cleanup
             try {
+                if (inputProcessor != null) {
+                    inputProcessor.close();
+                }
                 inputReader.close();
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, null, ex);

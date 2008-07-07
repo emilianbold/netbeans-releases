@@ -42,6 +42,7 @@ package org.netbeans.modules.web.project;
 
 import java.io.IOException;
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -64,6 +65,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
@@ -87,6 +89,9 @@ import java.util.HashSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.source.BuildArtifactMapper;
+import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -1383,4 +1388,5 @@ class WebActionProvider implements ActionProvider {
         }
         return foundWebServiceAnnotation[0];
     }
+
 }

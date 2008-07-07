@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.extexecution.api.input;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 /**
@@ -50,7 +51,7 @@ import java.io.IOException;
  * @author Petr Hejl
  * @see InputReader
  */
-public interface InputProcessor {
+public interface InputProcessor extends Closeable {
 
     /**
      * Processes the characters.
@@ -67,4 +68,8 @@ public interface InputProcessor {
      */
     void reset() throws IOException;
 
+    /**
+     * Closes the processor releasing the resources held by it.
+     */
+    void close() throws IOException;
 }
