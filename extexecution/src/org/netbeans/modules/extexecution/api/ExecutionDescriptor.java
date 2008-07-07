@@ -143,7 +143,7 @@ public final class ExecutionDescriptor {
      *
      * @return <code>true</code> if the input from user is allowed
      */
-    boolean isInputVisible() {
+    public boolean isInputVisible() {
         return input;
     }
 
