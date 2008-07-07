@@ -97,6 +97,7 @@ public class CreateWarFileAction extends AbstractAction implements LineProcessor
             });
         }
         builder.postExecution(new RefreshProjectRunnable(prj));
+        builder.optionsPath("org-netbeans-modules-groovy-support-options-GroovyOptionsCategory"); // NOI18N
 
         ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
         service.run();

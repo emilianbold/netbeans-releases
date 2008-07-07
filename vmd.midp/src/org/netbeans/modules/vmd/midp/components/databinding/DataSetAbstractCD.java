@@ -65,7 +65,7 @@ public class DataSetAbstractCD extends ComponentDescriptor {
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/dataset_16.gif"; // NOI18N
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#DataSetAbstract"); //NOI18N
     
-    public static final String PROP_NAMES = "names"; 
+    public static final String PROP_READ_ONLY = "readOnly"; //NOI18N
     
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
@@ -84,7 +84,7 @@ public class DataSetAbstractCD extends ComponentDescriptor {
     @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-                new PropertyDescriptor(PROP_NAMES, MidpTypes.TYPEID_JAVA_LANG_STRING.getArrayType(), PropertyValue.createNull(), true, false, MidpVersionable.MIDP_2)
+            new PropertyDescriptor(PROP_READ_ONLY, MidpTypes.TYPEID_BOOLEAN, PropertyValue.createNull(), false, false, MidpVersionable.MIDP_2)
         );
     }
 

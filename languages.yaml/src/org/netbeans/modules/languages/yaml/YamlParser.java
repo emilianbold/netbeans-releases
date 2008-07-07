@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.languages.yaml;
 
+import java.io.CharConversionException;
 import java.io.InputStream;
 import org.jruby.util.ByteList;
 import org.jvyamlb.Composer;
@@ -52,6 +53,10 @@ import org.jvyamlb.YAMLConfig;
 import org.jvyamlb.YAMLFactory;
 import org.jvyamlb.exceptions.PositionedParserException;
 import org.jvyamlb.nodes.Node;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -64,6 +69,9 @@ import org.netbeans.modules.gsf.api.PositionManager;
 import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.modules.gsf.api.SourceFileReader;
 import org.netbeans.modules.gsf.spi.DefaultError;
+import org.netbeans.modules.ruby.lexer.RubyCommentTokenId;
+import org.openide.util.Exceptions;
+import org.openide.xml.XMLUtil;
 
 /**
  * Parser for YAML. Delegates to the YAML parser shipped with JRuby (jvyamlb)
@@ -134,11 +142,49 @@ public class YamlParser implements Parser {
             try {
                 CharSequence buffer = reader.read(file);
                 String source = asString(buffer);
-                 
-                int caretOffset = reader.getCaretOffset(file);
-                if (caretOffset != -1 && job.translatedSource != null) {
-                    caretOffset = job.translatedSource.getAstOffset(caretOffset);
+//                int caretOffset = reader.getCaretOffset(file);
+//                if (caretOffset != -1 && job.translatedSource != null) {
+//                    caretOffset = job.translatedSource.getAstOffset(caretOffset);
+//                }
+
+                // Construct source by removing <% %> tokens etc.
+                StringBuilder sb = new StringBuilder();
+                TokenHierarchy hi = TokenHierarchy.create(source, YamlTokenId.language());
+
+                TokenSequence ts = hi.tokenSequence();
+
+                // If necessary move ts to the requested offset
+                int offset = 0;
+                ts.move(offset);
+
+//                int adjustedOffset = 0;
+//                int adjustedCaretOffset = -1;
+                while (ts.moveNext()) {
+                    Token t = ts.token();
+                    TokenId id = t.id();
+
+                    if (id == YamlTokenId.RUBY_EXPR) {
+                        String marker = "__"; // NOI18N
+                        // Marker
+                        sb.append(marker);
+                        // Replace with spaces to preserve offsets
+                        for (int i = 0, n = t.length()-marker.length(); i < n; i++) { // -2: account for the __
+                            sb.append(' ');
+                        }
+                    } else if (id == YamlTokenId.RUBY || id == YamlTokenId.RUBYCOMMENT || id == YamlTokenId.DELIMITER) {
+                        // Replace with spaces to preserve offsets
+                        for (int i = 0; i < t.length(); i++) {
+                            sb.append(' ');
+                        }
+                    } else {
+                        sb.append(t.text().toString());
+                    }
+
+//                    adjustedOffset += t.length();
                 }
+
+                source = sb.toString();
+                
                 result = parse(source, file);
             } catch (Exception ioe) {
                 listener.exception(ioe);

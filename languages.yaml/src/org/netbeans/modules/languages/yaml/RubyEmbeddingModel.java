@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,23 +37,42 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.vmd.midp.codegen;
+package org.netbeans.modules.languages.yaml;
 
-import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.Presenter;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
+import javax.swing.text.Document;
+import org.netbeans.modules.gsf.api.EditHistory;
+import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
+import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.ruby.RubyMimeResolver;
 
 /**
  *
- * @author karolharezlak
+ * @author Tor Norbye
  */
-public abstract class MidpEventSourceCodeGenPresenter extends Presenter {
+public class RubyEmbeddingModel implements IncrementalEmbeddingModel {
+    final Set<String> sourceMimeTypes = Collections.singleton(YamlTokenId.YAML_MIME_TYPE);
+
+    public RubyEmbeddingModel() {
+    }
     
-    public abstract void generateCodeRegistry(MultiGuardedSection section);
-    
-    public abstract void generateCodeNext(MultiGuardedSection section);
-    
-    public abstract void generateCodePrevious(MultiGuardedSection section);
-    
-    public abstract boolean isValid(DesignComponent component, String indexName);
+    public String getTargetMimeType() {
+        return RubyMimeResolver.RUBY_MIME_TYPE;
+    }
+
+    public Set<String> getSourceMimeTypes() {
+        return sourceMimeTypes;
+    }
+
+    public Collection<? extends TranslatedSource> translate(Document doc) {
+        // This will cache
+        RubyModel model = RubyModel.get(doc);
+        return Collections.singletonList(new RubyTranslatedSource(this, model));
+    }
+
+    public IncrementalEmbeddingModel.UpdateState update(EditHistory history, Collection<? extends TranslatedSource> previousTranslation) {
+        return ((RubyTranslatedSource)previousTranslation.iterator().next()).incrementalUpdate(history);
+    }
 }

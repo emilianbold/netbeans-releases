@@ -141,7 +141,7 @@ public class ConvertConditionals extends RubyAstRule {
         // If statement that is not already a statement modifier
         OffsetRange range = AstUtilities.getRange(node);
 
-        if (RubyUtils.isRhtmlFile(info.getFileObject())) {
+        if (RubyUtils.isRhtmlDocument(doc) || RubyUtils.isYamlDocument(doc)) {
             // Make sure that we're in a single contiguous Ruby section; if not, this won't work
             range = LexUtilities.getLexerOffsets(info, range);
             if (range == OffsetRange.NONE) {

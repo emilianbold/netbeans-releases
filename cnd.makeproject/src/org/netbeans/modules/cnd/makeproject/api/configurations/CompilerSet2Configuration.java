@@ -143,7 +143,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         String s = getCompilerSetName().getValue();
 	if (s != null) {
             int i = 0;
-            for (String csname : CompilerSetManager.getDefault().getCompilerSetNames()) {
+            for (String csname : CompilerSetManager.getDefault(developmentHostConfiguration.getName()).getCompilerSetNames()) {
                 if (s.equals(csname)) {
                     return i;
                 }
@@ -153,11 +153,16 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         return 0; // Default
     }
     
-    /**
-      * TODO: i'm not sure why this method wasn't here before so maybe it's wrong 
-      */
+    /*
+     * TODO: i'm not sure why this method wasn't here before so maybe it's wrong. (Sergey)
+     * Should this return csm.getCurrentCompilerSet()? (GRP)
+     */
     public CompilerSet getCompilerSet() {
-        return CompilerSetManager.getDefault(developmentHostConfiguration.getName()).getCompilerSet(getCompilerSetName().getValue());
+        return csm.getCompilerSet(getCompilerSetName().getValue());
+    }
+
+    public int getPlatform() {
+        return csm.getPlatform();
     }
     
     public String getName() {
@@ -253,7 +258,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     
     public String getFlavor() {
         if (flavor == null) {
-            CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(getOption());
+            CompilerSet cs = getCompilerSet();
             if (cs != null)
                 this.flavor = cs.getCompilerFlavor().toString();
             

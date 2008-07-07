@@ -59,15 +59,15 @@ import org.openide.text.NbDocument;
  * @author Alex Petrov (30.04.2008)
  */
 public class XSLTCompletionResultItem implements CompletionItem, Runnable {
-    private static final Logger _Logger = 
-        Logger.getLogger(XSLTCompletionResultItem.class.getName());
-    private static final Color ITEM_TEXT_COLOR = Color.BLUE; // Color.decode("0x0000B2");
+    private static final Logger _Logger = Logger.getLogger(
+        XSLTCompletionResultItem.class.getName());
+    protected static final Color ITEM_TEXT_COLOR = Color.BLUE; // Color.decode("0x0000B2");
     
-    private String itemText;
-    private Document document;
-    private int caretOffset, sortPriority;
-    private JTextComponent textComponent;
-    private boolean enabled;
+    protected String itemText;
+    protected Document document;
+    protected int caretOffset, sortPriority;
+    protected JTextComponent textComponent;
+    protected boolean enabled;
 
     public XSLTCompletionResultItem(String itemText, Document document, int caretOffset) {
         this(itemText, document, caretOffset, true);
@@ -139,9 +139,8 @@ public class XSLTCompletionResultItem implements CompletionItem, Runnable {
     public CharSequence getSortText() {return getText();}
     
     public CharSequence getInsertPrefix() {return getText();}
-    
-    public String getText() {return itemText;}
 
+    public String getText() {return itemText;}
 
     public boolean isEnabled() {return enabled;}
     public void setEnabled(boolean enabled) {this.enabled = enabled;}

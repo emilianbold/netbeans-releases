@@ -183,7 +183,7 @@ public class ConfigurationMakefileWriter {
         CCCCompilerConfiguration cCompilerConfiguration = conf.getCCompilerConfiguration();
         CCCCompilerConfiguration ccCompilerConfiguration = conf.getCCCompilerConfiguration();
         FortranCompilerConfiguration fortranCompilerConfiguration = conf.getFortranCompilerConfiguration();
-        CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue()); // GRP - 
+        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet(); 
         BasicCompiler cCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
         BasicCompiler ccCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
         BasicCompiler fortranCompiler = (BasicCompiler)compilerSet.getTool(Tool.FortranCompiler);
@@ -210,12 +210,6 @@ public class ConfigurationMakefileWriter {
                 fortranCompilerName = fortranCompiler.getName();
         }
         
-        if (CompilerSetManager.useFakeRemoteCompilerSet) {
-            // XXX: temporary, all this should be done automatically from correct CS
-            cCompilerName = CompilerSetManager.fakeRemoteCS.getTool(Tool.CCompiler).getPath();
-            ccCompilerName = CompilerSetManager.fakeRemoteCS.getTool(Tool.CCCompiler).getPath();
-        }
-
         bw.write("#\n"); // NOI18N
         bw.write("# Generated Makefile - do not edit!\n"); // NOI18N
         bw.write("#\n"); // NOI18N

@@ -44,6 +44,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.xam.Model.State;
+import org.netbeans.modules.xslt.core.text.completion.XSLTCompletionConstants;
 import org.netbeans.modules.xslt.core.text.completion.XSLTCompletionResultItem;
 import org.netbeans.modules.xslt.core.text.completion.XSLTCompletionUtil;
 import org.netbeans.modules.xslt.core.text.completion.XSLTEditorComponentHolder;
@@ -53,11 +54,8 @@ import org.netbeans.modules.xslt.model.Stylesheet;
 /**
  * @author Alex Petrov (06.06.2008)
  */
-public class HandlerUseAttributeSets extends BaseCompletionHandler {
-    protected static final String
-        XSLT_TAG_NAME_ATTRIBUTE_SET = "attribute-set",
-        ATTRIBUTE_NAME_USE_ATTRIBUTE_SETS = "use-attribute-sets";
-
+public class HandlerUseAttributeSets extends BaseCompletionHandler implements 
+    XSLTCompletionConstants {
     @Override
     public List<XSLTCompletionResultItem> getResultItemList(
         XSLTEditorComponentHolder editorComponentHolder) {
@@ -67,10 +65,10 @@ public class HandlerUseAttributeSets extends BaseCompletionHandler {
     
     private List<XSLTCompletionResultItem> getAttributeSetNameList() {
         if ((attributeName == null) || (xslModel == null)) 
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
 
         if (! XSLTCompletionUtil.ignoreNamespace(attributeName).equals(
-            ATTRIBUTE_NAME_USE_ATTRIBUTE_SETS)) return Collections.EMPTY_LIST;
+            ATTRIBUTE_NAME_USE_ATTRIBUTE_SETS)) return Collections.emptyList();
 
         if ((xslModel != null) && (xslModel.getState().equals(State.NOT_WELL_FORMED))) {
             return getIncorrectDocumentResultItem();
@@ -81,7 +79,7 @@ public class HandlerUseAttributeSets extends BaseCompletionHandler {
     private List<XSLTCompletionResultItem> findAttributeSetNames() {
         Stylesheet stylesheet = xslModel.getStylesheet();
         List<AttributeSet> attributeSetList = stylesheet.getChildren(AttributeSet.class);
-        if (attributeSetList.isEmpty()) return Collections.EMPTY_LIST;
+        if (attributeSetList.isEmpty()) return Collections.emptyList();
         
         List<XSLTCompletionResultItem> resultItemList = 
             new ArrayList<XSLTCompletionResultItem>();

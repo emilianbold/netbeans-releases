@@ -89,6 +89,7 @@ import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *  Basic validation suite for web services support in the IDE
@@ -400,18 +401,17 @@ public class WsValidation extends WebServicesTestBase {
                 "testCreateNewWs",
                 "testAddOperation",
                 "testStartServer",
-                "testWsHandlers"
-// commented out because of some XML parser issue during web project deployment
-//                "testDeployWsProject",
-//                "testCreateWsClient",
-//                "testCallWsOperationInServlet",
-//                "testCallWsOperationInJSP",
-//                "testCallWsOperationInJavaClass",
-//                "testRefreshClient",
-//                "testWsClientHandlers",
-//                "testDeployWsClientProject",
-//                "testUndeployProjects",
-//                "testStopServer"
+                "testWsHandlers",
+                "testDeployWsProject",
+                "testCreateWsClient",
+                "testCallWsOperationInServlet",
+                "testCallWsOperationInJSP",
+                "testCallWsOperationInJavaClass",
+                "testRefreshClient",
+                "testWsClientHandlers",
+                "testDeployWsClientProject",
+                "testUndeployProjects",
+                "testStopServer"
                 ).enableModules(".*").clusters(".*"));
     }
 
@@ -456,6 +456,11 @@ public class WsValidation extends WebServicesTestBase {
         eo.select(line);
         ndo.ok();
         waitForTextInEditor(eo, "port." + opName); //NOI18N
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException ex) {
+            //ignore
+        }
     }
 
     protected String getWsClientLookupCall() {
@@ -495,6 +500,12 @@ public class WsValidation extends WebServicesTestBase {
             eo = new EditorOperator(getWsName());
             assertTrue("missing @HandlerChain", //NOI18N
                     eo.contains("@HandlerChain(file = \"" + getWsName() + "_handler.xml\")")); //NOI18N
+        } else {
+            try {
+                Thread.sleep(2500);
+            } catch (InterruptedException ex) {
+                //ignore
+            }
         }
         assertTrue(handlerCfg.exists());
         FileObject fo = FileUtil.toFileObject(handlerCfg);
@@ -738,6 +749,12 @@ public class WsValidation extends WebServicesTestBase {
                 new EventTool().waitNoEvent(10000);
             }
             ccr.yes();
+        }
+        try {
+            waitForWsImport("wsimport-client"); //NOI18N
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            fail("refreshing wsdl failed, see the log for stacktrace"); //NOI18N
         }
     }
 

@@ -8,6 +8,4 @@ development:
   database: newsletter_development
   username: the-username
   password: the-password
-
 .e.o.f.
-

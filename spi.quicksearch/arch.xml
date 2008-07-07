@@ -76,8 +76,8 @@ Microsystems, Inc. All Rights Reserved.
 </api>
  <api type="export" group="property" name="quicksearch.web.url_patterns" category="devel">
      Resource name from org.netbeans.modules.quicksearch.web.Bundle where it is 
-     possible to specify a comma separated list of strings that the search results URLs 
-     must contain. When set to e.g. "docs/myapp,tutorials/myapp" then all the search
+     possible to specify a comma separated list of regular expressions that the search results URLs 
+     must contain. When set to e.g. ".*docs/myapp.*,.*tutorials/myapp.*" then all the search
      results will have either "docs/myapp" or "tutorials/myapp" anywhere in the URL.
 </api>
 </answer>
