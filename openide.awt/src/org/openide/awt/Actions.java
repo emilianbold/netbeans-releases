@@ -417,8 +417,8 @@ public class Actions extends Object {
         map.put("noIconInMenu", noIconInMenu); // NOI18N
         return alwaysEnabled(map);
     }
-    
-    public static Action alwaysEnabled(Map map) {
+    // for use from layers
+    static Action alwaysEnabled(Map map) {
         return new AlwaysEnabledAction(map);
     }
 
