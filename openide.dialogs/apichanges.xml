@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
 </apidefs>
 <changes>
     
-    <change id="WizardDescriptor new constants">
+    <change id="WizardDescriptor_new_constants">
         <api name="dialogs"/>
         <summary>New WizardDescriptor constants introduced for info and warning messages</summary>
         <version major="7" minor="8"/>
@@ -64,7 +64,7 @@ made subject to such option by the copyright holder.
         <issue number="137737"/>
     </change>
     
-    <change id="WizardDescriptor constants">
+    <change id="WizardDescriptor_constants">
         <api name="dialogs"/>
         <summary>Wizard Descriptor properties changed to constants, two new constants introduced</summary>
         <version major="7" minor="8"/>
