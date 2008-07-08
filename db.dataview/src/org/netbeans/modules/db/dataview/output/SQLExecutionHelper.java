@@ -113,8 +113,12 @@ class SQLExecutionHelper {
 
             ResultSet cntResultSet = null;
             try {
-                cntResultSet = stmt.executeQuery(SQLStatementGenerator.getCountSQLQuery(dv.getSQLString()));
-                execHelper.setTotalCount(cntResultSet);
+                if(execHelper.isSelectStatement(sql)) {
+                    cntResultSet = stmt.executeQuery(SQLStatementGenerator.getCountSQLQuery(sql));
+                    execHelper.setTotalCount(cntResultSet);
+                } else {
+                    execHelper.setTotalCount(null);
+                }
             } catch (SQLException e){
                 execHelper.setTotalCount(null);
             }  finally {
@@ -416,8 +420,12 @@ class SQLExecutionHelper {
                 // Get total row count
                 if (dataView.getDataViewPageContext().getTotalRows() == -1) {
                     try {
-                        crs = stmt.executeQuery(SQLStatementGenerator.getCountSQLQuery(dataView.getSQLString()));
-                        setTotalCount(crs);
+                        if(isSelectStatement(sql)) {
+                            crs = stmt.executeQuery(SQLStatementGenerator.getCountSQLQuery(sql));
+                            setTotalCount(crs);
+                        } else {
+                            setTotalCount(null);
+                        }
                     } catch (SQLException e) {
                         setTotalCount(null);
                     } finally {
@@ -497,7 +505,7 @@ class SQLExecutionHelper {
     void setTotalCount(ResultSet countresultSet) {
         try {
             if (countresultSet == null) {
-                dataView.getDataViewPageContext().setTotalRows(0);
+                dataView.getDataViewPageContext().setTotalRows(-1);
             } else {
                 if (countresultSet.next()) {
                     int count = countresultSet.getInt(1);
