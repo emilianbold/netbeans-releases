@@ -513,7 +513,13 @@ public class TaskProcessor {
                                         }
                                         else {
                                             SchedulerEvent event = SourceAccessor.getINSTANCE().getEvent (source);
-                                            final Parser.Result currentResult = sourceCache.getResult (r.task, event);
+                                            Parser.Result currentResult;
+                                            currentRequest.setCurrentParser(sourceCache.getParser());
+                                            try {
+                                                currentResult = sourceCache.getResult (r.task, event);
+                                            } finally {
+                                                currentRequest.setCurrentParser(null);
+                                            }
                                             boolean shouldCall = currentResult != null && sourceCache.isValid();
                                             if (shouldCall) {
                                                 try {
@@ -723,6 +729,7 @@ public class TaskProcessor {
         
         private Request reference;
         private Request canceledReference;
+        private Parser activeParser;
         private long cancelTime;
         private final AtomicBoolean canceled = new AtomicBoolean();
         
@@ -737,7 +744,13 @@ public class TaskProcessor {
                 this.reference = reference;
             }
             return result;
-        }                
+        }
+
+        void setCurrentParser (final Parser parser) {
+            synchronized (INTERNAL_LOCK) {
+                activeParser = parser;
+            }
+        }
         
         Request getTaskToCancel (final int priority) {
             Request request = null;
@@ -794,6 +807,7 @@ public class TaskProcessor {
         Request getTaskToCancel (final boolean mayCancelParser) {
             Request request = null;
             if (!factory.isDispatchThread(Thread.currentThread())) {
+                Parser parser;
                 synchronized (INTERNAL_LOCK) {
                     if (this.reference != null) {
                         assert this.canceledReference == null;
@@ -810,6 +824,10 @@ public class TaskProcessor {
                         //todo: Cancel parser
                         this.cancelTime = System.currentTimeMillis();
                     }
+                    parser = activeParser;
+                }
+                if (parser != null) {
+                    parser.cancel();
                 }
             }
             return request;
