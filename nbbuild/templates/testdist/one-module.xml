@@ -59,8 +59,8 @@ made subject to such option by the copyright holder.
        <property name="java.home.parent" location="${java.home}/.."/> 
        <loadproperties srcFile="test.properties"/>
        <propertyset id="test.properties">
-            <propertyref prefix="test-unit-sys-prop."/>
-            <mapper type="glob" from="test-unit-sys-prop.*" to="*"/>
+            <propertyref prefix="test-sys-prop."/>
+            <mapper type="glob" from="test-sys-prop.*" to="*"/>
         </propertyset>
        <delete dir="${test.classes.dir}"/>
        <mkdir dir="${test.results.dir}"/>

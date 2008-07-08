@@ -303,11 +303,11 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
 //            }
 //        }
 //        if (filesAlreadyExist) {
-//            wizard.putProperty("WizardPanel_errorMessage",                                  // NOI18N
+//            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,                                  // NOI18N
 //                NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "MSG_FilesAlreadyExist", troubleMaker));
 //            return false;
 //        }
-//        wizard.putProperty("WizardPanel_errorMessage", null); // NOI18N
+//        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null); // NOI18N
         
             ClassPath cp = ClassPath.getClassPath(getLocationValue().getRootFolder(), ClassPath.COMPILE);
             ClassLoader cl = cp.getClassLoader(true);
@@ -315,7 +315,7 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
                 Class.forName("javax.transaction.UserTransaction", false, cl);
             }
             catch (ClassNotFoundException cnfe) {
-                wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ERR_UserTransactionUnavailable"));
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ERR_UserTransactionUnavailable"));
                 return false;
             }
         
@@ -328,26 +328,26 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
                 String canonPath = new File(pagesRootFolderAsFile, jsfFolderText).getCanonicalPath();
             }
             catch (IOException ioe) {
-                wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ERR_JsfTargetChooser_InvalidJsfFolder"));
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ERR_JsfTargetChooser_InvalidJsfFolder"));
                 return false;
             }
         
             String packageName = getPackage();
             if (packageName.trim().equals("")) { // NOI18N
-                wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ERR_JavaTargetChooser_CantUseDefaultPackage"));
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ERR_JavaTargetChooser_CantUseDefaultPackage"));
                 return false;
             }
 
             if (!JavaIdentifiers.isValidPackageName(packageName)) {
-                wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PersistenceClientSetupPanelVisual.class,"ERR_JavaTargetChooser_InvalidPackage")); //NOI18N
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class,"ERR_JavaTargetChooser_InvalidPackage")); //NOI18N
                 return false;
             }
 
             if (!SourceGroups.isFolderWritable(getLocationValue(), packageName)) {
-                wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ERR_JavaTargetChooser_UnwritablePackage")); //NOI18N
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ERR_JavaTargetChooser_UnwritablePackage")); //NOI18N
                 return false;
             }
-            wizard.putProperty("WizardPanel_errorMessage", null); // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null); // NOI18N
             return true;
     }
     

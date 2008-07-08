@@ -89,22 +89,39 @@ class AppFrameworkSupport {
     private static Map<FileObject, String> appClassMap = new HashMap<FileObject, String>();
     
     /**
-     * Checks if the given project uses the app framework. Technically it checks
-     * the project classpath for Application class.
+     * Checks whether the project of given file is an application based on
+     * Swing Application Framework. Technically it checks if the app framework
+     * library is on classpath and the project contains a valid Application
+     * subclass.
      * @param fileInProject some source file contained in the project
-     * @return true if the project of given file uses app framework
+     * @return true if the project of given file uses app framework and has
+     *         a valid application class
      */
     static boolean isFrameworkEnabledProject(FileObject fileInProject) {
         return isFrameworkLibAvailable(fileInProject)
                 && getApplicationClassName(fileInProject) != null;
     }
-    
+
+    /**
+     * Checks whether the project of given file uses Swing Application Framework,
+     * i.e. whether the framework is on project classpath. Does not check if
+     * there is an Application subclass (the project can be just a library).
+     * @param fileInProject some source file contained in the project
+     * @return true if the project of given file uses app framework
+     */
     static boolean isFrameworkLibAvailable(FileObject fileInProject) {
         ClassPath cp = ClassPath.getClassPath(fileInProject, ClassPath.EXECUTE);
         return cp != null && cp.findResource(APPLICATION_RESOURCE_NAME) != null
                && projectCanUseFramework(fileInProject);
     }
 
+    /**
+     * Checks whether given project has an Application subclass stored in its
+     * auxiliary configuration (i.e. a quick check if it is an application -
+     * without checking the application class really exists in the project).
+     * @param project
+     * @return true if the project appears as app framework-based application
+     */
     static boolean isApplicationProject(Project project) {
         AuxiliaryConfiguration ac = ProjectUtils.getAuxiliaryConfiguration(project);
         return ac.getConfigurationFragment(SWINGAPP_ELEMENT, SWINGAPP_NS, true) != null;

@@ -52,7 +52,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
@@ -125,8 +124,13 @@ public class RunProfile implements ConfigurationAuxObject, PlatformTypes {
     private IntConfiguration terminalType;
     private HashMap termPaths;
     private HashMap termOptions;
-    
     private final int platform;
+    
+    // constructor for SS compatibility, only for localhost usage
+    @Deprecated
+    public RunProfile(String baseDir) {
+        this(baseDir, Platform.getDefaultPlatform());
+    }
     
     public RunProfile(String baseDir, int platform) {
         this.platform = platform;
@@ -421,15 +425,13 @@ public class RunProfile implements ConfigurationAuxObject, PlatformTypes {
     public void setRunDir(String runDir) {
         if (runDir == null)
             runDir = ""; // NOI18N
-        if (this.runDir == runDir)
-            return;
         if (this.runDir != null && this.runDir.equals(runDir)) {
             return;
         }
-        String oldRunDir = this.runDir;
         this.runDir = runDir;
-        if (pcs != null)
+        if (pcs != null) {
             pcs.firePropertyChange(PROP_RUNDIR_CHANGED, null, this);
+        }
         needSave = true;
     }
     

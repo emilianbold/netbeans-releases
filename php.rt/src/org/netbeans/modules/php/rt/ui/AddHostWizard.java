@@ -65,15 +65,15 @@ public class AddHostWizard extends WizardDescriptor {
     private static final String LBL_TITLE                   = 
             "LBL_Title";                                            // NOI18N
     private final static String PROP_AUTO_WIZARD_STYLE      = 
-            "WizardPanel_autoWizardStyle";                          // NOI18N
+            WizardDescriptor.PROP_AUTO_WIZARD_STYLE;                          // NOI18N
     private final static String PROP_CONTENT_DISPLAYED      = 
-            "WizardPanel_contentDisplayed";                         // NOI18N
+            WizardDescriptor.PROP_CONTENT_DISPLAYED;                         // NOI18N
     private final static String PROP_CONTENT_NUMBERED       = 
-            "WizardPanel_contentNumbered";                          // NOI18N
+            WizardDescriptor.PROP_CONTENT_NUMBERED;                          // NOI18N
     public final static String PROP_CONTENT_DATA            = 
-            "WizardPanel_contentData";                              // NOI18N
+            WizardDescriptor.PROP_CONTENT_DATA;                              // NOI18N
     public static final String SELECTED_INDEX               =
-        "WizardPanel_contentSelectedIndex";                         // NOI18N
+        WizardDescriptor.PROP_CONTENT_SELECTED_INDEX;                         // NOI18N
     
     public static final String LBL_CHOOSE_SERVER            = 
         "LBL_ChooseServer";                                         // NOI18N

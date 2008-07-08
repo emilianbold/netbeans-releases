@@ -82,7 +82,7 @@ class ChooseJARWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizard>
 
             // wizard API: set the caption and index of this panel
             fileChooser.setName(PaletteUtils.getBundleString("CTL_SelectJAR_Caption")); // NOI18N
-            fileChooser.putClientProperty("WizardPanel_contentSelectedIndex", // NOI18N
+            fileChooser.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, // NOI18N
                                           new Integer(0));
 
             fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);

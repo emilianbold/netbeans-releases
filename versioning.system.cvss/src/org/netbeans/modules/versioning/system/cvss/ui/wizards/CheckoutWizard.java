@@ -108,15 +108,15 @@ public final class CheckoutWizard implements ChangeListener{
     public boolean show() {
         wizardIterator = panelIterator();
         wizard = new WizardDescriptor(wizardIterator);
-        wizard.putProperty("WizardPanel_contentData",  // NOI18N
+        wizard.putProperty(WizardDescriptor.PROP_CONTENT_DATA,  // NOI18N
                 new String[] {
                     NbBundle.getMessage(CheckoutWizard.class, "BK0006"),
                     NbBundle.getMessage(CheckoutWizard.class, "BK2009")
                 }
         );
-        wizard.putProperty("WizardPanel_contentDisplayed", Boolean.TRUE);  // NOI18N
-        wizard.putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);  // NOI18N
-        wizard.putProperty("WizardPanel_contentNumbered", Boolean.TRUE);  // NOI18N
+        wizard.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);  // NOI18N
+        wizard.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);  // NOI18N
+        wizard.putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);  // NOI18N
         wizard.setTitleFormat(new MessageFormat("{0}"));  // NOI18N
         wizard.setTitle(NbBundle.getMessage(CheckoutWizard.class, "BK0007"));
         Object result = DialogDisplayer.getDefault().notify(wizard);
@@ -139,7 +139,7 @@ public final class CheckoutWizard implements ChangeListener{
     String getErrorMessage() {
         String value;
         if (wizard != null) {
-            value = (String) wizard.getProperty("WizardPanel_errorMessage");  // NOI18N
+            value = (String) wizard.getProperty(WizardDescriptor.PROP_ERROR_MESSAGE);  // NOI18N
         } else {
             value = errorMessage;
         }
@@ -150,7 +150,7 @@ public final class CheckoutWizard implements ChangeListener{
     private void setErrorMessage(String msg) {
         errorMessage = msg;
         if (wizard != null) {
-            wizard.putProperty("WizardPanel_errorMessage", msg); // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
         }
     }
 
@@ -174,7 +174,7 @@ public final class CheckoutWizard implements ChangeListener{
                 WizardDescriptor.Panel ret = super.current();
                 for (int i = 0; i<panels.length; i++) {
                     if (panels[i] == ret) {
-                        wizard.putProperty("WizardPanel_contentSelectedIndex", new Integer(i));  // NOI18N
+                        wizard.putProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));  // NOI18N
                     }
                 }
                 return ret;

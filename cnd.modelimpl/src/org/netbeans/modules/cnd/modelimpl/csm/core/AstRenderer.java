@@ -201,8 +201,12 @@ public class AstRenderer {
                     container.addDeclaration(new NamespaceAliasImpl(token, file));
                     break;
                 case CPPTokenTypes.CSM_USING_DIRECTIVE:
-                    container.addDeclaration(new UsingDirectiveImpl(token, file));
+                {
+                    UsingDirectiveImpl using = new UsingDirectiveImpl(token, file);
+                    container.addDeclaration(using);
+                    currentNamespace.addDeclaration(using);
                     break;
+                }
                 case CPPTokenTypes.CSM_USING_DECLARATION:
                 {
                     UsingDeclarationImpl using = new UsingDeclarationImpl(token, file, currentNamespace);
@@ -1230,8 +1234,12 @@ public class AstRenderer {
                 container.addDeclaration(new NamespaceAliasImpl(token, file));
                 return true;
             case CPPTokenTypes.CSM_USING_DIRECTIVE:
-                container.addDeclaration(new UsingDirectiveImpl(token, file));
+            {
+                UsingDirectiveImpl using = new UsingDirectiveImpl(token, file);
+                container.addDeclaration(using);
+                currentNamespace.addDeclaration(using);
                 return true;
+            }
             case CPPTokenTypes.CSM_USING_DECLARATION:
             {
                 UsingDeclarationImpl using = new UsingDeclarationImpl(token, file, currentNamespace);

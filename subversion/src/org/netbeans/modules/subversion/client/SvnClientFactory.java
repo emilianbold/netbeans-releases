@@ -189,7 +189,7 @@ public class SvnClientFactory {
             exception = e;
         }
     }
-    
+
     /**
      * Throws an exception if no SvnClientAdapter is available.
      */
@@ -223,10 +223,10 @@ public class SvnClientFactory {
         try {
             JavahlSupport.setup();
         } catch (Throwable t) {
-//            String jhlErorrs = JhlClientAdapter.getLibraryLoadErrors();
+            String jhlErorrs = JhlClientAdapter.getLibraryLoadErrors();
             // something went wrong - fallback on the commandline
-            Subversion.LOG.log(Level.INFO, t.getMessage());                    //Subversion.LOG.log(Level.INFO, null, t);
-//            Subversion.LOG.warning(jhlErorrs + "\n");
+            Subversion.LOG.log(Level.INFO, t.getMessage());     
+            Subversion.LOG.warning(jhlErorrs + "\n");
             Subversion.LOG.log(Level.INFO, "Could not setup JavaHl. Falling back on commandline!");
             setupCommandline();
             return;

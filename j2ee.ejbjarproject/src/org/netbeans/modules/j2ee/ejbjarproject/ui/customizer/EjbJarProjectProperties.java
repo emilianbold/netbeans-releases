@@ -117,6 +117,7 @@ public class EjbJarProjectProperties {
     public static final String EJB_PROJECT_NAME = "j2ee.ejbjarproject.name"; // NOI18N
     public static final String JAVA_PLATFORM = "platform.active"; // NOI18N
     public static final String J2EE_PLATFORM = "j2ee.platform"; // NOI18N
+    public static final String DEPLOY_ON_SAVE = "deploy.on.save"; // NOI18N
     
     // Properties stored in the PROJECT.PROPERTIES    
     /** root of external web module sources (full path), ".." if the sources are within project folder */
@@ -178,6 +179,7 @@ public class EjbJarProjectProperties {
     
     public static final String JAVA_SOURCE_BASED = "java.source.based";
     
+    private static final Logger LOGGER = Logger.getLogger(EjbJarProjectProperties.class.getName());
     
     ClassPathSupport cs;    
     
@@ -236,6 +238,7 @@ public class EjbJarProjectProperties {
     // CustomizerRun
     ComboBoxModel J2EE_SERVER_INSTANCE_MODEL;
     ComboBoxModel J2EE_PLATFORM_MODEL;
+    ButtonModel DEPLOY_ON_SAVE_MODEL;
 
     // CustomizerRunTest
     
@@ -345,6 +348,7 @@ public class EjbJarProjectProperties {
             privateProperties.getProperty(J2EE_SERVER_INSTANCE), projectProperties.getProperty(J2EE_PLATFORM));
         J2EE_PLATFORM_MODEL = J2eePlatformUiSupport.createSpecVersionComboBoxModel(
             projectProperties.getProperty(J2EE_PLATFORM));
+        DEPLOY_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, DEPLOY_ON_SAVE);
     }
     
     public void save() {
@@ -486,6 +490,15 @@ public class EjbJarProjectProperties {
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );        
+        
+        // compile on save listeners
+        if (DEPLOY_ON_SAVE_MODEL.isEnabled() && DEPLOY_ON_SAVE_MODEL.isSelected()) {
+            LOGGER.log(Level.FINE, "Starting listening on cos for {0}", project.getEjbModule());
+            Deployment.getDefault().enableCompileOnSaveSupport(project.getEjbModule());
+        } else {
+            LOGGER.log(Level.FINE, "Stopping listening on cos for {0}", project.getEjbModule());
+            Deployment.getDefault().disableCompileOnSaveSupport(project.getEjbModule());
+        }
         
         String value = (String)additionalProperties.get(SOURCE_ENCODING);
         if (value != null) {

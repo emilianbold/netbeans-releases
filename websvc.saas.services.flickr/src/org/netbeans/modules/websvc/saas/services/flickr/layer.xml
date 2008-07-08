@@ -47,20 +47,38 @@
     <folder name="Templates">
         <folder name="SaaSServices">
             <file name="FlickrAuthenticator.java" 
-                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/web/FlickrAuthenticator.template">
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrAuthenticator.template">
                 <attr name="position" intvalue="3710"/>
             </file>
             <file name="FlickrLogin.java" 
-                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/web/FlickrLogin.template">
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrLogin.template">
                 <attr name="position" intvalue="3720"/>
             </file>
             <file name="FlickrCallback.java" 
-                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/web/FlickrCallback.template">
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrCallback.template">
                 <attr name="position" intvalue="3730"/>
             </file>
             <file name="FlickrAuthenticatorDesktop.java" 
-                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/desktop/FlickrAuthenticator.template">
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/java/FlickrAuthenticator.template">
                 <attr name="position" intvalue="3740"/>
+            </file>
+            
+            <!-- PHP templates -->
+            <file name="FlickrAuthenticator.php" 
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/php/FlickrAuthenticator.template">
+                <attr name="position" intvalue="3750"/>
+            </file>
+            <file name="FlickrLogin.php" 
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/php/FlickrLogin.template">
+                <attr name="position" intvalue="3760"/>
+            </file>
+            <file name="FlickrCallback.php" 
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/php/FlickrCallback.template">
+                <attr name="position" intvalue="3770"/>
+            </file>
+            <file name="FlickrAuthenticatorDesktop.php" 
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/php/FlickrAuthenticatorDesktop.template">
+                <attr name="position" intvalue="3780"/>
             </file>
         </folder>
     </folder>

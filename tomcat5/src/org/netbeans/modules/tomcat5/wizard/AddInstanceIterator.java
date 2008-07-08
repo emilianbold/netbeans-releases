@@ -74,9 +74,9 @@ import org.netbeans.modules.tomcat5.util.TomcatUsers;
  */
 public class AddInstanceIterator implements WizardDescriptor.InstantiatingIterator {
     
-    public final static String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N    
-    private final static String PROP_CONTENT_DATA = "WizardPanel_contentData";  // NOI18N
-    private final static String PROP_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; // NOI18N
+    public final static String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE; // NOI18N    
+    private final static String PROP_CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA;  // NOI18N
+    private final static String PROP_CONTENT_SELECTED_INDEX = WizardDescriptor.PROP_CONTENT_SELECTED_INDEX; // NOI18N
     private final static String PROP_DISPLAY_NAME = "ServInstWizard_displayName"; // NOI18N
     
     private final static String[] CONTENT_DATA = new String[] { 

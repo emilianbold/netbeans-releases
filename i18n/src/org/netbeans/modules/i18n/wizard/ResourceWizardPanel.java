@@ -82,6 +82,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 import org.openide.ErrorManager;
+import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.AsynchronousValidatingPanel;
 import org.openide.awt.Mnemonics;
 
@@ -407,7 +408,7 @@ final class ResourceWizardPanel extends JPanel {
             // Accessibility
             panel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ResourceWizardPanel.class).getString("ACS_ResourceWizardPanel"));                 
             
-            panel.putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(1)); // NOI18N
+            panel.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(1)); // NOI18N
 
             String msgKey = testWizard ? "TXT_SelectTestResource"       //NOI18N
                                        : "TXT_SelectResource";          //NOI18N

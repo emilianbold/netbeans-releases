@@ -79,7 +79,9 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.utils.Path;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
@@ -329,6 +331,8 @@ public class MakeActionProvider implements ActionProvider {
                 actionEvent = ProjectActionEvent.RUN;
             }
             
+            PlatformInfo pi = conf.getPlatformInfo();
+            
             if (targetName.equals("save")) { // NOI18N
                 // Save all files and projects
                 if (MakeOptions.getInstance().getSave())
@@ -351,7 +355,7 @@ public class MakeActionProvider implements ActionProvider {
                             path = FilePathAdaptor.naturalize(path);
                             path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
                             path = FilePathAdaptor.naturalize(path);
-                            CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue());
+                            CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
                             if (compilerSet != null && compilerSet.getCompilerFlavor() == CompilerFlavor.MinGW) {
                                 // IZ 120352
                                 path = FilePathAdaptor.normalize(path);
@@ -373,6 +377,7 @@ public class MakeActionProvider implements ActionProvider {
                     RunDialogPanel.addElementToExecutablePicklist(path);
                 } else if (conf.isLibraryConfiguration()) {
                     // Should never get here...
+                    assert false;
                     return;
                 } else if (conf.isCompileConfiguration()) {
                     RunProfile runProfile = null;
@@ -386,9 +391,9 @@ public class MakeActionProvider implements ActionProvider {
                             String location = FilePathAdaptor.naturalize((String)iter.next());
                             path = location + ";" + path; // NOI18N
                         }
-                        String userPath = runProfile.getEnvironment().getenv(Path.getPathName());
+                        String userPath = runProfile.getEnvironment().getenv(pi.getPathName());
                         if (userPath == null)
-                            userPath = System.getenv(Path.getPathName());
+                            userPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get(pi.getPathName());
                         path = path + ";" + userPath; // NOI18N
                         runProfile.getEnvironment().putenv(Path.getPathName(), path);
                     } else if (Platforms.getPlatform(conf.getPlatform().getValue()).getId() == Platform.PLATFORM_MACOSX) {
@@ -396,7 +401,7 @@ public class MakeActionProvider implements ActionProvider {
                         Set subProjectOutputLocations = conf.getSubProjectOutputLocations();
                         Iterator iter = subProjectOutputLocations.iterator();
                         if (iter.hasNext()) {
-                            String extPath = System.getenv("DYLD_LIBRARY_PATH"); // NOI18N
+                            String extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get("DYLD_LIBRARY_PATH"); // NOI18N
                             runProfile = conf.getProfile().cloneProfile();
                             StringBuffer path = new StringBuffer();
                             while (iter.hasNext()) {
@@ -410,7 +415,7 @@ public class MakeActionProvider implements ActionProvider {
                             runProfile.getEnvironment().putenv("DYLD_LIBRARY_PATH", path.toString()); // NOI18N
                         }
                         // Make sure DISPLAY variable has been set
-                        if (System.getenv("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
+                        if (HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
                             // DISPLAY hasn't been set
                             if (runProfile == null)
                                 runProfile = conf.getProfile().cloneProfile();
@@ -423,12 +428,15 @@ public class MakeActionProvider implements ActionProvider {
                     if (targetName.equals("run")) { // NOI18N
                         // naturalize if relative
                         path = makeArtifact.getOutput();
-                        if (!IpeUtils.isPathAbsolute(path)) {
-                            // make path relative to run working directory
-                            path = makeArtifact.getWorkingDirectory() + "/" + path; // NOI18N
-                            path = FilePathAdaptor.naturalize(path);
-                            path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
-                            path = FilePathAdaptor.naturalize(path);
+                        //TODO: we also need remote aware IpeUtils..........
+                        if (conf.getDevelopmentHost().isLocalhost()) {
+                            if (!IpeUtils.isPathAbsolute(path)) {
+                                // make path relative to run working directory
+                                path = makeArtifact.getWorkingDirectory() + "/" + path; // NOI18N
+                                path = FilePathAdaptor.naturalize(path);
+                                path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
+                                path = FilePathAdaptor.naturalize(path);
+                            }
                         }
                     } else {
                         // Always absolute
@@ -755,14 +763,10 @@ public class MakeActionProvider implements ActionProvider {
     
     private String getMakeCommand(MakeConfigurationDescriptor pd, MakeConfiguration conf) {
         String cmd = null;
-        CompilerSet cs = 
-                conf.getDevelopmentHost().isLocalhost() 
-                ? conf.getCompilerSet().getCompilerSet()
-                : CompilerSetManager.fakeRemoteCS;
+        CompilerSet cs = conf.getCompilerSet().getCompilerSet();
         if (cs != null) {
             cmd = cs.getTool(Tool.MakeTool).getPath();
-        }
-        else {
+        } else {
             assert false;
             cmd = "make"; // NOI18N
         }
@@ -772,6 +776,7 @@ public class MakeActionProvider implements ActionProvider {
     
     public boolean validateBuildSystem(MakeConfigurationDescriptor pd, MakeConfiguration conf, boolean validated) {
         CompilerSet2Configuration csconf = conf.getCompilerSet();
+        String hkey = conf.getDevelopmentHost().getName();
         ArrayList<String> errs = new ArrayList<String>();
         CompilerSet cs;
         BuildToolsAction bt = null;
@@ -788,24 +793,25 @@ public class MakeActionProvider implements ActionProvider {
 
         // TODO: invent remote validation (another script?)
         if (!conf.getDevelopmentHost().isLocalhost()) {
+            lastValidation = true;
             return true;
         }
         
         if (csconf.getFlavor() != null && csconf.getFlavor().equals(CompilerFlavor.Unknown.toString())) {
             // Confiiguration was created with unknown tool set. Use the now default one.
-            csname = CppSettings.getDefault().getCompilerSetName();
-            cs = CompilerSetManager.getDefault().getCompilerSet(csname);
+            csname = csconf.getOption();
+            cs = CompilerSetManager.getDefault(hkey).getCompilerSet(csname);
             if (cs == null) {
-                cs = CompilerSetManager.getDefault().getCompilerSet(csconf.getOption());
+                cs = CompilerSetManager.getDefault(hkey).getCompilerSet(csconf.getOption());
             }
-            if (cs == null && CompilerSetManager.getDefault().getCompilerSets().size() > 0) {
-                cs = CompilerSetManager.getDefault().getCompilerSet(0);
+            if (cs == null && CompilerSetManager.getDefault(hkey).getCompilerSets().size() > 0) {
+                cs = CompilerSetManager.getDefault(hkey).getCompilerSet(0);
             }
             runBTA = true;
         }
         else if (csconf.isValid()) {
             csname = csconf.getOption();
-            cs = CompilerSetManager.getDefault().getCompilerSet(csname);
+            cs = CompilerSetManager.getDefault(hkey).getCompilerSet(csname);
         } else {
             csname = csconf.getOldName();
             CompilerFlavor flavor = null;
@@ -816,7 +822,7 @@ public class MakeActionProvider implements ActionProvider {
                 flavor = CompilerFlavor.GNU;
             }
             cs = CompilerSet.getCustomCompilerSet("", flavor, csconf.getOldName());
-            CompilerSetManager.getDefault().add(cs);
+            CompilerSetManager.getDefault(hkey).add(cs);
             csconf.setValid();
         }
         

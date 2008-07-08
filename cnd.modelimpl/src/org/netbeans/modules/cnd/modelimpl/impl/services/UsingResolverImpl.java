@@ -46,17 +46,21 @@ import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
-import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 
@@ -103,9 +107,39 @@ public class UsingResolverImpl extends CsmUsingResolver implements CsmProgressLi
     }
     
     public Collection<CsmNamespace> findVisibleNamespaces(CsmFile file, int offset, CsmProject onlyInProject) {
-        return getCollector(file, offset, onlyInProject).getVisibleNamespaces();
+        Set<CsmNamespace> seen = new LinkedHashSet<CsmNamespace>();
+        Queue<CsmNamespace> queue = new LinkedList<CsmNamespace>(
+                getCollector(file, offset, onlyInProject).getVisibleNamespaces());
+        findVisibleNamespacesBfs(seen, queue, onlyInProject);
+        return seen;
     }
-    
+
+    private void findVisibleNamespacesBfs(Set<CsmNamespace> seen, Queue<CsmNamespace> queue, CsmProject onlyInProject) {
+        // breadth-first search in namespace inclusion graph
+        while (!queue.isEmpty()) {
+            CsmNamespace namespace = queue.poll();
+            for (CsmNamespace used : findVisibleNamespaces(namespace)) {
+                if (!seen.contains(used) && !queue.contains(used) &&
+                        (onlyInProject == null || onlyInProject == used.getProject())) {
+                    queue.add(used);
+                }
+            }
+            seen.add(namespace);
+        }
+    }
+
+    public Collection<CsmUsingDirective> findUsingDirectives(CsmNamespace namespace) {
+        CsmDeclaration.Kind[] kinds = { CsmDeclaration.Kind.USING_DIRECTIVE };
+        CsmSelect select = CsmSelect.getDefault();
+        List<CsmUsingDirective> res = new ArrayList<CsmUsingDirective>();
+        Iterator<CsmOffsetableDeclaration> udirs = select.getDeclarations(
+                    namespace, select.getFilterBuilder().createKindFilter(kinds));
+        while (udirs.hasNext()) {
+            res.add((CsmUsingDirective)udirs.next());
+        }
+        return res;
+    }
+
     public Collection<CsmNamespaceAlias> findNamespaceAliases(CsmFile file, int offset, CsmProject onlyInProject) {
         return getCollector(file, offset, onlyInProject).getNamespaceAliases();
     }

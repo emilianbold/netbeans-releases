@@ -714,6 +714,11 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
      */
     public int[] findMatchingBlock(int offset, boolean simpleSearch)
     throws BadLocationException {
+        return findMatch(offset, simpleSearch);
+    }
+    
+    public int[] findMatch(int offset, boolean simpleSearch)
+    throws BadLocationException {
         // TODO - replanning to the other thread. Now it's in awt thread
         TokenItem token = getTokenChain(offset, offset+1);
         TokenItem tokenOnOffset = token;

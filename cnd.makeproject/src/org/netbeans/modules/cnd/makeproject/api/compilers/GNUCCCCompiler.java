@@ -61,8 +61,8 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
     private PersistentList systemIncludeDirectoriesList = null;
     private PersistentList systemPreprocessorSymbolsList = null;
     
-    public GNUCCCCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        super(flavor, kind, name, displayName, path);
+    public GNUCCCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        super(hkey, flavor, kind, name, displayName, path);
     }
 
     @Override
@@ -174,8 +174,7 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
     }
             
     @Override
-    protected void parseCompilerOutput(InputStream is) {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+    protected void parseCompilerOutput(BufferedReader reader) {
         
         try {
             String line;
@@ -216,7 +215,6 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
                     }
                 }
             }
-            is.close();
             reader.close();
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP

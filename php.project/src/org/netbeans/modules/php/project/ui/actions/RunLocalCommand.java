@@ -158,13 +158,17 @@ public class RunLocalCommand extends Command implements Displayable {
 
                 public void reset() throws IOException {
                 }
+
+                public void close() throws IOException {
+                    getFileWriter().flush();
+                    getFileWriter().close();                    
+                }
+
             };
         }
 
         public void run() {
             try {
-                getFileWriter().flush();
-                getFileWriter().close();
                 PhpOptions options = PhpOptions.getInstance();
                 if (options.isOpenResultInBrowser()) {
                     HtmlBrowser.URLDisplayer.getDefault().showURL(tmpFile.toURL());

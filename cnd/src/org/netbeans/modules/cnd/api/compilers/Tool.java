@@ -78,6 +78,7 @@ public class Tool {
         getString("CustomBuildTool"), // NOI18N
     };
     
+    private String hkey;
     private CompilerFlavor flavor;
     private int kind;
     private String name;
@@ -87,20 +88,25 @@ public class Tool {
     private String includeFilePrefix = null;
     
     /** Creates a new instance of GenericCompiler */
-    public Tool(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+    public Tool(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        this.hkey = hkey;
         this.flavor = flavor;
         this.kind = kind;
         this.name = name;
         this.displayName = displayName;
-        this.path = name.length() > 0 ? path + File.separator + name : path;
+        this.path = path;
         compilerSet = null;
         includeFilePrefix = null;
     }
     
     public Tool createCopy() {
-        Tool copy = new Tool(flavor, kind, "", displayName, path);
+        Tool copy = new Tool(hkey, flavor, kind, "", displayName, path);
         copy.setName(getName());
         return copy;
+    }
+    
+    public String getHostKey() {
+        return hkey;
     }
     
     public CompilerFlavor getFlavor() {

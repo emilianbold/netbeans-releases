@@ -45,13 +45,14 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 
 public class SunMaketool extends Tool {
-    public SunMaketool(CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
-        super(flavor, MakeTool, name, displayName, path); // NOI18N
+    
+    public SunMaketool(String hkey, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
+        super(hkey, flavor, MakeTool, name, displayName, path); // NOI18N
     }
     
     @Override
     public SunMaketool createCopy() {
-        SunMaketool copy = new SunMaketool(getFlavor(), "", getDisplayName(), getPath());
+        SunMaketool copy = new SunMaketool(getHostKey(), getFlavor(), "", getDisplayName(), getPath());
         copy.setName(getName());
         return copy;
     }

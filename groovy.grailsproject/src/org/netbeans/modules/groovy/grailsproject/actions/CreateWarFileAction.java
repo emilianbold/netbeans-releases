@@ -142,4 +142,7 @@ public class CreateWarFileAction extends AbstractAction implements LineProcessor
         // noop
     }
 
+    public void close() {
+        // noop
+    }
 }

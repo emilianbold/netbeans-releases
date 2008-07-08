@@ -99,11 +99,18 @@ public class ProgressUI implements ProgressListener {
         handle = ProgressHandleFactory.createHandle(title);
     }
     
-    /** Start the progress indication for indeterminate task. */
     public void start() {
+        start(null);
+    }    
+    
+    /** Start the progress indication for indeterminate task. */
+    public void start(Integer delay) {
         if (modal) {
             progressComponent = ProgressHandleFactory.createProgressComponent(handle);
         }
+        if (delay != null) {
+            handle.setInitialDelay(delay.intValue());
+        }        
         handle.start();
     }
     
