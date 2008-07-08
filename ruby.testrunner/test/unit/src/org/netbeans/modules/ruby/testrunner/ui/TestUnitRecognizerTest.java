@@ -112,7 +112,19 @@ public class TestUnitRecognizerTest extends TestCase {
         matcher = handler.match(outputScientificNotation);
         assertTrue(matcher.matches());
         assertEquals("9.8e-07", matcher.group(1));
-    }
+
+        // nested class name
+        String outputNestedClass = "%TEST_FAILED% time=0.0060 testname=test_foo(TestSomething::TestNotExecuted) message=this test is not executed. location=/a/path/to/somewhere/test/test_something.rb:21:in `test_foo'";
+        matcher = handler.match(outputNestedClass);
+        assertTrue(matcher.matches());
+
+        assertEquals(5, matcher.groupCount());
+        assertEquals("0.0060", matcher.group(1));
+        assertEquals("test_foo", matcher.group(2));
+        assertEquals("TestSomething::TestNotExecuted", matcher.group(3));
+        assertEquals("this test is not executed.", matcher.group(4));
+        assertEquals("/a/path/to/somewhere/test/test_something.rb:21:in `test_foo'", matcher.group(5));
+}
     
     public void testTestError() {
         TestUnitHandlerFactory.TestErrorHandler handler = new TestUnitHandlerFactory.TestErrorHandler();
@@ -159,6 +171,15 @@ public class TestUnitRecognizerTest extends TestCase {
         matcher = handler.match(outputScientificNotation);
         assertTrue(matcher.matches());
         assertEquals("1.2e-34", matcher.group(1));
+
+        String outputNestedClass = "%TEST_ERROR% time=1.2e-34 testname=test_two_people_buying(Some::Another::DslUserStoriesTest) " +
+                "message=StandardError: No fixture with name 'ruby_book' found for table 'products' " +
+                "location=/usr/lib/ruby/gems/1.8/gems/activerecord-2.0.2/lib/active_record/fixtures.rb:894:in `products'%BR%" +
+                "/usr/lib/ruby/gems/1.8/gems/activerecord-2.0.2/lib/active_record/fixtures.rb:888:in `map'%BR%";
+
+        matcher = handler.match(outputNestedClass);
+        assertTrue(matcher.matches());
+        assertEquals("Some::Another::DslUserStoriesTest", matcher.group(3));
 
     }
     
