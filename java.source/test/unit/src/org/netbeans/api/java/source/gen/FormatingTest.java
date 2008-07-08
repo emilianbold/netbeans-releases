@@ -2927,14 +2927,193 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         preferences.putBoolean("spaceWithinMethodCallParens", false);
     }
     
+    /**
+     * Problems with code formatting and comments put in the wrong place.
+     * Regression test.
+     *
+     * http://www.netbeans.org/issues/show_bug.cgi?id=137626
+     */
+    public void test137626() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie) testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        String content =
+            "package hierbas.del.litoral;\n" +
+            "public class Test{\n" +
+            "public void test(int i){\n" +
+            "    if(i>100)\n" +
+            "        i=100;\n" +
+            "\n" +
+            "    //Comment\n" +
+            "    System.err.println();\n" +
+            "}\n" +
+            "}\n";
+
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    public void test(int i) {\n" +
+            "        if (i > 100) {\n" +
+            "            i = 100;\n" +
+            "        }\n" +
+            "\n" +
+            "        //Comment\n" +
+            "        System.err.println();\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden);
+        
+        content =
+            "package hierbas.del.litoral;\n" +
+            "public class Test{\n" +
+            "public void test(int i){\n" +
+            "    if(i>100)\n" +
+            "        i=100; //Comment\n" +
+            "    System.err.println();\n" +
+            "}\n" +
+            "}\n";
+
+        golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    public void test(int i) {\n" +
+            "        if (i > 100) {\n" +
+            "            i = 100; //Comment\n" +
+            "        }\n" +
+            "        System.err.println();\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden);
+    }
+
+    /**
+     * Unexpected new line after comment.
+     * Regression test.
+     *
+     * http://www.netbeans.org/issues/show_bug.cgi?id=131954
+     */
+    public void test131954() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie) testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        String content =
+            "package hierbas.del.litoral;\n" +
+            "public class Test{\n" +
+            "public void test(){\n" +
+            "int a; // Uff\n" +
+            "int b;\n" +
+            "}\n" +
+            "}\n";
+
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    public void test() {\n" +
+            "        int a; // Uff\n" +
+            "        int b;\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden);
+    }
+    
+    /**
+     * Unexpected new line after comment.
+     * Regression test.
+     *
+     * http://www.netbeans.org/issues/show_bug.cgi?id=133225
+     */
+    public void test133225() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie) testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        String content =
+            "package hierbas.del.litoral;\n" +            
+            "public class Test{\n" +
+            "    public void test() {\n" +
+            "        int i = 5;\n" +
+            "        if (i > 0)\n" +
+            "            i++;\n" +
+            "        if (i > 0)\n" +
+            "            i++;\n" +
+            "    }\n" +
+            "}\n";
+
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "public class Test{\n" +
+            "    public void test() {\n" +
+            "        int i = 5;\n" +
+            "        if (i > 0) {\n" +
+            "            i++;\n" +
+            "        }\n" +
+            "        if (i > 0)\n" +
+            "            i++;\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden, 92, 128);
+        reformat(doc, content, golden, 92, 127);
+        
+        golden =
+            "package hierbas.del.litoral;\n" +
+            "public class Test{\n" +
+            "    public void test() {\n" +
+            "        int i = 5;\n" +
+            "        if (i > 0)\n" +
+            "            i++;\n" +
+            "        if (i > 0) {\n" +
+            "            i++;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden, 128, 163);
+        reformat(doc, content, golden, 127, 163);
+    }
+    
     private void reformat(Document doc, String content, String golden) throws Exception {
+        reformat(doc, content, golden, 0, content.length());
+    }
+    
+    private void reformat(Document doc, String content, String golden, int startOffset, int endOffset) throws Exception {
         doc.remove(0, doc.getLength());
         doc.insertString(0, content, null);
         
         Reformat reformat = Reformat.get(doc);
         reformat.lock();
         try {
-            reformat.reformat(0, doc.getLength());
+            reformat.reformat(startOffset, endOffset);
         } finally {
             reformat.unlock();
         }
