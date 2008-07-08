@@ -172,11 +172,17 @@ public class Reformatter implements ReformatTask {
         TreePath path = getCommonPath(startOffset, endOffset);
         if (path == null)
             return;
-        for (Diff diff : Pretty.reformat(controller, path, cs, templateEdit)) {
+        for (Diff diff : Pretty.reformat(controller, path, cs, startOffset, endOffset, templateEdit)) {
             int start = diff.getStartOffset();
             int end = diff.getEndOffset();
             String text = diff.getText();
-            if (startOffset > end || endOffset <= start || embeddingOffset >= start)
+            if (startOffset > end)
+                continue;
+            if (endOffset < start)
+                continue;
+            if (endOffset == start && (text == null || !text.trim().equals("}"))) //NOI18N
+                continue;
+            if (embeddingOffset >= start)
                 continue;
             if (startOffset >= start) {
                 if (text != null && text.length() > 0) {
@@ -353,14 +359,17 @@ public class Reformatter implements ReformatTask {
         private boolean templateEdit;
         private LinkedList<Diff> diffs = new LinkedList<Diff>();
         private DanglingElseChecker danglingElseChecker = new DanglingElseChecker();
+        private CompilationUnitTree root;
+        private int startOffset;
+        private int endOffset;
 
-        private Pretty(CompilationInfo info, TreePath path, CodeStyle cs, boolean templateEdit) {
+        private Pretty(CompilationInfo info, TreePath path, CodeStyle cs, int startOffset, int endOffset, boolean templateEdit) {
             this(info.getText(), info.getTokenHierarchy().tokenSequence(JavaTokenId.language()),
-                    path, info.getTrees().getSourcePositions(), cs);
+                    path, info.getTrees().getSourcePositions(), cs, startOffset, endOffset);
             this.templateEdit = templateEdit;
         }
         
-        private Pretty(String text, TokenSequence<JavaTokenId> tokens, TreePath path, SourcePositions sp, CodeStyle cs) {
+        private Pretty(String text, TokenSequence<JavaTokenId> tokens, TreePath path, SourcePositions sp, CodeStyle cs, int startOffset, int endOffset) {
             this.fText = text;
             this.sp = sp;
             this.cs = cs;
@@ -394,10 +403,13 @@ public class Reformatter implements ReformatTask {
                 tokens.move((int)sp.getStartPosition(path.getCompilationUnit(), tree));
             }
             tokens.moveNext();
+            this.root = path.getCompilationUnit();
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
         }
 
-        public static LinkedList<Diff> reformat(CompilationInfo info, TreePath path, CodeStyle cs, boolean templateEdit) {
-            Pretty pretty = new Pretty(info, path, cs, templateEdit);
+        public static LinkedList<Diff> reformat(CompilationInfo info, TreePath path, CodeStyle cs, int startOffset, int endOffset, boolean templateEdit) {
+            Pretty pretty = new Pretty(info, path, cs, startOffset, endOffset, templateEdit);
             if (pretty.indent >= 0)
                 pretty.scan(path, null);
             if (path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
@@ -412,7 +424,7 @@ public class Reformatter implements ReformatTask {
         }
 
         public static LinkedList<Diff> reformat(String text, TokenSequence<JavaTokenId> tokens, TreePath path, SourcePositions sp, CodeStyle cs) {
-            Pretty pretty = new Pretty(text, tokens, path, sp, cs);
+            Pretty pretty = new Pretty(text, tokens, path, sp, cs, 0, text.length());
             pretty.scan(path, null);
             tokens.moveEnd();
             tokens.movePrevious();
@@ -2581,7 +2593,7 @@ public class Reformatter implements ReformatTask {
                         } else {
                             if (lastBlankLines < 0 && count == ANY_COUNT)
                                 count = lastBlankLines = 1;
-                            String text = getNewlines(count) + getIndent();
+                            String text = after == 1 ? getIndent() : getNewlines(count) + getIndent();
                             if (text.length() > 0)
                                 diffs.addFirst(new Diff(tokens.offset(), tokens.offset(), text));
                         }
@@ -2710,7 +2722,7 @@ public class Reformatter implements ReformatTask {
                 scan(tree, null);
                 return true;
             }
-            if (bracesGenerationStyle == CodeStyle.BracesGenerationStyle.GENERATE) {
+            if (bracesGenerationStyle == CodeStyle.BracesGenerationStyle.GENERATE && startOffset <= sp.getStartPosition(root, tree) && endOffset >= sp.getEndPosition(root, tree)) {
                 scan(new FakeBlock(tree), null);
                 return true;
             }
