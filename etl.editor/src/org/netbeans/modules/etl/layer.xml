@@ -1612,7 +1612,7 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="output">
                 <file name="ETLOutputWindowTopComponent.wstcref" url="ETLOutputWindowTopComponentWstcref.xml">
-                    <attr name="position" intvalue="317"/>
+                    <attr name="position" intvalue="1250"/>
                 </file>
             </folder>
         </folder>
