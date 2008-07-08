@@ -177,13 +177,13 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
     // Sheet
     public Sheet getSheet(MakeConfiguration conf, Folder folder) {
         Sheet sheet = new Sheet();
-        CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue());
+        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         BasicCompiler ccCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
         
         sheet.put(getSet());
         if (conf.isCompileConfiguration() && folder == null) {
             sheet.put(getBasicSet());
-            if (conf.getCompilerSet().getValue() == CompilerFlavor.Sun.ordinal()) { // FIXUP: should be moved to SunCCompiler
+            if (compilerSet.isSunCompiler()) { // FIXUP: should be moved to SunCCompiler
                 Sheet.Set set2 = new Sheet.Set();
                 set2.setName("OtherOptions"); // NOI18N
                 set2.setDisplayName(getString("OtherOptionsTxt"));
