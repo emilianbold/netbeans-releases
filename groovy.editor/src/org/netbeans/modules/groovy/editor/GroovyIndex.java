@@ -387,6 +387,173 @@ public final class GroovyIndex {
         return methods;
     }
 
+    /**
+     * Get the set of inherited (through super classes and mixins) for the given fully qualified class name.
+     * @param classFqn FQN: module1.module2.moduleN.class
+     * @param prefix If kind is NameKind.PREFIX/CASE_INSENSITIVE_PREFIX, a prefix to filter methods by. Else,
+     *    if kind is NameKind.EXACT_NAME filter methods by the exact name.
+     * @param kind Whether the prefix field should be taken as a prefix or a whole name
+     */
+    public Set<IndexedMethod> getInheritedMethods(String classFqn, String prefix, NameKind kind) {
+        boolean haveRedirected = false;
+
+        //String field = RubyIndexer.FIELD_FQN_NAME;
+        Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
+        Set<String> scannedClasses = new HashSet<String>();
+        Set<String> seenSignatures = new HashSet<String>();
+
+        if (prefix == null) {
+            prefix = "";
+        }
+
+        addMethodsFromClass(prefix, kind, classFqn, methods, seenSignatures, scannedClasses, haveRedirected, false);
+
+        return methods;
+    }
+
+    /** Return whether the specific class referenced (classFqn) was found or not. This is
+     * not the same as returning whether any classes were added since it may add
+     * additional methods from parents (Object/Class).
+     */
+    private boolean addMethodsFromClass(String prefix, NameKind kind, String classFqn,
+        Set<IndexedMethod> methods, Set<String> seenSignatures, Set<String> scannedClasses,
+        boolean haveRedirected, boolean inheriting) {
+        // Prevent problems with circular includes or redundant includes
+        if (scannedClasses.contains(classFqn)) {
+            return false;
+        }
+
+        scannedClasses.add(classFqn);
+
+        String searchField = GroovyIndexer.FQN_NAME;
+
+        Set<SearchResult> result = new HashSet<SearchResult>();
+
+        search(searchField, classFqn, NameKind.EXACT_NAME, result);
+
+        boolean foundIt = result.size() > 0;
+
+        // If this is a bogus class entry (no search rsults) don't continue
+        if (!foundIt) {
+            return foundIt;
+        }
+
+        String extendsClass = null;
+
+        String classIn = null;
+        int fqnIndex = classFqn.lastIndexOf("."); // NOI18N
+
+        if (fqnIndex != -1) {
+            classIn = classFqn.substring(0, fqnIndex);
+        }
+
+        for (SearchResult map : result) {
+            assert map != null;
+
+            String[] signatures = map.getValues(GroovyIndexer.METHOD_NAME);
+
+            if (signatures != null) {
+                for (String signature : signatures) {
+                    // Skip weird methods like "[]" etc. in completion lists... TODO Think harder about this
+                    if ((prefix.length() == 0) && !Character.isLowerCase(signature.charAt(0))) {
+                        continue;
+                    }
+
+                    // Prevent duplicates when method is redefined
+                    if (!seenSignatures.contains(signature)) {
+                        if (signature.startsWith(prefix)) {
+                            if (kind == NameKind.EXACT_NAME) {
+                                // Ensure that the method is not longer than the prefix
+                                if ((signature.length() > prefix.length()) &&
+                                        (signature.charAt(prefix.length()) != '(') &&
+                                        (signature.charAt(prefix.length()) != ';')) {
+                                    continue;
+                                }
+                            } else {
+                                // REGEXP, CAMELCASE filtering etc. not supported here
+                                assert (kind == NameKind.PREFIX) ||
+                                (kind == NameKind.CASE_INSENSITIVE_PREFIX);
+                            }
+
+                            seenSignatures.add(signature);
+
+                            IndexedMethod method = createMethod(signature, map, inheriting);
+                            method.setSmart(!haveRedirected);
+                            methods.add(method);
+                        }
+                    }
+                }
+            }
+
+            String[] attributes = map.getValues(GroovyIndexer.ATTRIBUTE_NAME);
+
+            if (attributes != null) {
+                for (String attribute : attributes) {
+                    // Skip weird methods like "[]" etc. in completion lists... TODO Think harder about this
+                    if ((prefix.length() == 0) && !Character.isLowerCase(attribute.charAt(0))) {
+                        continue;
+                    }
+
+                    // Prevent duplicates when method is redefined
+                    if (!seenSignatures.contains(attribute)) {
+                        if (attribute.startsWith(prefix)) {
+                            if (kind == NameKind.EXACT_NAME) {
+                                // Ensure that the method is not longer than the prefix
+                                if ((attribute.length() > prefix.length()) &&
+                                        (attribute.charAt(prefix.length()) != '(') &&
+                                        (attribute.charAt(prefix.length()) != ';')) {
+                                    continue;
+                                }
+                            } else {
+                                // REGEXP, CAMELCASE filtering etc. not supported here
+                                assert (kind == NameKind.PREFIX) ||
+                                (kind == NameKind.CASE_INSENSITIVE_PREFIX);
+                            }
+
+                            seenSignatures.add(attribute);
+
+                            // TODO - create both getter and setter methods
+                            IndexedMethod method = createMethod(attribute, map, inheriting);
+                            method.setSmart(!haveRedirected);
+                            method.setMethodType(IndexedMethod.MethodType.ATTRIBUTE);
+                            methods.add(method);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (extendsClass == null) {
+            // XXX GroovyObject, GroovyScript
+            addMethodsFromClass(prefix, kind, "java.lang.Object", methods, seenSignatures, scannedClasses,
+                true, true);
+        } else {
+            // We're not sure we have a fully qualified path, so try some different candidates
+            if (!addMethodsFromClass(prefix, kind, extendsClass, methods, seenSignatures,
+                        scannedClasses, haveRedirected, true)) {
+                // Search by classIn
+                String fqn = classIn;
+
+                while (fqn != null) {
+                    if (addMethodsFromClass(prefix, kind, fqn + "." + extendsClass, methods,
+                                seenSignatures, scannedClasses, haveRedirected, true)) {
+                        break;
+                    }
+
+                    int f = fqn.lastIndexOf("."); // NOI18N
+
+                    if (f == -1) {
+                        break;
+                    } else {
+                        fqn = fqn.substring(0, f);
+                    }
+                }
+            }
+        }
+
+        return foundIt;
+    }
+
     public static FileObject getFileObject(String url) {
         try {
             if (url.startsWith(CLUSTER_URL)) {
