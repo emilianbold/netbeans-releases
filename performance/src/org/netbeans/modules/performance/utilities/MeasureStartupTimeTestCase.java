@@ -494,7 +494,7 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
          * @throws java.io.IOException
          */
         private StatusFile() throws IOException {
-            super(getSketchpad(), "prepare_failed.tmp");
+            super(CommonUtilities.getTempDir(), "prepare_failed.tmp");
         }
         
     }
