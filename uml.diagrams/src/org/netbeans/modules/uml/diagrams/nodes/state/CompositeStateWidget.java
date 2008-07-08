@@ -233,8 +233,7 @@ public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidg
                 PropertyChangeListener listener = (PropertyChangeListener) getNameWidget();
                 listener.propertyChange(event);
             }
-        }
-        updateSizeWithOptions();
+        }      
     }
 
     protected void updateName(PropertyChangeEvent event)
