@@ -45,6 +45,7 @@ import java.awt.Container;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -480,5 +481,31 @@ public class SoaUtil {
         }
         return NbDocument.findLineColumn(document,position);
     }
+    
+    // copied from FileInfo#getRoot() 
+    public static File getRoot(File child) {
+        File root = null;
+        File tmp = child;
+        root = tmp;
+        while (tmp != null) {
+            root = tmp;
+            tmp = tmp.getParentFile();
+        }
+        if ("\\\\".equals(root.getPath())) {  // NOI18N
+            // UNC paths => return \\computerName\sharedFolder (or \\ if path is only \\ or \\computerName)
+            String filename = child.getAbsolutePath();
+            int firstSlash = filename.indexOf("\\", 2);  //NOI18N
+            if(firstSlash != -1) {
+                int secondSlash = filename.indexOf("\\", firstSlash+1);  //NOI18N
+                if(secondSlash != -1) {
+                    filename = filename.substring(0, secondSlash);
+                }
+                root = new File(filename);
+            }
+        }
+
+        return root;
+    }
+    
 
 }

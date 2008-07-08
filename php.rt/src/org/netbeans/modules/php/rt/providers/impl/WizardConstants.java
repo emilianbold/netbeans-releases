@@ -47,6 +47,6 @@ package org.netbeans.modules.php.rt.providers.impl;
  */
 public interface WizardConstants {
 
-    String WIZARD_PANEL_ERROR_MESSAGE = "WizardPanel_errorMessage";    // NOI18N
+    String WIZARD_PANEL_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE;    // NOI18N
 
 }

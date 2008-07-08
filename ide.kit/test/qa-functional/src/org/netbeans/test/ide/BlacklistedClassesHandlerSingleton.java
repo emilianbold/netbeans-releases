@@ -336,6 +336,9 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
             if (record != null && record.getMessage() != null) {
                 if (record.getMessage().contains("initiated")) {
                     String className = (String) record.getParameters()[1];
+                    if (className.matches(".*\\$\\d+")) {
+                        return;
+                    }
                     if (blacklist.containsKey(className)) { //violator
                         Exception exc = new BlacklistedClassesViolationException(record.getParameters()[0].toString());
                         System.out.println("BlacklistedClassesHandler blacklist violator: " + className);

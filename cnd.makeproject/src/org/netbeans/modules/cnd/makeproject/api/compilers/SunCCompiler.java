@@ -95,13 +95,13 @@ public class SunCCompiler extends SunCCCCompiler {
     };
     
     /** Creates a new instance of SunCCompiler */
-    public SunCCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        super(flavor, kind, name, displayName, path);
+    public SunCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        super(hkey, flavor, kind, name, displayName, path);
     }
     
     @Override
     public SunCCompiler createCopy() {
-        SunCCompiler copy = new SunCCompiler(getFlavor(), getKind(), "", getDisplayName(), getPath());
+        SunCCompiler copy = new SunCCompiler(getHostKey(), getFlavor(), getKind(), "", getDisplayName(), getPath());
         copy.setName(getName());
         return copy;
     }

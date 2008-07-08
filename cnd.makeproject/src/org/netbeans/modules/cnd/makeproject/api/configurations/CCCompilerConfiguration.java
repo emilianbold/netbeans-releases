@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
@@ -177,13 +175,13 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
     // Sheet
     public Sheet getSheet(MakeConfiguration conf, Folder folder) {
         Sheet sheet = new Sheet();
-        CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue());
+        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         BasicCompiler ccCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
         
         sheet.put(getSet());
         if (conf.isCompileConfiguration() && folder == null) {
             sheet.put(getBasicSet());
-            if (conf.getCompilerSet().getValue() == CompilerFlavor.Sun.ordinal()) { // FIXUP: should be moved to SunCCompiler
+            if (compilerSet.isSunCompiler()) { // FIXUP: should be moved to SunCCompiler
                 Sheet.Set set2 = new Sheet.Set();
                 set2.setName("OtherOptions"); // NOI18N
                 set2.setDisplayName(getString("OtherOptionsTxt"));

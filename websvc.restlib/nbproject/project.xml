@@ -46,9 +46,7 @@ made subject to such option by the copyright holder.
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.websvc.restlib</code-name-base>
             <module-dependencies/>
-            <friend-packages>
-                <friend>org.netbeans.modules.websvc.rest</friend>
-                <friend>org.netbeans.modules.websvc.restkit</friend>
+            <public-packages>
                 <package>javax.ws.rs</package>
                 <package>javax.ws.rs.core</package>
                 <package>javax.ws.rs.ext</package>
@@ -99,7 +97,7 @@ made subject to such option by the copyright holder.
                 <package>com.sun.grizzly.util.http.mapper</package>
                 <package>com.sun.grizzly.util.net</package>
                 <package>com.sun.grizzly.util.net.jsse</package>
-            </friend-packages>
+            </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/jsr311-api.jar</runtime-relative-path>
             </class-path-extension>

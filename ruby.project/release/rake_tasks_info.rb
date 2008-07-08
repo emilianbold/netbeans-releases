@@ -9,8 +9,9 @@ app = Rake.application
 app.do_option('--silent', nil)
 app.init
 app.load_rakefile
-commented_tasks = app.tasks.select { |t| t.comment }
+commented_tasks = app.tasks
 commented_tasks.each do |t|
-  puts "#{t.name_with_args.gsub(/:/, '\:')}=#{t.full_comment.gsub(/\n/, '\n')}"
+  comment = (t.full_comment ? t.full_comment.gsub(/\n/, '\n') : '')
+  puts "#{t.name_with_args.gsub(/:/, '\:')}=#{comment}"
 end
 

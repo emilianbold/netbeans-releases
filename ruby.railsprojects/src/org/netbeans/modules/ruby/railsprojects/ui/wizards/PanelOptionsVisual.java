@@ -280,13 +280,13 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
             return false;
         }
 //        if (warCheckBox.isSelected() && !getPlatform().isJRuby()) {
-//            settings.putProperty( "WizardPanel_errorMessage", 
+//            settings.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, 
 //                    NbBundle.getMessage(PanelOptionsVisual.class, "JRubyRequired") ); //NOI18N
 //            return false;
 //        }
         //if (mainClassTextField.isVisible () && mainClassTextField.isEnabled ()) {
         //    if (!valid) {
-        //        settings.putProperty( "WizardPanel_errorMessage", // NOI18N
+        //        settings.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
         //            NbBundle.getMessage(PanelOptionsVisual.class,"ERROR_IllegalMainClassName")); //NOI18N
         //    }
         //    return this.valid;

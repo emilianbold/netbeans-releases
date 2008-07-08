@@ -61,8 +61,8 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
     private PersistentList systemIncludeDirectoriesList = null;
     private PersistentList systemPreprocessorSymbolsList = null;
     
-    public GNUCCCCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        super(flavor, kind, name, displayName, path);
+    public GNUCCCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        super(hkey, flavor, kind, name, displayName, path);
     }
 
     @Override

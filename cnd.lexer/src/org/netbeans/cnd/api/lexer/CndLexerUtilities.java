@@ -43,6 +43,7 @@ package org.netbeans.cnd.api.lexer;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.cnd.lexer.PreprocLexer;
@@ -77,7 +78,6 @@ public final class CndLexerUtilities {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
     public static Language<CppTokenId> getLanguage(final Document doc) {
         // try from property
         Language lang = (Language) doc.getProperty(Language.class);
@@ -85,7 +85,9 @@ public final class CndLexerUtilities {
                              lang != CppTokenId.languageCpp())) {
             lang = getLanguage((String) doc.getProperty("mimeType")); // NOI18N
         }
-        return (Language<CppTokenId>)lang;
+        @SuppressWarnings("unchecked")
+        Language<CppTokenId> out = (Language<CppTokenId>)lang;
+        return out;
     }
 
     public static TokenSequence<CppTokenId> getCppTokenSequence(final Document doc, final int offset) {
@@ -157,6 +159,11 @@ public final class CndLexerUtilities {
         }
     }
 
+    public static boolean isType(String str) {
+        CppTokenId id = CppTokenId.valueOf(str.toUpperCase());
+        return id == null ? false : isType(id);
+    }
+    
     public static boolean isType(CppTokenId id) {
         switch (id) {
             case AUTO:
