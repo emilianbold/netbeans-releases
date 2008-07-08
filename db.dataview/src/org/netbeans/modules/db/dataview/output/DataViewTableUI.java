@@ -229,7 +229,7 @@ class DataViewTableUI extends JTable {
         });
         tablePopupMenu.add(miCopyRowValues);
 
-        String nbBundle25 = mLoc.t("RESC025: Copy Row Values(With Header)");
+        String nbBundle25 = mLoc.t("RESC025: Copy Row Values (With Header)");
         final JMenuItem miCopyRowValuesH = new JMenuItem(nbBundle25.substring(15));
         miCopyRowValuesH.addActionListener(new ActionListener() {
 
@@ -239,6 +239,25 @@ class DataViewTableUI extends JTable {
         });
         tablePopupMenu.add(miCopyRowValuesH);
         tablePopupMenu.addSeparator();
+
+        String nbBundle29 = mLoc.t("RESC182: Show SQL Script for CREATE");
+        final JMenuItem miCreateSQLScript = new JMenuItem(nbBundle29.substring(15));
+        miCreateSQLScript.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    DBTable table = dataView.getDataViewDBTable().geTable(0);
+                    String createSQL = dataView.getSQLStatementGenerator().generateCreateStatement(table);
+                    ShowSQLDialog dialog = new ShowSQLDialog();
+                    dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
+                    dialog.setText(createSQL + ";\n"); // NOI18N
+                    dialog.setVisible(true);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+        tablePopupMenu.add(miCreateSQLScript);
 
         String nbBundle26 = mLoc.t("RESC026: Show SQL Script for INSERT");
         final JMenuItem miInsertSQLScript = new JMenuItem(nbBundle26.substring(15));
@@ -308,33 +327,6 @@ class DataViewTableUI extends JTable {
             }
         });
         tablePopupMenu.add(miCommitSQLScript);
-
-        String nbBundle29 = mLoc.t("RESC182: Show SQL Script for CREATE (With Data)");
-        final JMenuItem miCreateSQLScript = new JMenuItem(nbBundle29.substring(15));
-        miCreateSQLScript.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    DBTable table = dataView.getDataViewDBTable().geTable(0);
-                    String createSQL = dataView.getSQLStatementGenerator().generateCreateStatement(table);
-
-                    int[] rows = getSelectedRows();
-                    String insertSQL = "";
-                    for (int j = 0; j < rows.length; j++) {
-                        Object[] insertRow = dataView.getDataViewPageContext().getCurrentRows().get(rows[j]);
-                        String sql = dataView.getSQLStatementGenerator().generateInsertStatement(insertRow)[1];
-                        insertSQL += sql.replaceAll("\n", "").replaceAll("\t", "") + ";\n"; // NOI18N
-                    }
-                    ShowSQLDialog dialog = new ShowSQLDialog();
-                    dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
-                    dialog.setText(createSQL + ";\n"+ insertSQL);
-                    dialog.setVisible(true);
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        });
-        tablePopupMenu.add(miCreateSQLScript);
 
         tablePopupMenu.addSeparator();
 
