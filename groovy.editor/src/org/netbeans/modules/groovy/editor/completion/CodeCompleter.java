@@ -1433,12 +1433,14 @@ public class CodeCompleter implements CodeCompletionHandler {
         // try to find the types defined in this compilation unit
 
         ModuleNode mn =  null;
-
-        for (Iterator<ASTNode> it = request.path.iterator(); it.hasNext();) {
-            ASTNode current = it.next();
-            if (current instanceof ModuleNode) {
-                LOG.log(Level.FINEST, "Found ModuleNode");
-                mn = (ModuleNode)current;
+        AstPath path = request.path;
+        if (path != null) {
+            for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
+                ASTNode current = it.next();
+                if (current instanceof ModuleNode) {
+                    LOG.log(Level.FINEST, "Found ModuleNode");
+                    mn = (ModuleNode)current;
+                }
             }
         }
 
