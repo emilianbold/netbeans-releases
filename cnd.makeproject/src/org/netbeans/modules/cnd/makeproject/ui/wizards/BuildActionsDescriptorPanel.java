@@ -89,7 +89,7 @@ final class BuildActionsDescriptorPanel implements WizardDescriptor.Panel, NewMa
     public boolean isValid() {
 	boolean valid = ((BuildActionsPanel)getComponent()).valid( wizardDescriptor);
 	if (valid)
-	    wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); // NOI18N
+	    wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
 	return valid;
     }
     

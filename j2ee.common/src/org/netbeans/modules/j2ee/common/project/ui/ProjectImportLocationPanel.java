@@ -172,7 +172,7 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
         File f = new File (sourceLocationPath);
         if (!f.isDirectory() || !f.canRead()) {
 	    String format = NbBundle.getMessage(ProjectImportLocationPanel.class, "MSG_IllegalSources"); //NOI18N
-	    wizardDescriptor.putProperty( "WizardPanel_errorMessage", MessageFormat.format(format, new Object[] {sourceLocationPath})); //NOI18N
+	    wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, MessageFormat.format(format, new Object[] {sourceLocationPath})); //NOI18N
             return false;
         }
 
@@ -182,7 +182,7 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
         f = new File(f, projectName);
         f = ProjectLocationPanel.getCanonicalFile(f);
         if(f == null || !projectName.equals(f.getName())) {
-            settings.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ProjectImportLocationPanel.class, "MSG_ProvideProjectName"));
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(ProjectImportLocationPanel.class, "MSG_ProvideProjectName"));
             return false; // Invalid project name
         }
 
@@ -241,14 +241,14 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
                 }
                 if (file != null) {
                     String format = NbBundle.getMessage (ProjectImportLocationPanel.class,"MSG_ProjectFolderInvalid");
-                    wizardDescriptor.putProperty( "WizardPanel_errorMessage", MessageFormat.format(format, new Object[] {file}));  //NOI18N
+                    wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, MessageFormat.format(format, new Object[] {file}));  //NOI18N
                     return false;
                 }
             }
         }
         if (j2eeModuleType == J2eeModule.CLIENT) {
             if (FileSearchUtility.guessJavaRoots(FileUtil.toFileObject(destFolder)) == null) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ProjectImportLocationPanel.class,"MSG_NoAppClientModule")); //NOI18N
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(ProjectImportLocationPanel.class,"MSG_NoAppClientModule")); //NOI18N
                 return false; // No java project location
             }
         }
@@ -273,7 +273,7 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
     }
 
     private void setErrorMessage(String messageId) {
-        wizardDescriptor.putProperty( "WizardPanel_errorMessage",
+        wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE,
                 messageId == null ? null : NbBundle.getMessage(ProjectImportLocationPanel.class, messageId));
     }
 

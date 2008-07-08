@@ -62,9 +62,9 @@ import org.openide.util.NbBundle;
  */
 public class JavaMELibsVisualPanel extends JPanel {
 
-    private static final String CONTENT_NUMBERED  = "WizardPanel_contentNumbered";  // NOI18N
-    private static final String CONTENT_DISPLAYED = "WizardPanel_contentDisplayed"; // NOI18N
-    private static final String AUTO_WIZARD_STYLE = "WizardPanel_autoWizardStyle";  // NOI18N
+    private static final String CONTENT_NUMBERED  = WizardDescriptor.PROP_CONTENT_NUMBERED;  // NOI18N
+    private static final String CONTENT_DISPLAYED = WizardDescriptor.PROP_CONTENT_DISPLAYED; // NOI18N
+    private static final String AUTO_WIZARD_STYLE = WizardDescriptor.PROP_AUTO_WIZARD_STYLE;  // NOI18N
 
     private static final String DLD_DELETE_TITLE = "MSG_LibraryDeleteTitle";  // NOI18N
     private static final String DLD_DELETE_MSG = "MSG_LibraryDeleteMsg";  // NOI18N
