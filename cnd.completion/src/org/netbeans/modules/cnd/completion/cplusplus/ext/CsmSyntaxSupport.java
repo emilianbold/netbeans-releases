@@ -74,7 +74,7 @@ import org.netbeans.modules.cnd.editor.spi.cplusplus.CCSyntaxSupport;
 * @version 1.00
 * implemented after JavaSyntaxSupport
 */
-
+@Deprecated
 abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
 
     // Internal C++ declaration token processor states
@@ -118,7 +118,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         System.arraycopy(BRACKET_SKIP_TOKENS, 0, COMPLETION_SKIP_TOKENS, 0, brLen);
         System.arraycopy(INCLUDE_COMPLETION_TOKENS, 0, COMPLETION_SKIP_TOKENS, brLen, incLen);
     }
-    
+
     private static final char[] COMMAND_SEPARATOR_CHARS = new char[] {
                 ';', '{', '}'
             };
@@ -134,14 +134,14 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
 
 
     abstract protected CsmFinder getFinder();
-    
+
     @Override
     protected void documentModified(DocumentEvent evt) {
         super.documentModified(evt);
         classFieldMaps.clear();
-        fileVariableMaps.clear();        
+        fileVariableMaps.clear();
     }
-    
+
     protected void setJava15(boolean java15) {
         this.java15 = java15;
     }
@@ -204,8 +204,8 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
                                      }
                                  };
         int lastPos = getDocument().processText(tbp, pos, 0);
-        
-        //ensure we return last command separator from last 
+
+        //ensure we return last command separator from last
         //block of C++ tokens from <startPos;endPos> offset interval
         //AFAIK this is currently needed only for JSP code completion
         TokenItem item = getTokenChain(pos - 1, pos);
@@ -221,7 +221,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
             }
             item = item.getPrevious();
         }
-        
+
         return lastPos;
     }
 
@@ -238,7 +238,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         CsmClassifier ret = null;
 //        CsmClass ret = JavaCompletion.getPrimitiveClass(className);
 //        if (ret == null) {
-//            
+//
 //            ret = getIncludeProc().getClassifier(className);
 //        }
         if (ret == null && searchByName) {
@@ -252,10 +252,10 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         }
         return ret;
     }
-    
+
     protected void refreshClassInfo() {
     }
-    
+
     /** Get the class that belongs to the given position */
     public CsmClass getClass(int pos) {
         return CompletionUtilities.findClassOnPosition(getDocument(), pos);
@@ -265,11 +265,11 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
     public CsmOffsetableDeclaration getDefinition(int pos) {
         return CompletionUtilities.findFunDefinitionOrClassOnPosition(getDocument(), pos);
     }
-    
+
     public boolean isStaticBlock(int pos) {
         return false;
     }
-    
+
     public boolean isAnnotation(int pos) {
         try {
             BaseDocument document = getDocument();
@@ -286,7 +286,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
                 return true;
         } catch (BadLocationException e) {}
         return false;
-    }    
+    }
 
     @Override
     public int[] getFunctionBlock(int[] identifierBlock) throws BadLocationException {
@@ -294,12 +294,12 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         if (!isAnnotation(identifierBlock[0]))
             return retValue;
         return null;
-    }    
-    
+    }
+
     public boolean isAssignable(CsmType from, CsmType to) {
         CsmClassifier fromCls = from.getClassifier();
         CsmClassifier toCls = to.getClassifier();
-        
+
         if (fromCls == null) {
             return false;
         }
@@ -312,35 +312,35 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         if (fromCls.equals(CsmCompletion.NULL_CLASS)) {
             return to.getArrayDepth() > 0 || !CsmCompletion.isPrimitiveClass(toCls);
         }
-        
+
         if (toCls.equals(CsmCompletion.OBJECT_CLASS)) { // everything is object
             return (from.getArrayDepth() > to.getArrayDepth())
             || (from.getArrayDepth() == to.getArrayDepth()
             && !CsmCompletion.isPrimitiveClass(fromCls));
         }
-        
+
         if (from.getArrayDepth() != to.getArrayDepth() ||
                 from.getPointerDepth() != to.getPointerDepth()) {
             return false;
         }
-        
+
         if (fromCls.equals(toCls)) {
             return true; // equal classes
         }
         String tfrom = from.getCanonicalText().toString().replaceAll("const", "").trim(); // NOI18N
         String tto = to.getCanonicalText().toString().replaceAll("const", "").trim(); // NOI18N
-            
+
         if (tfrom.equals(tto)) {
             return true;
         }
         return false;
     }
-    
+
     public CsmType getCommonType(CsmType typ1, CsmType typ2) {
         if (typ1.equals(typ2)) {
             return typ1;
         }
-        
+
         // The following part
         TokenID cls1Kwd = CCTokenContext.getKeyword(typ1.getClassifier().getName().toString());
         TokenID cls2Kwd = CCTokenContext.getKeyword(typ2.getClassifier().getName().toString());
@@ -367,7 +367,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
             return null;
         }
     }
-    
+
     /** Filter the list of the methods (usually returned from
      * Finder.findMethods()) or the list of the constructors
      * by the given parameter specification.
@@ -384,7 +384,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         if (parmTypeList == null) {
             return methodList;
         }
-        
+
         List ret = new ArrayList();
         int parmTypeCnt = parmTypeList.size();
         int cnt = methodList.size();
@@ -408,7 +408,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
                             if (!isAssignable(t, mpt)) {
                                 accept = false;
                                 // TODO: do not break now, count matches
-                                // break; 
+                                // break;
                             } else {
                                 matched++;
                             }
@@ -419,7 +419,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
                         bestMatch = false;
                     }
                 }
-                
+
                 if (accept) {
                     if (bestMatch) {
                         ret.clear();
@@ -438,7 +438,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
                         ret.add(m);
                     }
                 }
-                
+
             } else if (methodParms.length == 0 && parmTypeCnt == 1) { // for cases like f(void)
                 CsmType t = (CsmType)parmTypeList.get(0);
                 if (t != null && "void".equals(t.getText())) { // best match // NOI18N
@@ -481,10 +481,10 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
 
     /** Map holding the [position, class-fields-map] pairs */
     private HashMap classFieldMaps = new HashMap();
-    
+
     /** Map holding the [position, class-fields-map] pairs */
     private HashMap fileVariableMaps = new HashMap();
-    
+
     /** Find the type of the variable. The default behavior is to first
     * search for the local variable declaration and then possibly for
     * the global declaration and if the declaration position is found
@@ -506,7 +506,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
             if (varMap != null) {
                 type = (CsmType) varMap.get(varName);
             }
-        }       
+        }
 
         // then try file local vars
         if (type == null) {
@@ -515,7 +515,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
                 type = (CsmType) varMap.get(varName);
             }
         }
-        
+
         // at the end - globals
         if (type == null) {
             varMap = getGlobalVariableMap(varPos); // try global vars
@@ -525,8 +525,8 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         }
 
         return type;
-    }    
-    
+    }
+
     public Map getClassFieldMap(int offset) {
         Integer posI = new Integer(offset);
         Map varMap = (Map)classFieldMaps.get(posI);
@@ -536,7 +536,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         }
         return varMap;
     }
-    
+
     public Map getFileVariableMap(int offset) {
         Integer posI = new Integer(offset);
         Map varMap = (Map)fileVariableMaps.get(posI);
@@ -546,11 +546,11 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         }
         return varMap;
     }
-    
+
     ///////////////////////////////////////////////////////////////////////////
     //                  build variable maps
     ///////////////////////////////////////////////////////////////////////////
-    
+
     @Override
     protected Map buildLocalVariableMap(int offset) {
         int methodStartPos = getMethodStartPosition(offset);
@@ -560,25 +560,25 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         }
         return null;
     }
-    
+
     @Override
     protected Map buildGlobalVariableMap(int offset) {
         List res = CompletionUtilities.findGlobalVariables(getDocument(), offset);
         return list2Map(res);
-    }    
- 
+    }
+
     protected Map buildClassFieldMap(int offset) {
         List res = CompletionUtilities.findClassFields(getDocument(), offset);
         return list2Map(res);
-    }   
-    
+    }
+
     protected Map buildFileVariableMap(int offset) {
         List res = CompletionUtilities.findFileVariables(getDocument(), offset);
         return list2Map(res);
-    }   
-    
+    }
+
     // utitlies
-    
+
     private Map/*<var-name, CsmType>*/ list2Map(List/*<CsmVariable>*/ vars) {
         if (vars == null || vars.size() == 0) {
             return null;
@@ -593,7 +593,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         }
         return res;
     }
-    
+
     @Override
     protected boolean isAbbrevDisabled(int offset) {
         boolean abbrevDisabled = false;
@@ -628,7 +628,6 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         }
         return abbrevDisabled;
     }
-    
 
     public boolean isIncludeCompletionDisabled(int offset) {
         boolean completionDisabled = true;
@@ -644,10 +643,10 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
                     return completionDisabled = false;
                 }
             }
-        }        
+        }
         return completionDisabled;
     }
-    
+
     public TokenItem getTokenItem(int offset) {
         TokenItem token;
         try {
@@ -664,7 +663,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         }
         return token;
     }
-    
+
     public TokenItem shiftToNonWhiteBwd(TokenItem token) {
         if (token == null) {
             return null;
@@ -690,7 +689,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         } while (token != null);
         return null;
     }
-    
+
     public boolean isCompletionDisabled(int offset) {
         boolean completionDisabled = false;
         TokenID[] disableTokenIds = COMPLETION_SKIP_TOKENS;
@@ -725,13 +724,13 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
             }
         }
         return completionDisabled;
-    }        
+    }
 
     public boolean needShowCompletionOnText(JTextComponent target, String typedText) throws BadLocationException {
-        boolean showCompletion = false;    
+        boolean showCompletion = false;
         char typedChar = typedText.charAt(0);
         if (typedChar == ' ' || typedChar == '>' || typedChar == ':' || typedChar == '.' || typedChar == '*') {
-            
+
             int dotPos = target.getCaret().getDot();
             BaseDocument doc = (BaseDocument)target.getDocument();
             TokenItem item = getTokenChain(dotPos - 1, dotPos);
@@ -767,19 +766,19 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
                     }
                     break;
                 case '*': // completion after star
-                    if (item != null && 
+                    if (item != null &&
                             (item.getTokenID() == CCTokenContext.ARROWMBR ||
                              item.getTokenID() == CCTokenContext.DOTMBR)) {
                         showCompletion = true;
                     }
-                    break;                    
+                    break;
                 case ':': // completion after scope
                     if (item != null && item.getTokenID() == CCTokenContext.SCOPE) {
                         showCompletion = true;
                     }
                     break;
             }
-        }      
+        }
         return showCompletion;
     }
 
