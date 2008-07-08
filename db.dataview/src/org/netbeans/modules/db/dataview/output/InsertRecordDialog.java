@@ -138,8 +138,9 @@ public class InsertRecordDialog extends javax.swing.JDialog {
         jTextArea1.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
         jPanel1.add(jTextArea1, java.awt.BorderLayout.NORTH);
 
-        jPanel4.setFont(jPanel4.getFont().deriveFont(jPanel4.getFont().getSize()+1f));
+        jPanel4.setFont(jPanel4.getFont());
         jPanel4.setPreferredSize(new java.awt.Dimension(520, 33));
+        jPanel4.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
 
         executeBtn.setFont(executeBtn.getFont());
         executeBtn.setMnemonic('E');
@@ -184,7 +185,6 @@ public class InsertRecordDialog extends javax.swing.JDialog {
 
         jSplitPane1.setDividerLocation(250);
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane1.setFont(jSplitPane1.getFont());
         jSplitPane1.setLastDividerLocation(250);
         jSplitPane1.setRequestFocusEnabled(false);
 
