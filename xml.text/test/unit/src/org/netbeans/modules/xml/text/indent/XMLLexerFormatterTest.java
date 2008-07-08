@@ -56,6 +56,7 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         TestSuite suite = new TestSuite();
         suite.addTest(new XMLLexerFormatterTest("testFormat"));
         suite.addTest(new XMLLexerFormatterTest("testFormatSubsection"));
+        suite.addTest(new XMLLexerFormatterTest("testFormatForTab"));
         return suite;
     }
     
@@ -80,6 +81,17 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         BaseDocument formattedDoc = formatter.doReformat(inputDoc, 72, 97);
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
         BaseDocument outputDoc = getDocument("output_sub.xml");        
+        assert(compare(formattedDoc, outputDoc));
+    }
+    
+    //for bug 139160
+    public void testFormatForTab() throws Exception {
+        BaseDocument inputDoc = getDocument("input2.xsd");
+        //format the inputDoc
+        XMLLexerFormatter formatter = new XMLLexerFormatter(null);
+        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
+        BaseDocument outputDoc = getDocument("output2.xsd");        
         assert(compare(formattedDoc, outputDoc));
     }
     
