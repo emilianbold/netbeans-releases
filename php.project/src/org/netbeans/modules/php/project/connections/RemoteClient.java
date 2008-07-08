@@ -375,9 +375,9 @@ public class RemoteClient {
             assert fo1 != null;
             assert fo2 != null;
             if (fo1.isData()) {
-                return 1;
-            } else if (fo2.isData()) {
                 return -1;
+            } else if (fo2.isData()) {
+                return 1;
             }
             return 0;
         }
