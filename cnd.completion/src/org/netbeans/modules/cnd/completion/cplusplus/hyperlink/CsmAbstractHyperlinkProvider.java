@@ -46,14 +46,14 @@ import java.text.MessageFormat;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.editor.BaseDocument;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.cnd.api.lexer.CndTokenUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.completion.cplusplus.NbCsmSyntaxSupport;
-import org.netbeans.modules.cnd.completion.cplusplus.utils.Token;
-import org.netbeans.modules.cnd.completion.cplusplus.utils.TokenUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.util.NbBundle;
 
@@ -63,18 +63,20 @@ import org.openide.util.NbBundle;
  */
 public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProvider {
 
+    private Token<CppTokenId> jumpToken = null;
+
     protected CsmAbstractHyperlinkProvider() {
         DefaultCaret caret = new DefaultCaret();
         caret.setMagicCaretPosition(null);        
     }
     
-    protected abstract void performAction(final BaseDocument originalDoc, final JTextComponent target, final int offset);
+    protected abstract void performAction(final Document originalDoc, final JTextComponent target, final int offset);
 
     public void performClickAction(Document originalDoc, final int offset) {
-        if (!(originalDoc instanceof BaseDocument))
+        if (!(originalDoc instanceof Document))
             return ;
         
-        final BaseDocument doc = (BaseDocument) originalDoc;
+        final Document doc = (Document) originalDoc;
         final JTextComponent target = Utilities.getFocusedComponent();
         
         if (target == null || target.getDocument() != doc)
@@ -93,23 +95,18 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProvider 
         return isValidToken(token);
     }
     
-    protected abstract boolean isValidToken(Token token);
+    protected abstract boolean isValidToken(Token<CppTokenId> token);
     
     public int[] getHyperlinkSpan(Document doc, int offset) {
         Token token = getToken(doc, offset);
         if (isValidToken(token)) {
-            return new int[] {token.getStartOffset(), token.getEndOffset()};
+            return new int[] {token.offset(null), token.offset(null) + token.length()};
         } else {
             return null;
         }
     }  
     
-    protected static Token getToken(Document doc, int offset) {
-        return TokenUtilities.getToken(doc, offset);
-    }
-    
-    private Token jumpToken = null;
-    protected boolean preJump(BaseDocument doc, JTextComponent target, int offset, String msgKey) {
+    protected boolean preJump(Document doc, JTextComponent target, int offset, String msgKey) {
         if (doc == null || target == null || offset < 0 || offset > doc.getLength()) {
             return false;
         }
@@ -117,7 +114,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProvider 
         if (!isValidToken(jumpToken)) {
             return false;
         }
-        String name = jumpToken.getText();
+        String name = jumpToken.text().toString();
         String msg = NbBundle.getBundle(NbCsmSyntaxSupport.class).getString(msgKey); //NOI18N
         msg = MessageFormat.format(msg, new Object [] { name });
         org.openide.awt.StatusDisplayer.getDefault().setStatusText(msg);//NOI18N
@@ -140,7 +137,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProvider 
                 name = itemDesc;
             } else {
                 key = "cannot-open-csm-element";// NOI18N
-                name = jumpToken.getText();
+                name = jumpToken.text().toString();
             }
             
             String msg = NbBundle.getBundle(NbCsmSyntaxSupport.class).getString(key);
@@ -154,5 +151,8 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProvider 
     protected Token getJumpToken() {
         return this.jumpToken;
     }
-    
+
+    static Token<CppTokenId> getToken(Document doc, int offset) {
+        return CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
+    }
 }

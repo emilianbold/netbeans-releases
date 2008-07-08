@@ -1,16 +1,10 @@
-'defined', tokenID=identifier, offset=2110 [42:6/2110-42:13/2117]
---OWNER:
-    null
---RESOLVED TO:
-    null
-==============================================================
-'MODULE_H', tokenID=identifier, offset=2118 [42:14/2118-42:22/2126]
+'MODULE_H', tokenID=preprocessor_identifier, offset=2118 [42:14/2118-42:22/2126]
 --OWNER:
     null
 --RESOLVED TO:
     MACROS #define 'MODULE_H' [43:1/2127-43:17/2143]
 ==============================================================
-'MODULE_H', tokenID=identifier, offset=2135 [43:9/2135-43:17/2143]
+'MODULE_H', tokenID=preprocessor_identifier, offset=2135 [43:9/2135-43:17/2143]
 --OWNER:
     MACROS #define 'MODULE_H' [43:1/2127-43:17/2143]
 --RESOLVED TO:
