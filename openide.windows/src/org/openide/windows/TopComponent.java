@@ -555,7 +555,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * @param displayName the display name of the action
      * @param image the image to associated with the action
      * 
-     * @since 6.23
+     * @since 6.24
      */
     public static Action openAction(TopComponent component, String displayName, Image image) {
         return new OpenComponentAction(component, displayName, image);
