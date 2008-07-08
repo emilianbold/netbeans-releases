@@ -133,6 +133,7 @@ import org.netbeans.modules.uml.drawingarea.actions.SQDMessageConnectProvider;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
 import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
 import org.netbeans.modules.uml.drawingarea.palette.context.SwingPaletteManager;
+import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator.SQDDiagramEngineExtension;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
@@ -1218,7 +1219,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
     
     public void diagramChanged()
     {
-        if(Boolean.TRUE.equals(getSettingValue(SHOW_INTERACTION_BOUNDARY)))
+        if(Boolean.TRUE.equals(getSettingValue(SHOW_INTERACTION_BOUNDARY)) && !PersistenceUtil.isDiagramLoading())
         {
             new AfterValidationExecutor(new ActionProvider()
             {
