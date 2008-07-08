@@ -5,7 +5,7 @@
 
 package org.netbeans.modules.web.client.javascript.debugger.http.ui;
 
-import apple.awt.ComponentModel;
+
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -50,7 +50,7 @@ final class HttpMonitorTopComponent extends TopComponent {
     private static final String PREFERRED_ID = "HttpMonitorTopComponent";
     private static JComponent tableView;
     private final ActivitiesPropertyChange activityPropertyChangeListener = new ActivitiesPropertyChange();
-    
+
     private HttpMonitorTopComponent() {
         initComponents();
         setName(NbBundle.getMessage(HttpMonitorTopComponent.class, "CTL_HttpMonitorTopComponent"));
@@ -69,10 +69,10 @@ final class HttpMonitorTopComponent extends TopComponent {
         assert tableView instanceof ExplorerManager.Provider;
 
         activitiesPanel.add(tableView, BorderLayout.CENTER);
-        
+
         ExplorerManager activityExplorerManager = ((ExplorerManager.Provider)tableView).getExplorerManager();
         activityExplorerManager.addPropertyChangeListener(  activityPropertyChangeListener );
-        DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_CURRENT_SESSION, new DebuggerManagerListenerImpl());     
+        DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_CURRENT_SESSION, new DebuggerManagerListenerImpl());
     }
 
     private void resetSessionInfo(Session session) {
@@ -100,11 +100,11 @@ final class HttpMonitorTopComponent extends TopComponent {
 
 
     private class ActivitiesPropertyChange implements PropertyChangeListener {
-        
+
         public void propertyChange(PropertyChangeEvent evt) {
             if( evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES) ){
                 if( reqHeaderTextArea != null ){
-                    
+
                     assert evt.getNewValue() instanceof Node[];
                     Node[] nodes = (Node[])evt.getNewValue();
                     if ( nodes == null || nodes.length < 1 ){
@@ -114,7 +114,7 @@ final class HttpMonitorTopComponent extends TopComponent {
                         resBodyTextArea.setText("");
                         return;
                     }
-                    
+
                     assert nodes[0] instanceof Node;
                     Node aNode = (Node)nodes[0];
                     HttpActivity activity = aNode.getLookup().lookup(HttpActivity.class);
@@ -123,7 +123,7 @@ final class HttpMonitorTopComponent extends TopComponent {
                         assert request != null;
                         reqHeaderTextArea.setText(request.getHeader().toString());
                         reqParamTextArea.setText(request.getUrlParams().toString());
-                        
+
                         JSHttpResponse response = activity.getResponse();
                         if( response != null ){
                             resHeaderTextArea.setText(response.getHeader().toString());
@@ -135,7 +135,7 @@ final class HttpMonitorTopComponent extends TopComponent {
                     }
                 }
             }
-            
+
         }
     }
 
@@ -155,15 +155,15 @@ final class HttpMonitorTopComponent extends TopComponent {
         double height = httpMonitorSplitPane.getHeight();
         double dividerLocPorportional1 = dividerLoc1/height;
         NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_HttpMonitorSplitPane_DIVIDERLOC, dividerLocPorportional1);
-    
+
         double dividerLoc2 = detailsSplitPane.getDividerLocation();
         double width = detailsSplitPane.getWidth();
         double dividerLocPorportional2 = dividerLoc2/width;
         NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_DetailsSplitPane_DIVIDERLOC, dividerLocPorportional2);
-    
+
     }
-    
-    
+
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
