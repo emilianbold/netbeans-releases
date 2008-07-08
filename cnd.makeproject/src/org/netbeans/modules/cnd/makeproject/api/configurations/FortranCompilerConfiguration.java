@@ -124,7 +124,7 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
     // Sheet
     public Sheet getGeneralSheet(MakeConfiguration conf) {
 	Sheet sheet = new Sheet();
-        CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue());
+        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         BasicCompiler fortranCompiler = (BasicCompiler)compilerSet.getTool(Tool.FortranCompiler);
         
 	sheet.put(getBasicSet());
