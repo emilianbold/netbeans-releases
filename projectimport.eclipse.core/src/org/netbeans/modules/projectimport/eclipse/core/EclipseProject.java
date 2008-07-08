@@ -55,6 +55,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.projectimport.eclipse.core.spi.DotClassPathEntry;
 import org.netbeans.modules.projectimport.eclipse.core.spi.Facets;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory;
+import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory.ProjectDescriptor;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
@@ -211,12 +212,23 @@ public final class EclipseProject implements Comparable {
         performRecognitionIfNeeded();
         return projectFactory;
     }
+
+    private ProjectDescriptor getProjectDescriptor() {
+        return new ProjectTypeFactory.ProjectDescriptor(getDirectory(), natures, projectFacets);
+    }
+    
+    File  getProjectFileLocation(String token) {
+        if (!isImportSupported()) {
+            return null;
+        }
+        return getProjectTypeFactory().getProjectFileLocation(getProjectDescriptor(), token);
+    }
     
     private void performRecognitionIfNeeded() {
         if (importSupported == null) {
             importSupported = Boolean.FALSE;
             for (ProjectTypeFactory factory : projectTypeFactories.allInstances()) {
-                if (factory.canHandle(new ProjectTypeFactory.ProjectDescriptor(getDirectory(), natures, projectFacets))) {
+                if (factory.canHandle(getProjectDescriptor())) {
                     this.projectFactory = factory;
                     importSupported = Boolean.TRUE;
                     break;
@@ -268,7 +280,7 @@ public final class EclipseProject implements Comparable {
             Collections.EMPTY_SET : projectsWeDependOn;
     }
 
-    void evaluateContainers(List<String> importProblems) {
+    void resolveContainers(List<String> importProblems) throws IOException {
         for (DotClassPathEntry entry : cp.getClassPathEntries()) {
             if (entry.getKind() != DotClassPathEntry.Kind.CONTAINER) {
                 continue;
@@ -277,13 +289,21 @@ public final class EclipseProject implements Comparable {
         }
     }
     
-    void setupEvaluatedContainers(List<String> importProblems) throws IOException {
+    void replaceContainers() {
+        List<DotClassPathEntry> newCp = new ArrayList<DotClassPathEntry>();
         for (DotClassPathEntry entry : cp.getClassPathEntries()) {
             if (entry.getKind() != DotClassPathEntry.Kind.CONTAINER) {
+                newCp.add(entry);
                 continue;
             }
-            ClassPathContainerResolver.setup(workspace, entry, importProblems);
+            List<DotClassPathEntry> repl = ClassPathContainerResolver.replaceContainerEntry(this, workspace, entry, importProblems);
+            if (repl != null) {
+                newCp.addAll(repl);
+            } else {
+                newCp.add(entry);
+            }
         }
+        cp.updateClasspath(newCp);
     }
     
     void setupEnvironmentVariables(List<String> importProblems) throws IOException {

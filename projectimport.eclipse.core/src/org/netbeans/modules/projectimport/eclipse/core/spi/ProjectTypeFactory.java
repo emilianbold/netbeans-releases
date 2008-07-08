@@ -51,6 +51,11 @@ import org.netbeans.api.project.Project;
  */
 public interface ProjectTypeFactory {
 
+    /* Preferably should be moved and handled in web module but it would
+     * require too much SPI so for now core will handle this and resolve
+     * org.eclipse.jst.j2ee.internal.web.container container.
+     */
+    public static final String FILE_LOCATION_TOKEN_WEBINF = "webinf";
     
     /**
      * Returns true if this factory understands given eclipse natures and can
@@ -85,13 +90,22 @@ public interface ProjectTypeFactory {
     boolean prepare();
 
     /**
+     * Return location of a file identified by the token in the given project.
+     * Used for resolving or replacing of Eclipse classpath containers.
+     * @param token textual representation of some area within a project; could
+     *  be for example 'sources', 'tests', etc.; at the moment only 
+     *  FILE_LOCATION_TOKEN_WEBINF is defined and required to be provided if 
+     *  appropriate;
+     */
+    File getProjectFileLocation(ProjectDescriptor descriptor, String token);
+
+    /**
      * Eclipse project descriptor.
      */
     public static final class ProjectDescriptor {
         
         private Set<String> natures;
         private Facets facets;
-        // for now intentionally not exposed in API:
         private File eclipseProject;
 
         public ProjectDescriptor(File eclipseProject, Set<String> natures, Facets facets) {
@@ -108,6 +122,10 @@ public interface ProjectTypeFactory {
             return natures;
         }
 
+        public File getEclipseProjectFolder() {
+            return eclipseProject;
+        }
+        
         @Override
         public String toString() {
             return "ProjectDescriptor[project="+eclipseProject+", natures="+natures+", facets="+facets+"]"; // NOI18N

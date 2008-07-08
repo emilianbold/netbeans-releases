@@ -104,7 +104,7 @@ final class WorkspaceParser {
                     "Cannot load workspace properties", e); // NOI18N
         }
     }
-    
+
     private void parseLaunchingPreferences() throws IOException, ProjectImporterException {
         Properties launchProps = EclipseUtils.loadProperties(workspace.getLaunchingPrefsFile());
         for (Iterator it = launchProps.entrySet().iterator(); it.hasNext(); ) {
@@ -233,10 +233,13 @@ final class WorkspaceParser {
         // information we need (we have to do this here because project's
         // classpath needs at least project's names and abs. paths during
         // parsing
-        for (Iterator it = workspace.getProjects().iterator(); it.hasNext(); ) {
-            EclipseProject project = (EclipseProject) it.next();
+        for (EclipseProject project : workspace.getProjects()) {
             project.setWorkspace(workspace);
             ProjectFactory.getInstance().load(project);
+        }
+        
+        for (EclipseProject project : workspace.getProjects()) {
+            project.replaceContainers();
         }
     }
     

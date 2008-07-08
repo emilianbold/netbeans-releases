@@ -42,7 +42,6 @@ package org.netbeans.modules.projectimport.eclipse.j2se;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -54,6 +53,7 @@ import org.netbeans.modules.java.j2seproject.J2SEProjectType;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectFactorySupport;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
+import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory.ProjectDescriptor;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeUpdater;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -183,6 +183,11 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.setProperty(J2SEProjectProperties.JAVAC_DEBUG, Boolean.toString(model.isDebug()));
         helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+    }
+
+    public File getProjectFileLocation(ProjectDescriptor descriptor, String token) {
+        // N/A
+        return null;
     }
 
 }
