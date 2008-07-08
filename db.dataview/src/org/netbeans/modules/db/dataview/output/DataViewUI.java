@@ -301,7 +301,7 @@ class DataViewUI extends JPanel {
         //add refresh button
         URL url = getClass().getResource(imgPrefix + "refresh.png"); // NOI18N
         refreshButton = new JButton(new ImageIcon(url));
-        String nbBundle31 = mLoc.t("RESC031: Refresh records");
+        String nbBundle31 = mLoc.t("RESC017: Refresh Records");
         refreshButton.setToolTipText(nbBundle31.substring(15));
         refreshButton.addActionListener(outputListener);
 
@@ -378,7 +378,7 @@ class DataViewUI extends JPanel {
 
         URL url = getClass().getResource(imgPrefix + "row_add.png"); // NOI18N
         insert = new JButton(new ImageIcon(url));
-        String nbBundle38 = mLoc.t("RESC038: Insert a record.");
+        String nbBundle38 = mLoc.t("RESC018: Insert Record");
         insert.setToolTipText(nbBundle38.substring(15));
         insert.addActionListener(outputListener);
         insert.setEnabled(false);
@@ -386,7 +386,7 @@ class DataViewUI extends JPanel {
 
         url = getClass().getResource(imgPrefix + "row_delete.png"); // NOI18N
         deleteRow = new JButton(new ImageIcon(url));
-        String nbBundle39 = mLoc.t("RESC039: Delete selected records.");
+        String nbBundle39 = mLoc.t("RESC039: Delete Record(s)");
         deleteRow.setToolTipText(nbBundle39.substring(15));
         deleteRow.addActionListener(outputListener);
         deleteRow.setEnabled(false);
@@ -411,7 +411,7 @@ class DataViewUI extends JPanel {
         //add truncate button
         url = getClass().getResource(imgPrefix + "table_truncate.png"); // NOI18N
         truncateButton = new JButton(new ImageIcon(url));
-        String nbBundle42 = mLoc.t("RESC042: Truncate table");
+        String nbBundle42 = mLoc.t("RESC022: Truncate Table");
         truncateButton.setToolTipText(nbBundle42.substring(15));
         truncateButton.addActionListener(outputListener);
         truncateButton.setEnabled(false);

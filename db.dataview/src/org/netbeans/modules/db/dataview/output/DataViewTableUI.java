@@ -159,7 +159,7 @@ class DataViewTableUI extends JTable {
         });
         tablePopupMenu.add(miInsertAction);
 
-        String nbBundle19 = mLoc.t("RESC019: Delete Record(s)");
+        String nbBundle19 = mLoc.t("RESC019: Delete Selected Record(s)");
         final JMenuItem miDeleteAction = new JMenuItem(nbBundle19.substring(15));
         miDeleteAction.addActionListener(new ActionListener() {
 
@@ -169,7 +169,7 @@ class DataViewTableUI extends JTable {
         });
         tablePopupMenu.add(miDeleteAction);
 
-        String nbBundle20 = mLoc.t("RESC020: Commit Record(s)");
+        String nbBundle20 = mLoc.t("RESC020: Commit Selected Record(s)");
         final JMenuItem miCommitAction = new JMenuItem(nbBundle20.substring(15));
         miCommitAction.addActionListener(new ActionListener() {
 
