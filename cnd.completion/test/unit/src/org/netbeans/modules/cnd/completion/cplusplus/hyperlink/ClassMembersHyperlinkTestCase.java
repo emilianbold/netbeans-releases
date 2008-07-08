@@ -97,6 +97,16 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("templateParameters.h", 13, 61, "templateParameters.h", 1, 35); // test for C
     }
 
+    public void testRenamedTemplateParameters() throws Exception {
+        // IZ 138903 : incorrect parsing of template function
+        performTest("templateParameters.h", 89, 18, "templateParameters.h", 82, 1); 
+        performTest("templateParameters.h", 89, 23, "templateParameters.h", 83, 1); 
+        performTest("templateParameters.h", 89, 39, "templateParameters.h", 84, 1); 
+        performTest("templateParameters.h", 89, 43, "templateParameters.h", 85, 1); 
+        performTest("templateParameters.h", 89, 47, "templateParameters.h", 86, 1); 
+        performTest("templateParameters.h", 90, 6, "templateParameters.h", 82, 1); 
+    }
+    
     public void testSameName() throws Exception {
         performTest("main.cc", 53, 10, "main.cc", 51, 1); //sameValue(  in sameValue(sameValue - 1);
         performTest("main.cc", 53, 20, "main.cc", 51, 16); //sameValue-1  in sameValue(sameValue - 1);

@@ -129,7 +129,7 @@ import org.openide.filesystems.FileObject;
  */
 public final class ClientInfo extends JPanel implements WsdlRetriever.MessageReceiver {
 
-    private static final String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
+    private static final String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE; // NOI18N
     private static final int WSDL_FROM_PROJECT = 0;
     private static final int WSDL_FROM_FILE = 1;
     private static final int WSDL_FROM_URL = 2;
@@ -1180,7 +1180,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, ""); //NOI18N
         }
         
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
         
         return true;
     }
@@ -1287,7 +1287,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
                 if ( (!jsr109Supported && !jsr109oldSupported) || jaxWsInJ2ee14Supported ||
                         (!jsr109Supported && jsr109oldSupported/* && jwsdpSupported*/)) {
                     if (Util.isSourceLevel14orLower(project)) {
-                        wizardDescriptor.putProperty("WizardPanel_errorMessage",
+                        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                                 NbBundle.getMessage(ClientInfo.class, "ERR_NeedProperSourceLevel")); // NOI18N
                         return false;
                     }

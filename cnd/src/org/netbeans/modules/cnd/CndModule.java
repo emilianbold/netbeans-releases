@@ -87,7 +87,7 @@ public class CndModule extends ModuleInstall {
     
     private void setExecutionPermission(String relpath) {
         File file = InstalledFileLocator.getDefault().locate(relpath, null, false);
-        if (file.exists()) {
+        if (file != null && file.exists()) {
             ProcessBuilder pb = new ProcessBuilder("/bin/chmod", "755", file.getAbsolutePath()); // NOI18N
             try {
                 pb.start();

@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -54,7 +55,6 @@ import org.openide.util.NbBundle;
 public class DevelopmentHostConfiguration {
     
     public static final String PROP_DEV_HOST = "devHost"; // NOI18N
-    private final static String LOCALHOST = "localhost"; // NOI18N
     
     private int def;
     private int value;
@@ -109,7 +109,7 @@ public class DevelopmentHostConfiguration {
                 setValue(v, true);
             }
         } else {
-            setValue(LOCALHOST, true);
+            setValue(CompilerSetManager.LOCALHOST, true);
         }
     }
     
@@ -174,7 +174,7 @@ public class DevelopmentHostConfiguration {
             String[] nu = serverList.getServerNames();
             return nu;
         }
-        return new String[] { LOCALHOST };
+        return new String[] { CompilerSetManager.LOCALHOST };
     }
     
     private static ServerList getServerList() {
@@ -185,6 +185,6 @@ public class DevelopmentHostConfiguration {
     }
     
     public boolean isLocalhost() {
-        return LOCALHOST.equals(getName());
+        return CompilerSetManager.LOCALHOST.equals(getName());
     }
 }

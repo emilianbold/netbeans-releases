@@ -227,7 +227,9 @@ public class Installer extends ModuleInstall implements Runnable {
     @Override
     public final void close() {
         UIHandler.flushImmediatelly();
+        closeLogStream();
         MetricsHandler.flushImmediatelly();
+        closeLogStreamMetrics();
     }
     
     public final void doClose() {
@@ -1083,41 +1085,41 @@ public class Installer extends ModuleInstall implements Runnable {
             }
             
             if (submit) { // NOI18N
-                if (isSubmiting.getAndSet(true)){
+                if (isSubmiting.getAndSet(true)) {
                     LOG.info("ALREADY SUBMITTING"); // NOI18N
                     return;
                 }
-                final List<LogRecord> recs = getLogs();
-                saveUserName();
-                LogRecord userData = getUserData(true);
-                LogRecord thrownLog = getThrownLog();
-                if (thrownLog != null){
-                    recs.add(thrownLog);//exception selected by user
-                }
-                recs.add(TimeToFailure.logFailure());
-                recs.add(userData);
-                if ((report)&&!(reportPanel.asAGuest())){
-                    try{
-                        if (!checkUserName()){
+                try {
+                    final List<LogRecord> recs = getLogs();
+                    saveUserName();
+                    LogRecord userData = getUserData(true);
+                    LogRecord thrownLog = getThrownLog();
+                    if (thrownLog != null) {
+                        recs.add(thrownLog);//exception selected by user
+                    }
+                    recs.add(TimeToFailure.logFailure());
+                    recs.add(userData);
+                    if ((report) && !(reportPanel.asAGuest())) {
+                        if (!checkUserName()) {
                             reportPanel.showWrongPassword();
-                            isSubmiting.set(false);
                             return;
                         }
-                    }catch(InterruptedException exc){
-                        LOG.log(Level.INFO, "PASSWORD CHECKING FAILED", exc);// NOI18N
-                    }finally{
-                        isSubmiting.set(false);
                     }
+                    LOG.fine("posting upload");// NOI18N
+                    RP.post(new Runnable() {
+
+                        public void run() {
+                            uploadAndPost(recs, universalResourceLocator[0]);
+                        }
+                    });
+                    okToExit = false;
+                    // this should close the descriptor
+                    doCloseDialog();
+                } catch (InterruptedException exc) {
+                    LOG.log(Level.INFO, "submitting data failed", exc);// NOI18N
+                } finally {
+                    isSubmiting.set(false);
                 }
-                RP.post(new Runnable() {
-                    public void run() {
-                        uploadAndPost(recs, universalResourceLocator[0]);
-                    }
-                });
-                okToExit = false;
-                // this should close the descriptor
-                doCloseDialog();
-                isSubmiting.set(false);
                 return;
             }
             
@@ -1242,10 +1244,6 @@ public class Installer extends ModuleInstall implements Runnable {
             saveUserName();
             params.add(settings.getUserName());
             addMoreLogs(params, openPasswd);
-            List<String> buildInfo = BuildInfo.logBuildInfo();
-                if (buildInfo != null) {
-                    params.addAll(buildInfo);
-                }
             userData = new LogRecord(Level.CONFIG, USER_CONFIGURATION);
             userData.setResourceBundle(NbBundle.getBundle(Installer.class));
             userData.setResourceBundleName(Installer.class.getPackage().getName()+".Bundle");
@@ -1296,7 +1294,7 @@ public class Installer extends ModuleInstall implements Runnable {
         return message;
     }
     
-    private static final class SubmitInteractive extends Submit 
+    static final class SubmitInteractive extends Submit 
     implements HyperlinkListener {
         private boolean connectDialog;
         private Dialog d;
@@ -1443,6 +1441,10 @@ public class Installer extends ModuleInstall implements Runnable {
                     LOG.log(Level.WARNING, "PASSWORD ENCRYPTION ERROR", exc);// NOI18N
                 } catch (IOException exc) {
                     LOG.log(Level.WARNING, "PASSWORD ENCRYPTION ERROR", exc);// NOI18N
+                }
+                List<String> buildInfo = BuildInfo.logBuildInfo();
+                if (buildInfo != null) {
+                    params.addAll(buildInfo);
                 }
             }
         }

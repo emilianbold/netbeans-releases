@@ -235,6 +235,14 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ138905.cc", 12, 18, "IZ138905.cc", 12, 17);
     }
 
+    public void testIZ139056() throws Exception {
+        // IZ#139056 : using directive affects only single namespace definition
+        performTest("IZ139056.cc", 10, 8, "IZ139056.cc", 2, 5);
+        performTest("IZ139056.cc", 10, 24, "IZ139056.cc", 2, 5);
+        performTest("IZ139056.cc", 15, 8, "IZ139056.cc", 2, 5);
+        performTest("IZ139056.cc", 15, 24, "IZ139056.cc", 2, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

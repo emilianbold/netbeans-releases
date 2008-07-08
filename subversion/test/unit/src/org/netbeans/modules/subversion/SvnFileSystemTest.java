@@ -194,8 +194,10 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
                         }
                     }                                    
                 }    
-            }            
-            client.addFile(filesToAdd.toArray(new File[filesToAdd.size()]), true);                                                      
+            }
+            for (File file : filesToAdd) {
+                client.addFile(file);
+            }
             client.commit(new File[] {getWorkDir()}, "commit", true);
             FileStatusCache cache = Subversion.getInstance().getStatusCache();
             for (File file : filesToAdd) {

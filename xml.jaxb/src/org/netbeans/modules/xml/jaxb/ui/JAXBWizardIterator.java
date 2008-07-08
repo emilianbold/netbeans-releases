@@ -128,7 +128,7 @@ public class JAXBWizardIterator implements TemplateWizard.Iterator  {
     public void initialize(WizardDescriptor wiz) {
         this.wizardDescriptor = wiz;
         
-        Object prop = wiz.getProperty("WizardPanel_contentData"); //NOI18N
+        Object prop = wiz.getProperty(WizardDescriptor.PROP_CONTENT_DATA); //NOI18N
         String[] beforeSteps = null;
         if (prop != null && prop instanceof String[]) {
             beforeSteps = (String[]) prop;
@@ -141,10 +141,10 @@ public class JAXBWizardIterator implements TemplateWizard.Iterator  {
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", //NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, //NOI18N
                                                     new Integer(i)); 
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); //NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); //NOI18N
             }
         }        
     }
@@ -204,7 +204,7 @@ public class JAXBWizardIterator implements TemplateWizard.Iterator  {
         wiz.putProperty(JAXBWizModuleConstants.EXISTING_SCHEMA_NAMES, schemas);
         initWizardPanels();     
 
-        Object prop = wiz.getProperty("WizardPanel_contentData"); // NOI18N
+        Object prop = wiz.getProperty(WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
         String[] beforeSteps = null;
         if (prop != null && prop instanceof String[]) {
             beforeSteps = (String[]) prop;
@@ -220,10 +220,10 @@ public class JAXBWizardIterator implements TemplateWizard.Iterator  {
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", //NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, //NOI18N
                         new Integer(i)); 
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); //NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); //NOI18N
             }
         }
         

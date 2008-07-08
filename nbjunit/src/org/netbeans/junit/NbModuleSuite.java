@@ -420,7 +420,11 @@ public class NbModuleSuite {
                 }
             }
             
-            File jdkLib = new File(new File(System.getProperty("java.home")).getParentFile(), "lib");
+            File jdkHome = new File(System.getProperty("java.home"));
+            if (!"Mac OS X".equals(System.getProperty("os.name"))) {
+                jdkHome = jdkHome.getParentFile();
+            }
+            File jdkLib = new File(jdkHome, "lib");
             if (jdkLib.isDirectory()) {
                 for (File jar : jdkLib.listFiles()) {
                     if (jar.getName().endsWith(".jar")) {

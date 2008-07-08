@@ -172,11 +172,17 @@ public class Reformatter implements ReformatTask {
         TreePath path = getCommonPath(startOffset, endOffset);
         if (path == null)
             return;
-        for (Diff diff : Pretty.reformat(controller, path, cs, templateEdit)) {
+        for (Diff diff : Pretty.reformat(controller, path, cs, startOffset, endOffset, templateEdit)) {
             int start = diff.getStartOffset();
             int end = diff.getEndOffset();
             String text = diff.getText();
-            if (startOffset > end || endOffset <= start || embeddingOffset >= start)
+            if (startOffset > end)
+                continue;
+            if (endOffset < start)
+                continue;
+            if (endOffset == start && (text == null || !text.trim().equals("}"))) //NOI18N
+                continue;
+            if (embeddingOffset >= start)
                 continue;
             if (startOffset >= start) {
                 if (text != null && text.length() > 0) {
@@ -353,14 +359,17 @@ public class Reformatter implements ReformatTask {
         private boolean templateEdit;
         private LinkedList<Diff> diffs = new LinkedList<Diff>();
         private DanglingElseChecker danglingElseChecker = new DanglingElseChecker();
+        private CompilationUnitTree root;
+        private int startOffset;
+        private int endOffset;
 
-        private Pretty(CompilationInfo info, TreePath path, CodeStyle cs, boolean templateEdit) {
+        private Pretty(CompilationInfo info, TreePath path, CodeStyle cs, int startOffset, int endOffset, boolean templateEdit) {
             this(info.getText(), info.getTokenHierarchy().tokenSequence(JavaTokenId.language()),
-                    path, info.getTrees().getSourcePositions(), cs);
+                    path, info.getTrees().getSourcePositions(), cs, startOffset, endOffset);
             this.templateEdit = templateEdit;
         }
         
-        private Pretty(String text, TokenSequence<JavaTokenId> tokens, TreePath path, SourcePositions sp, CodeStyle cs) {
+        private Pretty(String text, TokenSequence<JavaTokenId> tokens, TreePath path, SourcePositions sp, CodeStyle cs, int startOffset, int endOffset) {
             this.fText = text;
             this.sp = sp;
             this.cs = cs;
@@ -394,10 +403,13 @@ public class Reformatter implements ReformatTask {
                 tokens.move((int)sp.getStartPosition(path.getCompilationUnit(), tree));
             }
             tokens.moveNext();
+            this.root = path.getCompilationUnit();
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
         }
 
-        public static LinkedList<Diff> reformat(CompilationInfo info, TreePath path, CodeStyle cs, boolean templateEdit) {
-            Pretty pretty = new Pretty(info, path, cs, templateEdit);
+        public static LinkedList<Diff> reformat(CompilationInfo info, TreePath path, CodeStyle cs, int startOffset, int endOffset, boolean templateEdit) {
+            Pretty pretty = new Pretty(info, path, cs, startOffset, endOffset, templateEdit);
             if (pretty.indent >= 0)
                 pretty.scan(path, null);
             if (path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
@@ -412,7 +424,7 @@ public class Reformatter implements ReformatTask {
         }
 
         public static LinkedList<Diff> reformat(String text, TokenSequence<JavaTokenId> tokens, TreePath path, SourcePositions sp, CodeStyle cs) {
-            Pretty pretty = new Pretty(text, tokens, path, sp, cs);
+            Pretty pretty = new Pretty(text, tokens, path, sp, cs, 0, text.length());
             pretty.scan(path, null);
             tokens.moveEnd();
             tokens.movePrevious();
@@ -1416,7 +1428,8 @@ public class Reformatter implements ReformatTask {
             indent = old;
             StatementTree elseStat = node.getElseStatement();
             CodeStyle.BracesGenerationStyle redundantIfBraces = cs.redundantIfBraces();
-            if (elseStat != null && redundantIfBraces == CodeStyle.BracesGenerationStyle.ELIMINATE && danglingElseChecker.hasDanglingElse(node.getThenStatement()))
+            if ((elseStat != null && redundantIfBraces == CodeStyle.BracesGenerationStyle.ELIMINATE && danglingElseChecker.hasDanglingElse(node.getThenStatement())) ||
+                    (redundantIfBraces == CodeStyle.BracesGenerationStyle.GENERATE && (startOffset > sp.getStartPosition(root, node) || endOffset < sp.getEndPosition(root, node))))
                 redundantIfBraces = CodeStyle.BracesGenerationStyle.LEAVE_ALONE;
             boolean prevblock = wrapStatement(cs.wrapIfStatement(), redundantIfBraces, cs.spaceBeforeIfLeftBrace() ? 1 : 0, node.getThenStatement());
             if (elseStat != null) {
@@ -1430,7 +1443,10 @@ public class Reformatter implements ReformatTask {
                     space();
                     scan(elseStat, p);
                 } else {
-                    wrapStatement(cs.wrapIfStatement(), cs.redundantIfBraces(), cs.spaceBeforeElseLeftBrace() ? 1 : 0, elseStat);
+                    redundantIfBraces = cs.redundantIfBraces();
+                    if (redundantIfBraces == CodeStyle.BracesGenerationStyle.GENERATE && (startOffset > sp.getStartPosition(root, node) || endOffset < sp.getEndPosition(root, node)))
+                        redundantIfBraces = CodeStyle.BracesGenerationStyle.LEAVE_ALONE;
+                    wrapStatement(cs.wrapIfStatement(), redundantIfBraces, cs.spaceBeforeElseLeftBrace() ? 1 : 0, elseStat);
                 }
                 indent = old;
             }
@@ -1441,7 +1457,10 @@ public class Reformatter implements ReformatTask {
         public Boolean visitDoWhileLoop(DoWhileLoopTree node, Void p) {
             accept(DO);
             int old = indent;
-            boolean prevblock = wrapStatement(cs.wrapDoWhileStatement(), cs.redundantDoWhileBraces(), cs.spaceBeforeDoLeftBrace() ? 1 : 0, node.getStatement());
+            CodeStyle.BracesGenerationStyle redundantDoWhileBraces = cs.redundantDoWhileBraces();
+            if (redundantDoWhileBraces == CodeStyle.BracesGenerationStyle.GENERATE && (startOffset > sp.getStartPosition(root, node) || endOffset < sp.getEndPosition(root, node)))
+                redundantDoWhileBraces = CodeStyle.BracesGenerationStyle.LEAVE_ALONE;
+            boolean prevblock = wrapStatement(cs.wrapDoWhileStatement(), redundantDoWhileBraces, cs.spaceBeforeDoLeftBrace() ? 1 : 0, node.getStatement());
             if (cs.placeWhileOnNewLine() || !prevblock) {
                 newline();
             } else {
@@ -1464,7 +1483,10 @@ public class Reformatter implements ReformatTask {
             spaces(cs.spaceBeforeWhileParen() ? 1 : 0);
             scan(node.getCondition(), p);
             indent = old;
-            wrapStatement(cs.wrapWhileStatement(), cs.redundantWhileBraces(), cs.spaceBeforeWhileLeftBrace() ? 1 : 0, node.getStatement());
+            CodeStyle.BracesGenerationStyle redundantWhileBraces = cs.redundantWhileBraces();
+            if (redundantWhileBraces == CodeStyle.BracesGenerationStyle.GENERATE && (startOffset > sp.getStartPosition(root, node) || endOffset < sp.getEndPosition(root, node)))
+                redundantWhileBraces = CodeStyle.BracesGenerationStyle.LEAVE_ALONE;
+            wrapStatement(cs.wrapWhileStatement(), redundantWhileBraces, cs.spaceBeforeWhileLeftBrace() ? 1 : 0, node.getStatement());
             return true;
         }
 
@@ -1511,7 +1533,10 @@ public class Reformatter implements ReformatTask {
             }
             accept(RPAREN);
             indent = old;
-            wrapStatement(cs.wrapForStatement(), cs.redundantForBraces(), cs.spaceBeforeForLeftBrace() ? 1 : 0, node.getStatement());
+            CodeStyle.BracesGenerationStyle redundantForBraces = cs.redundantForBraces();
+            if (redundantForBraces == CodeStyle.BracesGenerationStyle.GENERATE && (startOffset > sp.getStartPosition(root, node) || endOffset < sp.getEndPosition(root, node)))
+                redundantForBraces = CodeStyle.BracesGenerationStyle.LEAVE_ALONE;
+            wrapStatement(cs.wrapForStatement(), redundantForBraces, cs.spaceBeforeForLeftBrace() ? 1 : 0, node.getStatement());
             return true;            
         }
 
@@ -1531,7 +1556,10 @@ public class Reformatter implements ReformatTask {
             spaces(cs.spaceWithinForParens() ? 1 : 0);
             accept(RPAREN);
             indent = old;
-            wrapStatement(cs.wrapForStatement(), cs.redundantForBraces(), cs.spaceBeforeForLeftBrace() ? 1 : 0, node.getStatement());
+            CodeStyle.BracesGenerationStyle redundantForBraces = cs.redundantForBraces();
+            if (redundantForBraces == CodeStyle.BracesGenerationStyle.GENERATE && (startOffset > sp.getStartPosition(root, node) || endOffset < sp.getEndPosition(root, node)))
+                redundantForBraces = CodeStyle.BracesGenerationStyle.LEAVE_ALONE;
+            wrapStatement(cs.wrapForStatement(), redundantForBraces, cs.spaceBeforeForLeftBrace() ? 1 : 0, node.getStatement());
             return true;
         }
 
@@ -2581,7 +2609,7 @@ public class Reformatter implements ReformatTask {
                         } else {
                             if (lastBlankLines < 0 && count == ANY_COUNT)
                                 count = lastBlankLines = 1;
-                            String text = getNewlines(count) + getIndent();
+                            String text = after == 1 ? getIndent() : getNewlines(count) + getIndent();
                             if (text.length() > 0)
                                 diffs.addFirst(new Diff(tokens.offset(), tokens.offset(), text));
                         }

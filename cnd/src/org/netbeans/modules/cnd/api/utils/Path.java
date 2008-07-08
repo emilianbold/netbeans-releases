@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.api.utils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.openide.util.Utilities;
 
 /**
@@ -148,6 +149,23 @@ public final class Path {
     public static String getPathName() {
         if (pathName == null) {
             if (Utilities.isWindows()) {
+                for (String key : System.getenv().keySet()) {
+                    if (key.toLowerCase().equals("path")) { // NOI18N
+                        pathName = key.substring(0, 4);
+                        return pathName;
+                    }
+                }
+            }
+            pathName = "PATH"; // NOI18N
+        }
+        return pathName;
+    }
+    
+    public static String getPathName(int platform) {
+        // TODO: we can't cache this
+        // and this class should become non-static with an instance per devhost 
+        if (pathName == null) {
+            if (PlatformTypes.PLATFORM_WINDOWS == platform) {
                 for (String key : System.getenv().keySet()) {
                     if (key.toLowerCase().equals("path")) { // NOI18N
                         pathName = key.substring(0, 4);

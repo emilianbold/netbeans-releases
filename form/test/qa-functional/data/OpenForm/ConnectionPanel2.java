@@ -127,7 +127,7 @@ class ConnectionPanel2 extends javax.swing.JPanel {
 
         updateActionList();
 
-        putClientProperty("WizardPanel_contentSelectedIndex", new Integer(1)); // NOI18N
+        putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(1)); // NOI18N
     }
 
     public java.awt.Dimension getPreferredSize() {

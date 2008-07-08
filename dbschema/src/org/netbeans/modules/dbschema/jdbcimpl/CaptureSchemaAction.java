@@ -43,6 +43,7 @@ package org.netbeans.modules.dbschema.jdbcimpl;
 
 import java.util.ResourceBundle;
 
+import org.openide.WizardDescriptor;
 import org.openide.loaders.*;
 import org.openide.nodes.Node;
 import org.openide.util.actions.*;
@@ -90,10 +91,10 @@ public class CaptureSchemaAction extends CallableSystemAction {
                                     break;
                                 }
                             
-                            wizard.putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); //NOI18N
-                            wizard.putProperty("WizardPanel_contentDisplayed", Boolean.TRUE); //NOI18N
-                            wizard.putProperty("WizardPanel_contentNumbered", Boolean.TRUE); //NOI18N
-                            String[] prop = (String[]) wizard.getProperty("WizardPanel_contentData"); // NOI18N
+                            wizard.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); //NOI18N
+                            wizard.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); //NOI18N
+                            wizard.putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); //NOI18N
+                            String[] prop = (String[]) wizard.getProperty(WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
                             String[] stepsNames = new String[] {
                                 wizard.targetChooser().getClass().toString().trim().equalsIgnoreCase("class org.openide.loaders.TemplateWizard2") ? bundle.getString("TargetLocation") :
                                     prop[0],
@@ -101,7 +102,7 @@ public class CaptureSchemaAction extends CallableSystemAction {
                                     bundle.getString("ConnectionChooser"),
                                     bundle.getString("TablesChooser")
                             };
-                            wizard.putProperty("WizardPanel_contentData", stepsNames); //NOI18N
+                            wizard.putProperty(WizardDescriptor.PROP_CONTENT_DATA, stepsNames); //NOI18N
                             wizard.setTitle(bundle.getString("WizardTitleName"));
                             
                             if(nId >= 0) {

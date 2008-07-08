@@ -42,13 +42,9 @@ package org.netbeans.spi.debugger.jpda;
 
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.api.debugger.jpda.LineBreakpoint;
-import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 
 /**
@@ -691,8 +687,8 @@ public abstract class EditorContext {
         public MethodArgument(String name, String type, Position startPos, Position endPos) {
             this.name = name;
             this.type = type;
-            startPos = startPos;
-            endPos = endPos;
+            this.startPos = startPos;
+            this.endPos = endPos;
         }
         
         /**

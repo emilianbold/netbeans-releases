@@ -47,6 +47,7 @@ import org.openide.util.NbBundle;
 
 import com.sun.collablet.Account;
 import org.netbeans.modules.collab.ui.DefaultUserInterface;
+import org.openide.WizardDescriptor;
 
 /**
  *
@@ -152,7 +153,7 @@ public class AccountInfoPanel extends WizardPanelBase {
             }
 
             // Display a hint to the user
-            settings.getWizardDescriptor().putProperty("WizardPanel_errorMessage", message); // NOI18N
+            settings.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
         }
 
         setValid(valid);

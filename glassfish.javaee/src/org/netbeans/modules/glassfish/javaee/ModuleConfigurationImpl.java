@@ -54,7 +54,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-//import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DatasourceConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DatasourceConfiguration;
 //import org.netbeans.modules.j2ee.deployment.plugins.spi.config.EjbResourceConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ContextRootConfiguration;
 //import org.netbeans.modules.j2ee.deployment.plugins.spi.config.MappingConfiguration;
@@ -73,7 +73,7 @@ import org.openide.util.lookup.Lookups;
  *
  */
 public class ModuleConfigurationImpl implements 
-        //DatasourceConfiguration, 
+        DatasourceConfiguration, 
         DeploymentPlanConfiguration,
         //EjbResourceConfiguration, 
         ContextRootConfiguration, 

@@ -138,7 +138,7 @@ public class ServletIterator implements TemplateWizard.Iterator {
 	}
         
         // Creating steps.
-        Object prop = wizard.getProperty ("WizardPanel_contentData"); // NOI18N
+        Object prop = wizard.getProperty (WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
         String[] beforeSteps = null;
         if (prop != null && prop instanceof String[]) {
             beforeSteps = (String[])prop;
@@ -153,9 +153,9 @@ public class ServletIterator implements TemplateWizard.Iterator {
                 // chooser to appear in the list of steps.
                 steps[i] = jc.getName ();
             }
-	    jc.putClientProperty ("WizardPanel_contentSelectedIndex", // NOI18N
+	    jc.putClientProperty (WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, // NOI18N
 				  new Integer (i)); 
-	    jc.putClientProperty ("WizardPanel_contentData", steps); // NOI18N
+	    jc.putClientProperty (WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
 	}	
     }
 

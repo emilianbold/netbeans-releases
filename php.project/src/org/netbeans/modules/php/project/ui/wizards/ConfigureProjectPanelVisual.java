@@ -54,6 +54,7 @@ import org.netbeans.modules.php.project.ui.LocalServerController;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.Utils.EncodingModel;
 import org.netbeans.modules.php.project.ui.Utils.EncodingRenderer;
+import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
@@ -67,9 +68,9 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
     ConfigureProjectPanelVisual(ConfigureProjectPanel wizardPanel) {
         // Provide a name in the title bar.
         setName(NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_ProjectNameLocation"));
-        putClientProperty("WizardPanel_contentSelectedIndex", 0); // NOI18N
+        putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 0); // NOI18N
         // Step name (actually the whole list for reference).
-        putClientProperty("WizardPanel_contentData", wizardPanel.getSteps()); // NOI18N
+        putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, wizardPanel.getSteps()); // NOI18N
 
         initComponents();
         localServerComponent = LocalServerController.create(localServerComboBox, localServerButton,

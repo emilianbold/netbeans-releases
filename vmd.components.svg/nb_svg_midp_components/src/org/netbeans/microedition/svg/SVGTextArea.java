@@ -67,6 +67,7 @@ import org.w3c.dom.svg.SVGRect;
  *   &lt;/g>
  * </pre>
  * @author ads
+ * @deprecated
  *
  */
 public class SVGTextArea extends SVGComponent {

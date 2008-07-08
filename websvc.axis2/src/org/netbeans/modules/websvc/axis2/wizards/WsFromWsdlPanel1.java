@@ -135,11 +135,11 @@ public class WsFromWsdlPanel1 implements  WizardDescriptor.FinishablePanel<Wizar
 
     public boolean isValid() {
         if ("jibx".equals(component.getDatabindingName()) && !isJiBXRuntime()) { //NOI18N
-            wizardDescriptor.putProperty("WizardPanel_errorMessage",  // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,  // NOI18N
                     NbBundle.getMessage(WsFromWsdlPanel1.class, "MSG_missingJiBX"));
             return false;
         }
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); // NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
         return component.dataIsValid();
     }
     

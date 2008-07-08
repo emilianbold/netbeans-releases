@@ -114,6 +114,24 @@ public abstract class CsmUsingResolver {
     public abstract Collection<CsmNamespace> findVisibleNamespaces(CsmFile file, int offset, CsmProject onlyInProject);
 
     /**
+     * Finds all "using" directives in given namespace.
+     * 
+     * @param namespace  namespace of interest
+     * @return unmodifiable collection of "using" directives in given namespace
+     */
+    public abstract Collection<CsmUsingDirective> findUsingDirectives(CsmNamespace namespace);
+
+    /**
+     * Finds all namespaces visible in given namespace through "using" directives.
+     * 
+     * @param namespace  namespace of interest
+     * @return unmodifiable collection of namespaces visible in given namespace though "using" directives
+     */
+    public Collection<CsmNamespace> findVisibleNamespaces(CsmNamespace namespace) {
+        return extractNamespaces(findUsingDirectives(namespace));
+    }
+
+    /**
      * return all namespace aliases visible for offsetable element, i.e.
      *  namespace B = A;
      *  namespace D = E;
@@ -160,9 +178,9 @@ public abstract class CsmUsingResolver {
                 out.put(name, ref);
             }
         }
-        return new ArrayList<CsmDeclaration>(out.values());        
+        return new ArrayList<CsmDeclaration>(out.values());
     }
-    
+
     //
     // Implementation of the default resolver
     //
@@ -176,6 +194,10 @@ public abstract class CsmUsingResolver {
         
         public Collection<CsmDeclaration> findUsedDeclarations(CsmNamespace namespace) {
             return Collections.<CsmDeclaration>emptyList();
+        }
+
+        public Collection<CsmUsingDirective> findUsingDirectives(CsmNamespace namespace) {
+            return Collections.<CsmUsingDirective>emptyList();
         }
 
         public Collection<CsmNamespace> findVisibleNamespaces(CsmFile file, int offset, CsmProject onlyInProject) {

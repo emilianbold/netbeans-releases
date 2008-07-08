@@ -39,9 +39,6 @@
 
 package org.netbeans.modules.extexecution.api.input;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-
 /**
  *
  * This class is <i>NotThreadSafe</i>.
@@ -54,6 +51,8 @@ public class TestInputProcessor implements InputProcessor {
     private StringBuilder charsProcessed = new StringBuilder();
 
     private int resetCount = 0;
+
+    private boolean closed;
 
     public TestInputProcessor(boolean cleanBytesOnReset) {
         this.cleanBytesOnReset = cleanBytesOnReset;
@@ -70,12 +69,20 @@ public class TestInputProcessor implements InputProcessor {
         }
     }
 
+    public void close() {
+        closed = true;
+    }
+
     public char[] getCharsProcessed() {
         return charsProcessed.toString().toCharArray();
     }
 
     public int getResetCount() {
         return resetCount;
+    }
+
+    public boolean isClosed() {
+        return closed;
     }
 
 }

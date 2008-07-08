@@ -51,8 +51,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.SyntaxSupport;
-import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -74,12 +72,9 @@ import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionProvider;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.QueryScope;
 import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmHyperlinkProvider;
 import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmIncludeHyperlinkProvider;
-import org.netbeans.modules.cnd.completion.cplusplus.utils.Token;
-import org.netbeans.modules.cnd.completion.cplusplus.utils.TokenUtilities;
 import org.netbeans.modules.cnd.completion.csm.CompletionUtilities;
 import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
 import org.netbeans.modules.cnd.completion.csm.CsmOffsetUtilities;
-import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.cookies.EditorCookie;
@@ -90,6 +85,8 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Parameters;
 import org.openide.util.UserQuestionException;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 
 /**
  *
@@ -136,21 +133,21 @@ public final class ReferencesSupport {
         return findReferencedObject(csmFile, doc, offset, null);
     }
     
-    /*static*/ static CsmObject findOwnerObject(CsmFile csmFile, BaseDocument baseDocument, int offset, Token token) {
+    /*static*/ static CsmObject findOwnerObject(CsmFile csmFile, BaseDocument baseDocument, int offset, Token<CppTokenId> token) {
         CsmObject csmOwner = CsmOffsetResolver.findObject(csmFile, offset);
         return csmOwner;
     }
     
-    /*package*/ static CsmObject findReferencedObject(CsmFile csmFile, BaseDocument doc, int offset, Token jumpToken) {
+    /*package*/ static CsmObject findReferencedObject(CsmFile csmFile, BaseDocument doc, int offset, Token<CppTokenId> jumpToken) {
         CsmObject csmItem = null;
         // emulate hyperlinks order
         // first ask includes handler if offset in include sring token  
         CsmInclude incl = null;
-        jumpToken = jumpToken != null ? jumpToken : getTokenByOffset(doc, offset);
+        jumpToken = jumpToken != null ? jumpToken : CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
         if (jumpToken != null) {
-            switch (jumpToken.getTokenID().getNumericID()) {
-                case CCTokenContext.SYS_INCLUDE_ID:
-                case CCTokenContext.USR_INCLUDE_ID:
+            switch (jumpToken.id()) {
+                case PREPROCESSOR_SYS_INCLUDE:
+                case PREPROCESSOR_USER_INCLUDE:
                     // look for include directive
                     incl = findInclude(csmFile, offset);
                     break;
@@ -171,10 +168,9 @@ public final class ReferencesSupport {
         return CsmOffsetUtilities.findObject(csmFile.getIncludes(), null, offset);
     }    
 
-    public static CsmObject findDeclaration(final CsmFile csmFile, final BaseDocument doc, 
+    public static CsmObject findDeclaration(final CsmFile csmFile, final Document doc, 
             Token tokenUnderOffset, final int offset) {
         // fast check, if possible
-        SyntaxSupport sup = doc.getSyntaxSupport();
         int[] idFunBlk = null;
         CsmObject csmItem = null;
         CsmObject objUnderOffset = CsmOffsetResolver.findObject(csmFile, offset);
@@ -201,8 +197,10 @@ public final class ReferencesSupport {
             }
         }
         if (csmItem == null) {
-            try { 
-                idFunBlk = NbEditorUtilities.getIdentifierAndMethodBlock(doc, offset);
+            try {
+                if (doc instanceof BaseDocument) {
+                    idFunBlk = NbEditorUtilities.getIdentifierAndMethodBlock((BaseDocument)doc, offset);
+                }
             } catch (BadLocationException ex) {
                 // skip it
             }
@@ -226,17 +224,17 @@ public final class ReferencesSupport {
         return csmItem;
     }
     
-    public static CsmObject findDeclaration(final CsmFile csmFile, final BaseDocument doc, 
-            Token tokenUnderOffset, final int offset, final QueryScope queryScope) {
+    public static CsmObject findDeclaration(final CsmFile csmFile, final Document doc, 
+            Token<CppTokenId> tokenUnderOffset, final int offset, final QueryScope queryScope) {
         assert csmFile != null;
-        tokenUnderOffset = tokenUnderOffset != null ? tokenUnderOffset : getTokenByOffset(doc, offset);
+        tokenUnderOffset = tokenUnderOffset != null ? tokenUnderOffset : CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
         // no token in document under offset position
         if (tokenUnderOffset == null) {
             return null;
         }
         CsmObject csmObject = null;
         // support for overloaded operators
-        if (tokenUnderOffset.getTokenID() == CCTokenContext.OPERATOR) {
+        if (tokenUnderOffset.id() == CppTokenId.OPERATOR) {
             CsmObject foundObject = CsmOffsetResolver.findObject(csmFile, offset);
             csmObject = foundObject;
             if (CsmKindUtilities.isFunction(csmObject)) {
@@ -258,21 +256,10 @@ public final class ReferencesSupport {
             csmObject = CompletionUtilities.findItemAtCaretPos(null, doc, CsmCompletionProvider.getCompletionQuery(csmFile, queryScope), offset);
         }     
         return csmObject;
-    }
-    
-    private static Token getTokenByOffset(BaseDocument doc, int offset) {
-        Token token = TokenUtilities.getToken(doc, offset);
-//        if (token != null) {
-//            // try prev token if it's end of prev token and prev token is interested one
-//            if (!token.getText().contains("\n")) {
-//                token = TokenUtilities.getToken(doc, offset-1);
-//            }
-//        }
-        return token;
-    }    
+    }  
 
     /*package*/ static ReferenceImpl createReferenceImpl(CsmFile file, BaseDocument doc, int offset) {
-        Token token = getTokenByOffset(doc, offset);
+        Token token = CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
         ReferenceImpl ref = null;
         if (isSupportedToken(token)) {
             ref = createReferenceImpl(file, doc, offset, token);
@@ -280,11 +267,11 @@ public final class ReferencesSupport {
         return ref;
     }
 
-    /*package*/ static ReferenceImpl createReferenceImpl(CsmFile file, BaseDocument doc, TokenItem tokenItem) {
-        Token token = new Token(tokenItem);
-        ReferenceImpl ref = createReferenceImpl(file, doc, tokenItem.getOffset(), token);
-        return ref;
-    }
+//    /*package*/ static ReferenceImpl createReferenceImpl(CsmFile file, BaseDocument doc, TokenItem tokenItem) {
+//        Token token = new Token(tokenItem);
+//        ReferenceImpl ref = createReferenceImpl(file, doc, tokenItem.getOffset(), token);
+//        return ref;
+//    }
     
     public static ReferenceImpl createReferenceImpl(CsmFile file, BaseDocument doc, int offset, Token token) {
         assert token != null;
@@ -293,7 +280,7 @@ public final class ReferencesSupport {
         return ref;
     }
 
-    private static boolean isSupportedToken(Token token) {
+    private static boolean isSupportedToken(Token<CppTokenId> token) {
         return token != null &&
                 (CsmIncludeHyperlinkProvider.isSupportedToken(token) || CsmHyperlinkProvider.isSupportedToken(token));
     }

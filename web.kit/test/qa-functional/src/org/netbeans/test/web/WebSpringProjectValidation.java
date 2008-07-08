@@ -76,6 +76,11 @@ public class WebSpringProjectValidation extends WebProjectValidationEE5 {
         super(name);
     }
 
+    /** Need to be defined because of JUnit */
+    public WebSpringProjectValidation() {
+        super();
+    }
+
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebSpringProjectValidation.class);
         conf = addServerTests(conf, 
