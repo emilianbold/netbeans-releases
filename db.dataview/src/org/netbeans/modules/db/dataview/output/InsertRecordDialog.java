@@ -381,17 +381,18 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
             }
 
             public void keyReleased(KeyEvent ke) {
+                refreshSQL();
             }
         });
 
-        colValueTextField[i].addFocusListener(new FocusListener() {
-            public void focusGained(FocusEvent e) {
-            }
-
-            public void focusLost(FocusEvent e) {
-                    refreshSQL();
-            }
-        });
+//        colValueTextField[i].addFocusListener(new FocusListener() {
+//            public void focusGained(FocusEvent e) {
+//            }
+//
+//            public void focusLost(FocusEvent e) {
+//                    refreshSQL();
+//            }
+//        });
     }
 
     private Object[] getInsertValues() throws DBException {
