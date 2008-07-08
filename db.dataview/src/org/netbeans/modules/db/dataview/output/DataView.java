@@ -57,6 +57,10 @@ import org.openide.awt.StatusDisplayer;
  * DataView to show data of a given sql query string, provides static method to create 
  * the DataView Pannel from a given sql query string and a connection. 
  *
+ * TODO: Show execution plan for executed query
+ * TODO: Navigate foreign key relationships in results
+ * TODO: Save results in various formats (CSV, spreadsheet, html etc)
+ * 
  * @author Ahimanikya Satapathy
  */
 public class DataView {
