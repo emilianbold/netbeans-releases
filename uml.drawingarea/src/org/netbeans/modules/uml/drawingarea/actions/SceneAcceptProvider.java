@@ -473,9 +473,17 @@ public class SceneAcceptProvider implements AcceptProvider
             
             // TODO: Meteora merge 
  
-             for (IPresentationElement presentation : presentations)
+            for (IPresentationElement presentation : presentations)
             {                
                 Widget newWidget = engine.getScene().findWidget(presentation);
+                if(newWidget==null)
+                {
+                    if(presentation.getFirstSubject()!=null)presentation.getFirstSubject().removePresentationElement(presentation);
+                    continue;
+                    //may be connection from project tree, may be some issue but check for npe here, better realization is if isDropPossible above will return false, but it may be hard to have simple check if it's edge or node named element
+                    //anyway if drop failed it may be better to do nothing rather then throw npe in this place
+                    //also clear out such presentations in this loop
+                }
                 Lookup lookup = newWidget.getLookup();
                 WidgetViewManager manager = lookup.lookup(WidgetViewManager.class);
                 if (manager != null)
