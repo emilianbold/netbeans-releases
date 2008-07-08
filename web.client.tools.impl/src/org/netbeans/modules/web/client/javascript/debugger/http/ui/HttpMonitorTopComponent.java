@@ -5,18 +5,23 @@
 
 package org.netbeans.modules.web.client.javascript.debugger.http.ui;
 
-
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
+import java.lang.String;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.swing.JComponent;
 
 
+import javax.swing.event.TableModelListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumnModel;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Session;
@@ -51,12 +56,17 @@ final class HttpMonitorTopComponent extends TopComponent {
     private static JComponent tableView;
     private final ActivitiesPropertyChange activityPropertyChangeListener = new ActivitiesPropertyChange();
 
+    private static final Map<String,String> EMPTY_MAP = Collections.emptyMap();
+    private final MapTableModel reqHeaderTableModel= new MapTableModel(EMPTY_MAP);
+    private final MapTableModel resHeaderTableModel= new MapTableModel(EMPTY_MAP);
+
     private HttpMonitorTopComponent() {
         initComponents();
         setName(NbBundle.getMessage(HttpMonitorTopComponent.class, "CTL_HttpMonitorTopComponent"));
         setToolTipText(NbBundle.getMessage(HttpMonitorTopComponent.class, "HINT_HttpMonitorTopComponent"));
         setIcon(Utilities.loadImage(ICON_PATH, true));
     }
+
 
     private void customInitiallization() {
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
@@ -72,6 +82,7 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         ExplorerManager activityExplorerManager = ((ExplorerManager.Provider)tableView).getExplorerManager();
         activityExplorerManager.addPropertyChangeListener(  activityPropertyChangeListener );
+
         DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_CURRENT_SESSION, new DebuggerManagerListenerImpl());
     }
 
@@ -98,19 +109,20 @@ final class HttpMonitorTopComponent extends TopComponent {
 
     }
 
-
     private class ActivitiesPropertyChange implements PropertyChangeListener {
 
         public void propertyChange(PropertyChangeEvent evt) {
             if( evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES) ){
-                if( reqHeaderTextArea != null ){
+                if( reqHeaderJTable != null ){
 
                     assert evt.getNewValue() instanceof Node[];
                     Node[] nodes = (Node[])evt.getNewValue();
                     if ( nodes == null || nodes.length < 1 ){
-                        reqHeaderTextArea.setText("");
+                        reqHeaderTableModel.setMap(EMPTY_MAP);
+//                        reqHeaderJTable.setText("");
                         reqParamTextArea.setText("");
-                        resHeaderTextArea.setText("");
+                        resHeaderTableModel.setMap(EMPTY_MAP);
+//                        resHeaderJTable.setText("");
                         resBodyTextArea.setText("");
                         return;
                     }
@@ -121,15 +133,18 @@ final class HttpMonitorTopComponent extends TopComponent {
                     if ( activity != null ){
                         JSHttpRequest request = activity.getRequest();
                         assert request != null;
-                        reqHeaderTextArea.setText(request.getHeader().toString());
+                        reqHeaderTableModel.setMap(request.getHeader());
+//                        reqHeaderJTable.setText(request.getHeader().toString());
                         reqParamTextArea.setText(request.getUrlParams().toString());
 
                         JSHttpResponse response = activity.getResponse();
                         if( response != null ){
-                            resHeaderTextArea.setText(response.getHeader().toString());
+                            resHeaderTableModel.setMap(request.getHeader());
+//                            resHeaderJTable.setText(response.getHeader().toString());
                             resBodyTextArea.setText( response.getUrlParams().toString());
                         } else {
-                            resHeaderTextArea.setText("");
+                            resHeaderTableModel.setMap(EMPTY_MAP);
+                            //resHeaderJTable.setText("");
                             resBodyTextArea.setText("");
                         }
                     }
@@ -180,8 +195,8 @@ final class HttpMonitorTopComponent extends TopComponent {
         reqLabel = new javax.swing.JLabel();
         reqTabbedPane = new javax.swing.JTabbedPane();
         reqHeaderPanel = new javax.swing.JPanel();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        reqHeaderTextArea = new javax.swing.JTextArea();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        reqHeaderJTable = new javax.swing.JTable();
         reqParamPanel = new javax.swing.JPanel();
         jScrollPane4 = new javax.swing.JScrollPane();
         reqParamTextArea = new javax.swing.JTextArea();
@@ -189,8 +204,8 @@ final class HttpMonitorTopComponent extends TopComponent {
         resLabel = new javax.swing.JLabel();
         resTabbedPane = new javax.swing.JTabbedPane();
         resHeaderPanel = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        resHeaderTextArea = new javax.swing.JTextArea();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        resHeaderJTable = new javax.swing.JTable();
         resBodyPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         resBodyTextArea = new javax.swing.JTextArea();
@@ -212,11 +227,12 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         reqHeaderPanel.setLayout(new java.awt.BorderLayout());
 
-        reqHeaderTextArea.setColumns(20);
-        reqHeaderTextArea.setRows(5);
-        jScrollPane3.setViewportView(reqHeaderTextArea);
+        reqHeaderJTable.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        reqHeaderJTable.setModel(reqHeaderTableModel);
+        reqHeaderJTable.setGridColor(new java.awt.Color(153, 153, 153));
+        jScrollPane5.setViewportView(reqHeaderJTable);
 
-        reqHeaderPanel.add(jScrollPane3, java.awt.BorderLayout.CENTER);
+        reqHeaderPanel.add(jScrollPane5, java.awt.BorderLayout.PAGE_END);
 
         reqTabbedPane.addTab(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.reqHeaderPanel.TabConstraints.tabTitle"), reqHeaderPanel); // NOI18N
 
@@ -241,11 +257,10 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         resHeaderPanel.setLayout(new java.awt.BorderLayout());
 
-        resHeaderTextArea.setColumns(20);
-        resHeaderTextArea.setRows(5);
-        jScrollPane1.setViewportView(resHeaderTextArea);
+        resHeaderJTable.setModel(resHeaderTableModel);
+        jScrollPane6.setViewportView(resHeaderJTable);
 
-        resHeaderPanel.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+        resHeaderPanel.add(jScrollPane6, java.awt.BorderLayout.PAGE_END);
 
         resTabbedPane.addTab(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.resHeaderPanel.TabConstraints.tabTitle"), resHeaderPanel); // NOI18N
 
@@ -278,20 +293,20 @@ final class HttpMonitorTopComponent extends TopComponent {
     private javax.swing.JSplitPane httpMonitorSplitPane;
     private javax.swing.JPanel httpReqPanel;
     private javax.swing.JPanel httpResPanel;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JTable reqHeaderJTable;
     private javax.swing.JPanel reqHeaderPanel;
-    private javax.swing.JTextArea reqHeaderTextArea;
     private javax.swing.JLabel reqLabel;
     private javax.swing.JPanel reqParamPanel;
     private javax.swing.JTextArea reqParamTextArea;
     private javax.swing.JTabbedPane reqTabbedPane;
     private javax.swing.JPanel resBodyPanel;
     private javax.swing.JTextArea resBodyTextArea;
+    private javax.swing.JTable resHeaderJTable;
     private javax.swing.JPanel resHeaderPanel;
-    private javax.swing.JTextArea resHeaderTextArea;
     private javax.swing.JLabel resLabel;
     private javax.swing.JTabbedPane resTabbedPane;
     // End of variables declaration//GEN-END:variables
@@ -380,4 +395,65 @@ final class HttpMonitorTopComponent extends TopComponent {
 
     }
 
+    private class MapTableModel extends AbstractTableModel  {
+
+        Map<String,String> map;
+        private static final int COL_COUNT = 2;
+        String[][] arrayOfMap;
+        public MapTableModel(Map<String,String> map) {
+            loadMapData(map);
+        }
+        public int getRowCount() {
+            return arrayOfMap[0].length;
+        }
+
+        public int getColumnCount() {
+            return COL_COUNT;
+        }
+
+
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            return arrayOfMap[columnIndex][rowIndex];
+        }
+
+        @Override
+        public String getColumnName(int column) {
+           switch (column){
+               case 0: return "Key";
+               case 1: return "Value";
+               default:
+                   throw new IllegalArgumentException("There is no such column id:" + column);
+           }
+        }
+
+        public void setMap( Map<String,String> map ){
+           loadMapData(map);
+           fireTableDataChanged();
+        }
+
+        public void loadMapData(Map<String,String> map ){
+           this.map = map;
+           arrayOfMap = new String[COL_COUNT][map.size()];
+           int i = 0;
+           for( String key : map.keySet()){
+                arrayOfMap[0][i] = key;
+                arrayOfMap[1][i] = map.get(key);
+                i++;
+           }
+        }
+
+
+        List localListener = new ArrayList();
+        @Override
+        public void addTableModelListener(TableModelListener l) {
+            localListener.add(l);
+            super.addTableModelListener(l);
+        }
+
+        @Override
+        public void removeTableModelListener(TableModelListener l) {
+            localListener.remove(l);
+            super.removeTableModelListener(l);
+        }
+    }
 }
