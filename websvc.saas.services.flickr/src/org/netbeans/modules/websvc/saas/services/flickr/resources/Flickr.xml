@@ -57,7 +57,7 @@
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.flickr.Bundle</localizing-bundle>
         <group name="Flickr"/>
         <code-gen>
-            <artifacts targets="java,servlet,resource,jsp">
+            <artifacts targets="java,servlet,resource,jsp" profile="Templates/SaaSServices/sessionkey.properties">
                 <artifact id="FlickrAuthenticatorDesktop" type="template"
                     url="Templates/SaaSServices/FlickrAuthenticatorDesktop.java"/>
                 <artifact id="FlickrAuthenticator" type="template"
@@ -67,8 +67,18 @@
                 <artifact id="FlickrAuthenticatorCallback" type="template"
                     url="Templates/SaaSServices/FlickrCallback.java"/>
             </artifacts>
+            <artifacts targets="php" profile="Templates/SaaSServices/sessionkey.php">
+                <artifact id="FlickrAuthenticatorDesktop" type="template"
+                    url="Templates/SaaSServices/FlickrAuthenticatorDesktop.php"/>
+                <artifact id="FlickrAuthenticator" type="template"
+                    url="Templates/SaaSServices/FlickrAuthenticator.php"/>
+                <artifact id="FlickrAuthenticatorLogin" type="template"
+                    url="Templates/SaaSServices/FlickrLogin.php"/>
+                <artifact id="FlickrAuthenticatorCallback" type="template"
+                    url="Templates/SaaSServices/FlickrCallback.php"/>
+            </artifacts>
         </code-gen>
-        <authentication profile="Templates/SaaSServices/sessionkey.properties">
+        <authentication>
             <session-key api-id="api_key" session-id="auth_token" sig-id="api_sig">
                 <sign id="sig">
                     <params>

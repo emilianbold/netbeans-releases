@@ -97,12 +97,12 @@ public class PanelConfigureProjectVisual extends JPanel {
         //if (Utilities.isWindows()) {
         //    String rails = RubyInstallation.getInstance().getRails();
         //    if (rails.indexOf(' ') != -1) {
-        //         wizardDescriptor.putProperty("WizardPanel_errorMessage", "Rails path contains spaces; fails on Windows.\n " + rails);
+        //         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "Rails path contains spaces; fails on Windows.\n " + rails);
         //         //return false;
         //    }
         //}
         
-        wizardDescriptor.putProperty( "WizardPanel_errorMessage", "" ); //NOI18N
+        wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, "" ); //NOI18N
         return projectLocationPanel.valid( wizardDescriptor ) && optionsPanel.valid(wizardDescriptor);
     }
     

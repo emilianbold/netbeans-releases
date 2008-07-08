@@ -135,9 +135,8 @@ public class ShorterPaths extends Task {
     public void setTestProperties(File testProperties) {
         this.testProperties = testProperties;
     } 
-    
-    
 
+    @Override
     public void execute() throws BuildException {
         // TODO code here what the task actually does:
         String paths[] = in.list();
@@ -169,12 +168,11 @@ public class ShorterPaths extends Task {
                 PrintWriter pw = new PrintWriter(testProperties);
                 
                 // copy extra unit.test.properties
-                String extraProp = "test-unit-sys-prop";
                 Hashtable properties = getProject().getProperties();  
                 StringBuffer outProp = new StringBuffer();
                 for (Iterator it = properties.keySet().iterator(); it.hasNext();) {
                     String name = (String) it.next();
-                    if (name.startsWith(extraProp)) {
+                    if (name.matches("test-(unit|qa-functional)-sys-prop\\..+")) {
                         if (name.equals("test-unit-sys-prop.xtest.data")) {
                             // ignore overring xtest.data.dir, data.zip placed to standard location
                             continue;
@@ -202,7 +200,7 @@ public class ShorterPaths extends Task {
 
                            simplyPath(path,externalLibBuf,outProp);
                        }
-                       pw.println(name + "=" + outProp);          
+                       pw.println(name.replaceFirst("^test-(unit|qa-functional)-sys-prop\\.", "test-sys-prop.") + "=" + outProp);
                     } else if (name.startsWith("test.config")) {
                         pw.println(name + "=" + properties.get(name));
                     }

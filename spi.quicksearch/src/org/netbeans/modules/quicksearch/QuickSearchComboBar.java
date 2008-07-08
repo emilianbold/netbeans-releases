@@ -112,7 +112,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         command = new javax.swing.JTextArea();
         jSeparator1 = new javax.swing.JSeparator();
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 4, 1, 1));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         setMaximumSize(new java.awt.Dimension(200, 2147483647));
         setName("Form"); // NOI18N
         setOpaque(false);
@@ -142,7 +142,6 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         jScrollPane1.setBorder(null);
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-        jScrollPane1.setViewportBorder(null);
         jScrollPane1.setMinimumSize(new java.awt.Dimension(2, 18));
         jScrollPane1.setName("jScrollPane1"); // NOI18N
 
@@ -281,6 +280,10 @@ private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:even
 
     JTextArea getCommand() {
         return command;
+    }
+
+    int getBottomLineY () {
+        return jPanel1.getY() + jPanel1.getHeight();
     }
 
     static Color getShadowColor () {

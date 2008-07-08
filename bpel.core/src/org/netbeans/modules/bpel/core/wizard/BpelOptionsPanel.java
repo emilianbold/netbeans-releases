@@ -237,12 +237,12 @@ public class BpelOptionsPanel extends javax.swing.JPanel {
         }
         if(namespaceTextField.getText().contains(" ")) {
             newBpelFilePanel.getTemplateWizard().
-                    putProperty("WizardPanel_errorMessage",                  // NOI18N
+                    putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,                  // NOI18N
                     NbBundle.getMessage(BpelOptionsPanel.class,
                     "MSG_Namespace_Contains_Space"));            // NOI18N
         } else {
             newBpelFilePanel.getTemplateWizard().
-                    putProperty("WizardPanel_errorMessage", null);               //NOI18N
+                    putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);               //NOI18N
         }
     }
 }

@@ -84,7 +84,7 @@ public class TestUnitHandlerFactory {
     static class TestFailedHandler extends TestRecognizerHandler {
 
         public TestFailedHandler() {
-            super("%TEST_FAILED%\\stime=(.+)\\stestname=([\\w]+)\\(([\\w]+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
+            super("%TEST_FAILED%\\stime=(.+)\\stestname=(.+)\\((.+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
         }
 
         @Override
@@ -114,7 +114,7 @@ public class TestUnitHandlerFactory {
     static class TestErrorHandler extends TestRecognizerHandler {
 
         public TestErrorHandler() {
-            super("%TEST_ERROR%\\stime=(.+)\\stestname=([\\w]+)\\(([\\w]+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
+            super("%TEST_ERROR%\\stime=(.+)\\stestname=(.+)\\((.+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
         }
 
         @Override
@@ -156,7 +156,7 @@ public class TestUnitHandlerFactory {
     static class TestStartedHandler extends TestRecognizerHandler {
 
         public TestStartedHandler() {
-            super("%TEST_STARTED%\\s([\\w]+)\\(([\\w]+)\\)"); //NOI18N
+            super("%TEST_STARTED%\\s([\\w]+)\\((.+)\\)"); //NOI18N
         }
 
         @Override
@@ -167,7 +167,7 @@ public class TestUnitHandlerFactory {
     static class TestFinishedHandler extends TestRecognizerHandler {
 
         public TestFinishedHandler() {
-            super("%TEST_FINISHED%\\stime=(.+)\\s([\\w]+)\\(([\\w]+)\\)"); //NOI18N
+            super("%TEST_FINISHED%\\stime=(.+)\\s([\\w]+)\\((.+)\\)"); //NOI18N
         }
 
         @Override
@@ -246,7 +246,7 @@ public class TestUnitHandlerFactory {
         private boolean firstSuite = true;
         
         public SuiteStartingHandler() {
-            super("%SUITE_STARTING%\\s(\\w+)"); //NOI18N
+            super("%SUITE_STARTING%\\s(.+)"); //NOI18N
         }
 
         @Override

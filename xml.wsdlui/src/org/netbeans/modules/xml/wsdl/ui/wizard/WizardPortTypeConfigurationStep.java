@@ -178,7 +178,7 @@ public class WizardPortTypeConfigurationStep implements WizardDescriptor.Finisha
             errorMessage = "<html>" + Utility.escapeHtml(mErrorMessage) + "</html>";
         }*/
         
-        wiz.putProperty ("WizardPanel_errorMessage", mErrorMessage); // NOI18N
+        wiz.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, mErrorMessage); // NOI18N
         return this.mErrorMessage == null;
         
     }
