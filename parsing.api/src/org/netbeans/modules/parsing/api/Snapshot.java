@@ -200,7 +200,7 @@ public final class Snapshot {
     public int getOriginalOffset (
         int                 offset
     ) {
-        if (offset >= getText ().length ())
+        if (offset > getText ().length ())
             throw new ArrayIndexOutOfBoundsException ();
 	int low = 0;
 	int high = currentToOriginal.length - 1;

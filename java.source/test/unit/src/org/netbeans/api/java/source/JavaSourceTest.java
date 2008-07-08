@@ -195,8 +195,18 @@ public class JavaSourceTest extends NbTestCase {
         suite.addTest(new JavaSourceTest("testChangeInvalidates"));
         suite.addTest(new JavaSourceTest("testInvalidatesCorrectly"));
         suite.addTest(new JavaSourceTest("testCancelCall"));
+        suite.addTest(new JavaSourceTest("testMultiJavaSource"));       //partialy fixed
         suite.addTest(new JavaSourceTest("testEmptyJavaSource"));
         suite.addTest(new JavaSourceTest("testCancelDeadLock"));
+        suite.addTest(new JavaSourceTest("testCompileTaskStartedFromPhaseTask"));
+//        suite.addTest(new JavaSourceTest("testUnsharedUserActionTask"));           failing due to missing shared flag
+        suite.addTest(new JavaSourceTest("testRescheduleDoesNotStore"));
+//        suite.addTest(new JavaSourceTest("testNestedActions"));                           failing due to missing shared flag
+//        suite.addTest(new JavaSourceTest("testCouplingErrors"));                          failing even in main
+//        suite.addTest(new JavaSourceTest("testRunWhenScanFinished"));                runWhenScanFinished not yet implemented
+        suite.addTest(new JavaSourceTest("testNested2"));
+//        suite.addTest(new JavaSourceTest("testIndexCancel"));                              fixme
+        suite.addTest(new JavaSourceTest("testRegisterSameTask"));
         return suite;
     }
 
@@ -662,26 +672,26 @@ public class JavaSourceTest extends NbTestCase {
         JavaSourceAccessor.getINSTANCE().removePhaseCompletionTask(js,wt2);
     }
 
-//todo: Run multi files not yet implemented in parsing API
-//    public void testMultiJavaSource () throws Exception {
-//        final FileObject testFile1 = createTestFile("Test1");
-//        final FileObject testFile2 = createTestFile("Test2");
-//        final FileObject testFile3 = createTestFile("Test3");
-//        final ClassPath bootPath = createBootPath();
-//        final ClassPath compilePath = createCompilePath();
-//        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,null);
-//        final JavaSource js = JavaSource.create(cpInfo,testFile1, testFile2, testFile3);
-//        CountDownLatch latch = new CountDownLatch (3);
-//        CompileControlJob ccj = new CompileControlJob (latch);
-//        ccj.multiSource = true;
-//        js.runUserActionTask(ccj,true);
-//        assertTrue(waitForMultipleObjects(new CountDownLatch[] {latch},10000));
-//
+    public void testMultiJavaSource () throws Exception {
+        final FileObject testFile1 = createTestFile("Test1");
+        final FileObject testFile2 = createTestFile("Test2");
+        final FileObject testFile3 = createTestFile("Test3");
+        final ClassPath bootPath = createBootPath();
+        final ClassPath compilePath = createCompilePath();
+        final ClassPath srcPath = createSourcePath();
+        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,srcPath);
+        final JavaSource js = JavaSource.create(cpInfo,testFile1, testFile2, testFile3);
+        CountDownLatch latch = new CountDownLatch (3);
+        CompileControlJob ccj = new CompileControlJob (latch);
+        ccj.multiSource = true;
+        js.runUserActionTask(ccj,true);
+        assertTrue(waitForMultipleObjects(new CountDownLatch[] {latch},10000));
+//todo: restart check not yet implemented in the parsing api.
 //        latch = new CountDownLatch (4);
 //        CompileControlJobWithOOM ccj2 = new CompileControlJobWithOOM (latch,1);
 //        js.runUserActionTask(ccj2,true);
 //        assertTrue(waitForMultipleObjects(new CountDownLatch[] {latch},10000));
-//    }
+    }
 
     public void testEmptyJavaSource () throws Exception {
         final ClassPath bootPath = createBootPath();
@@ -736,7 +746,8 @@ public class JavaSourceTest extends NbTestCase {
         final FileObject testFile1 = createTestFile("Test1");
         final ClassPath bootPath = createBootPath();
         final ClassPath compilePath = createCompilePath();
-        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,null);
+        final ClassPath srcPath = createSourcePath();
+        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,srcPath);
         final JavaSource js = JavaSource.create(cpInfo,testFile1);
         final AtomicBoolean canceled = new AtomicBoolean (false);
         final CountDownLatch latch = new CountDownLatch (1);
@@ -802,8 +813,9 @@ public class JavaSourceTest extends NbTestCase {
     public void testRescheduleDoesNotStore() throws IOException, InterruptedException {
         final FileObject testFile1 = createTestFile("Test1");
         final ClassPath bootPath = createBootPath();
+        final ClassPath srcPath = createSourcePath();
         final ClassPath compilePath = createCompilePath();
-        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,null);
+        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,srcPath);
         final JavaSource js = JavaSource.create(cpInfo,testFile1);
         final CountDownLatch waitFor = new CountDownLatch (1);
         final CountDownLatch second = new CountDownLatch (3);
@@ -1090,7 +1102,8 @@ public class JavaSourceTest extends NbTestCase {
 
         final ClassPath bootPath = createBootPath();
         final ClassPath compilePath = CacheClassPath.forSourcePath(ClassPathSupport.createClassPath(new FileObject[] {src1}));
-        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,null);
+        final ClassPath srcPath = ClassPathSupport.createClassPath(src2);
+        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,srcPath);
         final JavaSource js = JavaSource.create(cpInfo, test2, test);
 
         final List<FileObject> files = new ArrayList<FileObject>();
@@ -1211,7 +1224,8 @@ public class JavaSourceTest extends NbTestCase {
         final FileObject testFile1 = createTestFile("Test1");
         final ClassPath bootPath = createBootPath();
         final ClassPath compilePath = createCompilePath();
-        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,null);
+        final ClassPath srcPath = createSourcePath();
+        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,srcPath);
         final JavaSource js = JavaSource.create(cpInfo,testFile1);
         js.runUserActionTask(new Task<CompilationController>() {
 
@@ -1349,7 +1363,8 @@ public class JavaSourceTest extends NbTestCase {
         final FileObject testFile1 = createTestFile("Test1");
         final ClassPath bootPath = createBootPath();
         final ClassPath compilePath = createCompilePath();
-        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,null);
+        final ClassPath srcPath = createSourcePath();
+        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,srcPath);
               JavaSource js = JavaSource.create(cpInfo, testFile1);
         final CountDownLatch latch1 = new CountDownLatch (1);
         final CountDownLatch latch2 = new CountDownLatch (1);
