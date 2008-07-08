@@ -323,10 +323,10 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
         int previousEndOffset = Utilities.getFirstNonWhiteBwd(doc, so) + 1;
         String temp = doc.getText(previousEndOffset, so - previousEndOffset);
         if(temp.indexOf("\n") != -1){
-            int i = Utilities.getRowIndent(doc, so);
+            int i = Utilities.getRowFirstNonWhite(doc, so);
+            int rowStart = Utilities.getRowStart(doc, so);
             doc.insertString(so, newIndentText, null);
-            if(i > 0)
-                doc.remove(Utilities.getRowStart(doc, so), i);
+            doc.remove(rowStart, i - rowStart);            
         }
         else {
              doc.insertString(so, "\n" + newIndentText, null);
