@@ -186,7 +186,7 @@ public class SystemIncludesUtils {
             private List<String> fakeIncludes = new ArrayList<String>();
 
             private FakeTool() {
-                super(CompilerFlavor.GNU, 0, "fakeTool", "fakeTool", "/usr/sfw/bin");
+                super("fake", CompilerFlavor.GNU, 0, "fakeTool", "fakeTool", "/usr/sfw/bin");
                 fakeIncludes.add("/usr/include");
                 fakeIncludes.add("/usr/local/include");
                 fakeIncludes.add("/usr/sfw/include");

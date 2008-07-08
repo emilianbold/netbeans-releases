@@ -151,18 +151,18 @@ public class LibraryOptionPanel extends javax.swing.JPanel {
     
     public String getOption(MakeConfiguration conf) {
         if (dynamicRadioButton.isSelected()) {
-            if (CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue()).isSunCompiler())
+            if (CompilerSetManager.getDefault(conf.getDevelopmentHost().getName()).getCompilerSet(conf.getCompilerSet().getValue()).isSunCompiler())
                 return "-Bdynamic"; // NOI18N
-            else if (CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue()).isGnuCompiler())
+            else if (CompilerSetManager.getDefault(conf.getDevelopmentHost().getName()).getCompilerSet(conf.getCompilerSet().getValue()).isGnuCompiler())
                 return "-dynamic"; // NOI18N
             else
                 assert false;
             return ""; // NOI18N
         }
         else if (staticRadioButton.isSelected()) {
-            if (CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue()).isSunCompiler())
+            if (CompilerSetManager.getDefault(conf.getDevelopmentHost().getName()).getCompilerSet(conf.getCompilerSet().getValue()).isSunCompiler())
                 return "-Bstatic"; // NOI18N
-            else if (CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue()).isGnuCompiler())
+            else if (CompilerSetManager.getDefault(conf.getDevelopmentHost().getName()).getCompilerSet(conf.getCompilerSet().getValue()).isGnuCompiler())
                 return "-static"; // NOI18N
             else
                 assert false;

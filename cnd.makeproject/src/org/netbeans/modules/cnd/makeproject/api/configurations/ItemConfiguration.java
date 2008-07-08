@@ -150,7 +150,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     // Tool
     public void setTool(String name) {
 //        if (genericName != null) {
-//            CompilerSet set = CompilerSetManager.getDefault().getCompilerSet(((MakeConfiguration)configuration).getCompilerSet().getValue());
+//            CompilerSet set = CompilerSetManager.getDefault(((MakeConfiguration)configuration).getDevelopmentHost().getName()).getCompilerSet(((MakeConfiguration)configuration).getCompilerSet().getValue());
 //            tool = set.getToolKind(genericName);
 //        }
         setTool(Tool.getTool(name));
@@ -165,11 +165,11 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         return tool;
     }
 //    protected String getToolName() {
-//        CompilerSet set = CompilerSetManager.getDefault().getCompilerSet(((MakeConfiguration)configuration).getCompilerSet().getValue());
+//        CompilerSet set = CompilerSetManager.getDefault(((MakeConfiguration)configuration).getDevelopmentHost().getName()).getCompilerSet(((MakeConfiguration)configuration).getCompilerSet().getValue());
 //        return set.getTool(getTool()).getName();
 //    }
     protected String[] getToolNames() {
-//        CompilerSet set = CompilerSetManager.getDefault().getCompilerSet(((MakeConfiguration)configuration).getCompilerSet().getValue());
+//        CompilerSet set = CompilerSetManager.getDefault(((MakeConfiguration)configuration).getDevelopmentHost().getName()).getCompilerSet(((MakeConfiguration)configuration).getCompilerSet().getValue());
 //        return set.getToolGenericNames();
         return Tool.getCompilerToolNames();
     }
@@ -410,7 +410,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         public String getAsText() {
             int val = ((Integer)getValue()).intValue();
             return Tool.getName(val);
-//            CompilerSet set = CompilerSetManager.getDefault().getCompilerSet(((MakeConfiguration)configuration).getCompilerSet().getValue());
+//            CompilerSet set = CompilerSetManager.getDefault(((MakeConfiguration)configuration).getDevelopmentHost().getName()).getCompilerSet(((MakeConfiguration)configuration).getCompilerSet().getValue());
 //            return set.getTool(val).getGenericName();
         }
         

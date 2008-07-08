@@ -554,7 +554,7 @@ public class MakeConfiguration extends Configuration {
 
     public String getVariant() {
         String ret = "";
-        ret += CompilerSetManager.getDefault().getCompilerSet(getCompilerSet().getValue()).getName() + "-"; // NOI18N
+        ret += CompilerSetManager.getDefault(getDevelopmentHost().getName()).getCompilerSet(getCompilerSet().getValue()).getName() + "-"; // NOI18N
         ret += Platforms.getPlatform(getPlatform().getValue()).getName();
         return ret;
     }
@@ -637,7 +637,7 @@ public class MakeConfiguration extends Configuration {
 //
 //    private String[] getCompilerSetDisplayNames() {
 //        ArrayList<String> names = new ArrayList();
-//        for (CompilerSet cs : CompilerSetManager.getDefault().getCompilerSets()) {
+//        for (CompilerSet cs : CompilerSetManager.getDefault(getDevelopmentHost().getName()).getCompilerSets()) {
 //            names.add(cs.getDisplayName());
 //        }
 //        return names.toArray(new String[0]);
@@ -645,7 +645,7 @@ public class MakeConfiguration extends Configuration {
 //
 //    private String[] getCompilerSetNames() {
 //        ArrayList<String> names = new ArrayList();
-//        for (CompilerSet cs : CompilerSetManager.getDefault().getCompilerSets()) {
+//        for (CompilerSet cs : CompilerSetManager.getDefault(getDevelopmentHost().getName()).getCompilerSets()) {
 //            names.add(cs.getName());
 //        }
 //        return names.toArray(new String[0]);
@@ -654,7 +654,7 @@ public class MakeConfiguration extends Configuration {
 //    private int getDefaultCompilerSetIndex() {
 //        String name = CppSettings.getDefault().getCompilerSetName();
 //        int i = 0;
-//        for (CompilerSet cs : CompilerSetManager.getDefault().getCompilerSets()) {
+//        for (CompilerSet cs : CompilerSetManager.getDefault(getDevelopmentHost().getName()).getCompilerSets()) {
 //            if (name.equals(cs.getName())) {
 //                return i;
 //            }

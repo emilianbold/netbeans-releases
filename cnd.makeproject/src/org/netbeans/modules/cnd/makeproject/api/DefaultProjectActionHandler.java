@@ -58,7 +58,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
@@ -68,7 +67,6 @@ import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
@@ -334,7 +332,8 @@ public class DefaultProjectActionHandler implements ActionListener {
                 if (pae.getID() == ProjectActionEvent.RUN) {
                     int conType = pae.getProfile().getConsoleType().getValue();
                     if (pae.getProfile().getTerminalType() == null || pae.getProfile().getTerminalPath() == null ||
-                            !conf.getDevelopmentHost().isLocalhost()) { //TODO: only output window for remote
+                            (conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW &&
+                             !conf.getDevelopmentHost().isLocalhost())) { //TODO: only output window for remote
                         String errmsg;
                         if (Utilities.isMac())
                             errmsg = getString("Err_NoTermFoundMacOSX");
@@ -535,7 +534,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                         // Set executable in pae
                         if (pae.getID() == ProjectActionEvent.RUN) {
                             // Next block is commented out due to IZ120794
-                            /*CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+                            /*CompilerSet compilerSet = CompilerSetManager.getDefault(makeConfiguration.getDevelopmentHost().getName()).getCompilerSet(makeConfiguration.getCompilerSet().getValue());
                             if (compilerSet != null && compilerSet.getCompilerFlavor() != CompilerFlavor.MinGW) {
                                 // IZ 120352
                                 executable = FilePathAdaptor.naturalize(executable);

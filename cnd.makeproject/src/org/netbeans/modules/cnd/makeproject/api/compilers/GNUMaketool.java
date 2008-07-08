@@ -45,13 +45,14 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 
 public class GNUMaketool extends Tool {
-    public GNUMaketool(CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
-        super(flavor, MakeTool, name, displayName, path); // NOI18N
+    
+    public GNUMaketool(String hkey, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
+        super(hkey, flavor, MakeTool, name, displayName, path); // NOI18N
     }
     
     @Override
     public GNUMaketool createCopy() {
-        GNUMaketool copy = new GNUMaketool(getFlavor(), "", getDisplayName(), getPath());
+        GNUMaketool copy = new GNUMaketool(getHostKey(), getFlavor(), "", getDisplayName(), getPath());
         copy.setName(getName());
         return copy;
     }

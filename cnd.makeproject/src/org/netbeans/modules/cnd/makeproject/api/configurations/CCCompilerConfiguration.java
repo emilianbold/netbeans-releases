@@ -177,7 +177,7 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
     // Sheet
     public Sheet getSheet(MakeConfiguration conf, Folder folder) {
         Sheet sheet = new Sheet();
-        CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue());
+        CompilerSet compilerSet = CompilerSetManager.getDefault(conf.getDevelopmentHost().getName()).getCompilerSet(conf.getCompilerSet().getValue());
         BasicCompiler ccCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
         
         sheet.put(getSet());

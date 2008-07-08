@@ -239,7 +239,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
 
     public String getBasicOptions() {
 	String options = ""; // NOI18N 
-        CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(getMakeConfiguration().getCompilerSet().getValue());
+        CompilerSet cs = CompilerSetManager.getDefault(getMakeConfiguration().getDevelopmentHost().getName()).getCompilerSet(getMakeConfiguration().getCompilerSet().getValue());
 	if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB ) {
             String libName = getOutputValue();
             int sep = libName.lastIndexOf('/');
@@ -296,7 +296,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
     public String getLibraryItems() {
         String libPrefix = "-L"; // NOI18N
         String dynSearchPrefix = ""; // NOI18N
-        CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(getMakeConfiguration().getCompilerSet().getValue());
+        CompilerSet cs = CompilerSetManager.getDefault(getMakeConfiguration().getDevelopmentHost().getName()).getCompilerSet(getMakeConfiguration().getCompilerSet().getValue());
         if (cs.isSunCompiler()) {
             dynSearchPrefix = "-R"; // NOI18N
         }
@@ -324,7 +324,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
     // Sheet
     public Sheet getGeneralSheet(Project project, MakeConfigurationDescriptor configurationDescriptor, MakeConfiguration conf) {
 	Sheet sheet = new Sheet();
-        CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue());
+        CompilerSet compilerSet = CompilerSetManager.getDefault(conf.getDevelopmentHost().getName()).getCompilerSet(conf.getCompilerSet().getValue());
         String linkDriver;
         if (conf.hasCPPFiles(configurationDescriptor)) {
             BasicCompiler ccCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
