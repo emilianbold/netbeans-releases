@@ -39,34 +39,18 @@
 
 package org.netbeans.modules.javascript.libraries.api;
 
-import java.io.File;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.libraries.spi.JSLibrarySharabilityQueryImpl;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 
 /**
  *
  * @author Quy Nguyen <quynguyen@netbeans.org>
  */
-public final class EditableSharabilityQueryImplementation implements SharabilityQueryImplementation {
+public final class JSLibraryQuerySupport {
 
-    public int getSharability(File file) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public static final SharabilityQueryImplementation createSharabilityQuery(
+            JavaScriptLibrarySupport support, SharabilityQueryImplementation baseImpl) {
+        return new JSLibrarySharabilityQueryImpl(support, baseImpl);
     }
-    /*
-    private final SharabilityQueryImplementation baseImpl;
-    private final Collection<String> excludedPaths;
-    
-    private EditableSharabilityQueryImplementation(SharabilityQueryImplementation baseImpl) {
-        this.baseImpl = baseImpl;
-    }
-    
-    public void addUnsharablePath(String absolutePath) {
-        
-    }
-    public void removeUnsharablePath(String absolutePath) {
-        
-    }
-
-    public int getSharability(File file) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }*/
 }

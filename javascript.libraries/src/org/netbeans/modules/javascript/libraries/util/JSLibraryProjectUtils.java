@@ -78,6 +78,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.javascript.libraries.api.JavaScriptLibrarySupport;
+import org.netbeans.modules.javascript.libraries.spi.JSLibrarySharabilityQueryImpl;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -380,7 +381,7 @@ public final class JSLibraryProjectUtils {
         return librarySet;
     }
     
-    public static boolean extractLibrariesWithProgress(Project project, final Collection<Library> libraries, final String path) {
+    public static boolean extractLibrariesWithProgress(final Project project, final Collection<Library> libraries, final String path) {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new IllegalStateException("Cannot invoke JSLibraryProjectUtils.extractLibrariesWithProgress() outside event dispatch thread");
         }
@@ -417,12 +418,23 @@ public final class JSLibraryProjectUtils {
                         Collection<ZipFile> zipFiles = libraryZips.get(library);
 
                         for (ZipFile zip : zipFiles) {
+                            String[] libraryDirs = null;
                             try {
-                                String[] libraryDirs = getLibraryPropsValue(zip);
+                                libraryDirs = getLibraryPropsValue(zip);
+                                if (libraryDirs != null) {
+                                    for (String libraryDir : libraryDirs) {
+                                        addUnsharability(project, libraryDir);
+                                    }
+                                }
                                 
                                 currentSize = extractZip(library, destination, zip, handle, currentSize, libraryDirs);
                             } catch (IOException ex) {
                                 Log.getLogger().log(Level.SEVERE, "Unable to extract zip file", ex);
+                                if (libraryDirs != null) {
+                                    for (String libraryDir : libraryDirs) {
+                                        removeUnsharability(project, libraryDir);
+                                    }
+                                }
                             }
                         }
                     }
@@ -444,7 +456,21 @@ public final class JSLibraryProjectUtils {
         return true;
     }
     
-    public static boolean deleteLibrariesWithProgress(Project project, final Collection<Library> libraries, final String path) {
+    private static void addUnsharability(Project project, String libraryDir) {
+        JSLibrarySharabilityQueryImpl sharability = project.getLookup().lookup(JSLibrarySharabilityQueryImpl.class);
+        if (sharability != null) {
+            sharability.addUnsharablePath(libraryDir);
+        }
+    }
+
+    private static void removeUnsharability(Project project, String libraryDir) {
+        JSLibrarySharabilityQueryImpl sharability = project.getLookup().lookup(JSLibrarySharabilityQueryImpl.class);
+        if (sharability != null) {
+            sharability.removeUnsharablePath(libraryDir);
+        }
+    }
+    
+    public static boolean deleteLibrariesWithProgress(final Project project, final Collection<Library> libraries, final String path) {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new IllegalStateException("Cannot invoke JSLibraryProjectUtils.deleteLibrariesWithProgress() outside event dispatch thread");
         }
@@ -477,11 +503,23 @@ public final class JSLibraryProjectUtils {
                         Collections.reverse(sortedEntries);
 
                         for (ZipFile zip : zipFiles) {
+                            String[] libraryDirs = null;
                             try {
-                                String[] libraryDirs = getLibraryPropsValue(zip);
+                                libraryDirs = getLibraryPropsValue(zip);
+                                if (libraryDirs != null) {
+                                    for (String libraryDir : libraryDirs) {
+                                        removeUnsharability(project, libraryDir);
+                                    }
+                                }
+                                
                                 currentSize = deleteFiles(baseFO, sortedEntries, handle, currentSize, libraryDirs);
                             } catch (IOException ex) {
                                 Log.getLogger().log(Level.SEVERE, "Unable to delete files", ex);
+                                if (libraryDirs != null) {
+                                    for (String libraryDir : libraryDirs) {
+                                        addUnsharability(project, libraryDir);
+                                    }
+                                }
                             }
                         }
                     }
@@ -538,7 +576,7 @@ public final class JSLibraryProjectUtils {
         return true;
     }
     
-    private static Collection<ZipFile> getJSLibraryZips(Library library) {
+    public static Collection<ZipFile> getJSLibraryZips(Library library) {
         ArrayList<ZipFile> result = new ArrayList<ZipFile>();
 
         try {
@@ -704,7 +742,7 @@ public final class JSLibraryProjectUtils {
         return currentTotal;
     }
 
-    private static String[] getLibraryPropsValue(ZipFile zipFile) {
+    public static String[] getLibraryPropsValue(ZipFile zipFile) {
         InputStream is = null;
         try {
             ZipEntry zipEntry = zipFile.getEntry(LIBRARY_PROPERTIES);

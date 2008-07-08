@@ -125,9 +125,11 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
+import org.netbeans.modules.javascript.libraries.api.JSLibraryQuerySupport;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.web.project.classpath.WebProjectLibrariesModifierImpl;
+import org.netbeans.modules.web.project.javascript.JavaScriptLibrarySupportImpl;
 import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilter;
 import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilterProvider;
 import org.netbeans.modules.web.project.ui.customizer.CustomizerProviderImpl;
@@ -140,6 +142,7 @@ import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
+import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
@@ -434,6 +437,10 @@ public final class WebProject implements Project, AntProjectListener {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         final WebSources webSources = new WebSources(this.helper, evaluator(), getSourceRoots(), getTestSourceRoots());
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), WebProjectProperties.SOURCE_ENCODING);
+        SharabilityQueryImplementation sharabilityQuery = QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), 
+                getTestSourceRoots(), WebProjectProperties.WEB_DOCBASE_DIR);
+        JavaScriptLibrarySupportImpl jsLibSupport = new JavaScriptLibrarySupportImpl(refHelper, helper);
+        
         Lookup base = Lookups.fixed(new Object[] {            
             new Info(),
             aux,
@@ -458,8 +465,8 @@ public final class WebProject implements Project, AntProjectListener {
             QuerySupport.createSourceLevelQuery(evaluator()),
             webSources,
             new GsfClassPathProviderImpl (helper, evaluator(), webSources),
-            QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
-                    WebProjectProperties.WEB_DOCBASE_DIR),
+            JSLibraryQuerySupport.createSharabilityQuery(jsLibSupport, sharabilityQuery),
+            jsLibSupport,
             new RecommendedTemplatesImpl(),
             QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             classPathExtender,
