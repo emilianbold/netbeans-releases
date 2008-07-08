@@ -46,8 +46,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.openide.filesystems.FileObject;
-import org.openide.modules.ModuleInfo;
-import org.openide.util.Lookup;
 
 /**
  * Check that the correct sources are reported.
