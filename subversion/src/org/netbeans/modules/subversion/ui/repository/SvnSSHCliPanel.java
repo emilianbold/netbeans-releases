@@ -45,10 +45,10 @@ package org.netbeans.modules.subversion.ui.repository;
  *
  * @author  Petr Kuzel
  */
-public class RepositoryPanel extends javax.swing.JPanel {
+public class SvnSSHCliPanel extends javax.swing.JPanel {
 
     /** Creates new form RepositoryPanel */
-    public RepositoryPanel() {
+    public SvnSSHCliPanel() {
         initComponents();
     }
 
@@ -60,81 +60,51 @@ public class RepositoryPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        connPanel = new javax.swing.JPanel();
-
         setMinimumSize(new java.awt.Dimension(480, 160));
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/repository/Bundle"); // NOI18N
         setName(bundle.getString("BK2018")); // NOI18N
         setVerifyInputWhenFocusTarget(false);
 
-        titleLabel.setText(bundle.getString("BK0001")); // NOI18N
+        tunnelLabel.setText(org.openide.util.NbBundle.getMessage(SvnSSHCliPanel.class, "BK0010")); // NOI18N
 
-        jLabel2.setLabelFor(urlComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0002")); // NOI18N
+        tunnelCommandLabel.setText(org.openide.util.NbBundle.getMessage(SvnSSHCliPanel.class, "BK0009")); // NOI18N
 
-        urlComboBox.setEditable(true);
-
-        tipLabel.setText("-"); // NOI18N
-        tipLabel.setMaximumSize(new java.awt.Dimension(32767, 32767));
-
-        removeButton.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0008")); // NOI18N
-
-        connPanel.setLayout(new java.awt.BorderLayout());
+        tunnelHelpLabel.setText(org.openide.util.NbBundle.getMessage(SvnSSHCliPanel.class, "TT_svn_xxx")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(titleLabel)
             .add(layout.createSequentialGroup()
-                .add(21, 21, 21)
-                .add(jLabel2)
+                .add(tunnelLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(tipLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(urlComboBox, 0, 340, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(removeButton))))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .add(connPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 627, Short.MAX_VALUE))
+                .add(tunnelCommandTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 516, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(tunnelCommandLabel)
+                .addContainerGap(516, Short.MAX_VALUE))
+            .add(tunnelHelpLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 641, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(titleLabel)
+                .add(tunnelCommandLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel2)
-                    .add(removeButton)
-                    .add(urlComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(tunnelLabel)
+                    .add(tunnelCommandTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(tipLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(connPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE))
+                .add(tunnelHelpLabel))
         );
 
-        titleLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_RepositoryPanel_Title")); // NOI18N
-        titleLabel.getAccessibleContext().setAccessibleParent(this);
-        jLabel2.getAccessibleContext().setAccessibleParent(this);
-        urlComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSN_RepositoryURL")); // NOI18N
-        urlComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_RepositoryURL")); // NOI18N
-        urlComboBox.getAccessibleContext().setAccessibleParent(this);
-        removeButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSN_RemoveHistory")); // NOI18N
-        removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_RemoveHistory")); // NOI18N
-
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_RepositoryPanel")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SvnSSHCliPanel.class, "ACSD_RepositoryPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    javax.swing.JPanel connPanel;
-    private final javax.swing.JLabel jLabel2 = new javax.swing.JLabel();
-    final javax.swing.JButton removeButton = new javax.swing.JButton();
-    final javax.swing.JLabel tipLabel = new javax.swing.JLabel();
-    final javax.swing.JLabel titleLabel = new javax.swing.JLabel();
-    final javax.swing.JComboBox urlComboBox = new javax.swing.JComboBox();
+    final javax.swing.JLabel tunnelCommandLabel = new javax.swing.JLabel();
+    final javax.swing.JTextField tunnelCommandTextField = new javax.swing.JTextField();
+    final javax.swing.JLabel tunnelHelpLabel = new javax.swing.JLabel();
+    final javax.swing.JLabel tunnelLabel = new javax.swing.JLabel();
     // End of variables declaration//GEN-END:variables
         
 }

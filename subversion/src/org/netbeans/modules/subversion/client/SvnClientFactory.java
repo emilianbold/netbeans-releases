@@ -123,9 +123,14 @@ public class SvnClientFactory {
         }
     }
 
-    public ConnectionType connectionType() {
+    public static boolean isCLI() {
         assert factory != null;
-        return factory.connectionType();
+        return factory.connectionType() == ConnectionType.cli;
+    }
+
+    public static boolean isJavaHl() {
+        assert factory != null;
+        return factory.connectionType() == ConnectionType.javahl;
     }
 
     /**
