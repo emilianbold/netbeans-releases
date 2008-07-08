@@ -37,18 +37,33 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.mapper;
-
-import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.cnd.api.remote.PathMapProvider;
+package org.netbeans.modules.cnd.api.compilers;
 
 /**
  *
- * @author gordonp
+ * @author Sergey Grinev
  */
-public class RemotePathMapProvider implements PathMapProvider {
+public class PlatformInfo {
+    private final int platform;
     
-    public PathMap getMapper(String key) {
-        return RemotePathMap.getMapper(key);
+    public PlatformInfo(int platform) {
+        this.platform = platform;
     }
+    
+    public String separator() {
+        return isWindows() ? "\\" : "/"; // NOI18N
+    }
+    
+    public String pathSeparator() {
+        return isWindows() ? ";" : ":"; // NOI18N
+    }
+    
+    public boolean isWindows() {
+        return platform == PlatformTypes.PLATFORM_WINDOWS;
+    }
+
+    public boolean isMac() {
+        return platform == PlatformTypes.PLATFORM_MACOSX;
+    }
+       
 }

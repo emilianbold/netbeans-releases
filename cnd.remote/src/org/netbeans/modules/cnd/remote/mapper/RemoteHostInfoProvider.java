@@ -37,50 +37,31 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.ui.utils;
+package org.netbeans.modules.cnd.remote.mapper;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.cnd.api.remote.PathMapProvider;
-import org.openide.util.Lookup;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 
 /**
- * Local path map utility. The implementation is provided by the cnd.remote module.
- * 
+ *
  * @author gordonp
  */
-public class NativePathMap {
+public class RemoteHostInfoProvider extends HostInfoProvider {
     
-    private static PathMapProvider provider = null;
-    
-    public static synchronized PathMap get(String key) {
-        if ("localhost".equals(key)) {
-            return local;
-        }
-        if (provider == null) {
-            provider = (PathMapProvider) Lookup.getDefault().lookup(PathMapProvider.class);
-        }
-        return provider.getMapper(key);
+    @Override
+    public PathMap getMapper(String key) {
+        return RemotePathMap.getMapper(key);
     }
-    
-    public static boolean isRemote(String name, String path) {
-        return get(name).isRemote(path);
-    }
-    
-    private static PathMap local = new LocalPathMap();
-    
-    private static class LocalPathMap implements PathMap {
 
-        public boolean isRemote(String path) {
-            return false;
-        }
-
-        public String getLocalPath(String rpath) {
-            return rpath;
-        }
-
-        public String getRemotePath(String lpath) {
-            return lpath;
-        }
-        
+    @Override
+    public Map<String, String> getEnv(String key) {
+        //TODO: temp stub
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("Path", "/usr/bin");
+        map.put("PATH", "/usr/bin");
+        map.put("path", "/usr/bin");
+        return map;
     }
 }
