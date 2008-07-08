@@ -2,7 +2,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -25,7 +25,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -59,7 +59,6 @@ import org.netbeans.modules.j2ee.dd.api.web.FilterMapping;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 
-import org.openide.filesystems.*;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
@@ -71,15 +70,14 @@ import org.xml.sax.SAXException;
 
 import org.netbeans.modules.schema2beans.Common;
 import org.netbeans.modules.schema2beans.BaseBean;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.filesystems.URLMapper;
 
-/** Monitor enabling/disabling utilities for Application Server 8.x.
- *
- * @author Milan.Kuchtiak@sun.com, Petr Jiricka, Ludovic Champenois
- */
 public class HttpMonitorHelper {
 
     // monitor module enable status data
-    public static final String MONITOR_ENABLED_PROPERTY_NAME = "monitor_enabled"; // NOI18N
     private static final String MONITOR_MODULE_NAME="org.netbeans.modules.web.monitor"; //NOI18N    
     private static ModuleInfo httpMonitorInfo;
     private static ModuleSpy monitorSpy;
@@ -137,10 +135,7 @@ public class HttpMonitorHelper {
     }
     
     private static File getDefaultWebXML(String domainLoc, String domainName) {
-        //DeploymentManagerProperties dmProps = new DeploymentManagerProperties((DeploymentManager)tm);
-        
-        //String loc = dmProps.getLocation()+"/domains/"+dmProps.getDomainName()+"/config/default-web.xml";
-        String loc = domainLoc+"/"+domainName+"/config/default-web.xml";
+        String loc = domainLoc+"/"+domainName+"/config/default-web.xml"; // NOI18N
         File webXML = new File(loc);
         if (webXML.exists()) {
             return webXML;
@@ -151,8 +146,7 @@ public class HttpMonitorHelper {
     private static void addMonitorJars(String domainLoc, String domainName) throws IOException {
         String loc = domainLoc+"/"+domainName;
         File instDir = new File(loc);
-        copyFromIDEInstToDir("modules/ext/org-netbeans-modules-web-httpmonitor.jar"  , instDir, "lib/org-netbeans-modules-web-httpmonitor.jar");  // NOI18N
-        
+        copyFromIDEInstToDir("modules/ext/org-netbeans-modules-web-httpmonitor.jar"  , instDir, "lib/org-netbeans-modules-web-httpmonitor.jar");  // NOI18N        
     }
     
     private static boolean changeFilterMonitor(WebApp webApp,boolean full) throws ClassNotFoundException {
@@ -366,7 +360,7 @@ public class HttpMonitorHelper {
         //URL u = HttpServer.getRepositoryRoot();
         URL u = getSampleHTTPServerURL();
         if (u != null) {
-            return "" + u.getPort(); // NOI18N
+            return Integer.toString(u.getPort()); // NOI18N
         }
         else {
             return "8082"; // NOI18N
