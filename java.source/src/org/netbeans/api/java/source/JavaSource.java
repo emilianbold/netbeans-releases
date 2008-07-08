@@ -73,6 +73,7 @@ import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.FlowListener;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.Log;
+import com.sun.tools.javadoc.JavadocClassReader;
 import com.sun.tools.javadoc.JavadocEnter;
 import com.sun.tools.javadoc.JavadocMemberEnter;
 import com.sun.tools.javadoc.Messager;
@@ -166,7 +167,6 @@ import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.java.source.util.LowMemoryEvent;
 import org.netbeans.modules.java.source.util.LowMemoryListener;
 import org.netbeans.modules.java.source.util.LowMemoryNotifier;
-import org.netbeans.modules.java.source.usages.SymbolClassReader;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
@@ -1161,19 +1161,24 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         if (lintOptions.length() > 0) {
             options.addAll(Arrays.asList(lintOptions.split(" ")));
         }
+        Source validatedSourceLevel = validateSourceLevel(sourceLevel);
         if (!backgroundCompilation) {
             options.add("-Xjcov"); //NOI18N, Make the compiler store end positions
             options.add("-XDdisableStringFolding"); //NOI18N
         } else {
             options.add("-XDbackgroundCompilation");    //NOI18N
             options.add("-XDcompilePolicy=byfile");     //NOI18N
+            options.add("-target");                     //NOI18N
+            options.add(validatedSourceLevel.requiredTarget().name);
         }
         options.add("-XDide");   // NOI18N, javac runs inside the IDE
+        options.add("-XDsave-parameter-names");   // NOI18N, javac runs inside the IDE
         options.add("-g:");      // NOI18N, Enable some debug info
+        options.add("-g:source"); // NOI18N, Make the compiler to maintian source file info
         options.add("-g:lines"); // NOI18N, Make the compiler to maintain line table
         options.add("-g:vars");  // NOI18N, Make the compiler to maintain local variables table
         options.add("-source");  // NOI18N
-        options.add(validateSourceLevel(sourceLevel));
+        options.add(validatedSourceLevel.name);
 
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
         try {            
@@ -1184,11 +1189,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             JavacTaskImpl task = (JavacTaskImpl)tool.getTask(null, cpInfo.getFileManager(), diagnosticListener, options, null, Collections.<JavaFileObject>emptySet());
             Context context = task.getContext();
             
-            if (backgroundCompilation) {
-                SymbolClassReader.preRegister(context, false);
-            } else {
-                SymbolClassReader.preRegister(context, true);
-            }
+            JavadocClassReader.preRegister(context, !backgroundCompilation);
             
             if (cnih != null) {
                 context.put(ClassNamesForFileOraculum.class, cnih);
@@ -2547,25 +2548,25 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         return false;
     }    
     
-    private static String validateSourceLevel (String sourceLevel) {        
+    private static Source validateSourceLevel (String sourceLevel) {        
         Source[] sources = Source.values();
         if (sourceLevel == null) {
             //Should never happen but for sure
-            return sources[sources.length-1].name;
+            return sources[sources.length-1];
         }
         for (Source source : sources) {
             if (source.name.equals(sourceLevel)) {
-                return sourceLevel;
+                return source;
             }
         }
         SpecificationVersion specVer = new SpecificationVersion (sourceLevel);
         SpecificationVersion JAVA_12 = new SpecificationVersion ("1.2");   //NOI18N
         if (JAVA_12.compareTo(specVer)>0) {
             //Some SourceLevelQueries return 1.1 source level which is invalid, use 1.2
-            return sources[0].name;
+            return sources[0];
         }
         else {
-            return sources[sources.length-1].name;
+            return sources[sources.length-1];
         }
     }
     

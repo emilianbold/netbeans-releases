@@ -62,6 +62,7 @@ public abstract class SaasClientAuthenticationGenerator {
     private FileObject serviceFolder;
     private List<ParameterInfo> authMethodParams;
     private Project project;
+    private String authProfile;
 
     public SaasClientAuthenticationGenerator(SaasBean bean,
             Project project) {
@@ -75,6 +76,14 @@ public abstract class SaasClientAuthenticationGenerator {
     
     public Project getProject() {
         return project;
+    }
+    
+    public String getAuthenticationProfile() {
+        return this.authProfile;
+    }
+    
+    public void setAuthenticationProfile(String authProfile) {
+        this.authProfile = authProfile;
     }
     
     public String getLoginArguments() {

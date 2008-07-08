@@ -472,46 +472,6 @@ public class SourceAnalyser {
             return null;
         }
         
-        void dump(TypeElement clazz, String className, Element enclosingElement) {
-            PrintWriter output = null;
-            if (this.rsList != null) {
-                this.rsList.add (className);
-            }
-            try {
-                JavaFileObject jfo = manager.getJavaFileForOutput(StandardLocation.CLASS_OUTPUT, className, JavaFileObject.Kind.CLASS, sibling);
-                
-                output = new PrintWriter(new OutputStreamWriter(jfo.openOutputStream(), "UTF-8"));
-                
-                SymbolDumper.dump(output, types, trans, clazz, enclosingElement);
-                
-                output.close();
-                
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            } finally {
-                if (output != null) {
-                    output.close();
-                }
-            }
-        }
-        
-        protected boolean shouldGenerate (final String binaryName, ClassSymbol sym) {
-            if (!signatureFiles || binaryName == null) {
-                return false;
-            }
-            if  (sym.getQualifiedName().isEmpty()) {
-                return true;
-            }        
-            Symbol enclosing = sym.getEnclosingElement();
-            while (enclosing != null && enclosing.getKind() != ElementKind.PACKAGE) {
-                if (!enclosing.getKind().isClass() && !enclosing.getKind().isInterface()) {
-                    return true;
-                }
-                enclosing = enclosing.getEnclosingElement();
-            }
-            return false;
-    }
-        
         public @Override Void visitClass (final ClassTree node, final Map<Pair<String,String>,Data> p) {
             final ClassSymbol sym = ((JCTree.JCClassDecl)node).sym;            
             boolean errorInDecl = false;
@@ -636,8 +596,9 @@ public class SourceAnalyser {
                     enclosingElement = old;
                 }
             }
-            if (!errorInDecl && shouldGenerate(className, sym)) {
-                dump(sym, className, enclosingElement);
+            if (!errorInDecl) {
+                if (this.rsList != null)
+                    this.rsList.add (className);
             }
             return null;
         }

@@ -59,7 +59,6 @@ public class ContactDataSetCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.databinding.pim.ContactDataSet"); //NOI18N
     
-    public static final String PROP_NAMES = "names"; 
 
     @Override
     public TypeDescriptor getTypeDescriptor() {

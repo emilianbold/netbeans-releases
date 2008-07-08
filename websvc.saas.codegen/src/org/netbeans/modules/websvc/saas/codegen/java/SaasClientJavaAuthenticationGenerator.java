@@ -242,34 +242,14 @@ public class SaasClientJavaAuthenticationGenerator extends SaasClientAuthenticat
         //Also copy profile.properties
         if(getBean().getAuthenticationType() != SaasAuthenticationType.PLAIN) {
             String profileName = getBean().getAuthenticatorClassName().toLowerCase();
-            DataObject prof = null;
-            String authProfile = getBean().getAuthenticationProfile();
-            if (authProfile != null && !authProfile.trim().equals("")) {
+            if (getAuthenticationProfile() != null && !getAuthenticationProfile().trim().equals("")) {
                 try {
-                    prof = Util.createDataObjectFromTemplate(authProfile,
+                    Util.createDataObjectFromTemplate(getAuthenticationProfile(),
                             targetFolder, profileName);
                 } catch (Exception ex) {
                     throw new IOException("Profile file specified in " +
                             "saas-services/service-metadata/authentication/@profile, " +
-                            "not found: " + authProfile);// NOI18n
-                }
-            } else {
-                try {
-                    prof = Util.createDataObjectFromTemplate(SaasClientCodeGenerator.SAAS_SERVICES + "/" +
-                            getBean().getGroupName() + "/" + getBean().getDisplayName() + "/profile.properties", targetFolder, profileName);// NOI18n
-                } catch (Exception ex1) {
-                    try {
-                        prof = Util.createDataObjectFromTemplate(SaasClientCodeGenerator.SAAS_SERVICES + "/" +
-                                getBean().getGroupName() + "/profile.properties",
-                                targetFolder, profileName);// NOI18n
-                    } catch (Exception ex2) {
-                        try {
-                            prof = Util.createDataObjectFromTemplate(SaasClientCodeGenerator.TEMPLATES_SAAS +
-                                    getBean().getAuthenticationType().value() +
-                                    ".properties", targetFolder, profileName);// NOI18n
-                        } catch (Exception ex3) {//ignore
-                        }
-                    }
+                            "not found: " + getAuthenticationProfile());// NOI18n
                 }
             }
         }

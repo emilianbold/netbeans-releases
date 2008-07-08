@@ -143,7 +143,7 @@ public final class ExecutionDescriptor {
      *
      * @return <code>true</code> if the input from user is allowed
      */
-    boolean isInputVisible() {
+    public boolean isInputVisible() {
         return input;
     }
 
@@ -248,7 +248,7 @@ public final class ExecutionDescriptor {
      * in the output tab displaying the proper options when pressed.
      * <p>
      * Format of the parameter is described in
-     * {@link org.netbeans.api.options.OptionsDisplayer.OptionsDisplayer#open(java.lang.String)}.
+     * {@link org.netbeans.api.options.OptionsDisplayer#open(java.lang.String)}.
      *
      * @return the options path if any, may be <code>null</code>
      */

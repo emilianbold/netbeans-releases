@@ -237,7 +237,21 @@ is divided into following sections:
                         <isset property="jaxws.endorsed.dir"/>
                         <available file="nbproject/jaxws-build.xml"/>
                     </and>
-                </condition>
+                </condition>             
+            </target>
+            
+            <!-- COS feature - used in run-deploy -->
+            <target name="-init-cos">
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <condition>
+                    <xsl:attribute name="property">ensure.built.source.roots</xsl:attribute>
+                    <xsl:attribute name="value">
+                        <xsl:call-template name="createPath">
+                            <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:source-roots"/>
+                        </xsl:call-template>
+                    </xsl:attribute>
+                    <istrue value="${{deploy.on.save}}"/>
+                </condition>         
             </target>
             
             <target name="-post-init">
@@ -888,7 +902,7 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="dist-ear">
-                <xsl:attribute name="depends">init,compile,-pre-dist,-do-ear-dist,-post-dist</xsl:attribute>
+                <xsl:attribute name="depends">init,-init-cos,compile,-pre-dist,-do-ear-dist,-post-dist</xsl:attribute>
                 <xsl:attribute name="description">Build distribution (JAR) to be packaged into an EAR.</xsl:attribute>
             </target>
             
@@ -929,7 +943,7 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="run-deploy">
-                <xsl:attribute name="depends">init,-init-deploy,compile,library-inclusion-in-archive,dist,pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,post-run-deploy</xsl:attribute>
+                <xsl:attribute name="depends">init,-init-cos,-init-deploy,compile,library-inclusion-in-archive,dist,pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,post-run-deploy</xsl:attribute>
                 <nbjpdaappreloaded />
             </target>
             
@@ -940,7 +954,7 @@ exists or setup the property manually. For example like this:
             <target name="-init-deploy-ant" unless="netbeans.home">
                 <property name="deploy.ant.archive" value="${{dist.jar}}"/>
                 <property name="deploy.ant.resource.dir" value="${{resource.dir}}"/>
-                <property name="deploy.ant.enabled" value="true"/>
+                <property name="deploy.ant.enabled" value="true"/>                
             </target>
             
             <target name="run-undeploy">
