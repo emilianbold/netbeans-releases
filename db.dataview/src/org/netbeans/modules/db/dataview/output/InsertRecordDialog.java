@@ -117,11 +117,10 @@ public class InsertRecordDialog extends javax.swing.JDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.title")); // NOI18N
-        setBackground(java.awt.Color.white);
         setModal(true);
         setResizable(false);
 
-        jPanel1.setPreferredSize(new java.awt.Dimension(490, 450));
+        jPanel1.setPreferredSize(new java.awt.Dimension(550, 450));
         jPanel1.setRequestFocusEnabled(false);
         jPanel1.setLayout(new java.awt.BorderLayout());
 
@@ -138,6 +137,7 @@ public class InsertRecordDialog extends javax.swing.JDialog {
         jTextArea1.setPreferredSize(new java.awt.Dimension(520, 65));
         jPanel1.add(jTextArea1, java.awt.BorderLayout.NORTH);
 
+        jPanel4.setFont(new java.awt.Font("Arial", 0, 12));
         jPanel4.setPreferredSize(new java.awt.Dimension(520, 33));
 
         executeBtn.setMnemonic('E');
@@ -188,6 +188,7 @@ public class InsertRecordDialog extends javax.swing.JDialog {
 
         jPanel3.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         jPanel3.setForeground(new java.awt.Color(204, 204, 255));
+        jPanel3.setFont(new java.awt.Font("Arial", 0, 12));
         jPanel3.setLayout(new java.awt.GridBagLayout());
         jScrollPane1.setViewportView(jPanel3);
 
@@ -318,6 +319,7 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
 
             colNameLabel[i].setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
             colNameLabel[i].setPreferredSize(new java.awt.Dimension(120, 20));
+            colNameLabel[i].setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
             gridBagConstraints.gridx = gridx;
             gridBagConstraints.gridy = gridy;
             gridBagConstraints.insets = new java.awt.Insets(0, 0, bottom, right);
@@ -344,8 +346,9 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
             }
 
             colDataType[i] = new JLabel();
-            colDataType[i].setPreferredSize(new java.awt.Dimension(50, 20));
+            colDataType[i].setPreferredSize(new java.awt.Dimension(90, 20));
             colDataType[i].setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+            colDataType[i].setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
             colDataType[i].setText(DataViewUtils.getStdSqlType(col.getJdbcType()).toUpperCase());
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = gridx + 4;
