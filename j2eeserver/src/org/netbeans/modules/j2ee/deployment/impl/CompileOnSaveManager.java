@@ -58,6 +58,10 @@ import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTargetImpl;
  */
 public final class CompileOnSaveManager {
 
+    public static enum DeploymentState {
+        NOT_DEPLOYED, UPDATED, FAILED
+    }
+
     private static final Logger LOGGER = Logger.getLogger(CompileOnSaveManager.class.getName());
 
     private static final int DELAY = 300;
