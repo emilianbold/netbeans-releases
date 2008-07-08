@@ -382,7 +382,6 @@ public final class MidpDatabindingCodeSupport {
                     String indexName,
                     DesignComponent dataSet,
                     String propertyName) {
-                assert indexName != null;
                 if (eventSource.getType() != CommandEventSourceCD.TYPEID) {
                     return false;
                 }
