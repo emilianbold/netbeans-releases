@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.api.remote;
 
+import java.io.File;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.openide.util.Lookup;
@@ -59,6 +60,9 @@ public abstract class HostInfoProvider {
      */
     public abstract Map<String, String> getEnv(String key);
 
+    public abstract boolean fileExists(String key, String path);
+    
+    
     /** Static method to obtain the provider.
      * @return the resolver
      */
@@ -119,6 +123,17 @@ public abstract class HostInfoProvider {
 
             public String getRemotePath(String lpath) {
                 return lpath;
+            }
+        }
+
+        @Override
+        public boolean fileExists(String key, String path) {
+            if (CompilerSetManager.LOCALHOST.equals(key)) {
+                return new File(path).exists();
+            } else if (provider != null) {
+                return provider.fileExists(key, path);
+            } else {
+                throw new IllegalArgumentException();
             }
         }
     }
