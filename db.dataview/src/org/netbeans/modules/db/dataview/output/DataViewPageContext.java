@@ -158,8 +158,6 @@ class DataViewPageContext {
     }
 
     void setCurrentRows(List<Object[]> rows) {
-        synchronized(rows) {
-            this.rows = rows;
-        }
+        this.rows = rows;
     }
 }
