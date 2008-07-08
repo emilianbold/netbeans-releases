@@ -880,39 +880,6 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
     }
     
     @Override
-    protected void notifyAdded () 
-    {
-        // this is invoked when this widget or its parent gets added, only need to
-        // process the case when this widget is changed, same for notifyRemoved to 
-        // avoid concurrent modification to children list
-        new AfterValidationExecutor(new ActionProvider() {
-            public void perfomeAction() 
-            {
-                int index=-1;
-                for(InteractionOperandWidget ioW:operands.values())
-                {
-                    final MovableLabelWidget labelWidget=ioW.getLabel();
-                    if (labelWidget == null)
-                    {
-                        return;
-                    }
-                   if(getParentWidget()==labelWidget.getParentWidget())return;
-
-                    new AfterValidationExecutor(new ActionProvider() {
-                        public void perfomeAction() {
-                            labelWidget.removeFromParent();
-                            int index=getParentWidget().getChildren().indexOf(CombinedFragmentWidget.this);
-                            getParentWidget().addChild(index + 1, labelWidget);
-                        }
-                    }, getScene());
-                }
-                getScene().validate();
-            }
-        }, getScene());
-        getScene().validate();
-    }
-    
-    @Override
     public void loadDependencies(NodeInfo nodeReader) {
         Collection nodeLabels = nodeReader.getLabels();
         //do we have any node labels here? guess not..

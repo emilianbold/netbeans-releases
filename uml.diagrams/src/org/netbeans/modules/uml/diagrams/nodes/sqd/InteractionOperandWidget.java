@@ -328,6 +328,26 @@ public class InteractionOperandWidget extends Widget implements DiagramNodeWrite
     
     
     @Override
+    protected void notifyAdded () 
+    {
+        if(getLabel()==null || !getLabel().isVisible() || getLabel().getParentWidget()==null)return;//invisible/unadded labels don't need to be adjusted
+        final Widget cf=Util.getParentByClass(this, CombinedFragmentWidget.class);
+        if(cf==null || cf.getParentWidget()==null || getParentWidget()==null)return;//if cf absent or not yet added
+        if(cf.getParentWidget()==getLabel().getParentWidget())return;//if label already on correct layer
+        // this is invoked when this widget or its parent gets added, only need to
+        // process the case when this widget is changed, same for notifyRemoved to 
+        // avoid concurrent modification to children list
+        new AfterValidationExecutor(new ActionProvider() {
+            public void perfomeAction() 
+            {
+                getLabel().removeFromParent();
+                int index=cf.getParentWidget().getChildren().indexOf(cf);
+                getParentWidget().addChild(index + 1, getLabel());
+            }
+        }, getScene());
+        getScene().validate();
+    }
+    @Override
     protected void notifyRemoved()
     {
         MovableLabelWidget labelWidget=getLabel();
