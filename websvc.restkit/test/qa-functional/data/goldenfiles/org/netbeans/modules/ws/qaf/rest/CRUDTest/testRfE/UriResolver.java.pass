@@ -1,7 +1,7 @@
 /*
  * UriResolver.java
  *
- * Created on March 11, 2008, 10:39 PM
+ * Created on July 8, 2008, 10:54 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -15,11 +15,10 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import javax.xml.bind.JAXBContext;
-import o.n.m.ws.qaf.rest.crud.service.PersistenceService;
 
 /**
  * Utility class for resolving an uri into an entity.
- * 
+ *
  * @author lukas
  */
 public class UriResolver {
@@ -55,7 +54,7 @@ public class UriResolver {
      * @param uri the uri identifying the entity
      * @return the entity associated with the given uri
      */
-    public <T> T resolve(Class<T> type, URI uri) {
+    public Object resolve(Class type, URI uri) {
         if (inProgress) return null;
         
         inProgress = true;
@@ -72,9 +71,8 @@ public class UriResolver {
             if (conn.getResponseCode() == 200) {
                 JAXBContext context = JAXBContext.newInstance(type);
                 Object obj = context.createUnmarshaller().unmarshal(conn.getInputStream());
-                resolveEntity(obj);
                 
-                return (T) obj;
+                return resolveEntity(obj);
             } else {
                 throw new WebApplicationException(new Throwable("Resource for " + uri + " does not exist."), 404);
             }
@@ -87,13 +85,12 @@ public class UriResolver {
         }
     }
     
-    private void resolveEntity(Object obj) {
+    private Object resolveEntity(Object obj) {
         try {
-            Method method = obj.getClass().getMethod("getEntity");
-            Object entity = method.invoke(obj);
-            entity = PersistenceService.getInstance().resolveEntity(entity);
-            method = obj.getClass().getMethod("setEntity", entity.getClass());
-            method.invoke(obj, entity.getClass().cast(entity));
+            Class clazz = obj.getClass();
+            Method method = clazz.getMethod("resolveEntity");
+            
+            return method.invoke(obj);
         } catch (Exception ex) {
             throw new WebApplicationException(ex);
         }
