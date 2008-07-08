@@ -1659,10 +1659,10 @@ public class UMLDiagramTopComponent extends TopComponent
      private class ClipboardChangesListener implements ClipboardListener {
         public void clipboardChanged(ClipboardEvent ev) {
             if (!ev.isConsumed())
-            {
-                Set selected=scene.getSelectedObjects();
+            {             
                 if (scene != null)
                 {
+                    Set selected=scene.getSelectedObjects();
                     if(selected.size()==1)
                     {
                         //it may be special e;ement on the scene (usually only one like interaction boundary)
