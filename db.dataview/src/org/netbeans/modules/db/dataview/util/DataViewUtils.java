@@ -119,6 +119,65 @@ public class DataViewUtils {
         }
     }
 
+    public static boolean isPrecisionRequired(int jdbcType, boolean isdb2) {
+        if (isdb2 && jdbcType == Types.BLOB || jdbcType == Types.CLOB) {
+            return true;
+        } else {
+            return isPrecisionRequired(jdbcType);
+        }
+    }
+
+    public static boolean isPrecisionRequired(int jdbcType) {
+        switch (jdbcType) {
+            case Types.BIT:
+            case Types.BIGINT:
+            case Types.BOOLEAN:
+            case Types.INTEGER:
+            case Types.SMALLINT:
+            case Types.TINYINT:
+            case Types.FLOAT:
+            case Types.REAL:
+            case Types.DOUBLE:
+            case Types.DATE:
+            case Types.TIMESTAMP:
+            case Types.JAVA_OBJECT:
+            case Types.LONGVARCHAR:
+            case Types.LONGVARBINARY:
+            case Types.BLOB:
+            case Types.CLOB:
+            case Types.ARRAY:
+            case Types.STRUCT:
+            case Types.DISTINCT:
+            case Types.REF:
+            case Types.DATALINK:
+                return false;
+
+            default:
+                return true;
+        }
+    }
+
+    public static boolean isScaleRequired(int type) {
+        switch (type) {
+            case java.sql.Types.DECIMAL:
+            case java.sql.Types.NUMERIC:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public static boolean isBinary(int jdbcType) {
+        switch (jdbcType) {
+            case Types.BINARY:
+            case Types.VARBINARY:
+            case Types.LONGVARBINARY:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     public static boolean isNullString(String str) {
         return (str == null || str.trim().length() == 0);
     }

@@ -71,6 +71,7 @@ import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.db.dataview.logger.Localizer;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
+import org.netbeans.modules.db.dataview.meta.DBTable;
 import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
@@ -250,7 +251,7 @@ class DataViewTableUI extends JTable {
                     for (int j = 0; j < rows.length; j++) {
                         Object[] insertRow = dataView.getDataViewPageContext().getCurrentRows().get(rows[j]);
                         String sql = dataView.getSQLStatementGenerator().generateInsertStatement(insertRow)[1];
-                        insertSQL += sql.replaceAll("\n", "").replaceAll("\t", "") + "\n"; // NOI18N
+                        insertSQL += sql.replaceAll("\n", "").replaceAll("\t", "") + ";\n"; // NOI18N
                     }
                     ShowSQLDialog dialog = new ShowSQLDialog();
                     dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
@@ -277,7 +278,7 @@ class DataViewTableUI extends JTable {
 
                     SQLStatementGenerator generator = dataView.getSQLStatementGenerator();
                     final String[] deleteStmt = generator.generateDeleteStatement(types, values, rows[j], getModel());
-                    rawDeleteStmt += deleteStmt[1] + "\n"; // NOI18N
+                    rawDeleteStmt += deleteStmt[1] + ";\n"; // NOI18N
                 }
                 ShowSQLDialog dialog = new ShowSQLDialog();
                 dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
@@ -298,7 +299,7 @@ class DataViewTableUI extends JTable {
                     return;
                 }
                 for (String key : tblContext.getUpdateKeys()) {
-                    rawUpdateStmt += tblContext.getRawUpdateStmt((key)) + "\n"; // NOI18N
+                    rawUpdateStmt += tblContext.getRawUpdateStmt((key)) + ";\n"; // NOI18N
                 }
                 ShowSQLDialog dialog = new ShowSQLDialog();
                 dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
@@ -307,6 +308,34 @@ class DataViewTableUI extends JTable {
             }
         });
         tablePopupMenu.add(miCommitSQLScript);
+
+        String nbBundle29 = mLoc.t("RESC182: Show SQL Script for CREATE (With Data)");
+        final JMenuItem miCreateSQLScript = new JMenuItem(nbBundle29.substring(15));
+        miCreateSQLScript.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    DBTable table = dataView.getDataViewDBTable().geTable(0);
+                    String createSQL = dataView.getSQLStatementGenerator().generateCreateStatement(table);
+
+                    int[] rows = getSelectedRows();
+                    String insertSQL = "";
+                    for (int j = 0; j < rows.length; j++) {
+                        Object[] insertRow = dataView.getDataViewPageContext().getCurrentRows().get(rows[j]);
+                        String sql = dataView.getSQLStatementGenerator().generateInsertStatement(insertRow)[1];
+                        insertSQL += sql.replaceAll("\n", "").replaceAll("\t", "") + ";\n"; // NOI18N
+                    }
+                    ShowSQLDialog dialog = new ShowSQLDialog();
+                    dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
+                    dialog.setText(createSQL + ";\n"+ insertSQL);
+                    dialog.setVisible(true);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+        tablePopupMenu.add(miCreateSQLScript);
+
         tablePopupMenu.addSeparator();
 
         String nbBundle15 = mLoc.t("RESC015: Print Table Data");
@@ -371,6 +400,7 @@ class DataViewTableUI extends JTable {
                         miDeleteAction.setEnabled(false);
                         miTruncateRecord.setEnabled(false);
                         miInsertSQLScript.setEnabled(false);
+                        miCreateSQLScript.setEnabled(false);
                         miDeleteSQLScript.setEnabled(false);
                     }
 

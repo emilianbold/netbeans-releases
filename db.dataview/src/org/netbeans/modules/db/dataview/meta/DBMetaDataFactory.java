@@ -180,6 +180,23 @@ public final class DBMetaDataFactory {
         return dbtype;
     }
 
+    public Map<Integer, String> buildDBSpecificDatatypeMap() throws SQLException {
+        Map<Integer, String> typeInfoMap = new HashMap<Integer, String>();
+        ResultSet typeInfo = dbmeta.getTypeInfo();
+        String typeName = null;
+        Integer type = null;
+        int jdbcType = 0;
+        while (typeInfo.next()) {
+            typeName = typeInfo.getString("TYPE_NAME");
+            jdbcType  = typeInfo.getInt("DATA_TYPE");
+            type = new Integer(jdbcType);
+            if (!typeInfoMap.containsKey(type)){
+                typeInfoMap.put(type, typeName);
+            }
+        }
+        return typeInfoMap;
+    }
+
     private DBPrimaryKey getPrimaryKeys(String tcatalog, String tschema, String tname) throws Exception {
         ResultSet rs = null;
         try {
