@@ -314,10 +314,12 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         {
                 connection.setRouter(edgeRouter);
                 connection.setRoutingPolicy (ConnectionWidget.RoutingPolicy.ALWAYS_ROUTE);
-            }
-        
-        connectionLayer.addChild(connection);
-        engine.setActions(connection,edge);
+        }
+        if(connection!=null)
+        {
+            connectionLayer.addChild(connection);
+            engine.setActions(connection,edge);
+        }
         return connection;
     }
 
