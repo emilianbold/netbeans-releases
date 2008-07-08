@@ -1,7 +1,7 @@
 /*
  *  MicroMarketConverter
  *
- * Created on March 11, 2008, 10:39 PM
+ * Created on July 8, 2008, 10:54 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -10,11 +10,13 @@
 package o.n.m.ws.qaf.rest.crud.converter;
 
 import java.net.URI;
-import o.n.m.ws.qaf.rest.crud.MicroMarket;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.ws.rs.core.UriBuilder;
+import o.n.m.ws.qaf.rest.crud.MicroMarket;
+import o.n.m.ws.qaf.rest.crud.service.PersistenceService;
 
 
 /**
@@ -26,10 +28,10 @@ import javax.xml.bind.annotation.XmlAttribute;
 public class MicroMarketConverter {
     private MicroMarket entity;
     private URI uri;
+    private int expandLevel;
     
     /** Creates a new instance of MicroMarketConverter */
     public MicroMarketConverter() {
-        entity = new MicroMarket();
     }
 
     /**
@@ -37,10 +39,23 @@ public class MicroMarketConverter {
      *
      * @param entity associated entity
      * @param uri associated uri
+     * @param expandLevel indicates the number of levels the entity graph should be expanded@param isUriExtendable indicates whether the uri can be extended
      */
-    public MicroMarketConverter(MicroMarket entity, URI uri) {
+    public MicroMarketConverter(MicroMarket entity, URI uri, int expandLevel, boolean isUriExtendable) {
         this.entity = entity;
-        this.uri = uri;
+        this.uri = (isUriExtendable) ? UriBuilder.fromUri(uri).path(entity.getZipCode() + "/").build() : uri;
+        this.expandLevel = expandLevel;
+    }
+
+    /**
+     * Creates a new instance of MicroMarketConverter.
+     *
+     * @param entity associated entity
+     * @param uri associated uri
+     * @param expandLevel indicates the number of levels the entity graph should be expanded
+     */
+    public MicroMarketConverter(MicroMarket entity, URI uri, int expandLevel) {
+        this(entity, uri, expandLevel, false);
     }
 
     /**
@@ -50,7 +65,7 @@ public class MicroMarketConverter {
      */
     @XmlElement
     public String getZipCode() {
-        return entity.getZipCode();
+        return (expandLevel > 0) ? getEntity().getZipCode() : null;
     }
 
     /**
@@ -59,7 +74,7 @@ public class MicroMarketConverter {
      * @param value the value to set
      */
     public void setZipCode(String value) {
-        entity.setZipCode(value);
+        getEntity().setZipCode(value);
     }
 
     /**
@@ -69,7 +84,7 @@ public class MicroMarketConverter {
      */
     @XmlElement
     public Double getRadius() {
-        return entity.getRadius();
+        return (expandLevel > 0) ? getEntity().getRadius() : null;
     }
 
     /**
@@ -78,7 +93,7 @@ public class MicroMarketConverter {
      * @param value the value to set
      */
     public void setRadius(Double value) {
-        entity.setRadius(value);
+        getEntity().setRadius(value);
     }
 
     /**
@@ -88,7 +103,7 @@ public class MicroMarketConverter {
      */
     @XmlElement
     public Double getAreaLength() {
-        return entity.getAreaLength();
+        return (expandLevel > 0) ? getEntity().getAreaLength() : null;
     }
 
     /**
@@ -97,7 +112,7 @@ public class MicroMarketConverter {
      * @param value the value to set
      */
     public void setAreaLength(Double value) {
-        entity.setAreaLength(value);
+        getEntity().setAreaLength(value);
     }
 
     /**
@@ -107,7 +122,7 @@ public class MicroMarketConverter {
      */
     @XmlElement
     public Double getAreaWidth() {
-        return entity.getAreaWidth();
+        return (expandLevel > 0) ? getEntity().getAreaWidth() : null;
     }
 
     /**
@@ -116,7 +131,7 @@ public class MicroMarketConverter {
      * @param value the value to set
      */
     public void setAreaWidth(Double value) {
-        entity.setAreaWidth(value);
+        getEntity().setAreaWidth(value);
     }
 
     /**
@@ -124,9 +139,17 @@ public class MicroMarketConverter {
      *
      * @return the uri
      */
-    @XmlAttribute(name = "uri")
-    public URI getResourceUri() {
+    @XmlAttribute
+    public URI getUri() {
         return uri;
+    }
+
+    /**
+     * Sets the URI for this reference converter.
+     *
+     */
+    public void setUri(URI uri) {
+        this.uri = uri;
     }
 
     /**
@@ -136,15 +159,22 @@ public class MicroMarketConverter {
      */
     @XmlTransient
     public MicroMarket getEntity() {
+        if (entity == null) {
+            entity = new MicroMarket();
+        }
         return entity;
     }
 
     /**
-     * Sets the MicroMarket entity.
+     * Returns the resolved MicroMarket entity.
      *
-     * @param entity to set
+     * @return an resolved entity
      */
-    public void setEntity(MicroMarket entity) {
-        this.entity = entity;
+    public MicroMarket resolveEntity() {
+        if (entity != null) {
+            return PersistenceService.getInstance().resolveEntity(MicroMarket.class, entity.getZipCode());
+        } else {
+            return (MicroMarket) UriResolver.getInstance().resolve(MicroMarketConverter.class, uri);
+        }
     }
 }
