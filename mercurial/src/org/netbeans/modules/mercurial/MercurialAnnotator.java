@@ -145,6 +145,10 @@ public class MercurialAnnotator extends VCSAnnotator {
             + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Package_Modified_Locally");
     private static String toolTipPackageContainsConflict = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
             + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Package_Contains_Conflicts");
+    private static String toolTipContainsModifiedLocally = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;"
+            + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Contains_Modified_Locally");
+    private static String toolTipContainsConflict = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
+            + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Contains_Conflicts");
 
 
     public MercurialAnnotator() {
@@ -249,7 +253,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                 break;
             }
         }
-        
+
         if (folderAnnotation == false && context.getRootFiles().size() > 1) {
             folderAnnotation = !Utils.shareCommonDataObject(context.getRootFiles().toArray(new File[context.getRootFiles().size()]));
         }
@@ -312,6 +316,7 @@ public class MercurialAnnotator extends VCSAnnotator {
 
     private Image annotateFolderIcon(VCSContext context, Image icon) {
         boolean isVersioned = false;
+        boolean containsFiles = context.getRootFiles().size() > 1;
         for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
             File file = (File) i.next();
             // There is an assumption here that annotateName was already
@@ -341,7 +346,9 @@ public class MercurialAnnotator extends VCSAnnotator {
                         }
                         int status = info.getStatus();
                         if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                            Image badge = ImageUtilities.assignToolTipToImage(ImageUtilities.loadImage(badgeConflicts, true), toolTipPackageContainsConflict);
+                            Image badge = ImageUtilities.assignToolTipToImage(
+                                    ImageUtilities.loadImage(badgeConflicts, true),
+                                    containsFiles ? toolTipContainsConflict : toolTipPackageContainsConflict);
                             return ImageUtilities.mergeImages(icon, badge, 16, 9);
                         }
                         modified = true;
@@ -358,7 +365,9 @@ public class MercurialAnnotator extends VCSAnnotator {
                             continue;
                         }
                         if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                            Image badge = ImageUtilities.assignToolTipToImage(ImageUtilities.loadImage(badgeConflicts, true), toolTipPackageContainsConflict);
+                            Image badge = ImageUtilities.assignToolTipToImage(
+                                    ImageUtilities.loadImage(badgeConflicts, true),
+                                    containsFiles ? toolTipContainsConflict : toolTipPackageContainsConflict);
                             return ImageUtilities.mergeImages(icon, badge, 16, 9);
                         }
                         modified = true;
@@ -368,7 +377,9 @@ public class MercurialAnnotator extends VCSAnnotator {
             }
         }
         if (modified && !allExcluded) {
-            Image badge = ImageUtilities.assignToolTipToImage(ImageUtilities.loadImage(badgeModified, true), toolTipPackageModifiedLocally);
+            Image badge = ImageUtilities.assignToolTipToImage(
+                    ImageUtilities.loadImage(badgeModified, true),
+                    containsFiles ? toolTipContainsModifiedLocally : toolTipPackageModifiedLocally);
             return ImageUtilities.mergeImages(icon, badge, 16, 9);
         } else {
             return null;
