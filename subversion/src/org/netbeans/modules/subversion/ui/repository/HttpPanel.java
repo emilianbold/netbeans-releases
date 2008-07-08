@@ -85,11 +85,9 @@ public class HttpPanel extends javax.swing.JPanel {
         savePasswordCheckBox.setText(org.openide.util.NbBundle.getMessage(HttpPanel.class, "BK0007")); // NOI18N
         savePasswordCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        jLabel3.setText("SSL:");
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(HttpPanel.class, "HttpPanel.jLabel1.text")); // NOI18N
 
-        jLabel1.setText("Client Certificate File:");
-
-        jLabel2.setText("Passphrase:");
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(HttpPanel.class, "HttpPanel.jLabel2.text")); // NOI18N
 
         certPasswordField.setMinimumSize(new java.awt.Dimension(11, 22));
         certPasswordField.setPreferredSize(new java.awt.Dimension(11, 22));
@@ -97,12 +95,7 @@ public class HttpPanel extends javax.swing.JPanel {
         certFileTextField.setMinimumSize(new java.awt.Dimension(11, 22));
         certFileTextField.setPreferredSize(new java.awt.Dimension(11, 22));
 
-        browseButton.setText("Browse...");
-        browseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseButtonActionPerformed(evt);
-            }
-        });
+        browseButton.setText(org.openide.util.NbBundle.getMessage(HttpPanel.class, "HttpPanel.browseButton.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(proxySettingsButton, org.openide.util.NbBundle.getMessage(HttpPanel.class, "BK0006")); // NOI18N
         proxySettingsButton.setToolTipText(org.openide.util.NbBundle.getMessage(HttpPanel.class, "ACSD_ProxyDialog")); // NOI18N
@@ -113,9 +106,6 @@ public class HttpPanel extends javax.swing.JPanel {
             sslPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(sslPanelLayout.createSequentialGroup()
                 .add(sslPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(sslPanelLayout.createSequentialGroup()
-                        .add(jLabel3)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 501, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, sslPanelLayout.createSequentialGroup()
                         .add(sslPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel1)
@@ -123,18 +113,16 @@ public class HttpPanel extends javax.swing.JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(sslPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(sslPanelLayout.createSequentialGroup()
-                                .add(certFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(browseButton))
+                                .add(certFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
+                                .add(9, 9, 9))
                             .add(certPasswordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 143, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                     .add(proxySettingsButton))
-                .addContainerGap())
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(browseButton))
         );
         sslPanelLayout.setVerticalGroup(
             sslPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(sslPanelLayout.createSequentialGroup()
-                .add(jLabel3)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(sslPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
                     .add(browseButton)
@@ -143,9 +131,9 @@ public class HttpPanel extends javax.swing.JPanel {
                 .add(sslPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(certPasswordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(proxySettingsButton)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(40, Short.MAX_VALUE))
         );
 
         proxySettingsButton.getAccessibleContext().setAccessibleParent(this);
@@ -154,7 +142,6 @@ public class HttpPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(sslPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(userLabel)
@@ -166,10 +153,11 @@ public class HttpPanel extends javax.swing.JPanel {
                             .add(userPasswordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(userTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 145, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(leaveBlankLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE))
+                        .add(leaveBlankLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(savePasswordCheckBox)
                         .addContainerGap())))
+            .add(sslPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -184,9 +172,9 @@ public class HttpPanel extends javax.swing.JPanel {
                     .add(userPasswordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(savePasswordCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(18, 18, 18)
                 .add(sslPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .add(6, 6, 6))
         );
 
         userPasswordField.getAccessibleContext().setAccessibleParent(this);
@@ -199,20 +187,13 @@ public class HttpPanel extends javax.swing.JPanel {
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HttpPanel.class, "ACSD_RepositoryPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
-    private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        // TODO add your handling code here:
-}                                                 
-    
-    
-    // Variables declaration - do not modify//GEN-HEADEREND:event_browseButtonActionPerformed
-    // Variables declaration - do not modify//GEN-LAST:event_browseButtonActionPerformed
+        
+    // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JButton browseButton = new javax.swing.JButton();
     final javax.swing.JTextField certFileTextField = new javax.swing.JTextField();
     final javax.swing.JPasswordField certPasswordField = new javax.swing.JPasswordField();
     private final javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
     private final javax.swing.JLabel jLabel2 = new javax.swing.JLabel();
-    private final javax.swing.JLabel jLabel3 = new javax.swing.JLabel();
     final javax.swing.JLabel leaveBlankLabel = new javax.swing.JLabel();
     final javax.swing.JLabel passwordLabel = new javax.swing.JLabel();
     final javax.swing.JButton proxySettingsButton = new javax.swing.JButton();
@@ -222,5 +203,5 @@ public class HttpPanel extends javax.swing.JPanel {
     final javax.swing.JPasswordField userPasswordField = new javax.swing.JPasswordField();
     final javax.swing.JTextField userTextField = new javax.swing.JTextField();
     // End of variables declaration//GEN-END:variables
-        
+
 }
