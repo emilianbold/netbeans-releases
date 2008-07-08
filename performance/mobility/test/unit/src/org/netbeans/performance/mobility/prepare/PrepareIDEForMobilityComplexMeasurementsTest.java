@@ -41,23 +41,18 @@
 
 package org.netbeans.performance.mobility.prepare;
 
-import java.io.File;
 import java.util.ArrayList;
 
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.MainWindowOperator;
-
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.Operator;
 
@@ -75,9 +70,9 @@ import org.netbeans.modules.project.ui.test.ProjectSupport;
  * Open 10 java files and shut down ide.
  * Created user directory will be used to measure startup time and memory consumption of IDE with opened files.
  *
- * @author mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org, mrkam@netbeans.org
  */
-public class PrepareIDEForMobilityComplexMeasurements extends JellyTestCase {
+public class PrepareIDEForMobilityComplexMeasurementsTest extends JellyTestCase {
     
     /** Error output from the test. */
     protected static java.io.PrintStream err;
@@ -91,7 +86,7 @@ public class PrepareIDEForMobilityComplexMeasurements extends JellyTestCase {
     /** Define testcase
      * @param testName name of the testcase
      */
-    public PrepareIDEForMobilityComplexMeasurements(String testName) {
+    public PrepareIDEForMobilityComplexMeasurementsTest(String testName) {
         super(testName);
     }
     
@@ -100,12 +95,12 @@ public class PrepareIDEForMobilityComplexMeasurements extends JellyTestCase {
      */
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new PrepareIDEForMobilityComplexMeasurements("closeWelcome"));
-        suite.addTest(new PrepareIDEForMobilityComplexMeasurements("closeAllDocuments"));
-        suite.addTest(new PrepareIDEForMobilityComplexMeasurements("closeMemoryToolbar"));
-        suite.addTest(new PrepareIDEForMobilityComplexMeasurements("openProjects"));
-        suite.addTest(new PrepareIDEForMobilityComplexMeasurements("openFiles"));
-        suite.addTest(new PrepareIDEForMobilityComplexMeasurements("saveStatus"));
+        suite.addTest(new PrepareIDEForMobilityComplexMeasurementsTest("closeWelcome"));
+        suite.addTest(new PrepareIDEForMobilityComplexMeasurementsTest("closeAllDocuments"));
+        suite.addTest(new PrepareIDEForMobilityComplexMeasurementsTest("closeMemoryToolbar"));
+        suite.addTest(new PrepareIDEForMobilityComplexMeasurementsTest("openProjects"));
+        suite.addTest(new PrepareIDEForMobilityComplexMeasurementsTest("openFiles"));
+        suite.addTest(new PrepareIDEForMobilityComplexMeasurementsTest("saveStatus"));
         return suite;
     }
     

@@ -659,9 +659,11 @@ public class TargetServer {
         return true;
     }
 
-    public boolean notifyArtifactsUpdated(J2eeModuleProvider provider, Iterable<File> artifacts) {
+    public CompileOnSaveManager.DeploymentState notifyArtifactsUpdated(
+            J2eeModuleProvider provider, Iterable<File> artifacts) {
+
         if (!dtarget.getServer().getServerInstance().isRunning()) {
-            return false;
+            return CompileOnSaveManager.DeploymentState.NOT_DEPLOYED;
         }
 
         try {
@@ -675,7 +677,7 @@ public class TargetServer {
 
         try {
             if (!supportsDeployOnSave(modules)) {
-                return false;
+                return CompileOnSaveManager.DeploymentState.NOT_DEPLOYED;
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -684,7 +686,7 @@ public class TargetServer {
         // FIXME target
         TargetModule targetModule = dtarget.getTargetModules()[0];
         if (!targetModule.hasDelegate()) {
-            return false;
+            return CompileOnSaveManager.DeploymentState.NOT_DEPLOYED;
         }
 
         ProgressUI ui = new ProgressUI(NbBundle.getMessage(TargetServer.class, "MSG_DeployOnSave"), false);
@@ -694,26 +696,35 @@ public class TargetServer {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, changes.toString());
             }
-            reloadArtifacts(ui, modules, changes);
+            boolean completed = reloadArtifacts(ui, modules, changes);
+            if (!completed) {
+                LOGGER.log(Level.INFO, "On save deployment failed");
+                return CompileOnSaveManager.DeploymentState.FAILED;
+            }
+            return CompileOnSaveManager.DeploymentState.UPDATED;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+            return CompileOnSaveManager.DeploymentState.FAILED;
         } finally {
             ui.finish();
         }
-        return true;
     }
 
-    private void reloadArtifacts(ProgressUI ui, TargetModule[] modules, DeploymentChangeDescriptor desc) {
+    private boolean reloadArtifacts(ProgressUI ui, TargetModule[] modules, DeploymentChangeDescriptor desc) {
+        boolean completed = true;
         for (TargetModule module : modules) {
             ProgressObject obj = incremental.deployOnSave(module.delegate(), desc);
             try {
                 // this also save last deploy timestamp
-                trackDeployProgressObject(ui, obj, true);
+                completed = completed && trackDeployProgressObject(ui, obj, true);
             } catch (ServerException ex) {
                 Exceptions.printStackTrace(ex);
+                completed = false;
             }
         }
         notifyIncrementalDeployment(modules);
+
+        return completed;
     }
 
     private TargetModule[] getDeploymentDirectoryModules() {
@@ -752,8 +763,9 @@ public class TargetServer {
      * @param ui progress ui which will be notified about progress object changes .
      * @param po progress object which will be tracked.
      * @param incremental is it incremental deploy?
+     * @return true if the progress object completed successfully, false otherwise
      */
-    private void trackDeployProgressObject(ProgressUI ui, ProgressObject po, boolean incremental) throws ServerException {
+    private boolean trackDeployProgressObject(ProgressUI ui, ProgressObject po, boolean incremental) throws ServerException {
         long deploymentTimeout = instance.getDeploymentTimeout();
         long startTime = System.currentTimeMillis();
         try {
@@ -765,9 +777,10 @@ public class TargetServer {
                     // if incremental, plugin is responsible for starting module, depending on nature of changes
                     ProgressObject startPO = instance.getDeploymentManager().start(modules);
                     long deployTime = System.currentTimeMillis() - startTime;
-                    ProgressObjectUtil.trackProgressObject(ui, startPO, deploymentTimeout - deployTime);
+                    return ProgressObjectUtil.trackProgressObject(ui, startPO, deploymentTimeout - deployTime);
                 }
             }
+            return completed;
         } catch (TimedOutException e) {
             throw new ServerException(NbBundle.getMessage(TargetServer.class, "MSG_DeploymentTimeoutExceeded"));
         }

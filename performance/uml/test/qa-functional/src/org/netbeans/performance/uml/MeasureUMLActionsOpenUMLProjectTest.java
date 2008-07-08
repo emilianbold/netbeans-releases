@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,22 +39,30 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.mobility;
 
+package org.netbeans.performance.uml;
+
+
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.performance.uml.actions.*;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
- * @author  mmirilovic@netbeans.org
+ * @author  mrkam@netbeans.org
  */
-public class MeasureMobilityMenusTest  {
+public class MeasureUMLActionsOpenUMLProjectTest  {
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
+    public static Test suite() {
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness UML Actions suite - Open UML Project testcase");
 
-        // TODO add some test cases
-        
+        // EPMeasureActions1
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(OpenUMLProject.class)
+                .addTest(OpenUMLProject.class, "measureTime")
+                .enableModules(".*").clusters(".*").reuseUserDir(true)));
+
         return suite;
     }
     

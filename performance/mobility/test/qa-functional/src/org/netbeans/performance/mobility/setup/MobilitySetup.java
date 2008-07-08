@@ -41,27 +41,51 @@
 
 package org.netbeans.performance.mobility.setup;
 
+import java.io.IOException;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.performance.mobility.MPUtilities;
+import org.netbeans.modules.project.ui.test.ProjectSupport;
 
 /**
  * Test suite that actually does not perform any test but sets up user directory
  * for UI responsiveness tests
  *
- * @author  mmirilovic@netbeans.org
+ * @author  mmirilovic@netbeans.org, mrkam@netbeans.org
  */
 public class MobilitySetup extends JellyTestCase {
     
     public MobilitySetup(java.lang.String testName) {
         super(testName);
     }
+
+    public void openProject(String projectPath) {
+        String projectsDir = CommonUtilities.getProjectsDir() + projectPath;
+        Object prj = ProjectSupport.openProject(projectsDir);
+        assertNotNull(prj);
+        CommonUtilities.waitProjectTasksFinished();
+    }
     
     public void openMobilityMIDletProject() {
-        MPUtilities.waitProjectOpenedScanFinished(CommonUtilities.getProjectsDir() + "MobileApplicationVisualMIDlet");
+        openProject("MobileApplicationVisualMIDlet");
     }
 
     public void openMobilitySwitchProject() {
-        MPUtilities.waitProjectOpenedScanFinished(CommonUtilities.getProjectsDir() + "MobileApplicationSwitchConfiguration");
+        openProject("MobileApplicationSwitchConfiguration");
+    }
+    
+    public void closeMemoryToolbar() {
+        CommonUtilities.closeMemoryToolbar();
+    }
+
+    public void closeWelcome() {
+        CommonUtilities.closeWelcome();
+    }
+
+    public void closeAllDocuments() {
+        CommonUtilities.closeAllDocuments();
+    }
+    
+    public void cleanTempDir() throws IOException {
+        CommonUtilities.cleanTempDir();
     }
 }

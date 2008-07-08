@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,33 +39,36 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.mobility;
 
+package org.netbeans.performance.uml;
+
+import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.performance.uml.setup.UMLSetup;
+
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.performance.mobility.setup.MobilitySetup;
 
 /**
  * Test suite that actually does not perform any test but sets up user directory
  * for UI responsiveness tests
  *
- * @author  rkubacki@netbeans.org, mmirilovic@netbeans.org, mrkam@netbeans.org
+ * @author mrkam@netbeans.org
  */
-public class MeasureMobilitySetupTest extends NbTestSuite {
+public class MeasureUMLSetupTest extends NbTestSuite {
 
-    public MeasureMobilitySetupTest (java.lang.String testName) {
+    public MeasureUMLSetupTest (java.lang.String testName) {
         super(testName);
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness Setup suite for Mobility Pack");
+    public static Test suite() {
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness Setup suite for UML Pack");
         suite.addTest(NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(MobilitySetup.class)
+            NbModuleSuite.createConfiguration(UMLSetup.class)
             .addTest("closeMemoryToolbar")
             .addTest("closeWelcome")
 
-            .addTest("openMobilityMIDletProject")
-            .addTest("openMobilitySwitchProject")
+            .addTest("openJEditModelProject")
+            .addTest("openJEditProject")
 
             .addTest("closeAllDocuments")
             .enableModules(".*")

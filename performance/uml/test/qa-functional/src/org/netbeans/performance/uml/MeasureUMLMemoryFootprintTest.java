@@ -42,32 +42,23 @@
 
 package org.netbeans.performance.uml;
 
-import org.netbeans.performance.uml.setup.UMLSetup;
-
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.performance.uml.footprint.UMLWorkflow;
 
 /**
- * Test suite that actually does not perform any test but sets up user directory
- * for UI responsiveness tests
+ * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
- * @author mmirilovic@netbeans.org
+ * @author  mrkam@netbeans.org
  */
-public class MeasuringUMLSetupTest extends NbTestSuite {
-
-    public MeasuringUMLSetupTest (java.lang.String testName) {
-        super(testName);
-    }
+public class MeasureUMLMemoryFootprintTest  {
 
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness Setup suite for UML Pack");
+        NbTestSuite suite = new NbTestSuite("UML Memory Footprint suite");
 
-        suite.addTest(new UMLSetup("closeMemoryToolbar"));
-        suite.addTest(new UMLSetup("closeWelcome"));
-        
-        suite.addTest(new UMLSetup("openJeditModelProject"));
-        
-        suite.addTest(new UMLSetup("closeAllDocuments"));
-        
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(UMLWorkflow.class)
+                .enableModules(".*").clusters(".*").reuseUserDir(true)));
+
         return suite;
     }
     
