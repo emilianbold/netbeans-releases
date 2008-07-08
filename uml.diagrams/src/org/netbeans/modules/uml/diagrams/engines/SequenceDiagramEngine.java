@@ -275,7 +275,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
                 //add to trackbar
                 if(tc instanceof SQDDiagramTopComponent)
                 {
-                    new AfterValidationExecutor(new AddCarFprPresentationElementAction(((SQDDiagramTopComponent)tc).getTrackBar(),(LifelineWidget) newWidget, presentation), getScene());
+                    new AfterValidationExecutor(new AddCarFprPresentationElementAction((SQDDiagramTopComponent) tc,(LifelineWidget) newWidget, presentation), getScene());
                 }
             }
         }
