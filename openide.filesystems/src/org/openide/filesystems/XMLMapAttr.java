@@ -1247,10 +1247,11 @@ final class XMLMapAttr implements Map {
                 return NbBundle.getBundle(rb).getString(fo.getPath());
             } else if (type == 1) {
                 URL u = (URL) fo.getAttribute("SystemFileSystem.icon"); // NOI18N
-                return Toolkit.getDefaultToolkit().getImage(u);
-            } else {
-                return null;
-            }
+                if (u != null) {
+                    return Toolkit.getDefaultToolkit().getImage(u);
+                }
+            } 
+            return null;
         }
         
 
