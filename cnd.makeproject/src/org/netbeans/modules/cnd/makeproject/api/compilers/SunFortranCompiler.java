@@ -63,13 +63,13 @@ public class SunFortranCompiler extends BasicCompiler {
     };
     
     /** Creates a new instance of SunCCompiler */
-    public SunFortranCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        super(flavor, kind, name, displayName, path);
+    public SunFortranCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        super(hkey, flavor, kind, name, displayName, path);
     }
     
     @Override
     public SunFortranCompiler createCopy() {
-        SunFortranCompiler copy = new SunFortranCompiler(getFlavor(), getKind(), "", getDisplayName(), getPath());
+        SunFortranCompiler copy = new SunFortranCompiler(getHostKey(), getFlavor(), getKind(), "", getDisplayName(), getPath());
         copy.setName(getName());
         return copy;
     }

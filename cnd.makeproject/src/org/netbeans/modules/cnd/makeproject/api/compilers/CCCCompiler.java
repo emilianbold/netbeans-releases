@@ -48,13 +48,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.utils.Path;
 
 public class CCCCompiler extends BasicCompiler {
     private static File tmpFile = null;
     
-    public CCCCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        super(flavor, kind, name, displayName, path);
+    public CCCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        super(hkey, flavor, kind, name, displayName, path);
     }
     
     // To be overridden
@@ -92,6 +93,9 @@ public class CCCCompiler extends BasicCompiler {
                     String entry = key + "=" + (value != null ? value : ""); // NOI18N
                     envp.add(entry);
                 }
+            }
+            if (!getHostKey().equals(CompilerSetManager.LOCALHOST)) {
+                System.err.println("CCCCompiler.getSIAD: Need remote include/define lookup");
             }
             //String[] envp = { Path.getPathName() + '=' + path + File.pathSeparatorChar + CppSettings.getDefault().getPath() }; // NOI18N
             process = Runtime.getRuntime().exec(command + " " + tmpFile(), (String[])envp.toArray(new String[envp.size()])); // NOI18N
