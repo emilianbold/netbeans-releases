@@ -93,6 +93,7 @@ public final class RemoteConnections {
     private static final ConnectionType DEFAULT_TYPE = ConnectionType.FTP;
     private static final int DEFAULT_PORT = 21;
     private static final String DEFAULT_INITIAL_DIRECTORY = "/"; // NOI18N
+    private static final String DEFAULT_PATH_SEPARATOR = "/"; // NOI18N
     private static final int DEFAULT_TIMEOUT = 30;
 
     static final String TYPE = "type"; // NOI18N
@@ -102,6 +103,7 @@ public final class RemoteConnections {
     static final String PASSWORD = "password"; // NOI18N
     static final String ANONYMOUS_LOGIN = "anonymousLogin"; // NOI18N
     static final String INITIAL_DIRECTORY = "initialDirectory"; // NOI18N
+    static final String PATH_SEPARATOR = "pathSeparator"; // NOI18N
     static final String TIMEOUT = "timeout"; // NOI18N
 
     static final String[] PROPERTIES = new String[] {
@@ -112,6 +114,7 @@ public final class RemoteConnections {
         PASSWORD,
         ANONYMOUS_LOGIN,
         INITIAL_DIRECTORY,
+        PATH_SEPARATOR,
         TIMEOUT,
     };
 
@@ -264,6 +267,7 @@ public final class RemoteConnections {
             Configuration cfg = configManager.createNew(config, name);
             cfg.putValue(PORT, String.valueOf(DEFAULT_PORT));
             cfg.putValue(INITIAL_DIRECTORY, DEFAULT_INITIAL_DIRECTORY);
+            cfg.putValue(PATH_SEPARATOR, DEFAULT_PATH_SEPARATOR);
             cfg.putValue(TIMEOUT, String.valueOf(DEFAULT_TIMEOUT));
             panel.addConfiguration(cfg);
             configManager.markAsCurrentConfiguration(config);
@@ -299,6 +303,7 @@ public final class RemoteConnections {
             panel.setPassword(cfg.getValue(PASSWORD));
             panel.setAnonymousLogin(resolveBoolean(cfg.getValue(ANONYMOUS_LOGIN)));
             panel.setInitialDirectory(cfg.getValue(INITIAL_DIRECTORY));
+            panel.setPathSeparator(cfg.getValue(PATH_SEPARATOR));
             panel.setTimeout(cfg.getValue(TIMEOUT));
         } else {
             panel.resetFields();
@@ -329,6 +334,10 @@ public final class RemoteConnections {
         }
 
         if (!validateUser()) {
+            return;
+        }
+
+        if (!validatePathSeparator()) {
             return;
         }
 
@@ -371,6 +380,14 @@ public final class RemoteConnections {
         }
         if (panel.getUserName().trim().length() == 0) {
             setError("MSG_NoUserName");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean validatePathSeparator() {
+        if (panel.getHostName().trim().length() == 0) {
+            setError("MSG_NoPathSeparator");
             return false;
         }
         return true;
@@ -439,6 +456,7 @@ public final class RemoteConnections {
         cfg.putValue(PASSWORD, panel.getPassword());
         cfg.putValue(ANONYMOUS_LOGIN, String.valueOf(panel.isAnonymousLogin()));
         cfg.putValue(INITIAL_DIRECTORY, panel.getInitialDirectory());
+        cfg.putValue(PATH_SEPARATOR, panel.getPathSeparator());
         cfg.putValue(TIMEOUT, panel.getTimeout());
     }
 
