@@ -56,6 +56,7 @@ import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.WidgetAction;
@@ -75,6 +76,7 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.diagrams.DefaultWidgetContext;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
+import org.netbeans.modules.uml.drawingarea.view.CollapsibleWidgetManager;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
@@ -144,7 +146,18 @@ public class UMLClassWidget  extends SwitchableWidget
         members = null;
         operations = null;
         parameterWidget = null;
-
+        
+        //cleanup lookup: remove CollapsibleWidgetManager from lookup
+        Collection<? extends CollapsibleWidgetManager> mgrList = getLookup().lookupAll(CollapsibleWidgetManager.class);
+        CollapsibleWidgetManager[] mgrArray = new CollapsibleWidgetManager[mgrList.size()];
+        mgrList.toArray(mgrArray);        
+        for (CollapsibleWidgetManager mgr : mgrArray)
+        {
+            if (mgr != null)
+            {
+                removeFromLookup(mgr);
+            }
+        }
         getScene().validate();
     }
 
@@ -790,6 +803,7 @@ public class UMLClassWidget  extends SwitchableWidget
         }
     }
 
+    @Override
     protected void notifyFontChanged(Font font)
     {
         // Some of the widgets may be relative.  Therefore, notify them that 
