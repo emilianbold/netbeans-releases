@@ -293,10 +293,9 @@ public abstract class CompartmentWidget extends Widget implements PropertyChange
         setPreferredSize(null);
         setMinimumSize(null);
 
-        UMLNodeWidget parent = getParentNodeWidget(this);
-        if (parent != null)
-        {
-            ((UMLNodeWidget)parent).updateSizeWithOptions();
+        if (compositeWidget instanceof UMLNodeWidget)
+        {      
+            ((UMLNodeWidget)compositeWidget).updateSizeWithOptions();
         }
         revalidate();
     }
@@ -304,6 +303,8 @@ public abstract class CompartmentWidget extends Widget implements PropertyChange
     private UMLNodeWidget getParentNodeWidget(Widget widget)
     {
         Widget parent = widget.getParentWidget();
+        if (parent == null)
+            return null;
         if (parent instanceof UMLNodeWidget)
         {
             return (UMLNodeWidget)parent;

@@ -220,6 +220,7 @@ public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidg
         bodyWidget.addChild(regionWidget);
 
         updateConstraint();
+        updateSizeWithOptions();
     }
 
     public void propertyChange(PropertyChangeEvent event)
