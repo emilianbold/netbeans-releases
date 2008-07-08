@@ -696,7 +696,7 @@ public class MasterPanel implements WizardDescriptor.Panel {
         lastMsg = msg;
         if (wizardDesc != null) {
             wizardDesc.putProperty(
-                    "WizardPanel_errorMessage", // NOI18N
+                    WizardDescriptor.PROP_ERROR_MESSAGE,
                     (msg != null) ? NbBundle.getMessage(getClass(), msg) : null
                     );
         }

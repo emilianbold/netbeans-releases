@@ -90,7 +90,7 @@ public class WebServiceClientWizardIterator implements TemplateWizard.Iterator {
         index = 0;
         panels = createPanels();
 
-        Object prop = wiz.getProperty("WizardPanel_contentData"); // NOI18N
+        Object prop = wiz.getProperty(WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
         String[] beforeSteps = null;
         if (prop != null && prop instanceof String[]) {
             beforeSteps = (String[])prop;
@@ -109,9 +109,9 @@ public class WebServiceClientWizardIterator implements TemplateWizard.Iterator {
             assert c instanceof JComponent;
             JComponent jc = (JComponent)c;
             // Step #.
-            jc.putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(i)); // NOI18N
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i)); // NOI18N
             // Step name (actually the whole list for reference).
-            jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
         }
     }
 

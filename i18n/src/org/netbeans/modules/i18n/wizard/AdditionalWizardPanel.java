@@ -64,6 +64,7 @@ import org.netbeans.modules.i18n.I18nString;
 import org.netbeans.modules.i18n.I18nSupport;
 import org.netbeans.modules.i18n.I18nUtil;
 
+import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -247,7 +248,7 @@ final class AdditionalWizardPanel extends JPanel {
             //Accessibility
             panel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(AdditionalWizardPanel.class).getString("ACS_AdditionalWizardPanel"));                    
             
-            panel.putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(2)); // NOI18N
+            panel.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(2)); // NOI18N
             panel.setName(NbBundle.getBundle(getClass()).getString("TXT_ModifyAdditional"));
             panel.setPreferredSize(I18nWizardDescriptor.PREFERRED_DIMENSION);
 

@@ -52,6 +52,7 @@ import org.netbeans.editor.TokenContextPath;
 /**
  * CC token-context defines token-ids and token-categories
  * used in CC language.
+ * @deprecated Use new Lexer API and CppTokenId infrastructure instead
  */
 public class CCTokenContext extends TokenContext {
 

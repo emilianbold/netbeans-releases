@@ -58,8 +58,8 @@ import org.openide.util.WeakListeners;
  *
  * @author ads
  */
-public class LineBreakpoint extends AbstractBreakpoint {
-    
+public class LineBreakpoint extends AbstractBreakpoint {    
+
     public LineBreakpoint(Line line) {
         myLine = line;
         myListener = new FileRemoveListener();
@@ -70,6 +70,15 @@ public class LineBreakpoint extends AbstractBreakpoint {
             fileObject.addFileChangeListener( myWeakListener );
         }
     }
+
+    public final void setValid(String message) {
+        setValidity(VALIDITY.VALID, message);
+    }
+
+    public final void setInvalid(String message) {
+        setValidity(VALIDITY.INVALID, message);
+    }
+
 
     public Line getLine() {
         return myLine;

@@ -91,9 +91,9 @@ import org.openide.util.NbBundle;
  */
 public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterator {
     /** Key for the description of the wizard content. */
-    private static final String WIZARD_PANEL_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
+    private static final String WIZARD_PANEL_CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA; // NOI18N
     /** Key for the description of the wizard panel's position. */
-    private static final String WIZARD_PANEL_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; // NOI18N
+    private static final String WIZARD_PANEL_CONTENT_SELECTED_INDEX = WizardDescriptor.PROP_CONTENT_SELECTED_INDEX; // NOI18N
     /** Index of the current panel. */
     private int panelIndex;
     /** Panels of this wizard. */
@@ -206,7 +206,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
         Object prop;
         if (delegateIterator != null) {
             JComponent comp = (JComponent)delegateIterator.current().getComponent();
-            prop = comp.getClientProperty("WizardPanel_contentData"); // NOI18N
+            prop = comp.getClientProperty(WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
         }
         else prop = null;
 

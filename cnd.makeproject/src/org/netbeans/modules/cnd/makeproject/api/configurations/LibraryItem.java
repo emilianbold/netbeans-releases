@@ -169,7 +169,7 @@ public class LibraryItem {
 	}
 
 	public String getOption(MakeConfiguration conf) {
-            CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue());
+            CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
             Platform platform = Platforms.getPlatform(conf.getPlatform().getValue());
         
 	    String libPath = getMakeArtifact().getOutput();

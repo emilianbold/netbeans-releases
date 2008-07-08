@@ -4,5 +4,46 @@
 <!-- If you delete this file and reopen the project it will be recreated. -->
 <project name="org.netbeans.performance.mobility" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.performance.mobility</description>
+
+    <property name="nbextra.dir" location="../../../nbextra"/>
+    <property name="test.timeout" value="3000000"/>
+    <property name="test.run.args" value="-client -Xss2m -Xms32m -Xmx1024m -XX:PermSize=32m -XX:MaxPermSize=200m -Xverify:none -ea -Dcom.sun.aas.installRoot=&quot;${j2ee.appserver.path}&quot; -Dtomcat.installRoot=&quot;${tomcat.webserver.path}&quot;"/>
+
+    <target name="test-preinit" depends="init, prepare-wtk"/>
+
+    <target name="set-wtk-path" unless="wtk.zipfile.name">
+        <condition property="wtk.zipfile.name" value="wtk252-windows.zip">
+            <os family="windows"/>
+        </condition>
+        <condition property="wtk.zipfile.name" value="wtk252-linux.zip">
+            <os family="unix" name="linux"/>
+        </condition>
+    </target>
+
+    <target name="prepare-wtk" depends="set-wtk-path">
+        <fail unless="wtk.zipfile.name" message="Not supported platform."/>
+
+        <unzip src="${nbextra.dir}/data/${wtk.zipfile.name}" dest="${netbeans.dest.dir}/mobility8"/>
+    </target>
+
+    <target name="test" description="Uses test-single to run each suite in different VM">
+        <antcall target="test-single">
+            <param name="test.includes" value="**\MeasureUMLSetupTest*"/>
+            <param name="test.type" value="qa-functional"/>
+        </antcall>
+        <antcall target="test-single">
+            <param name="test.includes" value="**\MeasureUMLActionsTest*"/>
+            <param name="test.type" value="qa-functional"/>
+        </antcall>
+        <antcall target="test-single">
+            <param name="test.includes" value="**\MeasureUMLDialogsTest*"/>
+            <param name="test.type" value="qa-functional"/>
+        </antcall>
+        <antcall target="test-single">
+            <param name="test.includes" value="**\*"/>
+            <param name="test.type" value="unit"/>
+        </antcall>
+    </target>
+
     <import file="nbproject/build-impl.xml"/>
 </project>

@@ -279,7 +279,7 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
         if (errorMessage == null || errorMessage.length() == 0) {
             errorMessage = " "; // NOI18N
         }
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", errorMessage); // NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage); // NOI18N
     }
     
     void read(WizardDescriptor settings) {

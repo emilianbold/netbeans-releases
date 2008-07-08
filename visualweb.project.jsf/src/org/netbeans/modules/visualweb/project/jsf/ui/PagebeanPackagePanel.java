@@ -92,7 +92,7 @@ final class PagebeanPackagePanel implements WizardDescriptor.Panel, ChangeListen
         // Check to make sure that the package name is valid
         String packageName = gui.getPackageName();
         if (!JsfProjectUtils.isValidJavaPackageName(packageName)) {
-            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PagebeanPackagePanel.class, "MSG_InvalidPackageName", packageName)); // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PagebeanPackagePanel.class, "MSG_InvalidPackageName", packageName)); // NOI18N
             return false;
         }
 

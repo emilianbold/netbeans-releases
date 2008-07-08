@@ -135,7 +135,7 @@ public class DBSchemaWizardIterator implements TemplateWizard.Iterator {
     public void initialize(TemplateWizard wizard) {
         wizardInstance = wizard;
         setDefaultTarget();
-        String[] prop = (String[]) wizard.getProperty("WizardPanel_contentData"); // NOI18N
+        String[] prop = (String[]) wizard.getProperty(WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
         String[] stepsNames;
         if (wizard.targetChooser().getClass().toString().trim().equalsIgnoreCase("class org.openide.loaders.TemplateWizard2")) {
             stepsNames = new String[] {
@@ -158,10 +158,10 @@ public class DBSchemaWizardIterator implements TemplateWizard.Iterator {
                 bundle.getString("TablesChooser")
             };
         }
-        wizardInstance.putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); //NOI18N
-        wizardInstance.putProperty("WizardPanel_contentDisplayed", Boolean.TRUE); //NOI18N
-        wizardInstance.putProperty("WizardPanel_contentNumbered", Boolean.TRUE); //NOI18N
-        wizardInstance.putProperty("WizardPanel_contentData", stepsNames); //NOI18N
+        wizardInstance.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); //NOI18N
+        wizardInstance.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); //NOI18N
+        wizardInstance.putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); //NOI18N
+        wizardInstance.putProperty(WizardDescriptor.PROP_CONTENT_DATA, stepsNames); //NOI18N
         
         if(!guiInitialized) {
             initialize();
@@ -174,8 +174,8 @@ public class DBSchemaWizardIterator implements TemplateWizard.Iterator {
             
             java.awt.Component panel = targetPanel.getComponent();
             if (panel instanceof javax.swing.JComponent) {
-                ((javax.swing.JComponent) panel).putClientProperty("WizardPanel_contentData", stepsNames); //NOI18N
-                ((javax.swing.JComponent) panel).putClientProperty("WizardPanel_contentSelectedIndex", new Integer(0)); //NOI18N
+                ((javax.swing.JComponent) panel).putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, stepsNames); //NOI18N
+                ((javax.swing.JComponent) panel).putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(0)); //NOI18N
             }
             
             panels[0] = targetPanel.getPanel();

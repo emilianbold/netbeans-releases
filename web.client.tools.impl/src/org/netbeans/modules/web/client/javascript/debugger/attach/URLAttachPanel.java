@@ -45,18 +45,22 @@
 
 package org.netbeans.modules.web.client.javascript.debugger.attach;
 
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionException;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Factory;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -84,6 +88,13 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
                 messageTextField.setText("");
             }
         });
+
+        if (Utilities.isWindows()) {
+            // TODO Deal with persisted value
+        } else {
+            firefoxRadioButton.setSelected(true);
+            internetExplorerRadioButton.setEnabled(false);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -95,11 +106,21 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        browserButtonGroup = new javax.swing.ButtonGroup();
         debugURLLabel = new javax.swing.JLabel();
         debugURLTextField = new javax.swing.JTextField();
+        firefoxRadioButton = new javax.swing.JRadioButton();
+        internetExplorerRadioButton = new javax.swing.JRadioButton();
         messageTextField = new javax.swing.JTextField();
 
         debugURLLabel.setText(org.openide.util.NbBundle.getMessage(URLAttachPanel.class, "URLAttachPanel.debugURLLabel.text")); // NOI18N
+
+        browserButtonGroup.add(firefoxRadioButton);
+        firefoxRadioButton.setSelected(true);
+        firefoxRadioButton.setText(org.openide.util.NbBundle.getMessage(URLAttachPanel.class, "URLAttachPanel.firefoxRadioButton.text")); // NOI18N
+
+        browserButtonGroup.add(internetExplorerRadioButton);
+        internetExplorerRadioButton.setText(org.openide.util.NbBundle.getMessage(URLAttachPanel.class, "URLAttachPanel.internetExplorerRadioButton.text")); // NOI18N
 
         messageTextField.setEditable(false);
         messageTextField.setBorder(null);
@@ -115,7 +136,10 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
                     .add(layout.createSequentialGroup()
                         .add(debugURLLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(debugURLTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(internetExplorerRadioButton)
+                            .add(firefoxRadioButton)
+                            .add(debugURLTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -126,8 +150,12 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
                     .add(debugURLLabel)
                     .add(debugURLTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(firefoxRadioButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(internetExplorerRadioButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(messageTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(21, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -137,20 +165,36 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
     }
 
     public boolean ok() {
-        try {
-            Factory htmlBrowserFactory = getHtmlBrowserFactory();
-            URI uri = new URI(debugURLTextField.getText().trim());
-            if (WebClientToolsSessionStarterService.isAvailable()) {
+        if (WebClientToolsSessionStarterService.isAvailable()) {
+            try {
+                URI uri = new URI(debugURLTextField.getText().trim());
                 try {
-                    WebClientToolsSessionStarterService.startSession(uri, htmlBrowserFactory, Lookup.EMPTY);
+                    Factory htmlBrowserFactory = null;
+                    if (internetExplorerRadioButton.isSelected()) {
+                        htmlBrowserFactory = WebClientToolsProjectUtils.getInternetExplorerBrowser();
+                    } else {
+                        htmlBrowserFactory = WebClientToolsProjectUtils.getFirefoxBrowser();
+                    }
+                    if (htmlBrowserFactory == null) {
+                        // TODO Display message
+                        try {
+                            // Simply launch the URL in the browser
+                            HtmlBrowser.URLDisplayer.getDefault().showURL(uri.toURL());
+                        } catch (MalformedURLException ex) {
+                            messageTextField.setText(ex.getMessage());
+                            return false;
+                        }
+                    } else {
+                        WebClientToolsSessionStarterService.startSession(uri, htmlBrowserFactory, Lookup.EMPTY);
+                    }
                 } catch (WebClientToolsSessionException ex) {
                     StatusDisplayer.getDefault().setStatusText(ex.getMessage());
                     return true;
                 }
+            } catch (URISyntaxException ex) {
+                messageTextField.setText(ex.getMessage());
+                return false;
             }
-        } catch (URISyntaxException ex) {
-            messageTextField.setText(ex.getMessage());
-            return false;
         }
         return true;
     }
@@ -160,8 +204,11 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.ButtonGroup browserButtonGroup;
     private javax.swing.JLabel debugURLLabel;
     private javax.swing.JTextField debugURLTextField;
+    private javax.swing.JRadioButton firefoxRadioButton;
+    private javax.swing.JRadioButton internetExplorerRadioButton;
     private javax.swing.JTextField messageTextField;
     // End of variables declaration//GEN-END:variables
 
