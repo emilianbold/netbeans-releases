@@ -230,7 +230,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
      * Backward compatibility with old CompilerSetConfiguration (for now)
      */
     public boolean isValid() {
-        return CompilerSetManager.getDefault().getCompilerSet(getCompilerSetName().getValue()) != null;
+        return getCompilerSet() != null;
     }
     
     public void setValid() {
