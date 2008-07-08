@@ -160,11 +160,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
         repositoryPanel = new RepositoryPanel();
         http = new ConnectionType.Http(this);
         file = new ConnectionType.FileUrl(this);
-        if(SvnClientFactory.isCLI()) {
-            svnSSHCli = new ConnectionType.SvnSSHCli(this);
-        } else {
-            svnSSHCli = new ConnectionType.SvnSSHJhl(this);
-        }
+        svnSSHCli = new ConnectionType.SvnSSHCli(this);
         invalidUrlPanel = new ConnectionType.InvalidUrl(this);
 
         svnSSHCli.showHints(isSet(FLAG_SHOW_HINTS));
