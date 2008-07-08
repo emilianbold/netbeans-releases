@@ -43,8 +43,6 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.openide.ErrorManager;
@@ -176,8 +174,8 @@ public class SunCCCompiler extends SunCCCCompiler {
     }
     
     @Override
-    protected void parseCompilerOutput(InputStream is) {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+    protected void parseCompilerOutput(BufferedReader reader) {
+        
         try {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -218,7 +216,6 @@ public class SunCCCompiler extends SunCCCCompiler {
                     }
                 }
             }
-            is.close();
             reader.close();
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP
