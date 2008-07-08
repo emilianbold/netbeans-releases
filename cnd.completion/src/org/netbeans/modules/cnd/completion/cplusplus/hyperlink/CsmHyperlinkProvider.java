@@ -43,17 +43,19 @@
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 import java.util.Collection;
+import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
-import org.netbeans.modules.cnd.completion.cplusplus.utils.Token;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
@@ -75,33 +77,36 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     public CsmHyperlinkProvider() {
     }
     
-    protected void performAction(final BaseDocument doc, final JTextComponent target, final int offset) {
+    protected void performAction(final Document doc, final JTextComponent target, final int offset) {
         goToDeclaration(doc, target, offset);
     }
     
-    protected boolean isValidToken(Token token) {
+    protected boolean isValidToken(Token<CppTokenId> token) {
         return isSupportedToken(token);
     }
     
-    public static boolean isSupportedToken(Token token) {
-        if ((token != null) && (token.getTokenID() == CCTokenContext.IDENTIFIER ||
-                token.getTokenID() == CCTokenContext.OPERATOR)) {
-            return true;
-        } else {
-            return false;
-        }        
+    public static boolean isSupportedToken(Token<CppTokenId> token) {
+        if (token != null) {
+            switch (token.id()) {
+                case IDENTIFIER:
+                case PREPROCESSOR_IDENTIFIER:
+                case OPERATOR:
+                    return true;
+            }
+        }
+        return false;
     }
     
-    public boolean goToDeclaration(BaseDocument doc, JTextComponent target, int offset) {
+    public boolean goToDeclaration(Document doc, JTextComponent target, int offset) {
         if (!preJump(doc, target, offset, "opening-csm-element")) { //NOI18N
             return false;
         }
-        Token jumpToken = getJumpToken();
+        Token<CppTokenId> jumpToken = getJumpToken();
         CsmOffsetable item = findTargetObject(target, doc, jumpToken, offset);
         return postJump(item, "goto_source_source_not_found", "cannot-open-csm-element"); //NOI18N
     }
     
-    /*package*/ CsmOffsetable findTargetObject(final JTextComponent target, final BaseDocument doc, final Token jumpToken, final int offset) {
+    /*package*/ CsmOffsetable findTargetObject(final JTextComponent target, final Document doc, final Token jumpToken, final int offset) {
         CsmOffsetable item = null;
         assert jumpToken != null;
         CsmFile file = CsmUtilities.getCsmFile(doc, true);
