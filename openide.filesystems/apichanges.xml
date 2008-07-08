@@ -46,6 +46,23 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes> 	
+        <change id="displayNameImage">
+            <api name="filesystems"/>
+            <summary>Attributes 'displayName' and 'image'</summary>
+            <version major="7" minor="9"/>
+            <date day="9" month="7" year="2008"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    When using methodvalue in XML filesystem, one can add there
+                    expect new values 'displayName' and 'image' available to methods
+                    that accept <code>java.util.Map</code>.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="XMLFileSystem"/>
+            <issue number="137709"/>
+        </change>
         <change id="FileUtil.urlForArchiveOrDir.archiveOrDirForURL">
             <api name="filesystems"/>
             <summary>Added methods to interconvert URLs and traditional path entries</summary>
