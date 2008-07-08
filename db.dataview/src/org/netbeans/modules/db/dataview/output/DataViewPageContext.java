@@ -131,7 +131,7 @@ class DataViewPageContext {
 
         int curPage = currentPos / pageSize + 1;
         int totalPages = totalRows / pageSize + (totalRows % pageSize > 0 ? 1 : 0);
-        String nbBundle11 = mLoc.t("RESC011: (Page ");
+        String nbBundle11 = mLoc.t("RESC011:   (Page ");
         String nbBundle12 = mLoc.t("RESC029: of ");
         return nbBundle11.substring(15) + curPage + nbBundle12.substring(15) + totalPages + ") ";
     }

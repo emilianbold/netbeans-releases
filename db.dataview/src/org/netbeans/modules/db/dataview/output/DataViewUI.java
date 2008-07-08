@@ -314,7 +314,7 @@ class DataViewUI extends JPanel {
         // add navigation buttons
         url = getClass().getResource(imgPrefix + "navigate_beginning.png"); // NOI18N
         first = new JButton(new ImageIcon(url));
-        String nbBundle32 = mLoc.t("RESC032: Go to the first page");
+        String nbBundle32 = mLoc.t("RESC032: First Page");
         first.setToolTipText(nbBundle32.substring(15));
         first.addActionListener(outputListener);
         first.setEnabled(false);
@@ -322,7 +322,7 @@ class DataViewUI extends JPanel {
 
         url = getClass().getResource(imgPrefix + "navigate_left.png"); // NOI18N
         previous = new JButton(new ImageIcon(url));
-        String nbBundle33 = mLoc.t("RESC033: Go to the previous page");
+        String nbBundle33 = mLoc.t("RESC033: Previous Page");
         previous.setToolTipText(nbBundle33.substring(15));
         previous.addActionListener(outputListener);
         previous.setEnabled(false);
@@ -330,7 +330,7 @@ class DataViewUI extends JPanel {
 
         url = getClass().getResource(imgPrefix + "navigate_right.png"); // NOI18N
         next = new JButton(new ImageIcon(url));
-        String nbBundle34 = mLoc.t("RESC034: Go to the next page");
+        String nbBundle34 = mLoc.t("RESC034: Next Page");
         next.setToolTipText(nbBundle34.substring(15));
         next.addActionListener(outputListener);
         next.setEnabled(false);
@@ -338,7 +338,7 @@ class DataViewUI extends JPanel {
 
         url = getClass().getResource(imgPrefix + "navigate_end.png"); // NOI18N
         last = new JButton(new ImageIcon(url));
-        String nbBundle35 = mLoc.t("RESC035: Go to the last page");
+        String nbBundle35 = mLoc.t("RESC035: Last Page");
         last.setToolTipText(nbBundle35.substring(15));
         last.addActionListener(outputListener);
         last.setEnabled(false);
@@ -346,7 +346,7 @@ class DataViewUI extends JPanel {
         toolbar.addSeparator(new Dimension(10, 10));
 
         //add limit row label
-        String nbBundle36 = mLoc.t("RESC036: Page size:");
+        String nbBundle36 = mLoc.t("RESC036: Page Size:");
         limitRow = new JLabel(nbBundle36.substring(15));
         limitRow.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 8));
         toolbar.add(limitRow);
