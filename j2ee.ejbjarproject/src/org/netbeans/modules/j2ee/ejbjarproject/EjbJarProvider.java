@@ -212,6 +212,11 @@ public final class EjbJarProvider extends J2eeModuleProvider
     public org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter getModuleChangeReporter() {
         return this;
     }
+
+    @Override
+    public DeployOnSaveSupport getDeployOnSaveSupport() {
+        return project.getDeployOnSaveSupport();
+    }
     
     @Override
     public String getServerID() {
@@ -229,7 +234,9 @@ public final class EjbJarProvider extends J2eeModuleProvider
     }
     
     public Iterator getArchiveContents() throws java.io.IOException {
-        return new IT(getContentDirectory());
+        FileObject content = getContentDirectory();
+        content.refresh();
+        return new IT(content);
     }
     
     public FileObject getContentDirectory() {

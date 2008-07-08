@@ -80,7 +80,7 @@ public class GroovyCodeCompletionTest extends GroovyTestBase {
     }
 
     public void testScriptLong1() throws Exception {
-        checkCompletion(TEST_BASE + "ScriptLong1.groovy", "l.M^", false);
+        checkCompletion(TEST_BASE + "ScriptLong1.groovy", "l.MA^", false);
     }
 
     public void testScriptLong2() throws Exception {
@@ -108,7 +108,7 @@ public class GroovyCodeCompletionTest extends GroovyTestBase {
     }
     
     public void testClassMethodFieldLong1() throws Exception {
-        checkCompletion(TEST_BASE + "ClassMethodFieldLong1.groovy", "longField.M^", false);
+        checkCompletion(TEST_BASE + "ClassMethodFieldLong1.groovy", "longField.MAX^", false);
     }
 
     public void testClassMethodFieldLong2() throws Exception {
@@ -116,7 +116,7 @@ public class GroovyCodeCompletionTest extends GroovyTestBase {
     }
 
     public void testClassMethodLocalLong1() throws Exception {
-        checkCompletion(TEST_BASE + "ClassMethodLocalLong1.groovy", "localLong.M^", false);
+        checkCompletion(TEST_BASE + "ClassMethodLocalLong1.groovy", "localLong.MAX^", false);
     }
 
     public void testClassMethodLocalLong2() throws Exception {

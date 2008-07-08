@@ -322,6 +322,9 @@ public class J2SEProjectGenerator {
         if (manifestFile != null) {
             ep.setProperty("manifest.file", manifestFile); // NOI18N
         }
+        ep.setProperty(J2SEProjectProperties.QUICK_RUN, "true"); // NOI18N
+        ep.setProperty(J2SEProjectProperties.QUICK_RUN_SINGLE, "true"); // NOI18N
+        ep.setProperty(J2SEProjectProperties.QUICK_TEST_SINGLE, "true"); // NOI18N
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);        
         return h;
     }

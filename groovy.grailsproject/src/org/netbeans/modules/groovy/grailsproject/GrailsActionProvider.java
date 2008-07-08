@@ -229,5 +229,8 @@ public class GrailsActionProvider implements ActionProvider {
             // noop
         }
 
+        public void close() {
+            // noop
+        }
     }
 }
