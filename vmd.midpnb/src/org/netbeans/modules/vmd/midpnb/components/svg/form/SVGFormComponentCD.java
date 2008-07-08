@@ -111,7 +111,7 @@ public class SVGFormComponentCD extends ComponentDescriptor {
             // properties
             createPropertiesPresenter (),
             // delete
-            /* do now alow to delete
+            /* while I do not know how to prevent deleting, should have this */
             DeleteDependencyPresenter.createDependentOnParentComponentPresenter(),
             new DeletePresenter () {
                 protected void delete () {
@@ -120,7 +120,6 @@ public class SVGFormComponentCD extends ComponentDescriptor {
                     ArraySupport.remove (menu, SVGFormCD.PROP_ELEMENTS, component);
                 }
             },
-             */
             // flow
             new FlowSVGFormElementEventSourcePinPresenter(),
             // general
