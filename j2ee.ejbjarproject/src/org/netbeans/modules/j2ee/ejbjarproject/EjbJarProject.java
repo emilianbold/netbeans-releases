@@ -578,7 +578,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                         return ((Text) nl.item(0)).getNodeValue();
                     }
                 }
-                return "EJB???"; // NOI18N
+                return "A Broken EJB Project"; // NOI18N
             }
         });
     }
