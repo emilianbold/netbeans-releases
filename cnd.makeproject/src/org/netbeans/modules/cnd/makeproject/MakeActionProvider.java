@@ -79,7 +79,9 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.utils.Path;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
@@ -329,6 +331,8 @@ public class MakeActionProvider implements ActionProvider {
                 actionEvent = ProjectActionEvent.RUN;
             }
             
+            PlatformInfo pi = conf.getPlatformInfo();
+            
             if (targetName.equals("save")) { // NOI18N
                 // Save all files and projects
                 if (MakeOptions.getInstance().getSave())
@@ -387,9 +391,9 @@ public class MakeActionProvider implements ActionProvider {
                             String location = FilePathAdaptor.naturalize((String)iter.next());
                             path = location + ";" + path; // NOI18N
                         }
-                        String userPath = runProfile.getEnvironment().getenv(Path.getPathName());
+                        String userPath = runProfile.getEnvironment().getenv(pi.getPathName());
                         if (userPath == null)
-                            userPath = System.getenv(Path.getPathName());
+                            userPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get(pi.getPathName());
                         path = path + ";" + userPath; // NOI18N
                         runProfile.getEnvironment().putenv(Path.getPathName(), path);
                     } else if (Platforms.getPlatform(conf.getPlatform().getValue()).getId() == Platform.PLATFORM_MACOSX) {
@@ -397,7 +401,7 @@ public class MakeActionProvider implements ActionProvider {
                         Set subProjectOutputLocations = conf.getSubProjectOutputLocations();
                         Iterator iter = subProjectOutputLocations.iterator();
                         if (iter.hasNext()) {
-                            String extPath = System.getenv("DYLD_LIBRARY_PATH"); // NOI18N
+                            String extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get("DYLD_LIBRARY_PATH"); // NOI18N
                             runProfile = conf.getProfile().cloneProfile();
                             StringBuffer path = new StringBuffer();
                             while (iter.hasNext()) {
@@ -411,7 +415,7 @@ public class MakeActionProvider implements ActionProvider {
                             runProfile.getEnvironment().putenv("DYLD_LIBRARY_PATH", path.toString()); // NOI18N
                         }
                         // Make sure DISPLAY variable has been set
-                        if (System.getenv("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
+                        if (HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
                             // DISPLAY hasn't been set
                             if (runProfile == null)
                                 runProfile = conf.getProfile().cloneProfile();

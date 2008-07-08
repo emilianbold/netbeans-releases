@@ -37,11 +37,11 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.lexer.PartType;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.cnd.api.lexer.CndTokenUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.TokenItem;
-import org.netbeans.editor.Utilities;
-import org.netbeans.modules.cnd.completion.cplusplus.NbCsmSyntaxSupport;
-import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -277,35 +277,33 @@ public class CsmIncludeCompletionItem implements CompletionItem {
         BaseDocument doc = (BaseDocument)c.getDocument();
         String text = getItemText();
         if (text != null) {
-            TokenItem token = null;
-            NbCsmSyntaxSupport sup = (NbCsmSyntaxSupport) Utilities.getSyntaxSupport(c).get(NbCsmSyntaxSupport.class);
-            if (sup != null) {
-                token = sup.getTokenItem(offset);
-            }
+            Token<CppTokenId> token = CndTokenUtilities.getOffsetToken(doc, offset, true);
             if (toAdd != null) {
                 text += toAdd;
             }
             String pref = QUOTE;
             String post = QUOTE;
             if (token != null) {
-                switch (token.getTokenID().getNumericID()) {
-                case CCTokenContext.WHITESPACE_ID:
-                case CCTokenContext.IDENTIFIER_ID:
+                boolean changeLength = false;
+                switch (token.id()) {
+                case WHITESPACE:
+                case PREPROCESSOR_IDENTIFIER:
                     pref = this.isSysInclude ? SYS_OPEN : QUOTE;
                     post = this.isSysInclude ? SYS_CLOSE : QUOTE;
                     break;
-                case CCTokenContext.USR_INCLUDE_ID:
-                case CCTokenContext.INCOMPLETE_USR_INCLUDE_ID:
+                case PREPROCESSOR_USER_INCLUDE:
                     pref = QUOTE;
                     post = QUOTE;
-                    len = (token.getOffset() + token.getImage().length()) - offset;
+                    changeLength = true;
                     break;
-                case CCTokenContext.INCOMPLETE_SYS_INCLUDE_ID:
-                case CCTokenContext.SYS_INCLUDE_ID:
+                case PREPROCESSOR_SYS_INCLUDE:
                     pref = SYS_OPEN;
                     post = SYS_CLOSE;
-                    len = (token.getOffset() + token.getImage().length()) - offset;
+                    changeLength = true;
                     break;
+                }
+                if (changeLength) {
+                    len = (token.offset(null) + token.length()) - offset - (token.partType() == PartType.COMPLETE ? 0 : 1);
                 }
             }
             // Update the text

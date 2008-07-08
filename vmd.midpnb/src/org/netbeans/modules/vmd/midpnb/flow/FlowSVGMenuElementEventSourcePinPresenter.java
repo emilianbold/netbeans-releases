@@ -36,14 +36,52 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.vmd.midpnb.flow;
 
-package org.netbeans.modules.cnd.api.remote;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignEventFilter;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
+import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
+import org.netbeans.modules.vmd.midpnb.components.sources.SVGMenuElementEventSourceCD;
 
 /**
- * Interface for a path mapping utility provider which will be implemented in another module.
  *
- * @author gordonp
+ * @author avk
  */
-public interface PathMapProvider {
-    public PathMap getMapper(String key);
+public class FlowSVGMenuElementEventSourcePinPresenter extends FlowEventSourcePinPresenter {
+
+    protected DesignComponent getComponentForAttachingPin() {
+        return getComponent().getParentComponent();
+    }
+    protected String getDisplayName() {
+        return MidpValueSupport.getHumanReadableString(getComponent().readProperty(
+                SVGMenuElementEventSourceCD.PROP_STRING));
+    }
+
+    protected String getOrder() {
+        return FlowSVGMenuElementPinOrderPresenter.CATEGORY_ID;
+    }
+
+    @Override
+    protected boolean canRename() {
+        return getComponent() != null;
+    }
+
+    @Override
+    protected String getRenameName() {
+        return (String) getComponent().readProperty(
+                SVGMenuElementEventSourceCD.PROP_STRING).getPrimitiveValue();
+    }
+
+    @Override
+    protected void setRenameName(String name) {
+        getComponent().writeProperty(SVGMenuElementEventSourceCD.PROP_STRING, 
+                MidpTypes.createStringValue(name));
+    }
+
+    @Override
+    protected DesignEventFilter getEventFilter() {
+        return super.getEventFilter().addParentFilter(getComponent(), 1, false);
+    }
 }

@@ -37,18 +37,45 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.mapper;
+package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
-import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.cnd.api.remote.PathMapProvider;
+import java.util.Arrays;
+import java.util.List;
+import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
+import org.netbeans.modules.vmd.api.model.Presenter;
+import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
+import org.netbeans.modules.vmd.api.model.TypeDescriptor;
+import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 
 /**
  *
- * @author gordonp
+ * @author avk
  */
-public class RemotePathMapProvider implements PathMapProvider {
-    
-    public PathMap getMapper(String key) {
-        return RemotePathMap.getMapper(key);
+public class SVGLabelCD extends ComponentDescriptor{
+
+    public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGLabel"); // NOI18N
+
+    public TypeDescriptor getTypeDescriptor () {
+        return new TypeDescriptor (SVGFormComponentCD.TYPEID, TYPEID, true, false);
     }
+
+    @Override
+    public VersionDescriptor getVersionDescriptor() {
+        return MidpVersionDescriptor.MIDP_2;
+    }
+
+    @Override
+    public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
+        return Arrays.asList (
+                );
+    }
+
+    @Override
+    protected List<? extends Presenter> createPresenters() {
+        return Arrays.asList (
+                );
+    }
+
 }
