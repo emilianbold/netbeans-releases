@@ -197,7 +197,6 @@ public class JavaSourceTest extends NbTestCase {
         suite.addTest(new JavaSourceTest("testCancelCall"));
         suite.addTest(new JavaSourceTest("testEmptyJavaSource"));
         suite.addTest(new JavaSourceTest("testCancelDeadLock"));
-//        suite.addTest(new JavaSourceTest("testRTB_005")); Not more valid should be covered by parsing API test
         return suite;
     }
 
@@ -640,44 +639,6 @@ public class JavaSourceTest extends NbTestCase {
         assertTrue("Time out",waitForMultipleObjects(new CountDownLatch[] {latches[2]}, 15000));
 
         JavaSourceAccessor.getINSTANCE().removePhaseCompletionTask (js,task);
-    }
-
-
-    /**
-     * Tests deadlock
-     */
-    public void testRTB_005 () throws Exception {
-        try {
-            Object lock = new String ("Lock");
-            JavacParserTestUtil.setJavacFileObjectProvider(new TestProvider (lock));
-            FileObject test = createTestFile ("Test1");
-            ClassPath bootPath = createBootPath ();
-            ClassPath compilePath = createCompilePath ();
-            ClassPath srcPath = createSourcePath();
-            JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, srcPath), test);
-            JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask( js, new CancellableTask<CompilationInfo>() {
-                public void run (CompilationInfo info) {
-
-                }
-
-                public void cancel () {
-
-                }
-            },Phase.PARSED,Priority.NORMAL);
-
-            synchronized (lock) {
-                JavaSourceAccessor.getINSTANCE().revalidate(js);
-                Thread.sleep(2000);
-                js.runUserActionTask(new Task<CompilationController> () {
-                    public void run (CompilationController c) {
-
-                    }
-                },true);
-            }
-
-        } finally {
-            JavacParserTestUtil.setJavacFileObjectProvider(JavacParserTestUtil.defaultJavaFileObjectProvider());
-        }
     }
 
 
