@@ -44,7 +44,6 @@
 package org.netbeans.modules.glassfish.eecommon.api;
 
 import org.netbeans.modules.glassfish.eecommon.*;
-import java.io.File;
 import org.openide.util.Parameters;
 
 public class FindJSPServletHelper {
@@ -52,19 +51,7 @@ public class FindJSPServletHelper {
     /** Creates a new instance of FindJSPServletImpl */
     private FindJSPServletHelper() {
     }
-    
-    public static File getServletTempDirectory(String domainDir, String domain, String modName) {
-        Parameters.notWhitespace("domainDir", domainDir);
-        Parameters.notWhitespace("domain", domain);
-        File workDir = new File(domainDir, "/"+domain+"/generated/jsp/j2ee-modules/" +modName);// NOI18N
-        if (!workDir.exists()) { //check for ear file gen area:
-            workDir = new File(domainDir, "/"+domain+"/generated/jsp/j2ee-apps/" +modName);// NOI18N
-            
-        }
-        return workDir;
-    }
-    
-    
+        
     static public String getServletResourcePath(String moduleContextPath, String jspResourcePath) {
         Parameters.notWhitespace("jspResourcePath", jspResourcePath);
         String s= getServletPackageName(jspResourcePath).replace('.', '/') + '/' +

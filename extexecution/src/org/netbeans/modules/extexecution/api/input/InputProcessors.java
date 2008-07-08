@@ -86,7 +86,7 @@ public final class InputProcessors {
      * Any action taken on this processor is distributed to all processors
      * passed as arguments in the same order as they were passed to this method.
      * <p>
-     * Proxy is thread safe if all passed processors are thread safe.
+     * Returned processor is <i> not thread safe</i>.
      *
      * @param processors processor to which the actions will be ditributed
      * @return the processor acting as a proxy
@@ -162,7 +162,7 @@ public final class InputProcessors {
      * <p>
      * Reset action on the returned processor is noop.
      * <p>
-     * If the delegate is thread safe this processor is thread safe as well.
+     * Returned processor is <i> not thread safe</i>.
      *
      * @param delegate processor that will receive characters without control
      *             sequences
@@ -179,6 +179,8 @@ public final class InputProcessors {
 
         private final LineParsingHelper helper = new LineParsingHelper();
 
+        private boolean closed;
+
         public Bridge(LineProcessor lineProcessor) {
             Parameters.notNull("lineProcessor", lineProcessor);
 
@@ -186,6 +188,10 @@ public final class InputProcessors {
         }
 
         public final void processInput(char[] chars) {
+            if (closed) {
+                throw new IllegalStateException("Already closed processor");
+            }
+
             String[] lines = helper.parse(chars);
             for (String line : lines) {
                 lineProcessor.processLine(line);
@@ -193,17 +199,34 @@ public final class InputProcessors {
         }
 
         public final void reset() {
+            if (closed) {
+                throw new IllegalStateException("Already closed processor");
+            }
+
+            flush();
+            lineProcessor.reset();
+        }
+
+        public final void close() {
+            closed = true;
+
+            flush();
+            lineProcessor.close();
+        }
+
+        private void flush() {
             String line = helper.getTrailingLine(true);
             if (line != null) {
                 lineProcessor.processLine(line);
             }
-            lineProcessor.reset();
         }
     }
 
     private static class ProxyInputProcessor implements InputProcessor {
 
         private final List<InputProcessor> processors = new ArrayList<InputProcessor>();
+
+        private boolean closed;
 
         public ProxyInputProcessor(InputProcessor... processors) {
             for (InputProcessor processor : processors) {
@@ -214,14 +237,30 @@ public final class InputProcessors {
         }
 
         public void processInput(char[] chars) throws IOException {
+            if (closed) {
+                throw new IllegalStateException("Already closed processor");
+            }
+
             for (InputProcessor processor : processors) {
                 processor.processInput(chars);
             }
         }
 
         public void reset() throws IOException {
+            if (closed) {
+                throw new IllegalStateException("Already closed processor");
+            }
+
             for (InputProcessor processor : processors) {
                 processor.reset();
+            }
+        }
+
+        public void close() throws IOException {
+            closed = true;
+
+            for (InputProcessor processor : processors) {
+                processor.close();
             }
         }
     }
@@ -236,6 +275,8 @@ public final class InputProcessors {
 
         private final LineParsingHelper helper = new LineParsingHelper();
 
+        private boolean closed;
+
         public PrintingInputProcessor(OutputWriter out, LineConvertor convertor,
                 boolean resetEnabled) {
 
@@ -248,6 +289,10 @@ public final class InputProcessors {
 
         public void processInput(char[] chars) {
             assert chars != null;
+
+            if (closed) {
+                throw new IllegalStateException("Already closed processor");
+            }
 
 // TODO this does not color standard error lines :(
 //            if (convertor == null) {
@@ -273,11 +318,21 @@ public final class InputProcessors {
         }
 
         public void reset() throws IOException {
+            if (closed) {
+                throw new IllegalStateException("Already closed processor");
+            }
+
             if (!resetEnabled) {
                 return;
             }
 
             out.reset();
+        }
+
+        public void close() throws IOException {
+            closed = true;
+
+            out.close();
         }
 
         private void convert(String line) {
@@ -305,11 +360,17 @@ public final class InputProcessors {
 
         private final Writer writer;
 
+        private boolean closed;
+
         public CopyingInputProcessor(Writer writer) {
             this.writer = writer;
         }
 
         public void processInput(char[] chars) throws IOException {
+            if (closed) {
+                throw new IllegalStateException("Already closed processor");
+            }
+
             LOGGER.log(Level.FINEST, Arrays.toString(chars));
             writer.write(chars);
             writer.flush();
@@ -319,17 +380,28 @@ public final class InputProcessors {
             // noop
         }
 
+        public void close() throws IOException {
+            closed = true;
+
+            writer.close();
+        }
     }
 
     private static class AnsiStrippingInputProcessor implements InputProcessor {
 
         private final InputProcessor delegate;
 
+        private boolean closed;
+
         public AnsiStrippingInputProcessor(InputProcessor delegate) {
             this.delegate = delegate;
         }
 
         public void processInput(char[] chars) throws IOException {
+            if (closed) {
+                throw new IllegalStateException("Already closed processor");
+            }
+
             // FIXME optimize me
             String sequence = new String(chars);
             if (containsAnsiColors(sequence)) {
@@ -339,7 +411,15 @@ public final class InputProcessors {
         }
 
         public void reset() throws IOException {
-            // noop
+            if (closed) {
+                throw new IllegalStateException("Already closed processor");
+            }
+        }
+
+        public void close() throws IOException {
+            closed = true;
+
+            delegate.close();
         }
 
         private static boolean containsAnsiColors(String sequence) {

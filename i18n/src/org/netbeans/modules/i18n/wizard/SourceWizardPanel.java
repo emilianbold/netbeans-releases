@@ -72,6 +72,7 @@ import org.openide.nodes.NodeOperation;
 import org.openide.util.HelpCtx;
 import org.openide.util.UserCancelException;
 import org.netbeans.modules.i18n.SelectorUtils;
+import org.openide.WizardDescriptor;
 
 /**
  * First panel used in I18N (test) Wizard.
@@ -109,7 +110,7 @@ final class SourceWizardPanel extends JPanel {
         
         initList();
         
-        putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(0)); // NOI18N
+        putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(0)); // NOI18N
         
         if (testRole) {
             setName(Util.getString("TXT_SelecTestSources"));

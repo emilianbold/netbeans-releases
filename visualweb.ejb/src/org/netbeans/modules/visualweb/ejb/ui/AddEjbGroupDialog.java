@@ -74,22 +74,22 @@ public class AddEjbGroupDialog {
     
     /** See org.openide.WizardDescriptor.PROP_AUTO_WIZARD_STYLE
      */
-    private static final String PROP_AUTO_WIZARD_STYLE = "WizardPanel_autoWizardStyle"; // NOI18N
+    private static final String PROP_AUTO_WIZARD_STYLE = WizardDescriptor.PROP_AUTO_WIZARD_STYLE; // NOI18N
     /** See org.openide.WizardDescriptor.PROP_CONTENT_DISPLAYED
      */
-    private static final String PROP_CONTENT_DISPLAYED = "WizardPanel_contentDisplayed"; // NOI18N
+    private static final String PROP_CONTENT_DISPLAYED = WizardDescriptor.PROP_CONTENT_DISPLAYED; // NOI18N
     /** See org.openide.WizardDescriptor.PROP_CONTENT_NUMBERED
      */
-    private static final String PROP_CONTENT_NUMBERED = "WizardPanel_contentNumbered"; // NOI18N
+    private static final String PROP_CONTENT_NUMBERED = WizardDescriptor.PROP_CONTENT_NUMBERED; // NOI18N
     /** See org.openide.WizardDescriptor.PROP_CONTENT_SELECTED_INDEX
      */
-    private static final String PROP_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; // NOI18N
+    private static final String PROP_CONTENT_SELECTED_INDEX = WizardDescriptor.PROP_CONTENT_SELECTED_INDEX; // NOI18N
     /** See org.openide.WizardDescriptor.PROP_HELP_DISPLAYED
      */
-    private static final String PROP_HELP_DISPLAYED = "WizardPanel_helpDisplayed"; // NOI18N
+    private static final String PROP_HELP_DISPLAYED = WizardDescriptor.PROP_HELP_DISPLAYED; // NOI18N
     /** See org.openide.WizardDescriptor.PROP_CONTENT_DATA
      */
-    private static final String PROP_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
+    private static final String PROP_CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA; // NOI18N
     
     private EjbWizardDescriptor wizardDescriptor;
     private Dialog dialog;
@@ -347,11 +347,11 @@ public class AddEjbGroupDialog {
                 String groupName = (addPanel.getGroupName() != null) ? addPanel.getGroupName() : "";
                 String errorMsg = NbBundle.getMessage(AddEjbGroupDialog.class, "NAME_NOT_UNIQUE", groupName);
                 
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", errorMsg); // NOI18N
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMsg); // NOI18N
             }else if (!valid) {
                 valid = true;
                 wizardDescriptor.updateNavigatingState();
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", null); // NOI18N
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null); // NOI18N
             }
         }
         

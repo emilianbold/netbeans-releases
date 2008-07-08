@@ -596,7 +596,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         }
 
         private void setErrorMessage(String errorMessage) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", errorMessage); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage); // NOI18N
         }
 
         public boolean isFinishPanel() {

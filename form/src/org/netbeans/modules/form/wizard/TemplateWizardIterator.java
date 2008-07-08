@@ -103,11 +103,11 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
             
             ResourceBundle bundle = NbBundle.getBundle(TemplateWizardIterator.class);
             JComponent comp = (JComponent)delegateIterator.current().getComponent();
-            String[] contentData = (String[])comp.getClientProperty("WizardPanel_contentData"); // NOI18N
+            String[] contentData = (String[])comp.getClientProperty(WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
             String[] newContentData = new String[contentData.length+1];
             System.arraycopy(contentData, 0, newContentData, 0, contentData.length);
             newContentData[contentData.length] = bundle.getString("CTL_SuperclassTitle"); // NOI18N
-            comp.putClientProperty("WizardPanel_contentData", newContentData); // NOI18N
+            comp.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, newContentData); // NOI18N
         }    
     }
 
@@ -255,7 +255,7 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
         SuperclassPanel() {
             ResourceBundle bundle = NbBundle.getBundle(TemplateWizardIterator.class);
             setName(bundle.getString("CTL_SuperclassTitle")); // NOI18N
-            putClientProperty("WizardPanel_contentSelectedIndex", new Integer(1)); //NOI18N
+            putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(1)); //NOI18N
             getAccessibleContext()
                 .setAccessibleDescription(bundle.getString("ACSD_SuperclassPanel")); // NOI18N
 

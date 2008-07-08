@@ -351,8 +351,7 @@ public class MakeActionProvider implements ActionProvider {
                             path = FilePathAdaptor.naturalize(path);
                             path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
                             path = FilePathAdaptor.naturalize(path);
-                            String hkey = conf.getDevelopmentHost().getName();
-                            CompilerSet compilerSet = CompilerSetManager.getDefault(hkey).getCompilerSet(conf.getCompilerSet().getValue());
+                            CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
                             if (compilerSet != null && compilerSet.getCompilerFlavor() == CompilerFlavor.MinGW) {
                                 // IZ 120352
                                 path = FilePathAdaptor.normalize(path);
@@ -374,6 +373,7 @@ public class MakeActionProvider implements ActionProvider {
                     RunDialogPanel.addElementToExecutablePicklist(path);
                 } else if (conf.isLibraryConfiguration()) {
                     // Should never get here...
+                    assert false;
                     return;
                 } else if (conf.isCompileConfiguration()) {
                     RunProfile runProfile = null;
@@ -424,12 +424,15 @@ public class MakeActionProvider implements ActionProvider {
                     if (targetName.equals("run")) { // NOI18N
                         // naturalize if relative
                         path = makeArtifact.getOutput();
-                        if (!IpeUtils.isPathAbsolute(path)) {
-                            // make path relative to run working directory
-                            path = makeArtifact.getWorkingDirectory() + "/" + path; // NOI18N
-                            path = FilePathAdaptor.naturalize(path);
-                            path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
-                            path = FilePathAdaptor.naturalize(path);
+                        //TODO: we also need remote aware IpeUtils..........
+                        if (conf.getDevelopmentHost().isLocalhost()) {
+                            if (!IpeUtils.isPathAbsolute(path)) {
+                                // make path relative to run working directory
+                                path = makeArtifact.getWorkingDirectory() + "/" + path; // NOI18N
+                                path = FilePathAdaptor.naturalize(path);
+                                path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
+                                path = FilePathAdaptor.naturalize(path);
+                            }
                         }
                     } else {
                         // Always absolute
@@ -756,19 +759,7 @@ public class MakeActionProvider implements ActionProvider {
     
     private String getMakeCommand(MakeConfigurationDescriptor pd, MakeConfiguration conf) {
         String cmd = null;
-        // old way...
-//        CompilerSet2Configuration csconf = conf.getCompilerSet();
-//        String csname = csconf.getOption();
-//        CompilerSet cs = CompilerSetManager.useFakeRemoteCompilerSet ?
-//                CompilerSetManager.fakeRemoteCS :
-//                CompilerSetManager.getDefault(conf.getDevelopmentHost().getName()).getCompilerSet(csname);
-        // Sergey's way...
-//        CompilerSet cs =
-//                conf.getDevelopmentHost().isLocalhost()
-//                ? conf.getCompilerSet().getCompilerSet()
-//                : CompilerSetManager.fakeRemoteCS;
-        String csname = conf.getCompilerSet().getOption();
-        CompilerSet cs = CompilerSetManager.getDefault(conf.getDevelopmentHost().getName()).getCompilerSet(csname);
+        CompilerSet cs = conf.getCompilerSet().getCompilerSet();
         if (cs != null) {
             cmd = cs.getTool(Tool.MakeTool).getPath();
         } else {
@@ -798,6 +789,7 @@ public class MakeActionProvider implements ActionProvider {
 
         // TODO: invent remote validation (another script?)
         if (!conf.getDevelopmentHost().isLocalhost()) {
+            lastValidation = true;
             return true;
         }
         

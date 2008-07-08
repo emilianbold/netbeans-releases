@@ -67,7 +67,7 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
     /** Creates new form SAXGeneratorCustomizer */
     public SAXGeneratorFilePanel() {
 //        try {
-//            this.putClientProperty("WizardPanel_helpURL", new URL("nbresloc:/org/netbeans/modules/xml/tools/generator/SAXGeneratorFilePanel.html"));  //NOI18N
+//            this.putClientProperty(WizardDescriptor.PROP_HELP_URL, new URL("nbresloc:/org/netbeans/modules/xml/tools/generator/SAXGeneratorFilePanel.html"));  //NOI18N
 //        } catch (MalformedURLException ex) {
 //        }
     }

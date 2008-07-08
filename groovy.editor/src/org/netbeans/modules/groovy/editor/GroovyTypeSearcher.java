@@ -208,7 +208,7 @@ public class GroovyTypeSearcher implements TypeSearcher {
         }
 
         public void open() {
-            ASTNode node = AstUtilities.getForeignNode(element, null);
+            ASTNode node = AstUtilities.getForeignNode(element);
             
             if (node != null) {
                 // TODO - embedding context?

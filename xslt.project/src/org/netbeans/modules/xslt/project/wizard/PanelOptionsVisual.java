@@ -138,7 +138,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ProjectNameAwar
         
         String ns = targetNsTextField != null ? targetNsTextField.getText() : null;
         if (!isValidNS(ns)) {
-            settings.putProperty("WizardPanel_errorMessage", 
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
                     NbBundle.getMessage(PanelOptionsVisual.class,"MSG_IllegalNamespace", ns)); //NOI18N
             return false;
         }

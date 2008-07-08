@@ -412,8 +412,8 @@ public final class TaskHandler {
                         }
                     }
                 } else { // used when no token hierarchy exists
-                    MutablePositionRegion wholeDocRegion = new MutablePositionRegion(doc.getStartPosition(),
-                            doc.createPosition(doc.getLength()));
+                    MutablePositionRegion wholeDocRegion = new MutablePositionRegion(handler.startPos,
+                            handler.endPos);
                     indentRegions.add(IndentSpiPackageAccessor.get().createContextRegion(wholeDocRegion));
                 }
                 

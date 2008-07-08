@@ -58,6 +58,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${basedir}/netBeans/javaee/build"/>
         <delete dir="${basedir}/netBeans/baseide/build"/>    
         <delete dir="${basedir}/netBeans/php/build"/> 
+        <delete dir="${basedir}/netBeans/webcommon/build"/> 
         <delete dir="${basedir}/tools/classes"/>           
     </target>
     
@@ -82,6 +83,7 @@ Microsystems, Inc. All Rights Reserved.
                                          groovy(groovy),
                                          php(php), 
                                          enterprise(javaee), identity(javaee), xml(javaee), visualweb(javaee),
+                                         webcommon(webcommon),
                                          ide(baseide), nb6.0-etc(baseide), platform(baseide), gsf(baseide)"/>        
         <for-each list="${clusters}" separator="," property="cluster.name"  propertyArg="module.name">
             <ant target="unzip-cluster"/>                           
@@ -121,6 +123,7 @@ Microsystems, Inc. All Rights Reserved.
                                         javaee(${javaee-title}),
                                         cpp(${cpp-title}),
                                         ruby(${ruby-title}),
+					webcommon(${webcommon-title}),
                                         groovy(${groovy-title}),
                                         soa(${soa-title}),
                                         php(${php-title})"/>        
@@ -161,10 +164,10 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="dist"/>                  
         <property name="bundles" value="        (./build/*pkg),
                                              -javase(./build/baseide.pkg ./build/javase.pkg),
-                                             -javaee(./build/baseide.pkg ./build/javase.pkg  ./build/javaee.pkg ./build/groovy.pkg ./build/glassfish.pkg ./build/glassfish-v3.pkg ./build/tomcat.pkg),
+                                             -javaee(./build/baseide.pkg ./build/javase.pkg  ./build/webcommon.pkg ./build/javaee.pkg ./build/groovy.pkg ./build/glassfish.pkg ./build/glassfish-v3.pkg ./build/tomcat.pkg),
                                              -cpp(./build/baseide.pkg ./build/cpp.pkg),
-                                             -ruby(./build/baseide.pkg ./build/ruby.pkg ./build/glassfish-v3.pkg),
-                                             -php(./build/baseide.pkg ./build/php.pkg)"/>        
+                                             -ruby(./build/baseide.pkg ./build/webcommon.pkg ./build/ruby.pkg ./build/glassfish-v3.pkg),
+                                             -php(./build/baseide.pkg ./build/webcommon.pkg ./build/php.pkg)"/>        
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
             <delete dir="${basedir}/dist_dmg"/>                          
             <ant target="build-dmg">
@@ -356,7 +359,7 @@ fi"
         <chmod file="${basedir}/build/mysqlstartup.pkg/Contents/Resources/postflight" perm="ugo+x"/>          
               
         <ant target="build-dmg">             
-             <property name="packages" value="./build/baseide.pkg ./build/javase.pkg  ./build/javaee.pkg ./build/ruby.pkg ./build/glassfish.pkg ./build/mysql*.pkg"/>  
+             <property name="packages" value="./build/baseide.pkg ./build/javase.pkg  ./build/webcommon.pkg ./build/javaee.pkg ./build/ruby.pkg ./build/glassfish.pkg ./build/mysql*.pkg"/>  
              <property name="bundle.type" value="-mysql"/> 
              <property name="mpkg.name" value="${mpkg.name_nb_mysql}"/> 
              <property name="license.file" value="${basedir}/dmg/Resources/license_mysql.txt"/>                           
@@ -388,6 +391,7 @@ fi"
             <filterset>                      
                 <filter token="SIZE_CPP" value="${sizeof.cpp}"/>                
                 <filter token="SIZE_JAVASE" value="${sizeof.javase}"/> 
+                <filter token="SIZE_WEBCOMMON" value="${sizeof.webcommon}"/>
                 <filter token="SIZE_JAVAEE" value="${sizeof.javaee}"/>
                 <filter token="SIZE_RUBY" value="${sizeof.ruby}"/>
                 <filter token="SIZE_GROOVY" value="${sizeof.groovy}"/>

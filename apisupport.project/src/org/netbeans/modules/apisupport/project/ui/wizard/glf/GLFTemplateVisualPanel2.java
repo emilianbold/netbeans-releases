@@ -79,20 +79,20 @@ public final class GLFTemplateVisualPanel2 extends JPanel {
         // reasonable mime type check
         if (!MIME_PATTERN.matcher(getMimeType().trim()).matches()) {
             wd.putProperty(
-                    "WizardPanel_errorMessage", // NOI18N
+                    WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(GLFTemplateVisualPanel2.class, "CTL_Invalid_Mime_Type"));
             wizardPanel.setValid(false);
             return;
         }
         if (!EXT_PATTERN.matcher(getExtensions().trim()).matches()) {
             wd.putProperty(
-                    "WizardPanel_errorMessage", // NOI18N
+                    WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(GLFTemplateVisualPanel2.class, "CTL_Invalid_Extensions"));
             wizardPanel.setValid(false);
             return;
         }
         wd.putProperty(
-                "WizardPanel_errorMessage", // NOI18N
+                WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                 null);
         if (!initialized)
             return;

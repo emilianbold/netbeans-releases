@@ -107,7 +107,7 @@ public class WizardPanel implements WizardDescriptor.FinishablePanel {
     
     public void setErrorMessage(final Class clazz, final String message) {
         if (wizardDescriptor != null)
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message != null ? NbBundle.getMessage(clazz, message) : null); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message != null ? NbBundle.getMessage(clazz, message) : null); // NOI18N
     }
     
     public Object getProperty(final String property) {

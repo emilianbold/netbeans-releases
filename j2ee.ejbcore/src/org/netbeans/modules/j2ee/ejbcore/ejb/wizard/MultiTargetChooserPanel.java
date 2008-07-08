@@ -286,7 +286,7 @@ public final class MultiTargetChooserPanel implements WizardDescriptor.Panel, Ch
     }
     
     private void setLocalizedErrorMessage (String message) {
-        wizard.putProperty ("WizardPanel_errorMessage", message); // NOI18N
+        wizard.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
     }
     
     private FileObject getTargetFolderFromGUI (WizardDescriptor wd) {
