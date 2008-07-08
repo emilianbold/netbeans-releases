@@ -42,12 +42,15 @@ package org.netbeans.modules.php.project.connections;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.net.ProtocolCommandEvent;
+import org.apache.commons.net.ProtocolCommandListener;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
@@ -320,7 +323,7 @@ public class RemoteClient {
         LOGGER.log(Level.FINE, "FTP client creating");
         ftpClient = new FTPClient();
         // XXX
-        //ftp.addProtocolCommandListener(new PrintCommandListener(new PrintWriter(System.out)));
+        ftpClient.addProtocolCommandListener(new PrintCommandListener(new PrintWriter(System.out)));
         LOGGER.log(Level.FINE, "Protocol command listener added");
     }
 
@@ -390,5 +393,24 @@ public class RemoteClient {
         sb.append(baseRemoteDirectory);
         sb.append("]"); // NOI18N
         return sb.toString();
+    }
+
+    private static class PrintCommandListener implements ProtocolCommandListener {
+
+        private final PrintWriter writer;
+
+        public PrintCommandListener(PrintWriter writer) {
+            this.writer = writer;
+        }
+
+        public void protocolCommandSent(ProtocolCommandEvent event) {
+            writer.print(event.getMessage());
+            writer.flush();
+        }
+
+        public void protocolReplyReceived(ProtocolCommandEvent event) {
+            writer.print(event.getMessage());
+            writer.flush();
+        }
     }
 }
