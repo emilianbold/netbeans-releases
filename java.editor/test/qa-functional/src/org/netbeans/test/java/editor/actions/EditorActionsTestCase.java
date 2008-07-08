@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.test.java.editor.actions;
 
 import java.io.File;
@@ -51,6 +50,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.test.java.editor.lib.EditorTestCase;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
+import org.netbeans.junit.Manager;
+import org.netbeans.junit.diff.Diff;
 
 /**
  * Basic Editor Actions Test class.
@@ -59,72 +60,72 @@ import org.netbeans.jemmy.operators.JEditorPaneOperator;
  *
  * @author Martin Roskanin
  */
-  public class EditorActionsTestCase extends EditorTestCase {
+public class EditorActionsTestCase extends EditorTestCase {
 
     // private PrintStream wrapper for System.out
     private PrintStream systemOutPSWrapper = new PrintStream(System.out);
     private int index = 0;
-    public static final int WAIT_MAX_MILIS_FOR_UNDO_REDO = 2000;      
-      
+    public static final int WAIT_MAX_MILIS_FOR_UNDO_REDO = 2000;
+
     /** Creates a new instance of Main */
     public EditorActionsTestCase(String testMethodName) {
         super(testMethodName);
     }
 
-    private String getIndexAsString(){
+    private String getIndexAsString() {
         String ret = String.valueOf(index);
-        if (ret.length() == 1) ret = "0" + ret;
+        if (ret.length() == 1) {
+            ret = "0" + ret;
+        }
         return ret;
     }
-    
-    private String getRefFileName(){
-        return this.getName()+getIndexAsString()+".ref"; //NOI18N
+
+    private String getRefFileName() {
+        return this.getName() + getIndexAsString() + ".ref"; //NOI18N
     }
-    
-    private String getGoldenFileName(){
-        return this.getName()+getIndexAsString()+".pass"; //NOI18N
+
+    private String getGoldenFileName() {
+        return this.getName() + getIndexAsString() + ".pass"; //NOI18N
     }
-    
-    private String getDiffFileName(){
-        return this.getName()+getIndexAsString()+".diff"; //NOI18N
+
+    private String getDiffFileName() {
+        return this.getName() + getIndexAsString() + ".diff"; //NOI18N
     }
-    
     // hashtable holding all already used logs and correspondig printstreams
     private Hashtable logStreamTable = null;
-    
+
     private PrintStream getFileLog(String logName) throws IOException {
         OutputStream outputStream;
         FileOutputStream fileOutputStream;
-        
-        if ((logStreamTable == null)|(hasTestMethodChanged())) {
+
+        if ((logStreamTable == null) | (hasTestMethodChanged())) {
             // we haven't used logging capability - create hashtables
             logStreamTable = new Hashtable();
-            //System.out.println("Created new hashtable");
+        //System.out.println("Created new hashtable");
         } else {
             if (logStreamTable.containsKey(logName)) {
                 //System.out.println("Getting stream from cache:"+logName);
-                return (PrintStream)logStreamTable.get(logName);
+                return (PrintStream) logStreamTable.get(logName);
             }
         }
         // we didn't used this log, so let's create it
-        FileOutputStream fileLog = new FileOutputStream(new File(getWorkDir(),logName));
-        PrintStream printStreamLog = new PrintStream(fileLog,true);
-        logStreamTable.put(logName,printStreamLog);
+        FileOutputStream fileLog = new FileOutputStream(new File(getWorkDir(), logName));
+        PrintStream printStreamLog = new PrintStream(fileLog, true);
+        logStreamTable.put(logName, printStreamLog);
         //System.out.println("Created new stream:"+logName);
         return printStreamLog;
     }
-    
-    private String lastTestMethod=null;
-    
+    private String lastTestMethod = null;
+
     private boolean hasTestMethodChanged() {
         if (!this.getName().equals(lastTestMethod)) {
-            lastTestMethod=this.getName();
+            lastTestMethod = this.getName();
             return true;
         } else {
             return false;
         }
     }
-    
+
     @Override
     public PrintStream getRef() {
         String refFilename = getRefFileName();
@@ -134,63 +135,95 @@ import org.netbeans.jemmy.operators.JEditorPaneOperator;
             // canot get ref file - return system.out
             //System.err.println("Test method "+this.getName()+" - cannot open ref file:"+refFilename
             //                                +" - defaulting to System.out and failing test");
-            fail("Could not open reference file: "+refFilename);
-            return  systemOutPSWrapper;
+            fail("Could not open reference file: " + refFilename);
+            return systemOutPSWrapper;
         }
     }
 
-    protected void compareToGoldenFile(Document testDoc){
+    protected void compareToGoldenFile(Document testDoc) {
         //waitForMilis(150);
         try {
-        ref(testDoc.getText(0, testDoc.getLength()));
-        compareReferenceFiles(getRefFileName(), getGoldenFileName(), getDiffFileName());
-        index++;
+            ref(testDoc.getText(0, testDoc.getLength()));
+            compareReferenceFiles(getRefFileName(), getGoldenFileName(), getDiffFileName());
+            index++;
         } catch (BadLocationException e) {
             e.printStackTrace(getLog());
             fail();
         }
     }
 
-    protected void compareToGoldenFile(Document testDoc, String RefFileName, String GoldenFileName, String DiffFileName) {
+    protected String compareToGoldenFile(Document testDoc, String RefFileName, String GoldenFileName, String DiffFileName) {
         try {
             ref(testDoc.getText(0, testDoc.getLength()));
-            compareReferenceFiles(RefFileName + ".ref", GoldenFileName  + ".pass", DiffFileName + ".diff");
+            //compareReferenceFiles(RefFileName + ".ref", GoldenFileName + ".pass", DiffFileName + ".diff");
+            if (!getRef().equals(systemOutPSWrapper)) {
+                // better flush the reference file
+                getRef().flush();
+                getRef().close();
+            }
+            File goldenFile = getGoldenFile(GoldenFileName + ".pass");
+            File testFile = new File(getWorkDir(), RefFileName + ".ref");
+            File diffFile = new File(getWorkDir(), DiffFileName + ".diff");
+            String message = "Files differ";
+            if (System.getProperty("xtest.home") == null) {
+                // show location of diff file only when run without XTest (run file in IDE)
+                message += "; check " + diffFile;
+            }
+            //assertFile(message, testFile, goldenFile, diffFile);
+            Diff diffImpl = Manager.getSystemDiff();
+
+            if (null == diffImpl) {
+                return "[ERROR] diff is not available";
+            } else {
+                if (null == diffFile) {
+                    if (diffImpl.diff(testFile, goldenFile, null)) {
+                        return "[ERROR] " + message;
+                    }
+                } else {
+                    if (diffImpl.diff(testFile.getAbsolutePath(), goldenFile.getAbsolutePath(), diffFile.getAbsolutePath())) {
+                        return "[ERROR] " + message;
+                    }
+                }
+            }
         } catch (BadLocationException e) {
             e.printStackTrace(getLog());
-            fail();
+            return "[ERROR] (BLE) " + e.getMessage();
+        } catch (IOException e) {
+            e.printStackTrace(getLog());
+            return "[ERROR] (IOE) " + e.getMessage();
         }
+        return null;
     }
-    
-    
-    protected void waitForMilis(int maxMiliSeconds){
+
+    protected void waitForMilis(int maxMiliSeconds) {
         int time = (int) maxMiliSeconds / 100;
         while (time > 0) {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException ex) {
-                time=0;
+                time = 0;
             }
             time--;
-            
+
         }
     }
 
-    protected ValueResolver getFileLengthChangeResolver(final JEditorPaneOperator txtOper, final int oldLength){
+    protected ValueResolver getFileLengthChangeResolver(final JEditorPaneOperator txtOper, final int oldLength) {
         log("");
-        log("oldLength:"+oldLength);
-        ValueResolver fileLengthValueResolver = new ValueResolver(){
-            public Object getValue(){
+        log("oldLength:" + oldLength);
+        ValueResolver fileLengthValueResolver = new ValueResolver() {
+
+            public Object getValue() {
                 int newLength = txtOper.getDocument().getLength();
-                log("newLength:"+newLength);
+                log("newLength:" + newLength);
                 return (newLength == oldLength) ? Boolean.TRUE : Boolean.FALSE;
             }
         };
-        
+
         return fileLengthValueResolver;
     }
-    
+
     protected void resetCounter() {
         index = 0;
     }
-    
 }
