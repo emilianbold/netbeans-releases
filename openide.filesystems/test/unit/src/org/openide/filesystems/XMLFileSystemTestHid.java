@@ -306,7 +306,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
     
 
     public void testAttribute08 () throws Exception {
-      URL fsURLDef = this.getClass().getResource ("data/Attributes.xml");
+      URL fsURLDef = XMLFileSystemTestHid.class.getResource("data/Attributes.xml");
       assertTrue ("Cannot create XML FS for testing purposes", fsURLDef != null);
       FileSystem fs = FileSystemFactoryHid.createXMLSystem(getName(), this, fsURLDef);
       FileObject fo = fs.findResource("testMethodValue");
@@ -315,8 +315,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
       String testName = "test1";
       Object obj = fo.getAttribute(testName);
       assertTrue ("methodValue failed", obj != null);
-      assertTrue ("methodValue doesn't keep order ",
-      obj.equals(getObjectViaMethodValue1 (fo, testName)));
+      assertEquals("methodValue doesn't keep order", obj, getObjectViaMethodValue1(fo, testName));
 
       testName = "test2";
       obj = fo.getAttribute(testName);
