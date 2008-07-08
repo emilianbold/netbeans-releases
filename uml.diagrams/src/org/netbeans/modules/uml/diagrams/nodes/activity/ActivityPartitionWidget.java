@@ -109,7 +109,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
         
         // initialize context palette
         DefaultContextPaletteModel paletteModel = new DefaultContextPaletteModel(this);
-        paletteModel.initialize("UML/context-palette/ActivityFinal");
+        paletteModel.initialize("UML/context-palette/Activity");
         addToLookup(paletteModel);
         addToLookup(new CompositeWidgetSelectProvider(this));
     }

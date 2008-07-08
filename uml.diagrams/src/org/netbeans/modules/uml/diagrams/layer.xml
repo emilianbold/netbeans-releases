@@ -504,7 +504,7 @@ made subject to such option by the copyright holder.
             <folder name="x-compositestate-element">
                 <folder name="Popup">
                     <file name="org.netbeans.modules.uml.diagrams.actions.state.RegionsAction.instance">
-                        <attr name="position" intvalue="320"/>
+                        <attr name="position" intvalue="592"/>
                     </file>
                 </folder>
             </folder>   
