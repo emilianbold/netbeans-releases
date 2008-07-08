@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
@@ -69,7 +70,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
-import org.netbeans.modules.cnd.makeproject.ui.utils.NativePathMap;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -314,7 +314,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                 if (!conf.getDevelopmentHost().isLocalhost()) {
                     // Make sure the project root is visible remotely
                     String basedir = pae.getProfile().getBaseDir();
-                    if (!NativePathMap.isRemote(key, basedir)) {
+                    if (!HostInfoProvider.getDefault().getMapper(key).isRemote(basedir)) {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                                 NbBundle.getMessage(DefaultProjectActionHandler.class, "Err_CannotRunLocalProjectRemotely")));
                         progressHandle.finish();
