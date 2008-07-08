@@ -21,7 +21,6 @@ import javax.swing.JComponent;
 
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableColumnModel;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Session;
@@ -96,10 +95,6 @@ final class HttpMonitorTopComponent extends TopComponent {
     private static  CompoundModel createViewCompoundModel (Session session) {
         List<Model> models = new ArrayList<Model> ();
         if ( session != null ){
-//            Model httpActivityModel = session.lookupFirst(null, HttpActivitiesModel.class);
-//            if( httpActivityModel != null ){
-//                models.add( httpActivityModel );
-//            }
             HttpActivitiesWrapper wrapper = session.lookupFirst(null, HttpActivitiesWrapper.class);
             if( wrapper != null ){
                 models.add( wrapper.getModel() );
@@ -123,10 +118,8 @@ final class HttpMonitorTopComponent extends TopComponent {
                     Node[] nodes = (Node[])evt.getNewValue();
                     if ( nodes == null || nodes.length < 1 ){
                         reqHeaderTableModel.setMap(EMPTY_MAP);
-//                        reqHeaderJTable.setText("");
                         reqParamTextArea.setText("");
                         resHeaderTableModel.setMap(EMPTY_MAP);
-//                        resHeaderJTable.setText("");
                         resBodyTextArea.setText("");
                         return;
                     }
@@ -138,17 +131,14 @@ final class HttpMonitorTopComponent extends TopComponent {
                         JSHttpRequest request = activity.getRequest();
                         assert request != null;
                         reqHeaderTableModel.setMap(request.getHeader());
-//                        reqHeaderJTable.setText(request.getHeader().toString());
                         reqParamTextArea.setText(request.getUrlParams().toString());
 
                         JSHttpResponse response = activity.getResponse();
                         if( response != null ){
-                            resHeaderTableModel.setMap(request.getHeader());
-//                            resHeaderJTable.setText(response.getHeader().toString());
+                            resHeaderTableModel.setMap(response.getHeader());
                             resBodyTextArea.setText( response.getUrlParams().toString());
                         } else {
                             resHeaderTableModel.setMap(EMPTY_MAP);
-                            //resHeaderJTable.setText("");
                             resBodyTextArea.setText("");
                         }
                     }
