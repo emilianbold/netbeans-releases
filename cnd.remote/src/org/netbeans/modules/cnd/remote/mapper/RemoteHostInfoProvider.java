@@ -64,4 +64,10 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
         map.put("path", "/usr/bin");
         return map;
     }
+
+    @Override
+    public boolean fileExists(String key, String path) {
+        //TODO: temp stub
+        return true;
+    }
 }
