@@ -1340,14 +1340,20 @@ public class CodeCompleter implements CodeCompletionHandler {
     }
     
     /**
-     * Getting the ClasspathInfo for this completion instance. We retrieve this
-     * information either from the BaseDocument, or (in case we are running from 
-     * a test) we use the ClassPathProvider from the Lookup.
-     * 
-     * @param doc
+     *
+     * @param request
      * @return
      */
-
+     
+    ClasspathInfo getClasspathInfoFromRequest(final CompletionRequest request){
+        FileObject fileObject = request.info.getFileObject();
+        
+        if(fileObject != null){
+            return ClasspathInfo.create(fileObject);
+        }
+        
+        return null;
+    }
 
     /**
      * Here we complete package-names like java.lan to java.lang ...
@@ -1364,9 +1370,7 @@ public class CodeCompleter implements CodeCompletionHandler {
      
         LOG.log(Level.FINEST, "Token fullString = >{0}<", packageRequest.fullString);
         
-        FileObject fileObject = request.info.getFileObject();
-        assert fileObject != null;
-        ClasspathInfo pathInfo = ClasspathInfo.create(fileObject);
+        ClasspathInfo pathInfo = getClasspathInfoFromRequest(request);
 
         assert pathInfo != null : "Can not get ClasspathInfo";
         
@@ -1393,6 +1397,21 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         return false;
     }
+
+    private boolean isValidPackage(ClasspathInfo pathInfo, String pkg){
+        assert pathInfo != null : "ClasspathInfo can not be null";
+
+        // get packageSet
+
+        Set<String> pkgSet = pathInfo.getClassIndex().getPackageNames(pkg, true, EnumSet.allOf(ClassIndex.SearchScope.class));
+
+        if(pkgSet.size() > 0){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 
     /**
      * Complete the Groovy and Java types available at this position.
@@ -1437,12 +1456,10 @@ public class CodeCompleter implements CodeCompletionHandler {
             return false;
         }
 
-        // get the JavaSource for our file.
-
-        FileObject fileObject = request.info.getFileObject();
-        assert fileObject != null;
-        ClasspathInfo pathInfo = ClasspathInfo.create(fileObject);
+        ClasspathInfo pathInfo = getClasspathInfoFromRequest(request);
         assert pathInfo != null;
+
+        // get the JavaSource for our file.
 
         JavaSource javaSource = JavaSource.create(pathInfo);
 
@@ -1822,6 +1839,21 @@ public class CodeCompleter implements CodeCompletionHandler {
             LOG.log(Level.FINEST, "No declaring class found"); // NOI18N
             return false;
         }
+
+        // We only complete methods if there is no basePackage, which is a valid
+        // package.
+
+        PackageCompletionRequest packageRequest = getPackageRequest(request);
+
+        if(packageRequest.basePackage.length() > 0) {
+            ClasspathInfo pathInfo = getClasspathInfoFromRequest(request);
+
+            if(isValidPackage(pathInfo, packageRequest.basePackage)) {
+                return false;
+            }
+        }
+
+
 
         Class clz;
         
