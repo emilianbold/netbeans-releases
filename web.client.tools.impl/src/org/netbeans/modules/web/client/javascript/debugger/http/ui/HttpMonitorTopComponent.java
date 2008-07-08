@@ -5,6 +5,7 @@
 
 package org.netbeans.modules.web.client.javascript.debugger.http.ui;
 
+
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -16,10 +17,13 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 
 
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.web.client.javascript.debugger.http.api.HttpActivity;
-import org.netbeans.modules.web.client.javascript.debugger.http.api.HttpRequest;
-import org.netbeans.modules.web.client.javascript.debugger.http.api.HttpResponse;
 import org.netbeans.modules.web.client.javascript.debugger.http.ui.models.HttpActivitiesModel;
+import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSHttpRequest;
+import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSHttpResponse;
 import org.netbeans.spi.viewmodel.Model;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.Models.CompoundModel;
@@ -40,8 +44,13 @@ final class HttpMonitorTopComponent extends TopComponent {
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/HttpMonitor.png";
 
+    private static final Model METHOD_COLUMN   = HttpActivitiesModel.getColumnModel(HttpActivitiesModel.METHOD_COLUMN);
+    private static final Model SENT_COLUMN     = HttpActivitiesModel.getColumnModel(HttpActivitiesModel.SENT_COLUMN);
+    private static final Model RESPONSE_COLUMN = HttpActivitiesModel.getColumnModel(HttpActivitiesModel.RESPONSE_COLUMN);
     private static final String PREFERRED_ID = "HttpMonitorTopComponent";
-    
+    private static JComponent tableView;
+    private final ActivitiesPropertyChange activityPropertyChangeListener = new ActivitiesPropertyChange();
+
     private HttpMonitorTopComponent() {
         initComponents();
         setName(NbBundle.getMessage(HttpMonitorTopComponent.class, "CTL_HttpMonitorTopComponent"));
@@ -49,44 +58,76 @@ final class HttpMonitorTopComponent extends TopComponent {
         setIcon(Utilities.loadImage(ICON_PATH, true));
     }
 
-    
     private void customInitiallization() {
-        List<Model> models = new ArrayList<Model> ();
-        models.add( new HttpActivitiesModel ());
-        models.add( HttpActivitiesModel.getColumnModel(HttpActivitiesModel.METHOD_COLUMN));
-        models.add( HttpActivitiesModel.getColumnModel(HttpActivitiesModel.SENT_COLUMN));
-        models.add( HttpActivitiesModel.getColumnModel(HttpActivitiesModel.RESPONSE_COLUMN));
-        CompoundModel compoundModel = Models.createCompoundModel(models);
-        JComponent tableView = Models.createView (compoundModel);
-        activitiesPanel.add(tableView, BorderLayout.CENTER);
-        
+        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+        Session session = null;
+        if( sessions.length > 0 ){
+            session = sessions[0];
+        }
+        CompoundModel compoundModel = createViewCompoundModel(session);
+        tableView = Models.createView (compoundModel);
         assert tableView instanceof ExplorerManager.Provider;
+
+        activitiesPanel.add(tableView, BorderLayout.CENTER);
+
         ExplorerManager activityExplorerManager = ((ExplorerManager.Provider)tableView).getExplorerManager();
-        activityExplorerManager.addPropertyChangeListener( new ActivitiesPropertyChange() );
-       
+        activityExplorerManager.addPropertyChangeListener(  activityPropertyChangeListener );
+        DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_CURRENT_SESSION, new DebuggerManagerListenerImpl());
     }
+
+    private void resetSessionInfo(Session session) {
+       // Session session = DebuggerManager.getDebuggerManager().getSessions()[0];
+        CompoundModel compoundModel = createViewCompoundModel(session);
+        Models.setModelsToView(tableView, compoundModel);
+    }
+
+    private static  CompoundModel createViewCompoundModel (Session session) {
+        List<Model> models = new ArrayList<Model> ();
+        if ( session != null ){
+            Model httpActivityModel = session.lookupFirst(null, HttpActivitiesModel.class);
+            if( httpActivityModel != null ){
+                models.add( httpActivityModel );
+            }
+        }
+        models.add( METHOD_COLUMN );
+        models.add( SENT_COLUMN );
+        models.add( RESPONSE_COLUMN );
+
+        CompoundModel compoundModel = Models.createCompoundModel(models);
+        return compoundModel;
+
+    }
+
+
     private class ActivitiesPropertyChange implements PropertyChangeListener {
-        
+
         public void propertyChange(PropertyChangeEvent evt) {
             if( evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES) ){
                 if( reqHeaderTextArea != null ){
-                    
+
                     assert evt.getNewValue() instanceof Node[];
                     Node[] nodes = (Node[])evt.getNewValue();
-                    
+                    if ( nodes == null || nodes.length < 1 ){
+                        reqHeaderTextArea.setText("");
+                        reqParamTextArea.setText("");
+                        resHeaderTextArea.setText("");
+                        resBodyTextArea.setText("");
+                        return;
+                    }
+
                     assert nodes[0] instanceof Node;
                     Node aNode = (Node)nodes[0];
                     HttpActivity activity = aNode.getLookup().lookup(HttpActivity.class);
                     if ( activity != null ){
-                        HttpRequest request = activity.getRequest();
+                        JSHttpRequest request = activity.getRequest();
                         assert request != null;
                         reqHeaderTextArea.setText(request.getHeader().toString());
-                        reqParamTextArea.setText(request.getParams());
-                        
-                        HttpResponse response = activity.getResponse();
+                        reqParamTextArea.setText(request.getUrlParams().toString());
+
+                        JSHttpResponse response = activity.getResponse();
                         if( response != null ){
                             resHeaderTextArea.setText(response.getHeader().toString());
-                            resBodyTextArea.setText( response.getBody());
+                            resBodyTextArea.setText( response.getUrlParams().toString());
                         } else {
                             resHeaderTextArea.setText("");
                             resBodyTextArea.setText("");
@@ -94,7 +135,7 @@ final class HttpMonitorTopComponent extends TopComponent {
                     }
                 }
             }
-            
+
         }
     }
 
@@ -114,15 +155,15 @@ final class HttpMonitorTopComponent extends TopComponent {
         double height = httpMonitorSplitPane.getHeight();
         double dividerLocPorportional1 = dividerLoc1/height;
         NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_HttpMonitorSplitPane_DIVIDERLOC, dividerLocPorportional1);
-    
+
         double dividerLoc2 = detailsSplitPane.getDividerLocation();
         double width = detailsSplitPane.getWidth();
         double dividerLocPorportional2 = dividerLoc2/width;
         NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_DetailsSplitPane_DIVIDERLOC, dividerLocPorportional2);
-    
+
     }
-    
-    
+
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -318,6 +359,25 @@ final class HttpMonitorTopComponent extends TopComponent {
         public Object readResolve() {
             return HttpMonitorTopComponent.getDefault();
         }
+    }
+
+    /* Purpose: to listen to the session and update the model when the current
+     * session has changed.
+     */
+    private class DebuggerManagerListenerImpl extends DebuggerManagerAdapter{
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            assert evt.getPropertyName().equals(DebuggerManager.PROP_CURRENT_SESSION);
+            Object obj = evt.getNewValue();
+            if ( obj == null) {
+                resetSessionInfo(null);
+                return;
+            }
+
+            assert obj instanceof Session;
+            resetSessionInfo((Session)obj);
+        }
+
     }
 
 }

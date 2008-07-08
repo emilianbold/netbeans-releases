@@ -100,4 +100,9 @@ public class JSHttpRequest implements JSHttpMessage {
         return urlParams;
     }
 
+    @Override
+    public String toString() {
+        return "http://" + getHeader().get("Host");
+    }
+
 }
