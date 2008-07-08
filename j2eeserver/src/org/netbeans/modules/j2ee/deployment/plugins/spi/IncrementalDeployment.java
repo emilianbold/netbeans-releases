@@ -53,6 +53,7 @@ import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import java.io.File;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 
 /**
@@ -174,5 +175,32 @@ public abstract class IncrementalDeployment {
      */
     public void notifyDeployment(TargetModuleID module) {
         //do nothing, override if needed
+    }
+
+    /**
+     * Returns <code>true</code> if deploy on save is supported, <code>false</code>
+     * otherwise. If this method returns <code>true</code>
+     * {@link #deployOnSave(javax.enterprise.deploy.spi.TargetModuleID, org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor)}
+     * must provide (reasonably fast) redeploy functionality.
+     *
+     * @return <code>true</code> if deploy on save is supported
+     * @since 1.47
+     */
+    public boolean isDeployOnSaveSupported() {
+        return false;
+    }
+
+    /**
+     * Performs reload of the artifacts when the deploy on save is requested.
+     * All chenged files are alredy prepared at required location before this
+     * call. Returns object tracking the reload.
+     *
+     * @param module module owning the artifacts
+     * @param desc description of changes
+     * @return object tracking the reload
+     * @since 1.47
+     */
+    public ProgressObject deployOnSave(TargetModuleID module, DeploymentChangeDescriptor desc) {
+        throw new UnsupportedOperationException("Deploy on save not supported");
     }
 }

@@ -41,18 +41,25 @@
 
 package org.netbeans.modules.j2ee.deployment.impl.projects;
 
-import org.netbeans.modules.j2ee.deployment.execution.*;
-import org.netbeans.modules.j2ee.deployment.impl.*;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.*;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
+import java.io.File;
+import java.io.IOException;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.shared.ModuleType;
 import org.openide.filesystems.FileUtil;
-import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.j2ee.deployment.config.*;
+import org.netbeans.modules.j2ee.deployment.config.ConfigSupportImpl;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
+import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
+import org.netbeans.modules.j2ee.deployment.impl.ServerString;
+import org.netbeans.modules.j2ee.deployment.impl.TargetModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.openide.util.NbBundle;
 
@@ -62,10 +69,10 @@ import org.openide.util.NbBundle;
  */
 public final class DeploymentTargetImpl implements DeploymentTarget {
     
-    J2eeModuleProvider moduleProvider;
-    String clientName;
-    ServerString server;
-    TargetModule[] targetModules;
+    private final J2eeModuleProvider moduleProvider;
+    private final String clientName;
+    private ServerString server;
+    private TargetModule[] targetModules;
     
     public DeploymentTargetImpl(J2eeModuleProvider moduleProvider, String clientName) {
         this.moduleProvider = moduleProvider;

@@ -132,12 +132,17 @@ public class RecurrentSuiteFactory {
         int count = 0;
         while ((JDialogOperator.findJDialog(editPropertiesTitle, true, true) != null) && (count < 10)) {
             count++;
-            new JButtonOperator(new NbDialogOperator(editPropertiesTitle), "Regenerate").push();
+            JDialogOperator dialog = new NbDialogOperator(editPropertiesTitle);
+            JButtonOperator butt = new JButtonOperator(dialog, "Regenerate");
+            butt.push();
             log.info("Closing buildscript regeneration");
             try {
                 Thread.sleep(5000);
             } catch (InterruptedException exc) {
                 log.log(Level.INFO, "interrupt exception", exc);
+            }
+            if (dialog.isVisible()){
+                dialog.close();
             }
         }
     }

@@ -41,7 +41,6 @@
 
 package org.netbeans.tests.j2eeserver.plugin;
 
-import javax.enterprise.deploy.model.*;
 import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.shared.*;
 import javax.enterprise.deploy.spi.status.*;
@@ -59,40 +58,47 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
  * @author  nn136682
  */
 public class IncrementalDeploySupport extends IncrementalDeployment {
-    DepManager dm;
-    File applicationsDir;
-    HashMap moduleDirectories = new HashMap();
-    
+    private DepManager dm;
+    private File applicationsDir;
+    private final HashMap moduleDirectories = new HashMap();
+
     /** Creates a new instance of IncrementalDeploySupport */
     public IncrementalDeploySupport(DeploymentManager manager) {
-        this.dm = (DepManager) dm;
+        assert manager != null;
+        this.dm = (DepManager) manager;
     }
-    
+
     public void setDeploymentManager(DeploymentManager manager) {
-        if (manager instanceof DepManager)
+        if (manager instanceof DepManager) {
             dm = (DepManager) manager;
-        else
+        } else {
             throw new IllegalArgumentException("setDeploymentManager: Invalid manager type");
+        }
     }
-    
+
     File getApplicationsDir() {
         if (applicationsDir != null)
             return applicationsDir;
-        
-        File userdir = new File(System.getProperty("netbeans.user"));
+
+        String workDir = dm.getInstanceProperties().getProperty(DepManager.WORK_DIR);
+        if (workDir == null) {
+            workDir = System.getProperty("java.io.tmpdir");
+        }
+        File userdir = new File(workDir);
         applicationsDir = new File(userdir, "testplugin/applications");
-        if (! applicationsDir.exists())
+        if (!applicationsDir.exists()) {
             applicationsDir.mkdirs();
+        }
         return applicationsDir;
     }
-        
+
     static Map planFileNames = new HashMap();
     static {
         planFileNames.put(ModuleType.WAR, new String[] {"tpi-web.xml"});
         planFileNames.put(ModuleType.EJB, new String[] {"tpi-ejb-jar.xml"});
         planFileNames.put(ModuleType.EAR, new String[] {"tpi-application.xml"});
     }
-    
+
     public File getDirectoryForModule (TargetModuleID module) {
         File appDir = new File(getApplicationsDir(), getModuleRelativePath((TestTargetMoid)module));
         if (! appDir.exists())
@@ -100,7 +106,7 @@ public class IncrementalDeploySupport extends IncrementalDeployment {
         System.out.println("getDirectoryForModule("+module+") returned: "+appDir);
         return appDir;
     }
-    
+
     String getModuleRelativePath(TestTargetMoid module) {
         File path;
         if (module.getParent() != null)
@@ -109,30 +115,53 @@ public class IncrementalDeploySupport extends IncrementalDeployment {
             path = new File(module.getModuleID());
         return path.getPath();
     }
-    
+
     public String getModuleUrl(TargetModuleID module) {
         return ((TestTargetMoid)module).getModuleUrl();
     }
-    
-    
+
+
     public ProgressObject incrementalDeploy (TargetModuleID module, AppChangeDescriptor changes) {
-        return null;//dm.incrementalDeploy(module, changes);
+        return dm.incrementalDeploy(module, changes);
     }
-    
+
     public boolean canFileDeploy (Target target, J2eeModule deployable) {
         return true;
-    }    
-    
+    }
+
     public File getDirectoryForNewApplication (Target target, J2eeModule app, ModuleConfiguration configuration) {
         return null;
     }
-    
+
     public File getDirectoryForNewModule (File appDir, String uri, J2eeModule module, ModuleConfiguration configuration) {
         return null;
     }
-    
-    public ProgressObject initialDeploy (Target target, J2eeModule app, ModuleConfiguration configuration, File dir) {
-        return null;
+
+    public ProgressObject initialDeploy (Target target, J2eeModule app, ModuleConfiguration configuration, final File dir) {
+        File webInf = new File(dir, "WEB-INF");
+        final ProgObject po;
+        if (webInf.exists() && webInf.isDirectory()) {
+            po = new ProgObject(dm, new Target[] {target}, dir, null, ModuleType.WAR);
+        } else {
+            po = new ProgObject(dm, new Target[] {target}, dir, null);
+        }
+
+        Runnable r = new Runnable() {
+            public void run() {
+                try { Thread.sleep(200); //some latency
+                } catch (InterruptedException e) {e.printStackTrace();}
+
+                po.setStatusDistributeRunning("TestPluginDM: distributing "+ dir);
+
+                try { Thread.sleep(500); //super server starting time
+                } catch (InterruptedException e) {e.printStackTrace();}
+
+                po.setStatusStartCompleted("TestPluginDM distribute finish");
+            }
+        };
+
+        (new Thread(r)).start();
+        return po;
     }
-    
+
 }
