@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
@@ -167,7 +168,7 @@ public class RemoteClient {
         }
     }
 
-    public synchronized void upload(FileObject baseLocalDirectory, FileObject... filesToUpload) throws RemoteException {
+    public synchronized TransferInfo upload(FileObject baseLocalDirectory, FileObject... filesToUpload) throws RemoteException {
         assert baseLocalDirectory != null;
         assert filesToUpload != null;
         assert baseLocalDirectory.isFolder() : "Base local directory must be a directory";
@@ -180,21 +181,20 @@ public class RemoteClient {
         }
 
         long start = System.currentTimeMillis();
-        Set<FileObject> uploaded = new HashSet<FileObject>();
-        Set<FileObject> failed = new HashSet<FileObject>();
+        TransferInfo transferInfo = new TransferInfo();
         File baseLocalDir = FileUtil.toFile(baseLocalDirectory);
         try {
-            uploadFiles(uploaded, failed, baseLocalDir, filesToUpload);
+            uploadFiles(transferInfo, baseLocalDir, filesToUpload);
         } finally {
+            transferInfo.setRuntime(System.currentTimeMillis() - start);
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Uploaded files: " + uploaded);
-                LOGGER.fine("Failed files: " + failed);
-                LOGGER.fine("Operation took: " + (System.currentTimeMillis() - start) + " ms");
+                LOGGER.fine(transferInfo.toString());
             }
         }
+        return transferInfo;
     }
 
-    private void uploadFiles(Set<FileObject> uploaded, Set<FileObject> failed, File baseLocalDir, FileObject... filesToUpload) throws RemoteException {
+    private void uploadFiles(TransferInfo transferInfo, File baseLocalDir, FileObject... filesToUpload) throws RemoteException {
         assert Thread.holdsLock(this);
 
         // sort files by name for better performance
@@ -210,31 +210,31 @@ public class RemoteClient {
         for (FileObject fo : filesToUpload) {
             // XXX cancelable
             try {
-                if (uploaded.contains(fo)) {
+                if (transferInfo.isUploaded(fo)) {
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine("Skipping, file already uploaded: " + fo);
                     }
                     return;
-                } else if (failed.contains(fo)) {
+                } else if (transferInfo.isFailed(fo)) {
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine("Skipping, file already failed: " + fo);
                     }
                     return;
                 }
-                uploadFile(uploaded, failed, baseLocalDir, fo);
-                uploaded.add(fo);
+                uploadFile(transferInfo, baseLocalDir, fo);
+                transferInfo.addUploaded(fo);
             } catch (IOException ex) {
-                failed.add(fo);
+                transferInfo.addFailed(fo);
                 // XXX
                 throw new RemoteException("Error while uploading files to the server", ex);
             } catch (RemoteException ex) {
-                failed.add(fo);
+                transferInfo.addFailed(fo);
                 throw ex;
             }
         }
     }
 
-    private void uploadFile(Set<FileObject> uploaded, Set<FileObject> failed, File baseLocalDir, FileObject fo) throws IOException, RemoteException {
+    private void uploadFile(TransferInfo transferInfo, File baseLocalDir, FileObject fo) throws IOException, RemoteException {
         assert Thread.holdsLock(this);
 
         if (fo.isFolder()) {
@@ -244,7 +244,7 @@ public class RemoteClient {
             }
             FileObject[] children = fo.getChildren();
             if (children.length > 0) {
-                uploadFiles(uploaded, failed, baseLocalDir, children);
+                uploadFiles(transferInfo, baseLocalDir, children);
             }
         } else {
             // file => simply upload it
@@ -393,6 +393,58 @@ public class RemoteClient {
         sb.append(baseRemoteDirectory);
         sb.append("]"); // NOI18N
         return sb.toString();
+    }
+
+    public static final class TransferInfo {
+        private final Set<FileObject> uploaded = new HashSet<FileObject>();
+        private final Set<FileObject> failed = new HashSet<FileObject>();
+        private long runtime;
+
+        public Set<FileObject> getUploaded() {
+            return Collections.unmodifiableSet(uploaded);
+        }
+
+        public Set<FileObject> getFailed() {
+            return Collections.unmodifiableSet(failed);
+        }
+
+        public long getRuntime() {
+            return runtime;
+        }
+
+        public boolean isUploaded(FileObject fo) {
+            return uploaded.contains(fo);
+        }
+
+        public boolean isFailed(FileObject fo) {
+            return failed.contains(fo);
+        }
+
+        void addUploaded(FileObject fo) {
+            uploaded.add(fo);
+        }
+
+        void addFailed(FileObject fo) {
+            failed.add(fo);
+        }
+
+        void setRuntime(long runtime) {
+            this.runtime = runtime;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder(200);
+            sb.append(getClass().getName());
+            sb.append(" [uploaded: "); // NOI18N
+            sb.append(uploaded);
+            sb.append(", failed: "); // NOI18N
+            sb.append(failed);
+            sb.append(", runtime: "); // NOI18N
+            sb.append(runtime);
+            sb.append(" ms]"); // NOI18N
+            return sb.toString();
+        }
     }
 
     private static class PrintCommandListener implements ProtocolCommandListener {
