@@ -27,6 +27,7 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.web.client.javascript.debugger.http.api.HttpActivity;
 import org.netbeans.modules.web.client.javascript.debugger.http.ui.models.HttpActivitiesModel;
+import org.netbeans.modules.web.client.javascript.debugger.http.ui.models.HttpActivitiesWrapper;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSHttpRequest;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSHttpResponse;
 import org.netbeans.spi.viewmodel.Model;
@@ -95,15 +96,18 @@ final class HttpMonitorTopComponent extends TopComponent {
     private static  CompoundModel createViewCompoundModel (Session session) {
         List<Model> models = new ArrayList<Model> ();
         if ( session != null ){
-            Model httpActivityModel = session.lookupFirst(null, HttpActivitiesModel.class);
-            if( httpActivityModel != null ){
-                models.add( httpActivityModel );
+//            Model httpActivityModel = session.lookupFirst(null, HttpActivitiesModel.class);
+//            if( httpActivityModel != null ){
+//                models.add( httpActivityModel );
+//            }
+            HttpActivitiesWrapper wrapper = session.lookupFirst(null, HttpActivitiesWrapper.class);
+            if( wrapper != null ){
+                models.add( wrapper.getModel() );
+                models.add( METHOD_COLUMN );
+                models.add( SENT_COLUMN );
+                models.add( RESPONSE_COLUMN );
             }
         }
-        models.add( METHOD_COLUMN );
-        models.add( SENT_COLUMN );
-        models.add( RESPONSE_COLUMN );
-
         CompoundModel compoundModel = Models.createCompoundModel(models);
         return compoundModel;
 
