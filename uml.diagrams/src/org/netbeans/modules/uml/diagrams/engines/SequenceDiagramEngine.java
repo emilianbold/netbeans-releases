@@ -1145,9 +1145,12 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
                 if(!toSet.equals(sqdBoundary.getMinimumSize()))
                 {
                     revalidateWithParent=true;
-                    int dx=toSet.width-sqdBoundary.getMinimumSize().width;
-                    int oldHalf=sqdBoundary.getMinimumSize().width/2;
+                    Dimension size=sqdBoundary.getMinimumSize();
+                    if(size==null)size=new Dimension();
+                    int dx=toSet.width-size.width;
+                    int oldHalf=size.width/2;
                     sqdBoundary.setMinimumSize(toSet);
+                    sqdBoundary.setPreferredBounds(null);//name of sqd may be long, so better to use min size
                     for(Widget w:sqdBoundary.getMainWidget().getChildren())//correct pins(messages to the boundary)
                     {
                         if(w instanceof MessagePinWidget)
