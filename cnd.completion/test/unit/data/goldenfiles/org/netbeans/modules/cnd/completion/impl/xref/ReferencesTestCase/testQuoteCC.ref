@@ -1,28 +1,28 @@
-'"customer.h"', tokenID=user-include, offset=2176 [46:10/2176-46:22/2188]
+'"customer.h"', tokenID=preprocessor_user_include, offset=2176 [46:10/2176-46:22/2188]
 --OWNER:
     INCLUDE "customer.h" [46:1/2167-46:22/2188]
 --RESOLVED TO:
     FILE ReferencesTestCase/customer.h
 ==============================================================
-'"system.h"', tokenID=user-include, offset=2198 [47:10/2198-47:20/2208]
+'"system.h"', tokenID=preprocessor_user_include, offset=2198 [47:10/2198-47:20/2208]
 --OWNER:
     INCLUDE "system.h" [47:1/2189-47:20/2208]
 --RESOLVED TO:
     FILE ReferencesTestCase/system.h
 ==============================================================
-'"disk.h"', tokenID=user-include, offset=2218 [48:10/2218-48:18/2226]
+'"disk.h"', tokenID=preprocessor_user_include, offset=2218 [48:10/2218-48:18/2226]
 --OWNER:
     INCLUDE "disk.h" [48:1/2209-48:18/2226]
 --RESOLVED TO:
     FILE ReferencesTestCase/disk.h
 ==============================================================
-'"cpu.h"', tokenID=user-include, offset=2236 [49:10/2236-49:17/2243]
+'"cpu.h"', tokenID=preprocessor_user_include, offset=2236 [49:10/2236-49:17/2243]
 --OWNER:
     INCLUDE "cpu.h" [49:1/2227-49:17/2243]
 --RESOLVED TO:
     FILE ReferencesTestCase/cpu.h
 ==============================================================
-'"memory.h"', tokenID=user-include, offset=2253 [50:10/2253-50:20/2263]
+'"memory.h"', tokenID=preprocessor_user_include, offset=2253 [50:10/2253-50:20/2263]
 --OWNER:
     INCLUDE "memory.h" [50:1/2244-50:20/2263]
 --RESOLVED TO:

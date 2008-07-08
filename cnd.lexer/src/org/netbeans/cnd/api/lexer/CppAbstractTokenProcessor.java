@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,55 +39,32 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.completion.cplusplus.utils;
+package org.netbeans.cnd.api.lexer;
 
-import org.netbeans.editor.TokenID;
-import org.netbeans.editor.TokenItem;
+import org.netbeans.api.lexer.Token;
 
 /**
- * simple token to present one element of document
+ *
  * @author Vladimir Voskresensky
  */
-public final class Token {
-    
-    private final int tokenLen;
-    private final int tokenStart;
-    private final TokenID tokenID;
-    private final String text;
-    
-    public Token(TokenItem item) {
-        this(item.getOffset(), item.getImage().length(), item.getTokenID(), item.getImage());
+public abstract class CppAbstractTokenProcessor implements CppTokenProcessor {
+    private final boolean skipPP;
+
+    public CppAbstractTokenProcessor() {
+        this(false);
     }
     
-    public Token(int start, int len, TokenID tokenID, String text) {
-        this.tokenStart = start;
-        this.tokenLen = len;
-        this.tokenID = tokenID;
-        this.text = text;
+    public CppAbstractTokenProcessor(boolean skipPP) {
+        this.skipPP = skipPP;
     }
 
-    public int getStartOffset() {
-        return tokenStart;
-    }
-    
-    public int getEndOffset() {
-        return tokenStart + tokenLen;
-    }
+    public void start(int startOffset, int firstTokenOffset) {}
 
-    public int getLength() {
-        return tokenLen;
-    }
-    
-    public TokenID getTokenID() {
-        return tokenID;
-    }
+    public void end(int offset, int lastTokenOffset) {}
 
-    public String getText() {
-        return text;
-    }
-    
-    public String toString() {
-        String retValue = tokenID + "[" + tokenStart + ", " + tokenLen + "]" + text; //NOI18N
-        return retValue;
-    }
+    public void ppTokenFinished(Token<CppTokenId> token, int tokenOffset) {}
+
+    public boolean ppTokenStarted(Token<CppTokenId> token, int tokenOffset) { return !skipPP; }
+
+    public abstract void token(Token<CppTokenId> token, int tokenOffset);
 }
