@@ -68,7 +68,7 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
     public static final String PROP_PROJECT_NAME = "projectName"; //NOI18N
     public static final String PROP_PROJECT_LOCATION = "projectLocation"; //NOI18N
     
-    static final String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
+    static final String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE; // NOI18N
     
     private String generatedProjectName = "";
     private int generatedProjectNameIndex = 0;
@@ -305,20 +305,20 @@ private void sharableProjectActionPerformed(java.awt.event.ActionEvent evt) {//G
     boolean valid( WizardDescriptor wizardDescriptor ) {
         
         if ( projectNameTextField.getText().length() == 0 ) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
             NbBundle.getMessage(ProjectLocationPanel.class,"MSG_IllegalProjectName"));
             return false; // Display name not specified
         }
         File f = new File (projectLocationTextField.getText()).getAbsoluteFile();
         if (getCanonicalFile (f)==null) {
             String message = NbBundle.getMessage (ProjectLocationPanel.class,"MSG_IllegalProjectLocation");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
             return false;
         }
         final File destFolder = getCanonicalFile(new File( createdFolderTextField.getText() ).getAbsoluteFile());
         if (destFolder == null) {
             String message = NbBundle.getMessage (ProjectLocationPanel.class,"MSG_IllegalProjectName");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
             return false;
         }
 
@@ -327,26 +327,26 @@ private void sharableProjectActionPerformed(java.awt.event.ActionEvent evt) {//G
             projLoc = projLoc.getParentFile();
         }
         if (projLoc == null || !projLoc.canWrite()) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
             NbBundle.getMessage(ProjectLocationPanel.class,"MSG_ProjectFolderReadOnly"));
             return false;
         }
         
         if (FileUtil.toFileObject(projLoc) == null) {
             String message = NbBundle.getMessage (ProjectLocationPanel.class,"MSG_IllegalProjectLocation");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
             return false;
         }
         
         File[] kids = destFolder.listFiles();
         if ( destFolder.exists() && kids != null && kids.length > 0) {
             // Folder exists and is not empty
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
             NbBundle.getMessage(ProjectLocationPanel.class,"MSG_ProjectFolderExists"));
             return false;
         }
         
-        wizardDescriptor.putProperty( "WizardPanel_errorMessage", "");
+        wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, "");
         
         if (sharableProject.isSelected()) {
             String location = librariesLocation.getText();

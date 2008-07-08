@@ -53,7 +53,7 @@ import org.openide.filesystems.FileUtil;
 
 public class PaintAppPanelVisual extends JPanel implements DocumentListener {
     
-    private static final String WIZARD_PANEL_ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
+    private static final String WIZARD_PANEL_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE; // NOI18N
 
     public static final String PROP_PROJECT_NAME = "projectName"; // NOI18N
     

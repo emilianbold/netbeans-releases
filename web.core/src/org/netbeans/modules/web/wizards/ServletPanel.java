@@ -106,10 +106,10 @@ public class ServletPanel implements WizardDescriptor.FinishablePanel {
 
     public boolean isValid() {
 	if(deployData.isValid()) { 
-	    wizard.putProperty("WizardPanel_errorMessage", ""); //NOI18N
+	    wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
 	    return true;
 	}
-	wizard.putProperty("WizardPanel_errorMessage", //NOI18N
+	wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, //NOI18N
 			   deployData.getErrorMessage()); 
 	return false; 
     } 

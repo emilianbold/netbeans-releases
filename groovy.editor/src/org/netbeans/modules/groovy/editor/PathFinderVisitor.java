@@ -521,9 +521,9 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
         }
         
         boolean result = false;
-        
+
         if (beginLine == endLine) {
-            if (line == beginLine && column >= beginColumn && column <= endColumn) {
+            if (line == beginLine && column >= beginColumn && column < endColumn) {
                 result = true;
             }
         } else if (line == beginLine) {
@@ -531,7 +531,7 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
                 result = true;
             }
         } else if (line == endLine) {
-            if (column <= endColumn) {
+            if (column < endColumn) {
                 result = true;
             }
         } else if (beginLine < line && line < endLine) {

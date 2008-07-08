@@ -86,6 +86,10 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
         return occurrences;
     }
 
+    public ASTNode getScope() {
+        return scope;
+    }
+
     public void collect() {
         for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
             scope = it.next();

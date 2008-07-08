@@ -57,6 +57,7 @@ import org.netbeans.modules.mobility.end2end.client.config.ClientConfiguration;
 import org.netbeans.modules.mobility.end2end.client.config.Configuration;
 import org.netbeans.modules.mobility.end2end.client.config.ServerConfiguration;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
@@ -79,7 +80,7 @@ public class ClientOptionsPanel implements TemplateWizard.Panel, ChangeListener 
     
     final private static String TRUE = "true";
     final private static String FALSE = "false";           
-    final private static String WPEM = "WizardPanel_errorMessage";
+    final private static String WPEM = WizardDescriptor.PROP_ERROR_MESSAGE;
         
     public java.awt.Component getComponent() {
         if( gui == null ) {

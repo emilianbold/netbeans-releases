@@ -61,6 +61,7 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.web.client.javascript.debugger.NbJSDebuggerConstants;
+import org.netbeans.modules.web.client.javascript.debugger.http.ui.models.HttpActivitiesModel;
 import org.netbeans.modules.web.client.tools.common.dbgp.Feature;
 import org.netbeans.modules.web.client.javascript.debugger.filesystem.URLContentProvider;
 //import org.netbeans.modules.web.client.javascript.debugger.filesystem.URLContentProviderImpl;
@@ -122,6 +123,7 @@ public final class NbJSDebugger {
     public static final String PROPERTY_WINDOWS = JSDebugger.PROPERTY_WINDOWS;
     private URLContentProvider contentProvider;
     private JSDebugger debugger;
+
     private HashMap<Breakpoint, JSBreakpointImpl> breakpointsMap = new HashMap<Breakpoint, JSBreakpointImpl>();
 
     private class JSDebuggerEventListenerImpl implements JSDebuggerEventListener {
@@ -152,6 +154,7 @@ public final class NbJSDebugger {
     private class JSHttpMessageEventListenerImpl implements JSHttpMessageEventListener {
 
         public void onHttpMessageEvent(JSHttpMessageEvent jsHttpMessageEvent) {
+
             if (jsHttpMessageEvent != null) {
                 fireJSHttpMessageEvent(jsHttpMessageEvent);
             }
@@ -269,6 +272,7 @@ public final class NbJSDebugger {
     }
 
     public static void startDebugging(URI uri, HtmlBrowser.Factory browser, Lookup lookup) {
+
         JSDebuggerFactory factory = JSDebuggerFactoryLookup.getFactory(browser, uri);
         if (factory == null) {
             // No factory to handle the browser.
@@ -279,9 +283,13 @@ public final class NbJSDebugger {
             }
         } else {
             NbJSDebugger nbJSdebugger = new NbJSDebugger(uri, browser, lookup, factory.startDebugging(browser, uri));
-
             List<? super Object> services = new ArrayList<Object>();
             services.add(nbJSdebugger);
+
+            HttpActivitiesModel activitiesModel = new HttpActivitiesModel(nbJSdebugger);
+            if( activitiesModel != null ){
+                services.add(activitiesModel);
+            }
 
             NbJSToJSLocationMapper nbJSToJSLocation = lookup.lookup(NbJSToJSLocationMapper.class);
             if (nbJSToJSLocation != null) {

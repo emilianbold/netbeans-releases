@@ -664,7 +664,7 @@ public class CompilerSetManager implements PlatformTypes {
                 path = Path.findCommand("dbx"); // NOI18N
             }
             if (path != null)
-                cs.addNewTool(IpeUtils.getBaseName(path), IpeUtils.getDirName(path), Tool.DebuggerTool); // NOI18N
+                cs.addNewTool(IpeUtils.getBaseName(path), path, Tool.DebuggerTool); // NOI18N
         }
         if (cs.getTool(Tool.DebuggerTool) == null) {
                 cs.addTool("", "", Tool.DebuggerTool); // NOI18N

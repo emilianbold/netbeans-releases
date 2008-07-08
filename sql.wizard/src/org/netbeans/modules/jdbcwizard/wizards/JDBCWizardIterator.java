@@ -199,7 +199,7 @@ public abstract class JDBCWizardIterator implements WizardDescriptor.Instantiati
         this.panels = this.getPanels(wiz);
         this.wiz = wiz;
 
-        final Object prop = wiz.getProperty("WizardPanel_contentData"); // NOI18N
+        final Object prop = wiz.getProperty(WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
         if (prop != null && prop instanceof String[]) {
         }
         final String[] steps = this.createSteps();
@@ -214,9 +214,9 @@ public abstract class JDBCWizardIterator implements WizardDescriptor.Instantiati
             if (c instanceof JComponent) { // assume Swing components
                 final JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(String.valueOf(i))); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(String.valueOf(i))); // NOI18N
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
             }
         }
     }

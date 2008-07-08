@@ -351,8 +351,7 @@ public class MakeActionProvider implements ActionProvider {
                             path = FilePathAdaptor.naturalize(path);
                             path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
                             path = FilePathAdaptor.naturalize(path);
-                            String hkey = conf.getDevelopmentHost().getName();
-                            CompilerSet compilerSet = CompilerSetManager.getDefault(hkey).getCompilerSet(conf.getCompilerSet().getValue());
+                            CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
                             if (compilerSet != null && compilerSet.getCompilerFlavor() == CompilerFlavor.MinGW) {
                                 // IZ 120352
                                 path = FilePathAdaptor.normalize(path);

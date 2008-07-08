@@ -39,17 +39,24 @@
 
 package org.netbeans.modules.web.client.javascript.debugger.http.ui.models;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.Action;
+import org.netbeans.modules.web.client.javascript.debugger.api.NbJSDebugger;
 import org.netbeans.modules.web.client.javascript.debugger.http.api.HttpActivity;
-import org.netbeans.modules.web.client.javascript.debugger.http.api.HttpResponse;
-import org.netbeans.modules.web.client.javascript.debugger.models.AbstractColumnModel;
-import org.netbeans.modules.web.client.javascript.debugger.models.NbJSCallStackModel;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessage;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessageEvent;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessageEventListener;
+import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSHttpProgress;
+import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSHttpRequest;
+import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSHttpResponse;
 import org.netbeans.spi.viewmodel.ColumnModel;
+import org.netbeans.spi.viewmodel.ModelEvent.TreeChanged;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeModel;
@@ -73,18 +80,47 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
     private static final String HTTP_RESPONSE=
             "org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/GreenArrow"; // NOI18N
 //    private final static String ROOT = "Root";
+    private NbJSDebugger debugger;
 
-    public HttpActivitiesModel() {
+    public HttpActivitiesModel(NbJSDebugger debugger) {
         listeners = new CopyOnWriteArrayList<ModelListener>();
+        this.debugger = debugger;
+        debugger.addJSHttpMessageEventListener(new JSHttpMesageEventListenerImpl());
     }
-    
+
+
+    private class JSHttpMesageEventListenerImpl implements JSHttpMessageEventListener {
+        Map<String, HttpActivity> id2ActivityMap = new HashMap<String,HttpActivity>();
+        public void onHttpMessageEvent(JSHttpMessageEvent jsHttpMessageEvent) {
+            JSHttpMessage message = jsHttpMessageEvent.getHttpMessage();
+            if( message instanceof JSHttpRequest ){
+                HttpActivity activity = new HttpActivity((JSHttpRequest)message);
+                id2ActivityMap.put(message.getId(), activity);
+                activityList.add(activity);
+            } else {
+                HttpActivity activity = id2ActivityMap.get(message.getId());
+                if (activity != null ){
+                    if( message instanceof JSHttpResponse) {
+                        activity.setResponse((JSHttpResponse) message);
+                    } else if ( message instanceof JSHttpProgress ){
+                        activity.updateProgress((JSHttpProgress)message);
+                    }
+                } else {
+                    //Why is the activity null.. maybe we started listening to late a missed a request.
+                    return;
+                }
+            }
+            fireModelChange();
+        }
+
+    }
+
+    final List<HttpActivity> activityList = new LinkedList<HttpActivity>();
     public List<HttpActivity> getHttpActivities() {
-        List<HttpActivity> activityList = new ArrayList<HttpActivity>();
-        activityList.add(HttpActivity.createDummyActivity());
-        activityList.add(HttpActivity.createDummyActivity1());
-        activityList.add(HttpActivity.createDummyActivity());
         return activityList;
     }
+    
+
 
     public Object getValueAt(Object node, String columnID) throws UnknownTypeException {
         if ( ROOT.equals(node)){
@@ -94,13 +130,21 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
             HttpActivity activity = (HttpActivity)node;
             
             if ( METHOD_COLUMN.equals(columnID)){
-                return activity.getRequest().getMethod();
+                return activity.getRequest().getMethod().toString().toUpperCase();
             } else if ( SENT_COLUMN.equals(columnID) ) {
-                return activity.getRequest().getSentDate();
+
+               // Date date = new Date(activity.getRequest().getTimeStamp());
+                Calendar cal = Calendar.getInstance();
+                long l = Long.parseLong(activity.getRequest().getTimeStamp());
+                cal.setTimeInMillis(l);
+                return cal.getTime().toString();
             } else if ( RESPONSE_COLUMN.equals(columnID) ){
-                HttpResponse response = activity.getResponse();
+                JSHttpMessage response = activity.getResponse();
                 if( response != null ){
-                    return response.getResponseDate();
+                    Calendar cal = Calendar.getInstance();
+                    long l = Long.parseLong(response.getTimeStamp());
+                    cal.setTimeInMillis(l);
+                    return cal.getTime().toString();
                 } 
                 return "";
             }
@@ -149,6 +193,12 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
     public void removeModelListener(ModelListener l) {
         listeners.remove(l);
     }
+
+    private void fireModelChange( ){
+        for( ModelListener l : listeners ){
+            l.modelChanged(new TreeChanged(this));
+        }
+    }
     
 
     public String getDisplayName(Object node) throws UnknownTypeException {
@@ -157,7 +207,7 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
         }
         if (node instanceof HttpActivity) {
             HttpActivity activity = ((HttpActivity) node);
-            String displayName = activity.getRequest().getUrl().toString();
+            String displayName = activity.getRequest().toString();  //url
             return displayName;
         } else {
             throw new UnknownTypeException(node);
@@ -175,7 +225,7 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
     public String getShortDescription(Object node) throws UnknownTypeException {
         if (node instanceof HttpActivity) {
             HttpActivity activity = ((HttpActivity) node);
-            String displayName = activity.getRequest().getUrl().toString();
+            String displayName = activity.getRequest().toString();
             return displayName;
         } else {
             throw new UnknownTypeException(node);
@@ -261,6 +311,8 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
         }
         
     }
+
+
 
 
 }

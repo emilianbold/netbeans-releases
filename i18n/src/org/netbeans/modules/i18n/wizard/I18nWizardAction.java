@@ -137,9 +137,9 @@ public class I18nWizardAction extends NodeAction {
     /** Initializes wizard descriptor. */
     private void initWizard(WizardDescriptor wizardDesc) {
         // Init properties.
-        wizardDesc.putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);    // NOI18N
-        wizardDesc.putProperty("WizardPanel_contentDisplayed", Boolean.TRUE);   // NOI18N
-        wizardDesc.putProperty("WizardPanel_contentNumbered", Boolean.TRUE);    // NOI18N
+        wizardDesc.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);    // NOI18N
+        wizardDesc.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);   // NOI18N
+        wizardDesc.putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);    // NOI18N
 
         List<String> contents = new ArrayList<String>(4);
         contents.add(Util.getString("TXT_SelectSourcesHelp"));
@@ -148,7 +148,7 @@ public class I18nWizardAction extends NodeAction {
         contents.add(Util.getString("TXT_FoundStringsHelp"));
         
         wizardDesc.putProperty(
-            "WizardPanel_contentData",                                          // NOI18N
+            WizardDescriptor.PROP_CONTENT_DATA,                                          // NOI18N
             contents.toArray(new String[contents.size()])
         ); 
         

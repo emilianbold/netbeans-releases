@@ -83,6 +83,7 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.util.Elements;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.ImportNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
@@ -108,11 +109,13 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.elements.ElementHandleSupport;
 import org.netbeans.modules.groovy.editor.elements.GroovyElement;
+import org.netbeans.modules.groovy.editor.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
+import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -254,7 +257,8 @@ public class CodeCompleter implements CodeCompletionHandler {
     
     
     /**
-     * Returns the next upstream Literal token (GroovyTokenId.LITERAL_*) or null
+     * Computes an CompletionContext which surrounds the request.
+     * Three tokens in front and three after the request.
      * 
      * @param request
      * @return
@@ -381,7 +385,7 @@ public class CodeCompleter implements CodeCompletionHandler {
     }
     
     
-    public CaretLocation getCaretLocationFromRequest(CompletionRequest request) {
+    public CaretLocation getCaretLocationFromRequest(final CompletionRequest request) {
         
         // Are we above the package statement?
         // We try to figure this out by moving down the lexer Stream
@@ -446,8 +450,6 @@ public class CodeCompleter implements CodeCompletionHandler {
             return null;
         }
 
-        LOG.log(Level.FINEST, "CaretPath : {0}", request.path);
-        
         /* here we loop from the tail of the path (innermost element)
         up to the root to figure out where we are. Some of the trails are:
         
@@ -507,17 +509,15 @@ public class CodeCompleter implements CodeCompletionHandler {
      * @return the next surrouning MethodNode
      */
        private ASTNode getSurroundingMethodOrClosure (CompletionRequest request) {
-           AstPath path = getPathFromRequest(request);
-
-           if (path == null) {
+           if (request.path == null) {
                LOG.log(Level.FINEST, "path == null"); // NOI18N
                return null;
            }
 
            LOG.log(Level.FINEST, "getSurroundingMethodOrClosure() ----------------------------------------");
-           LOG.log(Level.FINEST, "Path : {0}", path);
+           LOG.log(Level.FINEST, "Path : {0}", request.path);
 
-           for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
+           for (Iterator<ASTNode> it = request.path.iterator(); it.hasNext();) {
                ASTNode current = it.next();
                if (current instanceof MethodNode) {
                    MethodNode mn = (MethodNode) current;
@@ -576,7 +576,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         // therefore we can not complete. See # 131317
 
         if (root == null) {
-            LOG.log(Level.FINEST, "root == null"); // NOI18N
+            LOG.log(Level.FINEST, "AstUtilities.getRoot(request.info) returned null."); // NOI18N
             LOG.log(Level.FINEST, "request.info   = {0}", request.info); // NOI18N
             LOG.log(Level.FINEST, "request.prefix = {0}", request.prefix); // NOI18N
             
@@ -1193,6 +1193,12 @@ public class CodeCompleter implements CodeCompletionHandler {
         }
     }
 
+    /**
+     * Add a ASTNode to a list of node's in case it is not already in.
+     * @param result
+     * @param node
+     */
+
     private void addIfNotInList (List<ASTNode> result, ASTNode node){
 
         String nodeName = node.getText();
@@ -1208,6 +1214,11 @@ public class CodeCompleter implements CodeCompletionHandler {
         }
     }
 
+    /**
+     * Check whether this completion request was issued behind an import statement.
+     * @param request
+     * @return
+     */
 
     boolean checkForRequestBehindImportStatement(final CompletionRequest request) {
 
@@ -1388,9 +1399,10 @@ public class CodeCompleter implements CodeCompletionHandler {
      *
      * This could be:
      *
-     * 1.) Types defined in the Groovy File where the completion is invoked.
-     * 2.) Types located in the same package (source or binary).
-     * 3.) The Default imports for Groovy, which are a super-set of Java.
+     * 1.) Types defined in the Groovy File where the completion is invoked. (INDEX)
+     * 2.) Types located in the same package (source or binary). (INDEX)
+     * 3.) Types manually imported via the "import" statement. (AST)
+     * 4.) The Default imports for Groovy, which are a super-set of Java. (NB JavaSource)
      *
      * These are the Groovy default imports:
      *
@@ -1421,6 +1433,78 @@ public class CodeCompleter implements CodeCompletionHandler {
                 packageRequest.fullString.equals(".")) {
             return false;
         }
+
+
+        // This ModuleNode is used to retrieve the types defined here
+        // and the package name.
+
+        ModuleNode mn =  null;
+        AstPath path = request.path;
+        if (path != null) {
+            for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
+                ASTNode current = it.next();
+                if (current instanceof ModuleNode) {
+                    LOG.log(Level.FINEST, "Found ModuleNode");
+                    mn = (ModuleNode)current;
+                }
+            }
+        }
+
+        // Retrieve this from the Groovy Index.
+        
+        if (mn != null) {
+            String packageName = mn.getPackageName();
+
+            GroovyIndex index = new GroovyIndex(request.info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
+
+            if (index != null) {
+
+                if(packageName.endsWith(".")){
+                    packageName = packageName.substring(0,packageName.length() -1);
+                }
+
+                LOG.log(Level.FINEST, "Index found, looking up package : {0} ", packageName);
+
+                // This retrieves all classes from index:
+                Set<IndexedClass> classes = index.getClasses("", NameKind.PREFIX, true, false, false);
+
+                if (classes.size() == 0) {
+                    LOG.log(Level.FINEST, "Nothing found in GroovyIndex");
+                } else {
+                    for (IndexedClass indexedClass : classes) {
+                        if(indexedClass.getSignature().startsWith(packageName)){
+                            String typeName = indexedClass.getName();
+                            LOG.log(Level.FINEST, "Class in same package : {0} ", typeName);
+                            if (typeName.startsWith(request.prefix)) {
+                                LOG.log(Level.FINEST, "Adding class from same package: {0} ", typeName);
+                                proposals.add(new TypeItem(typeName, anchor, request, javax.lang.model.element.ElementKind.CLASS));
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+
+        // Are there any manually imported types?
+
+        if (mn != null) {
+            List<ImportNode> imports = mn.getImports();
+
+            if (imports != null) {
+                for (ImportNode importNode : imports) {
+                    LOG.log(Level.FINEST, "Imports : {0} ", importNode.getClassName());
+                    String typeName = NbUtilities.stripPackage(importNode.getClassName());
+                    if (typeName.startsWith(request.prefix)) {
+                        proposals.add(new TypeItem(typeName, anchor, request, javax.lang.model.element.ElementKind.CLASS));
+                    }
+
+                }
+            }
+        }
+
+
+        // Now we compute the type-proposals for the default imports
 
         FileObject fileObject = request.info.getFileObject();
         assert fileObject != null;
@@ -1544,7 +1628,6 @@ public class CodeCompleter implements CodeCompletionHandler {
         CountDownLatch cnt;
 
         public TypeSearcherHelper(String pkg, CountDownLatch cnt) {
-            this.typelist = typelist;
             this.pkg = pkg;
             this.cnt = cnt;
         }
@@ -1790,14 +1873,15 @@ public class CodeCompleter implements CodeCompletionHandler {
 
     public CodeCompletionResult complete(CodeCompletionContext context) {
         CompilationInfo info = context.getInfo();
-        int lexOffset = context.getCaretOffset();
         String prefix = context.getPrefix();
         HtmlFormatter formatter = context.getFormatter();
 
+        final int lexOffset = context.getCaretOffset();
         final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
 
         LOG.log(Level.FINEST, "complete(...), prefix      : {0}", prefix); // NOI18N
-        LOG.log(Level.FINEST, "complete(...), CaretOffset : {0}", context.getCaretOffset()); // NOI18N
+        LOG.log(Level.FINEST, "complete(...), lexOffset   : {0}", lexOffset); // NOI18N
+        LOG.log(Level.FINEST, "complete(...), astOffset   : {0}", astOffset); // NOI18N
 
 
         // Avoid all those annoying null checks
@@ -1810,6 +1894,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         anchor = lexOffset - prefix.length();
 
         final Document document = info.getDocument();
+        
         if (document == null) {
             return CodeCompletionResult.NONE;
         }
@@ -1831,6 +1916,8 @@ public class CodeCompleter implements CodeCompletionHandler {
             request.prefix = prefix;
             request.scriptMode = false;
             request.path = getPathFromRequest(request);
+
+            LOG.log(Level.FINEST, "complete(...), path        : {0}", request.path);
             
             // Are we invoked right behind a dot? This is information is used later on in
             // a couple of completions.

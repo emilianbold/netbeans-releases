@@ -42,14 +42,15 @@ package org.netbeans.modules.cnd.completion.impl.xref;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CppAbstractTokenProcessor;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.TokenID;
-import org.netbeans.editor.TokenItem;
-import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
-import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
 
 /**
@@ -66,22 +67,13 @@ public class ReferencesBaseTestCase extends ProjectBasedTestCase {
         File testSourceFile = getDataFile(source);
         CsmFile csmFile = getCsmFile(testSourceFile);
         BaseDocument doc = getBaseDocument(testSourceFile);
-        ExtSyntaxSupport ssup = (ExtSyntaxSupport) doc.getSyntaxSupport();
-        TokenItem token = ssup.getTokenChain(0, doc.getLength());
         log("creating list of references:");
-        List<ReferenceImpl> refs = new ArrayList(1024);
-        while (token != null) {
-            if (supportReference(token.getTokenID())) {
-                ReferenceImpl ref = ReferencesSupport.createReferenceImpl(csmFile, doc, token);
-                assertNotNull("reference must not be null for valid token " + token, ref);
-                refs.add(ref);
-                log(ref.toString());
-            }
-            token = token.getNext();
-        }
+        MyTP tp = new MyTP(csmFile, doc);
+        TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, 0);
+        CndLexerUtilities.processTokens(tp, cppTokenSequence, 0, doc.getLength());
         log("end of references list");
         log("start resolving referenced objects");
-        for (ReferenceImpl ref : refs) {
+        for (ReferenceImpl ref : tp.references) {
             CsmObject owner = ref.getOwner();
             ref(ref.toString());
             ref("--OWNER:\n    " + CsmTracer.toString(owner));
@@ -93,14 +85,36 @@ public class ReferencesBaseTestCase extends ProjectBasedTestCase {
         compareReferenceFiles();
     }
 
-    protected boolean supportReference(TokenID tokenID) {
+    protected static boolean supportReference(CppTokenId tokenID) {
         assert tokenID != null;
-        switch (tokenID.getNumericID()) {
-            case CCTokenContext.IDENTIFIER_ID:
-            case CCTokenContext.SYS_INCLUDE_ID:
-            case CCTokenContext.USR_INCLUDE_ID:
+        switch (tokenID) {
+            case IDENTIFIER:
+            case PREPROCESSOR_IDENTIFIER:
+            case PREPROCESSOR_USER_INCLUDE:
+            case PREPROCESSOR_SYS_INCLUDE:
                 return true;
         }
         return false;
-    }    
+    }
+
+    private final class MyTP extends CppAbstractTokenProcessor {
+        final List<ReferenceImpl> references = new ArrayList<ReferenceImpl>();
+        private final CsmFile csmFile;
+        private final BaseDocument doc;
+
+        MyTP(CsmFile csmFile, BaseDocument doc) {
+            this.csmFile = csmFile;
+            this.doc = doc;
+        }
+
+        @Override
+        public void token(Token<CppTokenId> token, int tokenOffset) {
+            if (supportReference(token.id())) {
+                ReferenceImpl ref = ReferencesSupport.createReferenceImpl(csmFile, doc, tokenOffset, token);
+                assertNotNull("reference must not be null for valid token " + token, ref);
+                references.add(ref);
+                log(ref.toString());
+            }
+        }
+    }
 }
