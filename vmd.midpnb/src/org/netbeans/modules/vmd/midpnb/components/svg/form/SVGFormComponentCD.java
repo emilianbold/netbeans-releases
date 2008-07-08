@@ -38,23 +38,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.vmd.midpnb.components.sources;
+package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
-import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
-import org.netbeans.modules.vmd.api.inspector.common.RenameAction;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
-import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
-import org.netbeans.modules.vmd.api.model.presenters.actions.*;
-import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
-import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.components.*;
-import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
-import org.netbeans.modules.vmd.midpnb.components.items.ItemSupport;
-import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
 import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
@@ -62,25 +53,29 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
+import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
+import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
+import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
+import org.netbeans.modules.vmd.api.model.support.ArraySupport;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
-import org.netbeans.modules.vmd.midpnb.flow.FlowSVGMenuElementEventSourcePinPresenter;
+import org.netbeans.modules.vmd.midpnb.components.items.ItemSupport;
+import org.netbeans.modules.vmd.midpnb.components.svg.SVGFormCD;
+import org.netbeans.modules.vmd.midpnb.flow.FlowSVGFormElementEventSourcePinPresenter;
 
 /**
  *
  * @author Anton Chechel
  */
-public class SVGMenuElementEventSourceCD extends ComponentDescriptor {
+public class SVGFormComponentCD extends ComponentDescriptor {
 
-    public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "#SVGMenuElementEventSource"); // NOI18N
+    public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGComponent"); // NOI18N
 
-    public static final String PROP_STRING = "string"; // NOI18N
-
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/svg_menu_element_16.png"; // NOI18N
-    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/svg_menu_element_32.png"; // NOI18N
+    public static final String PROP_ID = "string"; // NOI18N
 
     public TypeDescriptor getTypeDescriptor () {
-        return new TypeDescriptor (EventSourceCD.TYPEID, TYPEID, true, false);
+        return new TypeDescriptor (null, TYPEID, true, true);
     }
 
     public VersionDescriptor getVersionDescriptor () {
@@ -89,49 +84,45 @@ public class SVGMenuElementEventSourceCD extends ComponentDescriptor {
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors () {
         return Arrays.asList (
-            new PropertyDescriptor(PROP_STRING, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull (), false, true, MidpVersionable.MIDP_2)
+            new PropertyDescriptor(PROP_ID, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull (), false, false, MidpVersionable.MIDP_2)
+            //new PropertyDescriptor(PROP_ID, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull (), false, false, MidpVersionable.MIDP_2, true, true)
         );
     }
 
     private static DefaultPropertiesPresenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter ()
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty(NbBundle.getMessage(SVGMenuElementEventSourceCD.class, "DISP_SVGMenuElementEventSource_String"), // NOI18N
-                    PropertyEditorString.createInstance(NbBundle.getMessage(SVGMenuElementEventSourceCD.class,
-                        "LBL_SVGMenuElementEventSource_String")), PROP_STRING); // NOI18N
+                .addProperty(NbBundle.getMessage(SVGFormComponentCD.class, "DISP_SVGFormComponent_id"), // NOI18N
+                    PropertyEditorString.createInstance(NbBundle.getMessage(SVGFormComponentCD.class,
+                        "LBL_SVGFormComponent_id")), PROP_ID); // NOI18N
     }
 
     @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
-        DocumentSupport.removePresentersOfClass (presenters, InspectorPositionPresenter.class);
-        DocumentSupport.removePresentersOfClass (presenters, ActionsPresenter.class);
-
-        MidpActionsSupport.addCommonActionsPresenters(presenters, false, true, false, true, false);
-        MidpActionsSupport.addMoveActionPresenter(presenters, SVGMenuCD.PROP_ELEMENTS);
-        presenters.addAll(ActionsSupport.createByParent(DeleteAction.class, RenameAction.class));
-
+        // TODO check if this is correct
+        DocumentSupport.removePresentersOfClass(presenters, ScreenDisplayPresenter.class);
         super.gatherPresenters (presenters);
     }
 
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
-            // info
-            InfoPresenter.create (ItemSupport.createSVGMenuElementInfoResolver ()),
+            // info. not necessary now but can become necessary in the future.
+            InfoPresenter.create (ItemSupport.createSVGFormElementInfoResolver()),
             // properties
             createPropertiesPresenter (),
-            // inspector
-//            InspectorPositionPresenter.create(new ComponentsCategoryPC(MidpInspectorSupport.TYPEID_ELEMENTS)),
             // delete
+            /* do now alow to delete
             DeleteDependencyPresenter.createDependentOnParentComponentPresenter(),
             new DeletePresenter () {
                 protected void delete () {
                     DesignComponent component = getComponent ();
                     DesignComponent menu = component.getParentComponent();
-                    ArraySupport.remove (menu, SVGMenuCD.PROP_ELEMENTS, component);
+                    ArraySupport.remove (menu, SVGFormCD.PROP_ELEMENTS, component);
                 }
             },
+             */
             // flow
-            new FlowSVGMenuElementEventSourcePinPresenter(),
+            new FlowSVGFormElementEventSourcePinPresenter(),
             // general
             new GoToSourcePresenter () {
                 protected boolean matches (GuardedSection section) {

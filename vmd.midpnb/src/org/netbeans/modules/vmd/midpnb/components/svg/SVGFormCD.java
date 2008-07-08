@@ -50,6 +50,16 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.support.ArraySupport;
+import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
+import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
+import org.netbeans.modules.vmd.midp.components.MidpVersionable;
+import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormComponentCD;
+import org.netbeans.modules.vmd.midpnb.flow.FlowSVGFormElementPinOrderPresenter;
+import org.openide.util.NbBundle;
 
 /**
  * This class represents Component Descriptor for SVG Form component.
@@ -63,6 +73,9 @@ public class SVGFormCD extends ComponentDescriptor {
 
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/svg_form_16.png"; // NOI18N
     public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/svg_form_32.png"; // NOI18N
+
+    public static final String PROP_ELEMENTS = "elements"; // NOI18N
+    public static final String PROP_ELEMENTS_COUNT = "elements_cnt"; // NOI18N
 
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
@@ -83,11 +96,16 @@ public class SVGFormCD extends ComponentDescriptor {
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
+            new PropertyDescriptor(PROP_ELEMENTS, SVGFormComponentCD.TYPEID.getArrayType(), PropertyValue.createEmptyArray(SVGFormComponentCD.TYPEID), false, true, MidpVersionable.MIDP_2),
+            new PropertyDescriptor(PROP_ELEMENTS_COUNT, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue(0), false, false, MidpVersionable.MIDP_2)
         );
     }
 
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
-        return null;
+        return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
+            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
+                .addProperty("Elements_cnt", PropertyEditorNumber.createIntegerInstance(true, "elements count"), PROP_ELEMENTS_COUNT); //NOI18N
+        
     }
 
     private static Presenter createSetterPresenter () {
@@ -97,20 +115,32 @@ public class SVGFormCD extends ComponentDescriptor {
 
     @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
-        //MidpActionsSupport.addNewActionPresenter(presenters, SVGMenuElementEventSourceCD.TYPEID);
+        MidpActionsSupport.addNewActionPresenter(presenters, SVGFormComponentCD.TYPEID);
         super.gatherPresenters (presenters);
     }
 
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
+                // accept
+                /*
+                new AcceptTypePresenter(SVGFormComponentCD.TYPEID) {
+                    @Override
+                    protected void notifyCreated (DesignComponent component) {
+                        super.notifyCreated (component);
+                        ArraySupport.append (getComponent (), SVGFormCD.PROP_ELEMENTS, component);
+                        if (component.isDefaultValue(SVGFormComponentCD.PROP_STRING)) {
+                            List<PropertyValue> list = getComponent ().readProperty(SVGFormCD.PROP_ELEMENTS).getArray ();
+                            component.writeProperty (SVGFormComponentCD.PROP_STRING, MidpTypes.createStringValue (NbBundle.getMessage(SVGMenuCD.class, "DISP_SVGMenu_NewMenuItem", list.size()))); // NOI18N
+                        }
+                    }
+                },
+                 */
                 // properties
                 createPropertiesPresenter(),
                 // code
-                createSetterPresenter ()
+                createSetterPresenter (),
                 // flow
-                //new FlowSVGMenuElementPinOrderPresenter ()
-        
-        
+                new FlowSVGFormElementPinOrderPresenter ()
         
         );
     }
