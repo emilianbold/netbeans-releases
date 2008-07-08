@@ -907,10 +907,10 @@ final class XMLMapAttr implements Map {
                     }
                 }
 
-                Object[] paramArray = new Object[] {
-                        new Class[] { FileObject.class, String.class }, new Class[] { String.class, FileObject.class },
-                        new Class[] { FileObject.class }, new Class[] { String.class }, new Class[] {  },
-                        new Class[] { Map.class, String.class }, new Class[] { Map.class },
+                Class[][] paramArray = {
+                        { FileObject.class, String.class }, { String.class, FileObject.class },
+                        { FileObject.class }, { String.class }, {  },
+                        { Map.class, String.class }, { Map.class },
                     };
 
                 boolean both = ((fo != null) && (attrName != null));
@@ -933,7 +933,7 @@ final class XMLMapAttr implements Map {
                     }
 
                     try {
-                        Method method = cls.getDeclaredMethod(methodName, (Class[]) paramArray[i]);
+                        Method method = cls.getDeclaredMethod(methodName, paramArray[i]);
 
                         if (method != null) {
                             method.setAccessible(true);
