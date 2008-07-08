@@ -43,8 +43,6 @@ package org.netbeans.modules.db.dataview.output;
 import java.awt.GridBagConstraints;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.AbstractAction;
@@ -384,15 +382,6 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
                 refreshSQL();
             }
         });
-
-//        colValueTextField[i].addFocusListener(new FocusListener() {
-//            public void focusGained(FocusEvent e) {
-//            }
-//
-//            public void focusLost(FocusEvent e) {
-//                    refreshSQL();
-//            }
-//        });
     }
 
     private Object[] getInsertValues() throws DBException {
