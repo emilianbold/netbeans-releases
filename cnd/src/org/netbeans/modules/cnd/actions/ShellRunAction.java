@@ -116,7 +116,7 @@ public class ShellRunAction extends NodeAction {
         String csdirs = ""; // NOI18N
         String dcsn = CppSettings.getDefault().getCompilerSetName();
         if (dcsn != null && dcsn.length() > 0) {
-            cs = CompilerSetManager.getDefault().getCompilerSet(dcsn);
+            cs = CompilerSetManager.getDefault(CompilerSetManager.LOCALHOST).getCompilerSet(dcsn);
             if (cs != null) {
                 csdirs = cs.getDirectory();
                 if (cs.getCompilerFlavor() == CompilerFlavor.MinGW) {

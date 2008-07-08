@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.makeproject;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.lang.String;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -58,7 +57,6 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.loaders.HDataLoader;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
@@ -364,7 +362,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         
         // Check all items
         Item[] items = getMakeConfigurationDescriptor().getProjectItems();
-        Project project = getMakeConfigurationDescriptor().getProject();
+        Project proj = getMakeConfigurationDescriptor().getProject();
         for (int i = 0; i < items.length; i++) {
             ItemConfiguration oldItemConf = items[i].getItemConfiguration(oldMConf); //ItemConfiguration)oldMConf.getAuxObject(ItemConfiguration.getId(items[i].getPath()));
             ItemConfiguration newItemConf = items[i].getItemConfiguration(newMConf); //ItemConfiguration)newMConf.getAuxObject(ItemConfiguration.getId(items[i].getPath()));
@@ -383,7 +381,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                     // included
                     added.add(items[i]);
                 }
-                MakeLogicalViewProvider.checkForChangedItems(project, null, items[i]);
+                MakeLogicalViewProvider.checkForChangedItems(proj, null, items[i]);
             }
             
             if (newItemConf.getExcluded().getValue()){
