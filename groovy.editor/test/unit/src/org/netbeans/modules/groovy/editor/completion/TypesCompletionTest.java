@@ -75,10 +75,27 @@ public class TypesCompletionTest extends GroovyTestBase {
 
     public void testTypeCompletion1() throws Exception {
         checkCompletion(TYPES_BASE + "" + "TypeCompletion1.groovy", "class Bar { ^}", false);
+        // assertTrue(false);
     }
 
-//    public void testTypeCompletion2() throws Exception {
-//        checkCompletion(TYPES_BASE + "" + "TypeCompletion2.groovy", "class Pre { Cl^ }", false);
-//    }
+    public void testTypeCompletion2() throws Exception {
+        checkCompletion(TYPES_BASE + "" + "TypeCompletion2.groovy", "class Pre { Cl^ }", false);
+        // assertTrue(false);
+    }
+
+    public void testTypeCompletion3() throws Exception {
+        checkCompletion(TYPES_BASE + "" + "TypeCompletion3.groovy", "    Cl^ }", false);
+        // assertTrue(false);
+    }
+
+    public void testTypeCompletion4() throws Exception {
+        checkCompletion(TYPES_BASE + "" + "TypeCompletion4.groovy", "class Pre { Cl^", false);
+        // assertTrue(false);
+    }
+
+    public void testTypeCompletion5() throws Exception {
+        checkCompletion(TYPES_BASE + "" + "TypeCompletion5.groovy", "    No^", false);
+        // assertTrue(false);
+    }
 
 }
