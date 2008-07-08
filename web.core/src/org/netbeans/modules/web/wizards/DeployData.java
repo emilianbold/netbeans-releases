@@ -67,13 +67,12 @@ abstract class DeployData {
     // This is the web app file object
     void setWebApp(FileObject fo) { 
 	LOG.finer("setWebApp()");
-	if(fo == null) { 
-	    ddObject = null; 
+        
+	ddObject = fo;
+	if (fo == null) {
 	    webApp = null; 
 	    return;
 	} 
-
-	ddObject = fo; 
 
 	try { 
 	    webApp = DDProvider.getDefault().getDDRoot(fo);
@@ -106,7 +105,8 @@ abstract class DeployData {
 
     void writeChanges() throws IOException { 
 	LOG.finer("writeChanges()"); //NOI18N
-	if(webApp == null) return; 
+	if(webApp == null)
+            return; 
 	LOG.finer("now writing..."); //NOI18N
         webApp.write(ddObject);
     }

@@ -39,11 +39,10 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.vmd.midpnb.components.svg.util;
+package org.netbeans.modules.vmd.midpnb.components.svg.parsers;
 
 import org.xml.sax.*;
 import org.xml.sax.helpers.XMLReaderFactory;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -61,15 +60,16 @@ import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
  *
  * @author Anton Chechel
  */
-public final class SVGUtils {
+public final class SVGMenuImageParser extends SVGComponentImageParser {
 
     private static final String MENU_ELEMENT_SEARCH_PATTERN = "menuItem_.*"; // NOI18N
 
-    private SVGUtils() {
+    public void parse(InputStream svgInputStream, DesignComponent svgComponent) {
+        parseSVGMenu(svgInputStream, svgComponent);
     }
 
     public static void parseSVGMenu(final InputStream svgInputStream, final DesignComponent svgComponent) {
-        final String[] menuItems = SVGUtils.getMenuItems(svgInputStream);
+        final String[] menuItems = getMenuItems(svgInputStream);
         if (menuItems != null) {
             svgComponent.getDocument().getTransactionManager().writeAccess(new Runnable() {
 
@@ -103,7 +103,7 @@ public final class SVGUtils {
         return ch.getFoundElements();
     }
 
-    private static class NamedElementsContentHandler implements ContentHandler, EntityResolver {
+    private static class NamedElementsContentHandler extends AbstractElementsContentHandler {
 
         private ArrayList<String> foundElements;
         private Pattern regex;
@@ -125,36 +125,7 @@ public final class SVGUtils {
             foundElements.clear();
         }
 
-        public final void endDocument() throws SAXException {
-        }
-
-        public final void startDocument() throws SAXException {
-        }
-
-        public final void characters(char[] ch, int start, int length) throws SAXException {
-        }
-
-        public final void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
-        }
-
-        public final void endPrefixMapping(String prefix) throws SAXException {
-        }
-
-        public final void skippedEntity(String name) throws SAXException {
-        }
-
-        public final void setDocumentLocator(Locator locator) {
-        }
-
-        public final void processingInstruction(String target, String data) throws SAXException {
-        }
-
-        public final void startPrefixMapping(String prefix, String uri) throws SAXException {
-        }
-
-        public final void endElement(String namespaceURI, String localName, String qName) throws SAXException {
-        }
-
+        @Override
         public final void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
             // get id attribute value
             final String value = atts.getValue("id"); // NOI18N
@@ -163,8 +134,5 @@ public final class SVGUtils {
             }
         }
 
-        public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-            return new InputSource(new ByteArrayInputStream(new byte[0]));
-        }
     }
 }
