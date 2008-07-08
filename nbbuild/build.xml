@@ -1352,7 +1352,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
               failonerror="${stop.when.clean.error}" />
   </target>
 
-  <target name="clean" depends="-cleanall,hg-clean"/><!-- deprecated -->
+  <target name="clean" depends="hg-clean"/><!-- deprecated -->
 
   <target name="-clean-external">
     <subant target="clean">
