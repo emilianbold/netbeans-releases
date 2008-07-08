@@ -44,13 +44,18 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.net.URL;
 
+import java.util.Arrays;
 import java.util.List;
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -86,6 +91,37 @@ class DataViewUI extends JPanel {
     private JButton cancel;
     private DataViewActionHandler actionHandler;
     private static transient final Localizer mLoc = Localizer.get();
+
+    /** Shared mouse listener used for setting the border painting property
+     * of the toolbar buttons and for invoking the popup menu.
+     */
+    private static final MouseListener sharedMouseListener
+        = new org.openide.awt.MouseUtils.PopupMouseAdapter() {
+            public @Override void mouseEntered(MouseEvent evt) {
+                Object src = evt.getSource();
+
+                if (src instanceof AbstractButton) {
+                    AbstractButton button = (AbstractButton)evt.getSource();
+                    if (button.isEnabled()) {
+                        button.setContentAreaFilled(true);
+                        button.setBorderPainted(true);
+                    }
+                }
+            }
+
+            public @Override void mouseExited(MouseEvent evt) {
+                Object src = evt.getSource();
+                if (src instanceof AbstractButton)
+                {
+                    AbstractButton button = (AbstractButton)evt.getSource();
+                    button.setContentAreaFilled(false);
+                    button.setBorderPainted(false);
+                }
+            }
+
+            protected void showPopup(MouseEvent evt) {
+            }
+        };
 
     DataViewUI(DataView dataView, int toolbarType) {
         this.dataView = dataView;
@@ -298,6 +334,18 @@ class DataViewUI extends JPanel {
         return outputListener;
     }
 
+    private static final Insets BUTTON_INSETS = new Insets(2, 1, 0, 1);
+    private void processButton(AbstractButton button) {
+        button.setContentAreaFilled(false);
+        button.setBorderPainted(false);
+        button.setMargin(BUTTON_INSETS);
+        if (button instanceof AbstractButton) {
+            button.addMouseListener(sharedMouseListener);
+        }
+        //Focus shouldn't stay in toolbar
+        button.setFocusable(false);
+    }
+
     private void initToolbar(JToolBar toolbar, ActionListener outputListener) {
 
         toolbar.addSeparator(new Dimension(10, 10));
@@ -308,6 +356,7 @@ class DataViewUI extends JPanel {
         String nbBundle31 = mLoc.t("RESC017: Refresh Records");
         refreshButton.setToolTipText(nbBundle31.substring(15));
         refreshButton.addActionListener(outputListener);
+        processButton(refreshButton);
 
         toolbar.add(refreshButton);
 
@@ -318,6 +367,7 @@ class DataViewUI extends JPanel {
         first.setToolTipText(nbBundle32.substring(15));
         first.addActionListener(outputListener);
         first.setEnabled(false);
+        processButton(first);
         toolbar.add(first);
 
         url = getClass().getResource(imgPrefix + "navigate_left.png"); // NOI18N
@@ -326,6 +376,7 @@ class DataViewUI extends JPanel {
         previous.setToolTipText(nbBundle33.substring(15));
         previous.addActionListener(outputListener);
         previous.setEnabled(false);
+        processButton(previous);
         toolbar.add(previous);
 
         url = getClass().getResource(imgPrefix + "navigate_right.png"); // NOI18N
@@ -334,6 +385,7 @@ class DataViewUI extends JPanel {
         next.setToolTipText(nbBundle34.substring(15));
         next.addActionListener(outputListener);
         next.setEnabled(false);
+        processButton(next);
         toolbar.add(next);
 
         url = getClass().getResource(imgPrefix + "navigate_end.png"); // NOI18N
@@ -343,6 +395,7 @@ class DataViewUI extends JPanel {
         last.addActionListener(outputListener);
         last.setEnabled(false);
         toolbar.add(last);
+        processButton(last);
         toolbar.addSeparator(new Dimension(10, 10));
 
         //add limit row label
@@ -354,13 +407,13 @@ class DataViewUI extends JPanel {
         //add refresh text field
         refreshField = new JTextField();
         refreshField.setText("" + dataView.getDataViewPageContext().getPageSize()); // NOI18N
-        refreshField.setPreferredSize(new Dimension(30, refreshField.getHeight()));
-        refreshField.setSize(30, refreshField.getHeight());
+        refreshField.setMinimumSize(new Dimension(40, refreshField.getHeight()));
+        refreshField.setSize(40, refreshField.getHeight());
         refreshField.addKeyListener(new KeyAdapter() {
 
             @Override
             public void keyTyped(KeyEvent evt) {
-                if (refreshField.getText().length() >= 3) {
+                if (refreshField.getText().length() >= 4) {
                     evt.consume();
                 }
             }
@@ -376,6 +429,13 @@ class DataViewUI extends JPanel {
         toolbar.add(totalRowsNameLabel);
         totalRowsLabel = new JLabel();
         toolbar.add(totalRowsLabel);
+
+        char[] fillChars = new char[250];
+        Arrays.fill(fillChars, ' ');
+        JLabel filler = new JLabel(new String(fillChars));
+        filler.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 8));
+        toolbar.add(filler);
+
     }
 
     private void initVerticalToolbar(ActionListener outputListener) {
@@ -386,6 +446,7 @@ class DataViewUI extends JPanel {
         insert.setToolTipText(nbBundle38.substring(15));
         insert.addActionListener(outputListener);
         insert.setEnabled(false);
+        processButton(insert);
         editButtons[0] = insert;
 
         url = getClass().getResource(imgPrefix + "row_delete.png"); // NOI18N
@@ -394,6 +455,7 @@ class DataViewUI extends JPanel {
         deleteRow.setToolTipText(nbBundle39.substring(15));
         deleteRow.addActionListener(outputListener);
         deleteRow.setEnabled(false);
+        processButton(deleteRow);
         editButtons[1] = deleteRow;
 
         url = getClass().getResource(imgPrefix + "row_commit.png"); // NOI18N
@@ -402,6 +464,7 @@ class DataViewUI extends JPanel {
         commit.setToolTipText(nbBundle40.substring(15));
         commit.addActionListener(outputListener);
         commit.setEnabled(false);
+        processButton(commit);
         editButtons[2] = commit;
 
         url = getClass().getResource(imgPrefix + "cancel_edits.png"); // NOI18N
@@ -410,6 +473,7 @@ class DataViewUI extends JPanel {
         cancel.setToolTipText(nbBundle41.substring(15));
         cancel.addActionListener(outputListener);
         cancel.setEnabled(false);
+        processButton(cancel);
         editButtons[3] = cancel;
 
         //add truncate button
@@ -419,6 +483,7 @@ class DataViewUI extends JPanel {
         truncateButton.setToolTipText(nbBundle42.substring(15));
         truncateButton.addActionListener(outputListener);
         truncateButton.setEnabled(false);
+        processButton(truncateButton);
         editButtons[4] = truncateButton;
     }
 
@@ -434,6 +499,7 @@ class DataViewUI extends JPanel {
         initVerticalToolbar(outputListener);
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
+        toolbar.setRollover(true);
 
         if (toolbarType == DataView.HORIZONTAL_TOOLBAR) {
             JButton[] btns = getVerticalToolBar();
@@ -447,7 +513,7 @@ class DataViewUI extends JPanel {
 
         c.weightx = 1.0;
         c.weighty = 1.0;
-        c.fill = GridBagConstraints.NONE;
+        c.fill = GridBagConstraints.HORIZONTAL;
         c.gridwidth = GridBagConstraints.RELATIVE;
         c.anchor = GridBagConstraints.FIRST_LINE_START;
         panel.add(toolbar, c);
