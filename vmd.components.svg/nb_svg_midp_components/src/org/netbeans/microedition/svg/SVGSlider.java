@@ -94,6 +94,8 @@ public class SVGSlider extends SVGComponent {
     
     public SVGSlider( int min, int max, SVGForm form, String elemId ) {
         this( form, elemId );
+        myMin = min;
+        myMax = max;
     }
     
     public int getValue(){
@@ -104,18 +106,25 @@ public class SVGSlider extends SVGComponent {
         return myInputHandler;
     }
     
-    public void setValue( int value ){
+    public void setValue( final int value ){
         if ( myValue > myMax || myValue < myMin ){
             throw new IllegalArgumentException( value +" is out of range"); // NOI18N
         }
         
-        SVGRect rect = myRuleElement.getBBox();
-        float width = rect.getWidth();
-        SVGMatrix matrix = myKnobElement.getMatrixTrait( TRANSFORM );
-        matrix.mTranslate( (value -myValue )*width/(myMax - myMin), 0);
-        myValue = value;
-        myKnobElement.setMatrixTrait(TRANSFORM, matrix);
+        getForm().invokeLaterSafely(new Runnable() {
+
+            public void run() {
+                SVGRect rect = myRuleElement.getBBox();
+                float width = rect.getWidth();
+                SVGMatrix matrix = myKnobElement.getMatrixTrait(TRANSFORM);
+                matrix.mTranslate((value - myValue) * width / (myMax - myMin),
+                        0);
+
+                myKnobElement.setMatrixTrait(TRANSFORM, matrix);
+            }
+        });
         
+        myValue = value;
         fireActionPerformed();
     }
     

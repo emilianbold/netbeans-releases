@@ -46,7 +46,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
@@ -113,7 +112,7 @@ public class MakeConfiguration extends Configuration {
         cRequired = new LanguageBooleanConfiguration();
         cppRequired = new LanguageBooleanConfiguration();
         fortranRequired = new LanguageBooleanConfiguration();
-        platform = new PlatformConfiguration(MakeOptions.getInstance().getPlatform(), Platforms.getPlatformDisplayNames());
+        platform = new PlatformConfiguration(compilerSet.getPlatform(), Platforms.getPlatformDisplayNames());
         makefileConfiguration = new MakefileConfiguration(this);
         dependencyChecking = new BooleanConfiguration(null, isMakefileConfiguration() ? false : MakeOptions.getInstance().getDepencyChecking());
         cCompilerConfiguration = new CCompilerConfiguration(baseDir, null);
@@ -554,7 +553,7 @@ public class MakeConfiguration extends Configuration {
 
     public String getVariant() {
         String ret = "";
-        ret += CompilerSetManager.getDefault().getCompilerSet(getCompilerSet().getValue()).getName() + "-"; // NOI18N
+        ret += getCompilerSet().getCompilerSet().getName() + "-"; // NOI18N
         ret += Platforms.getPlatform(getPlatform().getValue()).getName();
         return ret;
     }
@@ -637,7 +636,7 @@ public class MakeConfiguration extends Configuration {
 //
 //    private String[] getCompilerSetDisplayNames() {
 //        ArrayList<String> names = new ArrayList();
-//        for (CompilerSet cs : CompilerSetManager.getDefault().getCompilerSets()) {
+//        for (CompilerSet cs : CompilerSetManager.getDefault(getDevelopmentHost().getName()).getCompilerSets()) {
 //            names.add(cs.getDisplayName());
 //        }
 //        return names.toArray(new String[0]);
@@ -645,7 +644,7 @@ public class MakeConfiguration extends Configuration {
 //
 //    private String[] getCompilerSetNames() {
 //        ArrayList<String> names = new ArrayList();
-//        for (CompilerSet cs : CompilerSetManager.getDefault().getCompilerSets()) {
+//        for (CompilerSet cs : CompilerSetManager.getDefault(getDevelopmentHost().getName()).getCompilerSets()) {
 //            names.add(cs.getName());
 //        }
 //        return names.toArray(new String[0]);
@@ -654,7 +653,7 @@ public class MakeConfiguration extends Configuration {
 //    private int getDefaultCompilerSetIndex() {
 //        String name = CppSettings.getDefault().getCompilerSetName();
 //        int i = 0;
-//        for (CompilerSet cs : CompilerSetManager.getDefault().getCompilerSets()) {
+//        for (CompilerSet cs : CompilerSetManager.getDefault(getDevelopmentHost().getName()).getCompilerSets()) {
 //            if (name.equals(cs.getName())) {
 //                return i;
 //            }

@@ -100,4 +100,16 @@ public class YamlScannerTest extends YamlTestBase {
     public void testStructureOmap() throws Exception {
         checkStructure("testfiles/ordered.yaml");
     }
+
+    public void testErb1() throws Exception {
+        checkStructure("testfiles/fixture.yml");
+    }
+
+    public void testErb2() throws Exception {
+        checkStructure("testfiles/fixture2.yml");
+    }
+
+    public void testErb3() throws Exception {
+        checkStructure("testfiles/fixture3.yml");
+    }
 }

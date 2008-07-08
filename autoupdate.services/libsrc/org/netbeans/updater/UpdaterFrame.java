@@ -179,8 +179,15 @@ public class UpdaterFrame extends javax.swing.JPanel {
 
             // paint the background color.
             Graphics2D g2d = (Graphics2D) g;
-            g2d.setPaint(new GradientPaint(0, 0, outerColor, w/2, 0, centerColor, true));
-            g2d.fillRect(0, 0, w, h);
+            if (isGradientVertical ()) {
+                Icon splashIcon = jLabel3.getIcon();
+                int splashH = splashIcon!=null ? splashIcon.getIconHeight() : 0;
+                g2d.setPaint(new GradientPaint(0, splashH, centerColor, 0, h, outerColor));
+                g2d.fillRect(0, splashH, w, h - splashH);
+            } else {
+                g2d.setPaint(new GradientPaint(0, 0, outerColor, w/2, 0, centerColor, true));
+                g2d.fillRect(0, 0, w, h);
+            }
         } else {
             super.paintComponent (g);
         }
@@ -399,7 +406,10 @@ public class UpdaterFrame extends javax.swing.JPanel {
     static private boolean isGradient () {
         return "true".equals (Localization.getBrandedString ("UpdaterFrame.isGradient")); // NOI18N
     }
-    
+
+    static private boolean isGradientVertical () {
+        return "true".equals (Localization.getBrandedString ("UpdaterFrame.isGradientVertical")); // NOI18N
+    }    
     
     private void loadSplash() {
         URL lookup = Localization.getBrandedResource( SPLASH_PATH, ".gif" ); // NOI18N

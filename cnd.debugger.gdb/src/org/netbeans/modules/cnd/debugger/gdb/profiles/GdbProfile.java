@@ -134,11 +134,11 @@ public class GdbProfile implements ConfigurationAuxObject {
         
         if (csconf.isValid()) {
             csname = csconf.getOption();
-            cs = CompilerSetManager.getDefault().getCompilerSet(csname);
+            cs = CompilerSetManager.getDefault(conf.getDevelopmentHost().getName()).getCompilerSet(csname);
         } else {
             csname = csconf.getOldName();
-            cs = CompilerSet.getCompilerSet(csname);
-            CompilerSetManager.getDefault().add(cs);
+            cs = CompilerSet.getCompilerSet(conf.getDevelopmentHost().getName(), csname);
+            CompilerSetManager.getDefault(conf.getDevelopmentHost().getName()).add(cs);
             csconf.setValid();
         }
         Tool debuggerTool = cs.getTool(Tool.DebuggerTool);
@@ -174,7 +174,7 @@ public class GdbProfile implements ConfigurationAuxObject {
 //                setGdbCommand(model.getGdbName());
 //            }
             conf.getCompilerSet().setValue(model.getSelectedCompilerSetName());
-            cs = CompilerSetManager.getDefault().getCompilerSet(model.getSelectedCompilerSetName());
+            cs = CompilerSetManager.getDefault(conf.getDevelopmentHost().getName()).getCompilerSet(model.getSelectedCompilerSetName());
             return cs.getTool(Tool.DebuggerTool).getPath();
         } else {
             return null;

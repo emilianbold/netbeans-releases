@@ -87,7 +87,7 @@ public class GetProjectLocationStep implements  WizardDescriptor.Panel,
         getComponent();
         
         if(!serverConfigured) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", 
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
                 NbBundle.getMessage(NewGrailsProjectWizardIterator.class, 
                 "NewGrailsProjectWizardIterator.NoGrailsServerConfigured"));
             }

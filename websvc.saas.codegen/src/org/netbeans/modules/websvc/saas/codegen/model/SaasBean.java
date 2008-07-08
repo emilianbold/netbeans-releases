@@ -97,7 +97,6 @@ public abstract class SaasBean extends GenericResourceBean {
     private String resourceTemplate;
     private SaasAuthenticationType authType;
     private SaasBean.SaasAuthentication auth;
-    private String authProfile;
     private boolean isDropTargetWeb = false;
     private String groupName;
     private String displayName;
@@ -290,11 +289,6 @@ public abstract class SaasBean extends GenericResourceBean {
     public void setAuthentication(SaasAuthentication auth) {
         this.auth = auth;
     }
-    
-    
-    public String getAuthenticationProfile() {
-        return this.authProfile;
-    }
 
     private  SaasBean.SessionKeyAuthentication.UseGenerator.Method createSessionKeyUseGeneratorMethod(
             Method method, SaasBean.SessionKeyAuthentication.UseGenerator useGenerator) {
@@ -319,10 +313,6 @@ public abstract class SaasBean extends GenericResourceBean {
             }
         }
         return Collections.emptyList();
-    }
-    
-    private void setAuthenticationProfile(String profile) {
-        this.authProfile = profile;
     }
     
     protected Object getSignedUrl(Authentication auth) {
@@ -412,8 +402,6 @@ public abstract class SaasBean extends GenericResourceBean {
         } else {
             setAuthenticationType(SaasAuthenticationType.PLAIN);
         }
-        if(auth2.getProfile() != null)
-            setAuthenticationProfile(auth2.getProfile());
     }
     
     private boolean findUseGenerator(SaasMethod m, Authenticator authenticator,
@@ -608,6 +596,26 @@ public abstract class SaasBean extends GenericResourceBean {
             }
         }
         return false;
+    }
+    
+    public static String getProfile(SaasMethod m, DropFileType type) {
+        CodeGen codegen = m.getSaas().getSaasMetadata().getCodeGen();
+        if(codegen != null) {
+            List<Artifacts> artifactsList = codegen.getArtifacts();
+            if(artifactsList != null) {
+                for(Artifacts artifacts: artifactsList) {
+                    String targets = artifacts.getTargets();
+                    if(targets != null) {
+                        String[] fileTypes = targets.split(",");
+                        for(String fileType:fileTypes) {
+                            if(fileType.equalsIgnoreCase(type.prefix()))
+                                return artifacts.getProfile();
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
     
     public class Time {

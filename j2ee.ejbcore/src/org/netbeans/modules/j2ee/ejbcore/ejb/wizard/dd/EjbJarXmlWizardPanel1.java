@@ -99,7 +99,7 @@ public class EjbJarXmlWizardPanel1 implements WizardDescriptor.Panel {
     
     public boolean isValid() {
         if (component.getSelectedLocation() == null) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EjbJarXmlWizardPanel1.class,"ERR_FileExistsOrNoValidLocation")); //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(EjbJarXmlWizardPanel1.class,"ERR_FileExistsOrNoValidLocation")); //NOI18N
             return false;
         }
         return true;

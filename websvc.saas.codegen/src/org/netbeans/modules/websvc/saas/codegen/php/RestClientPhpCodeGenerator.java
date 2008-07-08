@@ -77,6 +77,8 @@ import org.openide.loaders.DataObject;
  */
 public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
 
+    public static final String INDENT = "             ";
+    
     private FileObject saasServiceFile = null;
     private FileObject serviceFolder = null;
     private FileObject saasFolder = null;
@@ -105,6 +107,7 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         this.authGen.setLoginArguments(getLoginArguments());
         this.authGen.setAuthenticatorMethodParameters(getAuthenticatorMethodParameters());
         this.authGen.setSaasServiceFolder(getSaasServiceFolder());
+        this.authGen.setAuthenticationProfile(getBean().getProfile(m, getDropFileType()));
     }
 
     @Override
@@ -213,7 +216,7 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         methodBody += "        " + pathParamsCode;
         methodBody += "        " + queryParamsCode;
 
-        methodBody += "             $conn = new " + Constants.REST_CONNECTION + "(\"" + getBean().getUrl() + "\"";
+        methodBody += "$conn = new " + Constants.REST_CONNECTION + "(\"" + getBean().getUrl() + "\"";
         if (!pathParamsCode.trim().equals("")) {
             methodBody += ", $" + Constants.PATH_PARAMS + ", " + (queryParamsCode.trim().equals("") ? "null" : "$"+Constants.QUERY_PARAMS);
         } else if (!queryParamsCode.trim().equals("")) {
@@ -228,7 +231,7 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         HttpMethodType httpMethod = getBean().getHttpMethod();
         if (getBean().getHeaderParameters() != null && getBean().getHeaderParameters().size() > 0) {
             methodBody += "        " + getHeaderOrParameterDefinition(getBean().getHeaderParameters(), Constants.HEADER_PARAMS, false, httpMethod);
-            methodBody += "        $conn->setHeaders($" +Constants.HEADER_PARAMS+");";
+            methodBody += INDENT+"$conn->setHeaders($" +Constants.HEADER_PARAMS+");";
         }
 
         boolean hasRequestRep = !getBean().findInputRepresentations(getBean().getMethod()).isEmpty();
@@ -269,7 +272,7 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         }
         for (ParameterInfo param : getBean().getInputParameters()) {
             if (param.isFixed() && !Util.isContains(param, signParams)) {
-                fixedCode += "$" + getVariableName(param.getName()) + " = $" + findParamValue(param) + ";\n";
+                fixedCode += "     $" + getVariableName(param.getName()) + " = \"" + findParamValue(param) + "\";\n";
             }
         }
 
@@ -544,7 +547,7 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
     
     public static String getHeaderOrParameterDefinition(List<ParameterInfo> params, String varName, boolean evaluate) {
         String paramCode = "";
-        paramCode += "$" + varName + " = array();\n";
+        paramCode += INDENT+"$" + varName + " = array();\n";
         paramCode += getHeaderOrParameterDefinitionPart(params, varName, evaluate) + "\n";
         return paramCode;
     }

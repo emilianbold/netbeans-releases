@@ -89,6 +89,16 @@ public class JDBCDriverDeployHelper {
     static public List getMissingDrivers(File driverLoc, Set<Datasource> datasources) {
         Parameters.notNull("driverLoc", driverLoc);
         List drivers = new ArrayList();
+        if (!driverLoc.exists()) {
+            boolean mkdirs = driverLoc.mkdirs();
+            // Fail if assertions are on.
+            assert mkdirs : "failed to create the directory for driver deployment: "+driverLoc.getPath();
+            // Log and continue if assertions are off.
+            if (!mkdirs) {
+                Logger.getLogger("glassfish.eecommon").finer("failed to create the directory for driver deployment");
+                return drivers;
+            }
+        }
         Collection driversLocation = Arrays.asList(driverLoc.listFiles()); // getJDBCDriversLocation().listFiles());
         for (Datasource datasource : datasources) {
             String className = datasource.getDriverClassName();

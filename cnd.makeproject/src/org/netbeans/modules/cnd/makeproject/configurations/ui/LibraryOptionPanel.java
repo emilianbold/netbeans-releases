@@ -41,8 +41,8 @@
 
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.openide.util.NbBundle;
 
 public class LibraryOptionPanel extends javax.swing.JPanel {
@@ -150,19 +150,20 @@ public class LibraryOptionPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_staticRadioButtonActionPerformed
     
     public String getOption(MakeConfiguration conf) {
+        CompilerSet cs = conf.getCompilerSet().getCompilerSet();
         if (dynamicRadioButton.isSelected()) {
-            if (CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue()).isSunCompiler())
+            if (cs.isSunCompiler())
                 return "-Bdynamic"; // NOI18N
-            else if (CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue()).isGnuCompiler())
+            else if (cs.isGnuCompiler())
                 return "-dynamic"; // NOI18N
             else
                 assert false;
             return ""; // NOI18N
         }
         else if (staticRadioButton.isSelected()) {
-            if (CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue()).isSunCompiler())
+            if (cs.isSunCompiler())
                 return "-Bstatic"; // NOI18N
-            else if (CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue()).isGnuCompiler())
+            else if (cs.isGnuCompiler())
                 return "-static"; // NOI18N
             else
                 assert false;

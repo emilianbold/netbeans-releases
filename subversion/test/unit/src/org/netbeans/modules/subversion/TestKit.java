@@ -114,7 +114,7 @@ public class TestKit {
     }
 
     static ISVNClientAdapter getClient() throws SVNClientException {        
-        CmdLineClientAdapterFactory.setup13(null);
+        CmdLineClientAdapterFactory.setup();
         return SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);    
     }
 
@@ -127,7 +127,7 @@ public class TestKit {
         if(files != null) {
             for (File file : files) {
                 if(!isMetadata(file)) {
-                    client.addFile(new File[] {file}, true);   
+                    client.addFile(file);
                 }                
             }
             client.commit(new File[] {wc}, "commit", true);                    

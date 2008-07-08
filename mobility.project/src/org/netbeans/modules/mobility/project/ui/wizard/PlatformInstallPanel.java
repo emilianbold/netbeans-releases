@@ -58,6 +58,7 @@ import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
+import org.openide.WizardDescriptor;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -261,7 +262,7 @@ public class PlatformInstallPanel extends javax.swing.JPanel {
         
         public void showError(final String message) {
             if (wizard != null)
-                wizard.putProperty("WizardPanel_errorMessage", message); // NOI18N
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
         }
         
         public boolean isValid() {

@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import java.io.File;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Vector;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
@@ -52,32 +51,32 @@ import org.openide.filesystems.FileUtil;
 public class BasicCompiler extends Tool {
 
     /** Creates a new instance of GenericCompiler */
-    public BasicCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        super(flavor, kind, name, displayName, path);
+    public BasicCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        super(hkey, flavor, kind, name, displayName, path);
     }
 
     public String getDevelopmentModeOptions(int value) {
-        return ""; // NOI18N
+        return "";
     }
 
     public String getWarningLevelOptions(int value) {
-        return ""; // NOI18N
+        return "";
     }
 
     public String getSixtyfourBitsOption(int value) {
-        return ""; // NOI18N
+        return "";
     }
 
     public String getStripOption(boolean value) {
-        return ""; // NOI18N
+        return "";
     }
 
     public List getSystemPreprocessorSymbols() {
-        return new Vector(); // NOI18N
+        return new Vector();
     }
 
     public List getSystemIncludeDirectories() {
-        return new Vector(); // NOI18N
+        return new Vector();
     }
 
     /**

@@ -174,6 +174,10 @@ public class Subversion {
     }
 
     public boolean checkClientAvailable() {
+        boolean ret = true;
+        if(SvnClientFactory.wasJavahlCrash()) {
+            throw new RuntimeException("It appears that subversion javahl initialization caused trouble in a previous Netbeans session. Please report.");
+        }
         try {
             SvnClientFactory.checkClientAvailable();
         } catch (SVNClientException ex) {

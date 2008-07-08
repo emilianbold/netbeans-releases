@@ -182,7 +182,7 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
     
     public void initialize(WizardDescriptor wizard) {      
         if(!GrailsRuntime.getInstance().isConfigured()) {
-            wizard.putProperty("WizardPanel_errorMessage", 
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
                     NbBundle.getMessage(NewArtifactWizardIterator.class, 
                     "NewGrailsProjectWizardIterator.NoGrailsServerConfigured"));
             serverConfigured = false;
@@ -196,8 +196,8 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
         
         if (c instanceof JComponent) { // assume Swing components
             JComponent jc = (JComponent)c;
-            jc.putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(1)); // NOI18N
-            jc.putClientProperty("WizardPanel_contentData", new String[] { wizardTitle }  ); // NOI18N
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(1)); // NOI18N
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, new String[] { wizardTitle }  ); // NOI18N
             }
         
     }

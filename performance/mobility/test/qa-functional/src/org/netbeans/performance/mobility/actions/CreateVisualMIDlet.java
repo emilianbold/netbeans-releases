@@ -60,7 +60,7 @@ import org.netbeans.modules.project.ui.test.ProjectSupport;
 /**
  * Test Create Visual MIDlet
  *
- * @author  rashid@netbeans.org
+ * @author  rashid@netbeans.org, mrkam@netbeans.org
  */
 public class CreateVisualMIDlet extends PerformanceTestCase {
 
@@ -130,7 +130,9 @@ public class CreateVisualMIDlet extends PerformanceTestCase {
                 }
             }
         }.start();
-        MIDletEditorOperator.findMIDletEditorOperator(midletName + ".java").close();
+        if (midletName != null) {
+            MIDletEditorOperator.findMIDletEditorOperator(midletName + ".java").close();
+        }
     }
 
     @Override

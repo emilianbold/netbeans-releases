@@ -102,7 +102,7 @@ public class FinishableProxyWizardPanel implements WizardDescriptor.Panel, Wizar
     private void setErrorMessage() {
         if (!enableFinish) {
             if (wizard != null) {
-                wizard.putProperty ("WizardPanel_errorMessage", NbBundle.getMessage(FinishableProxyWizardPanel.class, "ERR_NotSupportedInbJavaEE4")); // NOI18N
+                wizard.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(FinishableProxyWizardPanel.class, "ERR_NotSupportedInbJavaEE4")); // NOI18N
             }
         }
     }

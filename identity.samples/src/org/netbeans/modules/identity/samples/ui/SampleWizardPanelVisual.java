@@ -210,14 +210,14 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
     protected boolean valid( WizardDescriptor wizardDescriptor ) {
         
         if ( projectNameTextField.getText().length() == 0 ) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", //NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, //NOI18N
                     NbBundle.getMessage(SampleWizardPanelVisual.class, "MSG_IllegalProjectName"));
             return false; // Display name not specified
         }
         File f = FileUtil.normalizeFile(new File(projectLocationTextField.getText()).getAbsoluteFile());
         if (!f.isDirectory()) {
             String message = NbBundle.getMessage(SampleWizardPanelVisual.class, "MSG_IllegalProjectLocation");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
             return false;
         }
         final File destFolder = FileUtil.normalizeFile(new File(createdFolderTextField.getText()).getAbsoluteFile());
@@ -227,32 +227,32 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
             projLoc = projLoc.getParentFile();
         }
         if (projLoc == null || !projLoc.canWrite()) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(SampleWizardPanelVisual.class, "MSG_ProjectFolderReadOnly"));
             return false;
         }
         
         if (FileUtil.toFileObject(projLoc) == null) {
             String message = NbBundle.getMessage(SampleWizardPanelVisual.class, "MSG_IllegalProjectLocation");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
             return false;
         }
         
 //        File locFolder = FileUtil.normalizeFile(new File(projectLocationTextField.getText()).getAbsoluteFile());
 //        if(locFolder != null && locFolder.listFiles()!=null && locFolder.listFiles().length != 0) {
 //            String message = NbBundle.getMessage(SampleWizardPanelVisual.class, "MSG_ProjectLocationNotEmpty");
-//            wizardDescriptor.putProperty("WizardPanel_errorMessage", message); // NOI18N
+//            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
 //            return false;
 //        }
         
         File[] kids = destFolder.listFiles();
         if ( destFolder.exists() && kids != null && kids.length > 0) {
             // Folder exists and is not empty
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(SampleWizardPanelVisual.class, "MSG_ProjectFolderExists"));
             return false;
         }
-        wizardDescriptor.putProperty( "WizardPanel_errorMessage", ""); // NOI18N
+        wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
         return true;
     }
     

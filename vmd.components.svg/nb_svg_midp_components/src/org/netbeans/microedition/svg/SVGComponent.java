@@ -39,6 +39,7 @@ public abstract class SVGComponent implements SVGForm.FocusListener {
     public static final    String SVG_NS = "http://www.w3.org/2000/svg";  // NOI18N
     
     public static final    String LABEL_FOR        = "labelFor";          // NOI18N
+    public static final    String ENABLED          = "enabled";           // NOI18N
     
     protected static final String TRAIT_X          = "x";                 // NOI18N
     protected static final String TRAIT_Y          = "y";                 // NOI18N

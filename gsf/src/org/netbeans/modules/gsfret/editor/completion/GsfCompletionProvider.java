@@ -228,6 +228,7 @@ public class GsfCompletionProvider implements CompletionProvider {
         private String filterPrefix;
         private ElementHandle element;
         private boolean isTruncated;
+        private boolean isFilterable;
         //private Source source;
         /** The compilation info that the Element was generated for */
 
@@ -266,6 +267,7 @@ public class GsfCompletionProvider implements CompletionProvider {
                 if (queryType == TOOLTIP_QUERY_TYPE || queryType == DOCUMENTATION_QUERY_TYPE || isJavaContext(component, caretOffset)) {
                     results = null;
                     isTruncated = false;
+                    isFilterable = true;
                     documentation = null;
                     toolTip = null;
                     anchorOffset = -1;
@@ -316,7 +318,7 @@ public class GsfCompletionProvider implements CompletionProvider {
             int newOffset = component.getSelectionStart();
 
             if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
-                if (isTruncated) {
+                if (isTruncated || !isFilterable) {
                     return false;
                 }
                 
@@ -514,6 +516,7 @@ public class GsfCompletionProvider implements CompletionProvider {
                 String prefix = env.getPrefix();
                 results = new ArrayList<CompletionItem>();
                 isTruncated = false;
+                isFilterable = true;
                 anchorOffset = env.getOffset() - ((prefix != null) ? prefix.length() : 0);
 
                 CodeCompletionHandler completer = env.getCompletable();
@@ -547,6 +550,7 @@ public class GsfCompletionProvider implements CompletionProvider {
             String prefix = env.getPrefix();
             results = new ArrayList<CompletionItem>();
             isTruncated = false;
+            isFilterable = true;
             anchorOffset = env.getOffset() - ((prefix != null) ? prefix.length() : 0);
 
             CodeCompletionHandler completer = env.getCompletable();
@@ -572,6 +576,9 @@ public class GsfCompletionProvider implements CompletionProvider {
             if (result != CodeCompletionResult.NONE) {
                 if (result.isTruncated()) {
                     isTruncated = true;
+                }
+                if (!result.isFilterable()) {
+                    isFilterable = false;
                 }
 
                 for (CompletionProposal proposal : result.getItems()) {

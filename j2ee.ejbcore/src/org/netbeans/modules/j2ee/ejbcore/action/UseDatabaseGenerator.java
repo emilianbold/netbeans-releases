@@ -156,20 +156,24 @@ public final class UseDatabaseGenerator {
         metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
             public Void run(EjbJarMetadata metadata) throws Exception {
                 Ejb ejb = metadata.findByEjbClass(elementHandle.getQualifiedName());
-                ejbName[0] = ejb.getEjbName();
-                if (ejb instanceof Session) {
-                    ejbType[0] = EnterpriseBeans.SESSION;
-                } else if (ejb instanceof MessageDriven) {
-                    ejbType[0] = EnterpriseBeans.MESSAGE_DRIVEN;
-                } else if (ejb instanceof Entity) {
-                    ejbType[0] = EnterpriseBeans.ENTITY;
+                if (ejb != null) {
+                    ejbName[0] = ejb.getEjbName();
+                    if (ejb instanceof Session) {
+                        ejbType[0] = EnterpriseBeans.SESSION;
+                    } else if (ejb instanceof MessageDriven) {
+                        ejbType[0] = EnterpriseBeans.MESSAGE_DRIVEN;
+                    } else if (ejb instanceof Entity) {
+                        ejbType[0] = EnterpriseBeans.ENTITY;
+                    }
                 }
                 return null;
             }
         });
         
-        String dsJndiName = datasource.getJndiName();
-        j2eeModuleProvider.getConfigSupport().bindDatasourceReferenceForEjb(ejbName[0], ejbType[0], dsRefName, dsJndiName);
+        if (ejbName[0] != null && ejbType[0] != null) {
+            String dsJndiName = datasource.getJndiName();
+            j2eeModuleProvider.getConfigSupport().bindDatasourceReferenceForEjb(ejbName[0], ejbType[0], dsRefName, dsJndiName);
+        }
     }
     
     private boolean isWebOrAppClientModule(J2eeModule module) {

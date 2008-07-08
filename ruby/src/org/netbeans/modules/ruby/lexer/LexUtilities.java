@@ -161,7 +161,8 @@ public class LexUtilities {
     
     @SuppressWarnings("unchecked")
     private static TokenSequence<? extends RubyTokenId> findRhtmlDelimited(TokenSequence t, int offset) {
-        if (t.language().mimeType().equals(RubyInstallation.RHTML_MIME_TYPE)) {
+        String mimeType = t.language().mimeType();
+        if (mimeType.equals(RubyInstallation.RHTML_MIME_TYPE) || mimeType.equals(RubyInstallation.YAML_MIME_TYPE)) {
             t.move(offset);
             if (t.moveNext() && t.token() != null && 
                     "ruby-delimiter".equals(t.token().id().primaryCategory())) { // NOI18N

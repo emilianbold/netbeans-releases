@@ -68,6 +68,7 @@ import org.netbeans.modules.mobility.project.ui.wizard.PlatformSelectionPanel;
 import org.netbeans.modules.mobility.project.ui.wizard.ProjectPanel;
 import org.netbeans.modules.mobility.project.ui.wizard.Utils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.TemplateWizard;
@@ -380,7 +381,7 @@ public class SourcesPanel extends javax.swing.JPanel implements DocumentListener
         
         public void showError(final String message) {
             if (wizard != null)
-                wizard.putProperty("WizardPanel_errorMessage", message); // NOI18N
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
         }
         
         public boolean isValid() {

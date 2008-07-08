@@ -210,7 +210,7 @@ public class FormBeanPropertiesPanelVisual extends javax.swing.JPanel implements
     // End of variables declaration//GEN-END:variables
     
 //    boolean valid(WizardDescriptor wizardDescriptor) {
-//        wizardDescriptor.putProperty( "WizardPanel_errorMessage", null); //NOI18N
+//        wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, null); //NOI18N
 //        
 //        for (int i = 0; i < model.getRowCount(); i++)
 //            if (model.getItem(i) == null || (model.getItem(i).getProperty()).trim().equals("")) //NOI18N
