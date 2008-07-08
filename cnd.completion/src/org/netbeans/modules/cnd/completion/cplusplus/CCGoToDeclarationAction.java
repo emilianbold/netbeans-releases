@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
 public class CCGoToDeclarationAction extends GotoDeclarationAction {
 
     static final long serialVersionUID = 1L;
-    
+
     private static CCGoToDeclarationAction instance;
 
     public CCGoToDeclarationAction() {
@@ -95,7 +95,7 @@ public class CCGoToDeclarationAction extends GotoDeclarationAction {
         final JTextComponent target = getFocusedComponent();
         if (target != null && (target.getDocument() instanceof BaseDocument)) {
             BaseDocument doc = (BaseDocument) target.getDocument();
-            int offset = target.getCaret().getDot();
+            int offset = target.getSelectionStart();
             // first try include provider
             if (new CsmIncludeHyperlinkProvider().isHyperlinkPoint(doc, offset)) {
                 return true;
@@ -124,7 +124,7 @@ public class CCGoToDeclarationAction extends GotoDeclarationAction {
                 }
                 if (target != null && (target.getDocument() instanceof BaseDocument)) {
                     BaseDocument doc = (BaseDocument) target.getDocument();
-                    int offset = target.getCaret().getDot();
+                    int offset = target.getSelectionStart();
                     // first try include provider
                     if (!new CsmIncludeHyperlinkProvider().goToInclude(doc, target, offset)) {
                         // if failed => try identifier provider
@@ -145,7 +145,7 @@ public class CCGoToDeclarationAction extends GotoDeclarationAction {
         retValue = NbBundle.getBundle(CCGoToDeclarationAction.class).getString("goto-identifier-declaration");
         if (target != null && (target.getDocument() instanceof BaseDocument)) {
             BaseDocument doc = (BaseDocument) target.getDocument();
-            int offset = target.getCaret().getDot();
+            int offset = target.getSelectionStart();
             Token<CppTokenId> token = CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
             if (token != null) {
                 if (CsmIncludeHyperlinkProvider.isSupportedToken(token)) {
